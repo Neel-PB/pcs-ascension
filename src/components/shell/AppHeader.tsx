@@ -17,8 +17,8 @@ export function AppHeader() {
   const [searchFocused, setSearchFocused] = useState(false);
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-shell-line bg-shell/95 backdrop-blur supports-[backdrop-filter]:bg-shell/60 ml-20">
-      <div className="container flex h-16 items-center justify-between px-6">
+    <header className="fixed top-0 left-20 right-0 z-40 h-16 flex items-center border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="flex h-16 w-full items-center justify-between px-6">
         {/* Left Section - Title */}
         <div className="flex items-center gap-4">
           <h1 className="text-lg font-semibold text-foreground">

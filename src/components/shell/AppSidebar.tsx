@@ -7,15 +7,10 @@ import {
   FileBarChart,
   LifeBuoy,
   ShieldCheck,
-  Settings,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import AscensionLogo from "@/assets/Ascension-Emblem.png";
 
 interface SidebarItem {
   id: string;
@@ -25,12 +20,12 @@ interface SidebarItem {
 }
 
 const sidebarItems: SidebarItem[] = [
-  { id: "home", title: "Dashboard", url: "/", icon: Home },
-  { id: "staffing", title: "Position Planning & Staffing", url: "/staffing", icon: Users },
-  { id: "positions", title: "Workforce Management", url: "/positions", icon: UserCog },
-  { id: "analytics", title: "Multi-Site Analytics", url: "/analytics", icon: TrendingUp },
-  { id: "reports", title: "Position Reports", url: "/reports", icon: FileBarChart },
-  { id: "support", title: "Resources & Support", url: "/support", icon: LifeBuoy },
+  { id: "home", title: "Home", url: "/", icon: Home },
+  { id: "staffing", title: "Staffing", url: "/staffing", icon: Users },
+  { id: "positions", title: "Workforce", url: "/positions", icon: UserCog },
+  { id: "analytics", title: "Analytics", url: "/analytics", icon: TrendingUp },
+  { id: "reports", title: "Reports", url: "/reports", icon: FileBarChart },
+  { id: "support", title: "Support", url: "/support", icon: LifeBuoy },
 ];
 
 export function AppSidebar() {
@@ -42,78 +37,93 @@ export function AppSidebar() {
   };
 
   return (
-    <div className="fixed left-0 top-0 z-40 flex h-screen w-20 flex-col bg-shell border-r border-shell-line shadow-soft">
-      {/* Logo Section */}
-      <div className="flex h-16 items-center justify-center border-b border-shell-line">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-primary shadow-sm">
-          <span className="text-lg font-bold text-white">P</span>
-        </div>
+    <>
+      {/* Logo in intersection area */}
+      <div className="fixed top-0 left-0 z-50 w-20 h-16 flex items-center justify-center bg-background border-r border-b border-border">
+        <img src={AscensionLogo} alt="Ascension" className="w-10 h-10 object-contain" />
       </div>
 
-      {/* Navigation Items */}
-      <TooltipProvider delayDuration={0}>
+      {/* Sidebar */}
+      <div className="fixed left-0 top-16 z-40 flex h-[calc(100vh-4rem)] w-20 flex-col bg-background border-r border-border">
+        {/* Navigation Items */}
         <nav className="flex-1 py-4">
-          <div className="space-y-1 px-2">
+          <div className="space-y-3 px-2">
             {sidebarItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.url);
 
               return (
-                <Tooltip key={item.id}>
-                  <TooltipTrigger asChild>
-                    <NavLink
-                      to={item.url}
-                      className={cn(
-                        "group relative flex h-12 w-full items-center justify-center rounded-lg transition-all duration-200",
-                        active
-                          ? "bg-primary/10 text-primary shadow-sm"
-                          : "text-shell-muted hover:bg-shell-elevated hover:text-foreground"
-                      )}
-                    >
-                      {/* Active indicator */}
-                      {active && (
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-l-full bg-primary" />
-                      )}
+                <NavLink
+                  key={item.id}
+                  to={item.url}
+                  className="relative block"
+                >
+                  {/* Active indicator with framer-motion animation */}
+                  {active && (
+                    <motion.div
+                      layoutId="sidebar-active-indicator"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 h-10 w-1 rounded-r-full bg-primary"
+                      transition={{
+                        type: "spring",
+                        stiffness: 380,
+                        damping: 30,
+                      }}
+                    />
+                  )}
 
-                      <Icon
-                        className={cn(
-                          "h-5 w-5 transition-colors",
-                          active ? "text-primary" : "text-shell-subtle"
-                        )}
-                      />
-                    </NavLink>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" className="font-medium">
-                    {item.title}
-                  </TooltipContent>
-                </Tooltip>
+                  <div
+                    className={cn(
+                      "flex flex-col items-center gap-1 py-2 px-1 rounded-xl transition-all duration-200",
+                      active
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="text-xs font-medium leading-tight text-center">
+                      {item.title}
+                    </span>
+                  </div>
+                </NavLink>
               );
             })}
           </div>
         </nav>
 
-        {/* Settings at bottom */}
-        <div className="border-t border-shell-line py-4 px-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <NavLink
-                to="/admin"
-                className={cn(
-                  "flex h-12 w-full items-center justify-center rounded-lg transition-all duration-200",
-                  location.pathname.startsWith("/admin")
-                    ? "bg-primary/10 text-primary shadow-sm"
-                    : "text-shell-muted hover:bg-shell-elevated hover:text-foreground"
-                )}
-              >
-                <ShieldCheck className="h-5 w-5" />
-              </NavLink>
-            </TooltipTrigger>
-            <TooltipContent side="right" className="font-medium">
-              Admin
-            </TooltipContent>
-          </Tooltip>
+        {/* Admin at bottom */}
+        <div className="border-t border-border py-4 px-2">
+          <NavLink
+            to="/admin"
+            className="relative block"
+          >
+            {location.pathname.startsWith("/admin") && (
+              <motion.div
+                layoutId="sidebar-active-indicator"
+                className="absolute left-0 top-1/2 -translate-y-1/2 h-10 w-1 rounded-r-full bg-primary"
+                transition={{
+                  type: "spring",
+                  stiffness: 380,
+                  damping: 30,
+                }}
+              />
+            )}
+
+            <div
+              className={cn(
+                "flex flex-col items-center gap-1 py-2 px-1 rounded-xl transition-all duration-200",
+                location.pathname.startsWith("/admin")
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+              )}
+            >
+              <ShieldCheck className="h-5 w-5" />
+              <span className="text-xs font-medium leading-tight text-center">
+                Admin
+              </span>
+            </div>
+          </NavLink>
         </div>
-      </TooltipProvider>
-    </div>
+      </div>
+    </>
   );
 }
