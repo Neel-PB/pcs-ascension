@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Search, Bell, HelpCircle, Menu, User } from "lucide-react";
+import { Search, Bell, HelpCircle, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,51 +11,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { useSidebar } from "@/hooks/use-sidebar";
 import { cn } from "@/lib/utils";
 
 export function AppHeader() {
-  const { collapsed, toggle } = useSidebar();
   const [searchFocused, setSearchFocused] = useState(false);
 
   return (
-    <motion.header
-      className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-shell-line bg-shell/95 backdrop-blur supports-[backdrop-filter]:bg-shell/60"
-      style={{
-        paddingLeft: collapsed ? "96px" : "296px", // Account for sidebar width
-      }}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
-    >
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-shell-line bg-shell/95 backdrop-blur supports-[backdrop-filter]:bg-shell/60 ml-20">
       <div className="container flex h-16 items-center justify-between px-6">
-        {/* Left Section - Mobile Menu & Title */}
+        {/* Left Section - Title */}
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={toggle}
-          >
-            <Menu className="h-5 w-5" />
-            <span className="sr-only">Toggle sidebar</span>
-          </Button>
-          
-          <motion.h1
-            className="text-xl font-semibold text-foreground"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3 }}
-          >
+          <h1 className="text-lg font-semibold text-foreground">
             Position Control System
-          </motion.h1>
+          </h1>
         </div>
 
         {/* Center Section - Search */}
-        <div className="flex-1 max-w-xl mx-8">
-          <motion.div
-            className="relative"
-            animate={{ width: searchFocused ? "100%" : "400px" }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-          >
+        <div className="flex-1 max-w-md mx-8">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-shell-muted" />
             <Input
               type="search"
@@ -69,7 +41,7 @@ export function AppHeader() {
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
             />
-          </motion.div>
+          </div>
         </div>
 
         {/* Right Section - Utilities */}
@@ -166,6 +138,6 @@ export function AppHeader() {
           </DropdownMenu>
         </div>
       </div>
-    </motion.header>
+    </header>
   );
 }

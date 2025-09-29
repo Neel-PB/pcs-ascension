@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Home,
@@ -11,7 +10,12 @@ import {
   Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSidebar } from "@/hooks/use-sidebar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface SidebarItem {
   id: string;
@@ -21,27 +25,15 @@ interface SidebarItem {
 }
 
 const sidebarItems: SidebarItem[] = [
-  { id: "home", title: "Home", url: "/", icon: Home },
-  { id: "staffing", title: "Staffing", url: "/staffing", icon: Users },
-  { id: "positions", title: "Positions", url: "/positions", icon: UserCog },
-  { id: "analytics", title: "Analytics", url: "/analytics", icon: TrendingUp },
-  { id: "reports", title: "Reports", url: "/reports", icon: FileBarChart },
-  { id: "support", title: "Support", url: "/support", icon: LifeBuoy },
-  { id: "admin", title: "Admin", url: "/admin", icon: ShieldCheck },
+  { id: "home", title: "Dashboard", url: "/", icon: Home },
+  { id: "staffing", title: "Position Planning & Staffing", url: "/staffing", icon: Users },
+  { id: "positions", title: "Workforce Management", url: "/positions", icon: UserCog },
+  { id: "analytics", title: "Multi-Site Analytics", url: "/analytics", icon: TrendingUp },
+  { id: "reports", title: "Position Reports", url: "/reports", icon: FileBarChart },
+  { id: "support", title: "Resources & Support", url: "/support", icon: LifeBuoy },
 ];
 
-const sidebarVariants = {
-  expanded: { width: 280 },
-  collapsed: { width: 80 },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, x: -20 },
-  visible: { opacity: 1, x: 0 },
-};
-
 export function AppSidebar() {
-  const { collapsed, toggle } = useSidebar();
   const location = useLocation();
 
   const isActive = (url: string) => {
@@ -50,109 +42,78 @@ export function AppSidebar() {
   };
 
   return (
-    <motion.div
-      className="fixed left-0 top-0 z-40 flex h-screen flex-col bg-shell border-r border-shell-line shadow-soft"
-      variants={sidebarVariants}
-      animate={collapsed ? "collapsed" : "expanded"}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
-    >
+    <div className="fixed left-0 top-0 z-40 flex h-screen w-20 flex-col bg-shell border-r border-shell-line shadow-soft">
       {/* Logo Section */}
       <div className="flex h-16 items-center justify-center border-b border-shell-line">
-        <motion.div
-          className="flex items-center gap-3"
-          layout
-          transition={{ duration: 0.3 }}
-        >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary">
-            <div className="text-sm font-bold text-white">P</div>
-          </div>
-          {!collapsed && (
-            <motion.span
-              className="text-lg font-semibold text-foreground"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              Position Control
-            </motion.span>
-          )}
-        </motion.div>
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-primary shadow-sm">
+          <span className="text-lg font-bold text-white">P</span>
+        </div>
       </div>
 
       {/* Navigation Items */}
-      <nav className="flex-1 p-4">
-        <div className="space-y-2">
-          {sidebarItems.map((item, index) => {
-            const Icon = item.icon;
-            const active = isActive(item.url);
+      <TooltipProvider delayDuration={0}>
+        <nav className="flex-1 py-4">
+          <div className="space-y-1 px-2">
+            {sidebarItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.url);
 
-            return (
-              <motion.div
-                key={item.id}
-                variants={itemVariants}
-                initial="hidden"
-                animate="visible"
-                transition={{
-                  delay: index * 0.1,
-                  duration: 0.3,
-                  ease: "easeOut",
-                }}
-              >
-                <NavLink
-                  to={item.url}
-                  className={cn(
-                    "group relative flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all duration-200",
-                    "hover:bg-shell-elevated hover:shadow-soft",
-                    active
-                      ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary"
-                      : "text-shell-muted hover:text-foreground"
-                  )}
-                >
-                  {/* Active indicator */}
-                  {active && (
-                    <motion.div
-                      className="absolute right-0 top-1/2 h-6 w-1 rounded-l-full bg-primary"
-                      layoutId="activeIndicator"
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
-                    />
-                  )}
-
-                  <Icon
-                    className={cn(
-                      "h-5 w-5 flex-shrink-0 transition-colors",
-                      active ? "text-primary" : "text-shell-subtle"
-                    )}
-                  />
-
-                  {!collapsed && (
-                    <motion.span
-                      className="truncate"
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: "auto" }}
-                      exit={{ opacity: 0, width: 0 }}
-                      transition={{ duration: 0.2 }}
+              return (
+                <Tooltip key={item.id}>
+                  <TooltipTrigger asChild>
+                    <NavLink
+                      to={item.url}
+                      className={cn(
+                        "group relative flex h-12 w-full items-center justify-center rounded-lg transition-all duration-200",
+                        active
+                          ? "bg-primary/10 text-primary shadow-sm"
+                          : "text-shell-muted hover:bg-shell-elevated hover:text-foreground"
+                      )}
                     >
-                      {item.title}
-                    </motion.span>
-                  )}
-                </NavLink>
-              </motion.div>
-            );
-          })}
-        </div>
-      </nav>
+                      {/* Active indicator */}
+                      {active && (
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-l-full bg-primary" />
+                      )}
 
-      {/* Settings at bottom */}
-      <div className="border-t border-shell-line p-4">
-        <button
-          onClick={toggle}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-shell-muted transition-all duration-200 hover:bg-shell-elevated hover:text-foreground"
-        >
-          <Settings className="h-5 w-5 flex-shrink-0" />
-          {!collapsed && <span>Settings</span>}
-        </button>
-      </div>
-    </motion.div>
+                      <Icon
+                        className={cn(
+                          "h-5 w-5 transition-colors",
+                          active ? "text-primary" : "text-shell-subtle"
+                        )}
+                      />
+                    </NavLink>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="font-medium">
+                    {item.title}
+                  </TooltipContent>
+                </Tooltip>
+              );
+            })}
+          </div>
+        </nav>
+
+        {/* Settings at bottom */}
+        <div className="border-t border-shell-line py-4 px-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <NavLink
+                to="/admin"
+                className={cn(
+                  "flex h-12 w-full items-center justify-center rounded-lg transition-all duration-200",
+                  location.pathname.startsWith("/admin")
+                    ? "bg-primary/10 text-primary shadow-sm"
+                    : "text-shell-muted hover:bg-shell-elevated hover:text-foreground"
+                )}
+              >
+                <ShieldCheck className="h-5 w-5" />
+              </NavLink>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="font-medium">
+              Admin
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </TooltipProvider>
+    </div>
   );
 }
