@@ -11,7 +11,7 @@ export function ShellLayout({ children }: ShellLayoutProps) {
       <AppSidebar />
       <AppHeader />
       
-      <main className="ml-20 mt-16">
+      <main className="ml-36 mt-16">
         <div className="container mx-auto px-6 py-8 max-w-7xl">
           {children}
         </div>

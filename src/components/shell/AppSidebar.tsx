@@ -39,15 +39,15 @@ export function AppSidebar() {
   return (
     <>
       {/* Logo in intersection area */}
-      <div className="fixed top-0 left-0 z-50 w-20 h-16 flex items-center justify-center bg-background border-r border-b border-border">
-        <img src={AscensionLogo} alt="Ascension" className="w-10 h-10 object-contain" />
+      <div className="fixed top-0 left-0 z-50 w-36 h-16 flex items-center justify-center bg-background border-r border-b border-border">
+        <img src={AscensionLogo} alt="Ascension" className="w-12 h-12 object-contain" />
       </div>
 
       {/* Sidebar */}
-      <div className="fixed left-0 top-16 z-40 flex h-[calc(100vh-4rem)] w-20 flex-col bg-background border-r border-border">
+      <div className="fixed left-0 top-16 z-40 flex h-[calc(100vh-4rem)] w-36 flex-col bg-background border-r border-border">
         {/* Navigation Items */}
-        <nav className="flex-1 py-4">
-          <div className="space-y-3 px-2">
+        <nav className="flex-1 py-6">
+          <div className="space-y-6 px-3">
             {sidebarItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.url);
@@ -62,7 +62,7 @@ export function AppSidebar() {
                   {active && (
                     <motion.div
                       layoutId="sidebar-active-indicator"
-                      className="absolute left-0 top-1/2 -translate-y-1/2 h-10 w-1 rounded-r-full bg-primary"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 h-14 w-2 rounded-r-full bg-primary"
                       transition={{
                         type: "spring",
                         stiffness: 380,
@@ -73,14 +73,14 @@ export function AppSidebar() {
 
                   <div
                     className={cn(
-                      "flex flex-col items-center gap-1 py-2 px-1 rounded-xl transition-all duration-200",
+                      "flex flex-col items-center gap-2 py-4 px-3 rounded-2xl transition-all duration-200",
                       active
-                        ? "bg-primary/10 text-primary"
+                        ? "bg-primary/10 text-primary shadow-sm"
                         : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                     )}
                   >
-                    <Icon className="h-5 w-5" />
-                    <span className="text-xs font-medium leading-tight text-center">
+                    <Icon className="h-7 w-7 stroke-[1.5]" />
+                    <span className="text-sm font-medium leading-tight text-center">
                       {item.title}
                     </span>
                   </div>
@@ -91,7 +91,7 @@ export function AppSidebar() {
         </nav>
 
         {/* Admin at bottom */}
-        <div className="border-t border-border py-4 px-2">
+        <div className="border-t border-border py-6 px-3">
           <NavLink
             to="/admin"
             className="relative block"
@@ -99,7 +99,7 @@ export function AppSidebar() {
             {location.pathname.startsWith("/admin") && (
               <motion.div
                 layoutId="sidebar-active-indicator"
-                className="absolute left-0 top-1/2 -translate-y-1/2 h-10 w-1 rounded-r-full bg-primary"
+                className="absolute left-0 top-1/2 -translate-y-1/2 h-14 w-2 rounded-r-full bg-primary"
                 transition={{
                   type: "spring",
                   stiffness: 380,
@@ -110,14 +110,14 @@ export function AppSidebar() {
 
             <div
               className={cn(
-                "flex flex-col items-center gap-1 py-2 px-1 rounded-xl transition-all duration-200",
+                "flex flex-col items-center gap-2 py-4 px-3 rounded-2xl transition-all duration-200",
                 location.pathname.startsWith("/admin")
-                  ? "bg-primary/10 text-primary"
+                  ? "bg-primary/10 text-primary shadow-sm"
                   : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
               )}
             >
-              <ShieldCheck className="h-5 w-5" />
-              <span className="text-xs font-medium leading-tight text-center">
+              <ShieldCheck className="h-7 w-7 stroke-[1.5]" />
+              <span className="text-sm font-medium leading-tight text-center">
                 Admin
               </span>
             </div>
