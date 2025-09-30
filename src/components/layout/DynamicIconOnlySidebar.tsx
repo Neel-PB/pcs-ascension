@@ -41,7 +41,7 @@ function ModuleItem({ module, isActive }: ModuleItemProps) {
   return (
     <motion.div 
       className={cn(
-        "group relative flex flex-col items-center py-2 px-2 rounded-xl transition-all duration-200 cursor-pointer overflow-hidden",
+        "group relative flex flex-col items-center py-2 px-2 rounded-lg transition-all duration-200 cursor-pointer overflow-hidden",
         "hover:bg-primary/10"
       )}
       whileHover={{ scale: 1.02 }}
@@ -52,14 +52,14 @@ function ModuleItem({ module, isActive }: ModuleItemProps) {
       {isActive && (
         <motion.div
           layoutId="sidebar-active-highlight"
-          className="pointer-events-none absolute inset-1.5 z-0 rounded-xl bg-primary/15"
+          className="pointer-events-none absolute inset-0 z-0 rounded-lg bg-primary/15"
           transition={{
             type: "spring",
             stiffness: 380,
             damping: 30
           }}
         >
-          <div className="absolute top-2 bottom-2 right-1.5 w-1.5 bg-primary rounded-full" />
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-full" />
         </motion.div>
       )}
 
