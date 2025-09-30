@@ -39,7 +39,7 @@ function ModuleItem({ module, isActive }: ModuleItemProps) {
 
   return (
     <div className={cn(
-      "group relative flex flex-col items-center py-2 px-2 rounded-lg transition-all duration-200 cursor-pointer",
+      "group relative flex flex-col items-center py-1.5 px-1 rounded-lg transition-all duration-200 cursor-pointer",
       "hover:bg-primary/10",
       isActive ? "bg-primary/15" : ""
     )}>
@@ -55,7 +55,7 @@ function ModuleItem({ module, isActive }: ModuleItemProps) {
         <div className={cn(
           "flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200",
           isActive 
-            ? "text-primary" 
+            ? "bg-primary text-primary-foreground" 
             : "text-muted-foreground group-hover:text-primary"
         )}>
           <module.icon className="w-5 h-5" />
@@ -136,7 +136,7 @@ export function DynamicIconOnlySidebar() {
   }
 
   return (
-    <div className="fixed left-0 top-0 z-40 h-full w-20 max-w-20 border-r bg-background shadow-sm">
+    <div className="fixed left-0 top-0 z-40 h-full w-14 max-w-14 border-r bg-background shadow-sm">
       <div className="flex h-full flex-col">
         {/* Organization switcher */}
         <div className="flex items-center justify-center py-3 px-2 border-b">
@@ -144,7 +144,7 @@ export function DynamicIconOnlySidebar() {
         </div>
 
         {/* Main navigation */}
-        <div className="flex-1 overflow-y-auto py-1.5 px-2">
+        <div className="flex-1 overflow-y-auto py-1.5 px-0.5">
           <div className="space-y-0.5">
             {sidebarModules.map((module) => {
               const isActive = activeModule?.label === module.label;
