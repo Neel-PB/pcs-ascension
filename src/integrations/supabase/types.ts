@@ -108,12 +108,12 @@ export type Database = {
         Row: {
           actual_fte: number | null
           created_at: string
-          department_id: string
-          department_name: string
-          facility_id: string
-          facility_name: string
+          departmentId: string
+          departmentName: string
+          facilityId: string
+          facilityName: string
           id: string
-          labor_hours_per_uos: number | null
+          laborHoursPerUoS: number | null
           manhours: number | null
           market: string
           month: string | null
@@ -123,12 +123,12 @@ export type Database = {
         Insert: {
           actual_fte?: number | null
           created_at?: string
-          department_id: string
-          department_name: string
-          facility_id: string
-          facility_name: string
+          departmentId: string
+          departmentName: string
+          facilityId: string
+          facilityName: string
           id?: string
-          labor_hours_per_uos?: number | null
+          laborHoursPerUoS?: number | null
           manhours?: number | null
           market: string
           month?: string | null
@@ -138,12 +138,12 @@ export type Database = {
         Update: {
           actual_fte?: number | null
           created_at?: string
-          department_id?: string
-          department_name?: string
-          facility_id?: string
-          facility_name?: string
+          departmentId?: string
+          departmentName?: string
+          facilityId?: string
+          facilityName?: string
           id?: string
-          labor_hours_per_uos?: number | null
+          laborHoursPerUoS?: number | null
           manhours?: number | null
           market?: string
           month?: string | null
@@ -213,90 +213,90 @@ export type Database = {
       }
       positions: {
         Row: {
-          adjusted_hire_date: string | null
           created_at: string
-          department_id: string
-          department_name: string
-          employee_id: string | null
-          employee_name: string | null
-          employment_status: string | null
-          facility_id: string
-          facility_name: string
-          flsa_code: string | null
-          full_part_time: string | null
-          home_cost_center: string | null
-          home_cost_center_id: string | null
+          departmentId: string
+          departmentName: string
+          employeeId: string | null
+          employeeName: string | null
+          employeeType: string | null
+          employmentFlag: string | null
+          employmentType: string | null
+          facilityId: string
+          facilityName: string
+          FTE: number | null
           id: string
-          job_code: string | null
-          job_title: string | null
+          jobcode: string | null
+          jobFamily: string | null
+          jobTitle: string | null
+          managerEmployeeId: string | null
+          managerName: string | null
+          managerPositionNum: string | null
           market: string
-          original_hire_date: string | null
-          pay_type: string | null
-          people_manager_id: string | null
-          people_manager_name: string | null
-          position_control_id: string | null
-          regular_temporary: string | null
-          status: string | null
-          termination_date: string | null
-          union_non_union: string | null
+          payrollStatus: string | null
+          positionLifecycle: string | null
+          positionNum: string | null
+          positionStatus: string | null
+          positionStatusDate: string | null
+          shift: string | null
+          standardHours: number | null
           updated_at: string
         }
         Insert: {
-          adjusted_hire_date?: string | null
           created_at?: string
-          department_id: string
-          department_name: string
-          employee_id?: string | null
-          employee_name?: string | null
-          employment_status?: string | null
-          facility_id: string
-          facility_name: string
-          flsa_code?: string | null
-          full_part_time?: string | null
-          home_cost_center?: string | null
-          home_cost_center_id?: string | null
+          departmentId: string
+          departmentName: string
+          employeeId?: string | null
+          employeeName?: string | null
+          employeeType?: string | null
+          employmentFlag?: string | null
+          employmentType?: string | null
+          facilityId: string
+          facilityName: string
+          FTE?: number | null
           id?: string
-          job_code?: string | null
-          job_title?: string | null
+          jobcode?: string | null
+          jobFamily?: string | null
+          jobTitle?: string | null
+          managerEmployeeId?: string | null
+          managerName?: string | null
+          managerPositionNum?: string | null
           market: string
-          original_hire_date?: string | null
-          pay_type?: string | null
-          people_manager_id?: string | null
-          people_manager_name?: string | null
-          position_control_id?: string | null
-          regular_temporary?: string | null
-          status?: string | null
-          termination_date?: string | null
-          union_non_union?: string | null
+          payrollStatus?: string | null
+          positionLifecycle?: string | null
+          positionNum?: string | null
+          positionStatus?: string | null
+          positionStatusDate?: string | null
+          shift?: string | null
+          standardHours?: number | null
           updated_at?: string
         }
         Update: {
-          adjusted_hire_date?: string | null
           created_at?: string
-          department_id?: string
-          department_name?: string
-          employee_id?: string | null
-          employee_name?: string | null
-          employment_status?: string | null
-          facility_id?: string
-          facility_name?: string
-          flsa_code?: string | null
-          full_part_time?: string | null
-          home_cost_center?: string | null
-          home_cost_center_id?: string | null
+          departmentId?: string
+          departmentName?: string
+          employeeId?: string | null
+          employeeName?: string | null
+          employeeType?: string | null
+          employmentFlag?: string | null
+          employmentType?: string | null
+          facilityId?: string
+          facilityName?: string
+          FTE?: number | null
           id?: string
-          job_code?: string | null
-          job_title?: string | null
+          jobcode?: string | null
+          jobFamily?: string | null
+          jobTitle?: string | null
+          managerEmployeeId?: string | null
+          managerName?: string | null
+          managerPositionNum?: string | null
           market?: string
-          original_hire_date?: string | null
-          pay_type?: string | null
-          people_manager_id?: string | null
-          people_manager_name?: string | null
-          position_control_id?: string | null
-          regular_temporary?: string | null
-          status?: string | null
-          termination_date?: string | null
-          union_non_union?: string | null
+          payrollStatus?: string | null
+          positionLifecycle?: string | null
+          positionNum?: string | null
+          positionStatus?: string | null
+          positionStatusDate?: string | null
+          shift?: string | null
+          standardHours?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -407,151 +407,133 @@ export type Database = {
       }
       staffing_standards: {
         Row: {
-          additional_data_1: string | null
-          additional_data_2: string | null
-          additional_data_3: string | null
-          adjusted_patient_days: number | null
-          admissions: number | null
-          alos: number | null
-          charge_nurse_fte: number | null
-          clerk_fte: number | null
-          cmindex: number | null
-          cna_fte: number | null
-          contracted_registry_fte: number | null
-          contracted_registry_hours: number | null
-          contracted_registry_hppd: number | null
+          "% Census": number | null
+          "1:1 / Other": number | null
+          ANM: number | null
+          "CL : PT": string | null
+          "CL Day total hours": number | null
+          "CL Night total hours": number | null
+          "CL-Day": number | null
+          "CL-Night": number | null
+          "Clerk Day total hours": number | null
+          "Clerk Night total hours": number | null
+          "Clerk-Day": number | null
+          "Clerk-Night": number | null
+          Column1: string | null
+          Column2: string | null
+          Column3: string | null
           created_at: string
-          department_id: string
-          department_name: string
-          direct_patient_care_fte: number | null
-          direct_patient_care_hours: number | null
-          direct_patient_care_hppd: number | null
-          educator_fte: number | null
-          facility_id: string
-          facility_name: string
+          departmentId: string
+          departmentName: string
+          Director: number | null
+          facilityId: string
+          facilityName: string
+          "Fixed Hrs Per UoS": number | null
+          Frequency: string | null
           id: string
-          indirect_patient_care_fte: number | null
-          indirect_patient_care_hours: number | null
-          indirect_patient_care_hppd: number | null
-          lvn_fte: number | null
-          manager_fte: number | null
+          Manager: number | null
           market: string
-          non_productive_fte: number | null
-          non_productive_hours: number | null
-          other_fte: number | null
-          overhead_fte: number | null
-          overhead_hours: number | null
-          overhead_hppd: number | null
-          patient_days: number | null
-          rn_fte: number | null
-          total_fte: number | null
-          total_hours: number | null
-          total_hppd: number | null
-          total_worked_fte: number | null
-          total_worked_hours: number | null
-          total_worked_hppd: number | null
-          total_worked_productive_fte: number | null
-          total_worked_productive_hours: number | null
-          total_worked_productive_hppd: number | null
+          "Ops Coordinator": number | null
+          Patients: number | null
+          "PCT Day total hours": number | null
+          "PCT Night total hours": number | null
+          "PCT-Day": number | null
+          "PCT-Night": number | null
+          "Practice Specialist": number | null
+          "RN : PT": string | null
+          "RN Day total hours": number | null
+          "RN Night total hours": number | null
+          "RN-Day": number | null
+          "RN-Night": number | null
+          "Total Overhead Hours": number | null
           updated_at: string
+          "Variable Hrs Per UoS": number | null
         }
         Insert: {
-          additional_data_1?: string | null
-          additional_data_2?: string | null
-          additional_data_3?: string | null
-          adjusted_patient_days?: number | null
-          admissions?: number | null
-          alos?: number | null
-          charge_nurse_fte?: number | null
-          clerk_fte?: number | null
-          cmindex?: number | null
-          cna_fte?: number | null
-          contracted_registry_fte?: number | null
-          contracted_registry_hours?: number | null
-          contracted_registry_hppd?: number | null
+          "% Census"?: number | null
+          "1:1 / Other"?: number | null
+          ANM?: number | null
+          "CL : PT"?: string | null
+          "CL Day total hours"?: number | null
+          "CL Night total hours"?: number | null
+          "CL-Day"?: number | null
+          "CL-Night"?: number | null
+          "Clerk Day total hours"?: number | null
+          "Clerk Night total hours"?: number | null
+          "Clerk-Day"?: number | null
+          "Clerk-Night"?: number | null
+          Column1?: string | null
+          Column2?: string | null
+          Column3?: string | null
           created_at?: string
-          department_id: string
-          department_name: string
-          direct_patient_care_fte?: number | null
-          direct_patient_care_hours?: number | null
-          direct_patient_care_hppd?: number | null
-          educator_fte?: number | null
-          facility_id: string
-          facility_name: string
+          departmentId: string
+          departmentName: string
+          Director?: number | null
+          facilityId: string
+          facilityName: string
+          "Fixed Hrs Per UoS"?: number | null
+          Frequency?: string | null
           id?: string
-          indirect_patient_care_fte?: number | null
-          indirect_patient_care_hours?: number | null
-          indirect_patient_care_hppd?: number | null
-          lvn_fte?: number | null
-          manager_fte?: number | null
+          Manager?: number | null
           market: string
-          non_productive_fte?: number | null
-          non_productive_hours?: number | null
-          other_fte?: number | null
-          overhead_fte?: number | null
-          overhead_hours?: number | null
-          overhead_hppd?: number | null
-          patient_days?: number | null
-          rn_fte?: number | null
-          total_fte?: number | null
-          total_hours?: number | null
-          total_hppd?: number | null
-          total_worked_fte?: number | null
-          total_worked_hours?: number | null
-          total_worked_hppd?: number | null
-          total_worked_productive_fte?: number | null
-          total_worked_productive_hours?: number | null
-          total_worked_productive_hppd?: number | null
+          "Ops Coordinator"?: number | null
+          Patients?: number | null
+          "PCT Day total hours"?: number | null
+          "PCT Night total hours"?: number | null
+          "PCT-Day"?: number | null
+          "PCT-Night"?: number | null
+          "Practice Specialist"?: number | null
+          "RN : PT"?: string | null
+          "RN Day total hours"?: number | null
+          "RN Night total hours"?: number | null
+          "RN-Day"?: number | null
+          "RN-Night"?: number | null
+          "Total Overhead Hours"?: number | null
           updated_at?: string
+          "Variable Hrs Per UoS"?: number | null
         }
         Update: {
-          additional_data_1?: string | null
-          additional_data_2?: string | null
-          additional_data_3?: string | null
-          adjusted_patient_days?: number | null
-          admissions?: number | null
-          alos?: number | null
-          charge_nurse_fte?: number | null
-          clerk_fte?: number | null
-          cmindex?: number | null
-          cna_fte?: number | null
-          contracted_registry_fte?: number | null
-          contracted_registry_hours?: number | null
-          contracted_registry_hppd?: number | null
+          "% Census"?: number | null
+          "1:1 / Other"?: number | null
+          ANM?: number | null
+          "CL : PT"?: string | null
+          "CL Day total hours"?: number | null
+          "CL Night total hours"?: number | null
+          "CL-Day"?: number | null
+          "CL-Night"?: number | null
+          "Clerk Day total hours"?: number | null
+          "Clerk Night total hours"?: number | null
+          "Clerk-Day"?: number | null
+          "Clerk-Night"?: number | null
+          Column1?: string | null
+          Column2?: string | null
+          Column3?: string | null
           created_at?: string
-          department_id?: string
-          department_name?: string
-          direct_patient_care_fte?: number | null
-          direct_patient_care_hours?: number | null
-          direct_patient_care_hppd?: number | null
-          educator_fte?: number | null
-          facility_id?: string
-          facility_name?: string
+          departmentId?: string
+          departmentName?: string
+          Director?: number | null
+          facilityId?: string
+          facilityName?: string
+          "Fixed Hrs Per UoS"?: number | null
+          Frequency?: string | null
           id?: string
-          indirect_patient_care_fte?: number | null
-          indirect_patient_care_hours?: number | null
-          indirect_patient_care_hppd?: number | null
-          lvn_fte?: number | null
-          manager_fte?: number | null
+          Manager?: number | null
           market?: string
-          non_productive_fte?: number | null
-          non_productive_hours?: number | null
-          other_fte?: number | null
-          overhead_fte?: number | null
-          overhead_hours?: number | null
-          overhead_hppd?: number | null
-          patient_days?: number | null
-          rn_fte?: number | null
-          total_fte?: number | null
-          total_hours?: number | null
-          total_hppd?: number | null
-          total_worked_fte?: number | null
-          total_worked_hours?: number | null
-          total_worked_hppd?: number | null
-          total_worked_productive_fte?: number | null
-          total_worked_productive_hours?: number | null
-          total_worked_productive_hppd?: number | null
+          "Ops Coordinator"?: number | null
+          Patients?: number | null
+          "PCT Day total hours"?: number | null
+          "PCT Night total hours"?: number | null
+          "PCT-Day"?: number | null
+          "PCT-Night"?: number | null
+          "Practice Specialist"?: number | null
+          "RN : PT"?: string | null
+          "RN Day total hours"?: number | null
+          "RN Night total hours"?: number | null
+          "RN-Day"?: number | null
+          "RN-Night"?: number | null
+          "Total Overhead Hours"?: number | null
           updated_at?: string
+          "Variable Hrs Per UoS"?: number | null
         }
         Relationships: []
       }

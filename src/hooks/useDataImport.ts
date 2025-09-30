@@ -121,13 +121,13 @@ export function useDataImport() {
   const downloadTemplate = (tableName: string) => {
     const templates: Record<string, string[][]> = {
       staffing_standards: [
-        ["market", "facility_id", "facility_name", "department_id", "department_name", "patient_days", "admissions", "total_fte", "total_hours"],
+        ["market", "facilityId", "facilityName", "departmentId", "departmentName", "Patients", "CL-Day", "RN-Day", "PCT-Day", "Clerk-Day", "CL-Night", "RN-Night", "PCT-Night", "Clerk-Night", "Frequency", "% Census", "CL Day total hours", "RN Day total hours", "PCT Day total hours", "Clerk Day total hours", "CL Night total hours", "RN Night total hours", "PCT Night total hours", "Clerk Night total hours", "Variable Hrs Per UoS", "Fixed Hrs Per UoS", "CL : PT", "RN : PT", "Director", "Manager", "ANM", "Practice Specialist", "Ops Coordinator", "1:1 / Other", "Total Overhead Hours", "Column1", "Column2", "Column3"],
       ],
       labor_performance: [
-        ["market", "facility_id", "facility_name", "department_id", "department_name", "month", "volume", "manhours", "labor_hours_per_uos", "actual_fte"],
+        ["market", "facilityId", "facilityName", "departmentId", "departmentName", "volume", "manhours", "laborHoursPerUoS", "month", "actual_fte"],
       ],
       positions: [
-        ["market", "facility_id", "facility_name", "department_id", "department_name", "employee_id", "employee_name", "job_title", "employment_status"],
+        ["positionLifecycle", "employmentFlag", "positionStatus", "positionStatusDate", "market", "positionNum", "facilityId", "facilityName", "departmentId", "departmentName", "employeeType", "employmentType", "shift", "jobcode", "jobFamily", "jobTitle", "FTE", "standardHours", "payrollStatus", "employeeName", "employeeId", "managerPositionNum", "managerEmployeeId", "managerName"],
       ],
       markets: [
         ["market"],
