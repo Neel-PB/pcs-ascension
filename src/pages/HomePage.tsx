@@ -116,8 +116,8 @@ export default function HomePage() {
                 <p className="text-sm font-medium">Weekend Coverage Planning</p>
                 <p className="text-xs text-shell-muted">Tomorrow at 10:00 AM</p>
               </div>
-              <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center">
-                <Calendar className="h-4 w-4 text-orange-600" />
+              <div className="h-8 w-8 rounded-full bg-warning/10 flex items-center justify-center">
+                <Calendar className="h-4 w-4 text-warning" />
               </div>
             </div>
             
@@ -126,8 +126,8 @@ export default function HomePage() {
                 <p className="text-sm font-medium">Department Head Meeting</p>
                 <p className="text-xs text-shell-muted">Friday at 3:00 PM</p>
               </div>
-              <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                <Calendar className="h-4 w-4 text-green-600" />
+              <div className="h-8 w-8 rounded-full bg-success/10 flex items-center justify-center">
+                <Calendar className="h-4 w-4 text-success" />
               </div>
             </div>
           </div>

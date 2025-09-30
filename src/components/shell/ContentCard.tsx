@@ -91,9 +91,9 @@ export function StatsCard({ title, value, change, icon: Icon, delay = 0 }: Stats
               <span
                 className={cn(
                   "text-xs font-medium",
-                  change.type === "increase" && "text-green-600",
-                  change.type === "decrease" && "text-red-600",
-                  change.type === "neutral" && "text-shell-muted"
+                  change.type === "increase" && "text-success",
+                  change.type === "decrease" && "text-danger",
+                  change.type === "neutral" && "text-muted-foreground"
                 )}
               >
                 {change.value}

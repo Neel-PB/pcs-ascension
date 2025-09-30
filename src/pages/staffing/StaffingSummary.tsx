@@ -64,30 +64,30 @@ export default function StaffingSummary() {
           delay={0.5}
         >
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-success/10 border border-success/20">
               <div>
-                <p className="text-sm font-medium text-green-900">Emergency Department</p>
-                <p className="text-xs text-green-700">Fully Staffed • 98% Fill Rate</p>
+                <p className="text-sm font-medium">Emergency Department</p>
+                <p className="text-xs text-muted-foreground">Fully Staffed • 98% Fill Rate</p>
               </div>
-              <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                <CheckCircle className="h-4 w-4 text-green-600" />
+              <div className="h-8 w-8 rounded-full bg-success/20 flex items-center justify-center">
+                <CheckCircle className="h-4 w-4 text-success" />
               </div>
             </div>
             
-            <div className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 border border-yellow-200">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-warning/10 border border-warning/20">
               <div>
-                <p className="text-sm font-medium text-yellow-900">ICU</p>
-                <p className="text-xs text-yellow-700">3 Positions Open • 89% Fill Rate</p>
+                <p className="text-sm font-medium">ICU</p>
+                <p className="text-xs text-muted-foreground">3 Positions Open • 89% Fill Rate</p>
               </div>
-              <div className="h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center">
-                <AlertCircle className="h-4 w-4 text-yellow-600" />
+              <div className="h-8 w-8 rounded-full bg-warning/20 flex items-center justify-center">
+                <AlertCircle className="h-4 w-4 text-warning" />
               </div>
             </div>
             
             <div className="flex items-center justify-between p-3 rounded-lg bg-shell-elevated">
               <div>
                 <p className="text-sm font-medium">Surgery</p>
-                <p className="text-xs text-shell-muted">1 Position Open • 95% Fill Rate</p>
+                <p className="text-xs text-muted-foreground">1 Position Open • 95% Fill Rate</p>
               </div>
               <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                 <Users className="h-4 w-4 text-primary" />
@@ -107,15 +107,15 @@ export default function StaffingSummary() {
               <h4 className="text-sm font-semibold mb-2">Q4 2024 Hiring Plan</h4>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-shell-muted">Registered Nurses</span>
+                  <span className="text-muted-foreground">Registered Nurses</span>
                   <span className="font-medium">12 positions</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-shell-muted">Medical Assistants</span>
+                  <span className="text-muted-foreground">Medical Assistants</span>
                   <span className="font-medium">6 positions</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-shell-muted">Administrative</span>
+                  <span className="text-muted-foreground">Administrative</span>
                   <span className="font-medium">3 positions</span>
                 </div>
               </div>
@@ -125,12 +125,12 @@ export default function StaffingSummary() {
               <h4 className="text-sm font-semibold mb-2 text-primary">Priority Positions</h4>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-shell-muted">ICU Nurses (Night Shift)</span>
-                  <span className="font-medium text-red-600">Critical</span>
+                  <span className="text-muted-foreground">ICU Nurses (Night Shift)</span>
+                  <span className="font-medium text-danger">Critical</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-shell-muted">OR Technicians</span>
-                  <span className="font-medium text-yellow-600">High</span>
+                  <span className="text-muted-foreground">OR Technicians</span>
+                  <span className="font-medium text-warning">High</span>
                 </div>
               </div>
             </div>

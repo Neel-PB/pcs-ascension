@@ -67,7 +67,7 @@ export default function AnalyticsRegion() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Northeast</span>
-                <span className="text-sm text-shell-muted">94.2%</span>
+                <span className="text-sm text-muted-foreground">94.2%</span>
               </div>
               <div className="w-full bg-shell-elevated rounded-full h-2">
                 <div className="bg-gradient-primary h-2 rounded-full" style={{ width: "94.2%" }}></div>
@@ -77,7 +77,7 @@ export default function AnalyticsRegion() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Southwest</span>
-                <span className="text-sm text-shell-muted">89.7%</span>
+                <span className="text-sm text-muted-foreground">89.7%</span>
               </div>
               <div className="w-full bg-shell-elevated rounded-full h-2">
                 <div className="bg-gradient-primary h-2 rounded-full" style={{ width: "89.7%" }}></div>
@@ -87,7 +87,7 @@ export default function AnalyticsRegion() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Midwest</span>
-                <span className="text-sm text-shell-muted">92.1%</span>
+                <span className="text-sm text-muted-foreground">92.1%</span>
               </div>
               <div className="w-full bg-shell-elevated rounded-full h-2">
                 <div className="bg-gradient-primary h-2 rounded-full" style={{ width: "92.1%" }}></div>
@@ -97,7 +97,7 @@ export default function AnalyticsRegion() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Southeast</span>
-                <span className="text-sm text-shell-muted">88.3%</span>
+                <span className="text-sm text-muted-foreground">88.3%</span>
               </div>
               <div className="w-full bg-shell-elevated rounded-full h-2">
                 <div className="bg-gradient-primary h-2 rounded-full" style={{ width: "88.3%" }}></div>
@@ -113,36 +113,36 @@ export default function AnalyticsRegion() {
           delay={0.6}
         >
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-success/10 border border-success/20">
               <div>
-                <p className="text-sm font-medium text-green-900">Metro General Hospital</p>
-                <p className="text-xs text-green-700">Northeast • 98.5% Fill Rate</p>
+                <p className="text-sm font-medium">Metro General Hospital</p>
+                <p className="text-xs text-muted-foreground">Northeast • 98.5% Fill Rate</p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-bold text-green-900">A+</p>
-                <p className="text-xs text-green-700">Grade</p>
+                <p className="text-sm font-bold text-success">A+</p>
+                <p className="text-xs text-muted-foreground">Grade</p>
               </div>
             </div>
             
-            <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-200">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-primary/10 border border-primary/20">
               <div>
-                <p className="text-sm font-medium text-blue-900">Regional Medical Center</p>
-                <p className="text-xs text-blue-700">Midwest • 96.2% Fill Rate</p>
+                <p className="text-sm font-medium">Regional Medical Center</p>
+                <p className="text-xs text-muted-foreground">Midwest • 96.2% Fill Rate</p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-bold text-blue-900">A</p>
-                <p className="text-xs text-blue-700">Grade</p>
+                <p className="text-sm font-bold text-primary">A</p>
+                <p className="text-xs text-muted-foreground">Grade</p>
               </div>
             </div>
             
             <div className="flex items-center justify-between p-3 rounded-lg bg-shell-elevated">
               <div>
                 <p className="text-sm font-medium">City Healthcare Network</p>
-                <p className="text-xs text-shell-muted">Southwest • 94.8% Fill Rate</p>
+                <p className="text-xs text-muted-foreground">Southwest • 94.8% Fill Rate</p>
               </div>
               <div className="text-right">
                 <p className="text-sm font-bold text-primary">A-</p>
-                <p className="text-xs text-shell-muted">Grade</p>
+                <p className="text-xs text-muted-foreground">Grade</p>
               </div>
             </div>
           </div>
