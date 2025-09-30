@@ -8,7 +8,7 @@ interface FilterBarProps {
 export function FilterBar({ className }: FilterBarProps) {
   return (
     <motion.div
-      className={`flex flex-wrap gap-3 ${className}`}
+      className={`flex flex-wrap gap-3 justify-center ${className}`}
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}

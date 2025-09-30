@@ -8,7 +8,7 @@ export default function StaffingSummary() {
   return (
     <div className="space-y-6">
       {/* Filters and Navigation */}
-      <div className="space-y-4">
+      <div className="space-y-6 py-2">
         <FilterBar />
         <TabNavigation tabs={moduleTabConfigs.staffing} />
       </div>
