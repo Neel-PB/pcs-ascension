@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Play, FileText, AlertCircle, MessageSquare, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -125,193 +126,156 @@ export default function SupportPage() {
       transition={{ duration: 0.3 }}
       className="space-y-6"
     >
-      {/* Search Bar */}
+      {/* Contact Support Banner */}
       <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-shell-muted" />
-          <Input
-            type="text"
-            placeholder="Search for help topics, FAQs, or issues..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-12 text-base"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Quick Links */}
-        <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <FileText className="h-5 w-5 text-primary" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground">Quick Access</h3>
-          </div>
-          <div className="space-y-2">
-            <Button variant="outline" className="w-full justify-start" onClick={() => document.getElementById('faqs')?.scrollIntoView({ behavior: 'smooth' })}>
-              <MessageSquare className="h-4 w-4 mr-2" />
-              FAQs
-            </Button>
-            <Button variant="outline" className="w-full justify-start" onClick={() => document.getElementById('videos')?.scrollIntoView({ behavior: 'smooth' })}>
-              <Play className="h-4 w-4 mr-2" />
-              Training Videos
-            </Button>
-            <Button variant="outline" className="w-full justify-start" onClick={() => document.getElementById('troubleshooting')?.scrollIntoView({ behavior: 'smooth' })}>
-              <AlertCircle className="h-4 w-4 mr-2" />
-              Troubleshooting
-            </Button>
-          </div>
-        </div>
-
-        {/* Contact Support */}
-        <div className="bg-shell-elevated rounded-xl p-6 shadow-soft lg:col-span-2">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <MessageSquare className="h-5 w-5 text-primary" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground">Need Help?</h3>
-          </div>
-          <p className="text-sm text-shell-muted mb-4">
-            Can't find what you're looking for? Our support team is here to help you.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 bg-shell-elevated rounded-lg border border-shell-elevated">
-              <p className="text-sm font-medium text-foreground mb-1">Email Support</p>
-              <p className="text-sm text-primary">support@company.com</p>
-            </div>
-            <div className="p-4 bg-shell-elevated rounded-lg border border-shell-elevated">
-              <p className="text-sm font-medium text-foreground mb-1">Phone Support</p>
-              <p className="text-sm text-primary">1-800-555-0123</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* FAQs Section */}
-      <div id="faqs" className="bg-shell-elevated rounded-xl p-6 shadow-soft">
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-primary/10 rounded-lg">
             <MessageSquare className="h-5 w-5 text-primary" />
           </div>
-          <h2 className="text-2xl font-bold text-foreground">Frequently Asked Questions</h2>
+          <h3 className="text-lg font-semibold text-foreground">Need Help?</h3>
         </div>
-
-        <Accordion type="single" collapsible className="space-y-2">
-          {filteredFaqs.map((faq, index) => (
-            <AccordionItem key={index} value={`faq-${index}`} className="border border-shell-elevated rounded-lg px-4">
-              <AccordionTrigger className="hover:no-underline">
-                <span className="text-left font-medium">{faq.question}</span>
-              </AccordionTrigger>
-              <AccordionContent className="text-shell-muted">
-                {faq.answer}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-
-        {filteredFaqs.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-shell-muted">No FAQs match your search. Try different keywords or browse all topics.</p>
+        <p className="text-sm text-shell-muted mb-4">
+          Can't find what you're looking for? Our support team is here to help you.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-4 bg-shell-elevated rounded-lg border border-shell-elevated">
+            <p className="text-sm font-medium text-foreground mb-1">Email Support</p>
+            <p className="text-sm text-primary">support@company.com</p>
           </div>
-        )}
+          <div className="p-4 bg-shell-elevated rounded-lg border border-shell-elevated">
+            <p className="text-sm font-medium text-foreground mb-1">Phone Support</p>
+            <p className="text-sm text-primary">1-800-555-0123</p>
+          </div>
+        </div>
       </div>
 
-      {/* Training Videos Section */}
-      <div id="videos" className="bg-shell-elevated rounded-xl p-6 shadow-soft">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <Play className="h-5 w-5 text-primary" />
-          </div>
-          <h2 className="text-2xl font-bold text-foreground">Training Videos</h2>
-        </div>
+      {/* Tabs */}
+      <Tabs defaultValue="faqs" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="faqs">FAQs</TabsTrigger>
+          <TabsTrigger value="videos">Training Videos</TabsTrigger>
+          <TabsTrigger value="troubleshooting">Troubleshooting</TabsTrigger>
+          <TabsTrigger value="report">Report Issue</TabsTrigger>
+        </TabsList>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {trainingVideos.map((video, index) => (
-            <div key={index} className="group bg-shell-elevated rounded-lg p-4 hover:shadow-medium transition-all cursor-pointer">
-              <div className="flex items-center justify-center bg-gradient-primary rounded-lg h-32 mb-4 text-4xl">
-                {video.thumbnail}
+        {/* FAQs Tab */}
+        <TabsContent value="faqs" className="space-y-6">
+          <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
+            <div className="mb-6">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-shell-muted" />
+                <Input
+                  type="text"
+                  placeholder="Search FAQs..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
               </div>
-              <h3 className="font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-                {video.title}
-              </h3>
-              <p className="text-sm text-shell-muted mb-3">{video.description}</p>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-shell-muted">{video.duration}</span>
-                <Button size="sm" variant="ghost" className="gap-2">
-                  <Play className="h-3 w-3" />
-                  Watch
+            </div>
+
+            <Accordion type="single" collapsible className="space-y-2">
+              {filteredFaqs.map((faq, index) => (
+                <AccordionItem key={index} value={`faq-${index}`} className="border border-shell-elevated rounded-lg px-4">
+                  <AccordionTrigger className="hover:no-underline">
+                    <span className="text-left font-medium">{faq.question}</span>
+                  </AccordionTrigger>
+                  <AccordionContent className="text-shell-muted">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+
+            {filteredFaqs.length === 0 && (
+              <div className="text-center py-8">
+                <p className="text-shell-muted">No FAQs match your search. Try different keywords or browse all topics.</p>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* Training Videos Tab */}
+        <TabsContent value="videos" className="space-y-6">
+          <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {trainingVideos.map((video, index) => (
+                <div key={index} className="group bg-shell-elevated rounded-lg p-4 hover:shadow-medium transition-all cursor-pointer">
+                  <div className="flex items-center justify-center bg-gradient-primary rounded-lg h-32 mb-4 text-4xl">
+                    {video.thumbnail}
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+                    {video.title}
+                  </h3>
+                  <p className="text-sm text-shell-muted mb-3">{video.description}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-shell-muted">{video.duration}</span>
+                    <Button size="sm" variant="ghost" className="gap-2">
+                      <Play className="h-3 w-3" />
+                      Watch
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Troubleshooting Tab */}
+        <TabsContent value="troubleshooting" className="space-y-6">
+          <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
+            <div className="space-y-4">
+              {troubleshootingTopics.map((topic, index) => (
+                <div key={index} className="p-4 bg-shell-elevated rounded-lg border border-shell-elevated">
+                  <h3 className="font-semibold text-foreground mb-2 flex items-start gap-2">
+                    <AlertCircle className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                    {topic.issue}
+                  </h3>
+                  <p className="text-sm text-shell-muted ml-7">{topic.solution}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Report Issue Tab */}
+        <TabsContent value="report" className="space-y-6">
+          <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
+            <form onSubmit={handleSubmitIssue} className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">Issue Title</label>
+                <Input
+                  type="text"
+                  placeholder="Brief description of the issue"
+                  value={issueTitle}
+                  onChange={(e) => setIssueTitle(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">Description</label>
+                <Textarea
+                  placeholder="Please provide detailed information about the issue you're experiencing..."
+                  value={issueDescription}
+                  onChange={(e) => setIssueDescription(e.target.value)}
+                  required
+                  rows={6}
+                />
+              </div>
+              <div className="flex gap-3">
+                <Button type="submit" className="gap-2">
+                  <FileText className="h-4 w-4" />
+                  Submit Issue
+                </Button>
+                <Button type="button" variant="outline" className="gap-2">
+                  <ExternalLink className="h-4 w-4" />
+                  View My Tickets
                 </Button>
               </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Troubleshooting Section */}
-      <div id="troubleshooting" className="bg-shell-elevated rounded-xl p-6 shadow-soft">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <AlertCircle className="h-5 w-5 text-primary" />
+            </form>
           </div>
-          <h2 className="text-2xl font-bold text-foreground">Troubleshooting</h2>
-        </div>
-
-        <div className="space-y-4">
-          {troubleshootingTopics.map((topic, index) => (
-            <div key={index} className="p-4 bg-shell-elevated rounded-lg border border-shell-elevated">
-              <h3 className="font-semibold text-foreground mb-2 flex items-start gap-2">
-                <AlertCircle className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
-                {topic.issue}
-              </h3>
-              <p className="text-sm text-shell-muted ml-7">{topic.solution}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Report an Issue Section */}
-      <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <FileText className="h-5 w-5 text-primary" />
-          </div>
-          <h2 className="text-2xl font-bold text-foreground">Report an Issue</h2>
-        </div>
-
-        <form onSubmit={handleSubmitIssue} className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-foreground mb-2 block">Issue Title</label>
-            <Input
-              type="text"
-              placeholder="Brief description of the issue"
-              value={issueTitle}
-              onChange={(e) => setIssueTitle(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-foreground mb-2 block">Description</label>
-            <Textarea
-              placeholder="Please provide detailed information about the issue you're experiencing..."
-              value={issueDescription}
-              onChange={(e) => setIssueDescription(e.target.value)}
-              required
-              rows={6}
-            />
-          </div>
-          <div className="flex gap-3">
-            <Button type="submit" className="gap-2">
-              <FileText className="h-4 w-4" />
-              Submit Issue
-            </Button>
-            <Button type="button" variant="outline" className="gap-2">
-              <ExternalLink className="h-4 w-4" />
-              View My Tickets
-            </Button>
-          </div>
-        </form>
-      </div>
+        </TabsContent>
+      </Tabs>
     </motion.div>
   );
 }
