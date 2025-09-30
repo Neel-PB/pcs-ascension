@@ -4,10 +4,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PositionPlanning from "./PositionPlanning";
 
 export default function StaffingSummary() {
-  // Sample chart data generators
-  const generateTrendData = (base: number, variance: number = 5) => 
-    Array.from({ length: 12 }, (_, i) => ({ 
-      value: base + Math.random() * variance - variance / 2 
+  // Realistic chart data generators
+  const generateGrowthTrend = (start: number, end: number, points: number = 24) => 
+    Array.from({ length: points }, (_, i) => ({
+      value: start + ((end - start) * i) / (points - 1) + (Math.random() - 0.5) * 2
+    }));
+
+  const generateDeclineTrend = (start: number, end: number, points: number = 24) =>
+    Array.from({ length: points }, (_, i) => ({
+      value: start - ((start - end) * i) / (points - 1) + (Math.random() - 0.5) * 2
+    }));
+
+  const generateVolatileTrend = (base: number, variance: number, points: number = 24) =>
+    Array.from({ length: points }, (_, i) => ({
+      value: base + Math.sin(i * 0.5) * variance + (Math.random() - 0.5) * (variance * 0.3)
+    }));
+
+  const generateSeasonalTrend = (base: number, amplitude: number, points: number = 24) =>
+    Array.from({ length: points }, (_, i) => ({
+      value: base + Math.sin((i / points) * Math.PI * 2) * amplitude + (Math.random() - 0.5) * 2
     }));
 
   return (
@@ -50,8 +65,8 @@ export default function StaffingSummary() {
                 value="13.9%"
                 trend="down"
                 trendValue="2.1%"
-                chartData={generateTrendData(14, 3)}
-                chartType="line"
+                chartData={generateDeclineTrend(16, 13.9)}
+                chartType="area"
                 delay={0}
               />
               <KPICard
@@ -59,15 +74,15 @@ export default function StaffingSummary() {
                 value="40.9"
                 trend="up"
                 trendValue="3.2"
-                chartData={generateTrendData(40, 5)}
+                chartData={generateGrowthTrend(37, 40.9)}
                 chartType="bar"
                 delay={0.05}
               />
               <KPICard
                 title="Target FTEs"
                 value="43.4"
-                chartData={generateTrendData(43, 2)}
-                chartType="line"
+                chartData={generateSeasonalTrend(43.4, 2)}
+                chartType="area"
                 delay={0.1}
               />
               <KPICard
@@ -76,14 +91,14 @@ export default function StaffingSummary() {
                 isNegative
                 trend="up"
                 trendValue="0.8"
-                chartData={generateTrendData(2.5, 1.5)}
-                chartType="bar"
+                chartData={generateGrowthTrend(1.7, 2.5)}
+                chartType="area"
                 delay={0.15}
               />
               <KPICard
                 title="Open Requisitions"
                 value="5"
-                chartData={generateTrendData(5, 2)}
+                chartData={generateVolatileTrend(5, 2)}
                 chartType="bar"
                 delay={0.2}
               />
@@ -92,7 +107,7 @@ export default function StaffingSummary() {
                 value="2.5"
                 trend="up"
                 trendValue="1.2"
-                chartData={generateTrendData(2, 1)}
+                chartData={generateGrowthTrend(1.3, 2.5)}
                 chartType="line"
                 delay={0.25}
               />
@@ -108,8 +123,8 @@ export default function StaffingSummary() {
                 value="633.5"
                 trend="up"
                 trendValue="12.3%"
-                chartData={generateTrendData(630, 40)}
-                chartType="line"
+                chartData={generateGrowthTrend(565, 633.5, 30)}
+                chartType="area"
                 delay={0}
               />
               <KPICard
@@ -117,8 +132,8 @@ export default function StaffingSummary() {
                 value="20.8"
                 trend="up"
                 trendValue="5.2%"
-                chartData={generateTrendData(20, 3)}
-                chartType="line"
+                chartData={generateGrowthTrend(19.8, 20.8, 30)}
+                chartType="area"
                 delay={0.05}
               />
               <KPICard
@@ -127,8 +142,8 @@ export default function StaffingSummary() {
                 trend="down"
                 trendValue="3.1%"
                 isNegative
-                chartData={generateTrendData(15, 2)}
-                chartType="bar"
+                chartData={generateVolatileTrend(14.2, 3)}
+                chartType="area"
                 delay={0.1}
               />
               <KPICard
@@ -136,7 +151,7 @@ export default function StaffingSummary() {
                 value="28.4"
                 trend="up"
                 trendValue="8.7%"
-                chartData={generateTrendData(28, 4)}
+                chartData={generateVolatileTrend(28.4, 5)}
                 chartType="bar"
                 delay={0.15}
               />
@@ -144,14 +159,14 @@ export default function StaffingSummary() {
                 title="Target Volume"
                 value="20.8"
                 isHighlighted
-                chartData={generateTrendData(21, 2)}
-                chartType="line"
+                chartData={generateSeasonalTrend(20.8, 3)}
+                chartType="area"
                 delay={0.2}
               />
               <KPICard
                 title="Override Volume"
                 value="24.7"
-                chartData={generateTrendData(24, 3)}
+                chartData={generateVolatileTrend(24.7, 4)}
                 chartType="bar"
                 delay={0.25}
               />
@@ -167,14 +182,14 @@ export default function StaffingSummary() {
                 value="38.2"
                 trend="up"
                 trendValue="2.4"
-                chartData={generateTrendData(38, 4)}
+                chartData={generateGrowthTrend(35.8, 38.2)}
                 chartType="bar"
                 delay={0}
               />
               <KPICard
                 title="Total Contract Actual FTEs"
                 value="5.7"
-                chartData={generateTrendData(6, 1)}
+                chartData={generateSeasonalTrend(5.7, 1.2)}
                 chartType="bar"
                 delay={0.05}
               />
@@ -183,8 +198,8 @@ export default function StaffingSummary() {
                 value="2.1"
                 trend="down"
                 trendValue="0.3"
-                chartData={generateTrendData(2, 0.5)}
-                chartType="line"
+                chartData={generateDeclineTrend(2.4, 2.1)}
+                chartType="area"
                 delay={0.1}
               />
               <KPICard
@@ -192,7 +207,7 @@ export default function StaffingSummary() {
                 value="12.4"
                 trend="up"
                 trendValue="1.8"
-                chartData={generateTrendData(12, 2)}
+                chartData={generateGrowthTrend(10.6, 12.4)}
                 chartType="bar"
                 delay={0.15}
               />
@@ -201,8 +216,8 @@ export default function StaffingSummary() {
                 value="89.3%"
                 trend="up"
                 trendValue="3.2%"
-                chartData={generateTrendData(89, 5)}
-                chartType="line"
+                chartData={generateGrowthTrend(86.1, 89.3)}
+                chartType="area"
                 delay={0.2}
               />
               <KPICard
@@ -211,8 +226,8 @@ export default function StaffingSummary() {
                 isNegative
                 trend="up"
                 trendValue="0.5"
-                chartData={generateTrendData(1.8, 0.8)}
-                chartType="bar"
+                chartData={generateGrowthTrend(1.3, 1.8)}
+                chartType="area"
                 delay={0.25}
               />
             </div>

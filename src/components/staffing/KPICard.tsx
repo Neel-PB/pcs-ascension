@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { LineChart, Line, BarChart, Bar, ResponsiveContainer } from "recharts";
+import { LineChart, Line, BarChart, Bar, AreaChart, Area, ResponsiveContainer } from "recharts";
 
 interface KPICardProps {
   title: string;
@@ -12,7 +12,7 @@ interface KPICardProps {
   isHighlighted?: boolean;
   delay?: number;
   chartData?: Array<{ value: number }>;
-  chartType?: "line" | "bar";
+  chartType?: "line" | "bar" | "area";
 }
 
 export function KPICard({
@@ -37,6 +37,12 @@ export function KPICard({
     if (isNegative) return "hsl(var(--destructive))";
     if (isHighlighted) return "hsl(142 76% 36%)";
     return "hsl(var(--primary))";
+  };
+
+  const getGradientId = () => {
+    if (isNegative) return "colorNegative";
+    if (isHighlighted) return "colorHighlighted";
+    return "colorPrimary";
   };
 
   return (
@@ -80,15 +86,32 @@ export function KPICard({
 
           {/* Chart Section */}
           {chartData && chartData.length > 0 && (
-            <div className="flex-1 min-h-[60px]">
+            <div className="flex-1 min-h-[80px] -mx-2 -mb-2">
               <ResponsiveContainer width="100%" height="100%">
-                {chartType === "line" ? (
+                {chartType === "area" ? (
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id={getGradientId()} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={getChartColor()} stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor={getChartColor()} stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      stroke={getChartColor()}
+                      strokeWidth={2.5}
+                      fill={`url(#${getGradientId()})`}
+                      dot={false}
+                    />
+                  </AreaChart>
+                ) : chartType === "line" ? (
                   <LineChart data={chartData}>
                     <Line
                       type="monotone"
                       dataKey="value"
                       stroke={getChartColor()}
-                      strokeWidth={2}
+                      strokeWidth={2.5}
                       dot={false}
                     />
                   </LineChart>
