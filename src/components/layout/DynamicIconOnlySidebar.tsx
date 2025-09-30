@@ -41,30 +41,31 @@ function ModuleItem({ module, isActive }: ModuleItemProps) {
   return (
     <motion.div 
       className={cn(
-        "group relative flex flex-col items-center py-2 px-2 rounded-lg transition-all duration-200 cursor-pointer",
-        "hover:bg-primary/10",
-        isActive ? "bg-primary/15" : ""
+        "group relative flex flex-col items-center py-2 px-2 rounded-lg transition-all duration-200 cursor-pointer overflow-hidden",
+        "hover:bg-primary/10"
       )}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       transition={{ duration: 0.2 }}
     >
-      {/* Active indicator on RIGHT side with animation */}
+      {/* Combined active background + indicator overlay */}
       {isActive && (
-        <motion.div 
-          layoutId="sidebar-active-indicator"
-          className="absolute right-2 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-full"
+        <motion.div
+          layoutId="sidebar-active-highlight"
+          className="pointer-events-none absolute inset-0 z-0 rounded-lg bg-primary/15"
           transition={{
             type: "spring",
             stiffness: 380,
             damping: 30
           }}
-        />
+        >
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-full" />
+        </motion.div>
       )}
 
       <div 
         onClick={handleModuleClick}
-        className="flex flex-col items-center gap-1 w-full"
+        className="relative z-10 flex flex-col items-center gap-1 w-full"
       >
         <div className={cn(
           "flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200",
