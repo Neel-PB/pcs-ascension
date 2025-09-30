@@ -172,6 +172,14 @@ Modern enterprise shell with clean aesthetics and accessibility
   .animate-slide-in {
     animation: slideIn 0.3s ease-out;
   }
+  
+  /* ContentEditable placeholder styling */
+  [contenteditable][data-placeholder]:empty:before {
+    content: attr(data-placeholder);
+    color: hsl(var(--muted-foreground));
+    pointer-events: none;
+    position: absolute;
+  }
 }
 
 @layer utilities {

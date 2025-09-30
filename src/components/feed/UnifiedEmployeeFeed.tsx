@@ -378,99 +378,11 @@ export function UnifiedEmployeeFeed() {
 
   return (
     <div className="space-y-4">
-      <Card className="p-6">
-        <div className="space-y-4">
-          <div 
-            ref={editorRef}
-            contentEditable
-            onInput={handleEditorInput}
-            onKeyDown={handleKeyDown}
-            onFocus={handleEditorFocus}
-            className="min-h-[80px] p-3 rounded-lg bg-muted/50 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            data-placeholder="Share an update with your team..."
-          />
-
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => applyFormatting('bold')}
-                className={cn(
-                  "h-8 w-8 p-0",
-                  activeFormatting.includes('bold') && "bg-accent"
-                )}
-                title="Bold (Ctrl+B)"
-              >
-                <Bold className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => applyFormatting('italic')}
-                className={cn(
-                  "h-8 w-8 p-0",
-                  activeFormatting.includes('italic') && "bg-accent"
-                )}
-                title="Italic (Ctrl+I)"
-              >
-                <Italic className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => applyFormatting('underline')}
-                className={cn(
-                  "h-8 w-8 p-0",
-                  activeFormatting.includes('underline') && "bg-accent"
-                )}
-                title="Underline (Ctrl+U)"
-              >
-                <Underline className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => applyFormatting('list')}
-                className={cn(
-                  "h-8 w-8 p-0",
-                  activeFormatting.includes('list') && "bg-accent"
-                )}
-                title="Bullet List"
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleImageUpload}
-                className="h-8 w-8 p-0"
-                title="Add Image"
-              >
-                <ImagePlus className="h-4 w-4" />
-              </Button>
-              <Button
-                onClick={handleCreatePost}
-                disabled={createPostMutation.isPending || uploadingImages}
-                size="sm"
-                className={cn(
-                  (newPostContent || selectedImages.length > 0) && "bg-primary text-primary-foreground hover:bg-primary/90"
-                )}
-              >
-                {(createPostMutation.isPending || uploadingImages) ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <ArrowUp className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-          </div>
-
+      <Card className="overflow-hidden">
+        <div className="p-4">
+          {/* Image Preview Section */}
           {selectedImages.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 mb-3">
               {selectedImages.map((image, index) => (
                 <div key={index} className="relative">
                   <img
@@ -490,6 +402,100 @@ export function UnifiedEmployeeFeed() {
               ))}
             </div>
           )}
+
+          {/* Main Input Container with Integrated Utility Bar */}
+          <div className="border border-border rounded-lg overflow-hidden bg-background">
+            {/* Content Editable Area */}
+            <div 
+              ref={editorRef}
+              contentEditable
+              onInput={handleEditorInput}
+              onKeyDown={handleKeyDown}
+              onFocus={handleEditorFocus}
+              className="min-h-[100px] px-4 pt-4 pb-2 text-foreground focus:outline-none"
+              data-placeholder="Share an update, announcement, or praise with your team..."
+            />
+
+            {/* Integrated Utility Bar */}
+            <div className="flex items-center justify-between gap-2 px-3 py-2 bg-muted/30 border-t border-border">
+              {/* Left Side - Formatting Tools */}
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => applyFormatting('bold')}
+                  className={cn(
+                    "h-8 w-8 p-0",
+                    activeFormatting.includes('bold') && "bg-accent"
+                  )}
+                  title="Bold (Ctrl+B)"
+                >
+                  <Bold className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => applyFormatting('italic')}
+                  className={cn(
+                    "h-8 w-8 p-0",
+                    activeFormatting.includes('italic') && "bg-accent"
+                  )}
+                  title="Italic (Ctrl+I)"
+                >
+                  <Italic className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => applyFormatting('underline')}
+                  className={cn(
+                    "h-8 w-8 p-0",
+                    activeFormatting.includes('underline') && "bg-accent"
+                  )}
+                  title="Underline (Ctrl+U)"
+                >
+                  <Underline className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => applyFormatting('list')}
+                  className={cn(
+                    "h-8 w-8 p-0",
+                    activeFormatting.includes('list') && "bg-accent"
+                  )}
+                  title="Bullet List"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Right Side - Actions */}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleImageUpload}
+                  className="h-8 w-8 p-0"
+                  title="Add Image"
+                >
+                  <ImagePlus className="h-4 w-4" />
+                </Button>
+                <Button
+                  onClick={handleCreatePost}
+                  disabled={createPostMutation.isPending || uploadingImages}
+                  size="sm"
+                  className="h-8 w-8 p-0 rounded-full"
+                >
+                  {(createPostMutation.isPending || uploadingImages) ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <ArrowUp className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
 
           <input
             ref={fileInputRef}
