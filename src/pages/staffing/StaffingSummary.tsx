@@ -1,11 +1,26 @@
-import { motion } from "framer-motion";
-import { Users, UserPlus, Clock, TrendingUp, AlertCircle, CheckCircle } from "lucide-react";
-import { ContentCard, StatsCard } from "@/components/shell/ContentCard";
+import { useState } from "react";
+import {
+  Users,
+  Target,
+  TrendingUp,
+  Clock,
+  FileText,
+  Activity,
+  Briefcase,
+  DollarSign,
+  UserCheck,
+  AlertCircle,
+  BarChart3,
+} from "lucide-react";
+import { KPICard } from "@/components/staffing/KPICard";
 import { FilterBar } from "@/components/staffing/FilterBar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import PositionPlanning from "./PositionPlanning";
 
 export default function StaffingSummary() {
+  const [hideKPIs, setHideKPIs] = useState(false);
+
   return (
     <div className="space-y-6">
       {/* Filters */}
@@ -36,121 +51,172 @@ export default function StaffingSummary() {
         </div>
 
         {/* Summary Tab Content */}
-        <TabsContent value="summary" className="space-y-6 mt-0">
-          {/* Staffing Stats */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <StatsCard
-              title="Current Staff"
-              value="1,156"
-              change={{ value: "+12 this week", type: "increase" }}
-              icon={Users}
-              delay={0.1}
-            />
-            <StatsCard
-              title="New Hires"
-              value="23"
-              change={{ value: "+4 this month", type: "increase" }}
-              icon={UserPlus}
-              delay={0.2}
-            />
-            <StatsCard
-              title="Overtime Hours"
-              value="2,847"
-              change={{ value: "-156 vs last week", type: "decrease" }}
-              icon={Clock}
-              delay={0.3}
-            />
-            <StatsCard
-              title="Efficiency Rate"
-              value="94.2%"
-              change={{ value: "+2.1% this month", type: "increase" }}
-              icon={TrendingUp}
-              delay={0.4}
-            />
-          </div>
-
-          {/* Content Grid */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* Department Status */}
-            <ContentCard
-              title="Department Status"
-              icon={CheckCircle}
-              delay={0.5}
-            >
+        <TabsContent value="summary" className="space-y-8 mt-0">
+          {!hideKPIs && (
+            <>
+              {/* FTE Section */}
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-success/10 border border-success/20">
-                  <div>
-                    <p className="text-sm font-medium">Emergency Department</p>
-                    <p className="text-xs text-muted-foreground">Fully Staffed • 98% Fill Rate</p>
-                  </div>
-                  <div className="h-8 w-8 rounded-full bg-success/20 flex items-center justify-center">
-                    <CheckCircle className="h-4 w-4 text-success" />
-                  </div>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold">FTE</h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setHideKPIs(true)}
+                  >
+                    Hide KPIs
+                  </Button>
                 </div>
-                
-                <div className="flex items-center justify-between p-3 rounded-lg bg-warning/10 border border-warning/20">
-                  <div>
-                    <p className="text-sm font-medium">ICU</p>
-                    <p className="text-xs text-muted-foreground">3 Positions Open • 89% Fill Rate</p>
-                  </div>
-                  <div className="h-8 w-8 rounded-full bg-warning/20 flex items-center justify-center">
-                    <AlertCircle className="h-4 w-4 text-warning" />
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between p-3 rounded-lg bg-shell-elevated">
-                  <div>
-                    <p className="text-sm font-medium">Surgery</p>
-                    <p className="text-xs text-muted-foreground">1 Position Open • 95% Fill Rate</p>
-                  </div>
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Users className="h-4 w-4 text-primary" />
-                  </div>
+                <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+                  <KPICard
+                    title="Vacancy Rate"
+                    value="13.9%"
+                    trend="down"
+                    icon={Users}
+                    delay={0}
+                  />
+                  <KPICard
+                    title="Hired FTEs"
+                    value="40.9"
+                    trend="up"
+                    icon={UserCheck}
+                    delay={0.05}
+                  />
+                  <KPICard
+                    title="Target FTEs"
+                    value="43.4"
+                    icon={Target}
+                    delay={0.1}
+                  />
+                  <KPICard
+                    title="FTE Variance"
+                    value="2.5"
+                    isNegative
+                    icon={TrendingUp}
+                    iconColor="text-destructive"
+                    delay={0.15}
+                  />
+                  <KPICard
+                    title="Open Requisitions"
+                    value="5"
+                    icon={FileText}
+                    delay={0.2}
+                  />
+                  <KPICard
+                    title="Requisition Variance"
+                    value="2.5"
+                    icon={BarChart3}
+                    iconColor="text-green-500"
+                    delay={0.25}
+                  />
                 </div>
               </div>
-            </ContentCard>
 
-            {/* Position Planning */}
-            <ContentCard
-              title="Position Planning"
-              icon={TrendingUp}
-              delay={0.6}
-            >
+              {/* Volume Section */}
               <div className="space-y-4">
-                <div className="p-4 rounded-lg bg-shell-elevated">
-                  <h4 className="text-sm font-semibold mb-2">Q4 2024 Hiring Plan</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Registered Nurses</span>
-                      <span className="font-medium">12 positions</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Medical Assistants</span>
-                      <span className="font-medium">6 positions</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Administrative</span>
-                      <span className="font-medium">3 positions</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="p-4 rounded-lg border border-primary/20 bg-primary/5">
-                  <h4 className="text-sm font-semibold mb-2 text-primary">Priority Positions</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">ICU Nurses (Night Shift)</span>
-                      <span className="font-medium text-danger">Critical</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">OR Technicians</span>
-                      <span className="font-medium text-warning">High</span>
-                    </div>
-                  </div>
+                <h2 className="text-xl font-semibold">Volume</h2>
+                <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+                  <KPICard
+                    title="12M Avg Monthly"
+                    value="633.5"
+                    trend="up"
+                    icon={Activity}
+                    delay={0}
+                  />
+                  <KPICard
+                    title="12M Avg Daily"
+                    value="20.8"
+                    trend="up"
+                    icon={Activity}
+                    delay={0.05}
+                  />
+                  <KPICard
+                    title="3M Avg Lowest"
+                    value="14.2"
+                    trend="down"
+                    icon={TrendingUp}
+                    iconColor="text-red-500"
+                    delay={0.1}
+                  />
+                  <KPICard
+                    title="3M Avg Highest"
+                    value="28.4"
+                    trend="up"
+                    icon={TrendingUp}
+                    iconColor="text-green-500"
+                    delay={0.15}
+                  />
+                  <KPICard
+                    title="Target Volume"
+                    value="20.8"
+                    icon={Target}
+                    isHighlighted
+                    delay={0.2}
+                  />
+                  <KPICard
+                    title="Override Volume"
+                    value="Select Department"
+                    icon={AlertCircle}
+                    delay={0.25}
+                  />
                 </div>
               </div>
-            </ContentCard>
-          </div>
+
+              {/* Productivity Section */}
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold">Productivity</h2>
+                <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+                  <KPICard
+                    title="Total Paid Actual FTEs"
+                    comingSoon
+                    icon={DollarSign}
+                    iconColor="text-blue-500"
+                    delay={0}
+                  />
+                  <KPICard
+                    title="Total Contract Actual FTEs"
+                    comingSoon
+                    icon={Briefcase}
+                    iconColor="text-purple-500"
+                    delay={0.05}
+                  />
+                  <KPICard
+                    title="Total Overtime FTEs"
+                    comingSoon
+                    icon={Clock}
+                    iconColor="text-orange-500"
+                    delay={0.1}
+                  />
+                  <KPICard
+                    title="Total PRN"
+                    comingSoon
+                    icon={Users}
+                    iconColor="text-cyan-500"
+                    delay={0.15}
+                  />
+                  <KPICard
+                    title="Total NP%"
+                    comingSoon
+                    icon={BarChart3}
+                    iconColor="text-pink-500"
+                    delay={0.2}
+                  />
+                  <KPICard
+                    title="Missed Prod Targets FTEs"
+                    comingSoon
+                    icon={AlertCircle}
+                    iconColor="text-red-500"
+                    delay={0.25}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+          {hideKPIs && (
+            <div className="flex justify-center py-8">
+              <Button onClick={() => setHideKPIs(false)}>Show KPIs</Button>
+            </div>
+          )}
         </TabsContent>
 
         {/* Position Planning Tab Content */}
