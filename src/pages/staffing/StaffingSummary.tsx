@@ -2,26 +2,16 @@ import { motion } from "framer-motion";
 import { Users, UserPlus, Clock, TrendingUp, AlertCircle, CheckCircle } from "lucide-react";
 import { ContentCard, StatsCard } from "@/components/shell/ContentCard";
 import { TabNavigation, moduleTabConfigs } from "@/components/shell/TabNavigation";
+import { FilterBar } from "@/components/staffing/FilterBar";
 
 export default function StaffingSummary() {
   return (
-    <div className="space-y-8">
-      {/* Page Header */}
-      <motion.div
-        className="space-y-4"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-gradient">Staffing Overview</h1>
-          <p className="text-shell-muted">
-            Monitor staffing levels, position planning, and workforce analytics.
-          </p>
-        </div>
-        
+    <div className="space-y-6">
+      {/* Filters and Navigation */}
+      <div className="space-y-4">
+        <FilterBar />
         <TabNavigation tabs={moduleTabConfigs.staffing} />
-      </motion.div>
+      </div>
 
       {/* Staffing Stats */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
