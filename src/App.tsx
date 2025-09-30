@@ -11,6 +11,7 @@ import StaffingSummary from "./pages/staffing/StaffingSummary";
 import PositionsPage from "./pages/positions/PositionsPage";
 import AnalyticsRegion from "./pages/analytics/AnalyticsRegion";
 import ReportsRegion from "./pages/reports/ReportsRegion";
+import SupportPage from "./pages/support/SupportPage";
 import AdminPage from "./pages/admin/AdminPage";
 import NotFound from "./pages/NotFound";
 
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/positions" element={<ShellLayout><PositionsPage /></ShellLayout>} />
             <Route path="/analytics" element={<ShellLayout><AnalyticsRegion /></ShellLayout>} />
             <Route path="/reports" element={<ShellLayout><ReportsRegion /></ShellLayout>} />
+            <Route path="/support" element={<ShellLayout><SupportPage /></ShellLayout>} />
             <Route path="/admin" element={<ShellLayout><AdminPage /></ShellLayout>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<ShellLayout><NotFound /></ShellLayout>} />
