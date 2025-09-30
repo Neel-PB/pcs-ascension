@@ -16,7 +16,7 @@ Modern enterprise shell with clean aesthetics and accessibility
     --text-subtle: 220 9% 60%;
     
     /* Brand & Status Colors */
-    --primary: 213 94% 68%;
+    --primary: 217 91% 60%;
     --primary-weak: 214 95% 93%;
     --primary-weak-2: 214 88% 85%;
     --success: 142 71% 45%;
@@ -55,15 +55,14 @@ Modern enterprise shell with clean aesthetics and accessibility
     --sidebar-ring: 217 91% 60%;
     
     /* Custom Gradients */
-    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(215 16% 98%) 100%);
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(213 94% 55%) 100%);
-    --gradient-text: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(213 94% 55%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(var(--bg)) 0%, hsl(var(--bg-elev)) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(217 91% 55%) 100%);
+    --gradient-text: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(217 91% 55%) 100%);
     
     /* Shadows */
-    --shadow-soft: 0 2px 8px -2px hsl(215 25% 15% / 0.08);
+    --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.05);
     --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    --shadow-elegant: 0 8px 24px -4px hsl(215 25% 15% / 0.18);
   }
 
   .dark {
@@ -144,10 +143,6 @@ Modern enterprise shell with clean aesthetics and accessibility
   
   .shadow-large {
     box-shadow: var(--shadow-large);
-  }
-  
-  .shadow-elegant {
-    box-shadow: var(--shadow-elegant);
   }
   
   /* Animation utilities */

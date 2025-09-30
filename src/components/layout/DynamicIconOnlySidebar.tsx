@@ -41,25 +41,26 @@ function ModuleItem({ module, isActive }: ModuleItemProps) {
   return (
     <motion.div 
       className={cn(
-        "group relative flex flex-col items-center p-2 rounded-xl transition-all duration-300 cursor-pointer overflow-hidden",
-        "hover:bg-primary/10 hover:shadow-sm",
-        isActive && "bg-primary/15 shadow-soft"
+        "group relative flex flex-col items-center py-2 px-2 rounded-lg transition-all duration-200 cursor-pointer overflow-hidden",
+        "hover:bg-primary/10"
       )}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       transition={{ duration: 0.2 }}
     >
-      {/* Active indicator */}
+      {/* Combined active background + indicator overlay */}
       {isActive && (
         <motion.div
           layoutId="sidebar-active-highlight"
-          className="pointer-events-none absolute -right-0.5 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary to-primary/60 rounded-l-full shadow-sm z-10"
+          className="pointer-events-none absolute inset-0 z-0 rounded-lg bg-primary/15"
           transition={{
             type: "spring",
             stiffness: 380,
             damping: 30
           }}
-        />
+        >
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-full" />
+        </motion.div>
       )}
 
       <div 
@@ -69,16 +70,16 @@ function ModuleItem({ module, isActive }: ModuleItemProps) {
         <div className={cn(
           "flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200",
           isActive 
-            ? "bg-primary text-primary-foreground shadow-md" 
-            : "bg-muted text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary"
+            ? "text-primary" 
+            : "text-muted-foreground group-hover:text-primary"
         )}>
-          <module.icon className="w-4 h-4" />
+          <module.icon className="w-5 h-5" />
         </div>
         
         <span className={cn(
-          "text-xs font-light transition-all duration-200 text-center leading-tight",
+          "text-[10px] font-medium transition-all duration-200 text-center leading-tight",
           isActive 
-            ? "text-primary font-medium" 
+            ? "text-primary" 
             : "text-muted-foreground group-hover:text-foreground"
         )}>
           {module.label}
@@ -129,7 +130,6 @@ export function DynamicIconOnlySidebar() {
   const { sidebarModules, isLoading } = useDynamicSidebar();
   const { roles, loading: rbacLoading } = useRBAC();
   const location = useLocation();
-  const [debugMode, setDebugMode] = useState(false);
 
   // Determine which module is active based on current location
   const getActiveModule = useCallback(() => {
@@ -151,7 +151,7 @@ export function DynamicIconOnlySidebar() {
   }
 
   return (
-    <div className="fixed left-0 top-0 z-40 h-full w-14 border-r bg-gradient-card backdrop-blur-sm shadow-elegant">
+    <div className="fixed left-0 top-0 z-40 h-full w-20 max-w-20 border-r bg-background shadow-sm">
       <div className="flex h-full flex-col">
         {/* Organization switcher */}
         <div className="flex items-center justify-center py-3 px-2 border-b">
@@ -159,9 +159,9 @@ export function DynamicIconOnlySidebar() {
         </div>
 
         {/* Main navigation */}
-        <div className="flex-1 overflow-y-auto py-4 px-2">
+        <div className="flex-1 overflow-y-auto py-1.5 px-2">
           <LayoutGroup>
-            <div className="space-y-2">
+            <div className="space-y-0.5">
               {sidebarModules.map((module) => {
                 const isActive = activeModule?.label === module.label;
                 return (
@@ -174,24 +174,6 @@ export function DynamicIconOnlySidebar() {
               })}
             </div>
           </LayoutGroup>
-        </div>
-
-        {/* Debug toggle and user info */}
-        <div className="border-t p-2 space-y-2">
-          <button
-            onClick={() => setDebugMode(!debugMode)}
-            className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
-            title="Toggle debug mode"
-          >
-            Debug
-          </button>
-          
-          {debugMode && (
-            <div className="text-xs text-muted-foreground space-y-1">
-              <div>Roles: {roles.join(', ')}</div>
-              <div>Modules: {sidebarModules.length}</div>
-            </div>
-          )}
         </div>
       </div>
     </div>
