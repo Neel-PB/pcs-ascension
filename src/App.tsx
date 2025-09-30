@@ -10,6 +10,13 @@ import AuthPage from "./pages/AuthPage";
 import StaffingSummary from "./pages/staffing/StaffingSummary";
 import PositionsPage from "./pages/positions/PositionsPage";
 import AnalyticsRegion from "./pages/analytics/AnalyticsRegion";
+import AnalyticsMarket from "./pages/analytics/AnalyticsMarket";
+import AnalyticsFacility from "./pages/analytics/AnalyticsFacility";
+import AnalyticsDepartment from "./pages/analytics/AnalyticsDepartment";
+import ReportsRegion from "./pages/reports/ReportsRegion";
+import ReportsMarket from "./pages/reports/ReportsMarket";
+import ReportsFacility from "./pages/reports/ReportsFacility";
+import ReportsDepartment from "./pages/reports/ReportsDepartment";
 import AdminPage from "./pages/admin/AdminPage";
 import NotFound from "./pages/NotFound";
 
@@ -28,6 +35,13 @@ const App = () => (
             <Route path="/staffing" element={<ShellLayout><StaffingSummary /></ShellLayout>} />
             <Route path="/positions" element={<ShellLayout><PositionsPage /></ShellLayout>} />
             <Route path="/analytics" element={<ShellLayout><AnalyticsRegion /></ShellLayout>} />
+            <Route path="/analytics/market" element={<ShellLayout><AnalyticsMarket /></ShellLayout>} />
+            <Route path="/analytics/facility" element={<ShellLayout><AnalyticsFacility /></ShellLayout>} />
+            <Route path="/analytics/department" element={<ShellLayout><AnalyticsDepartment /></ShellLayout>} />
+            <Route path="/reports" element={<ShellLayout><ReportsRegion /></ShellLayout>} />
+            <Route path="/reports/market" element={<ShellLayout><ReportsMarket /></ShellLayout>} />
+            <Route path="/reports/facility" element={<ShellLayout><ReportsFacility /></ShellLayout>} />
+            <Route path="/reports/department" element={<ShellLayout><ReportsDepartment /></ShellLayout>} />
             <Route path="/admin" element={<ShellLayout><AdminPage /></ShellLayout>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<ShellLayout><NotFound /></ShellLayout>} />

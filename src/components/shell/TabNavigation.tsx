@@ -108,6 +108,12 @@ export const moduleTabConfigs = {
     { id: "tickets", label: "Service Tickets", path: "/support/tickets" },
     { id: "resources", label: "Resources", path: "/support/resources" },
   ],
+  reports: [
+    { id: "region", label: "Region", path: "/reports" },
+    { id: "market", label: "Market", path: "/reports/market" },
+    { id: "facility", label: "Facility", path: "/reports/facility" },
+    { id: "department", label: "Department", path: "/reports/department" },
+  ],
   admin: [
     { id: "users", label: "User Management", path: "/admin" },
     { id: "roles", label: "Roles", path: "/admin/roles" },
