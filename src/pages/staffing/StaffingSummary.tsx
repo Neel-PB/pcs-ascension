@@ -7,19 +7,11 @@ import { VarianceAnalysis } from "./VarianceAnalysis";
 
 export default function StaffingSummary() {
   const [selectedRegion, setSelectedRegion] = useState("all-regions");
-  const [selectedMarket, setSelectedMarket] = useState("all-markets");
   const [selectedFacility, setSelectedFacility] = useState("all-facilities");
   const [selectedDepartment, setSelectedDepartment] = useState("all-departments");
 
   const handleRegionChange = (value: string) => {
     setSelectedRegion(value);
-    setSelectedMarket("all-markets");
-    setSelectedFacility("all-facilities");
-    setSelectedDepartment("all-departments");
-  };
-
-  const handleMarketChange = (value: string) => {
-    setSelectedMarket(value);
     setSelectedFacility("all-facilities");
     setSelectedDepartment("all-departments");
   };
@@ -55,11 +47,9 @@ export default function StaffingSummary() {
       <div className="py-2">
         <FilterBar 
           onRegionChange={handleRegionChange}
-          onMarketChange={handleMarketChange}
           onFacilityChange={handleFacilityChange}
           onDepartmentChange={setSelectedDepartment}
           selectedRegion={selectedRegion}
-          selectedMarket={selectedMarket}
           selectedFacility={selectedFacility}
           selectedDepartment={selectedDepartment}
         />
@@ -276,7 +266,6 @@ export default function StaffingSummary() {
         <TabsContent value="variance" className="mt-0">
           <VarianceAnalysis 
             selectedRegion={selectedRegion}
-            selectedMarket={selectedMarket}
             selectedFacility={selectedFacility}
             selectedDepartment={selectedDepartment}
           />

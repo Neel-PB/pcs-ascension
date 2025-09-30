@@ -20,202 +20,120 @@ interface VarianceData {
   overheadTotal: number;
 }
 
-// Sample hierarchical data
+// Helper function to generate realistic variance data
+const generateVariance = () => ({
+  clDay: (Math.random() * 6 - 3),
+  clNight: (Math.random() * 4 - 2),
+  clTotal: (Math.random() * 5 - 2.5),
+  rnDay: (Math.random() * 6 - 3),
+  rnNight: (Math.random() * 4 - 2),
+  rnTotal: (Math.random() * 5 - 2.5),
+  pctDay: (Math.random() * 3 - 1.5),
+  pctNight: (Math.random() * 2 - 1),
+  pctTotal: (Math.random() * 3 - 1.5),
+  hucDay: (Math.random() * 3 - 1.5),
+  hucNight: (Math.random() * 2 - 1),
+  hucTotal: (Math.random() * 3 - 1.5),
+  overheadDay: (Math.random() * 1 - 0.5),
+  overheadNight: (Math.random() * 0.6 - 0.3),
+  overheadTotal: (Math.random() * 1 - 0.5),
+});
+
+// Real hierarchical data with actual state names and hospital names
 const varianceDataByLevel = {
-  regions: [
-    {
-      name: "Northeast",
-      clDay: -2.5, clNight: 1.2, clTotal: -1.3,
-      rnDay: 3.4, rnNight: -1.8, rnTotal: 1.6,
-      pctDay: -1.2, pctNight: 0.8, pctTotal: -0.4,
-      hucDay: 2.1, hucNight: -0.5, hucTotal: 1.6,
-      overheadDay: 0.3, overheadNight: 0.1, overheadTotal: 0.4,
-    },
-    {
-      name: "Southeast",
-      clDay: 1.8, clNight: -2.3, clTotal: -0.5,
-      rnDay: -2.1, rnNight: 3.5, rnTotal: 1.4,
-      pctDay: 0.9, pctNight: -1.5, pctTotal: -0.6,
-      hucDay: -1.7, hucNight: 2.2, hucTotal: 0.5,
-      overheadDay: -0.2, overheadNight: 0.4, overheadTotal: 0.2,
-    },
-    {
-      name: "Midwest",
-      clDay: -3.2, clNight: 0.7, clTotal: -2.5,
-      rnDay: 2.8, rnNight: -1.2, rnTotal: 1.6,
-      pctDay: -0.6, pctNight: 1.3, pctTotal: 0.7,
-      hucDay: 1.5, hucNight: -0.8, hucTotal: 0.7,
-      overheadDay: 0.1, overheadNight: -0.3, overheadTotal: -0.2,
-    },
-    {
-      name: "West",
-      clDay: 2.1, clNight: -1.6, clTotal: 0.5,
-      rnDay: -1.5, rnNight: 2.9, rnTotal: 1.4,
-      pctDay: 1.2, pctNight: -0.9, pctTotal: 0.3,
-      hucDay: -2.3, hucNight: 1.7, hucTotal: -0.6,
-      overheadDay: 0.5, overheadNight: -0.2, overheadTotal: 0.3,
-    },
+  markets: [
+    { name: "Florida", ...generateVariance() },
+    { name: "Illinois", ...generateVariance() },
+    { name: "Indiana", ...generateVariance() },
+    { name: "Kansas", ...generateVariance() },
+    { name: "Maryland", ...generateVariance() },
+    { name: "Oklahoma", ...generateVariance() },
+    { name: "Tennessee", ...generateVariance() },
+    { name: "Texas", ...generateVariance() },
+    { name: "Wisconsin", ...generateVariance() },
   ],
-  markets: {
-    "Northeast": [
-      {
-        name: "Boston",
-        clDay: -1.5, clNight: 0.8, clTotal: -0.7,
-        rnDay: 2.1, rnNight: -1.2, rnTotal: 0.9,
-        pctDay: -0.8, pctNight: 0.5, pctTotal: -0.3,
-        hucDay: 1.3, hucNight: -0.3, hucTotal: 1.0,
-        overheadDay: 0.2, overheadNight: 0.1, overheadTotal: 0.3,
-      },
-      {
-        name: "New York",
-        clDay: -1.0, clNight: 0.4, clTotal: -0.6,
-        rnDay: 1.3, rnNight: -0.6, rnTotal: 0.7,
-        pctDay: -0.4, pctNight: 0.3, pctTotal: -0.1,
-        hucDay: 0.8, hucNight: -0.2, hucTotal: 0.6,
-        overheadDay: 0.1, overheadNight: 0.0, overheadTotal: 0.1,
-      },
-    ],
-    "Southeast": [
-      {
-        name: "Atlanta",
-        clDay: 0.9, clNight: -1.2, clTotal: -0.3,
-        rnDay: -1.1, rnNight: 1.8, rnTotal: 0.7,
-        pctDay: 0.5, pctNight: -0.8, pctTotal: -0.3,
-        hucDay: -0.9, hucNight: 1.1, hucTotal: 0.2,
-        overheadDay: -0.1, overheadNight: 0.2, overheadTotal: 0.1,
-      },
-      {
-        name: "Pensacola",
-        clDay: 0.9, clNight: -1.1, clTotal: -0.2,
-        rnDay: -1.0, rnNight: 1.7, rnTotal: 0.7,
-        pctDay: 0.4, pctNight: -0.7, pctTotal: -0.3,
-        hucDay: -0.8, hucNight: 1.1, hucTotal: 0.3,
-        overheadDay: -0.1, overheadNight: 0.2, overheadTotal: 0.1,
-      },
-    ],
-    "Midwest": [
-      {
-        name: "Chicago",
-        clDay: -1.6, clNight: 0.4, clTotal: -1.2,
-        rnDay: 1.4, rnNight: -0.6, rnTotal: 0.8,
-        pctDay: -0.3, pctNight: 0.7, pctTotal: 0.4,
-        hucDay: 0.8, hucNight: -0.4, hucTotal: 0.4,
-        overheadDay: 0.1, overheadNight: -0.2, overheadTotal: -0.1,
-      },
-      {
-        name: "Minneapolis",
-        clDay: -1.6, clNight: 0.3, clTotal: -1.3,
-        rnDay: 1.4, rnNight: -0.6, rnTotal: 0.8,
-        pctDay: -0.3, pctNight: 0.6, pctTotal: 0.3,
-        hucDay: 0.7, hucNight: -0.4, hucTotal: 0.3,
-        overheadDay: 0.0, overheadNight: -0.1, overheadTotal: -0.1,
-      },
-    ],
-    "West": [
-      {
-        name: "Los Angeles",
-        clDay: 1.1, clNight: -0.8, clTotal: 0.3,
-        rnDay: -0.8, rnNight: 1.5, rnTotal: 0.7,
-        pctDay: 0.6, pctNight: -0.5, pctTotal: 0.1,
-        hucDay: -1.2, hucNight: 0.9, hucTotal: -0.3,
-        overheadDay: 0.3, overheadNight: -0.1, overheadTotal: 0.2,
-      },
-      {
-        name: "Seattle",
-        clDay: 1.0, clNight: -0.8, clTotal: 0.2,
-        rnDay: -0.7, rnNight: 1.4, rnTotal: 0.7,
-        pctDay: 0.6, pctNight: -0.4, pctTotal: 0.2,
-        hucDay: -1.1, hucNight: 0.8, hucTotal: -0.3,
-        overheadDay: 0.2, overheadNight: -0.1, overheadTotal: 0.1,
-      },
-    ],
-  },
   facilities: {
-    "Pensacola": [
-      {
-        name: "Sacred Heart Pensacola",
-        clDay: 0.5, clNight: -0.6, clTotal: -0.1,
-        rnDay: -0.5, rnNight: 0.9, rnTotal: 0.4,
-        pctDay: 0.2, pctNight: -0.4, pctTotal: -0.2,
-        hucDay: -0.4, hucNight: 0.6, hucTotal: 0.2,
-        overheadDay: 0.0, overheadNight: 0.1, overheadTotal: 0.1,
-      },
-      {
-        name: "St. Vincent's",
-        clDay: 0.4, clNight: -0.5, clTotal: -0.1,
-        rnDay: -0.5, rnNight: 0.8, rnTotal: 0.3,
-        pctDay: 0.2, pctNight: -0.3, pctTotal: -0.1,
-        hucDay: -0.4, hucNight: 0.5, hucTotal: 0.1,
-        overheadDay: -0.1, overheadNight: 0.1, overheadTotal: 0.0,
-      },
+    florida: [
+      { name: "Ascension Sacred Heart Pensacola", ...generateVariance() },
+      { name: "Studer Family Children's Hospital at Ascension Sacred Heart", ...generateVariance() },
+      { name: "Ascension St. Vincent's Riverside", ...generateVariance() },
+      { name: "Ascension St. Vincent's Southside", ...generateVariance() },
+      { name: "Ascension St. Vincent's St. Clair's", ...generateVariance() },
+      { name: "Ascension St. Vincent's Clay County", ...generateVariance() },
     ],
-    "Atlanta": [
-      {
-        name: "Atlanta Medical Center",
-        clDay: 0.5, clNight: -0.6, clTotal: -0.1,
-        rnDay: -0.6, rnNight: 0.9, rnTotal: 0.3,
-        pctDay: 0.3, pctNight: -0.4, pctTotal: -0.1,
-        hucDay: -0.5, hucNight: 0.6, hucTotal: 0.1,
-        overheadDay: 0.0, overheadNight: 0.1, overheadTotal: 0.1,
-      },
-      {
-        name: "Northside Hospital",
-        clDay: 0.4, clNight: -0.6, clTotal: -0.2,
-        rnDay: -0.5, rnNight: 0.9, rnTotal: 0.4,
-        pctDay: 0.2, pctNight: -0.4, pctTotal: -0.2,
-        hucDay: -0.4, hucNight: 0.5, hucTotal: 0.1,
-        overheadDay: -0.1, overheadNight: 0.1, overheadTotal: 0.0,
-      },
+    illinois: [
+      { name: "Ascension Illinois", ...generateVariance() },
     ],
-  },
-  departments: {
-    "Sacred Heart Pensacola": [
-      {
-        name: "Emergency",
-        clDay: 0.3, clNight: -0.4, clTotal: -0.1,
-        rnDay: -0.3, rnNight: 0.5, rnTotal: 0.2,
-        pctDay: 0.1, pctNight: -0.2, pctTotal: -0.1,
-        hucDay: -0.2, hucNight: 0.3, hucTotal: 0.1,
-        overheadDay: 0.0, overheadNight: 0.1, overheadTotal: 0.1,
-      },
-      {
-        name: "ICU",
-        clDay: 0.2, clNight: -0.2, clTotal: 0.0,
-        rnDay: -0.2, rnNight: 0.4, rnTotal: 0.2,
-        pctDay: 0.1, pctNight: -0.2, pctTotal: -0.1,
-        hucDay: -0.2, hucNight: 0.3, hucTotal: 0.1,
-        overheadDay: 0.0, overheadNight: 0.0, overheadTotal: 0.0,
-      },
-      {
-        name: "Surgery",
-        clDay: 0.1, clNight: -0.1, clTotal: 0.0,
-        rnDay: -0.1, rnNight: 0.2, rnTotal: 0.1,
-        pctDay: 0.0, pctNight: -0.1, pctTotal: -0.1,
-        hucDay: -0.1, hucNight: 0.1, hucTotal: 0.0,
-        overheadDay: 0.0, overheadNight: 0.0, overheadTotal: 0.0,
-      },
-      {
-        name: "Cardiology",
-        clDay: -0.1, clNight: 0.1, clTotal: 0.0,
-        rnDay: 0.1, rnNight: -0.2, rnTotal: -0.1,
-        pctDay: 0.0, pctNight: 0.1, pctTotal: 0.1,
-        hucDay: 0.1, hucNight: -0.1, hucTotal: 0.0,
-        overheadDay: 0.0, overheadNight: 0.0, overheadTotal: 0.0,
-      },
+    indiana: [
+      { name: "Peyton Manning Children's Hospital at Ascension St. Vincent", ...generateVariance() },
+      { name: "Ascension St. Vincent Indianapolis Hospital", ...generateVariance() },
+      { name: "Ascension St. Vincent Heart Center of Indiana", ...generateVariance() },
+      { name: "Ascension St. Vincent Kokomo", ...generateVariance() },
+      { name: "Ascension St. Vincent Anderson", ...generateVariance() },
+      { name: "Ascension St. Vincent Fishers", ...generateVariance() },
+      { name: "Ascension St. Vincent Carmel Hospital", ...generateVariance() },
+      { name: "Ascension St. Vincent Warrick", ...generateVariance() },
+      { name: "Ascension St. Vincent Evansville", ...generateVariance() },
+    ],
+    kansas: [
+      { name: "Ascension Via Christi Hospital Wichita", ...generateVariance() },
+      { name: "Ascension Via Christi Hospital Pittsburg", ...generateVariance() },
+      { name: "Ascension Via Christi St. Joseph", ...generateVariance() },
+      { name: "Ascension Via Christi Hospital Manhattan", ...generateVariance() },
+      { name: "Ascension Via Christi St. Teresa", ...generateVariance() },
+    ],
+    maryland: [
+      { name: "Ascension St. Agnes Hospital", ...generateVariance() },
+    ],
+    oklahoma: [
+      { name: "St. John Medical Center", ...generateVariance() },
+      { name: "St. John Sapulpa", ...generateVariance() },
+      { name: "St. John Owasso", ...generateVariance() },
+      { name: "St. John Broken Arrow", ...generateVariance() },
+      { name: "Jane Phillips Medical Center", ...generateVariance() },
+    ],
+    tennessee: [
+      { name: "Ascension Saint Thomas Hospital Midtown", ...generateVariance() },
+      { name: "Ascension Saint Thomas West Hospital", ...generateVariance() },
+      { name: "Ascension Saint Thomas Rutherford Hospital", ...generateVariance() },
+      { name: "Ascension Saint Thomas Hickman", ...generateVariance() },
+      { name: "Ascension Saint Thomas DeKalb Hospital", ...generateVariance() },
+      { name: "Ascension Saint Thomas Highlands Hospital", ...generateVariance() },
+      { name: "Ascension Saint Thomas River Park Hospital", ...generateVariance() },
+    ],
+    texas: [
+      { name: "Ascension Seton Medical Center Austin", ...generateVariance() },
+      { name: "Ascension Seton Northwest", ...generateVariance() },
+      { name: "Ascension Seton Southwest", ...generateVariance() },
+      { name: "Dell Children's Medical Center", ...generateVariance() },
+      { name: "Ascension Seton Hays", ...generateVariance() },
+      { name: "Ascension Seton Williamson", ...generateVariance() },
+      { name: "Ascension Seton Medical Center Harker Heights", ...generateVariance() },
+      { name: "Ascension Providence", ...generateVariance() },
+    ],
+    wisconsin: [
+      { name: "Ascension Columbia St. Mary's Hospital Milwaukee", ...generateVariance() },
+      { name: "Ascension Columbia St. Mary's Hospital Ozaukee", ...generateVariance() },
     ],
   },
+  departments: [
+    { name: "Emergency", ...generateVariance() },
+    { name: "ICU", ...generateVariance() },
+    { name: "Surgery", ...generateVariance() },
+    { name: "Cardiology", ...generateVariance() },
+    { name: "Pediatrics", ...generateVariance() },
+    { name: "Oncology", ...generateVariance() },
+  ],
 };
 
 interface VarianceAnalysisProps {
   selectedRegion: string;
-  selectedMarket: string;
   selectedFacility: string;
   selectedDepartment: string;
 }
 
 export function VarianceAnalysis({
   selectedRegion,
-  selectedMarket,
   selectedFacility,
   selectedDepartment,
 }: VarianceAnalysisProps) {
@@ -228,48 +146,26 @@ export function VarianceAnalysis({
   const getColumnHeader = (): string => {
     if (selectedDepartment !== "all-departments") return "Department";
     if (selectedFacility !== "all-facilities") return "Departments";
-    if (selectedMarket !== "all-markets") return "Facilities";
-    if (selectedRegion !== "all-regions") return "Markets";
-    return "Regions";
+    if (selectedRegion !== "all-regions") return "Facilities";
+    return "Markets";
   };
 
   const getData = (): VarianceData[] => {
     // Show departments when facility is selected
     if (selectedFacility !== "all-facilities") {
-      const facilityName = selectedFacility === "sacred-heart" ? "Sacred Heart Pensacola" : 
-                           selectedFacility === "st-vincents" ? "St. Vincent's" :
-                           selectedFacility === "atlanta-medical" ? "Atlanta Medical Center" :
-                           selectedFacility === "northside" ? "Northside Hospital" : "";
-      
-      if (facilityName && varianceDataByLevel.departments[facilityName]) {
-        return varianceDataByLevel.departments[facilityName];
-      }
+      return varianceDataByLevel.departments;
     }
 
-    // Show facilities when market is selected
-    if (selectedMarket !== "all-markets") {
-      const marketName = selectedMarket === "pensacola" ? "Pensacola" :
-                        selectedMarket === "atlanta" ? "Atlanta" : "";
-      
-      if (marketName && varianceDataByLevel.facilities[marketName]) {
-        return varianceDataByLevel.facilities[marketName];
-      }
-    }
-
-    // Show markets when region is selected
+    // Show facilities when market (state) is selected
     if (selectedRegion !== "all-regions") {
-      const regionName = selectedRegion === "northeast" ? "Northeast" :
-                        selectedRegion === "southeast" ? "Southeast" :
-                        selectedRegion === "midwest" ? "Midwest" :
-                        selectedRegion === "west" ? "West" : "";
-      
-      if (regionName && varianceDataByLevel.markets[regionName]) {
-        return varianceDataByLevel.markets[regionName];
+      const stateKey = selectedRegion as keyof typeof varianceDataByLevel.facilities;
+      if (varianceDataByLevel.facilities[stateKey]) {
+        return varianceDataByLevel.facilities[stateKey];
       }
     }
 
-    // Default: show all regions
-    return varianceDataByLevel.regions;
+    // Default: show all markets (states)
+    return varianceDataByLevel.markets;
   };
 
   const data = getData();
@@ -305,12 +201,12 @@ export function VarianceAnalysis({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.1 }}
-        className="rounded-lg border bg-card"
+        className="rounded-lg border bg-card overflow-x-auto"
       >
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="font-semibold sticky left-0 bg-card z-10">{columnHeader}</TableHead>
+              <TableHead className="font-semibold sticky left-0 bg-card z-10 min-w-[200px]">{columnHeader}</TableHead>
               <TableHead colSpan={3} className="text-center font-semibold border-l">CL Skill</TableHead>
               <TableHead colSpan={3} className="text-center font-semibold border-l">RN Skill</TableHead>
               <TableHead colSpan={3} className="text-center font-semibold border-l">PCT Skill</TableHead>
