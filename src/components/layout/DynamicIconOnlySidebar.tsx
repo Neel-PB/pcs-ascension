@@ -39,26 +39,26 @@ function ModuleItem({ module, isActive }: ModuleItemProps) {
 
   return (
     <div className={cn(
-      "group relative flex flex-col items-center py-3 px-2 rounded-xl transition-all duration-200 cursor-pointer",
+      "group relative flex flex-col items-center py-1.5 px-1 rounded-lg transition-all duration-200 cursor-pointer",
       "hover:bg-primary/10",
       isActive ? "bg-primary/15" : ""
     )}>
-      {/* Active indicator on LEFT side */}
+      {/* Active indicator on RIGHT side */}
       {isActive && (
-        <div className="absolute -left-1 top-1/2 transform -translate-y-1/2 w-1 h-12 bg-primary rounded-r-full" />
+        <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-primary rounded-l-full" />
       )}
 
       <div 
         onClick={handleModuleClick}
-        className="flex flex-col items-center gap-1.5 w-full"
+        className="flex flex-col items-center gap-1 w-full"
       >
         <div className={cn(
-          "flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200",
+          "flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200",
           isActive 
             ? "bg-primary text-primary-foreground" 
             : "text-muted-foreground group-hover:text-primary"
         )}>
-          <module.icon className="w-4 h-4" />
+          <module.icon className="w-5 h-5" />
         </div>
         
         <span className={cn(
@@ -136,7 +136,7 @@ export function DynamicIconOnlySidebar() {
   }
 
   return (
-    <div className="fixed left-0 top-0 z-40 h-full w-14 border-r bg-background shadow-sm">
+    <div className="fixed left-0 top-0 z-40 h-full w-14 max-w-14 border-r bg-background shadow-sm">
       <div className="flex h-full flex-col">
         {/* Organization switcher */}
         <div className="flex items-center justify-center py-3 px-2 border-b">
@@ -144,8 +144,8 @@ export function DynamicIconOnlySidebar() {
         </div>
 
         {/* Main navigation */}
-        <div className="flex-1 overflow-y-auto py-2 px-1">
-          <div className="space-y-1">
+        <div className="flex-1 overflow-y-auto py-1.5 px-0.5">
+          <div className="space-y-0.5">
             {sidebarModules.map((module) => {
               const isActive = activeModule?.label === module.label;
               return (
