@@ -53,7 +53,7 @@ function ModuleItem({ module, isActive }: ModuleItemProps) {
       {isActive && (
         <motion.div 
           layoutId="sidebar-active-indicator"
-          className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-primary rounded-l-full"
+          className="absolute right-2 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-full"
           transition={{
             type: "spring",
             stiffness: 380,
