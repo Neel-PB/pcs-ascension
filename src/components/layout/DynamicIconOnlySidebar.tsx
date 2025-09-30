@@ -1,5 +1,6 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useState, useCallback } from "react";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useRBAC } from "@/hooks/useRBAC";
@@ -38,14 +39,27 @@ function ModuleItem({ module, isActive }: ModuleItemProps) {
   }, [module.items, hasPermission, navigate]);
 
   return (
-    <div className={cn(
-      "group relative flex flex-col items-center py-2 px-2 rounded-lg transition-all duration-200 cursor-pointer",
-      "hover:bg-primary/10",
-      isActive ? "bg-primary/15" : ""
-    )}>
-      {/* Active indicator on RIGHT side */}
+    <motion.div 
+      className={cn(
+        "group relative flex flex-col items-center py-2 px-2 rounded-lg transition-all duration-200 cursor-pointer",
+        "hover:bg-primary/10",
+        isActive ? "bg-primary/15" : ""
+      )}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.2 }}
+    >
+      {/* Active indicator on RIGHT side with animation */}
       {isActive && (
-        <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-primary rounded-l-full" />
+        <motion.div 
+          layoutId="sidebar-active-indicator"
+          className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-primary rounded-l-full"
+          transition={{
+            type: "spring",
+            stiffness: 380,
+            damping: 30
+          }}
+        />
       )}
 
       <div 
@@ -107,7 +121,7 @@ function ModuleItem({ module, isActive }: ModuleItemProps) {
             ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -145,18 +159,20 @@ export function DynamicIconOnlySidebar() {
 
         {/* Main navigation */}
         <div className="flex-1 overflow-y-auto py-1.5 px-2">
-          <div className="space-y-0.5">
-            {sidebarModules.map((module) => {
-              const isActive = activeModule?.label === module.label;
-              return (
-                <ModuleItem 
-                  key={module.label} 
-                  module={module} 
-                  isActive={isActive}
-                />
-              );
-            })}
-          </div>
+          <LayoutGroup>
+            <div className="space-y-0.5">
+              {sidebarModules.map((module) => {
+                const isActive = activeModule?.label === module.label;
+                return (
+                  <ModuleItem 
+                    key={module.label} 
+                    module={module} 
+                    isActive={isActive}
+                  />
+                );
+              })}
+            </div>
+          </LayoutGroup>
         </div>
       </div>
     </div>
