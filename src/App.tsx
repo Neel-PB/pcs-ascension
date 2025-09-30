@@ -9,6 +9,7 @@ import HomePage from "./pages/HomePage";
 import AuthPage from "./pages/AuthPage";
 import StaffingSummary from "./pages/staffing/StaffingSummary";
 import AnalyticsRegion from "./pages/analytics/AnalyticsRegion";
+import AdminPage from "./pages/admin/AdminPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/" element={<ShellLayout><HomePage /></ShellLayout>} />
             <Route path="/staffing" element={<ShellLayout><StaffingSummary /></ShellLayout>} />
             <Route path="/analytics" element={<ShellLayout><AnalyticsRegion /></ShellLayout>} />
+            <Route path="/admin" element={<ShellLayout><AdminPage /></ShellLayout>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<ShellLayout><NotFound /></ShellLayout>} />
           </Routes>
