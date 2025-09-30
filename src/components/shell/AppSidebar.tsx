@@ -22,7 +22,7 @@ interface SidebarItem {
 const sidebarItems: SidebarItem[] = [
   { id: "home", title: "Home", url: "/", icon: Home },
   { id: "staffing", title: "Staffing", url: "/staffing", icon: Users },
-  { id: "positions", title: "Workforce", url: "/positions", icon: UserCog },
+  { id: "positions", title: "Positions", url: "/positions", icon: UserCog },
   { id: "analytics", title: "Analytics", url: "/analytics", icon: TrendingUp },
   { id: "reports", title: "Reports", url: "/reports", icon: FileBarChart },
   { id: "support", title: "Support", url: "/support", icon: LifeBuoy },
