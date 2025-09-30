@@ -83,16 +83,16 @@ export function ColumnMappingStep({
 
                 <div className="flex-1">
                   <Select
-                    value={mappedDbCol || ""}
+                    value={mappedDbCol || "__skip__"}
                     onValueChange={(value) => 
-                      onMappingChange(excelCol, value === "" ? null : value)
+                      onMappingChange(excelCol, value === "__skip__" ? null : value)
                     }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select database column" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Skip this column</SelectItem>
+                      <SelectItem value="__skip__">Skip this column</SelectItem>
                       {dbColumns.map((dbCol) => (
                         <SelectItem key={dbCol.name} value={dbCol.name}>
                           {dbCol.name}
