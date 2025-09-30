@@ -44,40 +44,44 @@ export default function PositionsPage() {
         </p>
       </motion.div>
 
-      <FilterBar
-        selectedRegion={selectedRegion}
-        selectedMarket={selectedMarket}
-        selectedFacility={selectedFacility}
-        selectedDepartment={selectedDepartment}
-        onRegionChange={handleRegionChange}
-        onMarketChange={handleMarketChange}
-        onFacilityChange={handleFacilityChange}
-        onDepartmentChange={setSelectedDepartment}
-      />
+      <div className="py-2">
+        <FilterBar
+          selectedRegion={selectedRegion}
+          selectedMarket={selectedMarket}
+          selectedFacility={selectedFacility}
+          selectedDepartment={selectedDepartment}
+          onRegionChange={handleRegionChange}
+          onMarketChange={handleMarketChange}
+          onFacilityChange={handleFacilityChange}
+          onDepartmentChange={setSelectedDepartment}
+        />
+      </div>
 
       <Tabs defaultValue="employees" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 h-auto p-2 bg-gradient-to-br from-muted/80 via-muted/60 to-muted/80 rounded-2xl shadow-lg backdrop-blur-sm border border-border/50">
-          <TabsTrigger
-            value="employees"
-            className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/90 data-[state=active]:to-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xl rounded-xl py-4 text-base font-semibold transition-all duration-300 hover:scale-[1.02]"
-          >
-            Employees
-          </TabsTrigger>
-          <TabsTrigger
-            value="contractors"
-            className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/90 data-[state=active]:to-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xl rounded-xl py-4 text-base font-semibold transition-all duration-300 hover:scale-[1.02]"
-          >
-            Contractors
-          </TabsTrigger>
-          <TabsTrigger
-            value="requisitions"
-            className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary/90 data-[state=active]:to-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xl rounded-xl py-4 text-base font-semibold transition-all duration-300 hover:scale-[1.02]"
-          >
-            Requisitions
-          </TabsTrigger>
-        </TabsList>
+        <div className="bg-shell-elevated rounded-xl p-2 shadow-soft mb-6">
+          <TabsList className="grid w-full grid-cols-3 bg-transparent gap-1">
+            <TabsTrigger
+              value="employees"
+              className="data-[state=active]:bg-gradient-primary data-[state=active]:text-white font-medium px-6 py-3 rounded-lg transition-all"
+            >
+              Employees
+            </TabsTrigger>
+            <TabsTrigger
+              value="contractors"
+              className="data-[state=active]:bg-gradient-primary data-[state=active]:text-white font-medium px-6 py-3 rounded-lg transition-all"
+            >
+              Contractors
+            </TabsTrigger>
+            <TabsTrigger
+              value="requisitions"
+              className="data-[state=active]:bg-gradient-primary data-[state=active]:text-white font-medium px-6 py-3 rounded-lg transition-all"
+            >
+              Requisitions
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-        <TabsContent value="employees" className="mt-6">
+        <TabsContent value="employees" className="mt-0">
           <EmployeesTab
             selectedRegion={selectedRegion}
             selectedMarket={selectedMarket}
@@ -86,7 +90,7 @@ export default function PositionsPage() {
           />
         </TabsContent>
 
-        <TabsContent value="contractors" className="mt-6">
+        <TabsContent value="contractors" className="mt-0">
           <ContractorsTab
             selectedRegion={selectedRegion}
             selectedMarket={selectedMarket}
@@ -95,7 +99,7 @@ export default function PositionsPage() {
           />
         </TabsContent>
 
-        <TabsContent value="requisitions" className="mt-6">
+        <TabsContent value="requisitions" className="mt-0">
           <RequisitionsTab
             selectedRegion={selectedRegion}
             selectedMarket={selectedMarket}
