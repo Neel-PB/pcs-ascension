@@ -39,8 +39,20 @@ const generateVariance = () => ({
   overheadTotal: (Math.random() * 1 - 0.5),
 });
 
-// Real hierarchical data with actual state names and hospital names
+// Region groupings
+const regionMap: { [key: string]: string[] } = {
+  "Southeast": ["Florida", "Tennessee", "Maryland"],
+  "Midwest": ["Illinois", "Indiana", "Wisconsin"],
+  "South Central": ["Kansas", "Oklahoma", "Texas"],
+};
+
+// Real hierarchical data structure
 const varianceDataByLevel = {
+  regions: [
+    { name: "Southeast", ...generateVariance() },
+    { name: "Midwest", ...generateVariance() },
+    { name: "South Central", ...generateVariance() },
+  ],
   markets: [
     { name: "Florida", ...generateVariance() },
     { name: "Illinois", ...generateVariance() },
@@ -53,67 +65,67 @@ const varianceDataByLevel = {
     { name: "Wisconsin", ...generateVariance() },
   ],
   facilities: {
-    florida: [
+    "Florida": [
       { name: "Ascension Sacred Heart Pensacola", ...generateVariance() },
-      { name: "Studer Family Children's Hospital at Ascension Sacred Heart", ...generateVariance() },
+      { name: "Studer Family Children's Hospital", ...generateVariance() },
       { name: "Ascension St. Vincent's Riverside", ...generateVariance() },
       { name: "Ascension St. Vincent's Southside", ...generateVariance() },
       { name: "Ascension St. Vincent's St. Clair's", ...generateVariance() },
       { name: "Ascension St. Vincent's Clay County", ...generateVariance() },
     ],
-    illinois: [
+    "Illinois": [
       { name: "Ascension Illinois", ...generateVariance() },
     ],
-    indiana: [
-      { name: "Peyton Manning Children's Hospital at Ascension St. Vincent", ...generateVariance() },
-      { name: "Ascension St. Vincent Indianapolis Hospital", ...generateVariance() },
-      { name: "Ascension St. Vincent Heart Center of Indiana", ...generateVariance() },
+    "Indiana": [
+      { name: "Peyton Manning Children's Hospital", ...generateVariance() },
+      { name: "Ascension St. Vincent Indianapolis", ...generateVariance() },
+      { name: "Ascension St. Vincent Heart Center", ...generateVariance() },
       { name: "Ascension St. Vincent Kokomo", ...generateVariance() },
       { name: "Ascension St. Vincent Anderson", ...generateVariance() },
       { name: "Ascension St. Vincent Fishers", ...generateVariance() },
-      { name: "Ascension St. Vincent Carmel Hospital", ...generateVariance() },
+      { name: "Ascension St. Vincent Carmel", ...generateVariance() },
       { name: "Ascension St. Vincent Warrick", ...generateVariance() },
       { name: "Ascension St. Vincent Evansville", ...generateVariance() },
     ],
-    kansas: [
-      { name: "Ascension Via Christi Hospital Wichita", ...generateVariance() },
-      { name: "Ascension Via Christi Hospital Pittsburg", ...generateVariance() },
+    "Kansas": [
+      { name: "Ascension Via Christi Wichita", ...generateVariance() },
+      { name: "Ascension Via Christi Pittsburg", ...generateVariance() },
       { name: "Ascension Via Christi St. Joseph", ...generateVariance() },
-      { name: "Ascension Via Christi Hospital Manhattan", ...generateVariance() },
+      { name: "Ascension Via Christi Manhattan", ...generateVariance() },
       { name: "Ascension Via Christi St. Teresa", ...generateVariance() },
     ],
-    maryland: [
+    "Maryland": [
       { name: "Ascension St. Agnes Hospital", ...generateVariance() },
     ],
-    oklahoma: [
+    "Oklahoma": [
       { name: "St. John Medical Center", ...generateVariance() },
       { name: "St. John Sapulpa", ...generateVariance() },
       { name: "St. John Owasso", ...generateVariance() },
       { name: "St. John Broken Arrow", ...generateVariance() },
       { name: "Jane Phillips Medical Center", ...generateVariance() },
     ],
-    tennessee: [
-      { name: "Ascension Saint Thomas Hospital Midtown", ...generateVariance() },
-      { name: "Ascension Saint Thomas West Hospital", ...generateVariance() },
-      { name: "Ascension Saint Thomas Rutherford Hospital", ...generateVariance() },
+    "Tennessee": [
+      { name: "Ascension Saint Thomas Midtown", ...generateVariance() },
+      { name: "Ascension Saint Thomas West", ...generateVariance() },
+      { name: "Ascension Saint Thomas Rutherford", ...generateVariance() },
       { name: "Ascension Saint Thomas Hickman", ...generateVariance() },
-      { name: "Ascension Saint Thomas DeKalb Hospital", ...generateVariance() },
-      { name: "Ascension Saint Thomas Highlands Hospital", ...generateVariance() },
-      { name: "Ascension Saint Thomas River Park Hospital", ...generateVariance() },
+      { name: "Ascension Saint Thomas DeKalb", ...generateVariance() },
+      { name: "Ascension Saint Thomas Highlands", ...generateVariance() },
+      { name: "Ascension Saint Thomas River Park", ...generateVariance() },
     ],
-    texas: [
-      { name: "Ascension Seton Medical Center Austin", ...generateVariance() },
+    "Texas": [
+      { name: "Ascension Seton Austin", ...generateVariance() },
       { name: "Ascension Seton Northwest", ...generateVariance() },
       { name: "Ascension Seton Southwest", ...generateVariance() },
       { name: "Dell Children's Medical Center", ...generateVariance() },
       { name: "Ascension Seton Hays", ...generateVariance() },
       { name: "Ascension Seton Williamson", ...generateVariance() },
-      { name: "Ascension Seton Medical Center Harker Heights", ...generateVariance() },
+      { name: "Ascension Seton Harker Heights", ...generateVariance() },
       { name: "Ascension Providence", ...generateVariance() },
     ],
-    wisconsin: [
-      { name: "Ascension Columbia St. Mary's Hospital Milwaukee", ...generateVariance() },
-      { name: "Ascension Columbia St. Mary's Hospital Ozaukee", ...generateVariance() },
+    "Wisconsin": [
+      { name: "Ascension Columbia St. Mary's Milwaukee", ...generateVariance() },
+      { name: "Ascension Columbia St. Mary's Ozaukee", ...generateVariance() },
     ],
   },
   departments: [
@@ -121,19 +133,19 @@ const varianceDataByLevel = {
     { name: "ICU", ...generateVariance() },
     { name: "Surgery", ...generateVariance() },
     { name: "Cardiology", ...generateVariance() },
-    { name: "Pediatrics", ...generateVariance() },
-    { name: "Oncology", ...generateVariance() },
   ],
 };
 
 interface VarianceAnalysisProps {
   selectedRegion: string;
+  selectedMarket: string;
   selectedFacility: string;
   selectedDepartment: string;
 }
 
 export function VarianceAnalysis({
   selectedRegion,
+  selectedMarket,
   selectedFacility,
   selectedDepartment,
 }: VarianceAnalysisProps) {
@@ -146,8 +158,9 @@ export function VarianceAnalysis({
   const getColumnHeader = (): string => {
     if (selectedDepartment !== "all-departments") return "Department";
     if (selectedFacility !== "all-facilities") return "Departments";
-    if (selectedRegion !== "all-regions") return "Facilities";
-    return "Markets";
+    if (selectedMarket !== "all-markets") return "Facilities";
+    if (selectedRegion !== "all-regions") return "Markets";
+    return "Regions";
   };
 
   const getData = (): VarianceData[] => {
@@ -157,15 +170,21 @@ export function VarianceAnalysis({
     }
 
     // Show facilities when market (state) is selected
-    if (selectedRegion !== "all-regions") {
-      const stateKey = selectedRegion as keyof typeof varianceDataByLevel.facilities;
-      if (varianceDataByLevel.facilities[stateKey]) {
-        return varianceDataByLevel.facilities[stateKey];
+    if (selectedMarket !== "all-markets") {
+      const facilityData = varianceDataByLevel.facilities[selectedMarket as keyof typeof varianceDataByLevel.facilities];
+      if (facilityData) {
+        return facilityData;
       }
     }
 
-    // Default: show all markets (states)
-    return varianceDataByLevel.markets;
+    // Show markets when region is selected
+    if (selectedRegion !== "all-regions") {
+      const marketsInRegion = regionMap[selectedRegion] || [];
+      return varianceDataByLevel.markets.filter(m => marketsInRegion.includes(m.name));
+    }
+
+    // Default: show all regions
+    return varianceDataByLevel.regions;
   };
 
   const data = getData();
