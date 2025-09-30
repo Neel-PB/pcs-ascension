@@ -8,7 +8,6 @@ import { ShellLayout } from "@/components/shell/ShellLayout";
 import HomePage from "./pages/HomePage";
 import AuthPage from "./pages/AuthPage";
 import StaffingSummary from "./pages/staffing/StaffingSummary";
-import PositionPlanning from "./pages/staffing/PositionPlanning";
 import AnalyticsRegion from "./pages/analytics/AnalyticsRegion";
 import AdminPage from "./pages/admin/AdminPage";
 import NotFound from "./pages/NotFound";
@@ -26,7 +25,6 @@ const App = () => (
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/" element={<ShellLayout><HomePage /></ShellLayout>} />
             <Route path="/staffing" element={<ShellLayout><StaffingSummary /></ShellLayout>} />
-            <Route path="/staffing/planning" element={<ShellLayout><PositionPlanning /></ShellLayout>} />
             <Route path="/analytics" element={<ShellLayout><AnalyticsRegion /></ShellLayout>} />
             <Route path="/admin" element={<ShellLayout><AdminPage /></ShellLayout>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
