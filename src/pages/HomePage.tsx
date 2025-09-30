@@ -1,8 +1,44 @@
 import { motion } from "framer-motion";
-import { Users, UserCheck, AlertTriangle, TrendingUp, Calendar, Clock } from "lucide-react";
-import { ContentCard, StatsCard } from "@/components/shell/ContentCard";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Users, UserCheck, AlertTriangle, TrendingUp } from "lucide-react";
+import { StatsCard } from "@/components/shell/ContentCard";
+import { UnifiedEmployeeFeed } from "@/components/feed/UnifiedEmployeeFeed";
+import { NotificationPanel } from "@/components/notifications/NotificationPanel";
+import { useAuth } from "@/hooks/useAuth";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function HomePage() {
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
+
+  // Redirect to auth page if not logged in
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/auth");
+    }
+  }, [user, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        <div className="space-y-2">
+          <Skeleton className="h-9 w-80" />
+          <Skeleton className="h-5 w-96" />
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-32 w-full" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect
+  }
+
   return (
     <div className="space-y-8">
       {/* Page Header */}
@@ -14,7 +50,7 @@ export default function HomePage() {
       >
         <h1 className="text-3xl font-bold text-gradient">Position Control Dashboard</h1>
         <p className="text-shell-muted">
-          Welcome back! Stay connected with your team and monitor your workforce network.
+          Welcome back, {user.user_metadata?.first_name}! Stay connected with your team.
         </p>
       </motion.div>
 
@@ -50,88 +86,17 @@ export default function HomePage() {
         />
       </div>
 
-      {/* Content Grid */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Recent Activity */}
-        <ContentCard
-          title="Recent Activity"
-          icon={Clock}
-          delay={0.5}
-        >
-          <div className="space-y-4">
-            <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-shell-elevated transition-colors">
-              <div className="h-2 w-2 rounded-full bg-green-500 mt-2"></div>
-              <div className="flex-1 space-y-1">
-                <p className="text-sm font-medium">Position Filled</p>
-                <p className="text-xs text-shell-muted">
-                  ICU Registered Nurse position has been successfully filled
-                </p>
-                <p className="text-xs text-shell-subtle">5 minutes ago</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-shell-elevated transition-colors">
-              <div className="h-2 w-2 rounded-full bg-yellow-500 mt-2"></div>
-              <div className="flex-1 space-y-1">
-                <p className="text-sm font-medium">Overtime Alert</p>
-                <p className="text-xs text-shell-muted">
-                  Sarah Johnson is approaching 40-hour overtime limit
-                </p>
-                <p className="text-xs text-shell-subtle">15 minutes ago</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-shell-elevated transition-colors">
-              <div className="h-2 w-2 rounded-full bg-blue-500 mt-2"></div>
-              <div className="flex-1 space-y-1">
-                <p className="text-sm font-medium">New Requisition</p>
-                <p className="text-xs text-shell-muted">
-                  Emergency Department submitted request for 2 RN positions
-                </p>
-                <p className="text-xs text-shell-subtle">30 minutes ago</p>
-              </div>
-            </div>
-          </div>
-        </ContentCard>
+      {/* Main Content - Three Column Layout */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Employee Feed - Takes 2 columns */}
+        <div className="lg:col-span-2">
+          <UnifiedEmployeeFeed />
+        </div>
 
-        {/* Upcoming Schedule */}
-        <ContentCard
-          title="Upcoming Schedule"
-          icon={Calendar}
-          delay={0.6}
-        >
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 rounded-lg bg-shell-elevated">
-              <div>
-                <p className="text-sm font-medium">Quarterly Staffing Review</p>
-                <p className="text-xs text-shell-muted">Today at 2:00 PM</p>
-              </div>
-              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <Calendar className="h-4 w-4 text-primary" />
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between p-3 rounded-lg hover:bg-shell-elevated transition-colors">
-              <div>
-                <p className="text-sm font-medium">Weekend Coverage Planning</p>
-                <p className="text-xs text-shell-muted">Tomorrow at 10:00 AM</p>
-              </div>
-              <div className="h-8 w-8 rounded-full bg-warning/10 flex items-center justify-center">
-                <Calendar className="h-4 w-4 text-warning" />
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between p-3 rounded-lg hover:bg-shell-elevated transition-colors">
-              <div>
-                <p className="text-sm font-medium">Department Head Meeting</p>
-                <p className="text-xs text-shell-muted">Friday at 3:00 PM</p>
-              </div>
-              <div className="h-8 w-8 rounded-full bg-success/10 flex items-center justify-center">
-                <Calendar className="h-4 w-4 text-success" />
-              </div>
-            </div>
-          </div>
-        </ContentCard>
+        {/* Notification Panel - Takes 1 column */}
+        <div className="lg:col-span-1">
+          <NotificationPanel />
+        </div>
       </div>
     </div>
   );

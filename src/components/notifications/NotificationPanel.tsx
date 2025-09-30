@@ -1,0 +1,131 @@
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from "@/hooks/useNotifications";
+import { Bell, Check, MessageCircle, Heart, Users, Megaphone } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+
+const notificationIcons = {
+  like: Heart,
+  comment: MessageCircle,
+  mention: Users,
+  announcement: Megaphone,
+  default: Bell,
+};
+
+export function NotificationPanel() {
+  const { data: notifications, isLoading } = useNotifications();
+  const markAsRead = useMarkNotificationRead();
+  const markAllAsRead = useMarkAllNotificationsRead();
+
+  const unreadCount = notifications?.filter(n => !n.read).length || 0;
+
+  if (isLoading) {
+    return (
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-8 w-20" />
+        </div>
+        <div className="space-y-3">
+          {[...Array(5)].map((_, i) => (
+            <Skeleton key={i} className="h-20 w-full" />
+          ))}
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-semibold">Notifications</h3>
+          {unreadCount > 0 && (
+            <span className="bg-primary text-primary-foreground text-xs font-medium px-2 py-1 rounded-full">
+              {unreadCount}
+            </span>
+          )}
+        </div>
+        {unreadCount > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => markAllAsRead.mutate()}
+            disabled={markAllAsRead.isPending}
+            className="text-xs"
+          >
+            <Check className="h-3 w-3 mr-1" />
+            Mark all read
+          </Button>
+        )}
+      </div>
+
+      <ScrollArea className="h-[calc(100vh-200px)]">
+        {!notifications || notifications.length === 0 ? (
+          <div className="text-center py-12">
+            <Bell className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">
+              No notifications yet
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {notifications.map((notification) => {
+              const IconComponent = notificationIcons[notification.type as keyof typeof notificationIcons] || notificationIcons.default;
+              
+              return (
+                <div
+                  key={notification.id}
+                  className={cn(
+                    "p-4 rounded-lg border transition-colors cursor-pointer hover:bg-accent/50",
+                    !notification.read && "bg-primary/5 border-primary/20"
+                  )}
+                  onClick={() => {
+                    if (!notification.read) {
+                      markAsRead.mutate(notification.id);
+                    }
+                    if (notification.link) {
+                      window.location.href = notification.link;
+                    }
+                  }}
+                >
+                  <div className="flex gap-3">
+                    <div className={cn(
+                      "h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0",
+                      notification.type === 'like' && "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400",
+                      notification.type === 'comment' && "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
+                      notification.type === 'mention' && "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400",
+                      notification.type === 'announcement' && "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400",
+                      !notification.type && "bg-muted text-muted-foreground"
+                    )}>
+                      <IconComponent className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <p className="text-sm font-semibold line-clamp-1">
+                          {notification.title}
+                        </p>
+                        {!notification.read && (
+                          <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-1" />
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                        {notification.message}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(notification.created_at), 'd MMM • HH:mm')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </ScrollArea>
+    </Card>
+  );
+}

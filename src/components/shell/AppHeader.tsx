@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Search, Bell, User, Sun, Moon, Monitor } from "lucide-react";
+import { Search, Bell, User, Sun, Moon, Monitor, LogOut } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +20,23 @@ import { cn } from "@/lib/utils";
 export function AppHeader() {
   const [searchFocused, setSearchFocused] = useState(false);
   const { theme, setTheme } = useTheme();
+  const { user, signOut } = useAuth();
+
+  const resolveAvatarUrl = (avatar_url?: string, first_name?: string, last_name?: string) => {
+    if (avatar_url) {
+      if (avatar_url.startsWith('http')) {
+        return avatar_url;
+      } else {
+        return supabase.storage.from('avatars').getPublicUrl(avatar_url).data.publicUrl;
+      }
+    }
+    const initials = `${first_name?.[0] || ''}${last_name?.[0] || ''}`.toUpperCase();
+    return `https://api.dicebear.com/7.x/initials/svg?seed=${initials}&backgroundColor=6366f1&color=ffffff`;
+  };
+
+  const userInitials = user?.user_metadata?.first_name?.[0] + user?.user_metadata?.last_name?.[0] || 'U';
+  const userName = `${user?.user_metadata?.first_name || ''} ${user?.user_metadata?.last_name || ''}`.trim() || 'User';
+  const userEmail = user?.email || '';
 
   const cycleTheme = () => {
     if (theme === "light") setTheme("dark");
@@ -120,41 +139,47 @@ export function AppHeader() {
           </Button>
 
           {/* User Menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 h-auto px-2 py-1.5">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src="" alt="Abhiman Ramnath" />
-                  <AvatarFallback className="bg-gradient-primary text-white text-sm font-medium">
-                    AR
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-sm font-medium text-foreground">Abhiman Ramnath</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">Abhiman Ramnath</p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    abhiman.ramnath@hospital.com
-                  </p>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <span>Settings</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <span>Log out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {user && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="flex items-center gap-2 h-auto px-2 py-1.5">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage 
+                      src={resolveAvatarUrl(user.user_metadata?.avatar_url, user.user_metadata?.first_name, user.user_metadata?.last_name)} 
+                      alt={userName} 
+                    />
+                    <AvatarFallback className="bg-gradient-primary text-white text-sm font-medium">
+                      {userInitials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium text-foreground">{userName}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{userName}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {userEmail}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={signOut}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
     </header>

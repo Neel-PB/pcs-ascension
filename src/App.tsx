@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import HomePage from "./pages/HomePage";
+import AuthPage from "./pages/AuthPage";
 import StaffingSummary from "./pages/staffing/StaffingSummary";
 import AnalyticsRegion from "./pages/analytics/AnalyticsRegion";
 import NotFound from "./pages/NotFound";
@@ -19,15 +20,14 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-        <ShellLayout>
           <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/staffing" element={<StaffingSummary />} />
-            <Route path="/analytics" element={<AnalyticsRegion />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/" element={<ShellLayout><HomePage /></ShellLayout>} />
+            <Route path="/staffing" element={<ShellLayout><StaffingSummary /></ShellLayout>} />
+            <Route path="/analytics" element={<ShellLayout><AnalyticsRegion /></ShellLayout>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
+            <Route path="*" element={<ShellLayout><NotFound /></ShellLayout>} />
           </Routes>
-        </ShellLayout>
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
