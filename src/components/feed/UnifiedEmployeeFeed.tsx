@@ -377,147 +377,147 @@ export function UnifiedEmployeeFeed() {
   }
 
   return (
-    <div className="space-y-4">
-      <Card className="overflow-hidden">
-        <div className="p-4">
-          {/* Image Preview Section */}
-          {selectedImages.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-3">
-              {selectedImages.map((image, index) => (
-                <div key={index} className="relative">
-                  <img
-                    src={URL.createObjectURL(image)}
-                    alt="Preview"
-                    className="h-20 w-20 object-cover rounded-lg"
-                  />
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => removeSelectedImage(index)}
-                    className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full"
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
-              ))}
+    <Card className="overflow-hidden">
+      {/* Post Creation Area */}
+      <div className="p-4 border-b border-border">
+        {/* Image Preview Section */}
+        {selectedImages.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-3">
+            {selectedImages.map((image, index) => (
+              <div key={index} className="relative">
+                <img
+                  src={URL.createObjectURL(image)}
+                  alt="Preview"
+                  className="h-20 w-20 object-cover rounded-lg"
+                />
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => removeSelectedImage(index)}
+                  className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Main Input Container with Integrated Utility Bar */}
+        <div className="border border-border rounded-lg overflow-hidden bg-background">
+          {/* Content Editable Area */}
+          <div 
+            ref={editorRef}
+            contentEditable
+            onInput={handleEditorInput}
+            onKeyDown={handleKeyDown}
+            onFocus={handleEditorFocus}
+            className="min-h-[100px] px-4 pt-4 pb-2 text-foreground focus:outline-none"
+            data-placeholder="Share an update, announcement, or praise with your team..."
+          />
+
+          {/* Integrated Utility Bar */}
+          <div className="flex items-center justify-between gap-2 px-3 py-2 bg-muted/30 border-t border-border">
+            {/* Left Side - Formatting Tools */}
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => applyFormatting('bold')}
+                className={cn(
+                  "h-8 w-8 p-0",
+                  activeFormatting.includes('bold') && "bg-accent"
+                )}
+                title="Bold (Ctrl+B)"
+              >
+                <Bold className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => applyFormatting('italic')}
+                className={cn(
+                  "h-8 w-8 p-0",
+                  activeFormatting.includes('italic') && "bg-accent"
+                )}
+                title="Italic (Ctrl+I)"
+              >
+                <Italic className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => applyFormatting('underline')}
+                className={cn(
+                  "h-8 w-8 p-0",
+                  activeFormatting.includes('underline') && "bg-accent"
+                )}
+                title="Underline (Ctrl+U)"
+              >
+                <Underline className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => applyFormatting('list')}
+                className={cn(
+                  "h-8 w-8 p-0",
+                  activeFormatting.includes('list') && "bg-accent"
+                )}
+                title="Bullet List"
+              >
+                <List className="h-4 w-4" />
+              </Button>
             </div>
-          )}
 
-          {/* Main Input Container with Integrated Utility Bar */}
-          <div className="border border-border rounded-lg overflow-hidden bg-background">
-            {/* Content Editable Area */}
-            <div 
-              ref={editorRef}
-              contentEditable
-              onInput={handleEditorInput}
-              onKeyDown={handleKeyDown}
-              onFocus={handleEditorFocus}
-              className="min-h-[100px] px-4 pt-4 pb-2 text-foreground focus:outline-none"
-              data-placeholder="Share an update, announcement, or praise with your team..."
-            />
-
-            {/* Integrated Utility Bar */}
-            <div className="flex items-center justify-between gap-2 px-3 py-2 bg-muted/30 border-t border-border">
-              {/* Left Side - Formatting Tools */}
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => applyFormatting('bold')}
-                  className={cn(
-                    "h-8 w-8 p-0",
-                    activeFormatting.includes('bold') && "bg-accent"
-                  )}
-                  title="Bold (Ctrl+B)"
-                >
-                  <Bold className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => applyFormatting('italic')}
-                  className={cn(
-                    "h-8 w-8 p-0",
-                    activeFormatting.includes('italic') && "bg-accent"
-                  )}
-                  title="Italic (Ctrl+I)"
-                >
-                  <Italic className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => applyFormatting('underline')}
-                  className={cn(
-                    "h-8 w-8 p-0",
-                    activeFormatting.includes('underline') && "bg-accent"
-                  )}
-                  title="Underline (Ctrl+U)"
-                >
-                  <Underline className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => applyFormatting('list')}
-                  className={cn(
-                    "h-8 w-8 p-0",
-                    activeFormatting.includes('list') && "bg-accent"
-                  )}
-                  title="Bullet List"
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-              </div>
-
-              {/* Right Side - Actions */}
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleImageUpload}
-                  className="h-8 w-8 p-0"
-                  title="Add Image"
-                >
-                  <ImagePlus className="h-4 w-4" />
-                </Button>
-                <Button
-                  onClick={handleCreatePost}
-                  disabled={createPostMutation.isPending || uploadingImages}
-                  size="sm"
-                  className="h-8 w-8 p-0 rounded-full"
-                >
-                  {(createPostMutation.isPending || uploadingImages) ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <ArrowUp className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
+            {/* Right Side - Actions */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleImageUpload}
+                className="h-8 w-8 p-0"
+                title="Add Image"
+              >
+                <ImagePlus className="h-4 w-4" />
+              </Button>
+              <Button
+                onClick={handleCreatePost}
+                disabled={createPostMutation.isPending || uploadingImages}
+                size="sm"
+                className="h-8 w-8 p-0 rounded-full"
+              >
+                {(createPostMutation.isPending || uploadingImages) ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ArrowUp className="h-4 w-4" />
+                )}
+              </Button>
             </div>
           </div>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleFileSelect}
-            className="hidden"
-          />
         </div>
-      </Card>
 
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+      </div>
+
+      {/* Posts Section */}
       {!posts || posts.length === 0 ? (
-        <Card className="p-12 text-center">
+        <div className="p-12 text-center">
           <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
           <p className="text-sm text-muted-foreground">
             Be the first to share something with your team!
           </p>
-        </Card>
+        </div>
       ) : (
-        posts.map((post) => {
+        posts.map((post, index) => {
           const isLiked = user?.id ? post.likes.includes(user.id) : false;
           const commentsOpen = showComments[post.id] || false;
           const authorAvatarSrc = post.user_id === user?.id
@@ -525,7 +525,7 @@ export function UnifiedEmployeeFeed() {
             : post.author?.avatar_url;
 
           return (
-            <Card key={post.id} className="p-6">
+            <div key={post.id} className="p-6 border-t border-border">
               <div className="flex items-start gap-3 mb-4">
                 <Avatar>
                   <AvatarImage src={resolveAvatarUrl(authorAvatarSrc, post.author?.first_name, post.author?.last_name)} />
@@ -761,10 +761,10 @@ export function UnifiedEmployeeFeed() {
                   </div>
                 </div>
               )}
-            </Card>
+            </div>
           );
         })
       )}
-    </div>
+    </Card>
   );
 }

@@ -24,8 +24,8 @@ export default function HomePage() {
           <Skeleton className="h-9 w-80" />
           <Skeleton className="h-5 w-96" />
         </div>
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="lg:col-span-1">
             <Skeleton className="h-96 w-full" />
           </div>
           <div className="lg:col-span-1">
@@ -55,10 +55,10 @@ export default function HomePage() {
         </p>
       </motion.div>
 
-      {/* Main Content - Three Column Layout */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Employee Feed - Takes 2 columns */}
-        <div className="lg:col-span-2">
+      {/* Main Content - Two Column Layout */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Employee Feed - Takes 1 column */}
+        <div className="lg:col-span-1">
           <UnifiedEmployeeFeed />
         </div>
 
