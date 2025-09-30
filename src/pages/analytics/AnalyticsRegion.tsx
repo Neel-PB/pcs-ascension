@@ -26,11 +26,6 @@ export default function AnalyticsRegion() {
       transition={{ duration: 0.3 }}
       className="space-y-6"
     >
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-foreground">Analytics</h1>
-        <p className="text-shell-muted">Comprehensive workforce analytics across all levels</p>
-      </div>
-
       <Tabs defaultValue="region" className="w-full">
         <div className="bg-shell-elevated rounded-xl p-2 shadow-soft mb-6">
           <TabsList className="grid w-full grid-cols-4 bg-transparent gap-1">
