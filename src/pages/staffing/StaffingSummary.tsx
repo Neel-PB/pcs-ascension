@@ -1,9 +1,33 @@
+import { useState } from "react";
 import { KPICard } from "@/components/staffing/KPICard";
 import { FilterBar } from "@/components/staffing/FilterBar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PositionPlanning from "./PositionPlanning";
+import { VarianceAnalysis } from "./VarianceAnalysis";
 
 export default function StaffingSummary() {
+  const [selectedRegion, setSelectedRegion] = useState("all-regions");
+  const [selectedMarket, setSelectedMarket] = useState("all-markets");
+  const [selectedFacility, setSelectedFacility] = useState("all-facilities");
+  const [selectedDepartment, setSelectedDepartment] = useState("all-departments");
+
+  const handleRegionChange = (value: string) => {
+    setSelectedRegion(value);
+    setSelectedMarket("all-markets");
+    setSelectedFacility("all-facilities");
+    setSelectedDepartment("all-departments");
+  };
+
+  const handleMarketChange = (value: string) => {
+    setSelectedMarket(value);
+    setSelectedFacility("all-facilities");
+    setSelectedDepartment("all-departments");
+  };
+
+  const handleFacilityChange = (value: string) => {
+    setSelectedFacility(value);
+    setSelectedDepartment("all-departments");
+  };
   // Realistic chart data generators
   const generateGrowthTrend = (start: number, end: number, points: number = 24) => 
     Array.from({ length: points }, (_, i) => ({
@@ -29,7 +53,16 @@ export default function StaffingSummary() {
     <div className="space-y-6">
       {/* Filters */}
       <div className="py-2">
-        <FilterBar />
+        <FilterBar 
+          onRegionChange={handleRegionChange}
+          onMarketChange={handleMarketChange}
+          onFacilityChange={handleFacilityChange}
+          onDepartmentChange={setSelectedDepartment}
+          selectedRegion={selectedRegion}
+          selectedMarket={selectedMarket}
+          selectedFacility={selectedFacility}
+          selectedDepartment={selectedDepartment}
+        />
       </div>
 
       <Tabs defaultValue="summary" className="w-full">
@@ -239,11 +272,14 @@ export default function StaffingSummary() {
           <PositionPlanning />
         </TabsContent>
 
-        {/* Placeholder tabs */}
+        {/* Variance Analysis Tab Content */}
         <TabsContent value="variance" className="mt-0">
-          <div className="text-center py-12 text-muted-foreground">
-            Variance Analysis content coming soon
-          </div>
+          <VarianceAnalysis 
+            selectedRegion={selectedRegion}
+            selectedMarket={selectedMarket}
+            selectedFacility={selectedFacility}
+            selectedDepartment={selectedDepartment}
+          />
         </TabsContent>
 
         <TabsContent value="forecasts" className="mt-0">
