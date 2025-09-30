@@ -17,6 +17,16 @@ interface ColumnMapping {
   [excelColumn: string]: string | null; // maps to db column name or null if skipped
 }
 
+// Required columns per table (non-nullable columns)
+const REQUIRED_COLUMNS: Record<string, string[]> = {
+  staffing_standards: ["market", "facilityId", "facilityName", "departmentId", "departmentName"],
+  labor_performance: ["market", "facilityId", "facilityName", "departmentId", "departmentName"],
+  positions: ["market", "facilityId", "facilityName", "departmentId", "departmentName"],
+  markets: ["market"],
+  facilities: ["market", "facility_id", "facility_name"],
+  departments: ["facility_id", "department_id", "department_name"],
+};
+
 export function useDataImport() {
   const [file, setFile] = useState<File | null>(null);
   const [parsedData, setParsedData] = useState<any[] | null>(null);
@@ -113,6 +123,38 @@ export function useDataImport() {
     return value;
   };
 
+  const validateMappedData = (tableName: TableName): { valid: boolean; errors: string[] } => {
+    const requiredCols = REQUIRED_COLUMNS[tableName] || [];
+    const errors: string[] = [];
+
+    // Check if all required columns are mapped
+    const mappedDbColumns = Object.values(columnMapping).filter(col => col !== null);
+    const missingRequired = requiredCols.filter(reqCol => !mappedDbColumns.includes(reqCol));
+    
+    if (missingRequired.length > 0) {
+      errors.push(`Missing required columns: ${missingRequired.join(", ")}`);
+    }
+
+    // Check if mapped data has non-empty values for required columns
+    if (mappedData && mappedData.length > 0) {
+      const sampleSize = Math.min(5, mappedData.length);
+      const samples = mappedData.slice(0, sampleSize);
+      
+      requiredCols.forEach(reqCol => {
+        const hasEmptyValues = samples.some(row => {
+          const value = row[reqCol];
+          return value === null || value === undefined || value === "";
+        });
+        
+        if (hasEmptyValues) {
+          errors.push(`Required column "${reqCol}" contains empty values`);
+        }
+      });
+    }
+
+    return { valid: errors.length === 0, errors };
+  };
+
   const applyMapping = () => {
     if (!parsedData || parsedData.length === 0) {
       toast.error("No data to map");
@@ -148,6 +190,13 @@ export function useDataImport() {
       return false;
     }
 
+    // Validate before importing
+    const validation = validateMappedData(tableName);
+    if (!validation.valid) {
+      validation.errors.forEach(error => toast.error(error));
+      return false;
+    }
+
     setIsImporting(true);
     setImportProgress({
       total: dataToImport.length,
@@ -159,6 +208,7 @@ export function useDataImport() {
     const batchSize = 100;
     let imported = 0;
     let failed = 0;
+    let lastError: any = null;
 
     try {
       for (let i = 0; i < dataToImport.length; i += batchSize) {
@@ -170,7 +220,21 @@ export function useDataImport() {
 
         if (error) {
           console.error("Batch import error:", error);
+          lastError = error;
           failed += batch.length;
+          
+          // Show detailed error for first failure
+          if (failed === batch.length) {
+            const errorMsg = error.message || "Unknown error";
+            const errorDetails = error.details || "";
+            const errorHint = error.hint || "";
+            
+            let fullError = `Import error: ${errorMsg}`;
+            if (errorDetails) fullError += ` | Details: ${errorDetails}`;
+            if (errorHint) fullError += ` | Hint: ${errorHint}`;
+            
+            toast.error(fullError, { duration: 8000 });
+          }
         } else {
           imported += batch.length;
         }
@@ -187,7 +251,7 @@ export function useDataImport() {
         total: dataToImport.length,
         imported,
         failed,
-        status: "complete",
+        status: failed > 0 ? "error" : "complete",
       });
 
       if (failed === 0) {
@@ -197,16 +261,16 @@ export function useDataImport() {
       }
 
       setIsImporting(false);
-      return true;
+      return failed === 0;
     } catch (error) {
       console.error("Import error:", error);
       setImportProgress({
         total: dataToImport.length,
         imported,
-        failed,
+        failed: dataToImport.length - imported,
         status: "error",
       });
-      toast.error("Import failed");
+      toast.error(`Import failed: ${error instanceof Error ? error.message : "Unknown error"}`);
       setIsImporting(false);
       return false;
     }
@@ -250,6 +314,7 @@ export function useDataImport() {
     setColumnMapping,
     mappedData,
     applyMapping,
+    validateMappedData,
     isImporting,
     importProgress,
     importData,

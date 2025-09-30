@@ -68,6 +68,7 @@ export default function DataImportPage() {
     setColumnMapping,
     mappedData,
     applyMapping,
+    validateMappedData,
     isImporting,
     importProgress,
     importData,
@@ -170,6 +171,45 @@ export default function DataImportPage() {
 
         {mappedData && mappedData.length > 0 && !showMapping && (
           <>
+            <div className="border rounded-lg p-4 bg-muted/20 space-y-3">
+              <h4 className="font-semibold text-sm">Validation Status</h4>
+              {(() => {
+                const validation = validateMappedData(selectedTable);
+                const requiredCols = TABLE_SCHEMAS[selectedTable]?.map(col => col.name) || [];
+                const mappedDbCols = Object.values(columnMapping).filter(col => col !== null);
+                
+                return (
+                  <div className="space-y-2">
+                    {requiredCols.map(reqCol => {
+                      const isMapped = mappedDbCols.includes(reqCol);
+                      return (
+                        <div key={reqCol} className="flex items-center gap-2 text-sm">
+                          {isMapped ? (
+                            <span className="text-green-600">✓</span>
+                          ) : (
+                            <span className="text-destructive">✗</span>
+                          )}
+                          <span className={isMapped ? "text-muted-foreground" : "text-destructive"}>
+                            {reqCol}
+                          </span>
+                        </div>
+                      );
+                    })}
+                    {!validation.valid && (
+                      <div className="mt-3 p-3 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">
+                        <strong>Validation failed:</strong>
+                        <ul className="list-disc list-inside mt-1">
+                          {validation.errors.map((error, idx) => (
+                            <li key={idx}>{error}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
+
             <DataPreview data={mappedData} tableName={selectedTable} />
             
             <div className="flex justify-end gap-3">
