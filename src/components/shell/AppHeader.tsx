@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { Search, Bell, HelpCircle, User } from "lucide-react";
+import { Search, Bell, User, Sun, Moon, Monitor } from "lucide-react";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +17,19 @@ import { cn } from "@/lib/utils";
 
 export function AppHeader() {
   const [searchFocused, setSearchFocused] = useState(false);
+  const { theme, setTheme } = useTheme();
+
+  const cycleTheme = () => {
+    if (theme === "light") setTheme("dark");
+    else if (theme === "dark") setTheme("system");
+    else setTheme("light");
+  };
+
+  const getThemeIcon = () => {
+    if (theme === "dark") return <Moon className="h-5 w-5" />;
+    if (theme === "system") return <Monitor className="h-5 w-5" />;
+    return <Sun className="h-5 w-5" />;
+  };
 
   return (
     <header className="fixed top-0 left-20 right-0 z-40 h-16 flex items-center border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -98,27 +113,31 @@ export function AppHeader() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Help */}
-          <Button variant="ghost" size="icon">
-            <HelpCircle className="h-5 w-5" />
-            <span className="sr-only">Help</span>
+          {/* Theme Selector */}
+          <Button variant="ghost" size="icon" onClick={cycleTheme}>
+            {getThemeIcon()}
+            <span className="sr-only">Toggle theme</span>
           </Button>
 
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                <div className="h-8 w-8 rounded-full bg-gradient-primary flex items-center justify-center">
-                  <span className="text-sm font-medium text-white">JD</span>
-                </div>
+              <Button variant="ghost" className="flex items-center gap-2 h-auto px-2 py-1.5">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="" alt="Abhiman Ramnath" />
+                  <AvatarFallback className="bg-gradient-primary text-white text-sm font-medium">
+                    AR
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm font-medium text-foreground">Abhiman Ramnath</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">John Doe</p>
-                  <p className="text-xs leading-none text-shell-muted">
-                    john.doe@hospital.com
+                  <p className="text-sm font-medium leading-none">Abhiman Ramnath</p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    abhiman.ramnath@hospital.com
                   </p>
                 </div>
               </DropdownMenuLabel>
