@@ -6,6 +6,7 @@ import PositionPlanning from "./PositionPlanning";
 import { VarianceAnalysis } from "./VarianceAnalysis";
 
 export default function StaffingSummary() {
+  // State management for filters
   const [selectedRegion, setSelectedRegion] = useState("all-regions");
   const [selectedMarket, setSelectedMarket] = useState("all-markets");
   const [selectedFacility, setSelectedFacility] = useState("all-facilities");
