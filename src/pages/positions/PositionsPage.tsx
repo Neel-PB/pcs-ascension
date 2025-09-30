@@ -60,22 +60,13 @@ export default function PositionsPage() {
       <Tabs defaultValue="employees" className="w-full">
         <div className="bg-shell-elevated rounded-xl p-2 shadow-soft mb-6">
           <TabsList className="grid w-full grid-cols-3 bg-transparent gap-1">
-            <TabsTrigger
-              value="employees"
-              className="data-[state=active]:bg-gradient-primary data-[state=active]:text-white font-medium px-6 py-3 rounded-lg transition-all"
-            >
+            <TabsTrigger value="employees" className="data-[state=active]:bg-gradient-primary data-[state=active]:text-white">
               Employees
             </TabsTrigger>
-            <TabsTrigger
-              value="contractors"
-              className="data-[state=active]:bg-gradient-primary data-[state=active]:text-white font-medium px-6 py-3 rounded-lg transition-all"
-            >
+            <TabsTrigger value="contractors" className="data-[state=active]:bg-gradient-primary data-[state=active]:text-white">
               Contractors
             </TabsTrigger>
-            <TabsTrigger
-              value="requisitions"
-              className="data-[state=active]:bg-gradient-primary data-[state=active]:text-white font-medium px-6 py-3 rounded-lg transition-all"
-            >
+            <TabsTrigger value="requisitions" className="data-[state=active]:bg-gradient-primary data-[state=active]:text-white">
               Requisitions
             </TabsTrigger>
           </TabsList>
