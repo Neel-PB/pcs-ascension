@@ -94,21 +94,101 @@ export function useDataImport() {
     return mapping;
   };
 
+  const isExcelSerialDate = (value: any): boolean => {
+    return typeof value === "number" && value > 1000 && value < 100000;
+  };
+
+  const excelSerialToDate = (serial: number): Date => {
+    // Excel serial dates start from 1900-01-01 (but Excel incorrectly treats 1900 as leap year)
+    const epoch = new Date(1899, 11, 30); // Dec 30, 1899
+    return new Date(epoch.getTime() + serial * 86400000);
+  };
+
   const transformDataValue = (value: any, dbColumn: string): any => {
-    // Handle null strings
-    if (value === "null" || value === "NULL" || value === "") {
+    // Handle null, undefined, empty strings, and whitespace-only strings
+    if (
+      value === null ||
+      value === undefined ||
+      value === "null" ||
+      value === "NULL" ||
+      (typeof value === "string" && value.trim() === "")
+    ) {
       return null;
     }
 
-    // Handle month column - convert "2022-04" to ISO timestamp
-    if (dbColumn === "month" && typeof value === "string") {
-      if (/^\d{4}-\d{2}$/.test(value)) {
-        // "2022-04" -> "2022-04-01T00:00:00Z"
-        return `${value}-01T00:00:00Z`;
+    // Handle month column - convert various formats to ISO timestamp
+    if (dbColumn === "month") {
+      // Excel serial date
+      if (isExcelSerialDate(value)) {
+        const date = excelSerialToDate(value);
+        return new Date(Date.UTC(date.getFullYear(), date.getMonth(), 1)).toISOString();
+      }
+      
+      // String formats
+      if (typeof value === "string") {
+        const trimmed = value.trim();
+        
+        // YYYY-MM format
+        if (/^\d{4}-\d{2}$/.test(trimmed)) {
+          return `${trimmed}-01T00:00:00Z`;
+        }
+        
+        // YYYY/MM format
+        if (/^\d{4}\/\d{2}$/.test(trimmed)) {
+          const [year, month] = trimmed.split("/");
+          return `${year}-${month}-01T00:00:00Z`;
+        }
+        
+        // MM/YYYY format
+        if (/^\d{2}\/\d{4}$/.test(trimmed)) {
+          const [month, year] = trimmed.split("/");
+          return `${year}-${month}-01T00:00:00Z`;
+        }
+        
+        // YYYYMM format
+        if (/^\d{6}$/.test(trimmed)) {
+          const year = trimmed.substring(0, 4);
+          const month = trimmed.substring(4, 6);
+          return `${year}-${month}-01T00:00:00Z`;
+        }
+      }
+      
+      // Date object
+      if (value instanceof Date) {
+        return new Date(Date.UTC(value.getFullYear(), value.getMonth(), 1)).toISOString();
       }
     }
 
-    // Handle numeric columns
+    // Handle positionStatusDate column - convert to YYYY-MM-DD
+    if (dbColumn === "positionStatusDate") {
+      // Excel serial date
+      if (isExcelSerialDate(value)) {
+        const date = excelSerialToDate(value);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+      
+      // String date formats
+      if (typeof value === "string") {
+        const trimmed = value.trim();
+        // YYYY-MM-DD already
+        if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+          return trimmed;
+        }
+      }
+      
+      // Date object
+      if (value instanceof Date) {
+        const year = value.getFullYear();
+        const month = String(value.getMonth() + 1).padStart(2, "0");
+        const day = String(value.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+    }
+
+    // Handle numeric columns - safely parse strings
     const numericColumns = [
       "volume", "manhours", "laborHoursPerUoS", "actual_fte",
       "FTE", "standardHours", "Patients"
@@ -116,10 +196,22 @@ export function useDataImport() {
     
     if (numericColumns.includes(dbColumn)) {
       if (value === null || value === undefined) return null;
-      const num = typeof value === "string" ? parseFloat(value) : value;
-      return isNaN(num) ? null : num;
+      
+      if (typeof value === "string") {
+        const trimmed = value.trim();
+        if (trimmed === "") return null;
+        const num = parseFloat(trimmed);
+        return isNaN(num) ? null : num;
+      }
+      
+      if (typeof value === "number") {
+        return isNaN(value) ? null : value;
+      }
+      
+      return null;
     }
 
+    // Return as-is for other columns
     return value;
   };
 
@@ -209,6 +301,7 @@ export function useDataImport() {
     let imported = 0;
     let failed = 0;
     let lastError: any = null;
+    const failingRows: string[] = [];
 
     try {
       for (let i = 0; i < dataToImport.length; i += batchSize) {
@@ -221,19 +314,37 @@ export function useDataImport() {
         if (error) {
           console.error("Batch import error:", error);
           lastError = error;
-          failed += batch.length;
           
-          // Show detailed error for first failure
-          if (failed === batch.length) {
+          // Try to find which specific rows failed
+          let batchFailed = 0;
+          for (let j = 0; j < batch.length && failingRows.length < 3; j++) {
+            const singleRow = [batch[j]];
+            const { error: rowError } = await supabase
+              .from(tableName as any)
+              .insert(singleRow as any);
+            
+            if (rowError) {
+              batchFailed++;
+              const rowIndex = i + j + 1; // 1-indexed for user display
+              const rowPreview = JSON.stringify(batch[j]).substring(0, 100);
+              failingRows.push(`Row ${rowIndex}: ${rowError.message} | Data: ${rowPreview}...`);
+            } else {
+              imported++;
+            }
+          }
+          
+          // If we didn't test all rows individually (after first 3 failures), count remaining as failed
+          if (batchFailed > 0 && failingRows.length >= 3) {
+            failed += batch.length - Math.min(3, batch.length);
+          } else {
+            failed += batchFailed;
+          }
+          
+          // Show detailed error for first batch failure
+          if (failingRows.length > 0 && failingRows.length <= 3) {
             const errorMsg = error.message || "Unknown error";
-            const errorDetails = error.details || "";
-            const errorHint = error.hint || "";
-            
-            let fullError = `Import error: ${errorMsg}`;
-            if (errorDetails) fullError += ` | Details: ${errorDetails}`;
-            if (errorHint) fullError += ` | Hint: ${errorHint}`;
-            
-            toast.error(fullError, { duration: 8000 });
+            toast.error(`Import error: ${errorMsg}`, { duration: 10000 });
+            failingRows.forEach(row => toast.error(row, { duration: 12000 }));
           }
         } else {
           imported += batch.length;
