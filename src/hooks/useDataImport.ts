@@ -13,9 +13,15 @@ interface ImportProgress {
   status: "idle" | "importing" | "complete" | "error";
 }
 
+interface ColumnMapping {
+  [excelColumn: string]: string | null; // maps to db column name or null if skipped
+}
+
 export function useDataImport() {
   const [file, setFile] = useState<File | null>(null);
   const [parsedData, setParsedData] = useState<any[] | null>(null);
+  const [columnMapping, setColumnMapping] = useState<ColumnMapping>({});
+  const [mappedData, setMappedData] = useState<any[] | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [importProgress, setImportProgress] = useState<ImportProgress>({
     total: 0,
@@ -29,6 +35,8 @@ export function useDataImport() {
       parseExcelFile(file);
     } else {
       setParsedData(null);
+      setColumnMapping({});
+      setMappedData(null);
     }
   }, [file]);
 
@@ -41,6 +49,14 @@ export function useDataImport() {
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
       
       setParsedData(jsonData);
+      
+      // Auto-detect column mapping
+      if (jsonData.length > 0) {
+        const excelColumns = Object.keys(jsonData[0]);
+        const autoMapping = autoDetectMapping(excelColumns);
+        setColumnMapping(autoMapping);
+      }
+      
       toast.success(`Parsed ${jsonData.length} records from Excel file`);
     } catch (error) {
       console.error("Error parsing Excel file:", error);
@@ -49,14 +65,92 @@ export function useDataImport() {
     }
   };
 
-  const importData = async (tableName: TableName): Promise<boolean> => {
+  const autoDetectMapping = (excelColumns: string[]): ColumnMapping => {
+    const mapping: ColumnMapping = {};
+    
+    excelColumns.forEach(excelCol => {
+      // Try exact match (case-insensitive)
+      const normalized = excelCol.toLowerCase().trim();
+      mapping[excelCol] = normalized;
+      
+      // Handle common variations
+      if (normalized === 'facilityid') mapping[excelCol] = 'facilityId';
+      if (normalized === 'departmentid') mapping[excelCol] = 'departmentId';
+      if (normalized === 'facilityname') mapping[excelCol] = 'facilityName';
+      if (normalized === 'departmentname') mapping[excelCol] = 'departmentName';
+      if (normalized === 'laborhoursperuos') mapping[excelCol] = 'laborHoursPerUoS';
+    });
+    
+    return mapping;
+  };
+
+  const transformDataValue = (value: any, dbColumn: string): any => {
+    // Handle null strings
+    if (value === "null" || value === "NULL" || value === "") {
+      return null;
+    }
+
+    // Handle month column - convert "2022-04" to ISO timestamp
+    if (dbColumn === "month" && typeof value === "string") {
+      if (/^\d{4}-\d{2}$/.test(value)) {
+        // "2022-04" -> "2022-04-01T00:00:00Z"
+        return `${value}-01T00:00:00Z`;
+      }
+    }
+
+    // Handle numeric columns
+    const numericColumns = [
+      "volume", "manhours", "laborHoursPerUoS", "actual_fte",
+      "FTE", "standardHours", "Patients"
+    ];
+    
+    if (numericColumns.includes(dbColumn)) {
+      if (value === null || value === undefined) return null;
+      const num = typeof value === "string" ? parseFloat(value) : value;
+      return isNaN(num) ? null : num;
+    }
+
+    return value;
+  };
+
+  const applyMapping = () => {
     if (!parsedData || parsedData.length === 0) {
+      toast.error("No data to map");
+      return;
+    }
+
+    try {
+      const transformed = parsedData.map((row) => {
+        const newRow: any = {};
+        
+        Object.entries(columnMapping).forEach(([excelCol, dbCol]) => {
+          if (dbCol && row[excelCol] !== undefined) {
+            const transformedValue = transformDataValue(row[excelCol], dbCol);
+            newRow[dbCol] = transformedValue;
+          }
+        });
+        
+        return newRow;
+      });
+
+      setMappedData(transformed);
+      toast.success(`Mapped ${transformed.length} records`);
+    } catch (error) {
+      console.error("Mapping error:", error);
+      toast.error("Failed to map data");
+    }
+  };
+
+  const importData = async (tableName: TableName): Promise<boolean> => {
+    const dataToImport = mappedData || parsedData;
+    
+    if (!dataToImport || dataToImport.length === 0) {
       return false;
     }
 
     setIsImporting(true);
     setImportProgress({
-      total: parsedData.length,
+      total: dataToImport.length,
       imported: 0,
       failed: 0,
       status: "importing",
@@ -67,8 +161,8 @@ export function useDataImport() {
     let failed = 0;
 
     try {
-      for (let i = 0; i < parsedData.length; i += batchSize) {
-        const batch = parsedData.slice(i, i + batchSize);
+      for (let i = 0; i < dataToImport.length; i += batchSize) {
+        const batch = dataToImport.slice(i, i + batchSize);
         
         const { error } = await supabase
           .from(tableName as any)
@@ -82,7 +176,7 @@ export function useDataImport() {
         }
 
         setImportProgress({
-          total: parsedData.length,
+          total: dataToImport.length,
           imported,
           failed,
           status: "importing",
@@ -90,7 +184,7 @@ export function useDataImport() {
       }
 
       setImportProgress({
-        total: parsedData.length,
+        total: dataToImport.length,
         imported,
         failed,
         status: "complete",
@@ -107,7 +201,7 @@ export function useDataImport() {
     } catch (error) {
       console.error("Import error:", error);
       setImportProgress({
-        total: parsedData.length,
+        total: dataToImport.length,
         imported,
         failed,
         status: "error",
@@ -152,6 +246,10 @@ export function useDataImport() {
     file,
     setFile,
     parsedData,
+    columnMapping,
+    setColumnMapping,
+    mappedData,
+    applyMapping,
     isImporting,
     importProgress,
     importData,

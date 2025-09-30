@@ -2,21 +2,72 @@ import { useState } from "react";
 import { FileUploadZone } from "@/components/admin/FileUploadZone";
 import { DataPreview } from "@/components/admin/DataPreview";
 import { ImportProgress } from "@/components/admin/ImportProgress";
+import { ColumnMappingStep } from "@/components/admin/ColumnMappingStep";
 import { useDataImport } from "@/hooks/useDataImport";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Download, Upload } from "lucide-react";
+import { Download, Upload, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 
 type TableName = keyof Database['public']['Tables'];
 
+const TABLE_SCHEMAS: Record<TableName, { name: string; type: string }[]> = {
+  staffing_standards: [
+    { name: "market", type: "text" },
+    { name: "facilityId", type: "text" },
+    { name: "facilityName", type: "text" },
+    { name: "departmentId", type: "text" },
+    { name: "departmentName", type: "text" },
+  ],
+  labor_performance: [
+    { name: "market", type: "text" },
+    { name: "facilityId", type: "text" },
+    { name: "facilityName", type: "text" },
+    { name: "departmentId", type: "text" },
+    { name: "departmentName", type: "text" },
+    { name: "volume", type: "numeric" },
+    { name: "manhours", type: "numeric" },
+    { name: "laborHoursPerUoS", type: "numeric" },
+    { name: "month", type: "timestamp" },
+    { name: "actual_fte", type: "numeric" },
+  ],
+  positions: [
+    { name: "market", type: "text" },
+    { name: "facilityId", type: "text" },
+    { name: "facilityName", type: "text" },
+    { name: "departmentId", type: "text" },
+    { name: "departmentName", type: "text" },
+  ],
+  markets: [{ name: "market", type: "text" }],
+  facilities: [
+    { name: "market", type: "text" },
+    { name: "facility_id", type: "text" },
+    { name: "facility_name", type: "text" },
+  ],
+  departments: [
+    { name: "facility_id", type: "text" },
+    { name: "department_id", type: "text" },
+    { name: "department_name", type: "text" },
+  ],
+  comments: [],
+  notifications: [],
+  post_likes: [],
+  posts: [],
+  profiles: [],
+};
+
 export default function DataImportPage() {
   const [selectedTable, setSelectedTable] = useState<TableName>("staffing_standards");
+  const [showMapping, setShowMapping] = useState(false);
   const {
     file,
     setFile,
     parsedData,
+    columnMapping,
+    setColumnMapping,
+    mappedData,
+    applyMapping,
     isImporting,
     importProgress,
     importData,
@@ -24,15 +75,26 @@ export default function DataImportPage() {
   } = useDataImport();
 
   const handleImport = async () => {
-    if (!parsedData || parsedData.length === 0) {
-      toast.error("No data to import");
+    if (!mappedData || mappedData.length === 0) {
+      toast.error("Please apply column mapping first");
       return;
     }
 
     const success = await importData(selectedTable);
     if (success) {
       setFile(null);
+      setShowMapping(false);
     }
+  };
+
+  const handleMappingConfirm = () => {
+    applyMapping();
+    setShowMapping(false);
+  };
+
+  const getExcelColumns = (): string[] => {
+    if (!parsedData || parsedData.length === 0) return [];
+    return Object.keys(parsedData[0]);
   };
 
   return (
@@ -74,7 +136,7 @@ export default function DataImportPage() {
 
         <FileUploadZone file={file} onFileSelect={setFile} />
 
-        {parsedData && parsedData.length > 0 && (
+        {parsedData && parsedData.length > 0 && !showMapping && !mappedData && (
           <>
             <DataPreview data={parsedData} tableName={selectedTable} />
             
@@ -82,9 +144,49 @@ export default function DataImportPage() {
               <Button variant="outline" onClick={() => setFile(null)} disabled={isImporting}>
                 Cancel
               </Button>
+              <Button 
+                onClick={() => setShowMapping(true)} 
+                className="flex items-center gap-2"
+              >
+                <Settings2 className="h-4 w-4" />
+                Configure Mapping
+              </Button>
+            </div>
+          </>
+        )}
+
+        {showMapping && (
+          <ColumnMappingStep
+            excelColumns={getExcelColumns()}
+            dbColumns={TABLE_SCHEMAS[selectedTable] || []}
+            mapping={columnMapping}
+            onMappingChange={(excelCol, dbCol) => {
+              setColumnMapping({ ...columnMapping, [excelCol]: dbCol });
+            }}
+            onConfirm={handleMappingConfirm}
+            onCancel={() => setShowMapping(false)}
+          />
+        )}
+
+        {mappedData && mappedData.length > 0 && !showMapping && (
+          <>
+            <DataPreview data={mappedData} tableName={selectedTable} />
+            
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setFile(null)} disabled={isImporting}>
+                Cancel
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowMapping(true)} 
+                className="flex items-center gap-2"
+              >
+                <Settings2 className="h-4 w-4" />
+                Edit Mapping
+              </Button>
               <Button onClick={handleImport} disabled={isImporting} className="flex items-center gap-2">
                 <Upload className="h-4 w-4" />
-                Import {parsedData.length} Records
+                Import {mappedData.length} Records
               </Button>
             </div>
           </>
