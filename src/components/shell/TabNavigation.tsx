@@ -27,7 +27,7 @@ export function TabNavigation({ tabs, className }: TabNavigationProps) {
     <div className={cn("w-full", className)}>
       <div className="bg-shell-elevated rounded-xl p-2 shadow-soft">
         <LayoutGroup>
-          <div className="flex space-x-1">
+          <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
             {tabs.map((tab, index) => {
               const isActive = activeTab?.id === tab.id;
 
