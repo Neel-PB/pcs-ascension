@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { BarChart3, Info } from "lucide-react";
 import { KPIChartModal } from "./KPIChartModal";
+import { KPIInfoModal } from "./KPIInfoModal";
 
 interface KPICardProps {
   title: string;
@@ -15,6 +16,8 @@ interface KPICardProps {
   delay?: number;
   chartData?: Array<{ value: number }>;
   chartType?: "line" | "bar" | "area";
+  definition?: string;
+  calculation?: string;
 }
 
 export function KPICard({
@@ -27,6 +30,8 @@ export function KPICard({
   delay = 0,
   chartData,
   chartType = "line",
+  definition = "",
+  calculation = "",
 }: KPICardProps) {
   const [showChartModal, setShowChartModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
@@ -114,17 +119,16 @@ export function KPICard({
       />
 
       {/* Info Modal */}
-      <KPIChartModal
+      <KPIInfoModal
         open={showInfoModal}
         onOpenChange={setShowInfoModal}
-        title={`${title} - Details`}
+        title={title}
         value={value}
         trend={trend}
         trendValue={trendValue}
         isNegative={isNegative}
-        isHighlighted={isHighlighted}
-        chartData={chartData}
-        chartType={chartType}
+        definition={definition}
+        calculation={calculation}
       />
     </>
   );
