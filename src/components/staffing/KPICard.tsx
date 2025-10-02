@@ -58,34 +58,34 @@ export function KPICard({
             isNegative && "border-destructive/50 bg-destructive/5"
           )}
         >
-          <CardContent className="p-4">
-            {/* Header with Action Icons */}
-            <div className="flex items-start justify-between mb-2">
-              <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex-1">
-                {title}
-              </h3>
-              <div className="flex flex-col gap-1 ml-2 border-l border-border pl-2">
-                {chartData && chartData.length > 0 && (
-                  <button
-                    onClick={() => setShowChartModal(true)}
-                    className="p-1.5 rounded hover:bg-accent transition-colors"
-                    title="View detailed chart"
-                  >
-                    <BarChart3 className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                  </button>
-                )}
+          <CardContent className="p-4 relative">
+            {/* Title */}
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+              {title}
+            </h3>
+
+            {/* Action Icons - Absolutely Positioned */}
+            <div className="absolute top-4 right-4 flex flex-col gap-1">
+              {chartData && chartData.length > 0 && (
                 <button
-                  onClick={() => setShowInfoModal(true)}
+                  onClick={() => setShowChartModal(true)}
                   className="p-1.5 rounded hover:bg-accent transition-colors"
-                  title="View details"
+                  title="View detailed chart"
                 >
-                  <Info className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                  <BarChart3 className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                 </button>
-              </div>
+              )}
+              <button
+                onClick={() => setShowInfoModal(true)}
+                className="p-1.5 rounded hover:bg-accent transition-colors"
+                title="View details"
+              >
+                <Info className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+              </button>
             </div>
 
             {/* Value and Trend Section */}
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               <div className={cn(
                 "text-2xl font-bold tracking-tight",
                 isNegative ? "text-destructive" : "text-foreground"
