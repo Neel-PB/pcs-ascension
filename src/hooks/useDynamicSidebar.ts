@@ -48,7 +48,7 @@ export function useDynamicSidebar() {
       label: "Workforce",
       icon: UserCog,
       items: [
-        { title: "Positions", url: "/positions", icon: UserCog },
+        { title: "Workforce", url: "/positions", icon: UserCog },
       ],
     },
     {
