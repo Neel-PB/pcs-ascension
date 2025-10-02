@@ -41,53 +41,57 @@ function ModuleItem({ module, isActive }: ModuleItemProps) {
   return (
     <motion.div 
       className={cn(
-        "group relative flex flex-col items-center py-2 px-2 rounded-lg transition-all duration-200 cursor-pointer overflow-hidden",
-        "hover:bg-primary/10"
+        "group relative flex flex-col items-center py-3 px-2 rounded-full transition-all duration-300 cursor-pointer overflow-visible",
+        "hover:bg-muted/30"
       )}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.2 }}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      transition={{ duration: 0.15 }}
     >
       {/* Combined active background + indicator overlay */}
       {isActive && (
         <motion.div
           layoutId="sidebar-active-highlight"
-          className="pointer-events-none absolute inset-0 z-0 rounded-lg bg-primary/15"
+          className="pointer-events-none absolute inset-0 z-0 rounded-full bg-primary/8"
           transition={{
             type: "spring",
-            stiffness: 380,
-            damping: 30
+            stiffness: 450,
+            damping: 28
           }}
         >
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-full" />
+          <div className="absolute right-1 top-1/2 -translate-y-1/2 w-1 h-10 bg-primary rounded-full shadow-sm" />
         </motion.div>
       )}
 
       <div 
         onClick={handleModuleClick}
-        className="relative z-10 flex flex-col items-center gap-1 w-full"
+        className="relative z-10 flex flex-col items-center gap-1.5 w-full"
       >
         <div className={cn(
-          "flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200",
+          "flex items-center justify-center w-10 h-10 rounded-full transition-colors duration-300",
           isActive 
             ? "text-primary" 
-            : "text-muted-foreground group-hover:text-primary"
+            : "text-muted-foreground/70 group-hover:text-primary"
         )}>
-          <module.icon className="w-5 h-5" />
+          <module.icon className="w-6 h-6" />
         </div>
         
         <span className={cn(
-          "text-[10px] font-medium transition-all duration-200 text-center leading-tight",
+          "text-[10px] font-medium tracking-wide transition-colors duration-300 text-center leading-tight",
           isActive 
             ? "text-primary" 
-            : "text-muted-foreground group-hover:text-foreground"
+            : "text-muted-foreground/70 group-hover:text-foreground"
         )}>
           {module.label}
         </span>
       </div>
 
       {/* Sub-items tooltip on hover */}
-      <div className="absolute left-full ml-2 top-0 w-48 bg-background border shadow-lg rounded-lg p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none group-hover:pointer-events-auto">
+      <motion.div 
+        initial={{ opacity: 0, x: -10 }}
+        whileHover={{ opacity: 1, x: 0 }}
+        className="absolute left-full ml-3 top-0 w-48 bg-background/95 backdrop-blur-md border border-border/50 shadow-xl rounded-lg p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none group-hover:pointer-events-auto"
+      >
         <div className="space-y-1">
           {module.items
             .filter(item => {
@@ -121,7 +125,7 @@ function ModuleItem({ module, isActive }: ModuleItemProps) {
               </NavLink>
             ))}
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 }
@@ -144,24 +148,24 @@ export function DynamicIconOnlySidebar() {
 
   if (isLoading || rbacLoading) {
     return (
-      <div className="fixed left-0 top-0 z-40 h-full w-14 border-r bg-background flex items-center justify-center">
+      <div className="fixed left-0 top-0 z-40 h-full w-24 border-r border-border/40 backdrop-blur-sm bg-background/95 flex items-center justify-center">
         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="fixed left-0 top-0 z-40 h-full w-20 max-w-20 border-r bg-background shadow-sm">
+    <div className="fixed left-0 top-0 z-40 h-full w-24 max-w-24 border-r border-border/40 backdrop-blur-sm bg-background/95">
       <div className="flex h-full flex-col">
         {/* Organization switcher */}
-        <div className="flex items-center justify-center py-3 px-2 border-b">
+        <div className="flex items-center justify-center py-4 px-3 border-b border-border/40">
           <OrganizationSwitcher />
         </div>
 
         {/* Main navigation */}
-        <div className="flex-1 overflow-y-auto py-1.5 px-2">
+        <div className="flex-1 overflow-y-auto py-6 px-3">
           <LayoutGroup>
-            <div className="space-y-0.5">
+            <div className="space-y-2">
               {sidebarModules.map((module) => {
                 const isActive = activeModule?.label === module.label;
                 return (
