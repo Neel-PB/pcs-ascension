@@ -6,7 +6,7 @@ function cn(...inputs: (string | undefined | null | false)[]): string {
 }
 
 const glassButtonVariants = cva(
-  "relative isolate all-unset cursor-pointer rounded-full transition-all",
+  "relative isolate cursor-pointer rounded-lg transition-all inline-flex items-center justify-center",
   {
     variants: {
       size: {
@@ -50,7 +50,7 @@ const GlassButton = React.forwardRef<HTMLButtonElement, GlassButtonProps>(
     return (
       <div
         className={cn(
-          "glass-button-wrap cursor-pointer rounded-full",
+          "glass-button-wrap cursor-pointer rounded-lg",
           className
         )}
       >
@@ -68,7 +68,7 @@ const GlassButton = React.forwardRef<HTMLButtonElement, GlassButtonProps>(
             {children}
           </span>
         </button>
-        <div className="glass-button-shadow rounded-full"></div>
+        <div className="glass-button-shadow rounded-lg"></div>
       </div>
     );
   }

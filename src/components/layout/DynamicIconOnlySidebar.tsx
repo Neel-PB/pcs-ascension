@@ -44,10 +44,10 @@ function ModuleItem({ module, isActive }: ModuleItemProps) {
       <GlassButton
         size="icon"
         className={cn(
-          "w-full py-2 px-2 flex flex-col items-center gap-1 overflow-visible",
+          "w-full h-auto",
           isActive && "active"
         )}
-        contentClassName="flex flex-col items-center gap-1 w-full"
+        contentClassName="flex flex-col items-center gap-1 py-2"
         onClick={handleModuleClick}
       >
         {/* Active indicator */}
