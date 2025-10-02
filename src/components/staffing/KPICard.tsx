@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { LineChart, Line, BarChart, Bar, AreaChart, Area, ResponsiveContainer } from "recharts";
+import { BarChart3, Info } from "lucide-react";
+import { KPIChartModal } from "./KPIChartModal";
 
 interface KPICardProps {
   title: string;
@@ -26,6 +28,9 @@ export function KPICard({
   chartData,
   chartType = "line",
 }: KPICardProps) {
+  const [showChartModal, setShowChartModal] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
+
   const getTrendColor = () => {
     if (isNegative) return "text-destructive";
     if (trend === "up") return "text-emerald-500";
@@ -33,102 +38,94 @@ export function KPICard({
     return "text-muted-foreground";
   };
 
-  const getChartColor = () => {
-    if (isNegative) return "hsl(var(--destructive))";
-    if (isHighlighted) return "hsl(142 76% 36%)";
-    return "hsl(var(--primary))";
-  };
-
-  const getGradientId = () => {
-    if (isNegative) return "colorNegative";
-    if (isHighlighted) return "colorHighlighted";
-    return "colorPrimary";
-  };
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay }}
-      className="h-full"
-    >
-      <Card
-        className={cn(
-          "h-full hover:shadow-lg transition-all duration-300",
-          isHighlighted && "border-emerald-500/50 bg-emerald-500/5",
-          isNegative && "border-destructive/50 bg-destructive/5"
-        )}
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay }}
+        className="h-full"
       >
-        <CardContent className="p-5 h-full flex flex-col">
-          {/* Header Section */}
-          <div className="flex items-start justify-between mb-3">
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              {title}
-            </h3>
-            {trend && trendValue && (
-              <div className="flex items-center gap-1">
-                <span className={cn("text-xs font-semibold", getTrendColor())}>
-                  {trend === "up" ? "↑" : "↓"} {trendValue}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Value Section */}
-          <div className="mb-4">
-            <div className={cn(
-              "text-3xl font-bold tracking-tight",
-              isNegative ? "text-destructive" : "text-foreground"
-            )}>
-              {value}
-            </div>
-          </div>
-
-          {/* Chart Section */}
-          {chartData && chartData.length > 0 && (
-            <div className="flex-1 min-h-[80px] -mx-2 -mb-2">
-              <ResponsiveContainer width="100%" height="100%">
-                {chartType === "area" ? (
-                  <AreaChart data={chartData}>
-                    <defs>
-                      <linearGradient id={getGradientId()} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={getChartColor()} stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor={getChartColor()} stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <Area
-                      type="monotone"
-                      dataKey="value"
-                      stroke={getChartColor()}
-                      strokeWidth={2.5}
-                      fill={`url(#${getGradientId()})`}
-                      dot={false}
-                    />
-                  </AreaChart>
-                ) : chartType === "line" ? (
-                  <LineChart data={chartData}>
-                    <Line
-                      type="monotone"
-                      dataKey="value"
-                      stroke={getChartColor()}
-                      strokeWidth={2.5}
-                      dot={false}
-                    />
-                  </LineChart>
-                ) : (
-                  <BarChart data={chartData}>
-                    <Bar
-                      dataKey="value"
-                      fill={getChartColor()}
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                )}
-              </ResponsiveContainer>
-            </div>
+        <Card
+          className={cn(
+            "h-full hover:shadow-lg transition-all duration-300",
+            isHighlighted && "border-emerald-500/50 bg-emerald-500/5",
+            isNegative && "border-destructive/50 bg-destructive/5"
           )}
-        </CardContent>
-      </Card>
-    </motion.div>
+        >
+          <CardContent className="p-4">
+            {/* Header with Action Icons */}
+            <div className="flex items-start justify-between mb-2">
+              <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex-1">
+                {title}
+              </h3>
+              <div className="flex items-center gap-1 ml-2">
+                {chartData && chartData.length > 0 && (
+                  <button
+                    onClick={() => setShowChartModal(true)}
+                    className="p-1 rounded hover:bg-accent transition-colors"
+                    title="View detailed chart"
+                  >
+                    <BarChart3 className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowInfoModal(true)}
+                  className="p-1 rounded hover:bg-accent transition-colors"
+                  title="View details"
+                >
+                  <Info className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                </button>
+              </div>
+            </div>
+
+            {/* Value and Trend Section */}
+            <div className="space-y-1">
+              <div className={cn(
+                "text-2xl font-bold tracking-tight",
+                isNegative ? "text-destructive" : "text-foreground"
+              )}>
+                {value}
+              </div>
+              {trend && trendValue && (
+                <div className="flex items-center">
+                  <span className={cn("text-xs font-semibold", getTrendColor())}>
+                    {trend === "up" ? "↑" : "↓"} {trendValue}
+                  </span>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Chart Modal */}
+      <KPIChartModal
+        open={showChartModal}
+        onOpenChange={setShowChartModal}
+        title={title}
+        value={value}
+        trend={trend}
+        trendValue={trendValue}
+        isNegative={isNegative}
+        isHighlighted={isHighlighted}
+        chartData={chartData}
+        chartType={chartType}
+      />
+
+      {/* Info Modal */}
+      <KPIChartModal
+        open={showInfoModal}
+        onOpenChange={setShowInfoModal}
+        title={`${title} - Details`}
+        value={value}
+        trend={trend}
+        trendValue={trendValue}
+        isNegative={isNegative}
+        isHighlighted={isHighlighted}
+        chartData={chartData}
+        chartType={chartType}
+      />
+    </>
   );
 }

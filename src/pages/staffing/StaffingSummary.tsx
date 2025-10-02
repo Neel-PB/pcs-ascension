@@ -93,7 +93,7 @@ export default function StaffingSummary() {
           {/* FTE Section */}
           <div className="space-y-4">
             <h2 className="text-lg font-semibold text-foreground">FTE</h2>
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
               <KPICard
                 title="Vacancy Rate"
                 value="13.9%"
@@ -151,7 +151,7 @@ export default function StaffingSummary() {
           {/* Volume Section */}
           <div className="space-y-4">
             <h2 className="text-lg font-semibold text-foreground">Volume</h2>
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
               <KPICard
                 title="12M Avg Monthly"
                 value="633.5"
@@ -210,7 +210,7 @@ export default function StaffingSummary() {
           {/* Productivity Section */}
           <div className="space-y-4">
             <h2 className="text-lg font-semibold text-foreground">Productivity</h2>
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
               <KPICard
                 title="Total Paid Actual FTEs"
                 value="38.2"
