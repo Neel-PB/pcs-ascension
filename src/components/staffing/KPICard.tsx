@@ -58,14 +58,14 @@ export function KPICard({
             isNegative && "border-destructive/50 bg-destructive/5"
           )}
         >
-          <CardContent className="p-4 relative">
+          <CardContent className="p-4 pr-10 relative">
             {/* Title */}
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-0.5">
               {title}
             </h3>
 
-            {/* Action Icons - Absolutely Positioned */}
-            <div className="absolute top-4 right-4 flex flex-col gap-1">
+            {/* Action Icons - Vertically Centered */}
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center gap-1">
               {chartData && chartData.length > 0 && (
                 <button
                   onClick={() => setShowChartModal(true)}
@@ -87,7 +87,7 @@ export function KPICard({
             {/* Value and Trend Section */}
             <div className="space-y-0.5">
               <div className={cn(
-                "text-2xl font-bold tracking-tight",
+                "text-2xl font-bold tracking-tight leading-none",
                 isNegative ? "text-destructive" : "text-foreground"
               )}>
                 {value}
