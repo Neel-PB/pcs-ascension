@@ -20,8 +20,8 @@ export function useEmployees({
       let query = supabase
         .from("positions")
         .select("*")
-        .not("employeeId", "is", null)
-        .eq("positionStatus", "Active");
+        .eq("positionLifecycle", "Filled")
+        .not("employmentFlag", "like", "%Contingent%");
 
       // Apply filters
       if (selectedMarket && selectedMarket !== "all-markets") {

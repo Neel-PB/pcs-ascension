@@ -20,7 +20,7 @@ export function useRequisitions({
       let query = supabase
         .from("positions")
         .select("*")
-        .or("employeeId.is.null,positionStatus.neq.Active");
+        .neq("positionLifecycle", "Filled");
 
       // Apply filters
       if (selectedMarket && selectedMarket !== "all-markets") {

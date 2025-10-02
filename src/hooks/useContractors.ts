@@ -20,8 +20,8 @@ export function useContractors({
       let query = supabase
         .from("positions")
         .select("*")
-        .not("employeeId", "is", null)
-        .eq("employmentFlag", "Contingent");
+        .eq("positionLifecycle", "Filled")
+        .like("employmentFlag", "%Contingent%");
 
       // Apply filters
       if (selectedMarket && selectedMarket !== "all-markets") {
