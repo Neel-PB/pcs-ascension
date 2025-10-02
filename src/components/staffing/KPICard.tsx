@@ -64,11 +64,11 @@ export function KPICard({
               <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex-1">
                 {title}
               </h3>
-              <div className="flex items-center gap-1 ml-2">
+              <div className="flex flex-col gap-1 ml-2 border-l border-border pl-2">
                 {chartData && chartData.length > 0 && (
                   <button
                     onClick={() => setShowChartModal(true)}
-                    className="p-1 rounded hover:bg-accent transition-colors"
+                    className="p-1.5 rounded hover:bg-accent transition-colors"
                     title="View detailed chart"
                   >
                     <BarChart3 className="h-4 w-4 text-muted-foreground hover:text-foreground" />
@@ -76,7 +76,7 @@ export function KPICard({
                 )}
                 <button
                   onClick={() => setShowInfoModal(true)}
-                  className="p-1 rounded hover:bg-accent transition-colors"
+                  className="p-1.5 rounded hover:bg-accent transition-colors"
                   title="View details"
                 >
                   <Info className="h-4 w-4 text-muted-foreground hover:text-foreground" />

@@ -154,7 +154,7 @@ Example: If target is 43.4 and hired is 40.9:
 43.4 - 40.9 = 2.5 FTE shortage"
               />
               <KPICard
-                title="Open Requisitions"
+                title="Open Reqs"
                 value="5"
                 chartData={generateVolatileTrend(5, 2)}
                 chartType="bar"
@@ -169,7 +169,7 @@ Includes:
 Excludes: Filled positions, withdrawn postings"
               />
               <KPICard
-                title="Requisition Variance"
+                title="Req Variance"
                 value="2.5"
                 trend="up"
                 trendValue="1.2"
@@ -190,7 +190,7 @@ Example: If FTE Variance is 2.5 and Open Requisitions is 5:
             <h2 className="text-lg font-semibold text-foreground">Volume</h2>
             <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
               <KPICard
-                title="12M Avg Monthly"
+                title="12M Monthly"
                 value="633.5"
                 trend="up"
                 trendValue="12.3%"
@@ -204,7 +204,7 @@ Example: If total volume over 12 months is 7,602:
 7,602 / 12 = 633.5 average per month"
               />
               <KPICard
-                title="12M Avg Daily"
+                title="12M Daily"
                 value="20.8"
                 trend="up"
                 trendValue="5.2%"
@@ -218,7 +218,7 @@ Example: If total volume is 7,602 over 365 days:
 7,602 / 365 = 20.8 average per day"
               />
               <KPICard
-                title="3M Avg Lowest"
+                title="3M Low"
                 value="14.2"
                 trend="down"
                 trendValue="3.1%"
@@ -235,7 +235,7 @@ Calculated by:
 • Used for minimum staffing level planning"
               />
               <KPICard
-                title="3M Avg Highest"
+                title="3M High"
                 value="28.4"
                 trend="up"
                 trendValue="8.7%"
@@ -251,7 +251,7 @@ Calculated by:
 • Used for peak staffing level planning"
               />
               <KPICard
-                title="Target Volume"
+                title="Target Vol"
                 value="20.8"
                 isHighlighted
                 chartData={generateSeasonalTrend(20.8, 3)}
@@ -267,7 +267,7 @@ Determined by:
 • Market conditions"
               />
               <KPICard
-                title="Override Volume"
+                title="Override Vol"
                 value="24.7"
                 chartData={generateVolatileTrend(24.7, 4)}
                 chartType="bar"
@@ -289,7 +289,7 @@ Used when:
             <h2 className="text-lg font-semibold text-foreground">Productivity</h2>
             <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
               <KPICard
-                title="Total Paid Actual FTEs"
+                title="Paid FTEs"
                 value="38.2"
                 trend="up"
                 trendValue="2.4"
@@ -303,7 +303,7 @@ Example: If 7,928 hours were paid in a 2-week period:
 7,928 / (40 hours × 2 weeks × 52 periods) = 38.2 FTEs"
               />
               <KPICard
-                title="Total Contract Actual FTEs"
+                title="Contract FTEs"
                 value="5.7"
                 chartData={generateSeasonalTrend(5.7, 1.2)}
                 chartType="bar"
@@ -318,7 +318,7 @@ Includes:
 Excludes: Regular staff, PRN staff"
               />
               <KPICard
-                title="Total Overtime FTEs"
+                title="Overtime FTEs"
                 value="2.1"
                 trend="down"
                 trendValue="0.3"
@@ -366,7 +366,7 @@ Example: If 7,076 productive hours and 7,928 total paid hours:
 Higher NP% indicates better labor efficiency"
               />
               <KPICard
-                title="Missed Prod Targets FTEs"
+                title="Missed Targets"
                 value="1.8"
                 isNegative
                 trend="up"
