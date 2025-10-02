@@ -7,6 +7,7 @@ import { useRBAC } from "@/hooks/useRBAC";
 import { OrganizationSwitcher } from "@/components/layout/OrganizationSwitcher";
 import { InboxBadge } from "@/components/inbox/InboxBadge";
 import { useDynamicSidebar, type DynamicMenuGroup } from "@/hooks/useDynamicSidebar";
+import { GlassButton } from "@/components/ui/glass-button";
 
 interface ModuleItemProps {
   module: DynamicMenuGroup;
@@ -39,36 +40,31 @@ function ModuleItem({ module, isActive }: ModuleItemProps) {
   }, [module.items, hasPermission, navigate]);
 
   return (
-    <motion.div 
-      className={cn(
-        "group relative flex flex-col items-center py-2 px-2 rounded-lg transition-all duration-200 cursor-pointer overflow-hidden",
-        "hover:bg-primary/10"
-      )}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.2 }}
-    >
-      {/* Combined active background + indicator overlay */}
-      {isActive && (
-        <motion.div
-          layoutId="sidebar-active-highlight"
-          className="pointer-events-none absolute inset-0 z-0 rounded-lg bg-primary/15"
-          transition={{
-            type: "spring",
-            stiffness: 380,
-            damping: 30
-          }}
-        >
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-full" />
-        </motion.div>
-      )}
-
-      <div 
+    <div className="relative group">
+      <GlassButton
+        size="icon"
+        className={cn(
+          "w-full py-2 px-2 flex flex-col items-center gap-1 overflow-visible",
+          isActive && "active"
+        )}
+        contentClassName="flex flex-col items-center gap-1 w-full"
         onClick={handleModuleClick}
-        className="relative z-10 flex flex-col items-center gap-1 w-full"
       >
+        {/* Active indicator */}
+        {isActive && (
+          <motion.div
+            layoutId="sidebar-active-highlight"
+            className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-full z-20"
+            transition={{
+              type: "spring",
+              stiffness: 380,
+              damping: 30
+            }}
+          />
+        )}
+
         <div className={cn(
-          "flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200",
+          "flex items-center justify-center w-8 h-8 transition-all duration-200",
           isActive 
             ? "text-primary" 
             : "text-muted-foreground group-hover:text-primary"
@@ -84,10 +80,10 @@ function ModuleItem({ module, isActive }: ModuleItemProps) {
         )}>
           {module.label}
         </span>
-      </div>
+      </GlassButton>
 
       {/* Sub-items tooltip on hover */}
-      <div className="absolute left-full ml-2 top-0 w-48 bg-background border shadow-lg rounded-lg p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none group-hover:pointer-events-auto">
+      <div className="absolute left-full ml-3 top-0 w-48 bg-background/80 backdrop-blur-xl border border-border/50 shadow-2xl rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none group-hover:pointer-events-auto">
         <div className="space-y-1">
           {module.items
             .filter(item => {
@@ -99,10 +95,10 @@ function ModuleItem({ module, isActive }: ModuleItemProps) {
                 key={index}
                 to={item.url || '#'}
                 className={({ isActive }) => cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-all duration-200",
+                  "flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200",
                   isActive 
                     ? "bg-primary text-primary-foreground shadow-sm" 
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                 )}
               >
                 <item.icon className="w-4 h-4" />
@@ -122,7 +118,7 @@ function ModuleItem({ module, isActive }: ModuleItemProps) {
             ))}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
