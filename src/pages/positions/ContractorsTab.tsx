@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
-import { MessageSquare } from "lucide-react";
+import { useState, useMemo } from "react";
+import { MessageSquare, ArrowUpDown, ArrowUp, ArrowDown, Filter } from "lucide-react";
 import { useContractors } from "@/hooks/useContractors";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ContractorDetailsSheet } from "@/components/workforce/ContractorDetailsSheet";
+import { ContractorsFilterSheet } from "@/components/positions/ContractorsFilterSheet";
 
 interface ContractorsTabProps {
   selectedRegion: string;
@@ -38,11 +39,116 @@ export function ContractorsTab({
 
   const [selectedContractor, setSelectedContractor] = useState<any>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [sortColumn, setSortColumn] = useState<string>("");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [filters, setFilters] = useState({
+    employmentType: "all",
+    skillType: "",
+    shift: "all",
+    fteMin: "",
+    fteMax: "",
+  });
 
   const handleRowClick = (contractor: any) => {
     setSelectedContractor(contractor);
     setSheetOpen(true);
   };
+
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
+
+  const getSortIcon = (column: string) => {
+    if (sortColumn !== column) return <ArrowUpDown className="h-4 w-4" />;
+    return sortDirection === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />;
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      employmentType: "all",
+      skillType: "",
+      shift: "all",
+      fteMin: "",
+      fteMax: "",
+    });
+  };
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.employmentType !== "all") count++;
+    if (filters.skillType) count++;
+    if (filters.shift !== "all") count++;
+    if (filters.fteMin) count++;
+    if (filters.fteMax) count++;
+    return count;
+  }, [filters]);
+
+  const filteredAndSortedContractors = useMemo(() => {
+    if (!contractors) return [];
+
+    let filtered = [...contractors];
+
+    // Apply filters
+    if (filters.employmentType !== "all") {
+      filtered = filtered.filter((c) => c.employmentType === filters.employmentType);
+    }
+    if (filters.skillType) {
+      filtered = filtered.filter((c) => 
+        c.jobFamily?.toLowerCase().includes(filters.skillType.toLowerCase())
+      );
+    }
+    if (filters.shift !== "all") {
+      filtered = filtered.filter((c) => c.shift === filters.shift);
+    }
+    if (filters.fteMin) {
+      const minFte = parseFloat(filters.fteMin);
+      filtered = filtered.filter((c) => {
+        const fte = typeof c.FTE === 'string' ? parseFloat(c.FTE) : (c.FTE || 0);
+        return fte >= minFte;
+      });
+    }
+    if (filters.fteMax) {
+      const maxFte = parseFloat(filters.fteMax);
+      filtered = filtered.filter((c) => {
+        const fte = typeof c.FTE === 'string' ? parseFloat(c.FTE) : (c.FTE || 0);
+        return fte <= maxFte;
+      });
+    }
+
+    // Apply sorting
+    if (sortColumn) {
+      filtered.sort((a, b) => {
+        let aVal = a[sortColumn];
+        let bVal = b[sortColumn];
+
+        // Handle numeric values
+        if (sortColumn === "FTE") {
+          aVal = parseFloat(aVal || "0");
+          bVal = parseFloat(bVal || "0");
+        }
+
+        // Handle null/undefined
+        if (!aVal) return 1;
+        if (!bVal) return -1;
+
+        if (typeof aVal === "string") {
+          return sortDirection === "asc"
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
+        }
+
+        return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
+      });
+    }
+
+    return filtered;
+  }, [contractors, filters, sortColumn, sortDirection]);
 
   if (isLoading) {
     return (
@@ -76,24 +182,105 @@ export function ContractorsTab({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <ScrollArea className="h-[calc(100vh-280px)]">
+      <div className="flex justify-end mb-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setFilterOpen(true)}
+          className="gap-2"
+        >
+          <Filter className="h-4 w-4" />
+          Filters
+          {activeFilterCount > 0 && (
+            <Badge variant="secondary" className="ml-1">
+              {activeFilterCount}
+            </Badge>
+          )}
+        </Button>
+      </div>
+
+      <ScrollArea className="h-[calc(100vh-330px)]">
         <Table>
           <TableHeader className="sticky top-0 bg-background z-10">
             <TableRow>
-              <TableHead>Contractor Name</TableHead>
-              <TableHead>Position #</TableHead>
-              <TableHead>Job Title</TableHead>
-              <TableHead>Skill Type</TableHead>
-              <TableHead className="text-center">Actual FTE</TableHead>
-              <TableHead>Shift</TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("employeeName")}
+              >
+                <div className="flex items-center gap-2">
+                  Contractor Name
+                  {getSortIcon("employeeName")}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("positionNum")}
+              >
+                <div className="flex items-center gap-2">
+                  Position #
+                  {getSortIcon("positionNum")}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("jobTitle")}
+              >
+                <div className="flex items-center gap-2">
+                  Job Title
+                  {getSortIcon("jobTitle")}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("jobFamily")}
+              >
+                <div className="flex items-center gap-2">
+                  Skill Type
+                  {getSortIcon("jobFamily")}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="text-center cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("FTE")}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  Actual FTE
+                  {getSortIcon("FTE")}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("shift")}
+              >
+                <div className="flex items-center gap-2">
+                  Shift
+                  {getSortIcon("shift")}
+                </div>
+              </TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Staff Type</TableHead>
-              <TableHead>Full/Part Time</TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("employmentFlag")}
+              >
+                <div className="flex items-center gap-2">
+                  Staff Type
+                  {getSortIcon("employmentFlag")}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("employmentType")}
+              >
+                <div className="flex items-center gap-2">
+                  Full/Part Time
+                  {getSortIcon("employmentType")}
+                </div>
+              </TableHead>
               <TableHead className="text-center">Comments</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {contractors.map((contractor) => (
+            {filteredAndSortedContractors.map((contractor) => (
               <TableRow
                 key={contractor.id}
                 className="cursor-pointer hover:bg-muted/50 transition-colors"
@@ -142,6 +329,15 @@ export function ContractorsTab({
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         contractor={selectedContractor}
+      />
+
+      <ContractorsFilterSheet
+        open={filterOpen}
+        onOpenChange={setFilterOpen}
+        filters={filters}
+        onFiltersChange={setFilters}
+        onClearFilters={clearFilters}
+        activeFilterCount={activeFilterCount}
       />
     </motion.div>
   );

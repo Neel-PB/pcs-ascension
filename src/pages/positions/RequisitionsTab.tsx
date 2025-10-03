@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
-import { Eye, Settings, MessageSquare } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Eye, Settings, MessageSquare, ArrowUpDown, ArrowUp, ArrowDown, Filter } from "lucide-react";
 import { differenceInDays } from "date-fns";
 import { useRequisitions } from "@/hooks/useRequisitions";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +16,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { RequisitionDetailsSheet } from "@/components/workforce/RequisitionDetailsSheet";
+import { RequisitionsFilterSheet } from "@/components/positions/RequisitionsFilterSheet";
 
 interface RequisitionsTabProps {
   selectedRegion: string;
@@ -39,6 +40,17 @@ export function RequisitionsTab({
 
   const [selectedRequisition, setSelectedRequisition] = useState<any>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [sortColumn, setSortColumn] = useState<string>("");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [filters, setFilters] = useState({
+    vacancyAgeMin: "",
+    vacancyAgeMax: "",
+    positionLifecycle: "all",
+    skillType: "",
+    shift: "all",
+    employmentType: "all",
+  });
 
   const handleRowClick = (requisition: any) => {
     setSelectedRequisition(requisition);
@@ -58,6 +70,103 @@ export function RequisitionsTab({
       return { variant: "secondary" as const, label: `${days}d - Attention` };
     return { variant: "default" as const, label: `${days}d - On Track` };
   };
+
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
+
+  const getSortIcon = (column: string) => {
+    if (sortColumn !== column) return <ArrowUpDown className="h-4 w-4" />;
+    return sortDirection === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />;
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      vacancyAgeMin: "",
+      vacancyAgeMax: "",
+      positionLifecycle: "all",
+      skillType: "",
+      shift: "all",
+      employmentType: "all",
+    });
+  };
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.vacancyAgeMin) count++;
+    if (filters.vacancyAgeMax) count++;
+    if (filters.positionLifecycle !== "all") count++;
+    if (filters.skillType) count++;
+    if (filters.shift !== "all") count++;
+    if (filters.employmentType !== "all") count++;
+    return count;
+  }, [filters]);
+
+  const filteredAndSortedRequisitions = useMemo(() => {
+    if (!requisitions) return [];
+
+    let filtered = requisitions.map((req) => ({
+      ...req,
+      vacancyAge: getVacancyAge(req.positionStatusDate),
+    }));
+
+    // Apply filters
+    if (filters.vacancyAgeMin) {
+      const minAge = parseInt(filters.vacancyAgeMin);
+      filtered = filtered.filter((r) => (r.vacancyAge ?? 0) >= minAge);
+    }
+    if (filters.vacancyAgeMax) {
+      const maxAge = parseInt(filters.vacancyAgeMax);
+      filtered = filtered.filter((r) => (r.vacancyAge ?? 0) <= maxAge);
+    }
+    if (filters.positionLifecycle !== "all") {
+      filtered = filtered.filter((r) => r.positionLifecycle === filters.positionLifecycle);
+    }
+    if (filters.skillType) {
+      filtered = filtered.filter((r) => 
+        r.jobFamily?.toLowerCase().includes(filters.skillType.toLowerCase())
+      );
+    }
+    if (filters.shift !== "all") {
+      filtered = filtered.filter((r) => r.shift === filters.shift);
+    }
+    if (filters.employmentType !== "all") {
+      filtered = filtered.filter((r) => r.employmentType === filters.employmentType);
+    }
+
+    // Apply sorting
+    if (sortColumn) {
+      filtered.sort((a, b) => {
+        let aVal = a[sortColumn];
+        let bVal = b[sortColumn];
+
+        // Handle vacancy age sorting
+        if (sortColumn === "vacancyAge") {
+          aVal = a.vacancyAge ?? 0;
+          bVal = b.vacancyAge ?? 0;
+        }
+
+        // Handle null/undefined
+        if (!aVal && aVal !== 0) return 1;
+        if (!bVal && bVal !== 0) return -1;
+
+        if (typeof aVal === "string") {
+          return sortDirection === "asc"
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
+        }
+
+        return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
+      });
+    }
+
+    return filtered;
+  }, [requisitions, filters, sortColumn, sortDirection]);
 
   if (isLoading) {
     return (
@@ -91,25 +200,97 @@ export function RequisitionsTab({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <ScrollArea className="h-[calc(100vh-280px)]">
+      <div className="flex justify-end mb-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setFilterOpen(true)}
+          className="gap-2"
+        >
+          <Filter className="h-4 w-4" />
+          Filters
+          {activeFilterCount > 0 && (
+            <Badge variant="secondary" className="ml-1">
+              {activeFilterCount}
+            </Badge>
+          )}
+        </Button>
+      </div>
+
+      <ScrollArea className="h-[calc(100vh-330px)]">
         <Table>
           <TableHeader className="sticky top-0 bg-background z-10">
             <TableRow>
-              <TableHead>Position #</TableHead>
-              <TableHead>Position Lifecycle</TableHead>
-              <TableHead>Vacancy Age</TableHead>
-              <TableHead>Job Title</TableHead>
-              <TableHead>Skill Type</TableHead>
-              <TableHead>Shift</TableHead>
-              <TableHead>Employment Type</TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("positionNum")}
+              >
+                <div className="flex items-center gap-2">
+                  Position #
+                  {getSortIcon("positionNum")}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("positionLifecycle")}
+              >
+                <div className="flex items-center gap-2">
+                  Position Lifecycle
+                  {getSortIcon("positionLifecycle")}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("vacancyAge")}
+              >
+                <div className="flex items-center gap-2">
+                  Vacancy Age
+                  {getSortIcon("vacancyAge")}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("jobTitle")}
+              >
+                <div className="flex items-center gap-2">
+                  Job Title
+                  {getSortIcon("jobTitle")}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("jobFamily")}
+              >
+                <div className="flex items-center gap-2">
+                  Skill Type
+                  {getSortIcon("jobFamily")}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("shift")}
+              >
+                <div className="flex items-center gap-2">
+                  Shift
+                  {getSortIcon("shift")}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("employmentType")}
+              >
+                <div className="flex items-center gap-2">
+                  Employment Type
+                  {getSortIcon("employmentType")}
+                </div>
+              </TableHead>
               <TableHead className="text-center">Comments</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {requisitions.map((requisition) => {
-              const vacancyAge = getVacancyAge(requisition.positionStatusDate);
-              const vacancyBadge = getVacancyBadge(vacancyAge);
+            {filteredAndSortedRequisitions.map((requisition) => {
+              const vacancyBadge = getVacancyBadge(requisition.vacancyAge);
 
               return (
                 <TableRow
@@ -193,6 +374,15 @@ export function RequisitionsTab({
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         requisition={selectedRequisition}
+      />
+
+      <RequisitionsFilterSheet
+        open={filterOpen}
+        onOpenChange={setFilterOpen}
+        filters={filters}
+        onFiltersChange={setFilters}
+        onClearFilters={clearFilters}
+        activeFilterCount={activeFilterCount}
       />
     </motion.div>
   );

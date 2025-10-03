@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
-import { MessageSquare } from "lucide-react";
+import { useState, useMemo } from "react";
+import { MessageSquare, ArrowUpDown, ArrowUp, ArrowDown, Filter } from "lucide-react";
 import { useEmployees } from "@/hooks/useEmployees";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { EmployeeDetailsSheet } from "@/components/workforce/EmployeeDetailsSheet";
+import { EmployeesFilterSheet } from "@/components/positions/EmployeesFilterSheet";
 
 interface EmployeesTabProps {
   selectedRegion: string;
@@ -38,11 +39,122 @@ export function EmployeesTab({
 
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [sortColumn, setSortColumn] = useState<string>("");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [filters, setFilters] = useState({
+    status: "all",
+    employmentType: "all",
+    skillType: "",
+    shift: "all",
+    fteMin: "",
+    fteMax: "",
+  });
 
   const handleRowClick = (employee: any) => {
     setSelectedEmployee(employee);
     setSheetOpen(true);
   };
+
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
+
+  const getSortIcon = (column: string) => {
+    if (sortColumn !== column) return <ArrowUpDown className="h-4 w-4" />;
+    return sortDirection === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />;
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      status: "all",
+      employmentType: "all",
+      skillType: "",
+      shift: "all",
+      fteMin: "",
+      fteMax: "",
+    });
+  };
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.status !== "all") count++;
+    if (filters.employmentType !== "all") count++;
+    if (filters.skillType) count++;
+    if (filters.shift !== "all") count++;
+    if (filters.fteMin) count++;
+    if (filters.fteMax) count++;
+    return count;
+  }, [filters]);
+
+  const filteredAndSortedEmployees = useMemo(() => {
+    if (!employees) return [];
+
+    let filtered = [...employees];
+
+    // Apply filters
+    if (filters.status !== "all") {
+      filtered = filtered.filter((e) => e.positionLifecycle === filters.status);
+    }
+    if (filters.employmentType !== "all") {
+      filtered = filtered.filter((e) => e.employmentType === filters.employmentType);
+    }
+    if (filters.skillType) {
+      filtered = filtered.filter((e) => 
+        e.jobFamily?.toLowerCase().includes(filters.skillType.toLowerCase())
+      );
+    }
+    if (filters.shift !== "all") {
+      filtered = filtered.filter((e) => e.shift === filters.shift);
+    }
+    if (filters.fteMin) {
+      const minFte = parseFloat(filters.fteMin);
+      filtered = filtered.filter((e) => {
+        const fte = typeof e.FTE === 'string' ? parseFloat(e.FTE) : (e.FTE || 0);
+        return fte >= minFte;
+      });
+    }
+    if (filters.fteMax) {
+      const maxFte = parseFloat(filters.fteMax);
+      filtered = filtered.filter((e) => {
+        const fte = typeof e.FTE === 'string' ? parseFloat(e.FTE) : (e.FTE || 0);
+        return fte <= maxFte;
+      });
+    }
+
+    // Apply sorting
+    if (sortColumn) {
+      filtered.sort((a, b) => {
+        let aVal = a[sortColumn];
+        let bVal = b[sortColumn];
+
+        // Handle numeric values
+        if (sortColumn === "FTE") {
+          aVal = parseFloat(aVal || "0");
+          bVal = parseFloat(bVal || "0");
+        }
+
+        // Handle null/undefined
+        if (!aVal) return 1;
+        if (!bVal) return -1;
+
+        if (typeof aVal === "string") {
+          return sortDirection === "asc"
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
+        }
+
+        return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
+      });
+    }
+
+    return filtered;
+  }, [employees, filters, sortColumn, sortDirection]);
 
   if (isLoading) {
     return (
@@ -80,20 +192,92 @@ export function EmployeesTab({
         <Table>
           <TableHeader className="sticky top-0 bg-background z-10">
             <TableRow>
-              <TableHead>Employee Name</TableHead>
-              <TableHead>Position #</TableHead>
-              <TableHead>Job Title</TableHead>
-              <TableHead>Skill Type</TableHead>
-              <TableHead className="text-center">Actual FTE</TableHead>
-              <TableHead>Shift</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Staff Type</TableHead>
-              <TableHead>Full/Part Time</TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("employeeName")}
+              >
+                <div className="flex items-center gap-2">
+                  Employee Name
+                  {getSortIcon("employeeName")}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("positionNum")}
+              >
+                <div className="flex items-center gap-2">
+                  Position #
+                  {getSortIcon("positionNum")}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("jobTitle")}
+              >
+                <div className="flex items-center gap-2">
+                  Job Title
+                  {getSortIcon("jobTitle")}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("jobFamily")}
+              >
+                <div className="flex items-center gap-2">
+                  Skill Type
+                  {getSortIcon("jobFamily")}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="text-center cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("FTE")}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  Actual FTE
+                  {getSortIcon("FTE")}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("shift")}
+              >
+                <div className="flex items-center gap-2">
+                  Shift
+                  {getSortIcon("shift")}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("positionLifecycle")}
+              >
+                <div className="flex items-center gap-2">
+                  Status
+                  {getSortIcon("positionLifecycle")}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("employmentFlag")}
+              >
+                <div className="flex items-center gap-2">
+                  Staff Type
+                  {getSortIcon("employmentFlag")}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleSort("employmentType")}
+              >
+                <div className="flex items-center gap-2">
+                  Full/Part Time
+                  {getSortIcon("employmentType")}
+                </div>
+              </TableHead>
               <TableHead className="text-center">Comments</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {employees.map((employee) => (
+            {filteredAndSortedEmployees.map((employee) => (
               <TableRow
                 key={employee.id}
                 className="cursor-pointer hover:bg-muted/50 transition-colors"
@@ -146,6 +330,15 @@ export function EmployeesTab({
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         employee={selectedEmployee}
+      />
+
+      <EmployeesFilterSheet
+        open={filterOpen}
+        onOpenChange={setFilterOpen}
+        filters={filters}
+        onFiltersChange={setFilters}
+        onClearFilters={clearFilters}
+        activeFilterCount={activeFilterCount}
       />
     </motion.div>
   );
