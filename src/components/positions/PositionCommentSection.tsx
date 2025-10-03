@@ -173,7 +173,7 @@ export function PositionCommentSection({ positionId }: PositionCommentSectionPro
         </div>
       </ScrollArea>
 
-      <div className="pt-4 mt-4">
+      <div className="pt-4 border-t">
         <div className="relative">
           <Input
             value={newComment}
