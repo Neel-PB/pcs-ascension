@@ -151,22 +151,28 @@ export function DynamicIconOnlySidebar() {
   useLayoutEffect(() => {
     if (activeIndex >= 0 && itemRefs.current[activeIndex] && containerRef.current) {
       const activeItem = itemRefs.current[activeIndex];
+      const container = containerRef.current;
       
       if (activeItem) {
         const inset = 2;
-        const tileWidth = activeItem.offsetWidth;
-        const tileHeight = activeItem.offsetHeight;
-        const tileTop = activeItem.offsetTop;
-        const tileLeft = activeItem.offsetLeft;
+        const rect = activeItem.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
         
-        // Make it a perfect square
-        const size = Math.min(tileWidth, tileHeight) - inset * 2;
+        // Calculate precise dimensions
+        const tileW = Math.round(rect.width);
+        const tileH = Math.round(rect.height);
+        const width = tileW - inset * 2;
+        const height = width; // Perfect square
+        
+        // Position relative to container with precise left positioning
+        const left = rect.left - containerRect.left + inset;
+        const top = Math.round(activeItem.offsetTop + (tileH - height) / 2);
         
         setIndicatorStyle({
-          top: tileTop + (tileHeight - size) / 2,
-          left: tileLeft + (tileWidth - size) / 2,
-          width: size,
-          height: size,
+          top,
+          left,
+          width,
+          height,
         });
       }
     }
@@ -175,22 +181,30 @@ export function DynamicIconOnlySidebar() {
   // Recalculate on window resize
   useLayoutEffect(() => {
     const handleResize = () => {
-      if (activeIndex >= 0 && itemRefs.current[activeIndex]) {
+      if (activeIndex >= 0 && itemRefs.current[activeIndex] && containerRef.current) {
         const activeItem = itemRefs.current[activeIndex];
+        const container = containerRef.current;
+        
         if (activeItem) {
           const inset = 2;
-          const tileWidth = activeItem.offsetWidth;
-          const tileHeight = activeItem.offsetHeight;
-          const tileTop = activeItem.offsetTop;
-          const tileLeft = activeItem.offsetLeft;
+          const rect = activeItem.getBoundingClientRect();
+          const containerRect = container.getBoundingClientRect();
           
-          const size = Math.min(tileWidth, tileHeight) - inset * 2;
+          // Calculate precise dimensions
+          const tileW = Math.round(rect.width);
+          const tileH = Math.round(rect.height);
+          const width = tileW - inset * 2;
+          const height = width; // Perfect square
+          
+          // Position relative to container with precise left positioning
+          const left = rect.left - containerRect.left + inset;
+          const top = Math.round(activeItem.offsetTop + (tileH - height) / 2);
           
           setIndicatorStyle({
-            top: tileTop + (tileHeight - size) / 2,
-            left: tileLeft + (tileWidth - size) / 2,
-            width: size,
-            height: size,
+            top,
+            left,
+            width,
+            height,
           });
         }
       }
