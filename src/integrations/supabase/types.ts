@@ -211,6 +211,33 @@ export type Database = {
           },
         ]
       }
+      position_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          position_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          position_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          position_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       positions: {
         Row: {
           created_at: string

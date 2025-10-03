@@ -71,6 +71,7 @@ const TABLE_SCHEMAS: Record<TableName, { name: string; type: string }[]> = {
   ],
   comments: [],
   notifications: [],
+  position_comments: [],
   post_likes: [],
   posts: [],
   profiles: [],
