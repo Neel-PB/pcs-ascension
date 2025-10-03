@@ -12,7 +12,7 @@ export function ShellLayout({ children }: ShellLayoutProps) {
       <AppHeader />
       
       <main className="ml-20 mt-16">
-        <div className="container mx-auto px-6 py-8 max-w-7xl">
+        <div className="px-4 py-4">
           {children}
         </div>
       </main>

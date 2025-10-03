@@ -76,7 +76,7 @@ export function EmployeesTab({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <ScrollArea className="h-[calc(100vh-280px)]">
+      <ScrollArea className="h-[calc(100vh-240px)]">
         <Table>
           <TableHeader className="sticky top-0 bg-background z-10">
             <TableRow>
