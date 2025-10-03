@@ -1,4 +1,4 @@
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate, matchPath } from "react-router-dom";
 import { useState, useCallback, useRef, useLayoutEffect, forwardRef } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -13,8 +13,7 @@ interface ModuleItemProps {
   isActive: boolean;
 }
 
-const ModuleItem = forwardRef<HTMLDivElement, ModuleItemProps & { index: number }>(
-  ({ module, isActive, index }, ref) => {
+const ModuleItem = ({ module, isActive, index }: ModuleItemProps & { index: number }) => {
     const { hasPermission } = useRBAC();
     const navigate = useNavigate();
 
@@ -41,7 +40,6 @@ const ModuleItem = forwardRef<HTMLDivElement, ModuleItemProps & { index: number 
 
     return (
       <motion.div
-        ref={ref}
         onClick={handleModuleClick}
           className={cn(
             "group flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl transition-colors relative w-full cursor-pointer aspect-square",
@@ -98,8 +96,7 @@ const ModuleItem = forwardRef<HTMLDivElement, ModuleItemProps & { index: number 
         </div>
       </motion.div>
     );
-  }
-);
+};
 
 ModuleItem.displayName = "ModuleItem";
 
@@ -115,9 +112,15 @@ export function DynamicIconOnlySidebar() {
   // Determine which module is active based on current location
   const getActiveModule = useCallback(() => {
     return sidebarModules.find(module =>
-      module.items.some(item => 
-        item.url && (location.pathname === item.url || location.pathname.startsWith(item.url + '/'))
-      )
+      module.items.some(item => {
+        if (!item.url) return false;
+        // Special handling for root path - must match exactly
+        if (item.url === "/") {
+          return matchPath({ path: "/", end: true }, location.pathname) !== null;
+        }
+        // For other paths, allow sub-routes
+        return matchPath({ path: item.url, end: false }, location.pathname) !== null;
+      })
     );
   }, [sidebarModules, location.pathname]);
 
@@ -156,7 +159,7 @@ export function DynamicIconOnlySidebar() {
         });
       }
     }
-  }, [activeIndex, accessibleModules.length]);
+  }, [activeIndex, accessibleModules.length, location.pathname]);
 
   // Recalculate on window resize
   useLayoutEffect(() => {
@@ -191,9 +194,12 @@ export function DynamicIconOnlySidebar() {
               {accessibleModules.map((module, index) => {
                 const isActive = activeModule?.label === module.label;
                 return (
-                  <div key={module.label} className="relative z-10">
+                  <div 
+                    key={module.label} 
+                    className="relative z-10"
+                    ref={(el) => (itemRefs.current[index] = el)}
+                  >
                     <ModuleItem 
-                      ref={(el) => (itemRefs.current[index] = el)}
                       module={module} 
                       isActive={isActive}
                       index={index}
@@ -209,8 +215,8 @@ export function DynamicIconOnlySidebar() {
                   className="absolute bg-gradient-primary rounded-xl z-0"
                   style={{
                     top: `${indicatorStyle.top}px`,
-                    left: "4px",
-                    right: "4px",
+                    left: "6px",
+                    right: "6px",
                     height: `${indicatorStyle.height}px`,
                   }}
                   transition={{
