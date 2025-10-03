@@ -107,7 +107,7 @@ export function DynamicIconOnlySidebar() {
   
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0 });
+  const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, left: 0, width: 0, height: 0 });
 
   // Determine which module is active based on current location
   const getActiveModule = useCallback(() => {
@@ -147,15 +147,22 @@ export function DynamicIconOnlySidebar() {
   useLayoutEffect(() => {
     if (activeIndex >= 0 && itemRefs.current[activeIndex] && containerRef.current) {
       const activeItem = itemRefs.current[activeIndex];
-      const container = containerRef.current;
       
       if (activeItem) {
-        const itemRect = activeItem.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
+        const inset = 3;
+        const tileWidth = activeItem.offsetWidth;
+        const tileHeight = activeItem.offsetHeight;
+        const tileTop = activeItem.offsetTop;
+        const tileLeft = activeItem.offsetLeft;
+        
+        // Make it a perfect square
+        const size = Math.min(tileWidth, tileHeight) - inset * 2;
         
         setIndicatorStyle({
-          top: activeItem.offsetTop,
-          height: activeItem.offsetHeight,
+          top: tileTop + (tileHeight - size) / 2,
+          left: tileLeft + (tileWidth - size) / 2,
+          width: size,
+          height: size,
         });
       }
     }
@@ -167,9 +174,19 @@ export function DynamicIconOnlySidebar() {
       if (activeIndex >= 0 && itemRefs.current[activeIndex]) {
         const activeItem = itemRefs.current[activeIndex];
         if (activeItem) {
+          const inset = 3;
+          const tileWidth = activeItem.offsetWidth;
+          const tileHeight = activeItem.offsetHeight;
+          const tileTop = activeItem.offsetTop;
+          const tileLeft = activeItem.offsetLeft;
+          
+          const size = Math.min(tileWidth, tileHeight) - inset * 2;
+          
           setIndicatorStyle({
-            top: activeItem.offsetTop,
-            height: activeItem.offsetHeight,
+            top: tileTop + (tileHeight - size) / 2,
+            left: tileLeft + (tileWidth - size) / 2,
+            width: size,
+            height: size,
           });
         }
       }
@@ -215,8 +232,8 @@ export function DynamicIconOnlySidebar() {
                   className="absolute bg-gradient-primary rounded-xl z-0"
                   style={{
                     top: `${indicatorStyle.top}px`,
-                    left: "6px",
-                    right: "6px",
+                    left: `${indicatorStyle.left}px`,
+                    width: `${indicatorStyle.width}px`,
                     height: `${indicatorStyle.height}px`,
                   }}
                   transition={{
