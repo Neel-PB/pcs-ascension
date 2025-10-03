@@ -99,7 +99,7 @@ export function EmployeesTab({
 
     // Apply filters
     if (filters.status !== "all") {
-      filtered = filtered.filter((e) => e.positionLifecycle === filters.status);
+      filtered = filtered.filter((e) => e.payrollStatus === filters.status);
     }
     if (filters.employmentType !== "all") {
       filtered = filtered.filter((e) => e.employmentType === filters.employmentType);

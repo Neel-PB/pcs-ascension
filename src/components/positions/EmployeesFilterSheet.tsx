@@ -71,7 +71,8 @@ export function EmployeesFilterSheet({
               <SelectContent>
                 <SelectItem value="all">All statuses</SelectItem>
                 <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Inactive">Inactive</SelectItem>
+                <SelectItem value="Leave With Pay">Leave With Pay</SelectItem>
+                <SelectItem value="Suspended">Suspended</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -84,8 +85,9 @@ export function EmployeesFilterSheet({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All types</SelectItem>
-                <SelectItem value="Full Time">Full Time</SelectItem>
-                <SelectItem value="Part Time">Part Time</SelectItem>
+                <SelectItem value="Full-Time">Full-Time</SelectItem>
+                <SelectItem value="Part-Time">Part-Time</SelectItem>
+                <SelectItem value="PRN">PRN</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -110,6 +112,8 @@ export function EmployeesFilterSheet({
                 <SelectItem value="Day">Day</SelectItem>
                 <SelectItem value="Night">Night</SelectItem>
                 <SelectItem value="Evening">Evening</SelectItem>
+                <SelectItem value="Rotating">Rotating</SelectItem>
+                <SelectItem value="Weekend Options">Weekend Options</SelectItem>
               </SelectContent>
             </Select>
           </div>
