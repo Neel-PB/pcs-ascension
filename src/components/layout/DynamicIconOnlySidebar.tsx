@@ -40,10 +40,9 @@ const ModuleItem = forwardRef<HTMLDivElement, ModuleItemProps & { index: number 
     }, [module.items, hasPermission, navigate]);
 
     return (
-      <div className="relative block">
-        <motion.div
-          ref={ref}
-          onClick={handleModuleClick}
+      <motion.div
+        ref={ref}
+        onClick={handleModuleClick}
           className={cn(
             "group flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl transition-colors relative w-full cursor-pointer aspect-square",
             isActive
@@ -98,9 +97,9 @@ const ModuleItem = forwardRef<HTMLDivElement, ModuleItemProps & { index: number 
           </div>
         </div>
       </motion.div>
-    </div>
-  );
-});
+    );
+  }
+);
 
 ModuleItem.displayName = "ModuleItem";
 
@@ -188,7 +187,7 @@ export function DynamicIconOnlySidebar() {
         {/* Main navigation */}
         <div className="flex-1 overflow-y-auto pt-0 pb-4">
           <LayoutGroup>
-            <div ref={containerRef} className="relative bg-secondary/30 rounded-xl p-0 space-y-1 mx-0">
+            <div ref={containerRef} className="relative bg-secondary/30 rounded-xl p-1 space-y-1 mx-1">
               {accessibleModules.map((module, index) => {
                 const isActive = activeModule?.label === module.label;
                 return (
@@ -210,8 +209,8 @@ export function DynamicIconOnlySidebar() {
                   className="absolute bg-gradient-primary rounded-xl z-0"
                   style={{
                     top: `${indicatorStyle.top}px`,
-                    left: "1px",
-                    right: "1px",
+                    left: "4px",
+                    right: "4px",
                     height: `${indicatorStyle.height}px`,
                   }}
                   transition={{
