@@ -60,7 +60,7 @@ function ModuleItem({ module, isActive, index }: ModuleItemProps & { index: numb
         </span>
 
         {/* Sub-items tooltip on hover */}
-        <div className="absolute left-full ml-2 top-0 w-48 bg-background border shadow-lg rounded-lg p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none group-hover:pointer-events-auto">
+        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-48 bg-background border shadow-lg rounded-lg p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none group-hover:pointer-events-auto">
           <div className="space-y-1">
             {module.items
               .filter(item => {
@@ -133,6 +133,11 @@ export function DynamicIconOnlySidebar() {
 
   const activeIndex = accessibleModules.findIndex(module => activeModule?.label === module.label);
 
+  // Accurate measurements for indicator positioning
+  const moduleHeight = 54; // py-3 (24px) + icon (20px) + gap-1.5 (6px) + text (~14px) = ~54px
+  const moduleGap = 4; // space-y-1
+  const containerPadding = 6; // p-1.5
+
   return (
     <div className="fixed left-0 top-0 z-40 h-full w-20 max-w-20 border-r bg-background shadow-sm">
       <div className="flex h-full flex-col">
@@ -161,10 +166,12 @@ export function DynamicIconOnlySidebar() {
               {activeIndex >= 0 && (
                 <motion.div
                   layoutId="dynamicSidebarActiveIndicator"
-                  className="absolute left-1.5 right-1.5 bg-primary rounded-lg"
+                  className="absolute bg-primary/20 rounded-lg"
                   style={{
-                    top: `${6 + activeIndex * (56 + 4)}px`,
-                    height: "56px",
+                    top: `${containerPadding + activeIndex * (moduleHeight + moduleGap)}px`,
+                    left: `${containerPadding}px`,
+                    right: `${containerPadding}px`,
+                    height: `${moduleHeight}px`,
                   }}
                   transition={{
                     type: "spring",
