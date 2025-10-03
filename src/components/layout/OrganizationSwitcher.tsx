@@ -1,14 +1,13 @@
 import AscensionLogo from "@/assets/Ascension-Emblem.png";
-import { GlassButton } from "@/components/ui/glass-button";
 
 export function OrganizationSwitcher() {
   return (
-    <GlassButton size="icon" className="w-10 h-10">
+    <div className="flex items-center justify-center w-10 h-10 rounded-lg transition-colors cursor-pointer">
       <img 
         src={AscensionLogo} 
         alt="Ascension" 
-        className="w-6 h-6 object-contain"
+        className="w-8 h-8 object-contain"
       />
-    </GlassButton>
+    </div>
   );
 }

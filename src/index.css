@@ -8,9 +8,6 @@ Modern enterprise shell with clean aesthetics and accessibility
 
 @layer base {
   :root {
-    /* Layout variables */
-    --sidebar-width: 5rem; /* 80px = w-20 */
-    
     /* Core Shell Colors */
     --bg: 0 0% 100%;
     --bg-elev: 220 14% 97.6%;
@@ -229,76 +226,4 @@ Modern enterprise shell with clean aesthetics and accessibility
     opacity: 1;
     transform: translateX(0);
   }
-}
-
-/* Glass Button Styles */
-.glass-button-wrap {
-  position: relative;
-  will-change: transform;
-}
-
-.glass-button {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  contain: layout style;
-}
-
-.glass-button:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 
-    0 12px 40px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-.glass-button:active {
-  transform: scale(0.98);
-}
-
-.glass-button-shadow {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: linear-gradient(135deg, hsl(var(--primary) / 0.1), transparent);
-  filter: blur(20px);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.glass-button-wrap:hover .glass-button-shadow {
-  opacity: 1;
-}
-
-/* Dark mode glass adjustments */
-.dark .glass-button {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.dark .glass-button:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.25);
-  box-shadow: 
-    0 12px 40px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-}
-
-/* Active glass state */
-.glass-button.active {
-  background: hsl(var(--primary) / 0.15);
-  border-color: hsl(var(--primary) / 0.3);
-  box-shadow: 0 0 20px hsl(var(--primary) / 0.2);
-}
-
-.dark .glass-button.active {
-  background: hsl(var(--primary) / 0.2);
-  border-color: hsl(var(--primary) / 0.4);
 }
