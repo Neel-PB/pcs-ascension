@@ -47,7 +47,7 @@ function ModuleItem({ module, isActive }: ModuleItemProps) {
           "w-full h-auto",
           isActive && "active"
         )}
-        contentClassName="flex flex-col items-center gap-1 py-2"
+        contentClassName="flex flex-col items-center gap-1.5 py-3 px-2"
         onClick={handleModuleClick}
       >
         {/* Active indicator */}
@@ -147,7 +147,7 @@ export function DynamicIconOnlySidebar() {
   }
 
   return (
-    <div className="fixed left-0 top-0 z-40 h-full w-20 max-w-20 border-r bg-background shadow-sm">
+    <div className="fixed left-0 top-0 z-40 h-full w-20 max-w-20 border-r bg-background/80 backdrop-blur-sm shadow-sm">
       <div className="flex h-full flex-col">
         {/* Organization switcher */}
         <div className="flex items-center justify-center py-3 px-2 border-b">
@@ -157,7 +157,7 @@ export function DynamicIconOnlySidebar() {
         {/* Main navigation */}
         <div className="flex-1 overflow-y-auto py-1.5 px-2">
           <LayoutGroup>
-            <div className="space-y-0.5">
+            <div className="space-y-1">
               {sidebarModules.map((module) => {
                 const isActive = activeModule?.label === module.label;
                 return (
