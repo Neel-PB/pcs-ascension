@@ -134,8 +134,6 @@ export default function StaffingSummary() {
               <KPICard
                 title="Vacancy Rate"
                 value="13.9%"
-                trend="down"
-                trendValue="1.8%"
                 chartData={generateDeclineTrend(16, 13.9)}
                 chartType="area"
                 delay={0}
@@ -148,8 +146,6 @@ Example: If you have 6 vacant positions and 43.4 total authorized positions:
               <KPICard
                 title="Hired FTEs"
                 value="40.9"
-                trend="up"
-                trendValue="2.9"
                 chartData={generateGrowthTrend(37, 40.9)}
                 chartType="bar"
                 delay={0.05}
@@ -179,8 +175,6 @@ Determined by:
                 title="FTE Variance"
                 value="2.5"
                 isNegative
-                trend="up"
-                trendValue="0.6"
                 chartData={generateGrowthTrend(1.7, 2.5)}
                 chartType="area"
                 delay={0.15}
@@ -208,8 +202,6 @@ Excludes: Filled positions, withdrawn postings"
               <KPICard
                 title="Req Variance"
                 value="2.5"
-                trend="up"
-                trendValue="0.9"
                 chartData={generateGrowthTrend(1.3, 2.5)}
                 chartType="line"
                 delay={0.25}
@@ -229,8 +221,6 @@ Example: If FTE Variance is 2.5 and Open Requisitions is 5:
               <KPICard
                 title="12M Monthly"
                 value="633.5"
-                trend="up"
-                trendValue="10.5%"
                 chartData={generateGrowthTrend(565, 633.5, 30)}
                 chartType="area"
                 delay={0}
@@ -243,8 +233,6 @@ Example: If total volume over 12 months is 7,602:
               <KPICard
                 title="12M Daily"
                 value="20.8"
-                trend="up"
-                trendValue="4.7%"
                 chartData={generateGrowthTrend(19.8, 20.8, 30)}
                 chartType="area"
                 delay={0.05}
@@ -257,8 +245,6 @@ Example: If total volume is 7,602 over 365 days:
               <KPICard
                 title="3M Low"
                 value="14.2"
-                trend="down"
-                trendValue="2.8%"
                 isNegative
                 chartData={generateVolatileTrend(14.2, 3)}
                 chartType="area"
@@ -274,8 +260,6 @@ Calculated by:
               <KPICard
                 title="3M High"
                 value="28.4"
-                trend="up"
-                trendValue="7.3%"
                 chartData={generateVolatileTrend(28.4, 5)}
                 chartType="bar"
                 delay={0.15}
@@ -328,8 +312,6 @@ Used when:
               <KPICard
                 title="Paid FTEs"
                 value="38.2"
-                trend="up"
-                trendValue="1.9"
                 chartData={generateGrowthTrend(35.8, 38.2)}
                 chartType="bar"
                 delay={0}
@@ -357,8 +339,6 @@ Excludes: Regular staff, PRN staff"
               <KPICard
                 title="Overtime FTEs"
                 value="2.1"
-                trend="down"
-                trendValue="0.2"
                 chartData={generateDeclineTrend(2.4, 2.1)}
                 chartType="area"
                 delay={0.1}
@@ -372,8 +352,6 @@ Note: This is the volume equivalent, not cost equivalent"
               <KPICard
                 title="Total PRN"
                 value="12.4"
-                trend="up"
-                trendValue="1.5"
                 chartData={generateGrowthTrend(10.6, 12.4)}
                 chartType="bar"
                 delay={0.15}
@@ -389,8 +367,6 @@ PRN staff characteristics:
               <KPICard
                 title="Total NP%"
                 value="89.3%"
-                trend="up"
-                trendValue="2.6%"
                 chartData={generateGrowthTrend(86.1, 89.3)}
                 chartType="area"
                 delay={0.2}
@@ -406,8 +382,6 @@ Higher NP% indicates better labor efficiency"
                 title="Missed Targets"
                 value="1.8"
                 isNegative
-                trend="up"
-                trendValue="0.4"
                 chartData={generateGrowthTrend(1.3, 1.8)}
                 chartType="area"
                 delay={0.25}
