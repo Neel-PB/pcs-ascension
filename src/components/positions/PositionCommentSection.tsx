@@ -85,7 +85,7 @@ export function PositionCommentSection({ positionId }: PositionCommentSectionPro
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-220px)]">
+    <div className="flex flex-col h-full">
       <ScrollArea className="flex-1 pr-4">
         <div className="space-y-4">
           {comments && comments.length === 0 && (

@@ -34,14 +34,14 @@ export function ContractorDetailsSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <Tabs defaultValue="details" className="mt-6">
+        <Tabs defaultValue="details" className="mt-6 flex flex-col flex-1">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="comments">Comments</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="details">
-            <ScrollArea className="h-[calc(100vh-220px)] pr-4">
+          <TabsContent value="details" className="flex-1 flex flex-col">
+            <ScrollArea className="h-full pr-4">
               <div className="space-y-6">
                 {/* Status */}
                 <div>
@@ -153,7 +153,7 @@ export function ContractorDetailsSheet({
             </ScrollArea>
           </TabsContent>
 
-          <TabsContent value="comments">
+          <TabsContent value="comments" className="flex-1">
             <PositionCommentSection positionId={contractor.id} />
           </TabsContent>
         </Tabs>
