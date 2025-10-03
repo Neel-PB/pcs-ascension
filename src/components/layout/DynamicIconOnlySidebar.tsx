@@ -13,7 +13,7 @@ interface ModuleItemProps {
   isActive: boolean;
 }
 
-function ModuleItem({ module, isActive }: ModuleItemProps) {
+function ModuleItem({ module, isActive, index }: ModuleItemProps & { index: number }) {
   const { hasPermission } = useRBAC();
   const navigate = useNavigate();
 
@@ -39,96 +39,70 @@ function ModuleItem({ module, isActive }: ModuleItemProps) {
   }, [module.items, hasPermission, navigate]);
 
   return (
-    <motion.div 
-      className={cn(
-        "group relative flex flex-col items-center py-2 px-2 rounded-lg transition-all duration-200 cursor-pointer overflow-hidden",
-        "hover:bg-primary/10"
-      )}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.2 }}
-    >
-      {/* Combined active background + indicator overlay */}
-      {isActive && (
-        <motion.div
-          layoutId="sidebar-active-highlight"
-          className="pointer-events-none absolute inset-0 z-0 rounded-lg bg-primary/15"
-          transition={{
-            type: "spring",
-            stiffness: 380,
-            damping: 30
-          }}
-        >
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-full" />
-        </motion.div>
-      )}
-
-      <div 
+    <div className="relative block">
+      <motion.div
         onClick={handleModuleClick}
-        className="relative z-10 flex flex-col items-center gap-1 w-full"
+        className={cn(
+          "group flex flex-col items-center gap-1.5 py-3 px-2 rounded-lg transition-colors z-10 relative w-full cursor-pointer",
+          isActive
+            ? "text-primary-foreground"
+            : "text-muted-foreground hover:text-foreground"
+        )}
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: index * 0.05 }}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
       >
-        <div className={cn(
-          "flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200",
-          isActive 
-            ? "text-primary" 
-            : "text-muted-foreground group-hover:text-primary"
-        )}>
-          <module.icon className="w-5 h-5" />
-        </div>
-        
-        <span className={cn(
-          "text-[10px] font-medium transition-all duration-200 text-center leading-tight",
-          isActive 
-            ? "text-primary" 
-            : "text-muted-foreground group-hover:text-foreground"
-        )}>
+        <module.icon className="h-5 w-5 stroke-[1.5]" />
+        <span className="text-[10px] font-medium leading-tight text-center">
           {module.label}
         </span>
-      </div>
 
-      {/* Sub-items tooltip on hover */}
-      <div className="absolute left-full ml-2 top-0 w-48 bg-background border shadow-lg rounded-lg p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none group-hover:pointer-events-auto">
-        <div className="space-y-1">
-          {module.items
-            .filter(item => {
-              if (!item.permissions || item.permissions.length === 0) return true;
-              return item.permissions.some(permission => hasPermission(permission));
-            })
-            .map((item, index) => (
-              <NavLink
-                key={index}
-                to={item.url || '#'}
-                className={({ isActive }) => cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-all duration-200",
-                  isActive 
-                    ? "bg-primary text-primary-foreground shadow-sm" 
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}
-              >
-                <item.icon className="w-4 h-4" />
-                <span className="flex-1">{item.title}</span>
-                {item.badge && (
-                  <Badge variant="secondary" className="text-xs px-1.5 py-0">
-                    {item.badge}
-                  </Badge>
-                )}
-                {item.isNew && (
-                  <Badge variant="default" className="text-xs px-1.5 py-0">
-                    New
-                  </Badge>
-                )}
-                {item.title === "Inbox" && <InboxBadge />}
-              </NavLink>
-            ))}
+        {/* Sub-items tooltip on hover */}
+        <div className="absolute left-full ml-2 top-0 w-48 bg-background border shadow-lg rounded-lg p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none group-hover:pointer-events-auto">
+          <div className="space-y-1">
+            {module.items
+              .filter(item => {
+                if (!item.permissions || item.permissions.length === 0) return true;
+                return item.permissions.some(permission => hasPermission(permission));
+              })
+              .map((item, idx) => (
+                <NavLink
+                  key={idx}
+                  to={item.url || '#'}
+                  className={({ isActive }) => cn(
+                    "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-all duration-200",
+                    isActive 
+                      ? "bg-primary text-primary-foreground shadow-sm" 
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <item.icon className="w-4 h-4" />
+                  <span className="flex-1">{item.title}</span>
+                  {item.badge && (
+                    <Badge variant="secondary" className="text-xs px-1.5 py-0">
+                      {item.badge}
+                    </Badge>
+                  )}
+                  {item.isNew && (
+                    <Badge variant="default" className="text-xs px-1.5 py-0">
+                      New
+                    </Badge>
+                  )}
+                  {item.title === "Inbox" && <InboxBadge />}
+                </NavLink>
+              ))}
+          </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 }
 
 export function DynamicIconOnlySidebar() {
   const { sidebarModules, isLoading } = useDynamicSidebar();
-  const { roles, loading: rbacLoading } = useRBAC();
+  const { roles, loading: rbacLoading, hasPermission } = useRBAC();
   const location = useLocation();
 
   // Determine which module is active based on current location
@@ -150,6 +124,15 @@ export function DynamicIconOnlySidebar() {
     );
   }
 
+  const accessibleModules = sidebarModules.filter(module => {
+    return module.items.some(item => {
+      if (!item.permissions || item.permissions.length === 0) return true;
+      return item.permissions.some(permission => hasPermission(permission));
+    });
+  });
+
+  const activeIndex = accessibleModules.findIndex(module => activeModule?.label === module.label);
+
   return (
     <div className="fixed left-0 top-0 z-40 h-full w-20 max-w-20 border-r bg-background shadow-sm">
       <div className="flex h-full flex-col">
@@ -159,19 +142,37 @@ export function DynamicIconOnlySidebar() {
         </div>
 
         {/* Main navigation */}
-        <div className="flex-1 overflow-y-auto py-1.5 px-2">
+        <div className="flex-1 overflow-y-auto py-4">
           <LayoutGroup>
-            <div className="space-y-0.5">
-              {sidebarModules.map((module) => {
+            <div className="relative bg-secondary/30 rounded-xl p-1.5 space-y-1 mx-2">
+              {accessibleModules.map((module, index) => {
                 const isActive = activeModule?.label === module.label;
                 return (
                   <ModuleItem 
                     key={module.label} 
                     module={module} 
                     isActive={isActive}
+                    index={index}
                   />
                 );
               })}
+
+              {/* Animated vertical indicator */}
+              {activeIndex >= 0 && (
+                <motion.div
+                  layoutId="dynamicSidebarActiveIndicator"
+                  className="absolute left-1.5 right-1.5 bg-primary rounded-lg"
+                  style={{
+                    top: `${6 + activeIndex * (56 + 4)}px`,
+                    height: "56px",
+                  }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 30,
+                  }}
+                />
+              )}
             </div>
           </LayoutGroup>
         </div>
