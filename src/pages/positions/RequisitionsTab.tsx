@@ -222,22 +222,7 @@ export function RequisitionsTab({
       transition={{ duration: 0.3 }}
     >
       <div className="flex justify-between items-center mb-4 gap-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setFilterOpen(true)}
-          className="gap-2"
-        >
-          <Filter className="h-4 w-4" />
-          Filters
-          {activeFilterCount > 0 && (
-            <Badge variant="secondary" className="ml-1">
-              {activeFilterCount}
-            </Badge>
-          )}
-        </Button>
-        
-        <div className="relative max-w-sm">
+        <div className="relative w-full max-w-2xl">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
@@ -247,6 +232,21 @@ export function RequisitionsTab({
             className="pl-9"
           />
         </div>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setFilterOpen(true)}
+          className="gap-2 flex-shrink-0"
+        >
+          <Filter className="h-4 w-4" />
+          Filters
+          {activeFilterCount > 0 && (
+            <Badge variant="secondary" className="ml-1">
+              {activeFilterCount}
+            </Badge>
+          )}
+        </Button>
       </div>
 
       <ScrollArea className="h-[calc(100vh-330px)]">
