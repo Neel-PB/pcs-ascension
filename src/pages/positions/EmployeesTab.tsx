@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState, useMemo } from "react";
-import { MessageSquare, ArrowUpDown, ArrowUp, ArrowDown, Filter, Search } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, Filter, Search } from "lucide-react";
 import { useEmployees } from "@/hooks/useEmployees";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -322,7 +322,6 @@ export function EmployeesTab({
                   {getSortIcon("employmentType")}
                 </div>
               </TableHead>
-              <TableHead className="text-center">Comments</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -357,18 +356,6 @@ export function EmployeesTab({
                 </TableCell>
                 <TableCell>{employee.employmentFlag || "—"}</TableCell>
                 <TableCell>{employee.employmentType || "—"}</TableCell>
-                <TableCell className="text-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Future: Open comments
-                    }}
-                  >
-                    <MessageSquare className="h-4 w-4" />
-                  </Button>
-                </TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState, useMemo } from "react";
-import { Eye, Settings, MessageSquare, ArrowUpDown, ArrowUp, ArrowDown, Filter, Search } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, Filter, Search } from "lucide-react";
 import { differenceInDays } from "date-fns";
 import { useRequisitions } from "@/hooks/useRequisitions";
 import { Badge } from "@/components/ui/badge";
@@ -316,8 +316,6 @@ export function RequisitionsTab({
                   {getSortIcon("employmentType")}
                 </div>
               </TableHead>
-              <TableHead className="text-center">Comments</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -349,52 +347,6 @@ export function RequisitionsTab({
                   </TableCell>
                   <TableCell>{requisition.shift || "—"}</TableCell>
                   <TableCell>{requisition.employmentType || "—"}</TableCell>
-                  <TableCell className="text-center">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Future: Open comments
-                      }}
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRowClick(requisition);
-                        }}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Future: Settings/actions
-                        }}
-                      >
-                        <Settings className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Future: Send to Oracle
-                        }}
-                      >
-                        Oracle
-                      </Button>
-                    </div>
-                  </TableCell>
                 </TableRow>
               );
             })}
