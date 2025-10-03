@@ -134,7 +134,7 @@ export function DynamicIconOnlySidebar() {
   const activeIndex = accessibleModules.findIndex(module => activeModule?.label === module.label);
 
   // Accurate measurements for indicator positioning
-  const moduleHeight = 54; // py-3 (24px) + icon (20px) + gap-1.5 (6px) + text (~14px) = ~54px
+  const moduleHeight = 62; // py-3 (24px) + icon (20px) + gap-1.5 (6px) + text (~12px) = 62px
   const moduleGap = 4; // space-y-1
   const containerPadding = 6; // p-1.5
 
@@ -153,12 +153,13 @@ export function DynamicIconOnlySidebar() {
               {accessibleModules.map((module, index) => {
                 const isActive = activeModule?.label === module.label;
                 return (
-                  <ModuleItem 
-                    key={module.label} 
-                    module={module} 
-                    isActive={isActive}
-                    index={index}
-                  />
+                  <div key={module.label} className="relative z-10">
+                    <ModuleItem 
+                      module={module} 
+                      isActive={isActive}
+                      index={index}
+                    />
+                  </div>
                 );
               })}
 
@@ -166,11 +167,11 @@ export function DynamicIconOnlySidebar() {
               {activeIndex >= 0 && (
                 <motion.div
                   layoutId="dynamicSidebarActiveIndicator"
-                  className="absolute bg-primary/20 rounded-lg"
+                  className="absolute bg-primary/20 rounded-lg z-0"
                   style={{
                     top: `${containerPadding + activeIndex * (moduleHeight + moduleGap)}px`,
-                    left: `${containerPadding}px`,
-                    right: `${containerPadding}px`,
+                    left: "2px",
+                    right: "2px",
                     height: `${moduleHeight}px`,
                   }}
                   transition={{
