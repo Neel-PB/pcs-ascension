@@ -11,9 +11,11 @@ import { useDynamicSidebar, type DynamicMenuGroup } from "@/hooks/useDynamicSide
 interface ModuleItemProps {
   module: DynamicMenuGroup;
   isActive: boolean;
+  index: number;
 }
 
-const ModuleItem = ({ module, isActive, index }: ModuleItemProps & { index: number }) => {
+const ModuleItem = forwardRef<HTMLDivElement, ModuleItemProps>(
+  ({ module, isActive, index }, ref) => {
     const { hasPermission } = useRBAC();
     const navigate = useNavigate();
 
@@ -40,6 +42,7 @@ const ModuleItem = ({ module, isActive, index }: ModuleItemProps & { index: numb
 
     return (
       <motion.div
+        ref={ref}
         onClick={handleModuleClick}
           className={cn(
             "group flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl transition-colors relative w-full cursor-pointer aspect-square",
@@ -96,7 +99,8 @@ const ModuleItem = ({ module, isActive, index }: ModuleItemProps & { index: numb
         </div>
       </motion.div>
     );
-};
+  }
+);
 
 ModuleItem.displayName = "ModuleItem";
 
@@ -149,7 +153,7 @@ export function DynamicIconOnlySidebar() {
       const activeItem = itemRefs.current[activeIndex];
       
       if (activeItem) {
-        const inset = 3;
+        const inset = 2;
         const tileWidth = activeItem.offsetWidth;
         const tileHeight = activeItem.offsetHeight;
         const tileTop = activeItem.offsetTop;
@@ -174,7 +178,7 @@ export function DynamicIconOnlySidebar() {
       if (activeIndex >= 0 && itemRefs.current[activeIndex]) {
         const activeItem = itemRefs.current[activeIndex];
         if (activeItem) {
-          const inset = 3;
+          const inset = 2;
           const tileWidth = activeItem.offsetWidth;
           const tileHeight = activeItem.offsetHeight;
           const tileTop = activeItem.offsetTop;
@@ -214,9 +218,9 @@ export function DynamicIconOnlySidebar() {
                   <div 
                     key={module.label} 
                     className="relative z-10"
-                    ref={(el) => (itemRefs.current[index] = el)}
                   >
                     <ModuleItem 
+                      ref={(el) => (itemRefs.current[index] = el)}
                       module={module} 
                       isActive={isActive}
                       index={index}
