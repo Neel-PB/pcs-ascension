@@ -66,7 +66,7 @@ export function AppHeader() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-shell-muted" />
             <Input
               type="search"
-              placeholder="Search employees, projects, or actions... (⌘K)"
+              placeholder="Search employees, contractors, or requisitions... (⌘K)"
               className={cn(
                 "pl-10 pr-4 bg-shell-elevated border-shell-line",
                 "focus:bg-shell focus:border-primary/20 focus:ring-primary/20",
