@@ -166,7 +166,7 @@ export function DynamicIconOnlySidebar() {
         
         // Position relative to container with precise left positioning
         const left = rect.left - containerRect.left + inset;
-        const top = Math.round(activeItem.offsetTop + (tileH - height) / 2);
+        const top = Math.round(rect.top - containerRect.top + inset);
         
         setIndicatorStyle({
           top,
@@ -198,7 +198,7 @@ export function DynamicIconOnlySidebar() {
           
           // Position relative to container with precise left positioning
           const left = rect.left - containerRect.left + inset;
-          const top = Math.round(activeItem.offsetTop + (tileH - height) / 2);
+          const top = Math.round(rect.top - containerRect.top + inset);
           
           setIndicatorStyle({
             top,
