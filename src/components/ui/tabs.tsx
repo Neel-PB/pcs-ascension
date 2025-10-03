@@ -76,7 +76,7 @@ const TabsTrigger = React.forwardRef<
           }}
         />
       )}
-      <span className="relative z-10">
+      <span className={cn("relative z-10 transition-colors", isActive ? "text-primary-foreground" : "text-muted-foreground")}>
         {children}
       </span>
     </TabsPrimitive.Trigger>
