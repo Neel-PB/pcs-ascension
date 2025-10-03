@@ -1,16 +1,24 @@
 import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { motion, LayoutGroup, AnimatePresence } from "framer-motion";
 import { FilterBar } from "@/components/staffing/FilterBar";
 import { EmployeesTab } from "./EmployeesTab";
 import { ContractorsTab } from "./ContractorsTab";
 import { RequisitionsTab } from "./RequisitionsTab";
 
 export default function PositionsPage() {
+  const [activeTab, setActiveTab] = useState("employees");
+  
   // State management for filters
   const [selectedRegion, setSelectedRegion] = useState("all-regions");
   const [selectedMarket, setSelectedMarket] = useState("all-markets");
   const [selectedFacility, setSelectedFacility] = useState("all-facilities");
   const [selectedDepartment, setSelectedDepartment] = useState("all-departments");
+
+  const tabs = [
+    { id: "employees", label: "Employees" },
+    { id: "contractors", label: "Contractors" },
+    { id: "requisitions", label: "Requisitions" },
+  ];
 
   const handleRegionChange = (value: string) => {
     setSelectedRegion(value);
@@ -45,48 +53,81 @@ export default function PositionsPage() {
         />
       </div>
 
-      <Tabs defaultValue="employees" className="w-full">
-        <div className="bg-shell-elevated rounded-xl p-2 shadow-soft mb-6">
-          <TabsList className="grid w-full grid-cols-3 bg-transparent gap-1">
-            <TabsTrigger value="employees" className="data-[state=active]:bg-gradient-primary data-[state=active]:text-white">
-              Employees
-            </TabsTrigger>
-            <TabsTrigger value="contractors" className="data-[state=active]:bg-gradient-primary data-[state=active]:text-white">
-              Contractors
-            </TabsTrigger>
-            <TabsTrigger value="requisitions" className="data-[state=active]:bg-gradient-primary data-[state=active]:text-white">
-              Requisitions
-            </TabsTrigger>
-          </TabsList>
+      <LayoutGroup>
+        <div className="relative bg-secondary rounded-lg p-1 mb-6">
+          <div className="flex">
+            {tabs.map((tab, index) => (
+              <motion.button
+                key={tab.id}
+                className={`relative flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors z-10 ${
+                  activeTab === tab.id
+                    ? "text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                onClick={() => setActiveTab(tab.id)}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                style={{ flex: 1 }}
+              >
+                {tab.label}
+              </motion.button>
+            ))}
+            
+            <motion.div
+              layoutId="positionsTabIndicator"
+              className="absolute inset-y-1 bg-primary rounded-sm"
+              style={{
+                left: `${(tabs.findIndex((t) => t.id === activeTab) / tabs.length) * 100}%`,
+                width: `${100 / tabs.length}%`,
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 30,
+              }}
+            />
+          </div>
         </div>
+      </LayoutGroup>
 
-        <TabsContent value="employees" className="mt-0">
-          <EmployeesTab
-            selectedRegion={selectedRegion}
-            selectedMarket={selectedMarket}
-            selectedFacility={selectedFacility}
-            selectedDepartment={selectedDepartment}
-          />
-        </TabsContent>
-
-        <TabsContent value="contractors" className="mt-0">
-          <ContractorsTab
-            selectedRegion={selectedRegion}
-            selectedMarket={selectedMarket}
-            selectedFacility={selectedFacility}
-            selectedDepartment={selectedDepartment}
-          />
-        </TabsContent>
-
-        <TabsContent value="requisitions" className="mt-0">
-          <RequisitionsTab
-            selectedRegion={selectedRegion}
-            selectedMarket={selectedMarket}
-            selectedFacility={selectedFacility}
-            selectedDepartment={selectedDepartment}
-          />
-        </TabsContent>
-      </Tabs>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
+          className="space-y-6 animate-fade-in"
+        >
+          {activeTab === "employees" && (
+            <EmployeesTab
+              selectedRegion={selectedRegion}
+              selectedMarket={selectedMarket}
+              selectedFacility={selectedFacility}
+              selectedDepartment={selectedDepartment}
+            />
+          )}
+          {activeTab === "contractors" && (
+            <ContractorsTab
+              selectedRegion={selectedRegion}
+              selectedMarket={selectedMarket}
+              selectedFacility={selectedFacility}
+              selectedDepartment={selectedDepartment}
+            />
+          )}
+          {activeTab === "requisitions" && (
+            <RequisitionsTab
+              selectedRegion={selectedRegion}
+              selectedMarket={selectedMarket}
+              selectedFacility={selectedFacility}
+              selectedDepartment={selectedDepartment}
+            />
+          )}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }

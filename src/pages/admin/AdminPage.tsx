@@ -1,13 +1,21 @@
 import { useState } from "react";
+import { motion, LayoutGroup, AnimatePresence } from "framer-motion";
 import { Shield, Upload, Users, Lock, Settings } from "lucide-react";
 import { ContentCard } from "@/components/shell/ContentCard";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRBAC } from "@/hooks/useRBAC";
 import DataImportPage from "./DataImportPage";
 
 export default function AdminPage() {
   const { hasPermission, loading } = useRBAC();
   const [activeTab, setActiveTab] = useState("data-import");
+
+  const tabs = [
+    { id: "data-import", label: "Data Import", icon: Upload },
+    { id: "users", label: "Users", icon: Users },
+    { id: "roles", label: "Roles", icon: Shield },
+    { id: "permissions", label: "Permissions", icon: Lock },
+    { id: "settings", label: "Settings", icon: Settings },
+  ];
 
   if (loading) {
     return (
@@ -31,58 +39,83 @@ export default function AdminPage() {
 
   return (
     <ContentCard title="Admin Panel" icon={Shield}>
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5 mb-6">
-          <TabsTrigger value="data-import" className="flex items-center gap-2">
-            <Upload className="h-4 w-4" />
-            Data Import
-          </TabsTrigger>
-          <TabsTrigger value="users" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Users
-          </TabsTrigger>
-          <TabsTrigger value="roles" className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            Roles
-          </TabsTrigger>
-          <TabsTrigger value="permissions" className="flex items-center gap-2">
-            <Lock className="h-4 w-4" />
-            Permissions
-          </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            Settings
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="data-import">
-          <DataImportPage />
-        </TabsContent>
-
-        <TabsContent value="users">
-          <div className="py-8 text-center text-muted-foreground">
-            User management coming soon...
+      <LayoutGroup>
+        <div className="relative bg-secondary rounded-lg p-1 mb-6">
+          <div className="flex">
+            {tabs.map((tab, index) => (
+              <motion.button
+                key={tab.id}
+                className={`relative flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-colors z-10 ${
+                  activeTab === tab.id
+                    ? "text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                onClick={() => setActiveTab(tab.id)}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                style={{ flex: 1 }}
+              >
+                <tab.icon className="h-4 w-4" />
+                {tab.label}
+              </motion.button>
+            ))}
+            
+            <motion.div
+              layoutId="adminTabIndicator"
+              className="absolute inset-y-1 bg-primary rounded-sm"
+              style={{
+                left: `${(tabs.findIndex((t) => t.id === activeTab) / tabs.length) * 100}%`,
+                width: `${100 / tabs.length}%`,
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 30,
+              }}
+            />
           </div>
-        </TabsContent>
+        </div>
+      </LayoutGroup>
 
-        <TabsContent value="roles">
-          <div className="py-8 text-center text-muted-foreground">
-            Role management coming soon...
-          </div>
-        </TabsContent>
-
-        <TabsContent value="permissions">
-          <div className="py-8 text-center text-muted-foreground">
-            Permission management coming soon...
-          </div>
-        </TabsContent>
-
-        <TabsContent value="settings">
-          <div className="py-8 text-center text-muted-foreground">
-            Admin settings coming soon...
-          </div>
-        </TabsContent>
-      </Tabs>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
+          className="space-y-6 animate-fade-in"
+        >
+          {activeTab === "data-import" && <DataImportPage />}
+          
+          {activeTab === "users" && (
+            <div className="py-8 text-center text-muted-foreground">
+              User management coming soon...
+            </div>
+          )}
+          
+          {activeTab === "roles" && (
+            <div className="py-8 text-center text-muted-foreground">
+              Role management coming soon...
+            </div>
+          )}
+          
+          {activeTab === "permissions" && (
+            <div className="py-8 text-center text-muted-foreground">
+              Permission management coming soon...
+            </div>
+          )}
+          
+          {activeTab === "settings" && (
+            <div className="py-8 text-center text-muted-foreground">
+              Admin settings coming soon...
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
     </ContentCard>
   );
 }

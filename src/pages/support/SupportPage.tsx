@@ -1,18 +1,25 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, LayoutGroup, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Play, FileText, AlertCircle, MessageSquare, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function SupportPage() {
+  const [activeTab, setActiveTab] = useState("faqs");
   const [searchQuery, setSearchQuery] = useState("");
   const [issueTitle, setIssueTitle] = useState("");
   const [issueDescription, setIssueDescription] = useState("");
   const { toast } = useToast();
+
+  const tabs = [
+    { id: "faqs", label: "FAQs" },
+    { id: "videos", label: "Training Videos" },
+    { id: "troubleshooting", label: "Troubleshooting" },
+    { id: "report", label: "Report Issue" },
+  ];
 
   const handleSubmitIssue = (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,17 +157,57 @@ export default function SupportPage() {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="faqs" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="faqs">FAQs</TabsTrigger>
-          <TabsTrigger value="videos">Training Videos</TabsTrigger>
-          <TabsTrigger value="troubleshooting">Troubleshooting</TabsTrigger>
-          <TabsTrigger value="report">Report Issue</TabsTrigger>
-        </TabsList>
+      <LayoutGroup>
+        <div className="relative bg-secondary rounded-lg p-1 mb-6">
+          <div className="flex">
+            {tabs.map((tab, index) => (
+              <motion.button
+                key={tab.id}
+                className={`relative flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors z-10 ${
+                  activeTab === tab.id
+                    ? "text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                onClick={() => setActiveTab(tab.id)}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                style={{ flex: 1 }}
+              >
+                {tab.label}
+              </motion.button>
+            ))}
+            
+            <motion.div
+              layoutId="supportTabIndicator"
+              className="absolute inset-y-1 bg-primary rounded-sm"
+              style={{
+                left: `${(tabs.findIndex((t) => t.id === activeTab) / tabs.length) * 100}%`,
+                width: `${100 / tabs.length}%`,
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 30,
+              }}
+            />
+          </div>
+        </div>
+      </LayoutGroup>
 
-        {/* FAQs Tab */}
-        <TabsContent value="faqs" className="space-y-6">
-          <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
+          className="space-y-6 animate-fade-in"
+        >
+          {activeTab === "faqs" && (
+            <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
             <div className="mb-6">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-shell-muted" />
@@ -193,11 +240,10 @@ export default function SupportPage() {
               </div>
             )}
           </div>
-        </TabsContent>
+          )}
 
-        {/* Training Videos Tab */}
-        <TabsContent value="videos" className="space-y-6">
-          <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
+          {activeTab === "videos" && (
+            <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {trainingVideos.map((video, index) => (
                 <div key={index} className="group bg-shell-elevated rounded-lg p-4 hover:shadow-medium transition-all cursor-pointer">
@@ -219,11 +265,10 @@ export default function SupportPage() {
               ))}
             </div>
           </div>
-        </TabsContent>
+          )}
 
-        {/* Troubleshooting Tab */}
-        <TabsContent value="troubleshooting" className="space-y-6">
-          <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
+          {activeTab === "troubleshooting" && (
+            <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
             <div className="space-y-4">
               {troubleshootingTopics.map((topic, index) => (
                 <div key={index} className="p-4 bg-shell-elevated rounded-lg border border-shell-elevated">
@@ -236,11 +281,10 @@ export default function SupportPage() {
               ))}
             </div>
           </div>
-        </TabsContent>
+          )}
 
-        {/* Report Issue Tab */}
-        <TabsContent value="report" className="space-y-6">
-          <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
+          {activeTab === "report" && (
+            <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
             <form onSubmit={handleSubmitIssue} className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-foreground mb-2 block">Issue Title</label>
@@ -274,8 +318,9 @@ export default function SupportPage() {
               </div>
             </form>
           </div>
-        </TabsContent>
-      </Tabs>
+          )}
+        </motion.div>
+      </AnimatePresence>
     </motion.div>
   );
 }

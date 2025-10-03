@@ -1,16 +1,26 @@
 import { useState } from "react";
+import { motion, LayoutGroup, AnimatePresence } from "framer-motion";
 import { KPICard } from "@/components/staffing/KPICard";
 import { FilterBar } from "@/components/staffing/FilterBar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PositionPlanning from "./PositionPlanning";
 import { VarianceAnalysis } from "./VarianceAnalysis";
 
 export default function StaffingSummary() {
+  const [activeTab, setActiveTab] = useState("summary");
+  
   // State management for filters
   const [selectedRegion, setSelectedRegion] = useState("all-regions");
   const [selectedMarket, setSelectedMarket] = useState("all-markets");
   const [selectedFacility, setSelectedFacility] = useState("all-facilities");
   const [selectedDepartment, setSelectedDepartment] = useState("all-departments");
+
+  const tabs = [
+    { id: "summary", label: "Summary" },
+    { id: "planning", label: "Position Planning" },
+    { id: "variance", label: "Variance Analysis" },
+    { id: "forecasts", label: "Forecasts" },
+    { id: "settings", label: "Settings" },
+  ];
 
   const handleRegionChange = (value: string) => {
     setSelectedRegion(value);
@@ -66,30 +76,57 @@ export default function StaffingSummary() {
         />
       </div>
 
-      <Tabs defaultValue="summary" className="w-full">
-        {/* Tab Navigation */}
-        <div className="bg-shell-elevated rounded-xl p-2 shadow-soft mb-6">
-          <TabsList className="grid w-full grid-cols-5 gap-1">
-            <TabsTrigger value="summary" className="data-[state=active]:bg-gradient-primary data-[state=active]:text-white">
-              Summary
-            </TabsTrigger>
-            <TabsTrigger value="planning" className="data-[state=active]:bg-gradient-primary data-[state=active]:text-white">
-              Position Planning
-            </TabsTrigger>
-            <TabsTrigger value="variance" className="data-[state=active]:bg-gradient-primary data-[state=active]:text-white">
-              Variance Analysis
-            </TabsTrigger>
-            <TabsTrigger value="forecasts" className="data-[state=active]:bg-gradient-primary data-[state=active]:text-white">
-              Forecasts
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="data-[state=active]:bg-gradient-primary data-[state=active]:text-white">
-              Settings
-            </TabsTrigger>
-          </TabsList>
+      <LayoutGroup>
+        <div className="relative bg-secondary rounded-lg p-1 mb-6">
+          <div className="flex">
+            {tabs.map((tab, index) => (
+              <motion.button
+                key={tab.id}
+                className={`relative flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors z-10 ${
+                  activeTab === tab.id
+                    ? "text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                onClick={() => setActiveTab(tab.id)}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                style={{ flex: 1 }}
+              >
+                {tab.label}
+              </motion.button>
+            ))}
+            
+            <motion.div
+              layoutId="staffingTabIndicator"
+              className="absolute inset-y-1 bg-primary rounded-sm"
+              style={{
+                left: `${(tabs.findIndex((t) => t.id === activeTab) / tabs.length) * 100}%`,
+                width: `${100 / tabs.length}%`,
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 30,
+              }}
+            />
+          </div>
         </div>
+      </LayoutGroup>
 
-        {/* Summary Tab Content */}
-        <TabsContent value="summary" className="space-y-8 mt-0">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
+          className="space-y-6 animate-fade-in"
+        >
+          {activeTab === "summary" && (
+            <div className="space-y-8">
           {/* FTE Section */}
           <div className="space-y-4">
             <h2 className="text-lg font-semibold text-foreground">FTE</h2>
@@ -384,35 +421,35 @@ Indicates room for productivity improvement"
               />
             </div>
           </div>
-        </TabsContent>
-
-        {/* Position Planning Tab Content */}
-        <TabsContent value="planning" className="mt-0">
-          <PositionPlanning />
-        </TabsContent>
-
-        {/* Variance Analysis Tab Content */}
-        <TabsContent value="variance" className="mt-0">
+        </div>
+          )}
+          
+          {activeTab === "planning" && (
+            <PositionPlanning />
+          )}
+          
+          {activeTab === "variance" && (
             <VarianceAnalysis 
               selectedRegion={selectedRegion}
               selectedMarket={selectedMarket}
               selectedFacility={selectedFacility}
               selectedDepartment={selectedDepartment}
             />
-        </TabsContent>
-
-        <TabsContent value="forecasts" className="mt-0">
-          <div className="text-center py-12 text-muted-foreground">
-            Forecasts content coming soon
-          </div>
-        </TabsContent>
-
-        <TabsContent value="settings" className="mt-0">
-          <div className="text-center py-12 text-muted-foreground">
-            Settings content coming soon
-          </div>
-        </TabsContent>
-      </Tabs>
+          )}
+          
+          {activeTab === "forecasts" && (
+            <div className="text-center py-12 text-muted-foreground">
+              Forecasts content coming soon
+            </div>
+          )}
+          
+          {activeTab === "settings" && (
+            <div className="text-center py-12 text-muted-foreground">
+              Settings content coming soon
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
