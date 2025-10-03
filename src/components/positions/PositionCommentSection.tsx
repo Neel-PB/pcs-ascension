@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Loader2, Pencil, Trash2, Send } from "lucide-react";
+import { Loader2, Pencil, Trash2, ArrowUp } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   usePositionComments,
@@ -172,35 +173,31 @@ export function PositionCommentSection({ positionId }: PositionCommentSectionPro
         </div>
       </ScrollArea>
 
-      <div className="border-t pt-4 mt-4">
-        <div className="space-y-2">
-          <Textarea
+      <div className="pt-4 mt-4">
+        <div className="relative">
+          <Input
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Write a comment..."
-            className="min-h-[80px] resize-none"
+            className="pr-12"
             onKeyDown={(e) => {
               if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                 handleAddComment();
               }
             }}
           />
-          <div className="flex justify-end">
-            <Button
-              onClick={handleAddComment}
-              disabled={!newComment.trim() || addComment.isPending}
-              size="sm"
-            >
-              {addComment.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  <Send className="h-4 w-4 mr-2" />
-                  Comment
-                </>
-              )}
-            </Button>
-          </div>
+          <Button
+            onClick={handleAddComment}
+            disabled={!newComment.trim() || addComment.isPending}
+            size="icon"
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full"
+          >
+            {addComment.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <ArrowUp className="h-4 w-4" />
+            )}
+          </Button>
         </div>
       </div>
     </div>
