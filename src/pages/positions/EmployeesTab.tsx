@@ -188,7 +188,24 @@ export function EmployeesTab({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <ScrollArea className="h-[calc(100vh-240px)]">
+      <div className="flex justify-end mb-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setFilterOpen(true)}
+          className="gap-2"
+        >
+          <Filter className="h-4 w-4" />
+          Filters
+          {activeFilterCount > 0 && (
+            <Badge variant="secondary" className="ml-1">
+              {activeFilterCount}
+            </Badge>
+          )}
+        </Button>
+      </div>
+
+      <ScrollArea className="h-[calc(100vh-330px)]">
         <Table>
           <TableHeader className="sticky top-0 bg-background z-10">
             <TableRow>
