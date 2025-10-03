@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useLayoutEffect, forwardRef } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -13,47 +13,49 @@ interface ModuleItemProps {
   isActive: boolean;
 }
 
-function ModuleItem({ module, isActive, index }: ModuleItemProps & { index: number }) {
-  const { hasPermission } = useRBAC();
-  const navigate = useNavigate();
+const ModuleItem = forwardRef<HTMLDivElement, ModuleItemProps & { index: number }>(
+  ({ module, isActive, index }, ref) => {
+    const { hasPermission } = useRBAC();
+    const navigate = useNavigate();
 
-  // Check if user has access to any sub-items
-  const hasAccessibleItems = module.items.some(item => {
-    if (!item.permissions || item.permissions.length === 0) return true;
-    return item.permissions.some(permission => hasPermission(permission));
-  });
-
-  // Don't render if user has no access to any items
-  if (!hasAccessibleItems) return null;
-
-  // Handle module click - navigate to first accessible sub-item
-  const handleModuleClick = useCallback(() => {
-    const firstAccessibleItem = module.items.find(item => {
+    // Check if user has access to any sub-items
+    const hasAccessibleItems = module.items.some(item => {
       if (!item.permissions || item.permissions.length === 0) return true;
       return item.permissions.some(permission => hasPermission(permission));
     });
 
-    if (firstAccessibleItem?.url) {
-      navigate(firstAccessibleItem.url);
-    }
-  }, [module.items, hasPermission, navigate]);
+    // Don't render if user has no access to any items
+    if (!hasAccessibleItems) return null;
 
-  return (
-    <div className="relative block">
-      <motion.div
-        onClick={handleModuleClick}
-        className={cn(
-          "group flex flex-col items-center gap-1.5 py-3 px-2 rounded-lg transition-colors z-10 relative w-full cursor-pointer",
-          isActive
-            ? "text-primary-foreground"
-            : "text-muted-foreground hover:text-foreground"
-        )}
-        initial={{ opacity: 0, x: -10 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: index * 0.05 }}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-      >
+    // Handle module click - navigate to first accessible sub-item
+    const handleModuleClick = useCallback(() => {
+      const firstAccessibleItem = module.items.find(item => {
+        if (!item.permissions || item.permissions.length === 0) return true;
+        return item.permissions.some(permission => hasPermission(permission));
+      });
+
+      if (firstAccessibleItem?.url) {
+        navigate(firstAccessibleItem.url);
+      }
+    }, [module.items, hasPermission, navigate]);
+
+    return (
+      <div className="relative block">
+        <motion.div
+          ref={ref}
+          onClick={handleModuleClick}
+          className={cn(
+            "group flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl transition-colors relative w-full cursor-pointer aspect-square",
+            isActive
+              ? "text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: index * 0.05 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
         <module.icon className="h-5 w-5 stroke-[1.5]" />
         <span className="text-[10px] font-medium leading-tight text-center">
           {module.label}
@@ -98,12 +100,18 @@ function ModuleItem({ module, isActive, index }: ModuleItemProps & { index: numb
       </motion.div>
     </div>
   );
-}
+});
+
+ModuleItem.displayName = "ModuleItem";
 
 export function DynamicIconOnlySidebar() {
   const { sidebarModules, isLoading } = useDynamicSidebar();
   const { roles, loading: rbacLoading, hasPermission } = useRBAC();
   const location = useLocation();
+  
+  const containerRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0 });
 
   // Determine which module is active based on current location
   const getActiveModule = useCallback(() => {
@@ -133,10 +141,41 @@ export function DynamicIconOnlySidebar() {
 
   const activeIndex = accessibleModules.findIndex(module => activeModule?.label === module.label);
 
-  // Accurate measurements for indicator positioning
-  const moduleHeight = 62; // py-3 (24px) + icon (20px) + gap-1.5 (6px) + text (~12px) = 62px
-  const moduleGap = 4; // space-y-1
-  const containerPadding = 6; // p-1.5
+  // Update indicator position based on actual DOM measurements
+  useLayoutEffect(() => {
+    if (activeIndex >= 0 && itemRefs.current[activeIndex] && containerRef.current) {
+      const activeItem = itemRefs.current[activeIndex];
+      const container = containerRef.current;
+      
+      if (activeItem) {
+        const itemRect = activeItem.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        
+        setIndicatorStyle({
+          top: activeItem.offsetTop,
+          height: activeItem.offsetHeight,
+        });
+      }
+    }
+  }, [activeIndex, accessibleModules.length]);
+
+  // Recalculate on window resize
+  useLayoutEffect(() => {
+    const handleResize = () => {
+      if (activeIndex >= 0 && itemRefs.current[activeIndex]) {
+        const activeItem = itemRefs.current[activeIndex];
+        if (activeItem) {
+          setIndicatorStyle({
+            top: activeItem.offsetTop,
+            height: activeItem.offsetHeight,
+          });
+        }
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [activeIndex]);
 
   return (
     <div className="fixed left-0 top-0 z-40 h-full w-20 max-w-20 border-r bg-background shadow-sm">
@@ -147,14 +186,15 @@ export function DynamicIconOnlySidebar() {
         </div>
 
         {/* Main navigation */}
-        <div className="flex-1 overflow-y-auto py-4">
+        <div className="flex-1 overflow-y-auto pt-0 pb-4">
           <LayoutGroup>
-            <div className="relative bg-secondary/30 rounded-xl p-1.5 space-y-1 mx-2">
+            <div ref={containerRef} className="relative bg-secondary/30 rounded-xl p-0 space-y-1 mx-0">
               {accessibleModules.map((module, index) => {
                 const isActive = activeModule?.label === module.label;
                 return (
                   <div key={module.label} className="relative z-10">
                     <ModuleItem 
+                      ref={(el) => (itemRefs.current[index] = el)}
                       module={module} 
                       isActive={isActive}
                       index={index}
@@ -164,15 +204,15 @@ export function DynamicIconOnlySidebar() {
               })}
 
               {/* Animated vertical indicator */}
-              {activeIndex >= 0 && (
+              {activeIndex >= 0 && indicatorStyle.height > 0 && (
                 <motion.div
                   layoutId="dynamicSidebarActiveIndicator"
-                  className="absolute bg-primary/20 rounded-lg z-0"
+                  className="absolute bg-gradient-primary rounded-xl z-0"
                   style={{
-                    top: `${containerPadding + activeIndex * (moduleHeight + moduleGap)}px`,
-                    left: "2px",
-                    right: "2px",
-                    height: `${moduleHeight}px`,
+                    top: `${indicatorStyle.top}px`,
+                    left: "1px",
+                    right: "1px",
+                    height: `${indicatorStyle.height}px`,
                   }}
                   transition={{
                     type: "spring",
