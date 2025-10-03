@@ -198,12 +198,7 @@ export function VarianceAnalysis({
         transition={{ duration: 0.3 }}
         className="flex items-center justify-between"
       >
-        <div>
-          <h2 className="text-2xl font-bold">FTE Skill Shift Variance Analysis</h2>
-          <p className="text-muted-foreground mt-1">
-            Target vs Actual FTE by skill level
-          </p>
-        </div>
+        <h2 className="text-2xl font-bold">Variance Analysis</h2>
         <div className="flex items-center gap-4 text-sm">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-green-500" />
