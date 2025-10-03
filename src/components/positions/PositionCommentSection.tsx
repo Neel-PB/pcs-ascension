@@ -85,8 +85,8 @@ export function PositionCommentSection({ positionId }: PositionCommentSectionPro
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <ScrollArea className="flex-1 pr-4">
+    <div className="flex h-full min-h-0 flex-col">
+      <ScrollArea className="flex-1 min-h-0 pr-4">
         <div className="space-y-4">
           {comments && comments.length === 0 && (
             <div className="text-center text-muted-foreground py-12">

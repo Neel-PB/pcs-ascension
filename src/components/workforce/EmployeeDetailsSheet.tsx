@@ -26,7 +26,7 @@ export function EmployeeDetailsSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-xl">
+      <SheetContent className="w-full sm:max-w-xl flex h-full flex-col">
         <SheetHeader>
           <SheetTitle className="text-2xl">{employee.employeeName}</SheetTitle>
           <SheetDescription>
@@ -34,13 +34,13 @@ export function EmployeeDetailsSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <Tabs defaultValue="details" className="mt-6 flex flex-col flex-1">
+        <Tabs defaultValue="details" className="mt-6 flex flex-col flex-1 min-h-0">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="comments">Comments</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="details" className="flex-1 flex flex-col">
+          <TabsContent value="details" className="flex-1 min-h-0 flex flex-col">
             <ScrollArea className="h-full pr-4">
               <div className="space-y-6">
                 {/* Status */}
@@ -150,7 +150,7 @@ export function EmployeeDetailsSheet({
             </ScrollArea>
           </TabsContent>
 
-          <TabsContent value="comments" className="flex-1">
+          <TabsContent value="comments" className="flex-1 min-h-0">
             <PositionCommentSection positionId={employee.id} />
           </TabsContent>
         </Tabs>

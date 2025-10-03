@@ -39,7 +39,7 @@ export function RequisitionDetailsSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-xl">
+      <SheetContent className="w-full sm:max-w-xl flex h-full flex-col">
         <SheetHeader>
           <SheetTitle className="text-2xl">Open Requisition</SheetTitle>
           <SheetDescription>
@@ -47,7 +47,7 @@ export function RequisitionDetailsSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <Tabs defaultValue="details" className="mt-6 flex flex-col flex-1">
+        <Tabs defaultValue="details" className="mt-6 flex flex-col flex-1 min-h-0">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="comments">Comments</TabsTrigger>
@@ -180,7 +180,7 @@ export function RequisitionDetailsSheet({
             </div>
           </TabsContent>
 
-          <TabsContent value="comments" className="flex-1">
+          <TabsContent value="comments" className="flex-1 min-h-0">
             <PositionCommentSection positionId={requisition.id} />
           </TabsContent>
         </Tabs>
