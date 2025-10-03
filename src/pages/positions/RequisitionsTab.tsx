@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState, useMemo } from "react";
-import { Eye, Settings, MessageSquare, ArrowUpDown, ArrowUp, ArrowDown, Filter } from "lucide-react";
+import { Eye, Settings, MessageSquare, ArrowUpDown, ArrowUp, ArrowDown, Filter, Search } from "lucide-react";
 import { differenceInDays } from "date-fns";
 import { useRequisitions } from "@/hooks/useRequisitions";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
 import { RequisitionDetailsSheet } from "@/components/workforce/RequisitionDetailsSheet";
 import { RequisitionsFilterSheet } from "@/components/positions/RequisitionsFilterSheet";
 
@@ -41,6 +42,7 @@ export function RequisitionsTab({
   const [selectedRequisition, setSelectedRequisition] = useState<any>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [sortColumn, setSortColumn] = useState<string>("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [filters, setFilters] = useState({
@@ -115,6 +117,25 @@ export function RequisitionsTab({
       vacancyAge: getVacancyAge(req.positionStatusDate),
     }));
 
+    // Apply search
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((r) => {
+        const searchFields = [
+          r.positionNum,
+          r.jobTitle,
+          r.jobFamily,
+          r.departmentName,
+          r.positionLifecycle,
+          r.employmentType,
+          r.shift,
+        ];
+        return searchFields.some((field) => 
+          field?.toString().toLowerCase().includes(query)
+        );
+      });
+    }
+
     // Apply filters
     if (filters.vacancyAgeMin) {
       const minAge = parseInt(filters.vacancyAgeMin);
@@ -166,7 +187,7 @@ export function RequisitionsTab({
     }
 
     return filtered;
-  }, [requisitions, filters, sortColumn, sortDirection]);
+  }, [requisitions, searchQuery, filters, sortColumn, sortDirection]);
 
   if (isLoading) {
     return (
@@ -200,7 +221,7 @@ export function RequisitionsTab({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-between items-center mb-4 gap-4">
         <Button
           variant="outline"
           size="sm"
@@ -215,6 +236,17 @@ export function RequisitionsTab({
             </Badge>
           )}
         </Button>
+        
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search requisitions..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
       </div>
 
       <ScrollArea className="h-[calc(100vh-330px)]">

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState, useMemo } from "react";
-import { MessageSquare, ArrowUpDown, ArrowUp, ArrowDown, Filter } from "lucide-react";
+import { MessageSquare, ArrowUpDown, ArrowUp, ArrowDown, Filter, Search } from "lucide-react";
 import { useContractors } from "@/hooks/useContractors";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
 import { ContractorDetailsSheet } from "@/components/workforce/ContractorDetailsSheet";
 import { ContractorsFilterSheet } from "@/components/positions/ContractorsFilterSheet";
 
@@ -40,6 +41,7 @@ export function ContractorsTab({
   const [selectedContractor, setSelectedContractor] = useState<any>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [sortColumn, setSortColumn] = useState<string>("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [filters, setFilters] = useState({
@@ -93,6 +95,25 @@ export function ContractorsTab({
     if (!contractors) return [];
 
     let filtered = [...contractors];
+
+    // Apply search
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((c) => {
+        const searchFields = [
+          c.employeeName,
+          c.positionNum,
+          c.jobTitle,
+          c.jobFamily,
+          c.departmentName,
+          c.employmentType,
+          c.shift,
+        ];
+        return searchFields.some((field) => 
+          field?.toString().toLowerCase().includes(query)
+        );
+      });
+    }
 
     // Apply filters
     if (filters.employmentType !== "all") {
@@ -148,7 +169,7 @@ export function ContractorsTab({
     }
 
     return filtered;
-  }, [contractors, filters, sortColumn, sortDirection]);
+  }, [contractors, searchQuery, filters, sortColumn, sortDirection]);
 
   if (isLoading) {
     return (
@@ -182,7 +203,7 @@ export function ContractorsTab({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-between items-center mb-4 gap-4">
         <Button
           variant="outline"
           size="sm"
@@ -197,6 +218,17 @@ export function ContractorsTab({
             </Badge>
           )}
         </Button>
+        
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search contractors..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
       </div>
 
       <ScrollArea className="h-[calc(100vh-330px)]">
