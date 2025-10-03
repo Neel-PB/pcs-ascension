@@ -196,7 +196,7 @@ export default function PositionPlanning() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          FTE Skill Shift Variance Analysis
+          FTE Skill Shift Analysis
         </motion.h1>
 
         {/* Legend */}
