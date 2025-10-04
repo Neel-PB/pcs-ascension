@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate, matchPath } from "react-router-dom";
-import { useState, useCallback, useRef, useLayoutEffect, forwardRef } from "react";
+import { useCallback, forwardRef } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -55,9 +55,16 @@ const ModuleItem = forwardRef<HTMLDivElement, ModuleItemProps>(
           transition={{ delay: index * 0.05 }}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-        >
-        <module.icon className="h-5 w-5 stroke-[1.5]" />
-        <span className="text-[10px] font-medium leading-tight text-center">
+>
+        {isActive && (
+          <motion.div
+            layoutId="dynamicSidebarIndicator"
+            className="absolute inset-0 rounded-xl bg-primary"
+            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+          />
+        )}
+        <module.icon className="relative z-10 h-5 w-5 stroke-[1.5]" />
+        <span className="relative z-10 text-[10px] font-medium leading-tight text-center">
           {module.label}
         </span>
 
@@ -108,10 +115,6 @@ export function DynamicIconOnlySidebar() {
   const { sidebarModules, isLoading } = useDynamicSidebar();
   const { roles, loading: rbacLoading, hasPermission } = useRBAC();
   const location = useLocation();
-  
-  const containerRef = useRef<HTMLDivElement>(null);
-  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, left: 0, width: 0, height: 0 });
 
   // Determine which module is active based on current location
   const getActiveModule = useCallback(() => {
@@ -145,75 +148,6 @@ export function DynamicIconOnlySidebar() {
     });
   });
 
-  const activeIndex = accessibleModules.findIndex(module => activeModule?.label === module.label);
-
-  // Update indicator position based on actual DOM measurements
-  useLayoutEffect(() => {
-    if (activeIndex >= 0 && itemRefs.current[activeIndex] && containerRef.current) {
-      const activeItem = itemRefs.current[activeIndex];
-      const container = containerRef.current;
-      
-      if (activeItem) {
-        const inset = 2;
-        const rect = activeItem.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
-        
-        // Calculate precise dimensions
-        const tileW = Math.round(rect.width);
-        const tileH = Math.round(rect.height);
-        const width = tileW - inset * 2;
-        const height = width; // Perfect square
-        
-        // Position relative to container with precise left positioning
-        const left = rect.left - containerRect.left + inset;
-        const top = Math.round(rect.top - containerRect.top + inset);
-        
-        setIndicatorStyle({
-          top,
-          left,
-          width,
-          height,
-        });
-      }
-    }
-  }, [activeIndex, accessibleModules.length, location.pathname]);
-
-  // Recalculate on window resize
-  useLayoutEffect(() => {
-    const handleResize = () => {
-      if (activeIndex >= 0 && itemRefs.current[activeIndex] && containerRef.current) {
-        const activeItem = itemRefs.current[activeIndex];
-        const container = containerRef.current;
-        
-        if (activeItem) {
-          const inset = 2;
-          const rect = activeItem.getBoundingClientRect();
-          const containerRect = container.getBoundingClientRect();
-          
-          // Calculate precise dimensions
-          const tileW = Math.round(rect.width);
-          const tileH = Math.round(rect.height);
-          const width = tileW - inset * 2;
-          const height = width; // Perfect square
-          
-          // Position relative to container with precise left positioning
-          const left = rect.left - containerRect.left + inset;
-          const top = Math.round(rect.top - containerRect.top + inset);
-          
-          setIndicatorStyle({
-            top,
-            left,
-            width,
-            height,
-          });
-        }
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [activeIndex]);
-
   return (
     <div className="fixed left-0 top-0 z-40 h-full w-20 max-w-20 border-r bg-background shadow-sm">
       <div className="flex h-full flex-col">
@@ -225,42 +159,22 @@ export function DynamicIconOnlySidebar() {
         {/* Main navigation */}
         <div className="flex-1 overflow-y-auto pt-0 pb-4">
           <LayoutGroup>
-            <div ref={containerRef} className="relative bg-secondary/30 rounded-xl p-1 space-y-1 mx-1">
+            <div className="relative bg-secondary/30 rounded-xl p-1 space-y-1 mx-1">
               {accessibleModules.map((module, index) => {
                 const isActive = activeModule?.label === module.label;
                 return (
-                  <div 
-                    key={module.label} 
-                    className="relative z-10"
+                  <div
+                    key={module.label}
+                    className="relative"
                   >
-                    <ModuleItem 
-                      ref={(el) => (itemRefs.current[index] = el)}
-                      module={module} 
+                    <ModuleItem
+                      module={module}
                       isActive={isActive}
                       index={index}
                     />
                   </div>
                 );
               })}
-
-              {/* Animated vertical indicator */}
-              {activeIndex >= 0 && indicatorStyle.height > 0 && (
-                <motion.div
-                  layoutId="dynamicSidebarActiveIndicator"
-                  className="absolute bg-gradient-primary rounded-xl z-0"
-                  style={{
-                    top: `${indicatorStyle.top}px`,
-                    left: `${indicatorStyle.left}px`,
-                    width: `${indicatorStyle.width}px`,
-                    height: `${indicatorStyle.height}px`,
-                  }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 30,
-                  }}
-                />
-              )}
             </div>
           </LayoutGroup>
         </div>
