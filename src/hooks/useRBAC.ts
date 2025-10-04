@@ -25,6 +25,9 @@ export function useRBAC() {
 
           const rolesList = userRoles?.map(r => r.role as UserRole) || [];
           setRoles(rolesList);
+        } else {
+          setUserId(null);
+          setRoles([]);
         }
       } catch (error) {
         console.error('Error fetching user roles:', error);
@@ -37,12 +40,29 @@ export function useRBAC() {
     fetchUserRoles();
 
     // Subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(() => {
       fetchUserRoles();
     });
 
+    // Subscribe to realtime changes on user_roles for current user
+    const channel = supabase
+      .channel('user-roles-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_roles',
+        },
+        () => {
+          fetchUserRoles();
+        }
+      )
+      .subscribe();
+
     return () => {
-      subscription.unsubscribe();
+      authSubscription.unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, []);
 

@@ -34,12 +34,16 @@ interface UserManagementTableProps {
 const getRoleBadgeVariant = (role: string) => {
   switch (role) {
     case 'admin':
-      return 'destructive';
-    case 'moderator':
-      return 'default';
+      return 'destructive' as const;
+    case 'labor_team':
+      return 'default' as const;
     default:
-      return 'secondary';
+      return 'secondary' as const;
   }
+};
+
+const getRoleDisplayName = (role: string): string => {
+  return role === 'labor_team' ? 'Labor Team' : role.charAt(0).toUpperCase() + role.slice(1);
 };
 
 export function UserManagementTable({
@@ -101,15 +105,16 @@ export function UserManagementTable({
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-1 flex-wrap">
-                    {user.roles.map((role) => (
+                    {user.roles.length > 0 ? user.roles.map((role) => (
                       <Badge
                         key={role}
                         variant={getRoleBadgeVariant(role)}
-                        className="capitalize"
                       >
-                        {role}
+                        {getRoleDisplayName(role)}
                       </Badge>
-                    ))}
+                    )) : (
+                      <Badge variant="outline">No Role</Badge>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground">

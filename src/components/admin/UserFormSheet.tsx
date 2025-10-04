@@ -34,7 +34,7 @@ const userFormSchema = z.object({
   lastName: z.string().min(1, "Last name is required").max(100),
   email: z.string().email("Invalid email address").max(255),
   password: z.string().min(8, "Password must be at least 8 characters").optional(),
-  roles: z.array(z.enum(['admin', 'moderator', 'user'])).min(1, "At least one role is required"),
+  roles: z.array(z.enum(['admin', 'labor_team'])).min(1, "At least one role is required"),
   bio: z.string().max(500).optional(),
 });
 
@@ -64,7 +64,7 @@ export function UserFormSheet({
       lastName: user?.last_name || "",
       email: user?.email || "",
       password: "",
-      roles: user?.roles || ["user"],
+      roles: user?.roles || [],
       bio: user?.bio || "",
     },
   });
@@ -90,7 +90,7 @@ export function UserFormSheet({
     }
   };
 
-  const availableRoles: UserRole[] = ['admin', 'moderator', 'user'];
+  const availableRoles: UserRole[] = ['admin', 'labor_team'];
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -202,7 +202,7 @@ export function UserFormSheet({
                                 />
                               </FormControl>
                               <FormLabel className="font-normal capitalize">
-                                {role}
+                                {role === 'labor_team' ? 'Labor Team' : role}
                               </FormLabel>
                             </FormItem>
                           );

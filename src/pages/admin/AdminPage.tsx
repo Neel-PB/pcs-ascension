@@ -3,12 +3,15 @@ import { motion, LayoutGroup, AnimatePresence } from "framer-motion";
 import { Shield, Upload, Users, Lock, Settings } from "lucide-react";
 import { ContentCard } from "@/components/shell/ContentCard";
 import { useRBAC } from "@/hooks/useRBAC";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import DataImportPage from "./DataImportPage";
 import UsersManagement from "./UsersManagement";
 
 export default function AdminPage() {
   const { hasPermission, loading } = useRBAC();
   const [activeTab, setActiveTab] = useState("data-import");
+  const [grantingAccess, setGrantingAccess] = useState(false);
 
   const tabs = [
     { id: "data-import", label: "Data Import", icon: Upload },
@@ -17,6 +20,26 @@ export default function AdminPage() {
     { id: "permissions", label: "Permissions", icon: Lock },
     { id: "settings", label: "Settings", icon: Settings },
   ];
+
+  const handleGrantAdminAccess = async () => {
+    setGrantingAccess(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('grant-admin-role');
+      
+      if (error) throw error;
+
+      toast.success("Admin access granted. Refreshing...");
+
+      // Refresh the page to update permissions
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (error) {
+      console.error('Error granting admin access:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      toast.error(`Failed to grant admin access: ${errorMessage}`);
+    } finally {
+      setGrantingAccess(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -31,8 +54,15 @@ export default function AdminPage() {
   if (!hasPermission("admin.access")) {
     return (
       <ContentCard title="Access Denied" icon={Shield}>
-        <div className="flex items-center justify-center py-12">
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
           <p className="text-muted-foreground">You don't have permission to access this page.</p>
+          <button
+            onClick={handleGrantAdminAccess}
+            disabled={grantingAccess}
+            className="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 transition-colors"
+          >
+            {grantingAccess ? "Granting Access..." : "Unlock Admin Access"}
+          </button>
         </div>
       </ContentCard>
     );

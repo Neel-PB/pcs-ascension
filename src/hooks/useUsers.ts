@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useEffect } from "react";
 
-export type UserRole = 'admin' | 'moderator' | 'user';
+export type UserRole = 'admin' | 'labor_team';
 
 export interface UserWithProfile {
   id: string;
@@ -52,7 +52,7 @@ export function useUsers() {
           avatar_url: profile.avatar_url,
           bio: profile.bio,
           created_at: profile.created_at,
-          roles: roles.length > 0 ? roles : ['user'], // Default to 'user' if no roles
+          roles: roles, // No default role
         };
       });
 
