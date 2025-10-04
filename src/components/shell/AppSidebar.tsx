@@ -36,9 +36,6 @@ export function AppSidebar() {
     return location.pathname.startsWith(url);
   };
 
-  const allItems = [...sidebarItems, { id: "admin", title: "Admin", url: "/admin", icon: ShieldCheck }];
-  const activeIndex = allItems.findIndex((item) => isActive(item.url));
-
   return (
     <>
       {/* Logo in intersection area */}
@@ -48,9 +45,9 @@ export function AppSidebar() {
 
       {/* Sidebar */}
       <div className="fixed left-0 top-16 z-40 flex h-[calc(100vh-4rem)] w-20 flex-col bg-background border-r border-border">
-        {/* Navigation Items */}
-        <nav className="flex-1 py-4">
-          <LayoutGroup>
+        <LayoutGroup>
+          {/* Navigation Items */}
+          <nav className="flex-1 py-4">
             <div className="relative bg-secondary/30 rounded-xl p-1.5 space-y-1 mx-2">
               {sidebarItems.map((item, index) => {
                 const Icon = item.icon;
@@ -64,7 +61,7 @@ export function AppSidebar() {
                   >
                     <motion.div
                       className={cn(
-                        "flex flex-col items-center gap-1.5 py-3 px-2 rounded-lg transition-colors z-10 relative w-full",
+                        "relative flex flex-col items-center gap-1.5 py-3 px-2 rounded-lg transition-colors w-full",
                         active
                           ? "text-primary-foreground"
                           : "text-muted-foreground hover:text-foreground"
@@ -75,38 +72,31 @@ export function AppSidebar() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      <Icon className="h-5 w-5 stroke-[1.5]" />
-                      <span className="text-[10px] font-medium leading-tight text-center">
+                      {active && (
+                        <motion.div
+                          layoutId="sidebarIndicator"
+                          className="absolute inset-0 bg-primary rounded-lg"
+                          initial={false}
+                          transition={{
+                            type: "spring",
+                            stiffness: 500,
+                            damping: 30,
+                          }}
+                        />
+                      )}
+                      <Icon className="relative z-10 h-5 w-5 stroke-[1.5]" />
+                      <span className="relative z-10 text-[10px] font-medium leading-tight text-center">
                         {item.title}
                       </span>
                     </motion.div>
                   </NavLink>
                 );
               })}
-
-              {/* Animated vertical indicator */}
-              {activeIndex >= 0 && activeIndex < sidebarItems.length && (
-                <motion.div
-                  layoutId="sidebarActiveIndicator"
-                  className="absolute left-1.5 right-1.5 bg-primary rounded-lg"
-                  style={{
-                    top: `${6 + activeIndex * (56 + 4)}px`,
-                    height: "56px",
-                  }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 30,
-                  }}
-                />
-              )}
             </div>
-          </LayoutGroup>
-        </nav>
+          </nav>
 
-        {/* Admin at bottom */}
-        <div className="border-t border-border py-4">
-          <LayoutGroup>
+          {/* Admin at bottom */}
+          <div className="border-t border-border py-4">
             <div className="relative bg-secondary/30 rounded-xl p-1.5 mx-2">
               <NavLink
                 to="/admin"
@@ -114,7 +104,7 @@ export function AppSidebar() {
               >
                 <motion.div
                   className={cn(
-                    "flex flex-col items-center gap-1.5 py-3 px-2 rounded-lg transition-colors z-10 relative w-full",
+                    "relative flex flex-col items-center gap-1.5 py-3 px-2 rounded-lg transition-colors w-full",
                     location.pathname.startsWith("/admin")
                       ? "text-primary-foreground"
                       : "text-muted-foreground hover:text-foreground"
@@ -124,28 +114,27 @@ export function AppSidebar() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <ShieldCheck className="h-5 w-5 stroke-[1.5]" />
-                  <span className="text-[10px] font-medium leading-tight text-center">
+                  {location.pathname.startsWith("/admin") && (
+                    <motion.div
+                      layoutId="sidebarIndicator"
+                      className="absolute inset-0 bg-primary rounded-lg"
+                      initial={false}
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                  <ShieldCheck className="relative z-10 h-5 w-5 stroke-[1.5]" />
+                  <span className="relative z-10 text-[10px] font-medium leading-tight text-center">
                     Admin
                   </span>
                 </motion.div>
               </NavLink>
-
-              {/* Admin indicator */}
-              {location.pathname.startsWith("/admin") && (
-                <motion.div
-                  layoutId="sidebarAdminIndicator"
-                  className="absolute inset-1.5 bg-primary rounded-lg"
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 30,
-                  }}
-                />
-              )}
             </div>
-          </LayoutGroup>
-        </div>
+          </div>
+        </LayoutGroup>
       </div>
     </>
   );
