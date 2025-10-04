@@ -92,12 +92,11 @@ export function AppSidebar() {
                   </NavLink>
                 );
               })}
-            </div>
-          </nav>
 
-          {/* Admin at bottom */}
-          <div className="border-t border-border py-4">
-            <div className="relative bg-secondary/30 rounded-xl p-1.5 mx-2">
+              {/* Separator */}
+              <div className="my-2 border-t border-border/50" />
+
+              {/* Admin Item */}
               <NavLink
                 to="/admin"
                 className="relative block"
@@ -133,7 +132,7 @@ export function AppSidebar() {
                 </motion.div>
               </NavLink>
             </div>
-          </div>
+          </nav>
         </LayoutGroup>
       </div>
     </>
