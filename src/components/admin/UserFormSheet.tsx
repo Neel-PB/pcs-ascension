@@ -20,14 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { UserWithProfile, UserRole } from "@/hooks/useUsers";
 
 const userFormSchema = z.object({
@@ -35,7 +28,7 @@ const userFormSchema = z.object({
   lastName: z.string().min(1, "Last name is required").max(100),
   email: z.string().email("Invalid email address").max(255),
   password: z.string().min(8, "Password must be at least 8 characters").optional(),
-  roles: z.array(z.enum(['admin', 'labor_team'])).min(1, "At least one role is required"),
+  role: z.enum(['admin', 'labor_team'], { required_error: "Role is required" }),
   bio: z.string().max(500).optional(),
 });
 
@@ -65,7 +58,7 @@ export function UserFormSheet({
       lastName: "",
       email: "",
       password: "",
-      roles: [],
+      role: "labor_team",
       bio: "",
     },
   });
@@ -78,7 +71,7 @@ export function UserFormSheet({
         lastName: user.last_name || "",
         email: user.email || "",
         password: "",
-        roles: user.roles || [],
+        role: user.role || "labor_team",
         bio: user.bio || "",
       });
     } else {
@@ -87,7 +80,7 @@ export function UserFormSheet({
         lastName: "",
         email: "",
         password: "",
-        roles: [],
+        role: "labor_team",
         bio: "",
       });
     }
@@ -100,7 +93,7 @@ export function UserFormSheet({
         firstName: data.firstName,
         lastName: data.lastName,
         bio: data.bio,
-        roles: data.roles,
+        role: data.role,
       });
     } else {
       onSubmit({
@@ -109,12 +102,10 @@ export function UserFormSheet({
         firstName: data.firstName,
         lastName: data.lastName,
         bio: data.bio,
-        roles: data.roles,
+        role: data.role,
       });
     }
   };
-
-  const availableRoles: UserRole[] = ['admin', 'labor_team'];
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -195,45 +186,34 @@ export function UserFormSheet({
 
             <FormField
               control={form.control}
-              name="roles"
-              render={() => (
-                <FormItem>
-                  <FormLabel>Roles</FormLabel>
-                  <div className="space-y-2">
-                    {availableRoles.map((role) => (
-                      <FormField
-                        key={role}
-                        control={form.control}
-                        name="roles"
-                        render={({ field }) => {
-                          return (
-                            <FormItem
-                              key={role}
-                              className="flex flex-row items-start space-x-3 space-y-0"
-                            >
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value?.includes(role)}
-                                  onCheckedChange={(checked) => {
-                                    return checked
-                                      ? field.onChange([...field.value, role])
-                                      : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== role
-                                          )
-                                        );
-                                  }}
-                                />
-                              </FormControl>
-                              <FormLabel className="font-normal capitalize">
-                                {role === 'labor_team' ? 'Labor Team' : role}
-                              </FormLabel>
-                            </FormItem>
-                          );
-                        }}
-                      />
-                    ))}
-                  </div>
+              name="role"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>Role</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      className="flex flex-col space-y-1"
+                    >
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="admin" />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          Administrator
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="labor_team" />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          Labor Team
+                        </FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

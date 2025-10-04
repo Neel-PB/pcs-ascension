@@ -13,7 +13,7 @@ export interface UserWithProfile {
   avatar_url: string | null;
   bio: string | null;
   created_at: string;
-  roles: UserRole[];
+  role: UserRole;
 }
 
 export function useUsers() {
@@ -40,9 +40,8 @@ export function useUsers() {
 
       // Combine the data
       const usersWithRoles: UserWithProfile[] = profiles.map(profile => {
-        const roles = userRoles
-          .filter(ur => ur.user_id === profile.id)
-          .map(ur => ur.role as UserRole);
+        const userRole = userRoles.find(ur => ur.user_id === profile.id);
+        const role = userRole?.role as UserRole || 'labor_team';
 
         return {
           id: profile.id,
@@ -52,7 +51,7 @@ export function useUsers() {
           avatar_url: profile.avatar_url,
           bio: profile.bio,
           created_at: profile.created_at,
-          roles: roles,
+          role: role,
         };
       });
 
@@ -105,7 +104,7 @@ export function useUsers() {
       password: string;
       firstName: string;
       lastName: string;
-      roles: UserRole[];
+      role: UserRole;
       bio?: string;
     }) => {
       // Create auth user
@@ -134,14 +133,12 @@ export function useUsers() {
 
       if (profileError) throw profileError;
 
-      // Assign roles
-      for (const role of userData.roles) {
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({ user_id: authData.user.id, role });
+      // Assign role
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({ user_id: authData.user.id, role: userData.role });
 
-        if (roleError) throw roleError;
-      }
+      if (roleError) throw roleError;
 
       return authData.user;
     },
@@ -161,7 +158,7 @@ export function useUsers() {
       firstName: string;
       lastName: string;
       bio?: string;
-      roles: UserRole[];
+      role: UserRole;
     }) => {
       // Update profile
       const { error: profileError } = await supabase
@@ -175,7 +172,7 @@ export function useUsers() {
 
       if (profileError) throw profileError;
 
-      // Delete existing roles
+      // Update role (delete old and insert new)
       const { error: deleteError } = await supabase
         .from('user_roles')
         .delete()
@@ -183,14 +180,11 @@ export function useUsers() {
 
       if (deleteError) throw deleteError;
 
-      // Insert new roles
-      for (const role of userData.roles) {
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({ user_id: userData.userId, role });
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({ user_id: userData.userId, role: userData.role });
 
-        if (roleError) throw roleError;
-      }
+      if (roleError) throw roleError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -204,13 +198,9 @@ export function useUsers() {
   // Delete user mutation
   const deleteUser = useMutation({
     mutationFn: async (userId: string) => {
-      // Note: Deleting from auth.users will cascade to profiles and user_roles
-      // This needs to be done via an admin function or service role
-      // For now, we'll just delete the profile and roles
-      const { error } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', userId);
+      const { error } = await supabase.functions.invoke('delete-user', {
+        body: { userId },
+      });
 
       if (error) throw error;
     },
