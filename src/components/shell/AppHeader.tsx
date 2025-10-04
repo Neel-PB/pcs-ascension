@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Search, Bell, User, Sun, Moon, Monitor, LogOut } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,7 @@ export function AppHeader() {
   const [searchFocused, setSearchFocused] = useState(false);
   const { theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   const resolveAvatarUrl = (avatar_url?: string, first_name?: string, last_name?: string) => {
     if (avatar_url) {
@@ -48,6 +50,11 @@ export function AppHeader() {
     if (theme === "dark") return <Moon className="h-5 w-5" />;
     if (theme === "system") return <Monitor className="h-5 w-5" />;
     return <Sun className="h-5 w-5" />;
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth");
   };
 
   return (
@@ -173,7 +180,7 @@ export function AppHeader() {
                   <span>Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut}>
+                <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
