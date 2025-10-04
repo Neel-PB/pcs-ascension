@@ -114,6 +114,9 @@ export function useUsers() {
           role: userData.role,
           bio: userData.bio,
         },
+        headers: {
+          'Origin': window.location.origin,
+        },
       });
 
       if (error) throw error;
@@ -123,7 +126,7 @@ export function useUsers() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      toast.success('Invitation sent successfully - user will receive an email to set their password');
+      toast.success('Invitation sent! The user will receive an email to set their password.');
     },
     onError: (error: Error) => {
       toast.error(`Failed to send invitation: ${error.message}`);

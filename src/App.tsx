@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import HomePage from "./pages/HomePage";
 import AuthPage from "./pages/AuthPage";
+import SetupPasswordPage from "./pages/SetupPasswordPage";
 import StaffingSummary from "./pages/staffing/StaffingSummary";
 import PositionsPage from "./pages/positions/PositionsPage";
 import AnalyticsRegion from "./pages/analytics/AnalyticsRegion";
@@ -26,6 +27,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/auth/setup-password" element={<SetupPasswordPage />} />
             <Route path="/" element={<ShellLayout><HomePage /></ShellLayout>} />
             <Route path="/staffing" element={<ShellLayout><StaffingSummary /></ShellLayout>} />
             <Route path="/positions" element={<ShellLayout><PositionsPage /></ShellLayout>} />
