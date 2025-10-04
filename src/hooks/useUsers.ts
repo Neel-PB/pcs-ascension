@@ -46,13 +46,13 @@ export function useUsers() {
 
         return {
           id: profile.id,
-          email: '', // We'll need to fetch this separately or from auth
+          email: profile.email || '',
           first_name: profile.first_name,
           last_name: profile.last_name,
           avatar_url: profile.avatar_url,
           bio: profile.bio,
           created_at: profile.created_at,
-          roles: roles, // No default role
+          roles: roles,
         };
       });
 
@@ -123,15 +123,16 @@ export function useUsers() {
       if (authError) throw authError;
       if (!authData.user) throw new Error('User creation failed');
 
-      // Update profile with bio if provided
-      if (userData.bio) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ bio: userData.bio })
-          .eq('id', authData.user.id);
+      // Update profile with bio and email
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ 
+          bio: userData.bio || null,
+          email: userData.email 
+        })
+        .eq('id', authData.user.id);
 
-        if (profileError) throw profileError;
-      }
+      if (profileError) throw profileError;
 
       // Assign roles
       for (const role of userData.roles) {

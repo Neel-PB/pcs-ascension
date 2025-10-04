@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useEffect } from "react";
 import {
   Sheet,
   SheetContent,
@@ -60,14 +61,37 @@ export function UserFormSheet({
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
-      firstName: user?.first_name || "",
-      lastName: user?.last_name || "",
-      email: user?.email || "",
+      firstName: "",
+      lastName: "",
+      email: "",
       password: "",
-      roles: user?.roles || [],
-      bio: user?.bio || "",
+      roles: [],
+      bio: "",
     },
   });
+
+  // Reset form when user changes
+  useEffect(() => {
+    if (user) {
+      form.reset({
+        firstName: user.first_name || "",
+        lastName: user.last_name || "",
+        email: user.email || "",
+        password: "",
+        roles: user.roles || [],
+        bio: user.bio || "",
+      });
+    } else {
+      form.reset({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        roles: [],
+        bio: "",
+      });
+    }
+  }, [user, form]);
 
   const handleSubmit = (data: UserFormValues) => {
     if (isEditMode) {
