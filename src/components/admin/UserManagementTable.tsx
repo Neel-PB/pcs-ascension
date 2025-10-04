@@ -42,7 +42,8 @@ const getRoleBadgeVariant = (role: string) => {
   }
 };
 
-const getRoleDisplayName = (role: string): string => {
+const getRoleDisplayName = (role: string | undefined | null): string => {
+  if (!role) return 'No Role';
   return role === 'labor_team' ? 'Labor Team' : role.charAt(0).toUpperCase() + role.slice(1);
 };
 
