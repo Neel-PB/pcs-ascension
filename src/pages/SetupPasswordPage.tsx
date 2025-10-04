@@ -17,19 +17,7 @@ export default function SetupPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Check if there's a valid session on mount
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      // If user is already fully authenticated, redirect to home
-      if (session?.user && !searchParams.get('token_hash')) {
-        navigate('/');
-      }
-    };
-    
-    checkSession();
-  }, [navigate, searchParams]);
+  // No auto-redirect - let user set password first
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
