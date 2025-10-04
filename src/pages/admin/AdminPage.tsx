@@ -4,6 +4,7 @@ import { Shield, Upload, Users, Lock, Settings } from "lucide-react";
 import { ContentCard } from "@/components/shell/ContentCard";
 import { useRBAC } from "@/hooks/useRBAC";
 import DataImportPage from "./DataImportPage";
+import UsersManagement from "./UsersManagement";
 
 export default function AdminPage() {
   const { hasPermission, loading } = useRBAC();
@@ -91,11 +92,7 @@ export default function AdminPage() {
         >
           {activeTab === "data-import" && <DataImportPage />}
           
-          {activeTab === "users" && (
-            <div className="py-8 text-center text-muted-foreground">
-              User management coming soon...
-            </div>
-          )}
+          {activeTab === "users" && <UsersManagement />}
           
           {activeTab === "roles" && (
             <div className="py-8 text-center text-muted-foreground">

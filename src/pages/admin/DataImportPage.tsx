@@ -75,6 +75,7 @@ const TABLE_SCHEMAS: Record<TableName, { name: string; type: string }[]> = {
   post_likes: [],
   posts: [],
   profiles: [],
+  user_roles: [],
 };
 
 export default function DataImportPage() {
