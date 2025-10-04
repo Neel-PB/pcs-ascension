@@ -76,7 +76,6 @@ export function AppSidebar() {
                         <motion.div
                           layoutId="sidebarIndicator"
                           className="absolute inset-0 bg-primary rounded-lg"
-                          initial={false}
                           transition={{
                             type: "spring",
                             stiffness: 500,
@@ -117,7 +116,6 @@ export function AppSidebar() {
                     <motion.div
                       layoutId="sidebarIndicator"
                       className="absolute inset-0 bg-primary rounded-lg"
-                      initial={false}
                       transition={{
                         type: "spring",
                         stiffness: 500,
