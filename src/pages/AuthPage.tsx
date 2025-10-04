@@ -8,6 +8,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
+import { z } from "zod";
+
+const ALLOWED_EMAIL_DOMAINS = ['@ascension.org', '@ascension-external.org', '@particleblack.com'];
+
+const signUpEmailSchema = z.string().email('Invalid email address').refine(
+  (email) => ALLOWED_EMAIL_DOMAINS.some(domain => email.toLowerCase().endsWith(domain)),
+  { message: `Email must end with ${ALLOWED_EMAIL_DOMAINS.join(', ')}` }
+);
 
 export default function AuthPage() {
   const navigate = useNavigate();
@@ -46,6 +55,14 @@ export default function AuthPage() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate email domain
+    const emailValidation = signUpEmailSchema.safeParse(signUpEmail);
+    if (!emailValidation.success) {
+      toast.error(emailValidation.error.errors[0].message);
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
@@ -151,12 +168,15 @@ export default function AuthPage() {
                     <Input
                       id="signup-email"
                       type="email"
-                      placeholder="you@example.com"
+                      placeholder="you@ascension.org"
                       value={signUpEmail}
                       onChange={(e) => setSignUpEmail(e.target.value)}
                       required
                       disabled={isLoading}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Only @ascension.org, @ascension-external.org, or @particleblack.com emails allowed
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
