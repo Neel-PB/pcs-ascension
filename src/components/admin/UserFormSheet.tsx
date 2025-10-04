@@ -27,7 +27,6 @@ const userFormSchema = z.object({
   firstName: z.string().min(1, "First name is required").max(100),
   lastName: z.string().min(1, "Last name is required").max(100),
   email: z.string().email("Invalid email address").max(255),
-  password: z.string().min(8, "Password must be at least 8 characters").optional(),
   role: z.enum(['admin', 'labor_team'], { required_error: "Role is required" }),
   bio: z.string().max(500).optional(),
 });
@@ -57,7 +56,6 @@ export function UserFormSheet({
       firstName: "",
       lastName: "",
       email: "",
-      password: "",
       role: "labor_team",
       bio: "",
     },
@@ -70,7 +68,6 @@ export function UserFormSheet({
         firstName: user.first_name || "",
         lastName: user.last_name || "",
         email: user.email || "",
-        password: "",
         role: user.role || "labor_team",
         bio: user.bio || "",
       });
@@ -79,7 +76,6 @@ export function UserFormSheet({
         firstName: "",
         lastName: "",
         email: "",
-        password: "",
         role: "labor_team",
         bio: "",
       });
@@ -98,7 +94,6 @@ export function UserFormSheet({
     } else {
       onSubmit({
         email: data.email,
-        password: data.password!,
         firstName: data.firstName,
         lastName: data.lastName,
         bio: data.bio,
@@ -111,11 +106,11 @@ export function UserFormSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>{isEditMode ? 'Edit User' : 'Add New User'}</SheetTitle>
+          <SheetTitle>{isEditMode ? 'Edit User' : 'Invite New User'}</SheetTitle>
           <SheetDescription>
             {isEditMode
               ? 'Update user information and roles'
-              : 'Create a new user account'}
+              : 'Send an invitation email to create a new user account'}
           </SheetDescription>
         </SheetHeader>
 
@@ -167,22 +162,6 @@ export function UserFormSheet({
                 </FormItem>
               )}
             />
-
-            {!isEditMode && (
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
 
             <FormField
               control={form.control}
@@ -248,7 +227,7 @@ export function UserFormSheet({
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting} className="flex-1">
-                {isSubmitting ? 'Saving...' : isEditMode ? 'Update' : 'Create'}
+                {isSubmitting ? 'Sending...' : isEditMode ? 'Update' : 'Send Invite'}
               </Button>
             </div>
           </form>

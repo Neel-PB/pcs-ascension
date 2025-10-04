@@ -97,57 +97,36 @@ export function useUsers() {
     };
   }, [queryClient]);
 
-  // Create user mutation
+  // Invite user mutation
   const createUser = useMutation({
     mutationFn: async (userData: {
       email: string;
-      password: string;
       firstName: string;
       lastName: string;
       role: UserRole;
       bio?: string;
     }) => {
-      // Create auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: userData.email,
-        password: userData.password,
-        options: {
-          data: {
-            first_name: userData.firstName,
-            last_name: userData.lastName,
-          },
+      const { data, error } = await supabase.functions.invoke('invite-user', {
+        body: {
+          email: userData.email,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          role: userData.role,
+          bio: userData.bio,
         },
       });
 
-      if (authError) throw authError;
-      if (!authData.user) throw new Error('User creation failed');
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Failed to invite user');
 
-      // Update profile with bio and email
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ 
-          bio: userData.bio || null,
-          email: userData.email 
-        })
-        .eq('id', authData.user.id);
-
-      if (profileError) throw profileError;
-
-      // Assign role
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({ user_id: authData.user.id, role: userData.role });
-
-      if (roleError) throw roleError;
-
-      return authData.user;
+      return data.user;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      toast.success('User created successfully');
+      toast.success('Invitation sent successfully - user will receive an email to set their password');
     },
     onError: (error: Error) => {
-      toast.error(`Failed to create user: ${error.message}`);
+      toast.error(`Failed to send invitation: ${error.message}`);
     },
   });
 
