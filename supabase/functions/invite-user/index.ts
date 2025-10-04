@@ -28,8 +28,8 @@ serve(async (req) => {
 
     console.log('Inviting user:', { email, firstName, lastName, role });
 
-    // Get the redirect URL from request or use default
-    const appUrl = req.headers.get('origin') || Deno.env.get('APP_URL') || 'https://b75aea96-d1cc-459d-b9c8-b92e13fbd2e9.lovableproject.com';
+    // Use the deployed app URL for redirect
+    const appUrl = 'https://pcs-ascension.lovable.app';
     
     // Invite user via admin API - this sends the invitation email
     const { data: userData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
