@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { BarChart3, Info } from "lucide-react";
 import { KPIChartModal } from "./KPIChartModal";
 import { KPIInfoModal } from "./KPIInfoModal";
+import { VacancyRateModal, VacancyBySkillType } from "./VacancyRateModal";
 
 interface KPICardProps {
   title: string;
@@ -18,6 +19,8 @@ interface KPICardProps {
   chartType?: "line" | "bar" | "area";
   definition?: string;
   calculation?: string;
+  useVacancyModal?: boolean;
+  vacancyData?: VacancyBySkillType[];
 }
 
 export function KPICard({
@@ -32,6 +35,8 @@ export function KPICard({
   chartType = "line",
   definition = "",
   calculation = "",
+  useVacancyModal = false,
+  vacancyData = [],
 }: KPICardProps) {
   const [showChartModal, setShowChartModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
@@ -104,19 +109,29 @@ export function KPICard({
         </Card>
       </motion.div>
 
-      {/* Chart Modal */}
-      <KPIChartModal
-        open={showChartModal}
-        onOpenChange={setShowChartModal}
-        title={title}
-        value={value}
-        trend={trend}
-        trendValue={trendValue}
-        isNegative={isNegative}
-        isHighlighted={isHighlighted}
-        chartData={chartData}
-        chartType={chartType}
-      />
+      {/* Chart Modal - Conditional */}
+      {useVacancyModal && vacancyData.length > 0 ? (
+        <VacancyRateModal
+          open={showChartModal}
+          onOpenChange={setShowChartModal}
+          title={title}
+          value={value}
+          data={vacancyData}
+        />
+      ) : (
+        <KPIChartModal
+          open={showChartModal}
+          onOpenChange={setShowChartModal}
+          title={title}
+          value={value}
+          trend={trend}
+          trendValue={trendValue}
+          isNegative={isNegative}
+          isHighlighted={isHighlighted}
+          chartData={chartData}
+          chartType={chartType}
+        />
+      )}
 
       {/* Info Modal */}
       <KPIInfoModal
