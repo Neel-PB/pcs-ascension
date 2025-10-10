@@ -26,6 +26,7 @@ import {
   Legend,
   ResponsiveContainer,
   ReferenceLine,
+  Cell,
 } from "recharts";
 import { cn } from "@/lib/utils";
 
@@ -95,71 +96,75 @@ export function VacancyRateModal({
     return "secondary";
   };
 
+  // Helper function to get bar color based on vacancy rate
+  const getBarColor = (rate: number) => {
+    if (rate >= 15) return "hsl(0, 84%, 60%)"; // red
+    if (rate >= 10) return "hsl(25, 95%, 53%)"; // orange
+    if (rate >= 5) return "hsl(45, 93%, 47%)"; // yellow
+    return "hsl(142, 71%, 45%)"; // green
+  };
+
   // Prepare chart data (sorted by vacancy rate for better visualization)
   const chartData = [...data].sort((a, b) => b.vacancyRate - a.vacancyRate);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-6xl h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center justify-between">
             <span>{title}</span>
             <span className="text-3xl font-bold text-foreground ml-4">{value}</span>
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="chart" className="flex-1 overflow-hidden flex flex-col">
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs defaultValue="chart" className="flex-1 flex flex-col min-h-0">
+          <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
             <TabsTrigger value="chart">Chart</TabsTrigger>
             <TabsTrigger value="table">Table</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="chart" className="flex-1 overflow-y-auto space-y-4 mt-4">
+          <TabsContent value="chart" className="flex-1 flex flex-col space-y-4 mt-4 min-h-0 overflow-y-auto pr-2">
             {/* Statistics Summary */}
-            <div className="grid grid-cols-4 gap-4 mb-4">
-              <div className="p-3 bg-muted rounded-lg">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 flex-shrink-0">
+              <div className="p-3 bg-muted rounded-lg border">
                 <div className="text-xs text-muted-foreground mb-1">Average</div>
                 <div className="text-lg font-bold">{avgVacancyRate.toFixed(1)}%</div>
               </div>
-              <div className="p-3 bg-destructive/10 rounded-lg">
+              <div className="p-3 bg-destructive/10 rounded-lg border">
                 <div className="text-xs text-muted-foreground mb-1">Highest</div>
                 <div className="text-lg font-bold text-destructive">{highestVacancy.toFixed(1)}%</div>
               </div>
-              <div className="p-3 bg-emerald-500/10 rounded-lg">
+              <div className="p-3 bg-emerald-500/10 rounded-lg border">
                 <div className="text-xs text-muted-foreground mb-1">Lowest</div>
                 <div className="text-lg font-bold text-emerald-500">{lowestVacancy.toFixed(1)}%</div>
               </div>
-              <div className="p-3 bg-muted rounded-lg">
+              <div className="p-3 bg-muted rounded-lg border">
                 <div className="text-xs text-muted-foreground mb-1">Total Vacancies</div>
                 <div className="text-lg font-bold">{totalVacancies} / {totalPositions}</div>
               </div>
             </div>
 
-            {/* Chart */}
-            <div className="w-full" style={{ height: "400px" }}>
+            {/* Chart - Fixed height container */}
+            <div className="flex-shrink-0 w-full h-[480px] bg-card rounded-lg border p-4">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={chartData}
-                  layout="vertical"
-                  margin={{ top: 5, right: 30, left: 120, bottom: 5 }}
+                  margin={{ top: 20, right: 30, left: 10, bottom: 80 }}
                 >
-                  <defs>
-                    <linearGradient id="vacancyGradient" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
-                      <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={1} />
-                    </linearGradient>
-                  </defs>
                   <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                   <XAxis
-                    type="number"
-                    domain={[0, Math.ceil(highestVacancy / 5) * 5]}
-                    label={{ value: "Vacancy Rate (%)", position: "bottom", offset: 0 }}
-                  />
-                  <YAxis
                     type="category"
                     dataKey="skillType"
-                    width={110}
-                    tick={{ fontSize: 12 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                    tick={{ fontSize: 11 }}
+                    interval={0}
+                  />
+                  <YAxis
+                    type="number"
+                    domain={[0, Math.ceil(highestVacancy / 5) * 5]}
+                    label={{ value: "Vacancy Rate (%)", angle: -90, position: "insideLeft" }}
                   />
                   <Tooltip
                     content={({ active, payload }) => {
@@ -181,25 +186,28 @@ export function VacancyRateModal({
                     }}
                   />
                   <ReferenceLine
-                    x={avgVacancyRate}
+                    y={avgVacancyRate}
                     stroke="hsl(var(--muted-foreground))"
                     strokeDasharray="3 3"
-                    label={{ value: "Avg", position: "top" }}
+                    label={{ value: `Avg: ${avgVacancyRate.toFixed(1)}%`, position: "right", fill: "hsl(var(--muted-foreground))" }}
                   />
                   <Bar
                     dataKey="vacancyRate"
-                    fill="url(#vacancyGradient)"
-                    radius={[0, 4, 4, 0]}
-                  />
+                    radius={[4, 4, 0, 0]}
+                  >
+                    {chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={getBarColor(entry.vacancyRate)} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </TabsContent>
 
-          <TabsContent value="table" className="flex-1 overflow-y-auto mt-4">
-            <div className="border rounded-lg">
+          <TabsContent value="table" className="mt-4 min-h-0">
+            <div className="h-[600px] overflow-auto border rounded-lg">
               <Table>
-                <TableHeader>
+                <TableHeader className="sticky top-0 bg-background z-10">
                   <TableRow>
                     <TableHead
                       className="cursor-pointer hover:bg-muted/50 transition-colors"
@@ -254,7 +262,7 @@ export function VacancyRateModal({
                     </TableRow>
                   ))}
                 </TableBody>
-                <TableFooter>
+                <TableFooter className="sticky bottom-0 bg-background z-10">
                   <TableRow>
                     <TableCell className="font-bold">Total</TableCell>
                     <TableCell className="text-right">
