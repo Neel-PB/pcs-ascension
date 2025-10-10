@@ -96,12 +96,9 @@ export function VacancyRateModal({
     return "secondary";
   };
 
-  // Helper function to get bar color based on vacancy rate
-  const getBarColor = (rate: number) => {
-    if (rate >= 15) return "hsl(0, 84%, 60%)"; // red
-    if (rate >= 10) return "hsl(25, 95%, 53%)"; // orange
-    if (rate >= 5) return "hsl(45, 93%, 47%)"; // yellow
-    return "hsl(142, 71%, 45%)"; // green
+  // Helper function to get bar color - using primary blue
+  const getBarColor = () => {
+    return "hsl(var(--primary))"; // primary blue
   };
 
   // Prepare chart data (sorted by vacancy rate for better visualization)
@@ -145,7 +142,7 @@ export function VacancyRateModal({
             </div>
 
             {/* Chart - Fixed height container */}
-            <div className="flex-shrink-0 w-full h-[480px] bg-card rounded-lg border p-4">
+            <div className="flex-shrink-0 w-full h-[480px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={chartData}
@@ -196,7 +193,7 @@ export function VacancyRateModal({
                     radius={[4, 4, 0, 0]}
                   >
                     {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={getBarColor(entry.vacancyRate)} />
+                      <Cell key={`cell-${index}`} fill={getBarColor()} />
                     ))}
                   </Bar>
                 </BarChart>
