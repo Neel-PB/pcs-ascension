@@ -1,22 +1,16 @@
 import { motion } from "framer-motion";
 import { useState, useMemo } from "react";
-import { ArrowUpDown, ArrowUp, ArrowDown, Filter, Search } from "lucide-react";
+import { Filter, Search } from "lucide-react";
 import { useContractors } from "@/hooks/useContractors";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { ContractorDetailsSheet } from "@/components/workforce/ContractorDetailsSheet";
 import { ContractorsFilterSheet } from "@/components/positions/ContractorsFilterSheet";
+import { EditableTable } from "@/components/editable-table/EditableTable";
+import { ColumnVisibilityPanel } from "@/components/editable-table/ColumnVisibilityPanel";
+import { contractorColumns } from "@/config/contractorColumns";
 
 interface ContractorsTabProps {
   selectedRegion: string;
@@ -57,18 +51,9 @@ export function ContractorsTab({
     setSheetOpen(true);
   };
 
-  const handleSort = (column: string) => {
-    if (sortColumn === column) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortColumn(column);
-      setSortDirection("asc");
-    }
-  };
-
-  const getSortIcon = (column: string) => {
-    if (sortColumn !== column) return <ArrowUpDown className="h-4 w-4" />;
-    return sortDirection === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />;
+  const handleSort = (columnId: string, direction: "asc" | "desc") => {
+    setSortColumn(columnId);
+    setSortDirection(direction);
   };
 
   const clearFilters = () => {
@@ -215,134 +200,40 @@ export function ContractorsTab({
           />
         </div>
         
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setFilterOpen(true)}
-          className="gap-2 flex-shrink-0"
-        >
-          <Filter className="h-4 w-4" />
-          Filters
-          {activeFilterCount > 0 && (
-            <Badge variant="secondary" className="ml-1">
-              {activeFilterCount}
-            </Badge>
-          )}
-        </Button>
+        <div className="flex gap-2 flex-shrink-0">
+          <ColumnVisibilityPanel
+            columns={contractorColumns}
+            storeNamespace="contractors-columns"
+          />
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setFilterOpen(true)}
+            className="gap-2"
+          >
+            <Filter className="h-4 w-4" />
+            Filters
+            {activeFilterCount > 0 && (
+              <Badge variant="secondary" className="ml-1">
+                {activeFilterCount}
+              </Badge>
+            )}
+          </Button>
+        </div>
       </div>
 
-      <ScrollArea className="h-[calc(100vh-330px)]">
-        <Table>
-          <TableHeader className="sticky top-0 bg-background z-10">
-            <TableRow>
-              <TableHead 
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("employeeName")}
-              >
-                <div className="flex items-center gap-2">
-                  Contractor Name
-                  {getSortIcon("employeeName")}
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("positionNum")}
-              >
-                <div className="flex items-center gap-2">
-                  Position #
-                  {getSortIcon("positionNum")}
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("jobTitle")}
-              >
-                <div className="flex items-center gap-2">
-                  Job Title
-                  {getSortIcon("jobTitle")}
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("jobFamily")}
-              >
-                <div className="flex items-center gap-2">
-                  Skill Type
-                  {getSortIcon("jobFamily")}
-                </div>
-              </TableHead>
-              <TableHead 
-                className="text-center cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("FTE")}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  Actual FTE
-                  {getSortIcon("FTE")}
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("shift")}
-              >
-                <div className="flex items-center gap-2">
-                  Shift
-                  {getSortIcon("shift")}
-                </div>
-              </TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("employmentFlag")}
-              >
-                <div className="flex items-center gap-2">
-                  Staff Type
-                  {getSortIcon("employmentFlag")}
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("employmentType")}
-              >
-                <div className="flex items-center gap-2">
-                  Full/Part Time
-                  {getSortIcon("employmentType")}
-                </div>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredAndSortedContractors.map((contractor) => (
-              <TableRow
-                key={contractor.id}
-                className="cursor-pointer hover:bg-muted/50 transition-colors"
-                onClick={() => handleRowClick(contractor)}
-              >
-                <TableCell className="font-medium">{contractor.employeeName || "—"}</TableCell>
-                <TableCell className="text-muted-foreground">{contractor.positionNum || "—"}</TableCell>
-                <TableCell>{contractor.jobTitle || "—"}</TableCell>
-                <TableCell>
-                  {contractor.jobFamily ? (
-                    <Badge variant="outline" className="bg-primary/10">
-                      {contractor.jobFamily}
-                    </Badge>
-                  ) : (
-                    "—"
-                  )}
-                </TableCell>
-                <TableCell className="text-center font-medium">
-                  {contractor.FTE || "—"}
-                </TableCell>
-                <TableCell>{contractor.shift || "—"}</TableCell>
-                <TableCell>
-                  <Badge variant="secondary">Contingent</Badge>
-                </TableCell>
-                <TableCell>{contractor.employmentFlag || "—"}</TableCell>
-                <TableCell>{contractor.employmentType || "—"}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </ScrollArea>
+      <EditableTable
+        columns={contractorColumns}
+        data={filteredAndSortedContractors}
+        getRowId={(row) => row.id}
+        sortField={sortColumn}
+        sortDirection={sortDirection}
+        onSort={handleSort}
+        onRowClick={handleRowClick}
+        storeNamespace="contractors-columns"
+        className="h-[calc(100vh-330px)]"
+      />
 
       <ContractorDetailsSheet
         open={sheetOpen}

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState, useMemo } from "react";
-import { ArrowUpDown, ArrowUp, ArrowDown, Filter, Search } from "lucide-react";
+import { Filter, Search } from "lucide-react";
 import { differenceInDays } from "date-fns";
 import { useRequisitions } from "@/hooks/useRequisitions";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { RequisitionDetailsSheet } from "@/components/workforce/RequisitionDetailsSheet";
 import { RequisitionsFilterSheet } from "@/components/positions/RequisitionsFilterSheet";
+import { EditableTable } from "@/components/editable-table/EditableTable";
+import { ColumnVisibilityPanel } from "@/components/editable-table/ColumnVisibilityPanel";
+import { requisitionColumns } from "@/config/requisitionColumns";
 
 interface RequisitionsTabProps {
   selectedRegion: string;
@@ -73,18 +76,9 @@ export function RequisitionsTab({
     return { variant: "default" as const, label: `${days}d - On Track` };
   };
 
-  const handleSort = (column: string) => {
-    if (sortColumn === column) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortColumn(column);
-      setSortDirection("asc");
-    }
-  };
-
-  const getSortIcon = (column: string) => {
-    if (sortColumn !== column) return <ArrowUpDown className="h-4 w-4" />;
-    return sortDirection === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />;
+  const handleSort = (columnId: string, direction: "asc" | "desc") => {
+    setSortColumn(columnId);
+    setSortDirection(direction);
   };
 
   const clearFilters = () => {
@@ -233,126 +227,40 @@ export function RequisitionsTab({
           />
         </div>
         
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setFilterOpen(true)}
-          className="gap-2 flex-shrink-0"
-        >
-          <Filter className="h-4 w-4" />
-          Filters
-          {activeFilterCount > 0 && (
-            <Badge variant="secondary" className="ml-1">
-              {activeFilterCount}
-            </Badge>
-          )}
-        </Button>
+        <div className="flex gap-2 flex-shrink-0">
+          <ColumnVisibilityPanel
+            columns={requisitionColumns}
+            storeNamespace="requisitions-columns"
+          />
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setFilterOpen(true)}
+            className="gap-2"
+          >
+            <Filter className="h-4 w-4" />
+            Filters
+            {activeFilterCount > 0 && (
+              <Badge variant="secondary" className="ml-1">
+                {activeFilterCount}
+              </Badge>
+            )}
+          </Button>
+        </div>
       </div>
 
-      <ScrollArea className="h-[calc(100vh-330px)]">
-        <Table>
-          <TableHeader className="sticky top-0 bg-background z-10">
-            <TableRow>
-              <TableHead 
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("positionNum")}
-              >
-                <div className="flex items-center gap-2">
-                  Position #
-                  {getSortIcon("positionNum")}
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("positionLifecycle")}
-              >
-                <div className="flex items-center gap-2">
-                  Position Lifecycle
-                  {getSortIcon("positionLifecycle")}
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("vacancyAge")}
-              >
-                <div className="flex items-center gap-2">
-                  Vacancy Age
-                  {getSortIcon("vacancyAge")}
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("jobTitle")}
-              >
-                <div className="flex items-center gap-2">
-                  Job Title
-                  {getSortIcon("jobTitle")}
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("jobFamily")}
-              >
-                <div className="flex items-center gap-2">
-                  Skill Type
-                  {getSortIcon("jobFamily")}
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("shift")}
-              >
-                <div className="flex items-center gap-2">
-                  Shift
-                  {getSortIcon("shift")}
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort("employmentType")}
-              >
-                <div className="flex items-center gap-2">
-                  Employment Type
-                  {getSortIcon("employmentType")}
-                </div>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredAndSortedRequisitions.map((requisition) => {
-              const vacancyBadge = getVacancyBadge(requisition.vacancyAge);
-
-              return (
-                <TableRow
-                  key={requisition.id}
-                  className="cursor-pointer hover:bg-muted/50 transition-colors"
-                  onClick={() => handleRowClick(requisition)}
-                >
-                  <TableCell className="font-medium text-muted-foreground">
-                    {requisition.positionNum || "—"}
-                  </TableCell>
-                  <TableCell>{requisition.positionLifecycle || "—"}</TableCell>
-                  <TableCell>
-                    <Badge variant={vacancyBadge.variant}>{vacancyBadge.label}</Badge>
-                  </TableCell>
-                  <TableCell className="font-medium">{requisition.jobTitle || "—"}</TableCell>
-                  <TableCell>
-                    {requisition.jobFamily ? (
-                      <Badge variant="outline" className="bg-primary/10">
-                        {requisition.jobFamily}
-                      </Badge>
-                    ) : (
-                      "—"
-                    )}
-                  </TableCell>
-                  <TableCell>{requisition.shift || "—"}</TableCell>
-                  <TableCell>{requisition.employmentType || "—"}</TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </ScrollArea>
+      <EditableTable
+        columns={requisitionColumns}
+        data={filteredAndSortedRequisitions}
+        getRowId={(row) => row.id}
+        sortField={sortColumn}
+        sortDirection={sortDirection}
+        onSort={handleSort}
+        onRowClick={handleRowClick}
+        storeNamespace="requisitions-columns"
+        className="h-[calc(100vh-330px)]"
+      />
 
       <RequisitionDetailsSheet
         open={sheetOpen}
