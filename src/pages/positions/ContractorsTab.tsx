@@ -232,7 +232,7 @@ export function ContractorsTab({
         onSort={handleSort}
         onRowClick={handleRowClick}
         storeNamespace="contractors-columns"
-        className="h-[calc(100vh-330px)]"
+        className="h-[calc(100vh-280px)]"
       />
 
       <ContractorDetailsSheet

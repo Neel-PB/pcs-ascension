@@ -8,7 +8,7 @@ export const contractorColumns: ColumnDef<Position>[] = [
     label: 'Contractor Name',
     type: 'text',
     width: 200,
-    minWidth: 150,
+    minWidth: 180, // Increased to fit header text + icons
     sortable: true,
     resizable: true,
     draggable: true,
@@ -19,7 +19,7 @@ export const contractorColumns: ColumnDef<Position>[] = [
     label: 'Position #',
     type: 'text',
     width: 140,
-    minWidth: 100,
+    minWidth: 130, // Increased for proper display
     sortable: true,
     resizable: true,
     draggable: true,
@@ -39,7 +39,7 @@ export const contractorColumns: ColumnDef<Position>[] = [
     label: 'Skill Type',
     type: 'badge',
     width: 180,
-    minWidth: 120,
+    minWidth: 140, // Increased for header text
     sortable: true,
     resizable: true,
     draggable: true,
@@ -56,7 +56,7 @@ export const contractorColumns: ColumnDef<Position>[] = [
     label: 'Actual FTE',
     type: 'number',
     width: 120,
-    minWidth: 80,
+    minWidth: 110, // Increased for header text
     sortable: true,
     resizable: true,
     draggable: true,
@@ -66,7 +66,7 @@ export const contractorColumns: ColumnDef<Position>[] = [
     label: 'Shift',
     type: 'text',
     width: 120,
-    minWidth: 80,
+    minWidth: 100, // Increased from 80
     sortable: true,
     resizable: true,
     draggable: true,
@@ -76,7 +76,7 @@ export const contractorColumns: ColumnDef<Position>[] = [
     label: 'Status',
     type: 'custom',
     width: 130,
-    minWidth: 100,
+    minWidth: 110, // Increased for proper display
     sortable: false,
     resizable: true,
     draggable: true,
@@ -87,7 +87,7 @@ export const contractorColumns: ColumnDef<Position>[] = [
     label: 'Staff Type',
     type: 'text',
     width: 150,
-    minWidth: 100,
+    minWidth: 130, // Increased for header text
     sortable: true,
     resizable: true,
     draggable: true,
@@ -97,7 +97,7 @@ export const contractorColumns: ColumnDef<Position>[] = [
     label: 'Full/Part Time',
     type: 'text',
     width: 140,
-    minWidth: 100,
+    minWidth: 140, // Increased to fit full header
     sortable: true,
     resizable: true,
     draggable: true,

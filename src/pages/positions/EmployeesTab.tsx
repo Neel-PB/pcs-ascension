@@ -238,7 +238,7 @@ export function EmployeesTab({
         onSort={handleSort}
         onRowClick={handleRowClick}
         storeNamespace="employees-columns"
-        className="h-[calc(100vh-330px)]"
+        className="h-[calc(100vh-280px)]"
       />
 
       <EmployeeDetailsSheet

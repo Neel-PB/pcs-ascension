@@ -259,7 +259,7 @@ export function RequisitionsTab({
         onSort={handleSort}
         onRowClick={handleRowClick}
         storeNamespace="requisitions-columns"
-        className="h-[calc(100vh-330px)]"
+        className="h-[calc(100vh-280px)]"
       />
 
       <RequisitionDetailsSheet

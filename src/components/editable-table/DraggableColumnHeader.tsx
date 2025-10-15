@@ -60,32 +60,33 @@ export function DraggableColumnHeader<T = any>({
       style={style}
       data-column-header
       className={cn(
-        "relative h-10 px-3 flex items-center gap-2",
+        "relative h-10 px-4 flex items-center gap-2",
         "text-xs uppercase tracking-wider font-medium text-muted-foreground",
         "border-r border-border last:border-r-0",
         column.headerClassName
       )}
     >
-      {/* Drag handle */}
+      {/* Drag handle - inline, not overlapping */}
       {column.draggable && (
         <div
           {...attributes}
           {...listeners}
-          className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+          className="flex-shrink-0 cursor-grab active:cursor-grabbing hover:text-foreground transition-colors"
           onClick={(e) => e.stopPropagation()}
+          title="Drag to reorder"
         >
-          <GripVertical className="h-4 w-4 text-muted-foreground" />
+          <GripVertical className="h-3.5 w-3.5 text-muted-foreground/40 hover:text-muted-foreground" />
         </div>
       )}
 
       {/* Column label */}
-      <span className="truncate flex-1">{column.label}</span>
+      <span className="truncate flex-1 min-w-0">{column.label}</span>
 
       {/* Sort icon */}
       {column.sortable && getSortIcon()}
 
       {/* Column menu */}
-      <div onClick={(e) => e.stopPropagation()}>
+      <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0">
         <ColumnMenu
           onSortAsc={() => onSort?.('asc')}
           onSortDesc={() => onSort?.('desc')}

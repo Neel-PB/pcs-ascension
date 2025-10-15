@@ -25,7 +25,7 @@ export const requisitionColumns: ColumnDef<Position>[] = [
     label: 'Position #',
     type: 'text',
     width: 140,
-    minWidth: 100,
+    minWidth: 130, // Increased for proper display
     sortable: true,
     resizable: true,
     draggable: true,
@@ -36,7 +36,7 @@ export const requisitionColumns: ColumnDef<Position>[] = [
     label: 'Position Lifecycle',
     type: 'text',
     width: 180,
-    minWidth: 120,
+    minWidth: 180, // Increased to fit full header text
     sortable: true,
     resizable: true,
     draggable: true,
@@ -46,7 +46,7 @@ export const requisitionColumns: ColumnDef<Position>[] = [
     label: 'Vacancy Age',
     type: 'custom',
     width: 180,
-    minWidth: 120,
+    minWidth: 140, // Increased for header text
     sortable: true,
     resizable: true,
     draggable: true,
@@ -77,7 +77,7 @@ export const requisitionColumns: ColumnDef<Position>[] = [
     label: 'Skill Type',
     type: 'badge',
     width: 180,
-    minWidth: 120,
+    minWidth: 140, // Increased for header text
     sortable: true,
     resizable: true,
     draggable: true,
@@ -94,7 +94,7 @@ export const requisitionColumns: ColumnDef<Position>[] = [
     label: 'Shift',
     type: 'text',
     width: 120,
-    minWidth: 80,
+    minWidth: 100, // Increased from 80
     sortable: true,
     resizable: true,
     draggable: true,
@@ -104,7 +104,7 @@ export const requisitionColumns: ColumnDef<Position>[] = [
     label: 'Employment Type',
     type: 'text',
     width: 160,
-    minWidth: 120,
+    minWidth: 160, // Increased to fit full header
     sortable: true,
     resizable: true,
     draggable: true,
