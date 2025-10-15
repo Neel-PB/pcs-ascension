@@ -45,20 +45,13 @@ export function DraggableColumnHeader<T = any>({
 
   const getSortIcon = () => {
     if (!column.sortable || sortField !== column.id) {
-      return <ArrowUpDown className="h-3 w-3 text-muted-foreground" />;
+      return null; // Don't show sort icon when not sorted
     }
     return sortDirection === 'asc' ? (
       <ArrowUp className="h-3 w-3" />
     ) : (
       <ArrowDown className="h-3 w-3" />
     );
-  };
-
-  const handleHeaderClick = () => {
-    if (column.sortable && onSort) {
-      const newDirection = sortField === column.id && sortDirection === 'asc' ? 'desc' : 'asc';
-      onSort(newDirection);
-    }
   };
 
   return (
@@ -70,10 +63,8 @@ export function DraggableColumnHeader<T = any>({
         "relative h-10 px-3 flex items-center gap-2",
         "text-xs uppercase tracking-wider font-medium text-muted-foreground",
         "border-r border-border last:border-r-0",
-        column.sortable && "cursor-pointer hover:bg-muted/50",
         column.headerClassName
       )}
-      onClick={handleHeaderClick}
     >
       {/* Drag handle */}
       {column.draggable && (
