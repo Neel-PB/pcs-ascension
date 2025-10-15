@@ -6,7 +6,7 @@ interface ColumnResizeHandleProps {
   minWidth?: number;
 }
 
-export function ColumnResizeHandle({ onResize, minWidth = 100 }: ColumnResizeHandleProps) {
+export function ColumnResizeHandle({ onResize, minWidth = 150 }: ColumnResizeHandleProps) {
   const [isResizing, setIsResizing] = useState(false);
 
   const handlePointerDown = useCallback(
@@ -20,10 +20,12 @@ export function ColumnResizeHandle({ onResize, minWidth = 100 }: ColumnResizeHan
       if (!headerCell) return;
       
       const startWidth = headerCell.offsetWidth;
+      // Ensure minWidth is at least 100px as absolute minimum
+      const effectiveMinWidth = Math.max(minWidth, 100);
 
       const handlePointerMove = (moveEvent: PointerEvent) => {
         const diff = moveEvent.clientX - startX;
-        const newWidth = Math.max(minWidth, startWidth + diff);
+        const newWidth = Math.max(effectiveMinWidth, startWidth + diff);
         onResize(newWidth);
       };
 

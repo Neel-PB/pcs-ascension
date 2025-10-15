@@ -64,9 +64,12 @@ export function EditableTable<T = any>({
       })
       .map(col => {
         const state = stateMap.get(col.id);
+        const storedWidth = state?.width ?? col.width ?? 160;
+        const minWidth = col.minWidth ?? 100;
+        // Ensure stored width respects minimum width
         return {
           ...col,
-          width: state?.width ?? col.width ?? 160,
+          width: Math.max(storedWidth, minWidth),
         };
       });
   }, [columnDefinitions, columnStates]);

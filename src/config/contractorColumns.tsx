@@ -8,7 +8,7 @@ export const contractorColumns: ColumnDef<Position>[] = [
     label: 'Contractor Name',
     type: 'text',
     width: 200,
-    minWidth: 180, // Increased to fit header text + icons
+    minWidth: 200, // Ensure full header text is always visible
     sortable: true,
     resizable: true,
     draggable: true,
@@ -19,7 +19,7 @@ export const contractorColumns: ColumnDef<Position>[] = [
     label: 'Position #',
     type: 'text',
     width: 140,
-    minWidth: 130, // Increased for proper display
+    minWidth: 140, // Ensure full header text is always visible
     sortable: true,
     resizable: true,
     draggable: true,
