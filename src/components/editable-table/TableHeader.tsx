@@ -9,6 +9,7 @@ interface TableHeaderProps<T = any> {
   onColumnResize: (columnId: string, width: number) => void;
   onColumnHide: (columnId: string) => void;
   onColumnResetWidth: (columnId: string) => void;
+  onColumnAutoFit: (columnId: string) => void;
   sortField?: string;
   sortDirection?: 'asc' | 'desc';
 }
@@ -20,6 +21,7 @@ export function TableHeader<T = any>({
   onColumnResize,
   onColumnHide,
   onColumnResetWidth,
+  onColumnAutoFit,
   sortField,
   sortDirection,
 }: TableHeaderProps<T>) {
@@ -42,6 +44,7 @@ export function TableHeader<T = any>({
             onSort={column.sortable && onSort ? (direction) => onSort(column.id, direction) : undefined}
             onHide={() => onColumnHide(column.id)}
             onResetWidth={() => onColumnResetWidth(column.id)}
+            onAutoFit={() => onColumnAutoFit(column.id)}
             sortField={sortField}
             sortDirection={sortDirection}
           />

@@ -4,9 +4,10 @@ import { cn } from '@/lib/utils';
 interface ColumnResizeHandleProps {
   onResize: (width: number) => void;
   minWidth?: number;
+  onAutoFit?: () => void;
 }
 
-export function ColumnResizeHandle({ onResize, minWidth = 150 }: ColumnResizeHandleProps) {
+export function ColumnResizeHandle({ onResize, minWidth = 150, onAutoFit }: ColumnResizeHandleProps) {
   const [isResizing, setIsResizing] = useState(false);
 
   const handlePointerDown = useCallback(
@@ -45,15 +46,26 @@ export function ColumnResizeHandle({ onResize, minWidth = 150 }: ColumnResizeHan
     [onResize, minWidth]
   );
 
+  const handleDoubleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onAutoFit?.();
+    },
+    [onAutoFit]
+  );
+
   return (
     <div
       onPointerDown={handlePointerDown}
+      onDoubleClick={handleDoubleClick}
       className={cn(
         "absolute right-0 top-0 bottom-0 w-1 cursor-col-resize",
         "hover:bg-primary hover:shadow-lg transition-all",
         isResizing && "bg-primary shadow-lg"
       )}
       style={{ zIndex: 10 }}
+      title="Double-click to auto-fit"
     />
   );
 }

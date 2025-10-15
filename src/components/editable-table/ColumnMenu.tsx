@@ -13,6 +13,7 @@ interface ColumnMenuProps {
   onSortDesc: () => void;
   onHide: () => void;
   onResetWidth: () => void;
+  onAutoFit: () => void;
   canHide: boolean;
 }
 
@@ -21,6 +22,7 @@ export function ColumnMenu({
   onSortDesc,
   onHide,
   onResetWidth,
+  onAutoFit,
   canHide,
 }: ColumnMenuProps) {
   return (
@@ -45,16 +47,23 @@ export function ColumnMenu({
           Sort Descending
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        {canHide && (
-          <DropdownMenuItem onClick={onHide}>
-            <EyeOff className="mr-2 h-4 w-4" />
-            Hide Column
-          </DropdownMenuItem>
-        )}
+        <DropdownMenuItem onClick={onAutoFit}>
+          <Maximize2 className="mr-2 h-4 w-4" />
+          Auto-fit Width
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={onResetWidth}>
           <RotateCcw className="mr-2 h-4 w-4" />
           Reset Width
         </DropdownMenuItem>
+        {canHide && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={onHide}>
+              <EyeOff className="mr-2 h-4 w-4" />
+              Hide Column
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

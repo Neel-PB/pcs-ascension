@@ -97,6 +97,61 @@ export function EditableTable<T = any>({
     }
   };
 
+  const handleColumnAutoFit = (columnId: string) => {
+    const column = columnDefinitions.find(c => c.id === columnId);
+    if (!column) return;
+
+    // Create a canvas to measure text width
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (!context) return;
+
+    // Set font to match header style
+    context.font = '11px system-ui, -apple-system, sans-serif'; // text-xs font
+
+    // Measure header text
+    const headerWidth = context.measureText(column.label.toUpperCase()).width;
+
+    // Measure all cell values in this column
+    const cellWidths = data.map(row => {
+      let value = '';
+      
+      if (column.getValue) {
+        value = String(column.getValue(row) ?? '');
+      } else {
+        value = String((row as any)[column.id] ?? '');
+      }
+
+      // Set font for cell content (slightly larger)
+      context.font = '14px system-ui, -apple-system, sans-serif'; // text-sm font
+      return context.measureText(value).width;
+    });
+
+    // Get the maximum width
+    const maxContentWidth = Math.max(headerWidth, ...cellWidths);
+
+    // Add padding for:
+    // - Left/right padding (px-4 = 32px)
+    // - Drag handle (if draggable: ~20px)
+    // - Sort icon (if sortable: ~20px)
+    // - Menu button (~30px)
+    // - Extra breathing room (20px)
+    const paddingAndIcons = 32 + 
+      (column.draggable ? 20 : 0) + 
+      (column.sortable ? 20 : 0) + 
+      30 + 
+      20;
+
+    const optimalWidth = Math.ceil(maxContentWidth + paddingAndIcons);
+
+    // Ensure it's within reasonable bounds
+    const minWidth = column.minWidth ?? 100;
+    const maxWidth = 600; // Don't let columns get too wide
+    const finalWidth = Math.max(minWidth, Math.min(maxWidth, optimalWidth));
+
+    setColumnWidth(storeNamespace, columnId, finalWidth);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -129,6 +184,7 @@ export function EditableTable<T = any>({
               onColumnResize={handleColumnResize}
               onColumnHide={handleColumnHide}
               onColumnResetWidth={handleColumnResetWidth}
+              onColumnAutoFit={handleColumnAutoFit}
               sortField={sortField}
               sortDirection={sortDirection}
             />

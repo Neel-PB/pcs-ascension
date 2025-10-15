@@ -12,6 +12,7 @@ interface DraggableColumnHeaderProps<T = any> {
   onSort?: (direction: 'asc' | 'desc') => void;
   onHide: () => void;
   onResetWidth: () => void;
+  onAutoFit: () => void;
   sortField?: string;
   sortDirection?: 'asc' | 'desc';
 }
@@ -22,6 +23,7 @@ export function DraggableColumnHeader<T = any>({
   onSort,
   onHide,
   onResetWidth,
+  onAutoFit,
   sortField,
   sortDirection,
 }: DraggableColumnHeaderProps<T>) {
@@ -92,13 +94,18 @@ export function DraggableColumnHeader<T = any>({
           onSortDesc={() => onSort?.('desc')}
           onHide={onHide}
           onResetWidth={onResetWidth}
+          onAutoFit={onAutoFit}
           canHide={!column.locked}
         />
       </div>
 
       {/* Resize handle */}
       {column.resizable && (
-        <ColumnResizeHandle onResize={onResize} minWidth={column.minWidth} />
+        <ColumnResizeHandle 
+          onResize={onResize} 
+          minWidth={column.minWidth}
+          onAutoFit={onAutoFit}
+        />
       )}
     </div>
   );
