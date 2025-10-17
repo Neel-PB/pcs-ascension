@@ -88,7 +88,7 @@ export function KPIChartModal({
           </div>
         </DialogHeader>
         
-        <div className="space-y-6 py-4">
+        <div className="space-y-6 pt-4 pb-4">
 
           {/* Tabs for Chart and Table */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -201,7 +201,7 @@ export function KPIChartModal({
 
               {/* Statistics */}
               {stats && (
-                <div className="flex items-center justify-between pt-4 border-t">
+                <div className="flex items-center justify-between py-4 border-t">
                   <div className="grid grid-cols-3 gap-8">
                     <div className="text-center">
                       <p className="text-sm text-muted-foreground mb-1">High</p>
@@ -246,7 +246,7 @@ export function KPIChartModal({
 
               {/* Statistics */}
               {stats && (
-                <div className="flex items-center justify-between pt-4 border-t">
+                <div className="flex items-center justify-between py-4 border-t">
                   <div className="grid grid-cols-3 gap-8">
                     <div className="text-center">
                       <p className="text-sm text-muted-foreground mb-1">High</p>
