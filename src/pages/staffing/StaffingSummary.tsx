@@ -79,17 +79,6 @@ export default function StaffingSummary() {
 
 Example: If you have 6 vacant positions and 43.4 total authorized positions:
 (6 / 43.4) × 100 = 13.8%`,
-        useVacancyModal: true,
-        vacancyData: [
-          { skillType: "Registered Nurse", vacancyRate: 18.5, vacancyCount: 12, totalPositions: 65 },
-          { skillType: "Clinical Lead", vacancyRate: 15.2, vacancyCount: 5, totalPositions: 33 },
-          { skillType: "Patient Care Tech", vacancyRate: 12.8, vacancyCount: 8, totalPositions: 62 },
-          { skillType: "Clerk", vacancyRate: 10.5, vacancyCount: 2, totalPositions: 19 },
-          { skillType: "Manager", vacancyRate: 8.3, vacancyCount: 1, totalPositions: 12 },
-          { skillType: "Practice Specialist", vacancyRate: 5.6, vacancyCount: 1, totalPositions: 18 },
-          { skillType: "Director", vacancyRate: 4.2, vacancyCount: 1, totalPositions: 24 },
-          { skillType: "Ops Coordinator", vacancyRate: 3.8, vacancyCount: 1, totalPositions: 26 },
-        ],
       },
       {
         id: 'hired-ftes',
