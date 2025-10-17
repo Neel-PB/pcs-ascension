@@ -60,14 +60,12 @@ export function KPIChartModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+        <DialogHeader className="flex flex-row items-start justify-between space-y-0 pb-4 border-b">
           <DialogTitle className="text-2xl">{title}</DialogTitle>
-        </DialogHeader>
-        
-        <div className="space-y-6 py-4">
+          
           {/* Current Value and Trend */}
-          <div className="flex items-center gap-6 pb-4 border-b">
-            <div>
+          <div className="flex items-center gap-6">
+            <div className="text-right">
               <p className="text-sm text-muted-foreground mb-1">Current Value</p>
               <p className={cn(
                 "text-4xl font-bold",
@@ -77,7 +75,7 @@ export function KPIChartModal({
               </p>
             </div>
             {trend && trendValue && (
-              <div>
+              <div className="text-right">
                 <p className="text-sm text-muted-foreground mb-1">Trend</p>
                 <div className="flex items-center gap-2">
                   <span className={cn("text-2xl font-semibold", getTrendColor())}>
@@ -87,6 +85,9 @@ export function KPIChartModal({
               </div>
             )}
           </div>
+        </DialogHeader>
+        
+        <div className="space-y-6 py-4">
 
           {/* Tabs for Chart and Table */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
