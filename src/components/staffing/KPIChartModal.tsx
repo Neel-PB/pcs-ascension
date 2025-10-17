@@ -88,7 +88,7 @@ export function KPIChartModal({
           </div>
         </DialogHeader>
         
-        <div className="space-y-6 pt-4">
+        <div className="space-y-6 pt-2">
 
           {/* Tabs for Chart and Table */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
