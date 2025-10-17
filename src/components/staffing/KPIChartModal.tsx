@@ -59,7 +59,7 @@ export function KPIChartModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[70vw] max-h-[70vh] overflow-y-auto top-[10vh]">
         <DialogHeader>
           <DialogTitle className="text-2xl">{title}</DialogTitle>
         </DialogHeader>
