@@ -61,7 +61,7 @@ export function KPIChartModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto pb-4">
-        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b">
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-2 border-b">
           <DialogTitle className="text-2xl">{title}</DialogTitle>
           
           {/* Current Value and Trend */}
