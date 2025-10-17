@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -201,19 +201,22 @@ export function KPIChartModal({
 
               {/* Statistics */}
               {stats && (
-                <div className="grid grid-cols-3 gap-4 pt-4 border-t">
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground mb-1">High</p>
-                    <p className="text-xl font-semibold text-foreground">{stats.high}</p>
+                <div className="flex items-center justify-between pt-4 border-t">
+                  <div className="grid grid-cols-3 gap-8">
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground mb-1">High</p>
+                      <p className="text-xl font-semibold text-foreground">{stats.high}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground mb-1">Average</p>
+                      <p className="text-xl font-semibold text-foreground">{stats.average}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground mb-1">Low</p>
+                      <p className="text-xl font-semibold text-foreground">{stats.low}</p>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground mb-1">Average</p>
-                    <p className="text-xl font-semibold text-foreground">{stats.average}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground mb-1">Low</p>
-                    <p className="text-xl font-semibold text-foreground">{stats.low}</p>
-                  </div>
+                  <Button onClick={() => onOpenChange(false)}>Close</Button>
                 </div>
               )}
             </TabsContent>
@@ -243,28 +246,27 @@ export function KPIChartModal({
 
               {/* Statistics */}
               {stats && (
-                <div className="grid grid-cols-3 gap-4 pt-4 border-t">
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground mb-1">High</p>
-                    <p className="text-xl font-semibold text-foreground">{stats.high}</p>
+                <div className="flex items-center justify-between pt-4 border-t">
+                  <div className="grid grid-cols-3 gap-8">
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground mb-1">High</p>
+                      <p className="text-xl font-semibold text-foreground">{stats.high}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground mb-1">Average</p>
+                      <p className="text-xl font-semibold text-foreground">{stats.average}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground mb-1">Low</p>
+                      <p className="text-xl font-semibold text-foreground">{stats.low}</p>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground mb-1">Average</p>
-                    <p className="text-xl font-semibold text-foreground">{stats.average}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground mb-1">Low</p>
-                    <p className="text-xl font-semibold text-foreground">{stats.low}</p>
-                  </div>
+                  <Button onClick={() => onOpenChange(false)}>Close</Button>
                 </div>
               )}
             </TabsContent>
           </Tabs>
         </div>
-        
-        <DialogFooter>
-          <Button onClick={() => onOpenChange(false)}>Close</Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
