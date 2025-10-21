@@ -1,6 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ArrowUpDown, ArrowUp, ArrowDown, GripVertical } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { ColumnDef } from '@/types/table';
 import { ColumnResizeHandle } from './ColumnResizeHandle';
 import { ColumnMenu } from './ColumnMenu';
@@ -65,7 +65,6 @@ export function DraggableColumnHeader<T = any>({
         "relative group h-10 px-4 flex items-center gap-2",
         "text-xs uppercase tracking-wider font-medium text-muted-foreground",
         "border-r border-border last:border-r-0",
-        column.draggable && "cursor-grab active:cursor-grabbing",
         column.headerClassName
       )}
     >
@@ -74,11 +73,12 @@ export function DraggableColumnHeader<T = any>({
         <div
           {...attributes}
           {...listeners}
-          className="absolute left-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+          className="absolute left-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing z-10 flex items-center justify-center p-1"
           onClick={(e) => e.stopPropagation()}
           title="Drag to reorder"
         >
-          <GripVertical className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-muted-foreground" />
+          {/* Vertical line indicator */}
+          <div className="w-0.5 h-4 bg-muted-foreground/40 rounded-full hover:bg-muted-foreground transition-colors" />
         </div>
       )}
 
