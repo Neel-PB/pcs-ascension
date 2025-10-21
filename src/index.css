@@ -11,6 +11,7 @@ Modern enterprise shell with clean aesthetics and accessibility
     /* Layout Dimensions */
     --sidebar-width: 5rem;
     --header-height: 4rem;
+    --border-width: 1px;
     
     /* Core Shell Colors */
     --bg: 0 0% 100%;

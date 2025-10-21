@@ -23,9 +23,9 @@ export function ShellLayout({ children }: ShellLayoutProps) {
     return (
       <div className="min-h-screen bg-background w-full">
         {/* Sidebar skeleton */}
-        <div className="fixed left-0 top-0 z-50 h-screen border-r bg-background" style={{ width: 'var(--sidebar-width)' }}>
+        <div className="fixed left-0 top-0 z-50 h-screen border-r border-border bg-background" style={{ width: 'var(--sidebar-width)' }}>
           <div className="flex h-full flex-col">
-            <div className="flex items-center justify-center py-3 px-2 border-b">
+            <div className="flex items-center justify-center py-3 px-2 border-b border-border">
               <Skeleton className="h-10 w-10 rounded-lg" />
             </div>
             <div className="flex-1 p-2 space-y-2">
@@ -37,7 +37,7 @@ export function ShellLayout({ children }: ShellLayoutProps) {
         </div>
 
         {/* Header skeleton */}
-        <div className="fixed top-0 right-0 z-40 border-b bg-background" style={{ left: 'var(--sidebar-width)', height: 'var(--header-height)' }}>
+        <div className="fixed top-0 right-0 z-40 border-b border-border bg-background" style={{ left: 'var(--sidebar-width)', height: 'var(--header-height)' }}>
           <div className="flex items-center justify-between px-6 h-full">
             <Skeleton className="h-6 w-48" />
             <Skeleton className="h-10 w-96" />
