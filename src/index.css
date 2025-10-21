@@ -8,6 +8,10 @@ Modern enterprise shell with clean aesthetics and accessibility
 
 @layer base {
   :root {
+    /* Sidebar Dimensions */
+    --sidebar-width: 14rem;
+    --sidebar-width-icon: 4rem;
+    
     /* Core Shell Colors */
     --bg: 0 0% 100%;
     --bg-elev: 220 14% 97.6%;
