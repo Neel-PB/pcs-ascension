@@ -3,7 +3,7 @@ import { motion, LayoutGroup, AnimatePresence } from "framer-motion";
 import { FilterBar } from "@/components/staffing/FilterBar";
 import PositionPlanning from "./PositionPlanning";
 import { VarianceAnalysis } from "./VarianceAnalysis";
-import { DraggableKPISection } from "@/components/staffing/DraggableKPISection";
+import { DraggableSectionsContainer } from "@/components/staffing/DraggableSectionsContainer";
 import { useKPIOrderStore } from "@/stores/useKPIOrderStore";
 
 export default function StaffingSummary() {
@@ -62,7 +62,14 @@ export default function StaffingSummary() {
     }));
 
   // KPI Order Store
-  const { fte: fteOrder, volume: volumeOrder, productivity: productivityOrder, setOrder } = useKPIOrderStore();
+  const { 
+    fte: fteOrder, 
+    volume: volumeOrder, 
+    productivity: productivityOrder, 
+    sectionOrder,
+    setOrder,
+    setSectionOrder 
+  } = useKPIOrderStore();
 
   // FTE KPIs Configuration
   const fteKPIs = useMemo(() => {
@@ -436,23 +443,30 @@ Includes:
           className="space-y-6 animate-fade-in"
         >
           {activeTab === "summary" && (
-            <div className="space-y-8">
-              <DraggableKPISection
-                title="FTE"
-                kpis={fteKPIs}
-                onReorder={(newOrder) => setOrder('fte', newOrder)}
-              />
-              <DraggableKPISection
-                title="Volume"
-                kpis={volumeKPIs}
-                onReorder={(newOrder) => setOrder('volume', newOrder)}
-              />
-              <DraggableKPISection
-                title="Productivity"
-                kpis={productivityKPIs}
-                onReorder={(newOrder) => setOrder('productivity', newOrder)}
-              />
-            </div>
+            <DraggableSectionsContainer
+              sections={[
+                {
+                  id: 'fte',
+                  title: 'FTE',
+                  kpis: fteKPIs,
+                  onReorder: (newOrder) => setOrder('fte', newOrder),
+                },
+                {
+                  id: 'volume',
+                  title: 'Volume',
+                  kpis: volumeKPIs,
+                  onReorder: (newOrder) => setOrder('volume', newOrder),
+                },
+                {
+                  id: 'productivity',
+                  title: 'Productivity',
+                  kpis: productivityKPIs,
+                  onReorder: (newOrder) => setOrder('productivity', newOrder),
+                },
+              ]}
+              sectionOrder={sectionOrder}
+              onSectionReorder={setSectionOrder}
+            />
           )}
           
           {activeTab === "planning" && (

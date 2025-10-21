@@ -1,0 +1,130 @@
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { DraggableKPISection } from './DraggableKPISection';
+import { GripVertical } from 'lucide-react';
+
+interface KPIData {
+  id: string;
+  title: string;
+  value: string;
+  chartData: any[];
+  chartType: 'line' | 'bar' | 'area';
+  delay: number;
+  definition: string;
+  calculation: string;
+  isNegative?: boolean;
+  isHighlighted?: boolean;
+  useVacancyModal?: boolean;
+  vacancyData?: any[];
+}
+
+interface SectionData {
+  id: string;
+  title: string;
+  kpis: KPIData[];
+  onReorder: (newOrder: string[]) => void;
+}
+
+interface DraggableSectionsContainerProps {
+  sections: SectionData[];
+  sectionOrder: string[];
+  onSectionReorder: (newOrder: string[]) => void;
+}
+
+function DraggableSection({ section }: { section: SectionData }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: section.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="relative">
+      <div className="absolute -left-8 top-8 z-10">
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing p-2 rounded hover:bg-accent/50 transition-colors"
+        >
+          <GripVertical className="h-5 w-5 text-muted-foreground" />
+        </div>
+      </div>
+      <DraggableKPISection
+        title={section.title}
+        kpis={section.kpis}
+        onReorder={section.onReorder}
+      />
+    </div>
+  );
+}
+
+export function DraggableSectionsContainer({
+  sections,
+  sectionOrder,
+  onSectionReorder,
+}: DraggableSectionsContainerProps) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = sectionOrder.findIndex((id) => id === active.id);
+      const newIndex = sectionOrder.findIndex((id) => id === over.id);
+      
+      const newOrder = arrayMove(sectionOrder, oldIndex, newIndex);
+      onSectionReorder(newOrder);
+    }
+  };
+
+  // Sort sections based on sectionOrder
+  const sortedSections = [...sections].sort((a, b) => {
+    const aIndex = sectionOrder.indexOf(a.id);
+    const bIndex = sectionOrder.indexOf(b.id);
+    return aIndex - bIndex;
+  });
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext items={sectionOrder} strategy={verticalListSortingStrategy}>
+        <div className="space-y-8 pl-8">
+          {sortedSections.map((section) => (
+            <DraggableSection key={section.id} section={section} />
+          ))}
+        </div>
+      </SortableContext>
+    </DndContext>
+  );
+}

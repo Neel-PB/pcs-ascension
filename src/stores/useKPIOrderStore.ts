@@ -5,8 +5,10 @@ interface KPIOrderState {
   fte: string[];
   volume: string[];
   productivity: string[];
+  sectionOrder: string[];
   setOrder: (section: 'fte' | 'volume' | 'productivity', order: string[]) => void;
   getOrder: (section: 'fte' | 'volume' | 'productivity') => string[];
+  setSectionOrder: (order: string[]) => void;
 }
 
 const defaultOrder = {
@@ -21,8 +23,10 @@ export const useKPIOrderStore = create<KPIOrderState>()(
       fte: defaultOrder.fte,
       volume: defaultOrder.volume,
       productivity: defaultOrder.productivity,
+      sectionOrder: ['fte', 'volume', 'productivity'],
       setOrder: (section, order) => set({ [section]: order }),
       getOrder: (section) => get()[section],
+      setSectionOrder: (order) => set({ sectionOrder: order }),
     }),
     {
       name: 'kpi-order-storage',
