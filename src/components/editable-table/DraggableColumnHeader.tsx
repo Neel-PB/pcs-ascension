@@ -47,10 +47,13 @@ export function DraggableColumnHeader<T = any>({
   });
 
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: transform 
+      ? `translate3d(${Math.round(transform.x)}px, ${Math.round(transform.y)}px, 0)`
+      : undefined,
     transition,
     opacity: isDragging ? 0.5 : 1,
-  };
+    willChange: isDragging ? 'transform' : undefined,
+  } as React.CSSProperties;
 
   const getSortIcon = () => {
     if (!column.sortable || sortField !== column.id) {
@@ -72,6 +75,8 @@ export function DraggableColumnHeader<T = any>({
         "relative group h-10 px-4 flex items-center gap-2",
         "text-xs uppercase tracking-wider font-medium text-muted-foreground",
         "border-r border-border last:border-r-0",
+        "[backface-visibility:hidden] [transform-style:preserve-3d]",
+        "[-webkit-font-smoothing:antialiased] [-moz-osx-font-smoothing:grayscale]",
         column.headerClassName
       )}
     >
