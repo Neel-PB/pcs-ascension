@@ -37,7 +37,7 @@ export function ShellLayout({ children }: ShellLayoutProps) {
         </div>
 
         {/* Header skeleton */}
-        <div className="fixed top-0 right-0 z-40 border-b border-border bg-background" style={{ left: 'var(--sidebar-width)', height: 'var(--header-height)' }}>
+        <div className="fixed top-0 z-40 border-b border-border bg-background" style={{ left: 'var(--sidebar-width)', right: 0, height: 'var(--header-height)' }}>
           <div className="flex items-center justify-between px-6 h-full">
             <Skeleton className="h-6 w-48" />
             <Skeleton className="h-10 w-96" />
