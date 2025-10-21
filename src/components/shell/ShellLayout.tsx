@@ -1,10 +1,9 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AppSidebar } from "./AppSidebar";
+import { DynamicIconOnlySidebar } from "../layout/DynamicIconOnlySidebar";
 import { AppHeader } from "./AppHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 
 interface ShellLayoutProps {
   children: React.ReactNode;
@@ -22,56 +21,53 @@ export function ShellLayout({ children }: ShellLayoutProps) {
 
   if (loading) {
     return (
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full">
-          {/* Sidebar skeleton */}
-          <div className="flex h-screen w-[--sidebar-width] flex-col border-r bg-background">
-            <div className="flex items-center justify-center p-4 border-b">
+      <div className="min-h-screen bg-background w-full">
+        {/* Sidebar skeleton */}
+        <div className="fixed left-0 top-0 z-50 h-screen border-r border-border bg-background" style={{ width: 'var(--sidebar-width)' }}>
+          <div className="flex h-full flex-col">
+            <div className="flex items-center justify-center py-3 px-2 border-b border-border">
               <Skeleton className="h-10 w-10 rounded-lg" />
             </div>
-            <div className="flex-1 p-4 space-y-2">
+            <div className="flex-1 p-2 space-y-2">
               {[...Array(6)].map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full rounded-lg" />
+                <Skeleton key={i} className="h-14 w-full rounded-xl" />
               ))}
             </div>
           </div>
-
-          <SidebarInset>
-            {/* Header skeleton */}
-            <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-              <Skeleton className="h-8 w-8" />
-              <Skeleton className="h-4 w-[1px]" />
-              <Skeleton className="h-6 w-48" />
-              <div className="ml-auto flex items-center gap-2">
-                <Skeleton className="h-10 w-96" />
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <Skeleton className="h-10 w-32 rounded-full" />
-              </div>
-            </header>
-
-            {/* Content skeleton */}
-            <div className="flex flex-1 flex-col gap-4 p-4">
-              <Skeleton className="h-8 w-64" />
-              <Skeleton className="h-64 w-full" />
-            </div>
-          </SidebarInset>
         </div>
-      </SidebarProvider>
+
+        {/* Header skeleton */}
+        <div className="fixed top-0 z-40 border-b border-border bg-background" style={{ left: 'var(--sidebar-width)', right: 0, height: 'var(--header-height)' }}>
+          <div className="flex items-center justify-between px-6 h-full">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-10 w-96" />
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <Skeleton className="h-10 w-32 rounded-full" />
+            </div>
+          </div>
+        </div>
+
+        {/* Content skeleton */}
+        <div className="px-4 py-4" style={{ marginLeft: 'var(--sidebar-width)', marginTop: 'var(--header-height)' }}>
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-64 w-full" />
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <SidebarInset>
-          <AppHeader />
-          <main className="flex flex-1 flex-col gap-4 p-4">
-            {children}
-          </main>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
+    <div className="min-h-screen bg-background w-full">
+      <DynamicIconOnlySidebar />
+      <AppHeader />
+      
+      <main className="px-4 py-4" style={{ marginLeft: 'var(--sidebar-width)', marginTop: 'var(--header-height)' }}>
+        {children}
+      </main>
+    </div>
   );
 }
