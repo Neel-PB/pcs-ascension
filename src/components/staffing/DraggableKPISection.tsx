@@ -28,13 +28,19 @@ interface KPIData {
   vacancyData?: any[];
 }
 
+interface DragHandleProps {
+  attributes: any;
+  listeners: any;
+}
+
 interface DraggableKPISectionProps {
   title: string;
   kpis: KPIData[];
   onReorder: (newOrder: string[]) => void;
+  dragHandleProps?: DragHandleProps;
 }
 
-export function DraggableKPISection({ title, kpis, onReorder }: DraggableKPISectionProps) {
+export function DraggableKPISection({ title, kpis, onReorder, dragHandleProps }: DraggableKPISectionProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -57,7 +63,20 @@ export function DraggableKPISection({ title, kpis, onReorder }: DraggableKPISect
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+      <div className="relative group flex items-center gap-2">
+        {dragHandleProps && (
+          <div
+            {...dragHandleProps.attributes}
+            {...dragHandleProps.listeners}
+            className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing flex items-center justify-center p-1"
+            onClick={(e) => e.stopPropagation()}
+            title="Drag to reorder section"
+          >
+            <div className="w-0.5 h-6 bg-muted-foreground/40 rounded-full hover:bg-muted-foreground transition-colors" />
+          </div>
+        )}
+        <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+      </div>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}

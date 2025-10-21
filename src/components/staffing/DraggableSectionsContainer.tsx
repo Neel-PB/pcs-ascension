@@ -37,6 +37,11 @@ interface SectionData {
   onReorder: (newOrder: string[]) => void;
 }
 
+interface DragHandleProps {
+  attributes: any;
+  listeners: any;
+}
+
 interface DraggableSectionsContainerProps {
   sections: SectionData[];
   sectionOrder: string[];
@@ -60,20 +65,12 @@ function DraggableSection({ section }: { section: SectionData }) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="relative group">
-      <div
-        {...attributes}
-        {...listeners}
-        className="absolute left-1.5 top-6 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing z-10 flex items-center justify-center p-1"
-        onClick={(e) => e.stopPropagation()}
-        title="Drag to reorder section"
-      >
-        <div className="w-0.5 h-6 bg-muted-foreground/40 rounded-full hover:bg-muted-foreground transition-colors" />
-      </div>
+    <div ref={setNodeRef} style={style} className="relative">
       <DraggableKPISection
         title={section.title}
         kpis={section.kpis}
         onReorder={section.onReorder}
+        dragHandleProps={{ attributes, listeners }}
       />
     </div>
   );
