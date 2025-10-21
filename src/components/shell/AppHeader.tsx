@@ -7,8 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,37 +58,35 @@ export function AppHeader() {
   };
 
   return (
-    <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <SidebarTrigger className="-ml-1" />
-      <Separator orientation="vertical" className="mr-2 h-4" />
-      
-      {/* Left Section - Title */}
-      <div className="flex items-center gap-4">
-        <h1 className="text-lg font-semibold text-foreground">
-          Position Control System
-        </h1>
-      </div>
-
-      {/* Center Section - Search */}
-      <div className="flex-1 max-w-md mx-8">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-shell-muted" />
-          <Input
-            type="search"
-            placeholder="Search employees, contractors, or requisitions... (⌘K)"
-            className={cn(
-              "pl-10 pr-4 bg-shell-elevated border-shell-line",
-              "focus:bg-shell focus:border-primary/20 focus:ring-primary/20",
-              "transition-all duration-200"
-            )}
-            onFocus={() => setSearchFocused(true)}
-            onBlur={() => setSearchFocused(false)}
-          />
+    <header className="fixed top-0 z-40 flex items-center border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" style={{ left: 'var(--sidebar-width)', right: 0, height: 'var(--header-height)' }}>
+      <div className="flex w-full items-center justify-between px-6" style={{ height: 'var(--header-height)' }}>
+        {/* Left Section - Title */}
+        <div className="flex items-center gap-4">
+          <h1 className="text-lg font-semibold text-foreground">
+            Position Control System
+          </h1>
         </div>
-      </div>
 
-      {/* Right Section - Utilities */}
-      <div className="flex items-center gap-2">
+        {/* Center Section - Search */}
+        <div className="flex-1 max-w-md mx-8">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-shell-muted" />
+            <Input
+              type="search"
+              placeholder="Search employees, contractors, or requisitions... (⌘K)"
+              className={cn(
+                "pl-10 pr-4 bg-shell-elevated border-shell-line",
+                "focus:bg-shell focus:border-primary/20 focus:ring-primary/20",
+                "transition-all duration-200"
+              )}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+            />
+          </div>
+        </div>
+
+        {/* Right Section - Utilities */}
+        <div className="flex items-center gap-2">
           {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -191,6 +187,7 @@ export function AppHeader() {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+        </div>
       </div>
     </header>
   );
