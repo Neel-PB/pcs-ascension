@@ -1,9 +1,16 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUp, ArrowDown, ChevronDown } from 'lucide-react';
 import { ColumnDef } from '@/types/table';
 import { ColumnResizeHandle } from './ColumnResizeHandle';
-import { ColumnMenu } from './ColumnMenu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Maximize2, RotateCcw, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface DraggableColumnHeaderProps<T = any> {
@@ -82,23 +89,51 @@ export function DraggableColumnHeader<T = any>({
         </div>
       )}
 
-      {/* Column label */}
-      <span className="truncate flex-1 min-w-0">{column.label}</span>
+      {/* Dropdown trigger - entire header is clickable */}
+      <DropdownMenu>
+        <DropdownMenuTrigger 
+          className="flex-1 flex items-center gap-2 cursor-pointer select-none hover:text-foreground transition-colors focus:outline-none"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Column label */}
+          <span className="truncate flex-1 min-w-0">{column.label}</span>
 
-      {/* Sort icon */}
-      {column.sortable && getSortIcon()}
+          {/* Sort icon (if active) */}
+          {column.sortable && getSortIcon()}
 
-      {/* Column menu */}
-      <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0">
-        <ColumnMenu
-          onSortAsc={() => onSort?.('asc')}
-          onSortDesc={() => onSort?.('desc')}
-          onHide={onHide}
-          onResetWidth={onResetWidth}
-          onAutoFit={onAutoFit}
-          canHide={!column.locked}
-        />
-      </div>
+          {/* Chevron down - subtle by default, visible on hover */}
+          <ChevronDown className="h-3 w-3 opacity-40 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+        </DropdownMenuTrigger>
+
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem onClick={() => onSort?.('asc')}>
+            <ArrowUp className="mr-2 h-4 w-4" />
+            Sort Ascending
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onSort?.('desc')}>
+            <ArrowDown className="mr-2 h-4 w-4" />
+            Sort Descending
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={onAutoFit}>
+            <Maximize2 className="mr-2 h-4 w-4" />
+            Auto-fit Width
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={onResetWidth}>
+            <RotateCcw className="mr-2 h-4 w-4" />
+            Reset Width
+          </DropdownMenuItem>
+          {!column.locked && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onHide}>
+                <EyeOff className="mr-2 h-4 w-4" />
+                Hide Column
+              </DropdownMenuItem>
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       {/* Resize handle */}
       {column.resizable && (
