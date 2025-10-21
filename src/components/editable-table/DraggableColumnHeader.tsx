@@ -92,11 +92,11 @@ export function DraggableColumnHeader<T = any>({
       {/* Dropdown trigger - entire header is clickable */}
       <DropdownMenu>
         <DropdownMenuTrigger 
-          className="flex-1 flex items-center gap-2 cursor-pointer select-none hover:text-foreground transition-colors focus:outline-none"
+          className="flex-1 flex items-center justify-start gap-2 cursor-pointer select-none hover:text-foreground transition-colors focus:outline-none text-left"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Column label */}
-          <span className="truncate flex-1 min-w-0">{column.label}</span>
+          <span className="truncate flex-1 min-w-0 text-left">{column.label}</span>
 
           {/* Sort icon (if active) */}
           {column.sortable && getSortIcon()}
