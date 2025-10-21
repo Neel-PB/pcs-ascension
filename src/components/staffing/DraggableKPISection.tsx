@@ -72,7 +72,7 @@ export function DraggableKPISection({ title, kpis, onReorder, dragHandleProps }:
             onClick={(e) => e.stopPropagation()}
             title="Drag to reorder section"
           >
-            <div className="w-0.5 h-6 bg-muted-foreground/40 rounded-full hover:bg-muted-foreground transition-colors" />
+            <div className="w-1.5 h-6 bg-muted-foreground/40 rounded-full hover:bg-muted-foreground transition-colors" />
           </div>
         )}
         <h2 className="text-lg font-semibold text-foreground">{title}</h2>
