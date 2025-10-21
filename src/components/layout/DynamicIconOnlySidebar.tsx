@@ -135,7 +135,7 @@ export function DynamicIconOnlySidebar() {
 
   if (isLoading || rbacLoading) {
     return (
-      <div className="fixed left-0 top-0 z-40 h-full w-14 border-r bg-background flex items-center justify-center">
+      <div className="fixed left-0 top-0 z-50 h-screen border-r bg-background flex items-center justify-center" style={{ width: 'var(--sidebar-width)' }}>
         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
       </div>
     );
@@ -149,7 +149,7 @@ export function DynamicIconOnlySidebar() {
   });
 
   return (
-    <div className="fixed left-0 top-0 z-40 h-full w-20 max-w-20 border-r bg-background shadow-sm">
+    <div className="fixed left-0 top-0 z-50 h-screen border-r bg-background shadow-sm" style={{ width: 'var(--sidebar-width)' }}>
       <div className="flex h-full flex-col">
         {/* Organization switcher */}
         <div className="flex items-center justify-center py-3 px-2 border-b">

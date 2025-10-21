@@ -58,8 +58,8 @@ export function AppHeader() {
   };
 
   return (
-    <header className="fixed top-0 left-20 right-0 z-40 h-16 flex items-center border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-16 w-full items-center justify-between px-6">
+    <header className="fixed top-0 right-0 z-40 flex items-center border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" style={{ left: 'var(--sidebar-width)', height: 'var(--header-height)' }}>
+      <div className="flex w-full items-center justify-between px-6" style={{ height: 'var(--header-height)' }}>
         {/* Left Section - Title */}
         <div className="flex items-center gap-4">
           <h1 className="text-lg font-semibold text-foreground">
