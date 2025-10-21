@@ -149,7 +149,7 @@ export function DynamicIconOnlySidebar() {
   });
 
   return (
-    <div className="fixed left-0 top-0 z-50 h-screen border-r bg-background shadow-sm" style={{ width: 'var(--sidebar-width)' }}>
+    <div className="fixed left-0 top-0 z-50 h-screen border-r border-border bg-background" style={{ width: 'var(--sidebar-width)' }}>
       <div className="flex h-full flex-col">
         {/* Organization switcher */}
         <div className="flex items-center justify-center py-3 px-2 border-b">
