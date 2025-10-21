@@ -3,6 +3,7 @@ import { motion, LayoutGroup, AnimatePresence } from "framer-motion";
 import { FilterBar } from "@/components/staffing/FilterBar";
 import PositionPlanning from "./PositionPlanning";
 import { VarianceAnalysis } from "./VarianceAnalysis";
+import { ForecastTab } from "./ForecastTab";
 import { DraggableSectionsContainer } from "@/components/staffing/DraggableSectionsContainer";
 import { useKPIOrderStore } from "@/stores/useKPIOrderStore";
 
@@ -483,9 +484,7 @@ Includes:
           )}
           
           {activeTab === "forecasts" && (
-            <div className="text-center py-12 text-muted-foreground">
-              Forecasts content coming soon
-            </div>
+            <ForecastTab />
           )}
           
           {activeTab === "settings" && (
