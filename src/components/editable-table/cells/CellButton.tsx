@@ -12,7 +12,7 @@ export function CellButton({ children, onClick, className }: CellButtonProps) {
     <button
       onClick={onClick}
       className={cn(
-        "w-full h-full text-left px-3 py-2",
+        "w-full h-full text-left px-4 py-2",
         "text-sm font-normal text-foreground",
         "truncate",
         "hover:bg-muted/50 transition-colors",

@@ -62,22 +62,23 @@ export function DraggableColumnHeader<T = any>({
       style={style}
       data-column-header
       className={cn(
-        "relative h-10 px-4 flex items-center gap-2",
+        "relative group h-10 px-4 flex items-center gap-2",
         "text-xs uppercase tracking-wider font-medium text-muted-foreground",
         "border-r border-border last:border-r-0",
+        column.draggable && "cursor-grab active:cursor-grabbing",
         column.headerClassName
       )}
     >
-      {/* Drag handle - inline, not overlapping */}
+      {/* Drag handle - absolutely positioned, shows on hover */}
       {column.draggable && (
         <div
           {...attributes}
           {...listeners}
-          className="flex-shrink-0 cursor-grab active:cursor-grabbing hover:text-foreground transition-colors"
+          className="absolute left-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
           onClick={(e) => e.stopPropagation()}
           title="Drag to reorder"
         >
-          <GripVertical className="h-3.5 w-3.5 text-muted-foreground/40 hover:text-muted-foreground" />
+          <GripVertical className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-muted-foreground" />
         </div>
       )}
 
