@@ -14,7 +14,6 @@ import {
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { DraggableKPISection } from './DraggableKPISection';
-import { GripVertical } from 'lucide-react';
 
 interface KPIData {
   id: string;
@@ -61,15 +60,15 @@ function DraggableSection({ section }: { section: SectionData }) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="relative">
-      <div className="absolute -left-8 top-8 z-10">
-        <div
-          {...attributes}
-          {...listeners}
-          className="cursor-grab active:cursor-grabbing p-2 rounded hover:bg-accent/50 transition-colors"
-        >
-          <GripVertical className="h-5 w-5 text-muted-foreground" />
-        </div>
+    <div ref={setNodeRef} style={style} className="relative group">
+      <div
+        {...attributes}
+        {...listeners}
+        className="absolute left-1.5 top-6 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing z-10 flex items-center justify-center p-1"
+        onClick={(e) => e.stopPropagation()}
+        title="Drag to reorder section"
+      >
+        <div className="w-0.5 h-6 bg-muted-foreground/40 rounded-full hover:bg-muted-foreground transition-colors" />
       </div>
       <DraggableKPISection
         title={section.title}
