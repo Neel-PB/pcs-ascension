@@ -61,8 +61,10 @@ export const useColumnStore = create<ColumnStore>()(
       
       initializeColumns: (namespace, columns) =>
         set((state) => {
-          // Only initialize if not already present
-          if (!state.columnsByNamespace[namespace]) {
+          const existingColumns = state.columnsByNamespace[namespace];
+          
+          // If no existing columns, initialize fresh
+          if (!existingColumns) {
             return {
               columnsByNamespace: {
                 ...state.columnsByNamespace,
@@ -70,7 +72,40 @@ export const useColumnStore = create<ColumnStore>()(
               },
             };
           }
-          return state;
+          
+          // Merge new columns into existing state, preserving stored order
+          const existingIds = new Set(existingColumns.map(c => c.id));
+          const newColumns = columns.filter(c => !existingIds.has(c.id));
+          
+          if (newColumns.length === 0) {
+            return state; // No new columns to add
+          }
+          
+          // Insert new columns at their intended positions
+          const merged = [...existingColumns];
+          newColumns.forEach(newCol => {
+            const intendedIndex = columns.findIndex(c => c.id === newCol.id);
+            // Find the closest existing column before this position
+            let insertIndex = 0;
+            for (let i = intendedIndex - 1; i >= 0; i--) {
+              const existingIndex = merged.findIndex(c => c.id === columns[i].id);
+              if (existingIndex !== -1) {
+                insertIndex = existingIndex + 1;
+                break;
+              }
+            }
+            merged.splice(insertIndex, 0, newCol);
+          });
+          
+          // Recompute order indices
+          const reordered = merged.map((col, index) => ({ ...col, order: index }));
+          
+          return {
+            columnsByNamespace: {
+              ...state.columnsByNamespace,
+              [namespace]: reordered,
+            },
+          };
         }),
       
       resetToDefault: (namespace, columns) =>
