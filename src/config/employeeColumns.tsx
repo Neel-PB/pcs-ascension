@@ -59,7 +59,7 @@ export const employeeColumns: ColumnDef<Position>[] = [
     minWidth: 110,
     sortable: true,
     resizable: true,
-    draggable: false, // Lock position to keep with Actual FTE
+    draggable: true,
   },
   {
     id: 'actual_fte',
@@ -69,7 +69,7 @@ export const employeeColumns: ColumnDef<Position>[] = [
     minWidth: 110,
     sortable: true,
     resizable: true,
-    draggable: false, // Lock position to always follow Hired FTE
+    draggable: true,
   },
   {
     id: 'shift',
