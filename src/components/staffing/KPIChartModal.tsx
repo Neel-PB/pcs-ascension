@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
@@ -98,7 +99,7 @@ export function KPIChartModal({
             </TabsList>
 
             {/* Chart Tab */}
-            <TabsContent value="chart" className="space-y-6">
+            <TabsContent value="chart" className="space-y-6 min-h-[450px]">
               {enrichedData && enrichedData.length > 0 && (
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -224,7 +225,7 @@ export function KPIChartModal({
             {/* Table Tab */}
             <TabsContent value="table" className="space-y-6">
               {enrichedData && enrichedData.length > 0 && (
-                <div className="border rounded-lg">
+                <ScrollArea className="h-[300px] rounded-lg border">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -241,7 +242,7 @@ export function KPIChartModal({
                       ))}
                     </TableBody>
                   </Table>
-                </div>
+                </ScrollArea>
               )}
 
               {/* Statistics */}
