@@ -88,16 +88,16 @@ export function EditableNumberCell({
         "text-sm font-medium",
         "hover:bg-muted/50 transition-colors",
         "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-        "flex items-center justify-center gap-2",
+        "relative",
         isModified && "text-red-600 dark:text-red-400",
         className
       )}
       type="button"
     >
-      <span>{value != null ? value : '—'}</span>
+      <span className="block">{value != null ? value : '—'}</span>
       {isModified && (
         <RotateCcw
-          className="h-3.5 w-3.5 opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
+          className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
           onClick={handleRevert}
         />
       )}
