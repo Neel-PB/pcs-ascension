@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { RotateCcw } from 'lucide-react';
 
 interface EditableNumberCellProps {
   value: number | null | undefined;
@@ -55,6 +56,13 @@ export function EditableNumberCell({
     handleSave();
   };
 
+  const handleRevert = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (originalValue !== undefined) {
+      await onSave(originalValue);
+    }
+  };
+
   if (isEditing) {
     return (
       <div className="w-full h-full flex items-center justify-center px-4">
@@ -80,12 +88,19 @@ export function EditableNumberCell({
         "text-sm font-medium",
         "hover:bg-muted/50 transition-colors",
         "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+        "flex items-center justify-center gap-2",
         isModified && "text-red-600 dark:text-red-400",
         className
       )}
       type="button"
     >
       <span>{value != null ? value : '—'}</span>
+      {isModified && (
+        <RotateCcw
+          className="h-3.5 w-3.5 opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
+          onClick={handleRevert}
+        />
+      )}
     </button>
   );
 }
