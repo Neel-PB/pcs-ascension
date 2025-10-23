@@ -14,7 +14,7 @@ interface KPIOrderState {
 const defaultOrder = {
   fte: ['vacancy-rate', 'hired-ftes', 'target-ftes', 'fte-variance', 'open-reqs', 'req-variance'],
   volume: ['12m-monthly', '12m-daily', '3m-low', '3m-high', 'target-vol', 'override-vol'],
-  productivity: ['paid-ftes', 'contract-ftes', 'overtime-ftes', 'total-prn', 'total-np', 'missed-targets'],
+  productivity: ['paid-ftes', 'contract-ftes', 'overtime-ftes', 'total-prn', 'total-np', 'total-fullpart-ftes'],
 };
 
 export const useKPIOrderStore = create<KPIOrderState>()(

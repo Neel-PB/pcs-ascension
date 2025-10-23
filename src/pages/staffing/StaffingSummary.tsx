@@ -352,21 +352,25 @@ Example: If 7,076 productive hours and 7,928 total paid hours:
 Higher NP% indicates better labor efficiency`,
       },
       {
-        id: 'missed-targets',
-        title: "Missed Targets",
-        value: "1.8",
-        isNegative: true,
-        chartData: generateGrowthTrend(1.3, 1.8),
-        chartType: "area" as const,
+        id: 'total-fullpart-ftes',
+        title: "Total Full/Part Time FTEs",
+        value: "35.3 / 5.6",
+        chartData: generateGrowthTrend(33.8, 40.9),
+        chartType: "bar" as const,
         delay: 0.25,
-        definition: "Missed Targets represents the number of productivity or volume targets that were not met during the reporting period. This helps identify areas needing improvement.",
-        calculation: `Missed Targets = Count of unmet performance targets
+        definition: "Total Full/Part Time FTEs shows the breakdown of hired employees by employment type. This helps understand workforce composition and scheduling flexibility.",
+        calculation: `Full Time FTEs = Sum of all FTEs where employmentType = "Full Time"
+Part Time FTEs = Sum of all FTEs where employmentType = "Part Time"
 
-Includes:
-• Volume targets not achieved
-• Productivity goals not met
-• Quality metrics below threshold
-• Staffing level variances`,
+Example breakdown:
+• Full Time: 35.3 FTEs (86.5%)
+• Part Time: 5.6 FTEs (13.5%)
+• Total: 40.9 FTEs
+
+This metric helps:
+• Understand workforce composition
+• Plan for benefits and scheduling
+• Analyze labor cost structure`,
       },
     ];
 
