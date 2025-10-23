@@ -53,10 +53,20 @@ export const employeeColumns: ColumnDef<Position>[] = [
   },
   {
     id: 'FTE',
-    label: 'Actual FTE',
+    label: 'Hired FTE',
     type: 'number',
     width: 120,
-    minWidth: 110, // Increased for header text
+    minWidth: 110,
+    sortable: true,
+    resizable: true,
+    draggable: true,
+  },
+  {
+    id: 'actual_fte',
+    label: 'Actual FTE',
+    type: 'custom',
+    width: 120,
+    minWidth: 110,
     sortable: true,
     resizable: true,
     draggable: true,

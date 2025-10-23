@@ -11,6 +11,8 @@ import { EmployeesFilterSheet } from "@/components/positions/EmployeesFilterShee
 import { EditableTable } from "@/components/editable-table/EditableTable";
 import { ColumnVisibilityPanel } from "@/components/editable-table/ColumnVisibilityPanel";
 import { employeeColumns } from "@/config/employeeColumns";
+import { useUpdateActualFte } from "@/hooks/useUpdateActualFte";
+import { EditableNumberCell } from "@/components/editable-table/cells/EditableNumberCell";
 
 interface EmployeesTabProps {
   selectedRegion: string;
@@ -32,6 +34,7 @@ export function EmployeesTab({
     selectedDepartment,
   });
 
+  const updateActualFte = useUpdateActualFte();
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -78,6 +81,29 @@ export function EmployeesTab({
     if (filters.fteMax) count++;
     return count;
   }, [filters]);
+
+  const handleActualFteUpdate = (id: string, newValue: number | null) => {
+    updateActualFte.mutate({ id, actual_fte: newValue });
+  };
+
+  const columnsWithHandlers = useMemo(() => {
+    return employeeColumns.map(col => {
+      if (col.id === 'actual_fte') {
+        return {
+          ...col,
+          renderCell: (row: any) => (
+            <EditableNumberCell
+              value={row.actual_fte}
+              originalValue={row.FTE}
+              onSave={(newValue) => handleActualFteUpdate(row.id, newValue)}
+              showModified={true}
+            />
+          ),
+        };
+      }
+      return col;
+    });
+  }, []);
 
   const filteredAndSortedEmployees = useMemo(() => {
     if (!employees) return [];
@@ -230,7 +256,7 @@ export function EmployeesTab({
       </div>
 
       <EditableTable
-        columns={employeeColumns}
+        columns={columnsWithHandlers}
         data={filteredAndSortedEmployees}
         getRowId={(row) => row.id}
         sortField={sortColumn}

@@ -240,6 +240,7 @@ export type Database = {
       }
       positions: {
         Row: {
+          actual_fte: number | null
           created_at: string
           departmentId: string
           departmentName: string
@@ -269,6 +270,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          actual_fte?: number | null
           created_at?: string
           departmentId: string
           departmentName: string
@@ -298,6 +300,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          actual_fte?: number | null
           created_at?: string
           departmentId?: string
           departmentName?: string

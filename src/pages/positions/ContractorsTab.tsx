@@ -11,6 +11,8 @@ import { ContractorsFilterSheet } from "@/components/positions/ContractorsFilter
 import { EditableTable } from "@/components/editable-table/EditableTable";
 import { ColumnVisibilityPanel } from "@/components/editable-table/ColumnVisibilityPanel";
 import { contractorColumns } from "@/config/contractorColumns";
+import { useUpdateActualFte } from "@/hooks/useUpdateActualFte";
+import { EditableNumberCell } from "@/components/editable-table/cells/EditableNumberCell";
 
 interface ContractorsTabProps {
   selectedRegion: string;
@@ -32,6 +34,7 @@ export function ContractorsTab({
     selectedDepartment,
   });
 
+  const updateActualFte = useUpdateActualFte();
   const [selectedContractor, setSelectedContractor] = useState<any>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -75,6 +78,29 @@ export function ContractorsTab({
     if (filters.fteMax) count++;
     return count;
   }, [filters]);
+
+  const handleActualFteUpdate = (id: string, newValue: number | null) => {
+    updateActualFte.mutate({ id, actual_fte: newValue });
+  };
+
+  const columnsWithHandlers = useMemo(() => {
+    return contractorColumns.map(col => {
+      if (col.id === 'actual_fte') {
+        return {
+          ...col,
+          renderCell: (row: any) => (
+            <EditableNumberCell
+              value={row.actual_fte}
+              originalValue={row.FTE}
+              onSave={(newValue) => handleActualFteUpdate(row.id, newValue)}
+              showModified={true}
+            />
+          ),
+        };
+      }
+      return col;
+    });
+  }, []);
 
   const filteredAndSortedContractors = useMemo(() => {
     if (!contractors) return [];
@@ -224,7 +250,7 @@ export function ContractorsTab({
       </div>
 
       <EditableTable
-        columns={contractorColumns}
+        columns={columnsWithHandlers}
         data={filteredAndSortedContractors}
         getRowId={(row) => row.id}
         sortField={sortColumn}
