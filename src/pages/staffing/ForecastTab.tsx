@@ -1,49 +1,43 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { EditableTable } from "@/components/editable-table/EditableTable";
 import { ColumnDef } from "@/types/table";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { PositionToOpenDetailsSheet } from "@/components/workforce/PositionToOpenDetailsSheet";
+import { PositionToCloseDetailsSheet } from "@/components/workforce/PositionToCloseDetailsSheet";
 
 // Mock data for positions to open
 const positionsToOpen = [
   {
     id: "1",
-    positionNum: "POS-2025-001",
-    jobTitle: "Registered Nurse",
-    department: "Emergency Department",
-    facilityName: "Memorial Hospital",
     market: "Central",
+    facilityName: "Memorial Hospital",
+    departmentName: "Emergency Department",
+    skillType: "Clinical RN",
+    reasonToOpen: "Vacancy - Retirement",
     FTE: 1.0,
-    targetStartDate: "2025-02-15",
-    priority: "High",
-    reason: "Vacancy - Retirement",
-    budgetImpact: "$85,000",
+    status: "Approved",
   },
   {
     id: "2",
-    positionNum: "POS-2025-002",
-    jobTitle: "Clinical Lab Technician",
-    department: "Laboratory",
-    facilityName: "Memorial Hospital",
     market: "Central",
+    facilityName: "Memorial Hospital",
+    departmentName: "Laboratory",
+    skillType: "Lab Technician",
+    reasonToOpen: "Volume Growth",
     FTE: 0.8,
-    targetStartDate: "2025-03-01",
-    priority: "Medium",
-    reason: "Volume Growth",
-    budgetImpact: "$52,000",
+    status: "Pending Approval",
   },
   {
     id: "3",
-    positionNum: "POS-2025-003",
-    jobTitle: "Physical Therapist",
-    department: "Rehabilitation",
-    facilityName: "Valley Medical Center",
     market: "West",
+    facilityName: "Valley Medical Center",
+    departmentName: "Rehabilitation",
+    skillType: "Physical Therapist",
+    reasonToOpen: "New Service Line",
     FTE: 1.0,
-    targetStartDate: "2025-02-20",
-    priority: "High",
-    reason: "New Service Line",
-    budgetImpact: "$78,000",
+    status: "Approved",
   },
 ];
 
@@ -51,28 +45,22 @@ const positionsToOpen = [
 const positionsToClose = [
   {
     id: "4",
-    positionNum: "POS-2020-145",
-    jobTitle: "Administrative Assistant",
-    department: "Finance",
-    facilityName: "Memorial Hospital",
     market: "Central",
+    facilityName: "Memorial Hospital",
+    departmentName: "Finance",
+    skillType: "Administrative",
+    reasonToClose: "Automation Implementation",
     FTE: 0.6,
-    targetCloseDate: "2025-03-31",
-    reason: "Automation Implementation",
-    savings: "$42,000",
     status: "Pending Approval",
   },
   {
     id: "5",
-    positionNum: "POS-2019-087",
-    jobTitle: "Unit Clerk",
-    department: "Medical-Surgical",
-    facilityName: "Valley Medical Center",
     market: "West",
+    facilityName: "Valley Medical Center",
+    departmentName: "Medical-Surgical",
+    skillType: "Unit Clerk",
+    reasonToClose: "Restructure",
     FTE: 0.5,
-    targetCloseDate: "2025-02-28",
-    reason: "Restructure",
-    savings: "$28,000",
     status: "Approved",
   },
 ];
@@ -80,33 +68,11 @@ const positionsToClose = [
 // Column definitions for Positions to Open
 const openPositionsColumns: ColumnDef[] = [
   {
-    id: "positionNum",
-    label: "Position #",
+    id: "market",
+    label: "Market",
     type: "text",
-    width: 140,
-    minWidth: 120,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-  },
-  {
-    id: "jobTitle",
-    label: "Job Title",
-    type: "text",
-    width: 200,
-    minWidth: 150,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-  },
-  {
-    id: "department",
-    label: "Department",
-    type: "text",
-    width: 180,
-    minWidth: 130,
+    width: 120,
+    minWidth: 100,
     sortable: true,
     resizable: true,
     draggable: true,
@@ -124,11 +90,33 @@ const openPositionsColumns: ColumnDef[] = [
     locked: false,
   },
   {
-    id: "market",
-    label: "Market",
+    id: "departmentName",
+    label: "Department",
     type: "text",
-    width: 120,
-    minWidth: 100,
+    width: 180,
+    minWidth: 130,
+    sortable: true,
+    resizable: true,
+    draggable: true,
+    locked: false,
+  },
+  {
+    id: "skillType",
+    label: "Skill Type",
+    type: "text",
+    width: 150,
+    minWidth: 120,
+    sortable: true,
+    resizable: true,
+    draggable: true,
+    locked: false,
+  },
+  {
+    id: "reasonToOpen",
+    label: "Reason to Open",
+    type: "text",
+    width: 200,
+    minWidth: 150,
     sortable: true,
     resizable: true,
     draggable: true,
@@ -146,86 +134,30 @@ const openPositionsColumns: ColumnDef[] = [
     locked: false,
   },
   {
-    id: "targetStartDate",
-    label: "Target Start",
-    type: "date",
-    width: 130,
+    id: "status",
+    label: "Status",
+    type: "badge",
+    width: 140,
     minWidth: 120,
     sortable: true,
     resizable: true,
     draggable: true,
     locked: false,
-  },
-  {
-    id: "priority",
-    label: "Priority",
-    type: "badge",
-    width: 110,
-    minWidth: 100,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
     renderCell: (data: any) => {
-      const variant = data.priority === "High" ? "destructive" : data.priority === "Medium" ? "secondary" : "outline";
-      return <Badge variant={variant}>{data.priority}</Badge>;
+      const variant = data.status === "Approved" ? "default" : "secondary";
+      return <Badge variant={variant}>{data.status}</Badge>;
     },
-  },
-  {
-    id: "reason",
-    label: "Reason",
-    type: "text",
-    width: 170,
-    minWidth: 140,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-  },
-  {
-    id: "budgetImpact",
-    label: "Budget Impact",
-    type: "text",
-    width: 130,
-    minWidth: 110,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-    className: "font-semibold text-green-600 dark:text-green-400",
   },
 ];
 
 // Column definitions for Positions to Close
 const closePositionsColumns: ColumnDef[] = [
   {
-    id: "positionNum",
-    label: "Position #",
+    id: "market",
+    label: "Market",
     type: "text",
-    width: 140,
-    minWidth: 120,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-  },
-  {
-    id: "jobTitle",
-    label: "Job Title",
-    type: "text",
-    width: 200,
-    minWidth: 150,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-  },
-  {
-    id: "department",
-    label: "Department",
-    type: "text",
-    width: 180,
-    minWidth: 130,
+    width: 120,
+    minWidth: 100,
     sortable: true,
     resizable: true,
     draggable: true,
@@ -243,11 +175,33 @@ const closePositionsColumns: ColumnDef[] = [
     locked: false,
   },
   {
-    id: "market",
-    label: "Market",
+    id: "departmentName",
+    label: "Department",
     type: "text",
-    width: 120,
-    minWidth: 100,
+    width: 180,
+    minWidth: 130,
+    sortable: true,
+    resizable: true,
+    draggable: true,
+    locked: false,
+  },
+  {
+    id: "skillType",
+    label: "Skill Type",
+    type: "text",
+    width: 150,
+    minWidth: 120,
+    sortable: true,
+    resizable: true,
+    draggable: true,
+    locked: false,
+  },
+  {
+    id: "reasonToClose",
+    label: "Reason to Close",
+    type: "text",
+    width: 200,
+    minWidth: 150,
     sortable: true,
     resizable: true,
     draggable: true,
@@ -263,40 +217,6 @@ const closePositionsColumns: ColumnDef[] = [
     resizable: true,
     draggable: true,
     locked: false,
-  },
-  {
-    id: "targetCloseDate",
-    label: "Target Close",
-    type: "date",
-    width: 130,
-    minWidth: 120,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-  },
-  {
-    id: "reason",
-    label: "Reason",
-    type: "text",
-    width: 170,
-    minWidth: 140,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-  },
-  {
-    id: "savings",
-    label: "Annual Savings",
-    type: "text",
-    width: 140,
-    minWidth: 110,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-    className: "font-semibold text-emerald-600 dark:text-emerald-400",
   },
   {
     id: "status",
@@ -316,8 +236,24 @@ const closePositionsColumns: ColumnDef[] = [
 ];
 
 export function ForecastTab() {
+  const [selectedOpenPosition, setSelectedOpenPosition] = useState<any>(null);
+  const [selectedClosePosition, setSelectedClosePosition] = useState<any>(null);
+  const [openSheetOpen, setOpenSheetOpen] = useState(false);
+  const [closeSheetOpen, setCloseSheetOpen] = useState(false);
+
+  const handleOpenRowClick = (row: any) => {
+    setSelectedOpenPosition(row);
+    setOpenSheetOpen(true);
+  };
+
+  const handleCloseRowClick = (row: any) => {
+    setSelectedClosePosition(row);
+    setCloseSheetOpen(true);
+  };
+
   return (
-    <div className="space-y-6">
+    <>
+      <div className="space-y-6">
       {/* Positions to Open Section */}
       <Card className="overflow-hidden">
         <div className="p-4 border-b bg-muted/30">
@@ -345,6 +281,7 @@ export function ForecastTab() {
             columns={openPositionsColumns}
             data={positionsToOpen}
             getRowId={(row) => row.id}
+            onRowClick={handleOpenRowClick}
             storeNamespace="forecast-open-positions"
           />
         </div>
@@ -377,10 +314,25 @@ export function ForecastTab() {
             columns={closePositionsColumns}
             data={positionsToClose}
             getRowId={(row) => row.id}
+            onRowClick={handleCloseRowClick}
             storeNamespace="forecast-close-positions"
           />
         </div>
       </Card>
-    </div>
+      </div>
+
+      {/* Detail Sheets */}
+      <PositionToOpenDetailsSheet
+        open={openSheetOpen}
+        onOpenChange={setOpenSheetOpen}
+        position={selectedOpenPosition}
+      />
+      
+      <PositionToCloseDetailsSheet
+        open={closeSheetOpen}
+        onOpenChange={setCloseSheetOpen}
+        position={selectedClosePosition}
+      />
+    </>
   );
 }
