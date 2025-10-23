@@ -1,10 +1,11 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { TableConfig, ColumnDef, ColumnState } from '@/types/table';
 import { useColumnStore } from '@/stores/useColumnStore';
 import { TableHeader } from './TableHeader';
 import { TableRow } from './TableRow';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function EditableTable<T = any>({
   columns: columnDefinitions,
@@ -38,6 +39,24 @@ export function EditableTable<T = any>({
   }, [storeNamespace, columnDefinitions, initializeColumns]);
 
   const columnStates = getColumns(storeNamespace);
+  const isMobile = useIsMobile();
+  
+  // Container ref for measuring width
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState<number>(0);
+
+  // Measure container width on mount and resize
+  useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.offsetWidth);
+      }
+    };
+    
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
 
   // Drag sensors with 5px threshold
   const sensors = useSensors(
@@ -74,12 +93,23 @@ export function EditableTable<T = any>({
       });
   }, [columnDefinitions, columnStates]);
 
-  // Calculate grid template
+  // Calculate grid template with proportional distribution
   const gridTemplate = useMemo(() => {
+    const totalDefinedWidth = visibleColumns.reduce((sum, col) => sum + (col.width || 160), 0);
+    
+    // If container is wider than total column width, distribute extra space proportionally
+    if (containerWidth > totalDefinedWidth && containerWidth > 0) {
+      const scaleFactor = containerWidth / totalDefinedWidth;
+      return visibleColumns
+        .map(col => `${Math.floor((col.width || 160) * scaleFactor)}px`)
+        .join(' ');
+    }
+    
+    // Default to defined widths if container is smaller or not measured yet
     return visibleColumns
       .map(col => `${col.width}px`)
       .join(' ');
-  }, [visibleColumns]);
+  }, [visibleColumns, containerWidth]);
 
   // Handlers
   const handleColumnResize = (columnId: string, width: number) => {
@@ -174,8 +204,15 @@ export function EditableTable<T = any>({
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <div className={cn("flex flex-col rounded-lg border bg-card shadow-sm overflow-hidden", className)}>
-        <div className="flex-1 overflow-auto">
-          <div style={{ minWidth: 'max-content' }}>
+        {isMobile && (
+          <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              📱 This table is optimized for desktop viewing. Please open on a desktop or laptop for the best experience.
+            </p>
+          </div>
+        )}
+        <div ref={containerRef} className="flex-1 overflow-auto">
+          <div style={{ minWidth: 'max-content', width: '100%' }}>
             {/* Header */}
             <TableHeader
               columns={visibleColumns}
