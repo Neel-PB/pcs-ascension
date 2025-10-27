@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { BarChart3, Info } from "lucide-react";
+import { BarChart3, Eye } from "lucide-react";
 import { KPIChartModal } from "./KPIChartModal";
 import { KPIInfoModal } from "./KPIInfoModal";
 
@@ -80,7 +80,7 @@ export function KPICard({
                 className="p-1.5 rounded hover:bg-accent transition-colors"
                 title="View details"
               >
-                <Info className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
               </button>
             </div>
 
