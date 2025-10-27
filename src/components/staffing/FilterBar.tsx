@@ -1,4 +1,5 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SelectItem } from "@/components/ui/select";
+import { HelixSelect } from "./HelixSelect";
 import { motion } from "framer-motion";
 
 interface FilterBarProps {
@@ -114,71 +115,65 @@ export function FilterBar({
 
   return (
     <motion.div
-      className={`flex flex-wrap gap-3 justify-center ${className}`}
+      className={`flex flex-wrap gap-4 justify-center ${className}`}
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
       {/* Region Filter */}
-      <Select value={selectedRegion} onValueChange={onRegionChange}>
-        <SelectTrigger className="w-[200px] bg-background border-border">
-          <SelectValue placeholder="Select region" />
-        </SelectTrigger>
-        <SelectContent className="bg-popover border-border z-50">
-          <SelectItem value="all-regions">All Regions</SelectItem>
-          <SelectItem value="Southeast">Southeast</SelectItem>
-          <SelectItem value="Midwest">Midwest</SelectItem>
-          <SelectItem value="South Central">South Central</SelectItem>
-        </SelectContent>
-      </Select>
+      <HelixSelect
+        label="Region"
+        value={selectedRegion}
+        onValueChange={onRegionChange || (() => {})}
+        className="w-[200px]"
+      >
+        <SelectItem value="all-regions">All Regions</SelectItem>
+        <SelectItem value="Southeast">Southeast</SelectItem>
+        <SelectItem value="Midwest">Midwest</SelectItem>
+        <SelectItem value="South Central">South Central</SelectItem>
+      </HelixSelect>
 
       {/* Market Filter */}
-      <Select value={selectedMarket} onValueChange={onMarketChange}>
-        <SelectTrigger className="w-[200px] bg-background border-border">
-          <SelectValue placeholder="Select market" />
-        </SelectTrigger>
-        <SelectContent className="bg-popover border-border z-50">
-          <SelectItem value="all-markets">All Markets</SelectItem>
-          {availableMarkets.map(market => (
-            <SelectItem key={market} value={market}>{market}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <HelixSelect
+        label="Market"
+        value={selectedMarket}
+        onValueChange={onMarketChange || (() => {})}
+        className="w-[200px]"
+      >
+        <SelectItem value="all-markets">All Markets</SelectItem>
+        {availableMarkets.map(market => (
+          <SelectItem key={market} value={market}>{market}</SelectItem>
+        ))}
+      </HelixSelect>
 
       {/* Facility Filter */}
-      <Select 
-        value={selectedFacility} 
-        onValueChange={onFacilityChange}
+      <HelixSelect
+        label="Facility"
+        value={selectedFacility}
+        onValueChange={onFacilityChange || (() => {})}
         disabled={selectedMarket === "all-markets"}
+        className="w-[250px]"
       >
-        <SelectTrigger className="w-[250px] bg-background border-border">
-          <SelectValue placeholder="Select facility" />
-        </SelectTrigger>
-        <SelectContent className="bg-popover border-border z-50">
-          <SelectItem value="all-facilities">All Facilities</SelectItem>
-          {availableFacilities.map(facility => (
-            <SelectItem key={facility.value} value={facility.value}>{facility.label}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        <SelectItem value="all-facilities">All Facilities</SelectItem>
+        {availableFacilities.map(facility => (
+          <SelectItem key={facility.value} value={facility.value}>{facility.label}</SelectItem>
+        ))}
+      </HelixSelect>
 
       {/* Department Filter */}
-      <Select 
-        value={selectedDepartment} 
-        onValueChange={onDepartmentChange}
+      <HelixSelect
+        label="Department"
+        value={selectedDepartment}
+        onValueChange={onDepartmentChange || (() => {})}
         disabled={selectedFacility === "all-facilities"}
+        className="w-[180px]"
       >
-        <SelectTrigger className="w-[180px] bg-background border-border">
-          <SelectValue placeholder="Select department" />
-        </SelectTrigger>
-        <SelectContent className="bg-popover border-border z-50">
-          <SelectItem value="all-departments">All Departments</SelectItem>
-          <SelectItem value="emergency">Emergency</SelectItem>
-          <SelectItem value="icu">ICU</SelectItem>
-          <SelectItem value="surgery">Surgery</SelectItem>
-          <SelectItem value="cardiology">Cardiology</SelectItem>
-        </SelectContent>
-      </Select>
+        <SelectItem value="all-departments">All Departments</SelectItem>
+        <SelectItem value="emergency">Emergency</SelectItem>
+        <SelectItem value="icu">ICU</SelectItem>
+        <SelectItem value="surgery">Surgery</SelectItem>
+        <SelectItem value="cardiology">Cardiology</SelectItem>
+      </HelixSelect>
     </motion.div>
   );
 }
