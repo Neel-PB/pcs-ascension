@@ -14,16 +14,42 @@ const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
 >(({ className, children, ...props }, ref) => {
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = React.useState(false);
+  
+  // Merge refs to support both internal and forwarded refs
+  React.useImperativeHandle(ref, () => triggerRef.current as HTMLButtonElement);
+  
+  // Observe data-state attribute changes to sync with Radix UI's internal state
+  React.useEffect(() => {
+    const trigger = triggerRef.current;
+    if (!trigger) return;
+    
+    // Check initial state
+    const initialState = trigger.getAttribute('data-state');
+    setIsOpen(initialState === 'open');
+    
+    // Watch for state changes
+    const observer = new MutationObserver(() => {
+      const state = trigger.getAttribute('data-state');
+      setIsOpen(state === 'open');
+    });
+    
+    observer.observe(trigger, { 
+      attributes: true, 
+      attributeFilter: ['data-state'] 
+    });
+    
+    return () => observer.disconnect();
+  }, []);
   
   return (
     <SelectPrimitive.Trigger
-      ref={ref}
+      ref={triggerRef}
       className={cn(
         "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
         className,
       )}
-      onClick={() => setIsOpen(!isOpen)}
       {...props}
     >
       {children}

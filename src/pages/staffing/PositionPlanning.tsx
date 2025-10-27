@@ -648,21 +648,21 @@ export default function PositionPlanning() {
           >
             <Button
               variant="ascension"
-              size="sm"
+              size="icon"
               onClick={downloadCSV}
-              className="gap-2"
+              aria-label="Download CSV"
+              title="Download CSV"
             >
               <Download className="h-4 w-4" />
-              Download
             </Button>
             <Button
               variant="ascension"
-              size="sm"
+              size="icon"
               onClick={() => setIsExpanded(true)}
-              className="gap-2"
+              aria-label="Expand view"
+              title="Expand view"
             >
               <Maximize2 className="h-4 w-4" />
-              Expand
             </Button>
           </motion.div>
         </div>
@@ -706,12 +706,12 @@ export default function PositionPlanning() {
                 {/* Download Button */}
                 <Button
                   variant="ascension"
-                  size="sm"
+                  size="icon"
                   onClick={downloadCSV}
-                  className="gap-2"
+                  aria-label="Download CSV"
+                  title="Download CSV"
                 >
                   <Download className="h-4 w-4" />
-                  Download
                 </Button>
               </div>
             </div>
