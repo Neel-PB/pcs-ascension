@@ -647,7 +647,7 @@ export default function PositionPlanning() {
             transition={{ duration: 0.3, delay: 0.15 }}
           >
             <Button
-              variant="outline"
+              variant="ascension"
               size="sm"
               onClick={downloadCSV}
               className="gap-2"
@@ -656,7 +656,7 @@ export default function PositionPlanning() {
               Download
             </Button>
             <Button
-              variant="outline"
+              variant="ascension"
               size="sm"
               onClick={() => setIsExpanded(true)}
               className="gap-2"
@@ -705,7 +705,7 @@ export default function PositionPlanning() {
                 </div>
                 {/* Download Button */}
                 <Button
-                  variant="outline"
+                  variant="ascension"
                   size="sm"
                   onClick={downloadCSV}
                   className="gap-2"
