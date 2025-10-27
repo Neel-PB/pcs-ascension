@@ -462,7 +462,7 @@ This metric helps:
                       },
                       {
                         id: 'productivity',
-                        title: 'Productivity',
+                        title: 'Productivity resources',
                         kpis: productivityKPIs,
                       },
                     ]}
