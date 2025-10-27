@@ -44,11 +44,15 @@ export default function HomePage() {
     <div className="space-y-8">
       {/* Page Header */}
       <motion.div
+        className="space-y-2"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
         <h1 className="text-3xl font-bold text-gradient">Position Control Dashboard</h1>
+        <p className="text-shell-muted">
+          Welcome back, {user.user_metadata?.first_name}! Stay connected with your team.
+        </p>
       </motion.div>
 
       {/* Main Content - Two Column Layout */}
