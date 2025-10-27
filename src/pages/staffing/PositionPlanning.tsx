@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
+import { Download, Maximize2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -7,6 +9,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 interface VarianceData {
@@ -185,7 +194,118 @@ const getVarianceColor = (value: number) => {
   return "";
 };
 
+// Reusable table component
+const FTESkillShiftTable = ({ data }: { data: VarianceData[] }) => (
+  <div className="overflow-x-auto">
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="font-semibold text-foreground w-32">Skills</TableHead>
+          <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
+            Target FTEs
+          </TableHead>
+          <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
+            Hired FTEs
+          </TableHead>
+          <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
+            Reqs
+          </TableHead>
+          <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
+            Variance
+          </TableHead>
+        </TableRow>
+        <TableRow>
+          <TableHead></TableHead>
+          {/* Target FTEs */}
+          <TableHead className="text-center text-xs">Day</TableHead>
+          <TableHead className="text-center text-xs">Night</TableHead>
+          <TableHead className="text-center text-xs">Total</TableHead>
+          {/* Hired FTEs */}
+          <TableHead className="text-center text-xs">Day</TableHead>
+          <TableHead className="text-center text-xs">Night</TableHead>
+          <TableHead className="text-center text-xs">Total</TableHead>
+          {/* Reqs */}
+          <TableHead className="text-center text-xs">Day</TableHead>
+          <TableHead className="text-center text-xs">Night</TableHead>
+          <TableHead className="text-center text-xs">Total</TableHead>
+          {/* Variance */}
+          <TableHead className="text-center text-xs">Day</TableHead>
+          <TableHead className="text-center text-xs">Night</TableHead>
+          <TableHead className="text-center text-xs">Total</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {data.map((row) => (
+          <TableRow
+            key={row.skill}
+            className={cn(
+              row.skill === "TOTAL" && "font-semibold bg-muted/20 border-t-2"
+            )}
+          >
+            <TableCell className="font-medium">{row.skill}</TableCell>
+            {/* Target FTEs */}
+            <TableCell className="text-center">{row.targetDay || "0"}</TableCell>
+            <TableCell className="text-center">{row.targetNight || "0"}</TableCell>
+            <TableCell className="text-center">{row.targetTotal || "0"}</TableCell>
+            {/* Hired FTEs */}
+            <TableCell className="text-center">{row.hiredDay || "0"}</TableCell>
+            <TableCell className="text-center">{row.hiredNight || "0"}</TableCell>
+            <TableCell className="text-center">{row.hiredTotal || "0"}</TableCell>
+            {/* Reqs */}
+            <TableCell className="text-center">{row.reqsDay || "0"}</TableCell>
+            <TableCell className="text-center">{row.reqsNight || "0"}</TableCell>
+            <TableCell className="text-center">{row.reqsTotal || "0"}</TableCell>
+            {/* Variance */}
+            <TableCell className={cn("text-center", getVarianceColor(row.varianceDay))}>
+              {row.varianceDay || "0"}
+            </TableCell>
+            <TableCell className={cn("text-center", getVarianceColor(row.varianceNight))}>
+              {row.varianceNight || "0"}
+            </TableCell>
+            <TableCell className={cn("text-center", getVarianceColor(row.varianceTotal))}>
+              {row.varianceTotal || "0"}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  </div>
+);
+
 export default function PositionPlanning() {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const downloadCSV = () => {
+    const headers = [
+      'Skill',
+      'Target Day', 'Target Night', 'Target Total',
+      'Hired Day', 'Hired Night', 'Hired Total',
+      'Reqs Day', 'Reqs Night', 'Reqs Total',
+      'Variance Day', 'Variance Night', 'Variance Total'
+    ];
+    
+    const rows = varianceData.map(row => [
+      row.skill,
+      row.targetDay, row.targetNight, row.targetTotal,
+      row.hiredDay, row.hiredNight, row.hiredTotal,
+      row.reqsDay, row.reqsNight, row.reqsTotal,
+      row.varianceDay, row.varianceNight, row.varianceTotal
+    ]);
+    
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `FTE_Skill_Shift_Analysis_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header with Legend */}
@@ -199,22 +319,51 @@ export default function PositionPlanning() {
           FTE Skill Shift Analysis
         </motion.h1>
 
-        {/* Legend */}
-        <motion.div
-          className="flex items-center gap-6 text-sm"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
-        >
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-green-500" />
-            <span className="text-muted-foreground">FTE Surplus (Negative)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500" />
-            <span className="text-muted-foreground">FTE Shortage (Positive)</span>
-          </div>
-        </motion.div>
+        <div className="flex items-center gap-4">
+          {/* Legend */}
+          <motion.div
+            className="flex items-center gap-6 text-sm"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-green-500" />
+              <span className="text-muted-foreground">FTE Surplus (Negative)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-red-500" />
+              <span className="text-muted-foreground">FTE Shortage (Positive)</span>
+            </div>
+          </motion.div>
+
+          {/* Action Buttons */}
+          <motion.div
+            className="flex items-center gap-2"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.15 }}
+          >
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={downloadCSV}
+              className="gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Download
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsExpanded(true)}
+              className="gap-2"
+            >
+              <Maximize2 className="h-4 w-4" />
+              Expand
+            </Button>
+          </motion.div>
+        </div>
       </div>
 
       {/* Table */}
@@ -224,81 +373,47 @@ export default function PositionPlanning() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
       >
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="font-semibold text-foreground w-32">Skills</TableHead>
-                <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
-                  Target FTEs
-                </TableHead>
-                <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
-                  Hired FTEs
-                </TableHead>
-                <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
-                  Reqs
-                </TableHead>
-                <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
-                  Variance
-                </TableHead>
-              </TableRow>
-              <TableRow>
-                <TableHead></TableHead>
-                {/* Target FTEs */}
-                <TableHead className="text-center text-xs">Day</TableHead>
-                <TableHead className="text-center text-xs">Night</TableHead>
-                <TableHead className="text-center text-xs">Total</TableHead>
-                {/* Hired FTEs */}
-                <TableHead className="text-center text-xs">Day</TableHead>
-                <TableHead className="text-center text-xs">Night</TableHead>
-                <TableHead className="text-center text-xs">Total</TableHead>
-                {/* Reqs */}
-                <TableHead className="text-center text-xs">Day</TableHead>
-                <TableHead className="text-center text-xs">Night</TableHead>
-                <TableHead className="text-center text-xs">Total</TableHead>
-                {/* Variance */}
-                <TableHead className="text-center text-xs">Day</TableHead>
-                <TableHead className="text-center text-xs">Night</TableHead>
-                <TableHead className="text-center text-xs">Total</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {varianceData.map((row, index) => (
-                <TableRow
-                  key={row.skill}
-                  className={cn(
-                    row.skill === "TOTAL" && "font-semibold bg-muted/20 border-t-2"
-                  )}
-                >
-                  <TableCell className="font-medium">{row.skill}</TableCell>
-                  {/* Target FTEs */}
-                  <TableCell className="text-center">{row.targetDay || "0"}</TableCell>
-                  <TableCell className="text-center">{row.targetNight || "0"}</TableCell>
-                  <TableCell className="text-center">{row.targetTotal || "0"}</TableCell>
-                  {/* Hired FTEs */}
-                  <TableCell className="text-center">{row.hiredDay || "0"}</TableCell>
-                  <TableCell className="text-center">{row.hiredNight || "0"}</TableCell>
-                  <TableCell className="text-center">{row.hiredTotal || "0"}</TableCell>
-                  {/* Reqs */}
-                  <TableCell className="text-center">{row.reqsDay || "0"}</TableCell>
-                  <TableCell className="text-center">{row.reqsNight || "0"}</TableCell>
-                  <TableCell className="text-center">{row.reqsTotal || "0"}</TableCell>
-                  {/* Variance */}
-                  <TableCell className={cn("text-center", getVarianceColor(row.varianceDay))}>
-                    {row.varianceDay || "0"}
-                  </TableCell>
-                  <TableCell className={cn("text-center", getVarianceColor(row.varianceNight))}>
-                    {row.varianceNight || "0"}
-                  </TableCell>
-                  <TableCell className={cn("text-center", getVarianceColor(row.varianceTotal))}>
-                    {row.varianceTotal || "0"}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <FTESkillShiftTable data={varianceData} />
       </motion.div>
+
+      {/* Expanded Modal */}
+      <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
+        <DialogContent className="max-w-none w-[95vw] h-[95vh] flex flex-col">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-2xl font-semibold">
+                FTE Skill Shift Analysis (Expanded View)
+              </DialogTitle>
+              <div className="flex items-center gap-4">
+                {/* Legend */}
+                <div className="flex items-center gap-6 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-green-500" />
+                    <span className="text-muted-foreground">FTE Surplus (Negative)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500" />
+                    <span className="text-muted-foreground">FTE Shortage (Positive)</span>
+                  </div>
+                </div>
+                {/* Download Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={downloadCSV}
+                  className="gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  Download
+                </Button>
+              </div>
+            </div>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto bg-card rounded-xl border shadow-sm">
+            <FTESkillShiftTable data={varianceData} />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
