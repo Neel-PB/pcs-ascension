@@ -80,7 +80,7 @@ export default function StaffingSummary() {
         title: "Vacancy Rate",
         value: "13.9%",
         chartData: generateDeclineTrend(16, 13.9),
-        chartType: "area" as const,
+        chartType: "bar" as const,
         delay: 0,
         definition: "Vacancy Rate measures the percentage of authorized positions that are currently unfilled. A lower rate indicates better staffing levels and improved operational capacity.",
         calculation: `Vacancy Rate = (Vacant Positions / Total Authorized Positions) × 100
