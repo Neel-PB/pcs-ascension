@@ -448,30 +448,27 @@ This metric helps:
           className="space-y-6 animate-fade-in"
         >
           {activeTab === "summary" && (
-            <DraggableSectionsContainer
-              sections={[
-                {
-                  id: 'fte',
-                  title: 'FTE',
-                  kpis: fteKPIs,
-                  onReorder: (newOrder) => setOrder('fte', newOrder),
-                },
-                {
-                  id: 'volume',
-                  title: 'Volume',
-                  kpis: volumeKPIs,
-                  onReorder: (newOrder) => setOrder('volume', newOrder),
-                },
-                {
-                  id: 'productivity',
-                  title: 'Productivity',
-                  kpis: productivityKPIs,
-                  onReorder: (newOrder) => setOrder('productivity', newOrder),
-                },
-              ]}
-              sectionOrder={sectionOrder}
-              onSectionReorder={setSectionOrder}
-            />
+                  <DraggableSectionsContainer
+                    sections={[
+                      {
+                        id: 'fte',
+                        title: 'FTE',
+                        kpis: fteKPIs,
+                      },
+                      {
+                        id: 'volume',
+                        title: 'Volume',
+                        kpis: volumeKPIs,
+                      },
+                      {
+                        id: 'productivity',
+                        title: 'Productivity',
+                        kpis: productivityKPIs,
+                      },
+                    ]}
+                    sectionOrder={sectionOrder}
+                    onSectionReorder={setSectionOrder}
+                  />
           )}
           
           {activeTab === "planning" && (

@@ -34,7 +34,6 @@ interface SectionData {
   id: string;
   title: string;
   kpis: KPIData[];
-  onReorder: (newOrder: string[]) => void;
 }
 
 interface DragHandleProps {
@@ -69,7 +68,6 @@ function DraggableSection({ section }: { section: SectionData }) {
       <DraggableKPISection
         title={section.title}
         kpis={section.kpis}
-        onReorder={section.onReorder}
         dragHandleProps={{ attributes, listeners }}
       />
     </div>
