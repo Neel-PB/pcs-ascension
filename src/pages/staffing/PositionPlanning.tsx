@@ -337,23 +337,23 @@ const GroupRow = ({
           </Badge>
         </div>
       </TableCell>
-      <TableCell className="text-center font-semibold">{data.targetDay || "0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.targetNight || "0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.targetTotal || "0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.hiredDay || "0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.hiredNight || "0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.hiredTotal || "0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.reqsDay || "0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.reqsNight || "0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.reqsTotal || "0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.targetDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.targetNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.targetTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.hiredDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.hiredNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.hiredTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.reqsDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.reqsNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.reqsTotal?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceDay))}>
-        {data.varianceDay || "0"}
+        {data.varianceDay?.toFixed(1) || "0.0"}
       </TableCell>
       <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceNight))}>
-        {data.varianceNight || "0"}
+        {data.varianceNight?.toFixed(1) || "0.0"}
       </TableCell>
       <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceTotal))}>
-        {data.varianceTotal || "0"}
+        {data.varianceTotal?.toFixed(1) || "0.0"}
       </TableCell>
     </TableRow>
   );
@@ -382,23 +382,23 @@ const SkillRow = ({
         )}
         {skill.skill}
       </TableCell>
-      <TableCell className="text-center">{skill.targetDay || "0"}</TableCell>
-      <TableCell className="text-center">{skill.targetNight || "0"}</TableCell>
-      <TableCell className="text-center">{skill.targetTotal || "0"}</TableCell>
-      <TableCell className="text-center">{skill.hiredDay || "0"}</TableCell>
-      <TableCell className="text-center">{skill.hiredNight || "0"}</TableCell>
-      <TableCell className="text-center">{skill.hiredTotal || "0"}</TableCell>
-      <TableCell className="text-center">{skill.reqsDay || "0"}</TableCell>
-      <TableCell className="text-center">{skill.reqsNight || "0"}</TableCell>
-      <TableCell className="text-center">{skill.reqsTotal || "0"}</TableCell>
+      <TableCell className="text-center">{skill.targetDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center">{skill.targetNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center">{skill.targetTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center">{skill.hiredDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center">{skill.hiredNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center">{skill.hiredTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center">{skill.reqsDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center">{skill.reqsNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center">{skill.reqsTotal?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className={cn("text-center", getVarianceColor(skill.varianceDay))}>
-        {skill.varianceDay || "0"}
+        {skill.varianceDay?.toFixed(1) || "0.0"}
       </TableCell>
       <TableCell className={cn("text-center", getVarianceColor(skill.varianceNight))}>
-        {skill.varianceNight || "0"}
+        {skill.varianceNight?.toFixed(1) || "0.0"}
       </TableCell>
       <TableCell className={cn("text-center", getVarianceColor(skill.varianceTotal))}>
-        {skill.varianceTotal || "0"}
+        {skill.varianceTotal?.toFixed(1) || "0.0"}
       </TableCell>
     </TableRow>
   );
@@ -408,23 +408,23 @@ const TotalRow = ({ data }: { data: VarianceData }) => {
   return (
     <TableRow className="font-semibold bg-muted/20 border-t-2">
       <TableCell className="font-semibold">{data.skill}</TableCell>
-      <TableCell className="text-center font-semibold">{data.targetDay || "0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.targetNight || "0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.targetTotal || "0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.hiredDay || "0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.hiredNight || "0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.hiredTotal || "0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.reqsDay || "0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.reqsNight || "0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.reqsTotal || "0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.targetDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.targetNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.targetTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.hiredDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.hiredNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.hiredTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.reqsDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.reqsNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.reqsTotal?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceDay))}>
-        {data.varianceDay || "0"}
+        {data.varianceDay?.toFixed(1) || "0.0"}
       </TableCell>
       <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceNight))}>
-        {data.varianceNight || "0"}
+        {data.varianceNight?.toFixed(1) || "0.0"}
       </TableCell>
       <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceTotal))}>
-        {data.varianceTotal || "0"}
+        {data.varianceTotal?.toFixed(1) || "0.0"}
       </TableCell>
     </TableRow>
   );
