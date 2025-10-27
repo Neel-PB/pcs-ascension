@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Download, Maximize2 } from "lucide-react";
+import { Download, Maximize2, ChevronRight } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,43 @@ interface VarianceData {
   varianceNight: number;
   varianceTotal: number;
 }
+
+interface SkillGroup {
+  id: string;
+  name: string;
+  skills: string[];
+  defaultExpanded?: boolean;
+}
+
+interface GroupedVarianceData {
+  type: 'group' | 'skill' | 'total';
+  id: string;
+  name: string;
+  data: VarianceData;
+  children?: VarianceData[];
+  isExpanded?: boolean;
+}
+
+const skillGroups: SkillGroup[] = [
+  {
+    id: 'overheads',
+    name: 'Overheads',
+    skills: ['RN DIR', 'RN MGR', 'RN AST MGR', 'CORD', 'SPEC'],
+    defaultExpanded: false
+  },
+  {
+    id: 'clinical_staff',
+    name: 'Clinical Staff',
+    skills: ['CL', 'RN'],
+    defaultExpanded: false
+  },
+  {
+    id: 'support_staff',
+    name: 'Support Staff',
+    skills: ['PCT', 'CLERK'],
+    defaultExpanded: false
+  }
+];
 
 const varianceData: VarianceData[] = [
   {
@@ -188,109 +226,373 @@ const varianceData: VarianceData[] = [
 ];
 
 const getVarianceColor = (value: number) => {
-  if (value < 0) return "bg-green-100 text-green-900";
-  if (value > 0) return "bg-red-100 text-red-900";
-  if (value === 0) return "bg-yellow-50 text-yellow-900";
+  if (value < 0) return "text-green-600 font-semibold";
+  if (value > 0) return "text-red-600 font-semibold";
+  if (value === 0) return "text-yellow-600 font-semibold";
   return "";
 };
 
-// Reusable table component
-const FTESkillShiftTable = ({ data }: { data: VarianceData[] }) => (
-  <div className="overflow-x-auto">
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="font-semibold text-foreground w-32">Skills</TableHead>
-          <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
-            Target FTEs
-          </TableHead>
-          <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
-            Hired FTEs
-          </TableHead>
-          <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
-            Reqs
-          </TableHead>
-          <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
-            Variance
-          </TableHead>
-        </TableRow>
-        <TableRow>
-          <TableHead></TableHead>
-          {/* Target FTEs */}
-          <TableHead className="text-center text-xs">Day</TableHead>
-          <TableHead className="text-center text-xs">Night</TableHead>
-          <TableHead className="text-center text-xs">Total</TableHead>
-          {/* Hired FTEs */}
-          <TableHead className="text-center text-xs">Day</TableHead>
-          <TableHead className="text-center text-xs">Night</TableHead>
-          <TableHead className="text-center text-xs">Total</TableHead>
-          {/* Reqs */}
-          <TableHead className="text-center text-xs">Day</TableHead>
-          <TableHead className="text-center text-xs">Night</TableHead>
-          <TableHead className="text-center text-xs">Total</TableHead>
-          {/* Variance */}
-          <TableHead className="text-center text-xs">Day</TableHead>
-          <TableHead className="text-center text-xs">Night</TableHead>
-          <TableHead className="text-center text-xs">Total</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {data.map((row) => (
-          <TableRow
-            key={row.skill}
-            className={cn(
-              row.skill === "TOTAL" && "font-semibold bg-muted/20 border-t-2"
-            )}
+const computeGroupTotals = (skills: VarianceData[]): VarianceData => {
+  return skills.reduce((acc, skill) => ({
+    skill: '',
+    targetDay: acc.targetDay + skill.targetDay,
+    targetNight: acc.targetNight + skill.targetNight,
+    targetTotal: acc.targetTotal + skill.targetTotal,
+    hiredDay: acc.hiredDay + skill.hiredDay,
+    hiredNight: acc.hiredNight + skill.hiredNight,
+    hiredTotal: acc.hiredTotal + skill.hiredTotal,
+    reqsDay: acc.reqsDay + skill.reqsDay,
+    reqsNight: acc.reqsNight + skill.reqsNight,
+    reqsTotal: acc.reqsTotal + skill.reqsTotal,
+    varianceDay: acc.varianceDay + skill.varianceDay,
+    varianceNight: acc.varianceNight + skill.varianceNight,
+    varianceTotal: acc.varianceTotal + skill.varianceTotal,
+  }), {
+    skill: '',
+    targetDay: 0, targetNight: 0, targetTotal: 0,
+    hiredDay: 0, hiredNight: 0, hiredTotal: 0,
+    reqsDay: 0, reqsNight: 0, reqsTotal: 0,
+    varianceDay: 0, varianceNight: 0, varianceTotal: 0,
+  });
+};
+
+const organizeDataIntoGroups = (
+  data: VarianceData[], 
+  groups: SkillGroup[], 
+  expandedGroups: Set<string>
+): GroupedVarianceData[] => {
+  const result: GroupedVarianceData[] = [];
+  const skillMap = new Map(data.map(d => [d.skill, d]));
+  
+  groups.forEach(group => {
+    const groupSkills = group.skills
+      .map(skillName => skillMap.get(skillName))
+      .filter(Boolean) as VarianceData[];
+    
+    if (groupSkills.length === 0) return;
+    
+    const groupTotal = computeGroupTotals(groupSkills);
+    const isExpanded = expandedGroups.has(group.id);
+    
+    result.push({
+      type: 'group',
+      id: group.id,
+      name: group.name,
+      data: groupTotal,
+      children: groupSkills,
+      isExpanded
+    });
+    
+    if (isExpanded) {
+      groupSkills.forEach(skill => {
+        result.push({
+          type: 'skill',
+          id: skill.skill,
+          name: skill.skill,
+          data: skill
+        });
+      });
+    }
+  });
+  
+  const totalRow = data.find(d => d.skill === 'TOTAL');
+  if (totalRow) {
+    result.push({
+      type: 'total',
+      id: 'total',
+      name: 'TOTAL',
+      data: totalRow
+    });
+  }
+  
+  return result;
+};
+
+const GroupRow = ({ 
+  group, 
+  onToggle 
+}: { 
+  group: GroupedVarianceData; 
+  onToggle?: (id: string) => void;
+}) => {
+  const { isExpanded, data, id, name, children } = group;
+  
+  return (
+    <TableRow 
+      className="font-semibold bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer border-t-2 border-primary/20"
+      onClick={() => onToggle?.(id)}
+    >
+      <TableCell className="font-semibold">
+        <div className="flex items-center gap-2">
+          <motion.div
+            initial={false}
+            animate={{ rotate: isExpanded ? 90 : 0 }}
+            transition={{ duration: 0.2 }}
           >
-            <TableCell className="font-medium">{row.skill}</TableCell>
-            {/* Target FTEs */}
-            <TableCell className="text-center">{row.targetDay || "0"}</TableCell>
-            <TableCell className="text-center">{row.targetNight || "0"}</TableCell>
-            <TableCell className="text-center">{row.targetTotal || "0"}</TableCell>
-            {/* Hired FTEs */}
-            <TableCell className="text-center">{row.hiredDay || "0"}</TableCell>
-            <TableCell className="text-center">{row.hiredNight || "0"}</TableCell>
-            <TableCell className="text-center">{row.hiredTotal || "0"}</TableCell>
-            {/* Reqs */}
-            <TableCell className="text-center">{row.reqsDay || "0"}</TableCell>
-            <TableCell className="text-center">{row.reqsNight || "0"}</TableCell>
-            <TableCell className="text-center">{row.reqsTotal || "0"}</TableCell>
-            {/* Variance */}
-            <TableCell className={cn("text-center", getVarianceColor(row.varianceDay))}>
-              {row.varianceDay || "0"}
-            </TableCell>
-            <TableCell className={cn("text-center", getVarianceColor(row.varianceNight))}>
-              {row.varianceNight || "0"}
-            </TableCell>
-            <TableCell className={cn("text-center", getVarianceColor(row.varianceTotal))}>
-              {row.varianceTotal || "0"}
-            </TableCell>
+            <ChevronRight className="h-4 w-4 text-primary" />
+          </motion.div>
+          <span className="text-foreground">{name}</span>
+          <Badge variant="secondary" className="ml-2 text-xs">
+            {children?.length || 0} skills
+          </Badge>
+        </div>
+      </TableCell>
+      <TableCell className="text-center font-semibold">{data.targetDay || "0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.targetNight || "0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.targetTotal || "0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.hiredDay || "0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.hiredNight || "0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.hiredTotal || "0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.reqsDay || "0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.reqsNight || "0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.reqsTotal || "0"}</TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceDay))}>
+        {data.varianceDay || "0"}
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceNight))}>
+        {data.varianceNight || "0"}
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceTotal))}>
+        {data.varianceTotal || "0"}
+      </TableCell>
+    </TableRow>
+  );
+};
+
+const SkillRow = ({ 
+  skill, 
+  isChildRow 
+}: { 
+  skill: VarianceData; 
+  isChildRow?: boolean;
+}) => {
+  return (
+    <TableRow 
+      className={cn(
+        "hover:bg-muted/30 transition-colors",
+        isChildRow && "bg-primary/5"
+      )}
+    >
+      <TableCell className={cn(
+        "font-medium",
+        isChildRow && "pl-12"
+      )}>
+        {isChildRow && (
+          <span className="text-muted-foreground mr-2">└─</span>
+        )}
+        {skill.skill}
+      </TableCell>
+      <TableCell className="text-center">{skill.targetDay || "0"}</TableCell>
+      <TableCell className="text-center">{skill.targetNight || "0"}</TableCell>
+      <TableCell className="text-center">{skill.targetTotal || "0"}</TableCell>
+      <TableCell className="text-center">{skill.hiredDay || "0"}</TableCell>
+      <TableCell className="text-center">{skill.hiredNight || "0"}</TableCell>
+      <TableCell className="text-center">{skill.hiredTotal || "0"}</TableCell>
+      <TableCell className="text-center">{skill.reqsDay || "0"}</TableCell>
+      <TableCell className="text-center">{skill.reqsNight || "0"}</TableCell>
+      <TableCell className="text-center">{skill.reqsTotal || "0"}</TableCell>
+      <TableCell className={cn("text-center", getVarianceColor(skill.varianceDay))}>
+        {skill.varianceDay || "0"}
+      </TableCell>
+      <TableCell className={cn("text-center", getVarianceColor(skill.varianceNight))}>
+        {skill.varianceNight || "0"}
+      </TableCell>
+      <TableCell className={cn("text-center", getVarianceColor(skill.varianceTotal))}>
+        {skill.varianceTotal || "0"}
+      </TableCell>
+    </TableRow>
+  );
+};
+
+const TotalRow = ({ data }: { data: VarianceData }) => {
+  return (
+    <TableRow className="font-semibold bg-muted/20 border-t-2">
+      <TableCell className="font-semibold">{data.skill}</TableCell>
+      <TableCell className="text-center font-semibold">{data.targetDay || "0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.targetNight || "0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.targetTotal || "0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.hiredDay || "0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.hiredNight || "0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.hiredTotal || "0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.reqsDay || "0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.reqsNight || "0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.reqsTotal || "0"}</TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceDay))}>
+        {data.varianceDay || "0"}
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceNight))}>
+        {data.varianceNight || "0"}
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceTotal))}>
+        {data.varianceTotal || "0"}
+      </TableCell>
+    </TableRow>
+  );
+};
+
+interface FTESkillShiftTableProps {
+  data: VarianceData[];
+  expandedGroups?: Set<string>;
+  onToggleGroup?: (groupId: string) => void;
+  skillGroups?: SkillGroup[];
+}
+
+const FTESkillShiftTable = ({ 
+  data, 
+  expandedGroups, 
+  onToggleGroup,
+  skillGroups: groups 
+}: FTESkillShiftTableProps) => {
+  const displayData = groups && expandedGroups
+    ? organizeDataIntoGroups(data, groups, expandedGroups)
+    : data.map(d => ({ type: 'skill' as const, id: d.skill, name: d.skill, data: d }));
+  
+  return (
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="font-semibold text-foreground w-32">Skills</TableHead>
+            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
+              Target FTEs
+            </TableHead>
+            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
+              Hired FTEs
+            </TableHead>
+            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
+              Reqs
+            </TableHead>
+            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
+              Variance
+            </TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  </div>
-);
+          <TableRow>
+            <TableHead></TableHead>
+            {/* Target FTEs */}
+            <TableHead className="text-center text-xs">Day</TableHead>
+            <TableHead className="text-center text-xs">Night</TableHead>
+            <TableHead className="text-center text-xs">Total</TableHead>
+            {/* Hired FTEs */}
+            <TableHead className="text-center text-xs">Day</TableHead>
+            <TableHead className="text-center text-xs">Night</TableHead>
+            <TableHead className="text-center text-xs">Total</TableHead>
+            {/* Reqs */}
+            <TableHead className="text-center text-xs">Day</TableHead>
+            <TableHead className="text-center text-xs">Night</TableHead>
+            <TableHead className="text-center text-xs">Total</TableHead>
+            {/* Variance */}
+            <TableHead className="text-center text-xs">Day</TableHead>
+            <TableHead className="text-center text-xs">Night</TableHead>
+            <TableHead className="text-center text-xs">Total</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {displayData.map((row) => {
+            if (row.type === 'group') {
+              return (
+                <GroupRow
+                  key={row.id}
+                  group={row}
+                  onToggle={onToggleGroup}
+                />
+              );
+            }
+            
+            if (row.type === 'skill') {
+              return (
+                <SkillRow
+                  key={row.id}
+                  skill={row.data}
+                  isChildRow={groups && expandedGroups ? true : false}
+                />
+              );
+            }
+            
+            if (row.type === 'total') {
+              return (
+                <TotalRow
+                  key={row.id}
+                  data={row.data}
+                />
+              );
+            }
+            
+            return null;
+          })}
+        </TableBody>
+      </Table>
+    </div>
+  );
+};
 
 export default function PositionPlanning() {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  const toggleGroup = (groupId: string) => {
+    setExpandedGroups(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(groupId)) {
+        newSet.delete(groupId);
+      } else {
+        newSet.add(groupId);
+      }
+      return newSet;
+    });
+  };
 
   const downloadCSV = () => {
     const headers = [
-      'Skill',
+      'Group', 'Skill',
       'Target Day', 'Target Night', 'Target Total',
       'Hired Day', 'Hired Night', 'Hired Total',
       'Reqs Day', 'Reqs Night', 'Reqs Total',
       'Variance Day', 'Variance Night', 'Variance Total'
     ];
     
-    const rows = varianceData.map(row => [
-      row.skill,
-      row.targetDay, row.targetNight, row.targetTotal,
-      row.hiredDay, row.hiredNight, row.hiredTotal,
-      row.reqsDay, row.reqsNight, row.reqsTotal,
-      row.varianceDay, row.varianceNight, row.varianceTotal
-    ]);
+    const rows: any[] = [];
+    
+    skillGroups.forEach(group => {
+      const groupSkills = group.skills
+        .map(skillName => varianceData.find(d => d.skill === skillName))
+        .filter(Boolean) as VarianceData[];
+      
+      if (groupSkills.length === 0) return;
+      
+      const groupTotal = computeGroupTotals(groupSkills);
+      
+      rows.push([
+        group.name, 
+        `${group.name} (Total)`,
+        groupTotal.targetDay, groupTotal.targetNight, groupTotal.targetTotal,
+        groupTotal.hiredDay, groupTotal.hiredNight, groupTotal.hiredTotal,
+        groupTotal.reqsDay, groupTotal.reqsNight, groupTotal.reqsTotal,
+        groupTotal.varianceDay, groupTotal.varianceNight, groupTotal.varianceTotal
+      ]);
+      
+      groupSkills.forEach(skill => {
+        rows.push([
+          group.name,
+          skill.skill,
+          skill.targetDay, skill.targetNight, skill.targetTotal,
+          skill.hiredDay, skill.hiredNight, skill.hiredTotal,
+          skill.reqsDay, skill.reqsNight, skill.reqsTotal,
+          skill.varianceDay, skill.varianceNight, skill.varianceTotal
+        ]);
+      });
+    });
+    
+    const totalRow = varianceData.find(d => d.skill === 'TOTAL');
+    if (totalRow) {
+      rows.push([
+        'GRAND TOTAL',
+        totalRow.skill,
+        totalRow.targetDay, totalRow.targetNight, totalRow.targetTotal,
+        totalRow.hiredDay, totalRow.hiredNight, totalRow.hiredTotal,
+        totalRow.reqsDay, totalRow.reqsNight, totalRow.reqsTotal,
+        totalRow.varianceDay, totalRow.varianceNight, totalRow.varianceTotal
+      ]);
+    }
     
     const csvContent = [
       headers.join(','),
@@ -373,7 +675,12 @@ export default function PositionPlanning() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
       >
-        <FTESkillShiftTable data={varianceData} />
+          <FTESkillShiftTable 
+            data={varianceData} 
+            expandedGroups={expandedGroups}
+            onToggleGroup={toggleGroup}
+            skillGroups={skillGroups}
+          />
       </motion.div>
 
       {/* Expanded Modal */}
@@ -410,7 +717,12 @@ export default function PositionPlanning() {
             </div>
           </DialogHeader>
           <div className="flex-1 overflow-auto bg-card rounded-xl border shadow-sm">
-            <FTESkillShiftTable data={varianceData} />
+            <FTESkillShiftTable 
+              data={varianceData} 
+              expandedGroups={expandedGroups}
+              onToggleGroup={toggleGroup}
+              skillGroups={skillGroups}
+            />
           </div>
         </DialogContent>
       </Dialog>
