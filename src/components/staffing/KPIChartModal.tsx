@@ -2,8 +2,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
@@ -227,63 +225,73 @@ export function KPIChartModal({
             {/* Table Tab */}
             <TabsContent value="table" className="space-y-4 overflow-hidden flex flex-col">
               {breakdownData && breakdownData.length > 0 ? (
-                <div className="h-[300px] overflow-y-auto rounded-lg border">
-                  <Table>
-                    <TableHeader className="sticky top-0 z-10 bg-blue-50 dark:bg-blue-950/30">
-                      <TableRow className="bg-blue-50 dark:bg-blue-950/30">
-                        <TableHead className="font-semibold">Skill Types</TableHead>
-                        <TableHead className="text-right font-semibold">FT FTEs</TableHead>
-                        <TableHead className="text-right font-semibold">PT FTEs</TableHead>
-                        <TableHead className="text-right font-semibold">PRN FTEs</TableHead>
-                        <TableHead className="text-right font-semibold">Total Actual Paid FTEs</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {breakdownData.map((item, index) => (
-                        <TableRow 
-                          key={index}
-                          className={cn(
-                            item.skillType === 'TOTAL' && "border-t-2 border-border font-bold bg-muted/30"
-                          )}
-                        >
-                          <TableCell className={cn("font-medium", item.skillType === 'TOTAL' && "font-bold")}>
-                            {item.skillType}
-                          </TableCell>
-                          <TableCell className={cn("text-right", item.skillType === 'TOTAL' && "font-bold")}>
-                            {item.ftFtes.toFixed(1)}
-                          </TableCell>
-                          <TableCell className={cn("text-right", item.skillType === 'TOTAL' && "font-bold")}>
-                            {item.ptFtes.toFixed(1)}
-                          </TableCell>
-                          <TableCell className={cn("text-right", item.skillType === 'TOTAL' && "font-bold")}>
-                            {item.prnFtes.toFixed(1)}
-                          </TableCell>
-                          <TableCell className={cn("text-right", item.skillType === 'TOTAL' && "font-bold")}>
-                            {item.totalActualPaidFtes.toFixed(1)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                <div className="rounded-lg border overflow-hidden">
+                  <div className="max-h-[300px] overflow-auto">
+                    {/* Header */}
+                    <div 
+                      className="grid sticky top-0 z-10 bg-blue-50 dark:bg-blue-950/30 border-b"
+                      style={{ gridTemplateColumns: '2fr repeat(4, 1fr)' }}
+                    >
+                      <div className="px-4 py-3 text-left font-semibold text-sm">Skill Types</div>
+                      <div className="px-4 py-3 text-right font-semibold text-sm">FT FTEs</div>
+                      <div className="px-4 py-3 text-right font-semibold text-sm">PT FTEs</div>
+                      <div className="px-4 py-3 text-right font-semibold text-sm">PRN FTEs</div>
+                      <div className="px-4 py-3 text-right font-semibold text-sm">Total Actual Paid FTEs</div>
+                    </div>
+                    
+                    {/* Body */}
+                    {breakdownData.map((item, index) => (
+                      <div
+                        key={index}
+                        className={cn(
+                          "grid border-b hover:bg-muted/50 transition-colors",
+                          item.skillType === 'TOTAL' && "border-t-2 font-bold bg-muted/30"
+                        )}
+                        style={{ gridTemplateColumns: '2fr repeat(4, 1fr)' }}
+                      >
+                        <div className={cn("px-4 py-3 text-left text-sm", item.skillType === 'TOTAL' && "font-bold")}>
+                          {item.skillType}
+                        </div>
+                        <div className={cn("px-4 py-3 text-right text-sm", item.skillType === 'TOTAL' && "font-bold")}>
+                          {item.ftFtes.toFixed(1)}
+                        </div>
+                        <div className={cn("px-4 py-3 text-right text-sm", item.skillType === 'TOTAL' && "font-bold")}>
+                          {item.ptFtes.toFixed(1)}
+                        </div>
+                        <div className={cn("px-4 py-3 text-right text-sm", item.skillType === 'TOTAL' && "font-bold")}>
+                          {item.prnFtes.toFixed(1)}
+                        </div>
+                        <div className={cn("px-4 py-3 text-right text-sm", item.skillType === 'TOTAL' && "font-bold")}>
+                          {item.totalActualPaidFtes.toFixed(1)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : enrichedData && enrichedData.length > 0 ? (
-                <div className="h-[300px] overflow-y-auto rounded-lg border">
-                  <Table>
-                    <TableHeader className="sticky top-0 z-10 bg-background">
-                      <TableRow>
-                        <TableHead>Period</TableHead>
-                        <TableHead className="text-right">{title}</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {enrichedData.map((item, index) => (
-                        <TableRow key={index}>
-                          <TableCell className="font-medium">{item.period}</TableCell>
-                          <TableCell className="text-right">{item.value.toFixed(1)}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                <div className="rounded-lg border overflow-hidden">
+                  <div className="max-h-[300px] overflow-auto">
+                    {/* Header */}
+                    <div 
+                      className="grid sticky top-0 z-10 bg-muted/50 backdrop-blur-sm border-b"
+                      style={{ gridTemplateColumns: '1fr 1fr' }}
+                    >
+                      <div className="px-4 py-3 text-left font-semibold text-sm">Period</div>
+                      <div className="px-4 py-3 text-right font-semibold text-sm">{title}</div>
+                    </div>
+                    
+                    {/* Body */}
+                    {enrichedData.map((item, index) => (
+                      <div
+                        key={index}
+                        className="grid border-b hover:bg-muted/50 transition-colors"
+                        style={{ gridTemplateColumns: '1fr 1fr' }}
+                      >
+                        <div className="px-4 py-3 text-left text-sm font-medium">{item.period}</div>
+                        <div className="px-4 py-3 text-right text-sm">{item.value.toFixed(1)}</div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : null}
 
