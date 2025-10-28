@@ -332,9 +332,6 @@ const GroupRow = ({
             <ChevronRight className="h-4 w-4 text-primary" />
           </motion.div>
           <span className="text-foreground">{name}</span>
-          <Badge variant="secondary" className="ml-2 text-xs">
-            {children?.length || 0} skills
-          </Badge>
         </div>
       </TableCell>
       <TableCell className="text-center font-semibold">{data.targetDay?.toFixed(1) || "0.0"}</TableCell>
