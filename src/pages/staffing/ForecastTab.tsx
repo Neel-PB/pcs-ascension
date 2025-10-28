@@ -2,244 +2,219 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { EditableTable } from "@/components/editable-table/EditableTable";
 import { ColumnDef } from "@/types/table";
-import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { PositionToOpenDetailsSheet } from "@/components/workforce/PositionToOpenDetailsSheet";
 import { PositionToCloseDetailsSheet } from "@/components/workforce/PositionToCloseDetailsSheet";
-
-// Mock data for positions to open
-const positionsToOpen = [
-  {
-    id: "1",
-    market: "Central",
-    facilityName: "Memorial Hospital",
-    departmentName: "Emergency Department",
-    skillType: "Clinical RN",
-    reasonToOpen: "Vacancy - Retirement",
-    FTE: 1.0,
-    status: "Approved",
-  },
-  {
-    id: "2",
-    market: "Central",
-    facilityName: "Memorial Hospital",
-    departmentName: "Laboratory",
-    skillType: "Lab Technician",
-    reasonToOpen: "Volume Growth",
-    FTE: 0.8,
-    status: "Pending Approval",
-  },
-  {
-    id: "3",
-    market: "West",
-    facilityName: "Valley Medical Center",
-    departmentName: "Rehabilitation",
-    skillType: "Physical Therapist",
-    reasonToOpen: "New Service Line",
-    FTE: 1.0,
-    status: "Approved",
-  },
-];
-
-// Mock data for positions to close
-const positionsToClose = [
-  {
-    id: "4",
-    market: "Central",
-    facilityName: "Memorial Hospital",
-    departmentName: "Finance",
-    skillType: "Administrative",
-    reasonToClose: "Automation Implementation",
-    FTE: 0.6,
-    status: "Pending Approval",
-  },
-  {
-    id: "5",
-    market: "West",
-    facilityName: "Valley Medical Center",
-    departmentName: "Medical-Surgical",
-    skillType: "Unit Clerk",
-    reasonToClose: "Restructure",
-    FTE: 0.5,
-    status: "Approved",
-  },
-];
-
-// Column definitions for Positions to Open
-const openPositionsColumns: ColumnDef[] = [
-  {
-    id: "market",
-    label: "Market",
-    type: "text",
-    width: 120,
-    minWidth: 100,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-  },
-  {
-    id: "facilityName",
-    label: "Facility",
-    type: "text",
-    width: 180,
-    minWidth: 130,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-  },
-  {
-    id: "departmentName",
-    label: "Department",
-    type: "text",
-    width: 180,
-    minWidth: 130,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-  },
-  {
-    id: "skillType",
-    label: "Skill Type",
-    type: "text",
-    width: 150,
-    minWidth: 120,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-  },
-  {
-    id: "reasonToOpen",
-    label: "Reason to Open",
-    type: "text",
-    width: 200,
-    minWidth: 150,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-  },
-  {
-    id: "FTE",
-    label: "FTE",
-    type: "number",
-    width: 80,
-    minWidth: 70,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-  },
-  {
-    id: "status",
-    label: "Status",
-    type: "badge",
-    width: 140,
-    minWidth: 120,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-    renderCell: (data: any) => {
-      const variant = data.status === "Approved" ? "default" : "secondary";
-      return <Badge variant={variant}>{data.status}</Badge>;
-    },
-  },
-];
-
-// Column definitions for Positions to Close
-const closePositionsColumns: ColumnDef[] = [
-  {
-    id: "market",
-    label: "Market",
-    type: "text",
-    width: 120,
-    minWidth: 100,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-  },
-  {
-    id: "facilityName",
-    label: "Facility",
-    type: "text",
-    width: 180,
-    minWidth: 130,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-  },
-  {
-    id: "departmentName",
-    label: "Department",
-    type: "text",
-    width: 180,
-    minWidth: 130,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-  },
-  {
-    id: "skillType",
-    label: "Skill Type",
-    type: "text",
-    width: 150,
-    minWidth: 120,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-  },
-  {
-    id: "reasonToClose",
-    label: "Reason to Close",
-    type: "text",
-    width: 200,
-    minWidth: 150,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-  },
-  {
-    id: "FTE",
-    label: "FTE",
-    type: "number",
-    width: 80,
-    minWidth: 70,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-  },
-  {
-    id: "status",
-    label: "Status",
-    type: "badge",
-    width: 140,
-    minWidth: 120,
-    sortable: true,
-    resizable: true,
-    draggable: true,
-    locked: false,
-    renderCell: (data: any) => {
-      const variant = data.status === "Approved" ? "default" : "secondary";
-      return <Badge variant={variant}>{data.status}</Badge>;
-    },
-  },
-];
+import { ApprovalButtons } from "@/components/staffing/ApprovalButtons";
+import { 
+  useForecastPositionsToOpen, 
+  useForecastPositionsToClose,
+  useApprovePositionToOpen,
+  useRejectPositionToOpen,
+  useApprovePositionToClose,
+  useRejectPositionToClose 
+} from "@/hooks/useForecastPositions";
+import { useRBAC } from "@/hooks/useRBAC";
 
 export function ForecastTab() {
   const [selectedOpenPosition, setSelectedOpenPosition] = useState<any>(null);
   const [selectedClosePosition, setSelectedClosePosition] = useState<any>(null);
   const [openSheetOpen, setOpenSheetOpen] = useState(false);
   const [closeSheetOpen, setCloseSheetOpen] = useState(false);
+
+  // Fetch data
+  const { data: positionsToOpen = [], isLoading: isLoadingOpen } = useForecastPositionsToOpen();
+  const { data: positionsToClose = [], isLoading: isLoadingClose } = useForecastPositionsToClose();
+
+  // Mutations
+  const { mutate: approveOpen, isPending: isApprovingOpen } = useApprovePositionToOpen();
+  const { mutate: rejectOpen, isPending: isRejectingOpen } = useRejectPositionToOpen();
+  const { mutate: approveClose, isPending: isApprovingClose } = useApprovePositionToClose();
+  const { mutate: rejectClose, isPending: isRejectingClose } = useRejectPositionToClose();
+
+  // Check admin status
+  const { hasRole } = useRBAC();
+  const isAdmin = hasRole('admin');
+
+  // Column definitions for Positions to Open
+  const openPositionsColumns: ColumnDef[] = [
+    {
+      id: "market",
+      label: "Market",
+      type: "text",
+      width: 120,
+      minWidth: 100,
+      sortable: true,
+      resizable: true,
+      draggable: true,
+      locked: false,
+    },
+    {
+      id: "facility_name",
+      label: "Facility",
+      type: "text",
+      width: 180,
+      minWidth: 130,
+      sortable: true,
+      resizable: true,
+      draggable: true,
+      locked: false,
+    },
+    {
+      id: "department_name",
+      label: "Department",
+      type: "text",
+      width: 180,
+      minWidth: 130,
+      sortable: true,
+      resizable: true,
+      draggable: true,
+      locked: false,
+    },
+    {
+      id: "skill_type",
+      label: "Skill Type",
+      type: "text",
+      width: 150,
+      minWidth: 120,
+      sortable: true,
+      resizable: true,
+      draggable: true,
+      locked: false,
+    },
+    {
+      id: "reason_to_open",
+      label: "Reason to Open",
+      type: "text",
+      width: 200,
+      minWidth: 150,
+      sortable: true,
+      resizable: true,
+      draggable: true,
+      locked: false,
+    },
+    {
+      id: "fte",
+      label: "FTE",
+      type: "number",
+      width: 80,
+      minWidth: 70,
+      sortable: true,
+      resizable: true,
+      draggable: true,
+      locked: false,
+    },
+    {
+      id: "actions",
+      label: "Actions",
+      type: "custom",
+      width: 180,
+      minWidth: 150,
+      sortable: false,
+      resizable: true,
+      draggable: false,
+      locked: true,
+      renderCell: (data: any) => (
+        <ApprovalButtons
+          status={data.status}
+          onApprove={() => approveOpen(data.id)}
+          onReject={() => rejectOpen(data.id)}
+          isLoading={isApprovingOpen || isRejectingOpen}
+          disabled={!isAdmin}
+        />
+      ),
+    },
+  ];
+
+  // Column definitions for Positions to Close
+  const closePositionsColumns: ColumnDef[] = [
+    {
+      id: "market",
+      label: "Market",
+      type: "text",
+      width: 120,
+      minWidth: 100,
+      sortable: true,
+      resizable: true,
+      draggable: true,
+      locked: false,
+    },
+    {
+      id: "facility_name",
+      label: "Facility",
+      type: "text",
+      width: 180,
+      minWidth: 130,
+      sortable: true,
+      resizable: true,
+      draggable: true,
+      locked: false,
+    },
+    {
+      id: "department_name",
+      label: "Department",
+      type: "text",
+      width: 180,
+      minWidth: 130,
+      sortable: true,
+      resizable: true,
+      draggable: true,
+      locked: false,
+    },
+    {
+      id: "skill_type",
+      label: "Skill Type",
+      type: "text",
+      width: 150,
+      minWidth: 120,
+      sortable: true,
+      resizable: true,
+      draggable: true,
+      locked: false,
+    },
+    {
+      id: "reason_to_close",
+      label: "Reason to Close",
+      type: "text",
+      width: 200,
+      minWidth: 150,
+      sortable: true,
+      resizable: true,
+      draggable: true,
+      locked: false,
+    },
+    {
+      id: "fte",
+      label: "FTE",
+      type: "number",
+      width: 80,
+      minWidth: 70,
+      sortable: true,
+      resizable: true,
+      draggable: true,
+      locked: false,
+    },
+    {
+      id: "actions",
+      label: "Actions",
+      type: "custom",
+      width: 180,
+      minWidth: 150,
+      sortable: false,
+      resizable: true,
+      draggable: false,
+      locked: true,
+      renderCell: (data: any) => (
+        <ApprovalButtons
+          status={data.status}
+          onApprove={() => approveClose(data.id)}
+          onReject={() => rejectClose(data.id)}
+          isLoading={isApprovingClose || isRejectingClose}
+          disabled={!isAdmin}
+        />
+      ),
+    },
+  ];
 
   const handleOpenRowClick = (row: any) => {
     setSelectedOpenPosition(row);

@@ -137,6 +137,108 @@ export type Database = {
         }
         Relationships: []
       }
+      forecast_positions_to_close: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string | null
+          department_id: string | null
+          department_name: string
+          facility_id: string | null
+          facility_name: string
+          fte: number
+          id: string
+          market: string
+          reason_to_close: string
+          skill_type: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          department_id?: string | null
+          department_name: string
+          facility_id?: string | null
+          facility_name: string
+          fte: number
+          id?: string
+          market: string
+          reason_to_close: string
+          skill_type: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          department_id?: string | null
+          department_name?: string
+          facility_id?: string | null
+          facility_name?: string
+          fte?: number
+          id?: string
+          market?: string
+          reason_to_close?: string
+          skill_type?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      forecast_positions_to_open: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string | null
+          department_id: string | null
+          department_name: string
+          facility_id: string | null
+          facility_name: string
+          fte: number
+          id: string
+          market: string
+          reason_to_open: string
+          skill_type: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          department_id?: string | null
+          department_name: string
+          facility_id?: string | null
+          facility_name: string
+          fte: number
+          id?: string
+          market: string
+          reason_to_open: string
+          skill_type: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          department_id?: string | null
+          department_name?: string
+          facility_id?: string | null
+          facility_name?: string
+          fte?: number
+          id?: string
+          market?: string
+          reason_to_open?: string
+          skill_type?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       labor_performance: {
         Row: {
           actual_fte: number | null

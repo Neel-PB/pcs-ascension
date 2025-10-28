@@ -30,7 +30,7 @@ export function PositionToOpenDetailsSheet({
         <SheetHeader>
           <SheetTitle className="text-2xl">Position to Open</SheetTitle>
           <SheetDescription>
-            {position.skillType} • FTE: {position.FTE}
+            {position.skill_type} • FTE: {position.fte}
           </SheetDescription>
         </SheetHeader>
 
@@ -46,9 +46,16 @@ export function PositionToOpenDetailsSheet({
                 {/* Status */}
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Status</h3>
-                  <Badge variant={position.status === "Approved" ? "default" : "secondary"}>
-                    {position.status}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={position.status === "approved" ? "default" : position.status === "rejected" ? "destructive" : "secondary"}>
+                      {position.status.charAt(0).toUpperCase() + position.status.slice(1)}
+                    </Badge>
+                    {position.approved_at && (
+                      <span className="text-xs text-muted-foreground">
+                        on {new Date(position.approved_at).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <Separator />
@@ -59,15 +66,15 @@ export function PositionToOpenDetailsSheet({
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-xs text-muted-foreground">Skill Type</p>
-                      <p className="text-sm font-medium">{position.skillType || "—"}</p>
+                      <p className="text-sm font-medium">{position.skill_type || "—"}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">FTE</p>
-                      <p className="text-sm font-medium">{position.FTE || "—"}</p>
+                      <p className="text-sm font-medium">{position.fte || "—"}</p>
                     </div>
                     <div className="col-span-2">
                       <p className="text-xs text-muted-foreground">Reason to Open</p>
-                      <p className="text-sm font-medium">{position.reasonToOpen || "—"}</p>
+                      <p className="text-sm font-medium">{position.reason_to_open || "—"}</p>
                     </div>
                   </div>
                 </div>
@@ -84,11 +91,11 @@ export function PositionToOpenDetailsSheet({
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Facility</p>
-                      <p className="text-sm font-medium">{position.facilityName || "—"}</p>
+                      <p className="text-sm font-medium">{position.facility_name || "—"}</p>
                     </div>
                     <div className="col-span-2">
                       <p className="text-xs text-muted-foreground">Department</p>
-                      <p className="text-sm font-medium">{position.departmentName || "—"}</p>
+                      <p className="text-sm font-medium">{position.department_name || "—"}</p>
                     </div>
                   </div>
                 </div>
