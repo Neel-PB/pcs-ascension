@@ -227,9 +227,9 @@ export function KPIChartModal({
             {/* Table Tab */}
             <TabsContent value="table" className="space-y-4 overflow-hidden flex flex-col">
               {breakdownData && breakdownData.length > 0 ? (
-                <ScrollArea className="h-[300px] rounded-lg border">
+                <div className="h-[300px] overflow-y-auto rounded-lg border">
                   <Table>
-                    <TableHeader className="sticky top-0 z-10 bg-background">
+                    <TableHeader className="sticky top-0 z-10 bg-blue-50 dark:bg-blue-950/30">
                       <TableRow className="bg-blue-50 dark:bg-blue-950/30">
                         <TableHead className="font-semibold">Skill Types</TableHead>
                         <TableHead className="text-right font-semibold">FT FTEs</TableHead>
@@ -265,9 +265,9 @@ export function KPIChartModal({
                       ))}
                     </TableBody>
                   </Table>
-                </ScrollArea>
+                </div>
               ) : enrichedData && enrichedData.length > 0 ? (
-                <ScrollArea className="h-[300px] rounded-lg border">
+                <div className="h-[300px] overflow-y-auto rounded-lg border">
                   <Table>
                     <TableHeader className="sticky top-0 z-10 bg-background">
                       <TableRow>
@@ -284,7 +284,7 @@ export function KPIChartModal({
                       ))}
                     </TableBody>
                   </Table>
-                </ScrollArea>
+                </div>
               ) : null}
 
               {/* Statistics */}
