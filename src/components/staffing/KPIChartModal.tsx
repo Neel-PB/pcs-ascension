@@ -229,7 +229,7 @@ export function KPIChartModal({
               {breakdownData && breakdownData.length > 0 ? (
                 <ScrollArea className="h-[300px] rounded-lg border">
                   <Table>
-                    <TableHeader>
+                    <TableHeader className="sticky top-0 z-10 bg-background">
                       <TableRow className="bg-blue-50 dark:bg-blue-950/30">
                         <TableHead className="font-semibold">Skill Types</TableHead>
                         <TableHead className="text-right font-semibold">FT FTEs</TableHead>
@@ -269,7 +269,7 @@ export function KPIChartModal({
               ) : enrichedData && enrichedData.length > 0 ? (
                 <ScrollArea className="h-[300px] rounded-lg border">
                   <Table>
-                    <TableHeader>
+                    <TableHeader className="sticky top-0 z-10 bg-background">
                       <TableRow>
                         <TableHead>Period</TableHead>
                         <TableHead className="text-right">{title}</TableHead>
