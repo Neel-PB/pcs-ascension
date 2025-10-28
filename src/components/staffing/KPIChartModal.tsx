@@ -18,6 +18,7 @@ interface KPIChartModalProps {
   isHighlighted?: boolean;
   chartData?: Array<{ value: number }>;
   chartType?: "line" | "bar" | "area";
+  breakdownData?: Array<any>;
 }
 
 export function KPIChartModal({
@@ -31,6 +32,7 @@ export function KPIChartModal({
   isHighlighted = false,
   chartData,
   chartType = "line",
+  breakdownData,
 }: KPIChartModalProps) {
   const [activeTab, setActiveTab] = useState("chart");
   const getChartColor = () => {
@@ -224,7 +226,47 @@ export function KPIChartModal({
 
             {/* Table Tab */}
             <TabsContent value="table" className="space-y-6 min-h-[450px] flex-1 overflow-hidden flex flex-col">
-              {enrichedData && enrichedData.length > 0 && (
+              {breakdownData && breakdownData.length > 0 ? (
+                <ScrollArea className="h-[300px] rounded-lg border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-blue-50 dark:bg-blue-950/30">
+                        <TableHead className="font-semibold">Skill Types</TableHead>
+                        <TableHead className="text-right font-semibold">FT FTEs</TableHead>
+                        <TableHead className="text-right font-semibold">PT FTEs</TableHead>
+                        <TableHead className="text-right font-semibold">PRN FTEs</TableHead>
+                        <TableHead className="text-right font-semibold">Total Actual Paid FTEs</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {breakdownData.map((item, index) => (
+                        <TableRow 
+                          key={index}
+                          className={cn(
+                            item.skillType === 'TOTAL' && "border-t-2 border-border font-bold bg-muted/30"
+                          )}
+                        >
+                          <TableCell className={cn("font-medium", item.skillType === 'TOTAL' && "font-bold")}>
+                            {item.skillType}
+                          </TableCell>
+                          <TableCell className={cn("text-right", item.skillType === 'TOTAL' && "font-bold")}>
+                            {item.ftFtes.toFixed(1)}
+                          </TableCell>
+                          <TableCell className={cn("text-right", item.skillType === 'TOTAL' && "font-bold")}>
+                            {item.ptFtes.toFixed(1)}
+                          </TableCell>
+                          <TableCell className={cn("text-right", item.skillType === 'TOTAL' && "font-bold")}>
+                            {item.prnFtes.toFixed(1)}
+                          </TableCell>
+                          <TableCell className={cn("text-right", item.skillType === 'TOTAL' && "font-bold")}>
+                            {item.totalActualPaidFtes.toFixed(1)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              ) : enrichedData && enrichedData.length > 0 ? (
                 <ScrollArea className="h-[300px] rounded-lg border">
                   <Table>
                     <TableHeader>
@@ -243,7 +285,7 @@ export function KPIChartModal({
                     </TableBody>
                   </Table>
                 </ScrollArea>
-              )}
+              ) : null}
 
               {/* Statistics */}
               {stats && (

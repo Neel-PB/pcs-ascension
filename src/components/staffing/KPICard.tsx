@@ -18,6 +18,7 @@ interface KPICardProps {
   chartType?: "line" | "bar" | "area";
   definition?: string;
   calculation?: string;
+  breakdownData?: Array<any>;
 }
 
 export function KPICard({
@@ -32,6 +33,7 @@ export function KPICard({
   chartType = "line",
   definition = "",
   calculation = "",
+  breakdownData,
 }: KPICardProps) {
   const [showChartModal, setShowChartModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
@@ -116,6 +118,7 @@ export function KPICard({
         isHighlighted={isHighlighted}
         chartData={chartData}
         chartType={chartType}
+        breakdownData={breakdownData}
       />
 
       {/* Info Modal */}
