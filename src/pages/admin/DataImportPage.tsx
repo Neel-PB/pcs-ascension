@@ -77,6 +77,7 @@ const TABLE_SCHEMAS: Record<TableName, { name: string; type: string }[]> = {
   posts: [],
   profiles: [],
   user_roles: [],
+  user_organization_access: [],
 };
 
 export default function DataImportPage() {

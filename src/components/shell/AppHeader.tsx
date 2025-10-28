@@ -3,6 +3,7 @@ import { Search, Bell, Sun, Moon, Monitor } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { UserProfileModal } from "@/components/profile/UserProfileModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -20,6 +21,7 @@ import { cn } from "@/lib/utils";
 
 export function AppHeader() {
   const [searchFocused, setSearchFocused] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -172,7 +174,7 @@ export function AppHeader() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setProfileModalOpen(true)}>
                   <span>Profile</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -184,6 +186,15 @@ export function AppHeader() {
           )}
         </div>
       </div>
+
+      {/* User Profile Modal */}
+      {user && (
+        <UserProfileModal
+          open={profileModalOpen}
+          onOpenChange={setProfileModalOpen}
+          userId={user.id}
+        />
+      )}
     </header>
   );
 }

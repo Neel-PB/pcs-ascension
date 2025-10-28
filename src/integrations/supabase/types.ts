@@ -446,6 +446,7 @@ export type Database = {
           email: string | null
           first_name: string | null
           id: string
+          job_title: string | null
           last_name: string | null
           updated_at: string
         }
@@ -456,6 +457,7 @@ export type Database = {
           email?: string | null
           first_name?: string | null
           id: string
+          job_title?: string | null
           last_name?: string | null
           updated_at?: string
         }
@@ -466,6 +468,7 @@ export type Database = {
           email?: string | null
           first_name?: string | null
           id?: string
+          job_title?: string | null
           last_name?: string | null
           updated_at?: string
         }
@@ -600,6 +603,42 @@ export type Database = {
           "Total Overhead Hours"?: number | null
           updated_at?: string
           "Variable Hrs Per UoS"?: number | null
+        }
+        Relationships: []
+      }
+      user_organization_access: {
+        Row: {
+          created_at: string | null
+          department_id: string | null
+          department_name: string | null
+          facility_id: string | null
+          facility_name: string | null
+          id: string
+          market: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          department_id?: string | null
+          department_name?: string | null
+          facility_id?: string | null
+          facility_name?: string | null
+          id?: string
+          market?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          department_id?: string | null
+          department_name?: string | null
+          facility_id?: string | null
+          facility_name?: string | null
+          id?: string
+          market?: string | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
