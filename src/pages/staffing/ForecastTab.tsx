@@ -12,7 +12,9 @@ import {
   useApprovePositionToOpen,
   useRejectPositionToOpen,
   useApprovePositionToClose,
-  useRejectPositionToClose 
+  useRejectPositionToClose,
+  useRevertPositionToOpen,
+  useRevertPositionToClose
 } from "@/hooks/useForecastPositions";
 import { useRBAC } from "@/hooks/useRBAC";
 
@@ -29,8 +31,10 @@ export function ForecastTab() {
   // Mutations
   const { mutate: approveOpen, isPending: isApprovingOpen } = useApprovePositionToOpen();
   const { mutate: rejectOpen, isPending: isRejectingOpen } = useRejectPositionToOpen();
+  const { mutate: revertOpen, isPending: isRevertingOpen } = useRevertPositionToOpen();
   const { mutate: approveClose, isPending: isApprovingClose } = useApprovePositionToClose();
   const { mutate: rejectClose, isPending: isRejectingClose } = useRejectPositionToClose();
+  const { mutate: revertClose, isPending: isRevertingClose } = useRevertPositionToClose();
 
   // Check admin status
   const { hasRole } = useRBAC();
@@ -114,15 +118,33 @@ export function ForecastTab() {
       resizable: true,
       draggable: false,
       locked: true,
-      renderCell: (data: any) => (
-        <ApprovalButtons
-          status={data.status}
-          onApprove={() => approveOpen(data.id)}
-          onReject={() => rejectOpen(data.id)}
-          isLoading={isApprovingOpen || isRejectingOpen}
-          disabled={!isAdmin}
-        />
-      ),
+      renderCell: (data: any) => {
+        const handleApprove = () => {
+          if (data.status === 'approved') {
+            revertOpen(data.id);
+          } else {
+            approveOpen(data.id);
+          }
+        };
+
+        const handleReject = () => {
+          if (data.status === 'rejected') {
+            revertOpen(data.id);
+          } else {
+            rejectOpen(data.id);
+          }
+        };
+
+        return (
+          <ApprovalButtons
+            status={data.status}
+            onApprove={handleApprove}
+            onReject={handleReject}
+            isLoading={isApprovingOpen || isRejectingOpen || isRevertingOpen}
+            disabled={!isAdmin}
+          />
+        );
+      },
     },
   ];
 
@@ -204,15 +226,33 @@ export function ForecastTab() {
       resizable: true,
       draggable: false,
       locked: true,
-      renderCell: (data: any) => (
-        <ApprovalButtons
-          status={data.status}
-          onApprove={() => approveClose(data.id)}
-          onReject={() => rejectClose(data.id)}
-          isLoading={isApprovingClose || isRejectingClose}
-          disabled={!isAdmin}
-        />
-      ),
+      renderCell: (data: any) => {
+        const handleApprove = () => {
+          if (data.status === 'approved') {
+            revertClose(data.id);
+          } else {
+            approveClose(data.id);
+          }
+        };
+
+        const handleReject = () => {
+          if (data.status === 'rejected') {
+            revertClose(data.id);
+          } else {
+            rejectClose(data.id);
+          }
+        };
+
+        return (
+          <ApprovalButtons
+            status={data.status}
+            onApprove={handleApprove}
+            onReject={handleReject}
+            isLoading={isApprovingClose || isRejectingClose || isRevertingClose}
+            disabled={!isAdmin}
+          />
+        );
+      },
     },
   ];
 

@@ -216,3 +216,75 @@ export function useRejectPositionToClose() {
     },
   });
 }
+
+export function useRevertPositionToOpen() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase
+        .from('forecast_positions_to_open')
+        .update({
+          status: 'pending',
+          approved_by: null,
+          approved_at: null,
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['forecast-positions-to-open'] });
+      toast({
+        title: "Status reverted",
+        description: "The position status has been reverted to pending.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to revert",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+}
+
+export function useRevertPositionToClose() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase
+        .from('forecast_positions_to_close')
+        .update({
+          status: 'pending',
+          approved_by: null,
+          approved_at: null,
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['forecast-positions-to-close'] });
+      toast({
+        title: "Status reverted",
+        description: "The position status has been reverted to pending.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to revert",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+}
