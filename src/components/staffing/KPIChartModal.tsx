@@ -101,7 +101,7 @@ export function KPIChartModal({
             </TabsList>
 
             {/* Chart Tab */}
-            <TabsContent value="chart" className="space-y-6 min-h-[450px] flex-1 overflow-hidden flex flex-col">
+            <TabsContent value="chart" className="space-y-6 flex-1 overflow-hidden flex flex-col">
               {enrichedData && enrichedData.length > 0 && (
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -225,7 +225,7 @@ export function KPIChartModal({
             </TabsContent>
 
             {/* Table Tab */}
-            <TabsContent value="table" className="space-y-6 min-h-[450px] flex-1 overflow-hidden flex flex-col">
+            <TabsContent value="table" className="space-y-4 flex-1 overflow-hidden flex flex-col">
               {breakdownData && breakdownData.length > 0 ? (
                 <ScrollArea className="h-[300px] rounded-lg border">
                   <Table>
