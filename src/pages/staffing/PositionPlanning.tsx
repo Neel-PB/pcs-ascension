@@ -1,7 +1,16 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Download, Maximize2, ChevronRight } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -301,127 +310,120 @@ const organizeDataIntoGroups = (
 
 const GroupRow = ({ 
   group, 
-  onToggle,
-  gridTemplate 
+  onToggle 
 }: { 
   group: GroupedVarianceData; 
   onToggle?: (id: string) => void;
-  gridTemplate: string;
 }) => {
-  const { isExpanded, data, id, name } = group;
+  const { isExpanded, data, id, name, children } = group;
   
   return (
-    <div 
-      style={{ display: 'grid', gridTemplateColumns: gridTemplate }}
-      className="font-semibold bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer border-t-2 border-primary/20 border-b"
+    <TableRow 
+      className="font-semibold bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer border-t-2 border-primary/20"
       onClick={() => onToggle?.(id)}
     >
-      <div className="px-4 py-3 font-semibold flex items-center gap-2">
-        <motion.div
-          initial={false}
-          animate={{ rotate: isExpanded ? 90 : 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          <ChevronRight className="h-4 w-4 text-primary" />
-        </motion.div>
-        <span className="text-foreground">{name}</span>
-      </div>
-      <div className="px-4 py-3 text-center font-semibold">{data.targetDay?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center font-semibold">{data.targetNight?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center font-semibold">{data.targetTotal?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center font-semibold">{data.hiredDay?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center font-semibold">{data.hiredNight?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center font-semibold">{data.hiredTotal?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center font-semibold">{data.reqsDay?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center font-semibold">{data.reqsNight?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center font-semibold">{data.reqsTotal?.toFixed(1) || "0.0"}</div>
-      <div className={cn("px-4 py-3 text-center font-semibold", getVarianceColor(data.varianceDay))}>
+      <TableCell className="font-semibold">
+        <div className="flex items-center gap-2">
+          <motion.div
+            initial={false}
+            animate={{ rotate: isExpanded ? 90 : 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <ChevronRight className="h-4 w-4 text-primary" />
+          </motion.div>
+          <span className="text-foreground">{name}</span>
+        </div>
+      </TableCell>
+      <TableCell className="text-center font-semibold">{data.targetDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.targetNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.targetTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.hiredDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.hiredNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.hiredTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.reqsDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.reqsNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.reqsTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceDay))}>
         {data.varianceDay?.toFixed(1) || "0.0"}
-      </div>
-      <div className={cn("px-4 py-3 text-center font-semibold", getVarianceColor(data.varianceNight))}>
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceNight))}>
         {data.varianceNight?.toFixed(1) || "0.0"}
-      </div>
-      <div className={cn("px-4 py-3 text-center font-semibold", getVarianceColor(data.varianceTotal))}>
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceTotal))}>
         {data.varianceTotal?.toFixed(1) || "0.0"}
-      </div>
-    </div>
+      </TableCell>
+    </TableRow>
   );
 };
 
 const SkillRow = ({ 
   skill, 
-  isChildRow,
-  gridTemplate 
+  isChildRow 
 }: { 
   skill: VarianceData; 
   isChildRow?: boolean;
-  gridTemplate: string;
 }) => {
   return (
-    <div 
-      style={{ display: 'grid', gridTemplateColumns: gridTemplate }}
+    <TableRow 
       className={cn(
-        "hover:bg-muted/30 transition-colors border-b",
+        "hover:bg-muted/30 transition-colors",
         isChildRow && "bg-primary/5"
       )}
     >
-      <div className={cn(
-        "px-4 py-3 font-medium flex items-center",
+      <TableCell className={cn(
+        "font-medium",
         isChildRow && "pl-12"
       )}>
         {isChildRow && (
           <span className="text-muted-foreground mr-2">└─</span>
         )}
         {skill.skill}
-      </div>
-      <div className="px-4 py-3 text-center">{skill.targetDay?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center">{skill.targetNight?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center">{skill.targetTotal?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center">{skill.hiredDay?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center">{skill.hiredNight?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center">{skill.hiredTotal?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center">{skill.reqsDay?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center">{skill.reqsNight?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center">{skill.reqsTotal?.toFixed(1) || "0.0"}</div>
-      <div className={cn("px-4 py-3 text-center", getVarianceColor(skill.varianceDay))}>
+      </TableCell>
+      <TableCell className="text-center">{skill.targetDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center">{skill.targetNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center">{skill.targetTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center">{skill.hiredDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center">{skill.hiredNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center">{skill.hiredTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center">{skill.reqsDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center">{skill.reqsNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center">{skill.reqsTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className={cn("text-center", getVarianceColor(skill.varianceDay))}>
         {skill.varianceDay?.toFixed(1) || "0.0"}
-      </div>
-      <div className={cn("px-4 py-3 text-center", getVarianceColor(skill.varianceNight))}>
+      </TableCell>
+      <TableCell className={cn("text-center", getVarianceColor(skill.varianceNight))}>
         {skill.varianceNight?.toFixed(1) || "0.0"}
-      </div>
-      <div className={cn("px-4 py-3 text-center", getVarianceColor(skill.varianceTotal))}>
+      </TableCell>
+      <TableCell className={cn("text-center", getVarianceColor(skill.varianceTotal))}>
         {skill.varianceTotal?.toFixed(1) || "0.0"}
-      </div>
-    </div>
+      </TableCell>
+    </TableRow>
   );
 };
 
-const TotalRow = ({ data, gridTemplate }: { data: VarianceData; gridTemplate: string }) => {
+const TotalRow = ({ data }: { data: VarianceData }) => {
   return (
-    <div 
-      style={{ display: 'grid', gridTemplateColumns: gridTemplate }}
-      className="font-semibold bg-muted/20 border-t-2 border-b"
-    >
-      <div className="px-4 py-3 font-semibold">{data.skill}</div>
-      <div className="px-4 py-3 text-center font-semibold">{data.targetDay?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center font-semibold">{data.targetNight?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center font-semibold">{data.targetTotal?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center font-semibold">{data.hiredDay?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center font-semibold">{data.hiredNight?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center font-semibold">{data.hiredTotal?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center font-semibold">{data.reqsDay?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center font-semibold">{data.reqsNight?.toFixed(1) || "0.0"}</div>
-      <div className="px-4 py-3 text-center font-semibold">{data.reqsTotal?.toFixed(1) || "0.0"}</div>
-      <div className={cn("px-4 py-3 text-center font-semibold", getVarianceColor(data.varianceDay))}>
+    <TableRow className="font-semibold bg-muted/20 border-t-2">
+      <TableCell className="font-semibold">{data.skill}</TableCell>
+      <TableCell className="text-center font-semibold">{data.targetDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.targetNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.targetTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.hiredDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.hiredNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.hiredTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.reqsDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.reqsNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold">{data.reqsTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceDay))}>
         {data.varianceDay?.toFixed(1) || "0.0"}
-      </div>
-      <div className={cn("px-4 py-3 text-center font-semibold", getVarianceColor(data.varianceNight))}>
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceNight))}>
         {data.varianceNight?.toFixed(1) || "0.0"}
-      </div>
-      <div className={cn("px-4 py-3 text-center font-semibold", getVarianceColor(data.varianceTotal))}>
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceTotal))}>
         {data.varianceTotal?.toFixed(1) || "0.0"}
-      </div>
-    </div>
+      </TableCell>
+    </TableRow>
   );
 };
 
@@ -442,88 +444,80 @@ const FTESkillShiftTable = ({
     ? organizeDataIntoGroups(data, groups, expandedGroups)
     : data.map(d => ({ type: 'skill' as const, id: d.skill, name: d.skill, data: d }));
   
-  const gridTemplate = "200px repeat(12, 1fr)";
-  
   return (
-    <div className="rounded-lg border bg-card overflow-hidden">
-      <div className="max-h-[600px] overflow-auto">
-        {/* Sticky Header */}
-        <div className="sticky top-0 z-10 bg-muted/50 backdrop-blur-sm border-b">
-          {/* First header row - Main groups */}
-          <div style={{ display: 'grid', gridTemplateColumns: gridTemplate }} className="border-b">
-            <div className="px-4 py-2 font-semibold text-foreground">Skills</div>
-            <div className="px-4 py-2 text-center font-semibold text-foreground bg-muted/30" style={{ gridColumn: 'span 3' }}>
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="font-semibold text-foreground w-32">Skills</TableHead>
+            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
               Target FTEs
-            </div>
-            <div className="px-4 py-2 text-center font-semibold text-foreground bg-muted/30" style={{ gridColumn: 'span 3' }}>
+            </TableHead>
+            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
               Hired FTEs
-            </div>
-            <div className="px-4 py-2 text-center font-semibold text-foreground bg-muted/30" style={{ gridColumn: 'span 3' }}>
+            </TableHead>
+            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
               Reqs
-            </div>
-            <div className="px-4 py-2 text-center font-semibold text-foreground bg-muted/30" style={{ gridColumn: 'span 3' }}>
+            </TableHead>
+            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
               Variance
-            </div>
-          </div>
-          {/* Second header row - Day/Night/Total subheaders */}
-          <div style={{ display: 'grid', gridTemplateColumns: gridTemplate }}>
-            <div className="px-4 py-2"></div>
+            </TableHead>
+          </TableRow>
+          <TableRow>
+            <TableHead></TableHead>
             {/* Target FTEs */}
-            <div className="px-4 py-2 text-center text-xs">Day</div>
-            <div className="px-4 py-2 text-center text-xs">Night</div>
-            <div className="px-4 py-2 text-center text-xs">Total</div>
+            <TableHead className="text-center text-xs">Day</TableHead>
+            <TableHead className="text-center text-xs">Night</TableHead>
+            <TableHead className="text-center text-xs">Total</TableHead>
             {/* Hired FTEs */}
-            <div className="px-4 py-2 text-center text-xs">Day</div>
-            <div className="px-4 py-2 text-center text-xs">Night</div>
-            <div className="px-4 py-2 text-center text-xs">Total</div>
+            <TableHead className="text-center text-xs">Day</TableHead>
+            <TableHead className="text-center text-xs">Night</TableHead>
+            <TableHead className="text-center text-xs">Total</TableHead>
             {/* Reqs */}
-            <div className="px-4 py-2 text-center text-xs">Day</div>
-            <div className="px-4 py-2 text-center text-xs">Night</div>
-            <div className="px-4 py-2 text-center text-xs">Total</div>
+            <TableHead className="text-center text-xs">Day</TableHead>
+            <TableHead className="text-center text-xs">Night</TableHead>
+            <TableHead className="text-center text-xs">Total</TableHead>
             {/* Variance */}
-            <div className="px-4 py-2 text-center text-xs">Day</div>
-            <div className="px-4 py-2 text-center text-xs">Night</div>
-            <div className="px-4 py-2 text-center text-xs">Total</div>
-          </div>
-        </div>
-
-        {/* Data Rows */}
-        {displayData.map((row) => {
-          if (row.type === 'group') {
-            return (
-              <GroupRow
-                key={row.id}
-                group={row}
-                onToggle={onToggleGroup}
-                gridTemplate={gridTemplate}
-              />
-            );
-          }
-          
-          if (row.type === 'skill') {
-            return (
-              <SkillRow
-                key={row.id}
-                skill={row.data}
-                isChildRow={groups && expandedGroups ? true : false}
-                gridTemplate={gridTemplate}
-              />
-            );
-          }
-          
-          if (row.type === 'total') {
-            return (
-              <TotalRow
-                key={row.id}
-                data={row.data}
-                gridTemplate={gridTemplate}
-              />
-            );
-          }
-          
-          return null;
-        })}
-      </div>
+            <TableHead className="text-center text-xs">Day</TableHead>
+            <TableHead className="text-center text-xs">Night</TableHead>
+            <TableHead className="text-center text-xs">Total</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {displayData.map((row) => {
+            if (row.type === 'group') {
+              return (
+                <GroupRow
+                  key={row.id}
+                  group={row}
+                  onToggle={onToggleGroup}
+                />
+              );
+            }
+            
+            if (row.type === 'skill') {
+              return (
+                <SkillRow
+                  key={row.id}
+                  skill={row.data}
+                  isChildRow={groups && expandedGroups ? true : false}
+                />
+              );
+            }
+            
+            if (row.type === 'total') {
+              return (
+                <TotalRow
+                  key={row.id}
+                  data={row.data}
+                />
+              );
+            }
+            
+            return null;
+          })}
+        </TableBody>
+      </Table>
     </div>
   );
 };

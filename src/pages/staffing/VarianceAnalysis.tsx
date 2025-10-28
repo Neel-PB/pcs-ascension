@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface VarianceData {
   name: string;
@@ -189,8 +190,6 @@ export function VarianceAnalysis({
   const data = getData();
   const columnHeader = getColumnHeader();
 
-  const gridTemplate = "200px repeat(15, 1fr)";
-
   return (
     <div className="space-y-6">
       <motion.div
@@ -216,97 +215,90 @@ export function VarianceAnalysis({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.1 }}
-        className="rounded-lg border bg-card overflow-hidden"
+        className="rounded-lg border bg-card overflow-x-auto"
       >
-        <div className="max-h-[600px] overflow-auto">
-          {/* Sticky Header */}
-          <div className="sticky top-0 z-10 bg-muted/50 backdrop-blur-sm border-b">
-            {/* First header row - Skill groups */}
-            <div style={{ display: 'grid', gridTemplateColumns: gridTemplate }} className="border-b">
-              <div className="px-4 py-2 font-semibold sticky left-0 z-20 bg-muted/50">{columnHeader}</div>
-              <div className="px-4 py-2 text-center font-semibold border-l" style={{ gridColumn: 'span 3' }}>CL Skill</div>
-              <div className="px-4 py-2 text-center font-semibold border-l" style={{ gridColumn: 'span 3' }}>RN Skill</div>
-              <div className="px-4 py-2 text-center font-semibold border-l" style={{ gridColumn: 'span 3' }}>PCT Skill</div>
-              <div className="px-4 py-2 text-center font-semibold border-l" style={{ gridColumn: 'span 3' }}>HUC</div>
-              <div className="px-4 py-2 text-center font-semibold border-l" style={{ gridColumn: 'span 3' }}>Overhead</div>
-            </div>
-            {/* Second header row - Day/Night/Total */}
-            <div style={{ display: 'grid', gridTemplateColumns: gridTemplate }}>
-              <div className="px-4 py-2 sticky left-0 z-20 bg-muted/50"></div>
-              <div className="px-4 py-2 text-center text-xs border-l">Day</div>
-              <div className="px-4 py-2 text-center text-xs">Night</div>
-              <div className="px-4 py-2 text-center text-xs">Total</div>
-              <div className="px-4 py-2 text-center text-xs border-l">Day</div>
-              <div className="px-4 py-2 text-center text-xs">Night</div>
-              <div className="px-4 py-2 text-center text-xs">Total</div>
-              <div className="px-4 py-2 text-center text-xs border-l">Day</div>
-              <div className="px-4 py-2 text-center text-xs">Night</div>
-              <div className="px-4 py-2 text-center text-xs">Total</div>
-              <div className="px-4 py-2 text-center text-xs border-l">Day</div>
-              <div className="px-4 py-2 text-center text-xs">Night</div>
-              <div className="px-4 py-2 text-center text-xs">Total</div>
-              <div className="px-4 py-2 text-center text-xs border-l">Day</div>
-              <div className="px-4 py-2 text-center text-xs">Night</div>
-              <div className="px-4 py-2 text-center text-xs">Total</div>
-            </div>
-          </div>
-
-          {/* Data Rows */}
-          {data.map((row, index) => (
-            <div 
-              key={index} 
-              style={{ display: 'grid', gridTemplateColumns: gridTemplate }}
-              className="hover:bg-muted/50 border-b"
-            >
-              <div className="px-4 py-3 font-medium sticky left-0 z-10 bg-card">{row.name}</div>
-              <div className={`px-4 py-3 text-center font-semibold border-l ${getVarianceColor(row.clDay)}`}>
-                {row.clDay > 0 ? '+' : ''}{row.clDay.toFixed(1)}
-              </div>
-              <div className={`px-4 py-3 text-center font-semibold ${getVarianceColor(row.clNight)}`}>
-                {row.clNight > 0 ? '+' : ''}{row.clNight.toFixed(1)}
-              </div>
-              <div className={`px-4 py-3 text-center font-semibold ${getVarianceColor(row.clTotal)}`}>
-                {row.clTotal > 0 ? '+' : ''}{row.clTotal.toFixed(1)}
-              </div>
-              <div className={`px-4 py-3 text-center font-semibold border-l ${getVarianceColor(row.rnDay)}`}>
-                {row.rnDay > 0 ? '+' : ''}{row.rnDay.toFixed(1)}
-              </div>
-              <div className={`px-4 py-3 text-center font-semibold ${getVarianceColor(row.rnNight)}`}>
-                {row.rnNight > 0 ? '+' : ''}{row.rnNight.toFixed(1)}
-              </div>
-              <div className={`px-4 py-3 text-center font-semibold ${getVarianceColor(row.rnTotal)}`}>
-                {row.rnTotal > 0 ? '+' : ''}{row.rnTotal.toFixed(1)}
-              </div>
-              <div className={`px-4 py-3 text-center font-semibold border-l ${getVarianceColor(row.pctDay)}`}>
-                {row.pctDay > 0 ? '+' : ''}{row.pctDay.toFixed(1)}
-              </div>
-              <div className={`px-4 py-3 text-center font-semibold ${getVarianceColor(row.pctNight)}`}>
-                {row.pctNight > 0 ? '+' : ''}{row.pctNight.toFixed(1)}
-              </div>
-              <div className={`px-4 py-3 text-center font-semibold ${getVarianceColor(row.pctTotal)}`}>
-                {row.pctTotal > 0 ? '+' : ''}{row.pctTotal.toFixed(1)}
-              </div>
-              <div className={`px-4 py-3 text-center font-semibold border-l ${getVarianceColor(row.hucDay)}`}>
-                {row.hucDay > 0 ? '+' : ''}{row.hucDay.toFixed(1)}
-              </div>
-              <div className={`px-4 py-3 text-center font-semibold ${getVarianceColor(row.hucNight)}`}>
-                {row.hucNight > 0 ? '+' : ''}{row.hucNight.toFixed(1)}
-              </div>
-              <div className={`px-4 py-3 text-center font-semibold ${getVarianceColor(row.hucTotal)}`}>
-                {row.hucTotal > 0 ? '+' : ''}{row.hucTotal.toFixed(1)}
-              </div>
-              <div className={`px-4 py-3 text-center font-semibold border-l ${getVarianceColor(row.overheadDay)}`}>
-                {row.overheadDay > 0 ? '+' : ''}{row.overheadDay.toFixed(1)}
-              </div>
-              <div className={`px-4 py-3 text-center font-semibold ${getVarianceColor(row.overheadNight)}`}>
-                {row.overheadNight > 0 ? '+' : ''}{row.overheadNight.toFixed(1)}
-              </div>
-              <div className={`px-4 py-3 text-center font-semibold ${getVarianceColor(row.overheadTotal)}`}>
-                {row.overheadTotal > 0 ? '+' : ''}{row.overheadTotal.toFixed(1)}
-              </div>
-            </div>
-          ))}
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="font-semibold sticky left-0 bg-card z-10 min-w-[200px]">{columnHeader}</TableHead>
+              <TableHead colSpan={3} className="text-center font-semibold border-l">CL Skill</TableHead>
+              <TableHead colSpan={3} className="text-center font-semibold border-l">RN Skill</TableHead>
+              <TableHead colSpan={3} className="text-center font-semibold border-l">PCT Skill</TableHead>
+              <TableHead colSpan={3} className="text-center font-semibold border-l">HUC</TableHead>
+              <TableHead colSpan={3} className="text-center font-semibold border-l">Overhead</TableHead>
+            </TableRow>
+            <TableRow className="bg-muted/50">
+              <TableHead className="sticky left-0 bg-muted/50 z-10"></TableHead>
+              <TableHead className="text-center text-xs border-l">Day</TableHead>
+              <TableHead className="text-center text-xs">Night</TableHead>
+              <TableHead className="text-center text-xs">Total</TableHead>
+              <TableHead className="text-center text-xs border-l">Day</TableHead>
+              <TableHead className="text-center text-xs">Night</TableHead>
+              <TableHead className="text-center text-xs">Total</TableHead>
+              <TableHead className="text-center text-xs border-l">Day</TableHead>
+              <TableHead className="text-center text-xs">Night</TableHead>
+              <TableHead className="text-center text-xs">Total</TableHead>
+              <TableHead className="text-center text-xs border-l">Day</TableHead>
+              <TableHead className="text-center text-xs">Night</TableHead>
+              <TableHead className="text-center text-xs">Total</TableHead>
+              <TableHead className="text-center text-xs border-l">Day</TableHead>
+              <TableHead className="text-center text-xs">Night</TableHead>
+              <TableHead className="text-center text-xs">Total</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.map((row, index) => (
+              <TableRow key={index} className="hover:bg-muted/50">
+                <TableCell className="font-medium sticky left-0 bg-card">{row.name}</TableCell>
+                <TableCell className={`text-center font-semibold border-l ${getVarianceColor(row.clDay)}`}>
+                  {row.clDay > 0 ? '+' : ''}{row.clDay.toFixed(1)}
+                </TableCell>
+                <TableCell className={`text-center font-semibold ${getVarianceColor(row.clNight)}`}>
+                  {row.clNight > 0 ? '+' : ''}{row.clNight.toFixed(1)}
+                </TableCell>
+                <TableCell className={`text-center font-semibold ${getVarianceColor(row.clTotal)}`}>
+                  {row.clTotal > 0 ? '+' : ''}{row.clTotal.toFixed(1)}
+                </TableCell>
+                <TableCell className={`text-center font-semibold border-l ${getVarianceColor(row.rnDay)}`}>
+                  {row.rnDay > 0 ? '+' : ''}{row.rnDay.toFixed(1)}
+                </TableCell>
+                <TableCell className={`text-center font-semibold ${getVarianceColor(row.rnNight)}`}>
+                  {row.rnNight > 0 ? '+' : ''}{row.rnNight.toFixed(1)}
+                </TableCell>
+                <TableCell className={`text-center font-semibold ${getVarianceColor(row.rnTotal)}`}>
+                  {row.rnTotal > 0 ? '+' : ''}{row.rnTotal.toFixed(1)}
+                </TableCell>
+                <TableCell className={`text-center font-semibold border-l ${getVarianceColor(row.pctDay)}`}>
+                  {row.pctDay > 0 ? '+' : ''}{row.pctDay.toFixed(1)}
+                </TableCell>
+                <TableCell className={`text-center font-semibold ${getVarianceColor(row.pctNight)}`}>
+                  {row.pctNight > 0 ? '+' : ''}{row.pctNight.toFixed(1)}
+                </TableCell>
+                <TableCell className={`text-center font-semibold ${getVarianceColor(row.pctTotal)}`}>
+                  {row.pctTotal > 0 ? '+' : ''}{row.pctTotal.toFixed(1)}
+                </TableCell>
+                <TableCell className={`text-center font-semibold border-l ${getVarianceColor(row.hucDay)}`}>
+                  {row.hucDay > 0 ? '+' : ''}{row.hucDay.toFixed(1)}
+                </TableCell>
+                <TableCell className={`text-center font-semibold ${getVarianceColor(row.hucNight)}`}>
+                  {row.hucNight > 0 ? '+' : ''}{row.hucNight.toFixed(1)}
+                </TableCell>
+                <TableCell className={`text-center font-semibold ${getVarianceColor(row.hucTotal)}`}>
+                  {row.hucTotal > 0 ? '+' : ''}{row.hucTotal.toFixed(1)}
+                </TableCell>
+                <TableCell className={`text-center font-semibold border-l ${getVarianceColor(row.overheadDay)}`}>
+                  {row.overheadDay > 0 ? '+' : ''}{row.overheadDay.toFixed(1)}
+                </TableCell>
+                <TableCell className={`text-center font-semibold ${getVarianceColor(row.overheadNight)}`}>
+                  {row.overheadNight > 0 ? '+' : ''}{row.overheadNight.toFixed(1)}
+                </TableCell>
+                <TableCell className={`text-center font-semibold ${getVarianceColor(row.overheadTotal)}`}>
+                  {row.overheadTotal > 0 ? '+' : ''}{row.overheadTotal.toFixed(1)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </motion.div>
     </div>
   );
