@@ -70,6 +70,7 @@ const TABLE_SCHEMAS: Record<TableName, { name: string; type: string }[]> = {
     { name: "department_name", type: "text" },
   ],
   comments: [],
+  data_refresh_log: [],
   notifications: [],
   position_comments: [],
   post_likes: [],

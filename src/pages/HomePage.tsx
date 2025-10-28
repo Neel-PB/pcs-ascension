@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { UnifiedEmployeeFeed } from "@/components/feed/UnifiedEmployeeFeed";
-import { NotificationPanel } from "@/components/notifications/NotificationPanel";
+import { DataRefreshPanel } from "@/components/dashboard/DataRefreshPanel";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -62,9 +62,9 @@ export default function HomePage() {
           <UnifiedEmployeeFeed />
         </div>
 
-        {/* Notification Panel - Takes 1 column */}
+        {/* Data Refresh Panel - Takes 1 column */}
         <div className="lg:col-span-1">
-          <NotificationPanel />
+          <DataRefreshPanel />
         </div>
       </div>
     </div>

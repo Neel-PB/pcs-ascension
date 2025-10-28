@@ -56,6 +56,39 @@ export type Database = {
           },
         ]
       }
+      data_refresh_log: {
+        Row: {
+          created_at: string | null
+          data_source: string
+          id: string
+          last_refresh_at: string
+          notes: string | null
+          record_count: number | null
+          refresh_status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data_source: string
+          id?: string
+          last_refresh_at: string
+          notes?: string | null
+          record_count?: number | null
+          refresh_status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data_source?: string
+          id?: string
+          last_refresh_at?: string
+          notes?: string | null
+          record_count?: number | null
+          refresh_status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       departments: {
         Row: {
           created_at: string
