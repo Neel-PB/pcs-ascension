@@ -10,12 +10,20 @@ export function usePositionCommentCounts(positionIds: string[]) {
       return;
     }
 
+    // Filter out any null/undefined position IDs
+    const validPositionIds = positionIds.filter(id => id != null && id !== '');
+    
+    if (!validPositionIds.length) {
+      setCounts(new Map());
+      return;
+    }
+
     // Initial fetch of comment counts
     const fetchCounts = async () => {
       const { data, error } = await supabase
         .from('position_comments')
         .select('position_id')
-        .in('position_id', positionIds);
+        .in('position_id', validPositionIds);
 
       if (error) {
         console.error('Error fetching comment counts:', error);
@@ -30,7 +38,7 @@ export function usePositionCommentCounts(positionIds: string[]) {
       });
 
       // Ensure all positions have a count (even if 0)
-      positionIds.forEach((id) => {
+      validPositionIds.forEach((id) => {
         if (!countMap.has(id)) {
           countMap.set(id, 0);
         }
