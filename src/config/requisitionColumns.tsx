@@ -1,7 +1,7 @@
 import { ColumnDef } from '@/types/table';
 import { Position } from '@/types/position';
 import { BadgeCell } from '@/components/editable-table/cells/BadgeCell';
-import { CommentIndicatorCell } from '@/components/editable-table/cells/CommentIndicatorCell';
+import { BellIndicatorCell } from '@/components/editable-table/cells/BellIndicatorCell';
 import { differenceInDays } from 'date-fns';
 
 // Helper to calculate vacancy age
@@ -120,15 +120,15 @@ export const createRequisitionColumnsWithComments = (
   ...requisitionColumns,
   {
     id: 'comments',
-    label: 'Comments',
+    label: 'Alerts',
     type: 'custom',
-    width: 110,
+    width: 100,
     minWidth: 90,
     sortable: false,
     resizable: true,
     draggable: true,
     renderCell: (row) => (
-      <CommentIndicatorCell
+      <BellIndicatorCell
         count={commentCounts.get(row.id) ?? 0}
         onClick={() => onRowClick(row)}
       />
