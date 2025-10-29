@@ -4,6 +4,7 @@ import { FilterBar } from "@/components/staffing/FilterBar";
 import PositionPlanning from "./PositionPlanning";
 import { VarianceAnalysis } from "./VarianceAnalysis";
 import { ForecastTab } from "./ForecastTab";
+import { SettingsTab } from "./SettingsTab";
 import { DraggableSectionsContainer } from "@/components/staffing/DraggableSectionsContainer";
 import { useKPIOrderStore } from "@/stores/useKPIOrderStore";
 
@@ -496,9 +497,10 @@ This metric helps:
           )}
           
           {activeTab === "settings" && (
-            <div className="text-center py-12 text-muted-foreground">
-              Settings content coming soon
-            </div>
+            <SettingsTab 
+              selectedMarket={selectedMarket}
+              selectedFacility={selectedFacility}
+            />
           )}
         </motion.div>
       </AnimatePresence>

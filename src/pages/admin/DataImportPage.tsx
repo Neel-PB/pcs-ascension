@@ -80,6 +80,7 @@ const TABLE_SCHEMAS: Record<TableName, { name: string; type: string }[]> = {
   user_organization_access: [],
   forecast_positions_to_open: [],
   forecast_positions_to_close: [],
+  volume_overrides: [],
 };
 
 export default function DataImportPage() {
