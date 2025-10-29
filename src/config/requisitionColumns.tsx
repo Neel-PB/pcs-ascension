@@ -1,6 +1,7 @@
 import { ColumnDef } from '@/types/table';
 import { Position } from '@/types/position';
 import { BadgeCell } from '@/components/editable-table/cells/BadgeCell';
+import { CommentIndicatorCell } from '@/components/editable-table/cells/CommentIndicatorCell';
 import { differenceInDays } from 'date-fns';
 
 // Helper to calculate vacancy age
@@ -108,5 +109,29 @@ export const requisitionColumns: ColumnDef<Position>[] = [
     sortable: true,
     resizable: true,
     draggable: true,
+  },
+];
+
+// Function to create columns with comment counts and handlers
+export const createRequisitionColumnsWithComments = (
+  commentCounts: Map<string, number>,
+  onRowClick: (row: Position) => void
+): ColumnDef<Position>[] => [
+  ...requisitionColumns,
+  {
+    id: 'comments',
+    label: 'Comments',
+    type: 'custom',
+    width: 110,
+    minWidth: 90,
+    sortable: false,
+    resizable: true,
+    draggable: true,
+    renderCell: (row) => (
+      <CommentIndicatorCell
+        count={commentCounts.get(row.id) ?? 0}
+        onClick={() => onRowClick(row)}
+      />
+    ),
   },
 ];

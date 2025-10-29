@@ -20,7 +20,8 @@ import { RequisitionDetailsSheet } from "@/components/workforce/RequisitionDetai
 import { RequisitionsFilterSheet } from "@/components/positions/RequisitionsFilterSheet";
 import { EditableTable } from "@/components/editable-table/EditableTable";
 import { ColumnVisibilityPanel } from "@/components/editable-table/ColumnVisibilityPanel";
-import { requisitionColumns } from "@/config/requisitionColumns";
+import { requisitionColumns, createRequisitionColumnsWithComments } from "@/config/requisitionColumns";
+import { usePositionCommentCounts } from "@/hooks/usePositionCommentCounts";
 
 interface RequisitionsTabProps {
   selectedRegion: string;
@@ -183,6 +184,20 @@ export function RequisitionsTab({
     return filtered;
   }, [requisitions, searchQuery, filters, sortColumn, sortDirection]);
 
+  // Extract position IDs for comment count fetching
+  const positionIds = useMemo(() => 
+    filteredAndSortedRequisitions.map(r => r.id), 
+    [filteredAndSortedRequisitions]
+  );
+
+  // Fetch comment counts
+  const commentCounts = usePositionCommentCounts(positionIds);
+
+  const columnsWithComments = useMemo(() => 
+    createRequisitionColumnsWithComments(commentCounts, handleRowClick),
+    [commentCounts]
+  );
+
   if (isLoading) {
     return (
       <motion.div
@@ -251,7 +266,7 @@ export function RequisitionsTab({
       </div>
 
       <EditableTable
-        columns={requisitionColumns}
+        columns={columnsWithComments}
         data={filteredAndSortedRequisitions}
         getRowId={(row) => row.id}
         sortField={sortColumn}

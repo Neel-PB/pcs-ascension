@@ -1,6 +1,7 @@
 import { ColumnDef } from '@/types/table';
 import { Position } from '@/types/position';
 import { BadgeCell } from '@/components/editable-table/cells/BadgeCell';
+import { CommentIndicatorCell } from '@/components/editable-table/cells/CommentIndicatorCell';
 
 export const contractorColumns: ColumnDef<Position>[] = [
   {
@@ -111,5 +112,29 @@ export const contractorColumns: ColumnDef<Position>[] = [
     sortable: true,
     resizable: true,
     draggable: true,
+  },
+];
+
+// Function to create columns with comment counts and handlers
+export const createContractorColumnsWithComments = (
+  commentCounts: Map<string, number>,
+  onRowClick: (row: Position) => void
+): ColumnDef<Position>[] => [
+  ...contractorColumns,
+  {
+    id: 'comments',
+    label: 'Comments',
+    type: 'custom',
+    width: 110,
+    minWidth: 90,
+    sortable: false,
+    resizable: true,
+    draggable: true,
+    renderCell: (row) => (
+      <CommentIndicatorCell
+        count={commentCounts.get(row.id) ?? 0}
+        onClick={() => onRowClick(row)}
+      />
+    ),
   },
 ];

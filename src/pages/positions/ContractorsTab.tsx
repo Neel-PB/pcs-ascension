@@ -10,9 +10,10 @@ import { ContractorDetailsSheet } from "@/components/workforce/ContractorDetails
 import { ContractorsFilterSheet } from "@/components/positions/ContractorsFilterSheet";
 import { EditableTable } from "@/components/editable-table/EditableTable";
 import { ColumnVisibilityPanel } from "@/components/editable-table/ColumnVisibilityPanel";
-import { contractorColumns } from "@/config/contractorColumns";
+import { contractorColumns, createContractorColumnsWithComments } from "@/config/contractorColumns";
 import { useUpdateActualFte } from "@/hooks/useUpdateActualFte";
 import { EditableNumberCell } from "@/components/editable-table/cells/EditableNumberCell";
+import { usePositionCommentCounts } from "@/hooks/usePositionCommentCounts";
 
 interface ContractorsTabProps {
   selectedRegion: string;
@@ -82,25 +83,6 @@ export function ContractorsTab({
   const handleActualFteUpdate = (id: string, newValue: number | null) => {
     updateActualFte.mutate({ id, actual_fte: newValue });
   };
-
-  const columnsWithHandlers = useMemo(() => {
-    return contractorColumns.map(col => {
-      if (col.id === 'actual_fte') {
-        return {
-          ...col,
-          renderCell: (row: any) => (
-            <EditableNumberCell
-              value={row.actual_fte}
-              originalValue={row.FTE}
-              onSave={(newValue) => handleActualFteUpdate(row.id, newValue)}
-              showModified={true}
-            />
-          ),
-        };
-      }
-      return col;
-    });
-  }, []);
 
   const filteredAndSortedContractors = useMemo(() => {
     if (!contractors) return [];
@@ -181,6 +163,35 @@ export function ContractorsTab({
 
     return filtered;
   }, [contractors, searchQuery, filters, sortColumn, sortDirection]);
+
+  // Extract position IDs for comment count fetching
+  const positionIds = useMemo(() => 
+    filteredAndSortedContractors.map(c => c.id), 
+    [filteredAndSortedContractors]
+  );
+
+  // Fetch comment counts
+  const commentCounts = usePositionCommentCounts(positionIds);
+
+  const columnsWithHandlers = useMemo(() => {
+    const baseColumns = createContractorColumnsWithComments(commentCounts, handleRowClick);
+    return baseColumns.map(col => {
+      if (col.id === 'actual_fte') {
+        return {
+          ...col,
+          renderCell: (row: any) => (
+            <EditableNumberCell
+              value={row.actual_fte}
+              originalValue={row.FTE}
+              onSave={(newValue) => handleActualFteUpdate(row.id, newValue)}
+              showModified={true}
+            />
+          ),
+        };
+      }
+      return col;
+    });
+  }, [commentCounts]);
 
   if (isLoading) {
     return (

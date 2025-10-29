@@ -10,9 +10,10 @@ import { EmployeeDetailsSheet } from "@/components/workforce/EmployeeDetailsShee
 import { EmployeesFilterSheet } from "@/components/positions/EmployeesFilterSheet";
 import { EditableTable } from "@/components/editable-table/EditableTable";
 import { ColumnVisibilityPanel } from "@/components/editable-table/ColumnVisibilityPanel";
-import { employeeColumns } from "@/config/employeeColumns";
+import { employeeColumns, createEmployeeColumnsWithComments } from "@/config/employeeColumns";
 import { useUpdateActualFte } from "@/hooks/useUpdateActualFte";
 import { EditableNumberCell } from "@/components/editable-table/cells/EditableNumberCell";
+import { usePositionCommentCounts } from "@/hooks/usePositionCommentCounts";
 
 interface EmployeesTabProps {
   selectedRegion: string;
@@ -85,25 +86,6 @@ export function EmployeesTab({
   const handleActualFteUpdate = (id: string, newValue: number | null) => {
     updateActualFte.mutate({ id, actual_fte: newValue });
   };
-
-  const columnsWithHandlers = useMemo(() => {
-    return employeeColumns.map(col => {
-      if (col.id === 'actual_fte') {
-        return {
-          ...col,
-          renderCell: (row: any) => (
-            <EditableNumberCell
-              value={row.actual_fte}
-              originalValue={row.FTE}
-              onSave={(newValue) => handleActualFteUpdate(row.id, newValue)}
-              showModified={true}
-            />
-          ),
-        };
-      }
-      return col;
-    });
-  }, []);
 
   const filteredAndSortedEmployees = useMemo(() => {
     if (!employees) return [];
@@ -187,6 +169,35 @@ export function EmployeesTab({
 
     return filtered;
   }, [employees, searchQuery, filters, sortColumn, sortDirection]);
+
+  // Extract position IDs for comment count fetching
+  const positionIds = useMemo(() => 
+    filteredAndSortedEmployees.map(e => e.id), 
+    [filteredAndSortedEmployees]
+  );
+
+  // Fetch comment counts
+  const commentCounts = usePositionCommentCounts(positionIds);
+
+  const columnsWithHandlers = useMemo(() => {
+    const baseColumns = createEmployeeColumnsWithComments(commentCounts, handleRowClick);
+    return baseColumns.map(col => {
+      if (col.id === 'actual_fte') {
+        return {
+          ...col,
+          renderCell: (row: any) => (
+            <EditableNumberCell
+              value={row.actual_fte}
+              originalValue={row.FTE}
+              onSave={(newValue) => handleActualFteUpdate(row.id, newValue)}
+              showModified={true}
+            />
+          ),
+        };
+      }
+      return col;
+    });
+  }, [commentCounts]);
 
   if (isLoading) {
     return (

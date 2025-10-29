@@ -19,11 +19,15 @@ export function CommentIndicatorCell({
   onClick,
   className,
 }: CommentIndicatorCellProps) {
+  const handleClick = () => {
+    onClick?.();
+  };
+
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <CellButton onClick={onClick} className={className}>
+          <CellButton onClick={handleClick} className={className}>
             <div className="flex items-center gap-1.5">
               <MessageSquareText
                 className={cn(
