@@ -32,11 +32,11 @@ export function CommentIndicatorCell({
               <MessageSquareText
                 className={cn(
                   'h-4 w-4 transition-colors',
-                  count === 0 ? 'text-muted-foreground/30' : 'text-muted-foreground'
+                  count === 0 ? 'text-muted-foreground/30' : 'text-primary'
                 )}
               />
               {count > 0 && (
-                <span className="text-xs font-medium tabular-nums">
+                <span className="text-xs font-medium tabular-nums text-primary">
                   {count > 99 ? '99+' : count}
                 </span>
               )}
