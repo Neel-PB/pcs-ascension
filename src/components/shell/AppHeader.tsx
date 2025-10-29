@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Bell, Sun, Moon, Monitor } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { UserProfileModal } from "@/components/profile/UserProfileModal";
+import { GlobalSearchCommand } from "@/components/shell/GlobalSearchCommand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -20,11 +21,22 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 export function AppHeader() {
-  const [searchFocused, setSearchFocused] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setCommandOpen((open) => !open);
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
 
   const resolveAvatarUrl = (avatar_url?: string, first_name?: string, last_name?: string) => {
     if (avatar_url) {
@@ -74,15 +86,15 @@ export function AppHeader() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-shell-muted" />
             <Input
-              type="search"
-              placeholder="Search employees, contractors, or requisitions... (⌘K)"
+              type="text"
+              placeholder="Search... (⌘K)"
               className={cn(
-                "pl-10 pr-4 bg-shell-elevated border-shell-line",
-                "focus:bg-shell focus:border-primary/20 focus:ring-primary/20",
+                "pl-10 pr-4 bg-shell-elevated border-shell-line cursor-pointer",
+                "hover:bg-shell hover:border-primary/20",
                 "transition-all duration-200"
               )}
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => setSearchFocused(false)}
+              readOnly
+              onClick={() => setCommandOpen(true)}
             />
           </div>
         </div>
@@ -195,6 +207,9 @@ export function AppHeader() {
           userId={user.id}
         />
       )}
+
+      {/* Global Search Command Palette */}
+      <GlobalSearchCommand open={commandOpen} onOpenChange={setCommandOpen} />
     </header>
   );
 }
