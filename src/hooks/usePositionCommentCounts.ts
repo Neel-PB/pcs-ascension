@@ -5,46 +5,57 @@ export function usePositionCommentCounts(positionIds: string[]) {
   const [counts, setCounts] = useState<Map<string, number>>(new Map());
 
   useEffect(() => {
-    if (!positionIds.length) {
+    // Early return if no position IDs
+    if (!positionIds || !Array.isArray(positionIds) || positionIds.length === 0) {
       setCounts(new Map());
       return;
     }
 
-    // Filter out any null/undefined position IDs
-    const validPositionIds = positionIds.filter(id => id != null && id !== '');
+    // Filter out any null/undefined/empty position IDs and ensure they're strings
+    const validPositionIds = positionIds.filter(
+      id => id != null && id !== '' && typeof id === 'string' && id.length > 0
+    );
     
-    if (!validPositionIds.length) {
+    if (validPositionIds.length === 0) {
       setCounts(new Map());
       return;
     }
 
     // Initial fetch of comment counts
     const fetchCounts = async () => {
-      const { data, error } = await supabase
-        .from('position_comments')
-        .select('position_id')
-        .in('position_id', validPositionIds);
+      try {
+        const { data, error } = await supabase
+          .from('position_comments')
+          .select('position_id')
+          .in('position_id', validPositionIds);
 
-      if (error) {
-        console.error('Error fetching comment counts:', error);
-        return;
-      }
-
-      // Count comments per position
-      const countMap = new Map<string, number>();
-      data.forEach((comment) => {
-        const currentCount = countMap.get(comment.position_id) || 0;
-        countMap.set(comment.position_id, currentCount + 1);
-      });
-
-      // Ensure all positions have a count (even if 0)
-      validPositionIds.forEach((id) => {
-        if (!countMap.has(id)) {
-          countMap.set(id, 0);
+        if (error) {
+          console.error('Error fetching comment counts:', error);
+          setCounts(new Map());
+          return;
         }
-      });
 
-      setCounts(countMap);
+        // Count comments per position
+        const countMap = new Map<string, number>();
+        if (data) {
+          data.forEach((comment) => {
+            const currentCount = countMap.get(comment.position_id) || 0;
+            countMap.set(comment.position_id, currentCount + 1);
+          });
+        }
+
+        // Ensure all positions have a count (even if 0)
+        validPositionIds.forEach((id) => {
+          if (!countMap.has(id)) {
+            countMap.set(id, 0);
+          }
+        });
+
+        setCounts(countMap);
+      } catch (err) {
+        console.error('Exception fetching comment counts:', err);
+        setCounts(new Map());
+      }
     };
 
     fetchCounts();
