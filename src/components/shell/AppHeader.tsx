@@ -83,20 +83,21 @@ export function AppHeader() {
 
         {/* Center Section - Search */}
         <div className="flex-1 max-w-md mx-8">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-shell-muted" />
-            <Input
-              type="text"
-              placeholder="Search... (⌘K)"
-              className={cn(
-                "pl-10 pr-4 bg-shell-elevated border-shell-line cursor-pointer",
-                "hover:bg-shell hover:border-primary/20",
-                "transition-all duration-200"
-              )}
-              readOnly
-              onClick={() => setCommandOpen(true)}
-            />
-          </div>
+          <GlobalSearchCommand open={commandOpen} onOpenChange={setCommandOpen}>
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-shell-muted pointer-events-none z-10" />
+              <Input
+                type="text"
+                placeholder="Search... (⌘K)"
+                className={cn(
+                  "pl-10 pr-4 bg-shell-elevated border-shell-line cursor-pointer w-full",
+                  "hover:bg-shell hover:border-primary/20",
+                  "transition-all duration-200"
+                )}
+                readOnly
+              />
+            </div>
+          </GlobalSearchCommand>
         </div>
 
         {/* Right Section - Utilities */}
@@ -208,8 +209,6 @@ export function AppHeader() {
         />
       )}
 
-      {/* Global Search Command Palette */}
-      <GlobalSearchCommand open={commandOpen} onOpenChange={setCommandOpen} />
     </header>
   );
 }
