@@ -73,6 +73,7 @@ export function useAddPositionComment() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["position-comments", variables.positionId] });
+      queryClient.invalidateQueries({ queryKey: ["position-comment-counts"] });
       toast.success("Comment added");
     },
     onError: () => {
@@ -98,6 +99,7 @@ export function useUpdatePositionComment() {
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["position-comments", result.positionId] });
+      queryClient.invalidateQueries({ queryKey: ["position-comment-counts"] });
       toast.success("Comment updated");
     },
     onError: () => {
@@ -121,6 +123,7 @@ export function useDeletePositionComment() {
     },
     onSuccess: (positionId) => {
       queryClient.invalidateQueries({ queryKey: ["position-comments", positionId] });
+      queryClient.invalidateQueries({ queryKey: ["position-comment-counts"] });
       toast.success("Comment deleted");
     },
     onError: () => {
