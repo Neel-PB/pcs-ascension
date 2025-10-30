@@ -209,7 +209,7 @@ Example: If total volume is 7,602 over 365 days:
         chartData: generateVolatileTrend(14.2, 3),
         chartType: "area" as const,
         delay: 0.1,
-        definition: "3-Month Average Lowest Volume shows the average daily volume recorded during the three months with the lowest total volume in the immediately preceding 12 months. This value is used to determine core staffing requirements.",
+        definition: "3-Month Average Lowest Volume shows the average daily volume recorded during the three months with the lowest total volume in the immediately preceding 12 months. This value is used to determine minimum staffing requirements.",
         calculation: `3M Avg Lowest = Average daily volume during the 3 lowest-volume months in past 12 months
 
 Calculated by:
