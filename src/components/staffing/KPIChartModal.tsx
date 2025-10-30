@@ -116,6 +116,7 @@ export function KPIChartModal({
                       tick={{ fill: "hsl(var(--muted-foreground))" }}
                     />
                     <Tooltip 
+                      formatter={(value: number) => value.toFixed(1)}
                       contentStyle={{
                         backgroundColor: "hsl(var(--popover))",
                         border: "1px solid hsl(var(--border))",
@@ -151,6 +152,7 @@ export function KPIChartModal({
                       tick={{ fill: "hsl(var(--muted-foreground))" }}
                     />
                     <Tooltip 
+                      formatter={(value: number) => value.toFixed(1)}
                       contentStyle={{
                         backgroundColor: "hsl(var(--popover))",
                         border: "1px solid hsl(var(--border))",
@@ -181,6 +183,7 @@ export function KPIChartModal({
                       tick={{ fill: "hsl(var(--muted-foreground))" }}
                     />
                     <Tooltip 
+                      formatter={(value: number) => value.toFixed(1)}
                       contentStyle={{
                         backgroundColor: "hsl(var(--popover))",
                         border: "1px solid hsl(var(--border))",

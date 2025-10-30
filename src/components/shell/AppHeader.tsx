@@ -88,7 +88,7 @@ export function AppHeader() {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-shell-muted pointer-events-none z-10" />
               <Input
                 type="text"
-                placeholder="Search... (⌘K)"
+                placeholder="Search..."
                 className={cn(
                   "pl-10 pr-4 bg-shell-elevated border-shell-line cursor-pointer w-full",
                   "hover:bg-shell hover:border-primary/20",
