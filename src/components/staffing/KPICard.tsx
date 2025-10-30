@@ -27,9 +27,6 @@ interface KPICardProps {
   breakdownData?: Array<any>;
   decimalPlaces?: number;
   xAxisLabels?: string[];
-  currentIndex?: number;
-  totalKPIs?: number;
-  onNavigate?: (direction: 'prev' | 'next') => void;
 }
 
 export function KPICard({
@@ -47,9 +44,6 @@ export function KPICard({
   breakdownData,
   decimalPlaces = 1,
   xAxisLabels,
-  currentIndex,
-  totalKPIs,
-  onNavigate,
 }: KPICardProps) {
   const [showChartModal, setShowChartModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
@@ -132,26 +126,21 @@ export function KPICard({
       </motion.div>
 
       {/* Chart Modal */}
-      {chartData && (
-        <KPIChartModal
-          open={showChartModal}
-          onOpenChange={setShowChartModal}
-          title={title}
-          value={value}
-          trend={trend}
-          trendValue={trendValue}
-          isNegative={isNegative}
-          isHighlighted={isHighlighted}
-          chartData={chartData}
-          chartType={chartType}
-          breakdownData={breakdownData}
-          decimalPlaces={decimalPlaces}
-          xAxisLabels={xAxisLabels}
-          currentIndex={currentIndex}
-          totalKPIs={totalKPIs}
-          onNavigate={onNavigate}
-        />
-      )}
+      <KPIChartModal
+        open={showChartModal}
+        onOpenChange={setShowChartModal}
+        title={title}
+        value={value}
+        trend={trend}
+        trendValue={trendValue}
+        isNegative={isNegative}
+        isHighlighted={isHighlighted}
+        chartData={chartData}
+        chartType={chartType}
+        breakdownData={breakdownData}
+        decimalPlaces={decimalPlaces}
+        xAxisLabels={xAxisLabels}
+      />
 
       {/* Info Modal */}
       <KPIInfoModal
@@ -164,9 +153,6 @@ export function KPICard({
         isNegative={isNegative}
         definition={definition}
         calculation={calculation}
-        currentIndex={currentIndex}
-        totalKPIs={totalKPIs}
-        onNavigate={onNavigate}
       />
     </>
   );
