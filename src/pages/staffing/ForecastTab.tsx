@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { EditableTable } from "@/components/editable-table/EditableTable";
 import { ColumnDef } from "@/types/table";
-import { TrendingUp, TrendingDown } from "lucide-react";
+
 import { PositionToOpenDetailsSheet } from "@/components/workforce/PositionToOpenDetailsSheet";
 import { PositionToCloseDetailsSheet } from "@/components/workforce/PositionToCloseDetailsSheet";
 import { ApprovalButtons } from "@/components/staffing/ApprovalButtons";
@@ -271,24 +271,8 @@ export function ForecastTab() {
       <div className="space-y-6">
       {/* Positions to Open Section */}
       <Card className="overflow-hidden">
-        <div className="p-4 border-b bg-muted/30">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
-                <h2 className="text-lg font-semibold">Positions to Open</h2>
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Planned position openings based on forecast analysis
-              </p>
-            </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {positionsToOpen.length}
-              </div>
-              <div className="text-xs text-muted-foreground">Total Positions</div>
-            </div>
-          </div>
+        <div className="p-4 border-b">
+          <h2 className="text-lg font-semibold">Positions to Open</h2>
         </div>
         
         <div className="overflow-auto max-h-[400px]">
@@ -304,24 +288,8 @@ export function ForecastTab() {
 
       {/* Positions to Close Section */}
       <Card className="overflow-hidden">
-        <div className="p-4 border-b bg-muted/30">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <TrendingDown className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                <h2 className="text-lg font-semibold">Positions to Close</h2>
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Positions planned for closure or elimination
-              </p>
-            </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-                {positionsToClose.length}
-              </div>
-              <div className="text-xs text-muted-foreground">Total Positions</div>
-            </div>
-          </div>
+        <div className="p-4 border-b">
+          <h2 className="text-lg font-semibold">Positions to Close</h2>
         </div>
         
         <div className="overflow-auto max-h-[400px]">
