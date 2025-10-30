@@ -93,23 +93,28 @@ export function DataRefreshPanel() {
 
           return (
             <div key={log.id}>
-              <div className="py-4">
-                <p className="text-sm font-medium mb-1">{config.label}</p>
-                <p className="text-xs text-muted-foreground mb-2">{config.description}</p>
+              <div className="py-4 grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                {/* Left column: Data source info */}
+                <div>
+                  <p className="text-sm font-medium mb-1">{config.label}</p>
+                  <p className="text-xs text-muted-foreground">{config.description}</p>
+                </div>
                 
-                <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                  <span>
-                    {format(new Date(log.last_refresh_at), "MMM d, yyyy 'at' h:mm a")}
-                  </span>
-                  <span>•</span>
-                  <span>
-                    {formatDistanceToNow(new Date(log.last_refresh_at), { addSuffix: true })}
-                  </span>
-                  <span>•</span>
-                  <span className={cn("flex items-center gap-1", statusInfo.color)}>
-                    <span>●</span>
+                {/* Right column: Timestamp and status */}
+                <div className="flex flex-col gap-2 md:items-end">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap md:justify-end">
+                    <span>
+                      {format(new Date(log.last_refresh_at), "MMM d, yyyy 'at' h:mm a")}
+                    </span>
+                    <span>•</span>
+                    <span>
+                      {formatDistanceToNow(new Date(log.last_refresh_at), { addSuffix: true })}
+                    </span>
+                  </div>
+                  <div className={cn("flex items-center gap-1.5 text-xs font-medium", statusInfo.color)}>
+                    <span className="text-lg leading-none">●</span>
                     <span>{statusInfo.text}</span>
-                  </span>
+                  </div>
                 </div>
               </div>
               
