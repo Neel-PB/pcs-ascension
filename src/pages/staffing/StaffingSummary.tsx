@@ -18,6 +18,8 @@ export default function StaffingSummary() {
   const [selectedFacility, setSelectedFacility] = useState("all-facilities");
   const [selectedDepartment, setSelectedDepartment] = useState("all-departments");
 
+  // No additional state needed - navigation is handled within each KPI section
+
   const tabs = [
     { id: "summary", label: "Summary" },
     { id: "planning", label: "Position Planning" },

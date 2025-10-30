@@ -1,9 +1,22 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Tooltip as UITooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface KPIChartModalProps {
   open: boolean;
@@ -19,6 +32,9 @@ interface KPIChartModalProps {
   breakdownData?: Array<any>;
   decimalPlaces?: number;
   xAxisLabels?: string[];
+  currentIndex?: number;
+  totalKPIs?: number;
+  onNavigate?: (direction: 'prev' | 'next') => void;
 }
 
 export function KPIChartModal({
@@ -35,8 +51,30 @@ export function KPIChartModal({
   breakdownData,
   decimalPlaces = 1,
   xAxisLabels,
+  currentIndex = 0,
+  totalKPIs = 1,
+  onNavigate,
 }: KPIChartModalProps) {
   const [activeTab, setActiveTab] = useState("chart");
+
+  // Keyboard navigation
+  useEffect(() => {
+    if (!open || !onNavigate) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft' && currentIndex > 0) {
+        e.preventDefault();
+        onNavigate('prev');
+      } else if (e.key === 'ArrowRight' && currentIndex < totalKPIs - 1) {
+        e.preventDefault();
+        onNavigate('next');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, currentIndex, totalKPIs, onNavigate]);
+
   const getChartColor = () => {
     if (isNegative) return "hsl(var(--destructive))";
     if (isHighlighted) return "hsl(142 76% 36%)";
@@ -87,7 +125,49 @@ export function KPIChartModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden pb-4 flex flex-col">
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-2 border-b">
-          <DialogTitle className="text-2xl">{title}</DialogTitle>
+          <div className="flex items-center justify-between gap-4 w-full">
+            {onNavigate && totalKPIs > 1 ? (
+              <>
+                <TooltipProvider>
+                  <UITooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onNavigate('prev')}
+                        disabled={currentIndex === 0}
+                        className="shrink-0"
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Previous KPI (←)</TooltipContent>
+                  </UITooltip>
+                </TooltipProvider>
+                
+                <DialogTitle className="text-2xl text-center flex-1">{title}</DialogTitle>
+                
+                <TooltipProvider>
+                  <UITooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onNavigate('next')}
+                        disabled={currentIndex === totalKPIs - 1}
+                        className="shrink-0"
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Next KPI (→)</TooltipContent>
+                  </UITooltip>
+                </TooltipProvider>
+              </>
+            ) : (
+              <DialogTitle className="text-2xl">{title}</DialogTitle>
+            )}
+          </div>
           
           {/* Current Value and Trend */}
           <div className="flex items-center gap-6">
@@ -111,6 +191,9 @@ export function KPIChartModal({
               </div>
             )}
           </div>
+          <DialogDescription className="sr-only">
+            Chart and data breakdown for {title}
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4 pt-2 overflow-hidden flex flex-col">

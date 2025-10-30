@@ -27,6 +27,9 @@ interface KPICardProps {
   breakdownData?: Array<any>;
   decimalPlaces?: number;
   xAxisLabels?: string[];
+  currentIndex?: number;
+  totalKPIs?: number;
+  onNavigate?: (direction: 'prev' | 'next') => void;
 }
 
 export function KPICard({
@@ -44,6 +47,9 @@ export function KPICard({
   breakdownData,
   decimalPlaces = 1,
   xAxisLabels,
+  currentIndex,
+  totalKPIs,
+  onNavigate,
 }: KPICardProps) {
   const [showChartModal, setShowChartModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
@@ -140,6 +146,9 @@ export function KPICard({
         breakdownData={breakdownData}
         decimalPlaces={decimalPlaces}
         xAxisLabels={xAxisLabels}
+        currentIndex={currentIndex}
+        totalKPIs={totalKPIs}
+        onNavigate={onNavigate}
       />
 
       {/* Info Modal */}
@@ -153,6 +162,9 @@ export function KPICard({
         isNegative={isNegative}
         definition={definition}
         calculation={calculation}
+        currentIndex={currentIndex}
+        totalKPIs={totalKPIs}
+        onNavigate={onNavigate}
       />
     </>
   );

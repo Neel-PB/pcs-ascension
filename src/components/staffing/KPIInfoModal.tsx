@@ -9,6 +9,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import { useEffect } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface KPIInfoModalProps {
   open: boolean;
@@ -20,6 +28,9 @@ interface KPIInfoModalProps {
   definition: string;
   calculation: string;
   isNegative?: boolean;
+  currentIndex?: number;
+  totalKPIs?: number;
+  onNavigate?: (direction: 'prev' | 'next') => void;
 }
 
 export function KPIInfoModal({
@@ -32,7 +43,27 @@ export function KPIInfoModal({
   definition,
   calculation,
   isNegative = false,
+  currentIndex = 0,
+  totalKPIs = 1,
+  onNavigate,
 }: KPIInfoModalProps) {
+  // Keyboard navigation
+  useEffect(() => {
+    if (!open || !onNavigate) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft' && currentIndex > 0) {
+        e.preventDefault();
+        onNavigate('prev');
+      } else if (e.key === 'ArrowRight' && currentIndex < totalKPIs - 1) {
+        e.preventDefault();
+        onNavigate('next');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, currentIndex, totalKPIs, onNavigate]);
   const getTrendColor = () => {
     if (isNegative) return "text-destructive";
     if (trend === "up") return "text-emerald-500";
@@ -44,7 +75,49 @@ export function KPIInfoModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{title}</DialogTitle>
+          <div className="flex items-center justify-between gap-4">
+            {onNavigate && totalKPIs > 1 ? (
+              <>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onNavigate('prev')}
+                        disabled={currentIndex === 0}
+                        className="shrink-0"
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Previous KPI (←)</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                
+                <DialogTitle className="text-2xl text-center flex-1">{title}</DialogTitle>
+                
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onNavigate('next')}
+                        disabled={currentIndex === totalKPIs - 1}
+                        className="shrink-0"
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Next KPI (→)</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </>
+            ) : (
+              <DialogTitle className="text-2xl">{title}</DialogTitle>
+            )}
+          </div>
           <DialogDescription className="sr-only">
             Definition and calculation details for {title}
           </DialogDescription>
