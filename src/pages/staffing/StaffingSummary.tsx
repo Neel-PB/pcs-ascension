@@ -224,12 +224,12 @@ Calculated by:
         chartData: generateVolatileTrend(28.4, 5),
         chartType: "bar" as const,
         delay: 0.15,
-        definition: "3-Month Average Highest Volume shows the average daily volume during the highest-volume period in the past 3 months. This helps identify peak staffing requirements.",
-        calculation: `3M Avg Highest = Average daily volume during the highest 3-month period
+        definition: "3-Month Average Highest Volume shows the average daily volume recorded during the three months with the highest total volume in the immediately preceding 12 months. This value is used to determine maximum capacity or peak staffing requirements.",
+        calculation: `3M Avg Highest = Average daily volume during the 3 highest-volume months in past 12 months
 
 Calculated by:
-• Identifying the highest volume month in past 3 months
-• Calculating average daily volume for that month
+• Identifying the 3 consecutive months with highest total volume in past 12 months
+• Calculating average daily volume across those 3 months
 • Used for peak staffing level planning`,
       },
       {
