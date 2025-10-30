@@ -132,24 +132,26 @@ export function KPICard({
       </motion.div>
 
       {/* Chart Modal */}
-      <KPIChartModal
-        open={showChartModal}
-        onOpenChange={setShowChartModal}
-        title={title}
-        value={value}
-        trend={trend}
-        trendValue={trendValue}
-        isNegative={isNegative}
-        isHighlighted={isHighlighted}
-        chartData={chartData}
-        chartType={chartType}
-        breakdownData={breakdownData}
-        decimalPlaces={decimalPlaces}
-        xAxisLabels={xAxisLabels}
-        currentIndex={currentIndex}
-        totalKPIs={totalKPIs}
-        onNavigate={onNavigate}
-      />
+      {chartData && (
+        <KPIChartModal
+          open={showChartModal}
+          onOpenChange={setShowChartModal}
+          title={title}
+          value={value}
+          trend={trend}
+          trendValue={trendValue}
+          isNegative={isNegative}
+          isHighlighted={isHighlighted}
+          chartData={chartData}
+          chartType={chartType}
+          breakdownData={breakdownData}
+          decimalPlaces={decimalPlaces}
+          xAxisLabels={xAxisLabels}
+          currentIndex={currentIndex}
+          totalKPIs={totalKPIs}
+          onNavigate={onNavigate}
+        />
+      )}
 
       {/* Info Modal */}
       <KPIInfoModal

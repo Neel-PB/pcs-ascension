@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { KPICard } from './KPICard';
 
 interface KPIData {
@@ -13,6 +14,9 @@ interface KPIData {
   isHighlighted?: boolean;
   useVacancyModal?: boolean;
   vacancyData?: any[];
+  decimalPlaces?: number;
+  breakdownData?: any[];
+  xAxisLabels?: string[];
 }
 
 interface DragHandleProps {
@@ -27,6 +31,20 @@ interface DraggableKPISectionProps {
 }
 
 export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableKPISectionProps) {
+  const [currentKPIIndex, setCurrentKPIIndex] = useState(0);
+
+  const handleNavigate = (direction: 'prev' | 'next') => {
+    setCurrentKPIIndex((prevIndex) => {
+      if (direction === 'prev') {
+        return Math.max(0, prevIndex - 1);
+      } else {
+        return Math.min(kpis.length - 1, prevIndex + 1);
+      }
+    });
+  };
+
+  const currentKPI = kpis[currentKPIIndex];
+
   return (
     <div className="space-y-4">
       <div className="relative group">
@@ -44,8 +62,15 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
         <h2 className="text-lg font-semibold text-foreground">{title}</h2>
       </div>
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-        {kpis.map((kpi) => (
-          <KPICard key={kpi.id} {...kpi} />
+        {kpis.map((kpi, index) => (
+          <div key={kpi.id} onClick={() => setCurrentKPIIndex(index)}>
+            <KPICard 
+              {...(currentKPIIndex === index ? currentKPI : kpi)}
+              currentIndex={currentKPIIndex}
+              totalKPIs={kpis.length}
+              onNavigate={handleNavigate}
+            />
+          </div>
         ))}
       </div>
     </div>
