@@ -377,18 +377,18 @@ export function UnifiedEmployeeFeed() {
   }
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden shadow-lg">
       {/* Post Creation Area */}
-      <div className="p-4 border-b border-border">
+      <div className="p-6 border-b border-border/50">
         {/* Image Preview Section */}
         {selectedImages.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-3">
+          <div className="flex flex-wrap gap-2 mb-4">
             {selectedImages.map((image, index) => (
               <div key={index} className="relative">
                 <img
                   src={URL.createObjectURL(image)}
                   alt="Preview"
-                  className="h-20 w-20 object-cover rounded-lg"
+                  className="h-24 w-24 object-cover rounded-xl"
                 />
                 <Button
                   variant="destructive"
@@ -404,7 +404,7 @@ export function UnifiedEmployeeFeed() {
         )}
 
         {/* Main Input Container with Integrated Utility Bar */}
-        <div className="border border-border rounded-lg overflow-hidden bg-background">
+        <div className="border border-border/60 rounded-2xl overflow-hidden bg-background shadow-sm">
           {/* Content Editable Area */}
           <div 
             ref={editorRef}
@@ -412,12 +412,13 @@ export function UnifiedEmployeeFeed() {
             onInput={handleEditorInput}
             onKeyDown={handleKeyDown}
             onFocus={handleEditorFocus}
-            className="min-h-[100px] px-4 pt-4 pb-2 text-foreground focus:outline-none"
+            className="min-h-[120px] px-4 pt-4 pb-2 text-foreground focus:outline-none prose prose-sm max-w-none"
             data-placeholder="Share an update, announcement, or praise with your team..."
+            suppressContentEditableWarning={true}
           />
 
           {/* Integrated Utility Bar */}
-          <div className="flex items-center justify-between gap-2 px-3 py-2 bg-muted/30 border-t border-border">
+          <div className="flex items-center justify-between gap-2 px-4 py-3 bg-muted/20 border-t border-border/50">
             {/* Left Side - Formatting Tools */}
             <div className="flex items-center gap-1">
               <Button
@@ -425,8 +426,8 @@ export function UnifiedEmployeeFeed() {
                 size="sm"
                 onClick={() => applyFormatting('bold')}
                 className={cn(
-                  "h-8 w-8 p-0",
-                  activeFormatting.includes('bold') && "bg-accent"
+                  "h-9 w-9 p-0 hover:bg-accent/50",
+                  activeFormatting.includes('bold') && "bg-accent text-accent-foreground"
                 )}
                 title="Bold (Ctrl+B)"
               >
@@ -437,8 +438,8 @@ export function UnifiedEmployeeFeed() {
                 size="sm"
                 onClick={() => applyFormatting('italic')}
                 className={cn(
-                  "h-8 w-8 p-0",
-                  activeFormatting.includes('italic') && "bg-accent"
+                  "h-9 w-9 p-0 hover:bg-accent/50",
+                  activeFormatting.includes('italic') && "bg-accent text-accent-foreground"
                 )}
                 title="Italic (Ctrl+I)"
               >
@@ -449,8 +450,8 @@ export function UnifiedEmployeeFeed() {
                 size="sm"
                 onClick={() => applyFormatting('underline')}
                 className={cn(
-                  "h-8 w-8 p-0",
-                  activeFormatting.includes('underline') && "bg-accent"
+                  "h-9 w-9 p-0 hover:bg-accent/50",
+                  activeFormatting.includes('underline') && "bg-accent text-accent-foreground"
                 )}
                 title="Underline (Ctrl+U)"
               >
@@ -461,8 +462,8 @@ export function UnifiedEmployeeFeed() {
                 size="sm"
                 onClick={() => applyFormatting('list')}
                 className={cn(
-                  "h-8 w-8 p-0",
-                  activeFormatting.includes('list') && "bg-accent"
+                  "h-9 w-9 p-0 hover:bg-accent/50",
+                  activeFormatting.includes('list') && "bg-accent text-accent-foreground"
                 )}
                 title="Bullet List"
               >
@@ -476,7 +477,7 @@ export function UnifiedEmployeeFeed() {
                 variant="ghost"
                 size="sm"
                 onClick={handleImageUpload}
-                className="h-8 w-8 p-0"
+                className="h-9 w-9 p-0 hover:bg-accent/50"
                 title="Add Image"
               >
                 <ImagePlus className="h-4 w-4" />
@@ -485,7 +486,7 @@ export function UnifiedEmployeeFeed() {
                 onClick={handleCreatePost}
                 disabled={createPostMutation.isPending || uploadingImages}
                 size="sm"
-                className="h-8 w-8 p-0 rounded-full"
+                className="h-9 w-9 p-0 rounded-full"
               >
                 {(createPostMutation.isPending || uploadingImages) ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -525,18 +526,18 @@ export function UnifiedEmployeeFeed() {
             : post.author?.avatar_url;
 
           return (
-            <div key={post.id} className="p-6 border-t border-border">
-              <div className="flex items-start gap-3 mb-4">
-                <Avatar>
+            <div key={post.id} className="p-6 border-t border-border/50 bg-card">
+              <div className="flex items-start gap-3 mb-3">
+                <Avatar className="h-10 w-10">
                   <AvatarImage src={resolveAvatarUrl(authorAvatarSrc, post.author?.first_name, post.author?.last_name)} />
                   <AvatarFallback>
                     {post.author?.first_name?.[0]}{post.author?.last_name?.[0]}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-base">
                         {post.author?.first_name} {post.author?.last_name}
                       </p>
                       <p className="text-xs text-muted-foreground">
@@ -546,7 +547,7 @@ export function UnifiedEmployeeFeed() {
                     {post.user_id === user?.id && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-accent/50 -mt-1">
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -569,7 +570,7 @@ export function UnifiedEmployeeFeed() {
                 </div>
               </div>
 
-              <div className="mb-4">
+              <div className="mb-3 ml-[52px]">
                 {editingPost === post.id ? (
                   <div className="space-y-3">
                     <div 
@@ -653,78 +654,93 @@ export function UnifiedEmployeeFeed() {
                   </div>
                 ) : (
                   <div 
-                    className="prose prose-sm max-w-none dark:prose-invert"
+                    className="prose prose-sm max-w-none dark:prose-invert prose-p:leading-relaxed prose-headings:mb-2"
                     dangerouslySetInnerHTML={{ __html: post.content }}
                   />
                 )}
               </div>
 
               {post.attachments && post.attachments.length > 0 && (
-                <div className="mb-4 flex flex-wrap gap-2">
+                <div className={cn(
+                  "mb-4 ml-[52px] grid gap-2",
+                  post.attachments.length === 1 && "grid-cols-1",
+                  post.attachments.length === 2 && "grid-cols-2",
+                  post.attachments.length >= 3 && "grid-cols-2"
+                )}>
                   {post.attachments.map((imageUrl, index) => (
                     <img
                       key={index}
                       src={imageUrl}
                       alt="Post attachment"
-                      className="max-h-64 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                      className="w-full h-auto max-h-[400px] object-cover rounded-xl cursor-pointer hover:opacity-95 transition-opacity"
                       onClick={() => window.open(imageUrl, '_blank')}
                     />
                   ))}
                 </div>
               )}
 
-              <div className="flex items-center gap-2 pt-2 border-t">
+              <div className="flex items-center justify-end gap-1 pt-3 ml-[52px]">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => handleLikePost(post.id, isLiked)}
                   className={cn(
-                    "gap-2",
+                    "h-8 w-8 p-0 relative hover:bg-accent/50",
                     isLiked && "text-red-500 hover:text-red-600"
                   )}
+                  title="Like"
                 >
                   <Heart className={cn("h-4 w-4", isLiked && "fill-current")} />
-                  {post.likes.length > 0 && post.likes.length}
+                  {post.likes.length > 0 && (
+                    <span className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 bg-red-500 text-white text-[10px] font-medium rounded-full flex items-center justify-center">
+                      {post.likes.length}
+                    </span>
+                  )}
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => toggleComments(post.id)}
-                  className="gap-2"
+                  className="h-8 w-8 p-0 relative hover:bg-accent/50"
+                  title="Comment"
                 >
                   <MessageCircle className="h-4 w-4" />
-                  {(post.comments?.length || 0) > 0 && post.comments?.length}
+                  {(post.comments?.length || 0) > 0 && (
+                    <span className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 bg-primary text-primary-foreground text-[10px] font-medium rounded-full flex items-center justify-center">
+                      {post.comments?.length}
+                    </span>
+                  )}
                 </Button>
               </div>
 
               {commentsOpen && (
-                <div className="mt-4 pt-4 border-t space-y-3">
+                <div className="mt-4 pt-4 border-t border-border/50 space-y-3 ml-[52px]">
                   {post.comments?.map((comment) => (
-                    <div key={comment.id} className="flex gap-3">
-                      <Avatar className="h-8 w-8">
+                    <div key={comment.id} className="flex gap-2.5">
+                      <Avatar className="h-8 w-8 flex-shrink-0">
                         <AvatarImage src={resolveAvatarUrl(comment.author?.avatar_url, comment.author?.first_name, comment.author?.last_name)} />
-                        <AvatarFallback>
+                        <AvatarFallback className="text-xs">
                           {comment.author?.first_name?.[0]}{comment.author?.last_name?.[0]}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1">
-                        <div className="bg-muted rounded-lg p-3">
-                          <p className="text-sm font-semibold mb-1">
+                      <div className="flex-1 min-w-0">
+                        <div className="bg-muted/50 rounded-xl p-3">
+                          <p className="text-sm font-medium mb-1">
                             {comment.author?.first_name} {comment.author?.last_name}
                           </p>
-                          <p className="text-sm">{comment.content}</p>
+                          <p className="text-sm text-foreground/90 break-words">{comment.content}</p>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="text-xs text-muted-foreground mt-1.5 ml-3">
                           {format(new Date(comment.created_at), 'd MMM • HH:mm')}
                         </p>
                       </div>
                     </div>
                   ))}
 
-                  <div className="flex gap-3">
-                    <Avatar className="h-8 w-8">
+                  <div className="flex gap-2.5">
+                    <Avatar className="h-8 w-8 flex-shrink-0">
                       <AvatarImage src={resolveAvatarUrl(user?.user_metadata?.avatar_url, user?.user_metadata?.first_name, user?.user_metadata?.last_name)} />
-                      <AvatarFallback>
+                      <AvatarFallback className="text-xs">
                         {user?.user_metadata?.first_name?.[0]}{user?.user_metadata?.last_name?.[0]}
                       </AvatarFallback>
                     </Avatar>
@@ -743,13 +759,14 @@ export function UnifiedEmployeeFeed() {
                             handleAddComment(post.id, newComments[post.id] || "");
                           }
                         }}
-                        className="flex-1 bg-muted rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                        className="flex-1 bg-muted/50 rounded-xl px-4 py-2 text-sm border border-border/50 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                         disabled={addCommentMutation.isPending}
                       />
                       <Button
                         size="sm"
                         onClick={() => handleAddComment(post.id, newComments[post.id] || "")}
                         disabled={!newComments[post.id]?.trim() || addCommentMutation.isPending}
+                        className="h-9 w-9 p-0 rounded-full flex-shrink-0"
                       >
                         {addCommentMutation.isPending ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
