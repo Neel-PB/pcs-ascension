@@ -190,7 +190,7 @@ Example: If total volume over 12 months is 7,602:
       },
       {
         id: '12m-daily',
-        title: "12M Daily",
+        title: "12M Daily Average",
         value: "20.8",
         chartData: generateGrowthTrend(19.8, 20.8, 30),
         chartType: "area" as const,
