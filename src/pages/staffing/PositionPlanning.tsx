@@ -457,7 +457,7 @@ const FTESkillShiftTable = ({
               Hired FTEs
             </TableHead>
             <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
-              Reqs
+              Open Req FTEs
             </TableHead>
             <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
               Variance
