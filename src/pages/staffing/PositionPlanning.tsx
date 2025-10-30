@@ -371,12 +371,9 @@ const SkillRow = ({
       )}
     >
       <TableCell className={cn(
-        "font-medium",
-        isChildRow && "pl-12"
+        "font-medium whitespace-nowrap",
+        isChildRow && "pl-8"
       )}>
-        {isChildRow && (
-          <span className="text-muted-foreground mr-2">└─</span>
-        )}
         {skill.skill}
       </TableCell>
       <TableCell className="text-center">{skill.targetDay?.toFixed(1) || "0.0"}</TableCell>
