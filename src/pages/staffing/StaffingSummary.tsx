@@ -140,6 +140,7 @@ Example: If target is 43.4 and hired is 40.9:
         chartData: generateVolatileTrend(5, 2),
         chartType: "bar" as const,
         delay: 0.2,
+        decimalPlaces: 0,
         definition: "Open Requisitions represents the total number of approved job postings that are currently active and being recruited for. This includes positions that are in various stages of the hiring process.",
         calculation: `Open Requisitions = Count of all active job postings
 

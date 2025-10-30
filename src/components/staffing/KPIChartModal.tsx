@@ -17,6 +17,7 @@ interface KPIChartModalProps {
   chartData?: Array<{ value: number }>;
   chartType?: "line" | "bar" | "area";
   breakdownData?: Array<any>;
+  decimalPlaces?: number;
 }
 
 export function KPIChartModal({
@@ -31,6 +32,7 @@ export function KPIChartModal({
   chartData,
   chartType = "line",
   breakdownData,
+  decimalPlaces = 1,
 }: KPIChartModalProps) {
   const [activeTab, setActiveTab] = useState("chart");
   const getChartColor = () => {
@@ -48,9 +50,9 @@ export function KPIChartModal({
 
   // Calculate statistics if data exists
   const stats = chartData ? {
-    high: Math.max(...chartData.map(d => d.value)).toFixed(1),
-    low: Math.min(...chartData.map(d => d.value)).toFixed(1),
-    average: (chartData.reduce((sum, d) => sum + d.value, 0) / chartData.length).toFixed(1),
+    high: Math.max(...chartData.map(d => d.value)).toFixed(decimalPlaces),
+    low: Math.min(...chartData.map(d => d.value)).toFixed(decimalPlaces),
+    average: (chartData.reduce((sum, d) => sum + d.value, 0) / chartData.length).toFixed(decimalPlaces),
   } : null;
 
   // Add time labels to chart data
@@ -114,9 +116,10 @@ export function KPIChartModal({
                     <YAxis 
                       className="text-xs"
                       tick={{ fill: "hsl(var(--muted-foreground))" }}
+                      tickFormatter={(value: number) => value.toFixed(decimalPlaces)}
                     />
                     <Tooltip 
-                      formatter={(value: number) => value.toFixed(1)}
+                      formatter={(value: number) => value.toFixed(decimalPlaces)}
                       contentStyle={{
                         backgroundColor: "hsl(var(--popover))",
                         border: "1px solid hsl(var(--border))",
@@ -150,9 +153,10 @@ export function KPIChartModal({
                     <YAxis 
                       className="text-xs"
                       tick={{ fill: "hsl(var(--muted-foreground))" }}
+                      tickFormatter={(value: number) => value.toFixed(decimalPlaces)}
                     />
                     <Tooltip 
-                      formatter={(value: number) => value.toFixed(1)}
+                      formatter={(value: number) => value.toFixed(decimalPlaces)}
                       contentStyle={{
                         backgroundColor: "hsl(var(--popover))",
                         border: "1px solid hsl(var(--border))",
@@ -181,9 +185,10 @@ export function KPIChartModal({
                     <YAxis 
                       className="text-xs"
                       tick={{ fill: "hsl(var(--muted-foreground))" }}
+                      tickFormatter={(value: number) => value.toFixed(decimalPlaces)}
                     />
                     <Tooltip 
-                      formatter={(value: number) => value.toFixed(1)}
+                      formatter={(value: number) => value.toFixed(decimalPlaces)}
                       contentStyle={{
                         backgroundColor: "hsl(var(--popover))",
                         border: "1px solid hsl(var(--border))",
@@ -291,7 +296,7 @@ export function KPIChartModal({
                         style={{ gridTemplateColumns: '1fr 1fr' }}
                       >
                         <div className="px-4 py-3 text-left text-sm font-medium">{item.period}</div>
-                        <div className="px-4 py-3 text-right text-sm">{item.value.toFixed(1)}</div>
+                        <div className="px-4 py-3 text-right text-sm">{item.value.toFixed(decimalPlaces)}</div>
                       </div>
                     ))}
                   </div>

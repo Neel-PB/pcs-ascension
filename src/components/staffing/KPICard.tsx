@@ -25,6 +25,7 @@ interface KPICardProps {
   definition?: string;
   calculation?: string;
   breakdownData?: Array<any>;
+  decimalPlaces?: number;
 }
 
 export function KPICard({
@@ -40,6 +41,7 @@ export function KPICard({
   definition = "",
   calculation = "",
   breakdownData,
+  decimalPlaces = 1,
 }: KPICardProps) {
   const [showChartModal, setShowChartModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
@@ -134,6 +136,7 @@ export function KPICard({
         chartData={chartData}
         chartType={chartType}
         breakdownData={breakdownData}
+        decimalPlaces={decimalPlaces}
       />
 
       {/* Info Modal */}
