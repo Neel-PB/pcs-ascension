@@ -269,39 +269,37 @@ export function ForecastTab() {
   return (
     <>
       <div className="space-y-6">
-      {/* Positions to Open Section */}
-      <Card className="overflow-hidden">
-        <div className="p-4 border-b">
-          <h2 className="text-lg font-semibold">Positions to Open</h2>
+        {/* Positions to Open Section */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold">Positions to Open</h2>
+          <Card className="overflow-hidden">
+            <div className="overflow-auto max-h-[400px]">
+              <EditableTable
+                columns={openPositionsColumns}
+                data={positionsToOpen}
+                getRowId={(row) => row.id}
+                onRowClick={handleOpenRowClick}
+                storeNamespace="forecast-open-positions"
+              />
+            </div>
+          </Card>
         </div>
-        
-        <div className="overflow-auto max-h-[400px]">
-          <EditableTable
-            columns={openPositionsColumns}
-            data={positionsToOpen}
-            getRowId={(row) => row.id}
-            onRowClick={handleOpenRowClick}
-            storeNamespace="forecast-open-positions"
-          />
-        </div>
-      </Card>
 
-      {/* Positions to Close Section */}
-      <Card className="overflow-hidden">
-        <div className="p-4 border-b">
-          <h2 className="text-lg font-semibold">Positions to Close</h2>
+        {/* Positions to Close Section */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold">Positions to Close</h2>
+          <Card className="overflow-hidden">
+            <div className="overflow-auto max-h-[400px]">
+              <EditableTable
+                columns={closePositionsColumns}
+                data={positionsToClose}
+                getRowId={(row) => row.id}
+                onRowClick={handleCloseRowClick}
+                storeNamespace="forecast-close-positions"
+              />
+            </div>
+          </Card>
         </div>
-        
-        <div className="overflow-auto max-h-[400px]">
-          <EditableTable
-            columns={closePositionsColumns}
-            data={positionsToClose}
-            getRowId={(row) => row.id}
-            onRowClick={handleCloseRowClick}
-            storeNamespace="forecast-close-positions"
-          />
-        </div>
-      </Card>
       </div>
 
       {/* Detail Sheets */}
