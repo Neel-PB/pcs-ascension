@@ -182,7 +182,7 @@ Example: If FTE Variance is 2.5 and Open Requisitions is 5:
         chartData: generateGrowthTrend(565, 633.5, 30),
         chartType: "area" as const,
         delay: 0,
-        definition: "12-Month Average Monthly Volume represents the average number of patient encounters, procedures, or units of service delivered per month over the past 12 months.",
+        definition: "Rolling 12-Month Average Monthly Volume represents the average number of patient encounters, procedures, or units of service delivered per month over the immediately preceding 12 months.",
         calculation: `12M Avg Monthly = Sum of monthly volumes over 12 months / 12
 
 Example: If total volume over 12 months is 7,602:
