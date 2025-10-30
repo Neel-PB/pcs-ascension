@@ -177,7 +177,7 @@ Example: If FTE Variance is 2.5 and Open Requisitions is 5:
     const kpis = [
       {
         id: '12m-monthly',
-        title: "12M Monthly",
+        title: "12M Average",
         value: "633.5",
         chartData: generateGrowthTrend(565, 633.5, 30),
         chartType: "area" as const,
