@@ -262,7 +262,7 @@ export function KPIChartModal({
                       className="grid sticky top-0 z-10 bg-blue-50 dark:bg-blue-950/30 border-b"
                       style={{ gridTemplateColumns: '2fr repeat(4, 1fr)' }}
                     >
-                      <div className="px-4 py-3 text-left font-semibold text-sm">Skill Types</div>
+                      <div className="px-4 py-3 text-left font-semibold text-sm">Job Families</div>
                       <div className="px-4 py-3 text-right font-semibold text-sm">FT FTEs</div>
                       <div className="px-4 py-3 text-right font-semibold text-sm">PT FTEs</div>
                       <div className="px-4 py-3 text-right font-semibold text-sm">PRN FTEs</div>

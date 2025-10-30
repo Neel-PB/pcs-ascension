@@ -30,7 +30,7 @@ export function PositionToCloseDetailsSheet({
         <SheetHeader>
           <SheetTitle className="text-2xl">Position to Close</SheetTitle>
           <SheetDescription>
-            {position.skill_type} • FTE: {position.fte}
+            {position.skill_type} (Job Family) • FTE: {position.fte}
           </SheetDescription>
         </SheetHeader>
 
@@ -65,7 +65,7 @@ export function PositionToCloseDetailsSheet({
                   <h3 className="text-sm font-medium text-muted-foreground mb-3">Position Information</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-xs text-muted-foreground">Skill Type</p>
+                      <p className="text-xs text-muted-foreground">Job Family</p>
                       <p className="text-sm font-medium">{position.skill_type || "—"}</p>
                     </div>
                     <div>

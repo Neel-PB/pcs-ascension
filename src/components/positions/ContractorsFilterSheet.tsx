@@ -77,9 +77,9 @@ export function ContractorsFilterSheet({
           </div>
 
           <div className="space-y-2">
-            <Label>Skill Type</Label>
+            <Label>Job Family</Label>
             <Input
-              placeholder="Filter by skill type"
+              placeholder="Filter by job family"
               value={filters.skillType}
               onChange={(e) => updateFilter("skillType", e.target.value)}
             />

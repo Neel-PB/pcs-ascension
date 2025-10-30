@@ -75,7 +75,7 @@ export const requisitionColumns: ColumnDef<Position>[] = [
   },
   {
     id: 'jobFamily',
-    label: 'Skill Type',
+    label: 'Job Family',
     type: 'badge',
     width: 180,
     minWidth: 140, // Increased for header text
