@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 interface KPIChartModalProps {
   open: boolean;
@@ -57,44 +57,31 @@ export function KPIChartModal({
     average: (chartData.reduce((sum, d) => sum + d.value, 0) / chartData.length).toFixed(decimalPlaces),
   } : null;
 
-  // Add time labels to chart data
-  const enrichedData = chartData?.map((item, index) => {
-    // If xAxisLabels provided, use those labels for the most recent data points
-    if (xAxisLabels && xAxisLabels.length > 0) {
-      // Map the last N data points to the last N labels
-      const dataLength = chartData.length;
-      const labelLength = xAxisLabels.length;
-      
-      if (dataLength <= labelLength) {
-        // If we have fewer or equal data points than labels, use the last labels
-        const labelIndex = labelLength - dataLength + index;
+  // Add time labels to chart data - use last 12 data points when xAxisLabels provided
+  const enrichedData = useMemo(() => {
+    if (!chartData) return undefined;
+    
+    // If xAxisLabels provided, take only the last 12 data points
+    const dataToUse = xAxisLabels && xAxisLabels.length === 12 
+      ? chartData.slice(-12) 
+      : chartData;
+    
+    return dataToUse.map((item, index) => {
+      if (xAxisLabels && xAxisLabels.length === 12 && chartData.length >= 12) {
+        // Use the month labels for the last 12 points
         return {
           ...item,
-          period: xAxisLabels[labelIndex] || `P${index + 1}`,
-        };
-      } else {
-        // If we have more data points than labels, only show labels for the last N points
-        const startIndex = dataLength - labelLength;
-        if (index >= startIndex) {
-          const labelIndex = index - startIndex;
-          return {
-            ...item,
-            period: xAxisLabels[labelIndex] || `P${index + 1}`,
-          };
-        }
-        return {
-          ...item,
-          period: `P${index + 1}`,
+          period: xAxisLabels[index],
         };
       }
-    }
-    
-    // Default to period labels
-    return {
-      ...item,
-      period: `P${index + 1}`,
-    };
-  });
+      
+      // Default to period labels
+      return {
+        ...item,
+        period: `P${index + 1}`,
+      };
+    });
+  }, [chartData, xAxisLabels]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
