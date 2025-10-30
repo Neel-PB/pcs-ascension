@@ -71,19 +71,10 @@ export function KPICard({
           )}
         >
           <CardContent className="p-4 pr-10 relative">
-            {/* Title with Tooltip */}
-            <TooltipProvider delayDuration={200}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-0.5 cursor-help">
-                    {title}
-                  </h3>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-xs">
-                  <p className="text-sm">{definition}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            {/* Title */}
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-0.5">
+              {title}
+            </h3>
 
             {/* Action Icons - Vertically Centered */}
             <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center gap-1">
