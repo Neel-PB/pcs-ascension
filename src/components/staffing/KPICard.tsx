@@ -2,8 +2,9 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, Eye } from "lucide-react";
 import { KPIChartModal } from "./KPIChartModal";
+import { KPIInfoModal } from "./KPIInfoModal";
 import {
   Tooltip,
   TooltipContent,
@@ -41,6 +42,7 @@ export function KPICard({
   breakdownData,
 }: KPICardProps) {
   const [showChartModal, setShowChartModal] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
 
   const getTrendColor = () => {
     if (isNegative) return "text-destructive";
@@ -80,8 +82,8 @@ export function KPICard({
             </TooltipProvider>
 
             {/* Action Icons - Vertically Centered */}
-            {chartData && chartData.length > 0 && (
-              <div className="absolute right-4 top-1/2 -translate-y-1/2">
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center gap-1">
+              {chartData && chartData.length > 0 && (
                 <button
                   onClick={() => setShowChartModal(true)}
                   className="p-1.5 rounded hover:bg-accent transition-colors"
@@ -89,8 +91,15 @@ export function KPICard({
                 >
                   <BarChart3 className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                 </button>
-              </div>
-            )}
+              )}
+              <button
+                onClick={() => setShowInfoModal(true)}
+                className="p-1.5 rounded hover:bg-accent transition-colors"
+                title="View details"
+              >
+                <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+              </button>
+            </div>
 
             {/* Value and Trend Section */}
             <div className="space-y-0.5">
@@ -125,6 +134,19 @@ export function KPICard({
         chartData={chartData}
         chartType={chartType}
         breakdownData={breakdownData}
+      />
+
+      {/* Info Modal */}
+      <KPIInfoModal
+        open={showInfoModal}
+        onOpenChange={setShowInfoModal}
+        title={title}
+        value={value}
+        trend={trend}
+        trendValue={trendValue}
+        isNegative={isNegative}
+        definition={definition}
+        calculation={calculation}
       />
     </>
   );
