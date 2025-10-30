@@ -7,6 +7,7 @@ import { ForecastTab } from "./ForecastTab";
 import { SettingsTab } from "./SettingsTab";
 import { DraggableSectionsContainer } from "@/components/staffing/DraggableSectionsContainer";
 import { useKPIOrderStore } from "@/stores/useKPIOrderStore";
+import { generateLast12MonthLabels } from "@/lib/utils";
 
 export default function StaffingSummary() {
   const [activeTab, setActiveTab] = useState("summary");
@@ -175,6 +176,9 @@ Example: If FTE Variance is 2.5 and Open Requisitions is 5:
 
   // Volume KPIs Configuration
   const volumeKPIs = useMemo(() => {
+    // Generate month labels for all Volume KPIs
+    const monthLabels = generateLast12MonthLabels();
+    
     const kpis = [
       {
         id: '12m-monthly',
@@ -183,6 +187,7 @@ Example: If FTE Variance is 2.5 and Open Requisitions is 5:
         chartData: generateGrowthTrend(565, 633.5, 30),
         chartType: "area" as const,
         delay: 0,
+        xAxisLabels: monthLabels,
         definition: "Rolling 12-Month Average Monthly Volume represents the average number of patient encounters, procedures, or units of service delivered per month over the immediately preceding 12 months.",
         calculation: `12M Avg Monthly = Sum of monthly volumes over 12 months / 12
 
@@ -196,6 +201,7 @@ Example: If total volume over 12 months is 7,602:
         chartData: generateGrowthTrend(19.8, 20.8, 30),
         chartType: "area" as const,
         delay: 0.05,
+        xAxisLabels: monthLabels,
         definition: "12-Month Average Daily Volume represents the average number of patient encounters, procedures, or units of service delivered per day over the past 12 months.",
         calculation: `12M Avg Daily = Total volume over 12 months / Total working days
 
@@ -210,6 +216,7 @@ Example: If total volume is 7,602 over 365 days:
         chartData: generateVolatileTrend(14.2, 3),
         chartType: "area" as const,
         delay: 0.1,
+        xAxisLabels: monthLabels,
         definition: "3-Month Average Lowest Volume shows the average daily volume recorded during the three months with the lowest total volume in the immediately preceding 12 months. This value is used to determine minimum staffing requirements.",
         calculation: `3M Avg Lowest = Average daily volume during the 3 lowest-volume months in past 12 months
 
@@ -225,6 +232,7 @@ Calculated by:
         chartData: generateVolatileTrend(28.4, 5),
         chartType: "bar" as const,
         delay: 0.15,
+        xAxisLabels: monthLabels,
         definition: "3-Month Average Highest Volume shows the average daily volume recorded during the three months with the highest total volume in the immediately preceding 12 months. This value is used to determine maximum capacity or peak staffing requirements.",
         calculation: `3M Avg Highest = Average daily volume during the 3 highest-volume months in past 12 months
 
@@ -241,6 +249,7 @@ Calculated by:
         chartData: generateSeasonalTrend(20.8, 3),
         chartType: "area" as const,
         delay: 0.2,
+        xAxisLabels: monthLabels,
         definition: "Target Volume represents the expected daily volume used for staffing calculations and planning. This is typically based on historical trends and projected growth.",
         calculation: `Target Volume = Forecasted daily volume based on historical data and growth projections
 
@@ -257,6 +266,7 @@ Determined by:
         chartData: generateVolatileTrend(24.7, 4),
         chartType: "bar" as const,
         delay: 0.25,
+        xAxisLabels: monthLabels,
         definition: "Override Volume is a manually adjusted volume target that supersedes the calculated target volume. Used when managers have specific knowledge of upcoming changes or special circumstances.",
         calculation: `Override Volume = Manually entered volume target
 

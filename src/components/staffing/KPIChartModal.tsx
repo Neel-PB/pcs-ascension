@@ -18,6 +18,7 @@ interface KPIChartModalProps {
   chartType?: "line" | "bar" | "area";
   breakdownData?: Array<any>;
   decimalPlaces?: number;
+  xAxisLabels?: string[];
 }
 
 export function KPIChartModal({
@@ -33,6 +34,7 @@ export function KPIChartModal({
   chartType = "line",
   breakdownData,
   decimalPlaces = 1,
+  xAxisLabels,
 }: KPIChartModalProps) {
   const [activeTab, setActiveTab] = useState("chart");
   const getChartColor = () => {
@@ -56,10 +58,43 @@ export function KPIChartModal({
   } : null;
 
   // Add time labels to chart data
-  const enrichedData = chartData?.map((item, index) => ({
-    ...item,
-    period: `P${index + 1}`,
-  }));
+  const enrichedData = chartData?.map((item, index) => {
+    // If xAxisLabels provided, use those labels for the most recent data points
+    if (xAxisLabels && xAxisLabels.length > 0) {
+      // Map the last N data points to the last N labels
+      const dataLength = chartData.length;
+      const labelLength = xAxisLabels.length;
+      
+      if (dataLength <= labelLength) {
+        // If we have fewer or equal data points than labels, use the last labels
+        const labelIndex = labelLength - dataLength + index;
+        return {
+          ...item,
+          period: xAxisLabels[labelIndex] || `P${index + 1}`,
+        };
+      } else {
+        // If we have more data points than labels, only show labels for the last N points
+        const startIndex = dataLength - labelLength;
+        if (index >= startIndex) {
+          const labelIndex = index - startIndex;
+          return {
+            ...item,
+            period: xAxisLabels[labelIndex] || `P${index + 1}`,
+          };
+        }
+        return {
+          ...item,
+          period: `P${index + 1}`,
+        };
+      }
+    }
+    
+    // Default to period labels
+    return {
+      ...item,
+      period: `P${index + 1}`,
+    };
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
