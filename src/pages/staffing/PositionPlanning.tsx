@@ -679,7 +679,7 @@ export default function PositionPlanning() {
 
       {/* Expanded Modal */}
       <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
-        <DialogContent className="max-w-none w-[95vw] h-[95vh] flex flex-col">
+        <DialogContent className="max-w-none w-[95vw] max-h-[95vh] flex flex-col">
           <DialogHeader>
             <div className="flex items-center justify-between">
               <DialogTitle className="text-2xl font-semibold">
