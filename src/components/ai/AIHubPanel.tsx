@@ -1,6 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { X, Minimize2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useAIHub } from '@/hooks/useAIHub';
 import { useResizable } from '@/hooks/useResizable';
 import { ChatMessageList } from './chat/ChatMessageList';
@@ -138,33 +136,6 @@ export const AIHubPanel = () => {
               {Math.round(currentWidth)}px
             </div>
           )}
-        </div>
-
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold">AI Assistant</h2>
-          </div>
-          <div className="flex items-center gap-1">
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => setOpen(false)}
-              className="h-8 w-8"
-              aria-label="Minimize"
-            >
-              <Minimize2 className="h-4 w-4" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => setOpen(false)}
-              className="h-8 w-8"
-              aria-label="Close"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
         </div>
 
         {/* Messages Area */}
