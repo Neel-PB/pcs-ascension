@@ -189,18 +189,23 @@ export const AIHubPanel = () => {
         </div>
 
         {/* Chat Input */}
-        <PillChatBar
-          value={currentInput}
-          onChange={setCurrentInput}
-          onSend={handleSendMessage}
-          onAttach={(files) => setFileAttachments(prev => [...prev, ...files])}
-          onRemoveAttachment={(id) => setFileAttachments(prev => prev.filter(f => f.id !== id))}
-          attachments={fileAttachments}
-          isLoading={false}
-          isGenerating={isGenerating}
-          placeholder="Ask anything..."
-          onClearChat={handleClearChat}
-        />
+        <div className="absolute bottom-4 left-4 right-4">
+          <PillChatBar
+            value={currentInput}
+            onChange={setCurrentInput}
+            onSend={handleSendMessage}
+            onAttach={(files) => setFileAttachments(prev => [...prev, ...files])}
+            onRemoveAttachment={(id) => setFileAttachments(prev => prev.filter(f => f.id !== id))}
+            attachments={fileAttachments}
+            isLoading={false}
+            isGenerating={isGenerating}
+            onStop={() => setIsGenerating(false)}
+            placeholder="Ask anything..."
+            showVoice={true}
+            onMinimize={() => setOpen(false)}
+            onClearChat={handleClearChat}
+          />
+        </div>
       </div>
     </>
   );
