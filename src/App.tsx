@@ -15,6 +15,8 @@ import ReportsRegion from "./pages/reports/ReportsRegion";
 import SupportPage from "./pages/support/SupportPage";
 import AdminPage from "./pages/admin/AdminPage";
 import NotFound from "./pages/NotFound";
+import { AIHubTrigger } from "./components/ai/AIHubTrigger";
+import { AIHubPanel } from "./components/ai/AIHubPanel";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +40,8 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<ShellLayout><NotFound /></ShellLayout>} />
           </Routes>
+          <AIHubTrigger />
+          <AIHubPanel />
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
