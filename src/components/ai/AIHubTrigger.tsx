@@ -1,18 +1,18 @@
-import { Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAIHub } from '@/hooks/useAIHub';
+import { Sparkles } from 'lucide-react';
 
-export const AIHubTrigger = () => {
-  const { setOpen } = useAIHub();
+export const AIHubTrigger: React.FC = () => {
+  const { toggle } = useAIHub();
 
   return (
     <Button
-      onClick={() => setOpen(true)}
-      className="fixed right-6 bottom-[5%] z-50 h-12 px-6 rounded-full shadow-lg hover:shadow-xl transition-all"
-      aria-label="Open AI Assistant"
+      onClick={toggle}
+      variant="ghost"
+      className="fixed right-0 bottom-[5%] h-24 w-6 rounded-l-xl rounded-r-none bg-[#7BB5FF] hover:bg-[#6BA5EF] shadow-xl active:scale-95 transition-all duration-300 ease-out z-50 flex items-center justify-center text-gray-900"
+      aria-label="Open AI Hub"
     >
-      <Sparkles className="h-5 w-5 mr-2" />
-      AI Assistant
+      <Sparkles className="h-5 w-5" />
     </Button>
   );
 };

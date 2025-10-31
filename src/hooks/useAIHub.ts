@@ -5,6 +5,7 @@ interface AIHubState {
   isOpen: boolean;
   width: number;
   setOpen: (open: boolean) => void;
+  toggle: () => void;
   setWidth: (width: number) => void;
 }
 
@@ -14,6 +15,7 @@ export const useAIHub = create<AIHubState>()(
       isOpen: false,
       width: 520,
       setOpen: (open) => set({ isOpen: open }),
+      toggle: () => set((state) => ({ isOpen: !state.isOpen })),
       setWidth: (width) => set({ width }),
     }),
     {
