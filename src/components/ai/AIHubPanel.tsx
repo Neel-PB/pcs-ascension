@@ -5,7 +5,7 @@ import { PillChatBar } from './PillChatBar';
 import { AIWelcomeCards } from './AIWelcomeCards';
 import { ContentBlock } from '@/types/contentBlock';
 import { ContentBlockRenderer } from './ContentBlockRenderer';
-import { mockComplexResponse } from '@/data/mockContentBlocks';
+import { mockComplexResponse, simpleReasoningBlocks } from '@/data/mockContentBlocks';
 
 interface ProcessedFile {
   id: string;
@@ -218,8 +218,9 @@ export const AIHubPanel = () => {
         return;
       }
       
-      // Simple response
-      responseContent = mockResponses[Math.floor(Math.random() * mockResponses.length)];
+      // Simple response with reasoning
+      const responseIndex = Math.floor(Math.random() * mockResponses.length);
+      responseContent = mockResponses[responseIndex];
       
       const aiBlock: ContentBlock = {
         id: aiBlockId,
@@ -228,6 +229,7 @@ export const AIHubPanel = () => {
         metadata: {
           isStreaming: true,
           timestamp: new Date(),
+          reasoning: simpleReasoningBlocks[responseIndex]
         }
       };
 

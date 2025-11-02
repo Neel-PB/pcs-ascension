@@ -181,6 +181,45 @@ The recommendations prioritize high-impact, cost-effective interventions that al
   }
 };
 
+// Reasoning blocks for simple responses
+export const simpleReasoningBlocks = [
+  {
+    content: `To provide this overview, I:
+
+1. **Queried the staffing database** for current FTE counts across all departments
+2. **Calculated growth metrics** by comparing current quarter to previous quarter data
+3. **Analyzed open requisition status** to identify active hiring needs
+4. **Evaluated turnover rates** against industry benchmarks and internal targets
+5. **Assessed contractor ratios** to ensure optimal workforce composition
+
+The 8.2% growth rate indicates healthy expansion, while the Engineering team's acceleration aligns with your product roadmap priorities.`,
+    duration: 2400
+  },
+  {
+    content: `My forecasting approach involved:
+
+1. **Historical pattern analysis**: Examined 12 months of hiring data to identify seasonal trends
+2. **Department capacity modeling**: Calculated current team utilization and projected workload
+3. **Budget constraint validation**: Cross-referenced recommendations against approved compensation budgets
+4. **Time-to-fill estimation**: Factored in your average 45-day hiring cycle for realistic planning
+5. **Role prioritization matrix**: Weighted positions by business impact and urgency
+
+The 18-22 FTE range provides flexibility while maintaining budget discipline. Technical roles were prioritized due to longer lead times.`,
+    duration: 3100
+  },
+  {
+    content: `To summarize my capabilities, I evaluated:
+
+1. **Available data sources**: Your staffing database, historical trends, and industry benchmarks
+2. **Analysis functions**: Statistical modeling, forecasting algorithms, and comparison tools
+3. **Output formats**: Reports, visualizations, and actionable recommendations
+4. **Common use cases**: Based on frequent queries from similar organizations
+
+Each capability is designed to help you make data-driven workforce decisions with minimal manual effort.`,
+    duration: 2600
+  }
+];
+
 export const demoScenarios = {
   simple: [mockWelcomeResponse],
   reasoning: [mockResponseWithReasoning],
