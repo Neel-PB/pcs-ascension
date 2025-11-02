@@ -28,17 +28,19 @@ export const Reasoning = ({ reasoning, isStreaming, defaultOpen = false }: Reaso
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-6">
       <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group w-full">
-        {isOpen ? (
-          <ChevronDown className="h-4 w-4 transition-transform" />
-        ) : (
-          <ChevronRight className="h-4 w-4 transition-transform" />
-        )}
         <Brain className="h-4 w-4" />
         <span className="font-medium">
           {isStreaming 
             ? 'Thinking...' 
             : `Thought for ${(reasoning.duration! / 1000).toFixed(1)}s`
           }
+        </span>
+        <span className="ml-auto">
+          {isOpen ? (
+            <ChevronDown className="h-4 w-4 transition-transform" />
+          ) : (
+            <ChevronRight className="h-4 w-4 transition-transform" />
+          )}
         </span>
       </CollapsibleTrigger>
       <CollapsibleContent className="mt-2 pl-6">
