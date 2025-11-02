@@ -120,11 +120,74 @@ export const AIHubPanel = () => {
     };
   }, []);
 
-  // Simulate streaming text effect
-  const simulateStreaming = (fullText: string, blockId: string) => {
+  // Simulate streaming text effect for both reasoning and response
+  const simulateStreaming = (fullText: string, blockId: string, reasoningText?: { content: string; duration: number }) => {
+    // First stream reasoning if present
+    if (reasoningText) {
+      let reasoningIndex = 0;
+      const reasoningChunkSize = 20;
+      const reasoningInterval = 40;
+      
+      const reasoningTimer = setInterval(() => {
+        if (reasoningIndex < reasoningText.content.length) {
+          reasoningIndex = Math.min(reasoningIndex + reasoningChunkSize, reasoningText.content.length);
+          
+          setContentBlocks(prev =>
+            prev.map(block =>
+              block.id === blockId
+                ? {
+                    ...block,
+                    metadata: {
+                      ...block.metadata,
+                      reasoning: {
+                        content: reasoningText.content.slice(0, reasoningIndex),
+                        duration: reasoningText.duration
+                      }
+                    }
+                  }
+                : block
+            )
+          );
+        } else {
+          // Reasoning complete, mark it as done and start main content
+          clearInterval(reasoningTimer);
+          
+          setContentBlocks(prev =>
+            prev.map(block =>
+              block.id === blockId
+                ? {
+                    ...block,
+                    metadata: {
+                      ...block.metadata,
+                      reasoning: {
+                        content: reasoningText.content,
+                        duration: reasoningText.duration
+                      }
+                    }
+                  }
+                : block
+            )
+          );
+          
+          // Start streaming main content after reasoning
+          setTimeout(() => streamMainContent(fullText, blockId), 300);
+        }
+      }, reasoningInterval);
+      
+      if (streamingIntervalRef.current) {
+        clearInterval(streamingIntervalRef.current);
+      }
+      streamingIntervalRef.current = reasoningTimer;
+    } else {
+      // No reasoning, stream main content directly
+      streamMainContent(fullText, blockId);
+    }
+  };
+  
+  const streamMainContent = (fullText: string, blockId: string) => {
     let currentIndex = 0;
-    const chunkSize = 15; // Characters per update
-    const updateInterval = 50; // ms between updates
+    const chunkSize = 15;
+    const updateInterval = 50;
 
     if (streamingIntervalRef.current) {
       clearInterval(streamingIntervalRef.current);
@@ -201,7 +264,7 @@ export const AIHubPanel = () => {
           message.toLowerCase().includes('recommend')) {
         responseContent = mockComplexResponse.content;
         
-        // Add complex response with metadata
+        // Add complex response with metadata (reasoning starts empty)
         const aiBlock: ContentBlock = {
           id: aiBlockId,
           type: 'ai-response',
@@ -209,16 +272,25 @@ export const AIHubPanel = () => {
           metadata: {
             isStreaming: true,
             timestamp: new Date(),
-            ...mockComplexResponse.metadata
+            reasoning: {
+              content: '',
+              duration: mockComplexResponse.metadata?.reasoning?.duration
+            },
+            citations: mockComplexResponse.metadata?.citations,
+            tasks: mockComplexResponse.metadata?.tasks
           }
         };
         
         setContentBlocks(prev => [...prev, aiBlock]);
-        simulateStreaming(responseContent, aiBlockId);
+        simulateStreaming(
+          responseContent, 
+          aiBlockId, 
+          mockComplexResponse.metadata?.reasoning as { content: string; duration: number }
+        );
         return;
       }
       
-      // Simple response with reasoning
+      // Simple response with reasoning (starts empty)
       const responseIndex = Math.floor(Math.random() * mockResponses.length);
       responseContent = mockResponses[responseIndex];
       
@@ -229,12 +301,15 @@ export const AIHubPanel = () => {
         metadata: {
           isStreaming: true,
           timestamp: new Date(),
-          reasoning: simpleReasoningBlocks[responseIndex]
+          reasoning: {
+            content: '',
+            duration: simpleReasoningBlocks[responseIndex].duration
+          }
         }
       };
 
       setContentBlocks(prev => [...prev, aiBlock]);
-      simulateStreaming(responseContent, aiBlockId);
+      simulateStreaming(responseContent, aiBlockId, simpleReasoningBlocks[responseIndex]);
     }, 800);
   };
 
