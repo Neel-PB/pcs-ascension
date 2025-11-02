@@ -406,7 +406,7 @@ export const AIHubPanel = () => {
               <AIWelcomeCards onCardClick={handleWelcomeCardClick} />
             </div>
           ) : (
-            <div className="max-w-[90%] mx-auto">
+            <div className="w-full px-4">
               {contentBlocks.map((block) => (
                 <ContentBlockRenderer
                   key={block.id}
