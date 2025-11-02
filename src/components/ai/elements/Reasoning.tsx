@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Brain, ChevronDown, ChevronRight } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ReasoningBlock } from '@/types/contentBlock';
@@ -11,16 +11,19 @@ interface ReasoningProps {
 
 export const Reasoning = ({ reasoning, isStreaming, defaultOpen = false }: ReasoningProps) => {
   const [isOpen, setIsOpen] = useState(defaultOpen || isStreaming);
+  const prevStreamingRef = useRef(isStreaming);
 
-  // Auto-collapse when streaming finishes
+  // Auto-collapse only when streaming transitions from true to false
   useEffect(() => {
-    if (!isStreaming && isOpen) {
+    if (prevStreamingRef.current && !isStreaming) {
       const timer = setTimeout(() => {
         setIsOpen(false);
       }, 500);
+      prevStreamingRef.current = isStreaming;
       return () => clearTimeout(timer);
     }
-  }, [isStreaming, isOpen]);
+    prevStreamingRef.current = isStreaming;
+  }, [isStreaming]);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-6">
