@@ -1,7 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Brain, ChevronDown, ChevronRight } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { cn } from '@/lib/utils';
 import { ReasoningBlock } from '@/types/contentBlock';
 
 interface ReasoningProps {
@@ -13,6 +12,16 @@ interface ReasoningProps {
 export const Reasoning = ({ reasoning, isStreaming, defaultOpen = false }: ReasoningProps) => {
   const [isOpen, setIsOpen] = useState(defaultOpen || isStreaming);
 
+  // Auto-collapse when streaming finishes
+  useEffect(() => {
+    if (!isStreaming && isOpen) {
+      const timer = setTimeout(() => {
+        setIsOpen(false);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isStreaming, isOpen]);
+
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-6">
       <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group w-full">
@@ -23,19 +32,14 @@ export const Reasoning = ({ reasoning, isStreaming, defaultOpen = false }: Reaso
         )}
         <Brain className="h-4 w-4" />
         <span className="font-medium">
-          {isStreaming ? 'Thinking...' : 'View reasoning'}
+          {isStreaming 
+            ? 'Thinking...' 
+            : `Thought for ${(reasoning.duration! / 1000).toFixed(1)}s`
+          }
         </span>
-        {reasoning.duration && !isStreaming && (
-          <span className="text-xs text-muted-foreground ml-auto">
-            {(reasoning.duration / 1000).toFixed(1)}s
-          </span>
-        )}
       </CollapsibleTrigger>
-      <CollapsibleContent className="mt-3">
-        <div className={cn(
-          'rounded-lg border border-border bg-muted/30 p-4',
-          'text-sm text-muted-foreground leading-relaxed whitespace-pre-line'
-        )}>
+      <CollapsibleContent className="mt-2 pl-6">
+        <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
           {reasoning.content}
         </div>
       </CollapsibleContent>
