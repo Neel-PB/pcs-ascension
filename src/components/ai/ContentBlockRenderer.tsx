@@ -34,9 +34,10 @@ export const ContentBlockRenderer = ({
   switch (block.type) {
     case 'user-input':
       return (
-        <div className="flex items-start gap-2 mb-6">
-          <span className="text-sm font-medium text-muted-foreground">You:</span>
-          <p className="text-sm text-foreground flex-1">{block.content}</p>
+        <div className="flex justify-end mb-6">
+          <div className="max-w-[85%] px-4 py-3 rounded-2xl rounded-br-sm bg-primary text-primary-foreground">
+            <p className="text-sm whitespace-pre-wrap">{block.content}</p>
+          </div>
         </div>
       );
 
