@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Mic, MicOff } from 'lucide-react';
+import { Mic, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
@@ -19,14 +19,18 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscript, disa
     
     if (SpeechRecognition) {
       recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = false;
-      recognitionRef.current.interimResults = false;
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = true;
       recognitionRef.current.lang = 'en-US';
 
       recognitionRef.current.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        onTranscript(transcript);
-        setIsRecording(false);
+        const results = event.results;
+        const lastResult = results[results.length - 1];
+        
+        if (lastResult.isFinal) {
+          const transcript = lastResult[0].transcript;
+          onTranscript(transcript);
+        }
       };
 
       recognitionRef.current.onerror = (event: any) => {
@@ -75,14 +79,14 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscript, disa
   return (
     <Button
       type="button"
-      variant="ghost"
+      variant={isRecording ? "destructive" : "ghost"}
       size="icon"
-      className="h-7 w-7 rounded-lg hover:bg-accent"
+      className={`h-7 w-7 rounded-lg ${isRecording ? 'animate-pulse' : 'hover:bg-accent'}`}
       onClick={toggleRecording}
       disabled={disabled}
     >
       {isRecording ? (
-        <MicOff className="h-3 w-3 text-destructive animate-pulse" />
+        <Square className="h-3 w-3 fill-current" />
       ) : (
         <Mic className="h-3 w-3" />
       )}
