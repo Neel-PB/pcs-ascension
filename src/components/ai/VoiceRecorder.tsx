@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Mic, Square } from 'lucide-react';
+import { AudioWaveform, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
@@ -88,7 +88,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscript, disa
       {isRecording ? (
         <Square className="h-3 w-3 fill-current" />
       ) : (
-        <Mic className="h-3 w-3" />
+        <AudioWaveform className="h-3 w-3" />
       )}
     </Button>
   );
