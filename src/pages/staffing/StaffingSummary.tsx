@@ -358,8 +358,8 @@ PRN staff characteristics:
       {
         id: 'total-np',
         title: "Total NP%",
-        value: "89.3%",
-        chartData: generateGrowthTrend(86.1, 89.3),
+        value: "9.7%",
+        chartData: generateGrowthTrend(8.1, 9.7),
         chartType: "area" as const,
         delay: 0.2,
         definition: "The percentage of all paid hours that were not spent directly delivering patient care or performing operational work tied to Patient Volume (e.g., PTO, Holiday Pay, sick leave, education, admin or committee time, Training or onboarding.).",
