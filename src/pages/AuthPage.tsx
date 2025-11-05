@@ -6,11 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { z } from "zod";
+import DemoLogin from "@/components/auth/DemoLogin";
 
 const ALLOWED_EMAIL_DOMAINS = ['@ascension.org', '@ascension-external.org', '@particleblack.com'];
 
@@ -21,10 +21,8 @@ const signUpEmailSchema = z.string().email('Invalid email address').refine(
 
 export default function AuthPage() {
   const navigate = useNavigate();
-  const { signIn, signUp, resetPassword, user } = useAuth();
+  const { signIn, signUp, user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [resetDialogOpen, setResetDialogOpen] = useState(false);
-  const [resetEmail, setResetEmail] = useState("");
 
   // Sign in form state
   const [signInEmail, setSignInEmail] = useState("");
@@ -78,20 +76,6 @@ export default function AuthPage() {
     }
   };
 
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const { error } = await resetPassword(resetEmail);
-      if (!error) {
-        setResetDialogOpen(false);
-        setResetEmail("");
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
@@ -99,17 +83,19 @@ export default function AuthPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        className="w-full max-w-5xl"
       >
-        <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">
-              Position Control Dashboard
-            </CardTitle>
-            <CardDescription className="text-center">
-              Sign in to access your workforce network
-            </CardDescription>
-          </CardHeader>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Main Auth Card */}
+          <Card>
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-2xl font-bold text-center">
+                Position Control Dashboard
+              </CardTitle>
+              <CardDescription className="text-center">
+                Sign in to access your workforce network
+              </CardDescription>
+            </CardHeader>
           <CardContent>
             <Tabs defaultValue="signin" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
@@ -152,46 +138,6 @@ export default function AuthPage() {
                       "Sign In"
                     )}
                   </Button>
-                  
-                  <Dialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button variant="link" className="w-full text-sm text-muted-foreground">
-                        Forgot password?
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Reset Password</DialogTitle>
-                        <DialogDescription>
-                          Enter your email address and we'll send you a password reset link.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <form onSubmit={handleResetPassword} className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="reset-email">Email</Label>
-                          <Input
-                            id="reset-email"
-                            type="email"
-                            placeholder="you@ascension.org"
-                            value={resetEmail}
-                            onChange={(e) => setResetEmail(e.target.value)}
-                            required
-                            disabled={isLoading}
-                          />
-                        </div>
-                        <Button type="submit" className="w-full" disabled={isLoading}>
-                          {isLoading ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Sending...
-                            </>
-                          ) : (
-                            "Send Reset Link"
-                          )}
-                        </Button>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
                 </form>
               </TabsContent>
 
@@ -263,6 +209,10 @@ export default function AuthPage() {
             </Tabs>
           </CardContent>
         </Card>
+
+        {/* Demo Login Card */}
+        <DemoLogin />
+        </div>
       </motion.div>
     </div>
   );

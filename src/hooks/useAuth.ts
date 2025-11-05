@@ -79,22 +79,6 @@ export function useAuth() {
     return { error: null };
   };
 
-  const resetPassword = async (email: string) => {
-    const redirectUrl = `${window.location.origin}/auth/setup-password`;
-    
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: redirectUrl,
-    });
-
-    if (error) {
-      toast.error(error.message);
-      return { error };
-    }
-
-    toast.success("Password reset email sent! Check your inbox.");
-    return { error: null };
-  };
-
   return {
     user,
     session,
@@ -102,6 +86,5 @@ export function useAuth() {
     signUp,
     signIn,
     signOut,
-    resetPassword,
   };
 }
