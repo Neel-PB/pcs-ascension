@@ -109,8 +109,8 @@ export function DraggableColumnHeader<T = any>({
                 {column.label}
               </span>
             </TooltipTrigger>
-            <TooltipContent side="top" className="max-w-xs">
-              <p>{column.tooltip}</p>
+            <TooltipContent side="top" className="max-w-xs text-sm">
+              <p className="whitespace-normal">{column.tooltip}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
