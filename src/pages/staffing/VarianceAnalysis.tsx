@@ -161,10 +161,9 @@ export function VarianceAnalysis({
 }: VarianceAnalysisProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const getVarianceColor = (value: number): string => {
-    if (value < 0) return "text-green-600 dark:text-green-400";
-    if (value > 0) return "text-red-600 dark:text-red-400";
-    return "text-yellow-600 dark:text-yellow-400";
+  // Format variance value with +/- sign
+  const formatVariance = (value: number): string => {
+    return `${value > 0 ? '+' : ''}${value.toFixed(1)}`;
   };
 
   const getColumnHeader = (): string => {
@@ -279,50 +278,50 @@ export function VarianceAnalysis({
         {data.map((row, index) => (
           <TableRow key={index} className="hover:bg-muted/50">
             <TableCell className="font-medium sticky left-0 bg-card">{row.name}</TableCell>
-            <TableCell className={`text-center font-semibold border-l ${getVarianceColor(row.clDay)}`}>
-              {row.clDay > 0 ? '+' : ''}{row.clDay.toFixed(1)}
+            <TableCell className="text-center font-semibold border-l">
+              {formatVariance(row.clDay)}
             </TableCell>
-            <TableCell className={`text-center font-semibold ${getVarianceColor(row.clNight)}`}>
-              {row.clNight > 0 ? '+' : ''}{row.clNight.toFixed(1)}
+            <TableCell className="text-center font-semibold">
+              {formatVariance(row.clNight)}
             </TableCell>
-            <TableCell className={`text-center font-semibold ${getVarianceColor(row.clTotal)}`}>
-              {row.clTotal > 0 ? '+' : ''}{row.clTotal.toFixed(1)}
+            <TableCell className="text-center font-semibold">
+              {formatVariance(row.clTotal)}
             </TableCell>
-            <TableCell className={`text-center font-semibold border-l ${getVarianceColor(row.rnDay)}`}>
-              {row.rnDay > 0 ? '+' : ''}{row.rnDay.toFixed(1)}
+            <TableCell className="text-center font-semibold border-l">
+              {formatVariance(row.rnDay)}
             </TableCell>
-            <TableCell className={`text-center font-semibold ${getVarianceColor(row.rnNight)}`}>
-              {row.rnNight > 0 ? '+' : ''}{row.rnNight.toFixed(1)}
+            <TableCell className="text-center font-semibold">
+              {formatVariance(row.rnNight)}
             </TableCell>
-            <TableCell className={`text-center font-semibold ${getVarianceColor(row.rnTotal)}`}>
-              {row.rnTotal > 0 ? '+' : ''}{row.rnTotal.toFixed(1)}
+            <TableCell className="text-center font-semibold">
+              {formatVariance(row.rnTotal)}
             </TableCell>
-            <TableCell className={`text-center font-semibold border-l ${getVarianceColor(row.pctDay)}`}>
-              {row.pctDay > 0 ? '+' : ''}{row.pctDay.toFixed(1)}
+            <TableCell className="text-center font-semibold border-l">
+              {formatVariance(row.pctDay)}
             </TableCell>
-            <TableCell className={`text-center font-semibold ${getVarianceColor(row.pctNight)}`}>
-              {row.pctNight > 0 ? '+' : ''}{row.pctNight.toFixed(1)}
+            <TableCell className="text-center font-semibold">
+              {formatVariance(row.pctNight)}
             </TableCell>
-            <TableCell className={`text-center font-semibold ${getVarianceColor(row.pctTotal)}`}>
-              {row.pctTotal > 0 ? '+' : ''}{row.pctTotal.toFixed(1)}
+            <TableCell className="text-center font-semibold">
+              {formatVariance(row.pctTotal)}
             </TableCell>
-            <TableCell className={`text-center font-semibold border-l ${getVarianceColor(row.hucDay)}`}>
-              {row.hucDay > 0 ? '+' : ''}{row.hucDay.toFixed(1)}
+            <TableCell className="text-center font-semibold border-l">
+              {formatVariance(row.hucDay)}
             </TableCell>
-            <TableCell className={`text-center font-semibold ${getVarianceColor(row.hucNight)}`}>
-              {row.hucNight > 0 ? '+' : ''}{row.hucNight.toFixed(1)}
+            <TableCell className="text-center font-semibold">
+              {formatVariance(row.hucNight)}
             </TableCell>
-            <TableCell className={`text-center font-semibold ${getVarianceColor(row.hucTotal)}`}>
-              {row.hucTotal > 0 ? '+' : ''}{row.hucTotal.toFixed(1)}
+            <TableCell className="text-center font-semibold">
+              {formatVariance(row.hucTotal)}
             </TableCell>
-            <TableCell className={`text-center font-semibold border-l ${getVarianceColor(row.overheadDay)}`}>
-              {row.overheadDay > 0 ? '+' : ''}{row.overheadDay.toFixed(1)}
+            <TableCell className="text-center font-semibold border-l">
+              {formatVariance(row.overheadDay)}
             </TableCell>
-            <TableCell className={`text-center font-semibold ${getVarianceColor(row.overheadNight)}`}>
-              {row.overheadNight > 0 ? '+' : ''}{row.overheadNight.toFixed(1)}
+            <TableCell className="text-center font-semibold">
+              {formatVariance(row.overheadNight)}
             </TableCell>
-            <TableCell className={`text-center font-semibold ${getVarianceColor(row.overheadTotal)}`}>
-              {row.overheadTotal > 0 ? '+' : ''}{row.overheadTotal.toFixed(1)}
+            <TableCell className="text-center font-semibold">
+              {formatVariance(row.overheadTotal)}
             </TableCell>
           </TableRow>
         ))}
@@ -341,15 +340,8 @@ export function VarianceAnalysis({
         <h2 className="text-2xl font-bold">Variance Analysis</h2>
         <div className="flex items-center gap-4">
           {/* Legend */}
-          <div className="flex items-center gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-green-500" />
-              <span>Under Target (Surplus)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-500" />
-              <span>Over Target (Shortage)</span>
-            </div>
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <span>Negative values indicate surplus, positive values indicate shortage</span>
           </div>
           
           {/* Action Buttons */}
@@ -401,15 +393,8 @@ export function VarianceAnalysis({
               </DialogTitle>
               <div className="flex items-center gap-4">
                 {/* Legend */}
-                <div className="flex items-center gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-green-500" />
-                    <span className="text-muted-foreground">Under Target (Surplus)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500" />
-                    <span className="text-muted-foreground">Over Target (Shortage)</span>
-                  </div>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <span>Negative values indicate surplus, positive values indicate shortage</span>
                 </div>
                 {/* Download Button */}
                 <Button
