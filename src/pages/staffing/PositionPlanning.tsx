@@ -17,6 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 
 interface VarianceData {
@@ -429,13 +430,15 @@ interface FTESkillShiftTableProps {
   expandedGroups?: Set<string>;
   onToggleGroup?: (groupId: string) => void;
   skillGroups?: SkillGroup[];
+  viewMode?: 'planned' | 'active';
 }
 
 const FTESkillShiftTable = ({ 
   data, 
   expandedGroups, 
   onToggleGroup,
-  skillGroups: groups 
+  skillGroups: groups,
+  viewMode = 'planned'
 }: FTESkillShiftTableProps) => {
   const displayData = groups && expandedGroups
     ? organizeDataIntoGroups(data, groups, expandedGroups)
@@ -451,7 +454,7 @@ const FTESkillShiftTable = ({
               Target FTEs
             </TableHead>
             <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
-              Hired FTEs
+              {viewMode === 'active' ? 'Active FTEs' : 'Hired FTEs'}
             </TableHead>
             <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
               Open Req FTEs
@@ -522,6 +525,7 @@ const FTESkillShiftTable = ({
 export default function PositionPlanning() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<'planned' | 'active'>('planned');
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroups(prev => {
@@ -536,10 +540,11 @@ export default function PositionPlanning() {
   };
 
   const downloadCSV = () => {
+    const hiredLabel = viewMode === 'active' ? 'Active' : 'Hired';
     const headers = [
       'Group', 'Skill',
       'Target Day', 'Target Night', 'Target Total',
-      'Hired Day', 'Hired Night', 'Hired Total',
+      `${hiredLabel} Day`, `${hiredLabel} Night`, `${hiredLabel} Total`,
       'Reqs Day', 'Reqs Night', 'Reqs Total',
       'Variance Day', 'Variance Night', 'Variance Total'
     ];
@@ -606,14 +611,36 @@ export default function PositionPlanning() {
     <div className="space-y-6">
       {/* Header with Legend */}
       <div className="flex items-center justify-between">
-        <motion.h1
-          className="text-2xl font-semibold text-foreground"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          FTE Skill Shift Analysis
-        </motion.h1>
+        <div className="flex items-center gap-4">
+          <motion.h1
+            className="text-2xl font-semibold text-foreground"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            FTE Skill Shift Analysis
+          </motion.h1>
+
+          {/* Toggle for Planned/Active */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.05 }}
+          >
+            <ToggleGroup 
+              type="single" 
+              value={viewMode} 
+              onValueChange={(value) => value && setViewMode(value as 'planned' | 'active')}
+            >
+              <ToggleGroupItem value="planned" aria-label="Planned Resources">
+                Planned
+              </ToggleGroupItem>
+              <ToggleGroupItem value="active" aria-label="Active Resources">
+                Active
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </motion.div>
+        </div>
 
         <div className="flex items-center gap-4">
           {/* Legend */}
@@ -674,6 +701,7 @@ export default function PositionPlanning() {
             expandedGroups={expandedGroups}
             onToggleGroup={toggleGroup}
             skillGroups={skillGroups}
+            viewMode={viewMode}
           />
       </motion.div>
 
@@ -682,9 +710,26 @@ export default function PositionPlanning() {
         <DialogContent className="max-w-none w-[95vw] max-h-[95vh] flex flex-col">
           <DialogHeader>
             <div className="flex items-center justify-between">
-              <DialogTitle className="text-2xl font-semibold">
-                FTE Skill Shift Analysis (Expanded View)
-              </DialogTitle>
+              <div className="flex items-center gap-4">
+                <DialogTitle className="text-2xl font-semibold">
+                  FTE Skill Shift Analysis (Expanded View)
+                </DialogTitle>
+                
+                {/* Toggle for Planned/Active in Modal */}
+                <ToggleGroup 
+                  type="single" 
+                  value={viewMode} 
+                  onValueChange={(value) => value && setViewMode(value as 'planned' | 'active')}
+                >
+                  <ToggleGroupItem value="planned" aria-label="Planned Resources">
+                    Planned
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="active" aria-label="Active Resources">
+                    Active
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+              
               <div className="flex items-center gap-4">
                 {/* Legend */}
                 <div className="flex items-center gap-6 text-sm">
@@ -716,6 +761,7 @@ export default function PositionPlanning() {
               expandedGroups={expandedGroups}
               onToggleGroup={toggleGroup}
               skillGroups={skillGroups}
+              viewMode={viewMode}
             />
           </div>
         </DialogContent>
