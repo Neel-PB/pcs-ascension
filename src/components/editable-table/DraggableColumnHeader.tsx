@@ -102,14 +102,14 @@ export function DraggableColumnHeader<T = any>({
 
       {/* Column label with tooltip */}
       {column.tooltip ? (
-        <TooltipProvider delayDuration={300}>
+        <TooltipProvider delayDuration={100}>
           <Tooltip>
             <TooltipTrigger asChild>
               <span className="truncate flex-1 min-w-0 text-left">
                 {column.label}
               </span>
             </TooltipTrigger>
-            <TooltipContent side="top" className="max-w-xs">
+            <TooltipContent side="top" className="max-w-xs font-medium">
               <p className="text-sm whitespace-normal">{column.tooltip}</p>
             </TooltipContent>
           </Tooltip>
