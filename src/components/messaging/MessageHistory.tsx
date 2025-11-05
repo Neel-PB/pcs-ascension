@@ -29,42 +29,47 @@ export function MessageHistory() {
   };
 
   return (
-    <Card className="p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <MessageSquare className="h-5 w-5" />
+    <div className="bg-background/95 backdrop-blur-sm border border-border/60 rounded-xl shadow-sm p-6">
+      <div className="flex items-center gap-2 mb-6">
+        <MessageSquare className="h-5 w-5 text-primary" />
         <h3 className="text-xl font-semibold">Message History</h3>
       </div>
 
       {!messages || messages.length === 0 ? (
-        <p className="text-muted-foreground text-center py-8">
-          No messages sent yet
-        </p>
+        <div className="text-center py-12">
+          <MessageSquare className="h-12 w-12 text-muted-foreground/40 mx-auto mb-3" />
+          <p className="text-muted-foreground">No messages sent yet</p>
+        </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className="border rounded-lg p-4 hover:bg-accent/50 transition-colors"
+              className="bg-background/60 backdrop-blur-sm border border-border/40 rounded-lg p-4 hover:bg-accent/30 hover:border-border/60 transition-all duration-200"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold truncate">{msg.title}</h4>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <span className="text-sm text-muted-foreground">To:</span>
+                  <div className="flex items-center gap-2 mb-2">
+                    <MessageSquare className="h-4 w-4 text-primary flex-shrink-0" />
+                    <h4 className="font-semibold truncate">{msg.title}</h4>
+                  </div>
+                  <div className="flex flex-wrap gap-2 items-center">
+                    <span className="text-xs text-muted-foreground">To:</span>
                     {msg.target_roles.map((role) => (
-                      <Badge key={role} variant="secondary" className="text-xs">
+                      <Badge key={role} variant="secondary" className="text-xs h-5">
                         {getRoleLabel(role)}
                       </Badge>
                     ))}
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Sent {formatDistanceToNow(new Date(msg.sent_at), { addSuffix: true })}
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {formatDistanceToNow(new Date(msg.sent_at), { addSuffix: true })}
                   </p>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setExpandedId(expandedId === msg.id ? null : msg.id)}
+                  className="h-7 w-7 p-0 rounded-lg hover:bg-accent flex-shrink-0"
                 >
                   {expandedId === msg.id ? (
                     <ChevronUp className="h-4 w-4" />
@@ -75,14 +80,16 @@ export function MessageHistory() {
               </div>
 
               {expandedId === msg.id && (
-                <div className="mt-4 pt-4 border-t">
-                  <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
+                <div className="mt-4 pt-4 border-t border-border/40 animate-in fade-in-50 slide-in-from-top-2 duration-200">
+                  <p className="text-sm whitespace-pre-wrap text-foreground/90 leading-relaxed">
+                    {msg.message}
+                  </p>
                 </div>
               )}
             </div>
           ))}
         </div>
       )}
-    </Card>
+    </div>
   );
 }

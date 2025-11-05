@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSendMessage, roleGroups } from "@/hooks/useMessages";
-import { Send } from "lucide-react";
+import { Send, X, Users } from "lucide-react";
+import TextareaAutosize from "react-textarea-autosize";
+import { Badge } from "@/components/ui/badge";
 
 export function MessageComposer() {
   const [title, setTitle] = useState("");
@@ -14,18 +14,24 @@ export function MessageComposer() {
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const { mutate: sendMessage, isPending } = useSendMessage();
 
-  const handleRoleToggle = (roleValue: string) => {
-    if (roleValue === "all") {
-      setSelectedRoles(selectedRoles.includes("all") ? [] : ["all"]);
+  const handleRoleSelect = (value: string) => {
+    if (value === "all") {
+      setSelectedRoles(["all"]);
     } else {
       setSelectedRoles(prev => {
         const filtered = prev.filter(r => r !== "all");
-        if (filtered.includes(roleValue)) {
-          return filtered.filter(r => r !== roleValue);
+        if (filtered.includes(value)) {
+          return filtered.filter(r => r !== value);
         }
-        return [...filtered, roleValue];
+        return [...filtered, value];
       });
     }
+  };
+
+  const handleClear = () => {
+    setTitle("");
+    setMessage("");
+    setSelectedRoles([]);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -49,85 +55,129 @@ export function MessageComposer() {
 
   const charCount = message.length;
   const maxChars = 1000;
+  const canSend = title.trim() && message.trim() && selectedRoles.length > 0 && !isPending;
+
+  const getRecipientLabel = () => {
+    if (selectedRoles.length === 0) return "Select recipients";
+    if (selectedRoles.includes("all")) return "All teams";
+    if (selectedRoles.length === 1) {
+      const role = roleGroups.find(r => r.value === selectedRoles[0]);
+      return role?.label || "1 group";
+    }
+    return `${selectedRoles.length} groups`;
+  };
 
   return (
-    <Card className="p-6">
-      <h2 className="text-2xl font-bold mb-6">Send Message to Team</h2>
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Recipient Selection */}
-        <div className="space-y-3">
-          <Label>Send To:</Label>
-          <div className="grid grid-cols-2 gap-3">
-            {roleGroups.map((role) => (
-              <div key={role.value} className="flex items-center space-x-2">
-                <Checkbox
-                  id={role.value}
-                  checked={selectedRoles.includes(role.value)}
-                  onCheckedChange={() => handleRoleToggle(role.value)}
-                  disabled={role.value !== "all" && selectedRoles.includes("all")}
-                />
-                <Label
-                  htmlFor={role.value}
-                  className="text-sm font-normal cursor-pointer"
-                >
-                  {role.label}
-                </Label>
-              </div>
-            ))}
-          </div>
-        </div>
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Send className="h-5 w-5 text-primary" />
+        <h2 className="text-xl font-semibold">Send Message to Team</h2>
+      </div>
 
-        {/* Subject */}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Subject Input */}
         <div className="space-y-2">
-          <Label htmlFor="title">Subject</Label>
+          <Label htmlFor="title" className="text-sm text-muted-foreground">Subject</Label>
           <Input
             id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter message subject"
+            placeholder="Enter message subject..."
             maxLength={200}
+            className="bg-background/95 backdrop-blur-sm border-border/60 focus-visible:ring-primary/20 focus-visible:border-primary/40"
             required
           />
         </div>
 
-        {/* Message */}
-        <div className="space-y-2">
-          <Label htmlFor="message">Message</Label>
-          <Textarea
-            id="message"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Enter your message here..."
-            className="min-h-[150px]"
-            maxLength={maxChars}
-            required
-          />
-          <div className="text-sm text-muted-foreground text-right">
-            {charCount}/{maxChars} characters
+        {/* Message Textarea Container */}
+        <div className="relative">
+          <div className="bg-background/95 backdrop-blur-sm border border-border/60 rounded-xl shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/40 transition-all duration-200">
+            <TextareaAutosize
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Type your message here..."
+              maxLength={maxChars}
+              minRows={4}
+              maxRows={12}
+              className="w-full bg-transparent border-0 resize-none outline-none placeholder:text-muted-foreground text-sm p-4 focus:ring-0 focus:border-0"
+              required
+            />
+
+            {/* Utility Toolbar */}
+            <div className="flex items-center justify-between gap-2 px-3 pb-3 pt-1 border-t border-border/40">
+              <div className="flex items-center gap-2">
+                {/* Clear Button */}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClear}
+                  disabled={isPending}
+                  className="h-7 w-7 p-0 rounded-lg hover:bg-accent"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+
+                {/* Recipient Selector */}
+                <Select
+                  value={selectedRoles.includes("all") ? "all" : selectedRoles[0] || ""}
+                  onValueChange={handleRoleSelect}
+                >
+                  <SelectTrigger className="h-7 w-auto gap-2 border-0 bg-accent/50 hover:bg-accent text-xs">
+                    <Users className="h-3 w-3" />
+                    <SelectValue placeholder="Select recipients">
+                      {getRecipientLabel()}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roleGroups.map((role) => (
+                      <SelectItem key={role.value} value={role.value}>
+                        {role.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {/* Selected Roles Badges */}
+                {!selectedRoles.includes("all") && selectedRoles.length > 0 && (
+                  <div className="flex gap-1 flex-wrap">
+                    {selectedRoles.map((roleValue) => {
+                      const role = roleGroups.find(r => r.value === roleValue);
+                      return (
+                        <Badge 
+                          key={roleValue} 
+                          variant="secondary" 
+                          className="text-xs h-6 px-2"
+                        >
+                          {role?.label}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-3">
+                {/* Character Counter */}
+                <span className={`text-xs ${charCount > maxChars * 0.9 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                  {charCount}/{maxChars}
+                </span>
+
+                {/* Send Button */}
+                <Button
+                  type="submit"
+                  disabled={!canSend}
+                  size="sm"
+                  className="h-7 px-3 gap-1.5"
+                >
+                  <Send className="h-3 w-3" />
+                  {isPending ? "Sending..." : "Send"}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
-
-        {/* Actions */}
-        <div className="flex justify-end gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              setTitle("");
-              setMessage("");
-              setSelectedRoles([]);
-            }}
-            disabled={isPending}
-          >
-            Clear
-          </Button>
-          <Button type="submit" disabled={isPending || !title || !message || selectedRoles.length === 0}>
-            <Send className="mr-2 h-4 w-4" />
-            {isPending ? "Sending..." : "Send Message"}
-          </Button>
-        </div>
       </form>
-    </Card>
+    </div>
   );
 }
