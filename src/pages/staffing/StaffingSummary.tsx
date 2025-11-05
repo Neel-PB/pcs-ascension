@@ -124,7 +124,6 @@ Determined by:
         id: 'fte-variance',
         title: "FTE Variance",
         value: "2.5",
-        isNegative: true,
         chartData: generateGrowthTrend(1.7, 2.5),
         chartType: "area" as const,
         delay: 0.15,
