@@ -61,6 +61,7 @@ export const contractorColumns: ColumnDef<Position>[] = [
     sortable: true,
     resizable: true,
     draggable: true,
+    tooltip: 'Hired FTEs represents the total number of full-time equivalent employees currently employed and actively working in the department.',
   },
   {
     id: 'actual_fte',
@@ -71,6 +72,7 @@ export const contractorColumns: ColumnDef<Position>[] = [
     sortable: true,
     resizable: true,
     draggable: true,
+    tooltip: 'Active FTEs represents the total number of full-time equivalent employees currently employed and actively working in the department.',
   },
   {
     id: 'shift',

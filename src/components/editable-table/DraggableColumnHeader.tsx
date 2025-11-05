@@ -10,6 +10,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { Maximize2, RotateCcw, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -101,7 +107,20 @@ export function DraggableColumnHeader<T = any>({
           onClick={(e) => e.stopPropagation()}
         >
           {/* Column label */}
-          <span className="truncate flex-1 min-w-0 text-left">{column.label}</span>
+          {column.tooltip ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="truncate flex-1 min-w-0 text-left">{column.label}</span>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-xs">
+                  <p>{column.tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <span className="truncate flex-1 min-w-0 text-left">{column.label}</span>
+          )}
 
           {/* Sort icon (if active) */}
           {column.sortable && getSortIcon()}

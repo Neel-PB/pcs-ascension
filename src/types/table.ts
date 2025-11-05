@@ -16,6 +16,7 @@ export interface ColumnDef<T = any> {
   resizable?: boolean;         // Allow resizing
   draggable?: boolean;         // Allow reordering
   locked?: boolean;            // Prevent hiding/removal
+  tooltip?: string;            // Tooltip text for column header
   
   // Custom rendering
   renderCell?: (data: T, column: ColumnDef<T>) => ReactNode;
