@@ -100,33 +100,32 @@ export function DraggableColumnHeader<T = any>({
         </div>
       )}
 
-      {/* Dropdown trigger - entire header is clickable */}
+      {/* Column label with tooltip */}
+      {column.tooltip ? (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="truncate flex-1 min-w-0 text-left">{column.label}</span>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-xs">
+              <p>{column.tooltip}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ) : (
+        <span className="truncate flex-1 min-w-0 text-left">{column.label}</span>
+      )}
+
+      {/* Sort icon (if active) */}
+      {column.sortable && getSortIcon()}
+
+      {/* Dropdown trigger - menu icon */}
       <DropdownMenu>
         <DropdownMenuTrigger 
-          className="flex-1 flex items-center justify-start gap-2 cursor-pointer select-none hover:text-foreground transition-colors focus:outline-none text-left"
+          className="flex items-center opacity-40 group-hover:opacity-100 hover:text-foreground transition-all focus:outline-none"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Column label */}
-          {column.tooltip ? (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="truncate flex-1 min-w-0 text-left">{column.label}</span>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-xs">
-                  <p>{column.tooltip}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          ) : (
-            <span className="truncate flex-1 min-w-0 text-left">{column.label}</span>
-          )}
-
-          {/* Sort icon (if active) */}
-          {column.sortable && getSortIcon()}
-
-          {/* Chevron down - subtle by default, visible on hover */}
-          <ChevronDown className="h-3 w-3 opacity-40 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+          <ChevronDown className="h-3 w-3" />
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end" className="w-48">
