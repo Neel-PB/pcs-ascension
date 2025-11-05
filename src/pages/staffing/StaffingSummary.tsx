@@ -8,6 +8,7 @@ import { SettingsTab } from "./SettingsTab";
 import { DraggableSectionsContainer } from "@/components/staffing/DraggableSectionsContainer";
 import { useKPIOrderStore } from "@/stores/useKPIOrderStore";
 import { generateLast12MonthLabels } from "@/lib/utils";
+import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 
 export default function StaffingSummary() {
   const [activeTab, setActiveTab] = useState("summary");
@@ -466,27 +467,32 @@ This metric helps:
           className="space-y-6 animate-fade-in"
         >
           {activeTab === "summary" && (
-                  <DraggableSectionsContainer
-                    sections={[
-                      {
-                        id: 'fte',
-                        title: 'FTE',
-                        kpis: fteKPIs,
-                      },
-                      {
-                        id: 'volume',
-                        title: 'Volume',
-                        kpis: volumeKPIs,
-                      },
-                      {
-                        id: 'productivity',
-                        title: 'Productive Resources',
-                        kpis: productivityKPIs,
-                      },
-                    ]}
-                    sectionOrder={sectionOrder}
-                    onSectionReorder={setSectionOrder}
-                  />
+            <div className="space-y-6">
+              <div className="flex justify-end">
+                <DataRefreshButton dataSources={['staffing_grid', 'labor_uos_data']} />
+              </div>
+              <DraggableSectionsContainer
+                sections={[
+                  {
+                    id: 'fte',
+                    title: 'FTE',
+                    kpis: fteKPIs,
+                  },
+                  {
+                    id: 'volume',
+                    title: 'Volume',
+                    kpis: volumeKPIs,
+                  },
+                  {
+                    id: 'productivity',
+                    title: 'Productive Resources',
+                    kpis: productivityKPIs,
+                  },
+                ]}
+                sectionOrder={sectionOrder}
+                onSectionReorder={setSectionOrder}
+              />
+            </div>
           )}
           
           {activeTab === "planning" && (
