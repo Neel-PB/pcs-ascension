@@ -363,12 +363,7 @@ PRN staff characteristics:
         chartType: "area" as const,
         delay: 0.2,
         definition: "The percentage of all paid hours that were not spent directly delivering patient care or performing operational work tied to Patient Volume (e.g., PTO, Holiday Pay, sick leave, education, admin or committee time, Training or onboarding.).",
-        calculation: `Total NP% = (Productive Hours / Total Paid Hours) × 100
-
-Example: If 7,076 productive hours and 7,928 total paid hours:
-(7,076 / 7,928) × 100 = 89.3%
-
-Higher NP% indicates better labor efficiency`,
+        calculation: `Total non-productive Man hours / Total Paid hours × 100`,
       },
       {
         id: 'total-fullpart-ftes',
