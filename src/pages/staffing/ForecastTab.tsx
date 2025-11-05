@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { EditableTable } from "@/components/editable-table/EditableTable";
 import { ColumnDef } from "@/types/table";
+import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 
 import { PositionToOpenDetailsSheet } from "@/components/workforce/PositionToOpenDetailsSheet";
 import { PositionToCloseDetailsSheet } from "@/components/workforce/PositionToCloseDetailsSheet";
@@ -271,7 +272,10 @@ export function ForecastTab() {
       <div className="space-y-6">
         {/* Positions to Open Section */}
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold">Positions to Open</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">Positions to Open</h2>
+            <DataRefreshButton dataSources={['forecast_data', 'staffing_grid']} />
+          </div>
           <Card className="overflow-hidden">
             <div className="overflow-auto max-h-[400px]">
               <EditableTable

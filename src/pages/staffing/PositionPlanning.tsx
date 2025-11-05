@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Download, Maximize2, ChevronRight } from "lucide-react";
+import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import {
   Table,
   TableBody,
@@ -713,6 +714,7 @@ export default function PositionPlanning() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.15 }}
           >
+            <DataRefreshButton dataSources={['staffing_grid', 'labor_uos_data']} />
             <Button
               variant="ascension"
               size="icon"

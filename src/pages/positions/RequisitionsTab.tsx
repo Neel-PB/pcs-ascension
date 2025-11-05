@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useState, useMemo } from "react";
 import { Filter, Search } from "lucide-react";
 import { differenceInDays } from "date-fns";
+import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import { useRequisitions } from "@/hooks/useRequisitions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -243,6 +244,7 @@ export function RequisitionsTab({
         </div>
         
         <div className="flex gap-2 flex-shrink-0">
+          <DataRefreshButton dataSources={['positions_data']} />
           <ColumnVisibilityPanel
             columns={requisitionColumns}
             storeNamespace="requisitions-columns"

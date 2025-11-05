@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useState, useMemo } from "react";
 import { Filter, Search } from "lucide-react";
+import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import { useContractors } from "@/hooks/useContractors";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -238,6 +239,7 @@ export function ContractorsTab({
         </div>
         
         <div className="flex gap-2 flex-shrink-0">
+          <DataRefreshButton dataSources={['positions_data']} />
           <ColumnVisibilityPanel
             columns={contractorColumns}
             storeNamespace="contractors-columns"
