@@ -31,11 +31,6 @@ Deno.serve(async (req) => {
       throw new Error('Unauthorized')
     }
 
-    // Only allow for the specific email
-    if (user.email !== 'neel.ravi@particleblack.com') {
-      throw new Error('This function is only available for the system owner')
-    }
-
     console.log(`Granting admin role to ${user.email}`)
 
     // Check if user already has admin role
