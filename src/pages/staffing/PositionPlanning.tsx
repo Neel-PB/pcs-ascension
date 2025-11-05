@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Download, Maximize2, ChevronRight } from "lucide-react";
 import {
@@ -225,6 +225,40 @@ const varianceData: VarianceData[] = [
     varianceTotal: -0.2,
   },
 ];
+
+const applyActiveVariation = (data: VarianceData[]): VarianceData[] => {
+  return data.map(skill => {
+    // Don't modify TOTAL row directly, it will be recalculated
+    if (skill.skill === 'TOTAL') {
+      return skill;
+    }
+    
+    // Generate small deterministic variations for hired values based on skill name
+    const hashCode = skill.skill.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const variationDay = ((hashCode % 5) - 2) * 0.5; // Range: -1.0 to +1.0
+    const variationNight = (((hashCode + 1) % 5) - 2) * 0.5;
+    
+    // Apply variations (keeping 1 decimal precision, ensuring non-negative)
+    const activeDay = Math.max(0, Math.round((skill.hiredDay + variationDay) * 10) / 10);
+    const activeNight = Math.max(0, Math.round((skill.hiredNight + variationNight) * 10) / 10);
+    const activeTotal = Math.round((activeDay + activeNight) * 10) / 10;
+    
+    // Recalculate variance based on new hired values: variance = target - hired - reqs
+    const varianceDay = Math.round((skill.targetDay - activeDay - skill.reqsDay) * 10) / 10;
+    const varianceNight = Math.round((skill.targetNight - activeNight - skill.reqsNight) * 10) / 10;
+    const varianceTotal = Math.round((skill.targetTotal - activeTotal - skill.reqsTotal) * 10) / 10;
+    
+    return {
+      ...skill,
+      hiredDay: activeDay,
+      hiredNight: activeNight,
+      hiredTotal: activeTotal,
+      varianceDay,
+      varianceNight,
+      varianceTotal
+    };
+  });
+};
 
 const getVarianceColor = (value: number) => {
   if (value < 0) return "text-green-600 font-semibold";
@@ -527,6 +561,18 @@ export default function PositionPlanning() {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<'planned' | 'active'>('planned');
 
+  // Apply data variation when in "Active" mode
+  const displayVarianceData = useMemo(() => {
+    if (viewMode === 'active') {
+      const modifiedData = applyActiveVariation(varianceData.filter(d => d.skill !== 'TOTAL'));
+      
+      // Recalculate TOTAL row based on modified data
+      const newTotal = computeGroupTotals(modifiedData);
+      return [...modifiedData, { ...newTotal, skill: 'TOTAL' }];
+    }
+    return varianceData;
+  }, [viewMode]);
+
   const toggleGroup = (groupId: string) => {
     setExpandedGroups(prev => {
       const newSet = new Set(prev);
@@ -553,7 +599,7 @@ export default function PositionPlanning() {
     
     skillGroups.forEach(group => {
       const groupSkills = group.skills
-        .map(skillName => varianceData.find(d => d.skill === skillName))
+        .map(skillName => displayVarianceData.find(d => d.skill === skillName))
         .filter(Boolean) as VarianceData[];
       
       if (groupSkills.length === 0) return;
@@ -581,7 +627,7 @@ export default function PositionPlanning() {
       });
     });
     
-    const totalRow = varianceData.find(d => d.skill === 'TOTAL');
+    const totalRow = displayVarianceData.find(d => d.skill === 'TOTAL');
     if (totalRow) {
       rows.push([
         'GRAND TOTAL',
@@ -697,7 +743,7 @@ export default function PositionPlanning() {
         transition={{ duration: 0.4, delay: 0.2 }}
       >
           <FTESkillShiftTable 
-            data={varianceData} 
+            data={displayVarianceData} 
             expandedGroups={expandedGroups}
             onToggleGroup={toggleGroup}
             skillGroups={skillGroups}
@@ -757,7 +803,7 @@ export default function PositionPlanning() {
           </DialogHeader>
           <div className="flex-1 overflow-auto bg-card rounded-xl border shadow-sm">
             <FTESkillShiftTable 
-              data={varianceData} 
+              data={displayVarianceData} 
               expandedGroups={expandedGroups}
               onToggleGroup={toggleGroup}
               skillGroups={skillGroups}
