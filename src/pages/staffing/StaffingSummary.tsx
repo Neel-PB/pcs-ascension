@@ -20,7 +20,7 @@ export default function StaffingSummary() {
 
   const tabs = [
     { id: "summary", label: "Summary" },
-    { id: "planning", label: "Position Planning" },
+    { id: "planning", label: "Planned/Active Resources" },
     { id: "variance", label: "Variance Analysis" },
     { id: "forecasts", label: "Forecasts" },
     { id: "settings", label: "Settings" },
