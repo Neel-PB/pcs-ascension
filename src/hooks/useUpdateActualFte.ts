@@ -20,11 +20,11 @@ export function useUpdateActualFte() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       queryClient.invalidateQueries({ queryKey: ['contractors'] });
-      toast.success('Actual FTE updated successfully');
+      toast.success('Active FTE updated successfully');
     },
     onError: (error) => {
       console.error('Error updating actual FTE:', error);
-      toast.error('Failed to update Actual FTE');
+      toast.error('Failed to update Active FTE');
     },
   });
 }

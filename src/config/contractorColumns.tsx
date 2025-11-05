@@ -64,7 +64,7 @@ export const contractorColumns: ColumnDef<Position>[] = [
   },
   {
     id: 'actual_fte',
-    label: 'Actual FTE',
+    label: 'Active FTE',
     type: 'custom',
     width: 120,
     minWidth: 110,
