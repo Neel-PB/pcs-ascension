@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import {
-  Home,
   Users,
   UserCog,
   TrendingUp,
@@ -30,13 +29,6 @@ export function useDynamicSidebar() {
 
   // Define the sidebar menu structure based on your current app
   const sidebarModules: DynamicMenuGroup[] = [
-    {
-      label: "Home",
-      icon: Home,
-      items: [
-        { title: "Dashboard", url: "/", icon: Home },
-      ],
-    },
     {
       label: "Staffing",
       icon: Users,

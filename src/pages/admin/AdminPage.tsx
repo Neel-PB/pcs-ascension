@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { motion, LayoutGroup, AnimatePresence } from "framer-motion";
-import { Shield, Upload, Users, Lock, Settings } from "lucide-react";
+import { Shield, Upload, Users, Lock, Settings, MessageSquare } from "lucide-react";
 import { ContentCard } from "@/components/shell/ContentCard";
 import { useRBAC } from "@/hooks/useRBAC";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import DataImportPage from "./DataImportPage";
 import UsersManagement from "./UsersManagement";
+import { MessageComposer } from "@/components/messaging/MessageComposer";
+import { MessageHistory } from "@/components/messaging/MessageHistory";
 
 export default function AdminPage() {
   const { hasPermission, loading } = useRBAC();
@@ -16,6 +18,7 @@ export default function AdminPage() {
   const tabs = [
     { id: "data-import", label: "Data Import", icon: Upload },
     { id: "users", label: "Users", icon: Users },
+    { id: "messages", label: "Messages", icon: MessageSquare },
     { id: "roles", label: "Roles", icon: Shield },
     { id: "permissions", label: "Permissions", icon: Lock },
     { id: "settings", label: "Settings", icon: Settings },
@@ -123,6 +126,13 @@ export default function AdminPage() {
           {activeTab === "data-import" && <DataImportPage />}
           
           {activeTab === "users" && <UsersManagement />}
+          
+          {activeTab === "messages" && (
+            <div className="space-y-6">
+              <MessageComposer />
+              <MessageHistory />
+            </div>
+          )}
           
           {activeTab === "roles" && (
             <div className="py-8 text-center text-muted-foreground">

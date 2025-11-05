@@ -1,6 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
 import {
-  Home,
   Users,
   UserCog,
   TrendingUp,
@@ -20,7 +19,6 @@ interface SidebarItem {
 }
 
 const sidebarItems: SidebarItem[] = [
-  { id: "home", title: "Home", url: "/", icon: Home },
   { id: "staffing", title: "Staffing", url: "/staffing", icon: Users },
   { id: "positions", title: "Positions", url: "/positions", icon: UserCog },
   { id: "analytics", title: "Analytics", url: "/analytics", icon: TrendingUp },
@@ -32,7 +30,6 @@ export function AppSidebar() {
   const location = useLocation();
 
   const isActive = (url: string) => {
-    if (url === "/") return location.pathname === "/";
     return location.pathname.startsWith(url);
   };
 

@@ -3,9 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ShellLayout } from "@/components/shell/ShellLayout";
-import HomePage from "./pages/HomePage";
 import AuthPage from "./pages/AuthPage";
 import SetupPasswordPage from "./pages/SetupPasswordPage";
 import StaffingSummary from "./pages/staffing/StaffingSummary";
@@ -30,7 +29,7 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/auth/setup-password" element={<SetupPasswordPage />} />
-            <Route path="/" element={<ShellLayout><HomePage /></ShellLayout>} />
+            <Route path="/" element={<Navigate to="/staffing" replace />} />
             <Route path="/staffing" element={<ShellLayout><StaffingSummary /></ShellLayout>} />
             <Route path="/positions" element={<ShellLayout><PositionsPage /></ShellLayout>} />
             <Route path="/analytics" element={<ShellLayout><AnalyticsRegion /></ShellLayout>} />
