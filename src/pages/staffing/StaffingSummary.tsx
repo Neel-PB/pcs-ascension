@@ -362,7 +362,7 @@ PRN staff characteristics:
         chartData: generateGrowthTrend(86.1, 89.3),
         chartType: "area" as const,
         delay: 0.2,
-        definition: "Total Net Productivity Percentage (NP%) measures the percentage of paid hours that are spent on productive (direct patient care or service delivery) activities versus non-productive time.",
+        definition: "The percentage of all paid hours that were not spent directly delivering patient care or performing operational work tied to Patient Volume (e.g., PTO, Holiday Pay, sick leave, education, admin or committee time, Training or onboarding.).",
         calculation: `Total NP% = (Productive Hours / Total Paid Hours) × 100
 
 Example: If 7,076 productive hours and 7,928 total paid hours:
