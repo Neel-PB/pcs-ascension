@@ -305,6 +305,44 @@ export type Database = {
         }
         Relationships: []
       }
+      messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          sender_id: string
+          sent_at: string
+          target_roles: string[]
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          sender_id: string
+          sent_at?: string
+          target_roles: string[]
+          title: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          sender_id?: string
+          sent_at?: string
+          target_roles?: string[]
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -821,7 +859,15 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user" | "labor_team"
+      app_role:
+        | "admin"
+        | "moderator"
+        | "user"
+        | "labor_team"
+        | "leadership"
+        | "cno"
+        | "director"
+        | "nurse_manager"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -949,7 +995,16 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user", "labor_team"],
+      app_role: [
+        "admin",
+        "moderator",
+        "user",
+        "labor_team",
+        "leadership",
+        "cno",
+        "director",
+        "nurse_manager",
+      ],
     },
   },
 } as const

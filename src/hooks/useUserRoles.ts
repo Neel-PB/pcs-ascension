@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export type UserRole = 'admin' | 'labor_team';
+export type UserRole = 'admin' | 'labor_team' | 'leadership' | 'cno' | 'director' | 'nurse_manager';
 
 export function useUserRoles(userId?: string) {
   const { data: roles, isLoading } = useQuery({
@@ -21,7 +21,7 @@ export function useUserRoles(userId?: string) {
     enabled: !!userId,
   });
 
-  const availableRoles: UserRole[] = ['admin', 'labor_team'];
+  const availableRoles: UserRole[] = ['admin', 'labor_team', 'leadership', 'cno', 'director', 'nurse_manager'];
 
   return {
     roles: roles || [],

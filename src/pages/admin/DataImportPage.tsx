@@ -81,6 +81,7 @@ const TABLE_SCHEMAS: Record<TableName, { name: string; type: string }[]> = {
   forecast_positions_to_open: [],
   forecast_positions_to_close: [],
   volume_overrides: [],
+  messages: [],
 };
 
 export default function DataImportPage() {

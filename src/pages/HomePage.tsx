@@ -1,14 +1,17 @@
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { UnifiedEmployeeFeed } from "@/components/feed/UnifiedEmployeeFeed";
+import { MessageComposer } from "@/components/messaging/MessageComposer";
+import { MessageHistory } from "@/components/messaging/MessageHistory";
 import { DataRefreshPanel } from "@/components/dashboard/DataRefreshPanel";
 import { useAuth } from "@/hooks/useAuth";
+import { useRBAC } from "@/hooks/useRBAC";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function HomePage() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const { hasRole, loading: rolesLoading } = useRBAC();
 
   // Redirect to auth page if not logged in
   useEffect(() => {
@@ -17,7 +20,7 @@ export default function HomePage() {
     }
   }, [user, loading, navigate]);
 
-  if (loading) {
+  if (loading || rolesLoading) {
     return (
       <div className="space-y-8">
         <div className="space-y-2">
@@ -40,6 +43,8 @@ export default function HomePage() {
     return null; // Will redirect
   }
 
+  const isAdmin = hasRole("admin");
+
   return (
     <div className="space-y-8">
       {/* Page Header */}
@@ -51,22 +56,29 @@ export default function HomePage() {
       >
         <h1 className="text-3xl font-bold text-gradient">Position Control Dashboard</h1>
         <p className="text-shell-muted">
-          Welcome back, {user.user_metadata?.first_name}! Stay connected with your team.
+          Welcome back, {user.user_metadata?.first_name}! {isAdmin ? "Send messages to your team." : "Check your notifications for updates."}
         </p>
       </motion.div>
 
-      {/* Main Content - Two Column Layout */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Employee Feed - Takes 1 column */}
-        <div className="lg:col-span-1">
-          <UnifiedEmployeeFeed />
-        </div>
+      {/* Main Content */}
+      {isAdmin ? (
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Messaging Section - Left Column */}
+          <div className="lg:col-span-1 space-y-6">
+            <MessageComposer />
+            <MessageHistory />
+          </div>
 
-        {/* Data Refresh Panel - Takes 1 column */}
-        <div className="lg:col-span-1">
+          {/* Data Refresh Panel - Right Column */}
+          <div className="lg:col-span-1">
+            <DataRefreshPanel />
+          </div>
+        </div>
+      ) : (
+        <div className="max-w-4xl">
           <DataRefreshPanel />
         </div>
-      </div>
+      )}
     </div>
   );
 }
