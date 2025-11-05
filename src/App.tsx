@@ -16,8 +16,37 @@ import AdminPage from "./pages/admin/AdminPage";
 import NotFound from "./pages/NotFound";
 import { AIHubTrigger } from "./components/ai/AIHubTrigger";
 import { AIHubPanel } from "./components/ai/AIHubPanel";
+import { useAuth } from "./hooks/useAuth";
 
 const queryClient = new QueryClient();
+
+const AppContent = () => {
+  const { user, loading } = useAuth();
+
+  return (
+    <>
+      <Routes>
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/auth/setup-password" element={<SetupPasswordPage />} />
+        <Route path="/" element={<Navigate to="/staffing" replace />} />
+        <Route path="/staffing" element={<ShellLayout><StaffingSummary /></ShellLayout>} />
+        <Route path="/positions" element={<ShellLayout><PositionsPage /></ShellLayout>} />
+        <Route path="/analytics" element={<ShellLayout><AnalyticsRegion /></ShellLayout>} />
+        <Route path="/reports" element={<ShellLayout><ReportsRegion /></ShellLayout>} />
+        <Route path="/support" element={<ShellLayout><SupportPage /></ShellLayout>} />
+        <Route path="/admin" element={<ShellLayout><AdminPage /></ShellLayout>} />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<ShellLayout><NotFound /></ShellLayout>} />
+      </Routes>
+      {!loading && user && (
+        <>
+          <AIHubTrigger />
+          <AIHubPanel />
+        </>
+      )}
+    </>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -26,21 +55,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/auth/setup-password" element={<SetupPasswordPage />} />
-            <Route path="/" element={<Navigate to="/staffing" replace />} />
-            <Route path="/staffing" element={<ShellLayout><StaffingSummary /></ShellLayout>} />
-            <Route path="/positions" element={<ShellLayout><PositionsPage /></ShellLayout>} />
-            <Route path="/analytics" element={<ShellLayout><AnalyticsRegion /></ShellLayout>} />
-            <Route path="/reports" element={<ShellLayout><ReportsRegion /></ShellLayout>} />
-            <Route path="/support" element={<ShellLayout><SupportPage /></ShellLayout>} />
-            <Route path="/admin" element={<ShellLayout><AdminPage /></ShellLayout>} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<ShellLayout><NotFound /></ShellLayout>} />
-          </Routes>
-          <AIHubTrigger />
-          <AIHubPanel />
+          <AppContent />
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
