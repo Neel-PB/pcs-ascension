@@ -357,7 +357,7 @@ const GroupRow = ({
       className="font-semibold bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer border-t-2 border-primary/20"
       onClick={() => onToggle?.(id)}
     >
-      <TableCell className="font-semibold">
+      <TableCell className="font-semibold py-2">
         <div className="flex items-center gap-2">
           <motion.div
             initial={false}
@@ -369,22 +369,22 @@ const GroupRow = ({
           <span className="text-foreground">{name}</span>
         </div>
       </TableCell>
-      <TableCell className="text-center font-semibold">{data.targetDay?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.targetNight?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.targetTotal?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.hiredDay?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.hiredNight?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.hiredTotal?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.reqsDay?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.reqsNight?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.reqsTotal?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceDay))}>
+      <TableCell className="text-center font-semibold py-2">{data.targetDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold py-2">{data.targetNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold py-2">{data.targetTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold py-2">{data.hiredDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold py-2">{data.hiredNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold py-2">{data.hiredTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold py-2">{data.reqsDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold py-2">{data.reqsNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold py-2">{data.reqsTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className={cn("text-center font-semibold py-2", getVarianceColor(data.varianceDay))}>
         {data.varianceDay?.toFixed(1) || "0.0"}
       </TableCell>
-      <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceNight))}>
+      <TableCell className={cn("text-center font-semibold py-2", getVarianceColor(data.varianceNight))}>
         {data.varianceNight?.toFixed(1) || "0.0"}
       </TableCell>
-      <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceTotal))}>
+      <TableCell className={cn("text-center font-semibold py-2", getVarianceColor(data.varianceTotal))}>
         {data.varianceTotal?.toFixed(1) || "0.0"}
       </TableCell>
     </TableRow>
@@ -406,27 +406,27 @@ const SkillRow = ({
       )}
     >
       <TableCell className={cn(
-        "font-medium whitespace-nowrap",
+        "font-medium whitespace-nowrap py-2",
         isChildRow && "pl-8"
       )}>
         {skill.skill}
       </TableCell>
-      <TableCell className="text-center">{skill.targetDay?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center">{skill.targetNight?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center">{skill.targetTotal?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center">{skill.hiredDay?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center">{skill.hiredNight?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center">{skill.hiredTotal?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center">{skill.reqsDay?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center">{skill.reqsNight?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center">{skill.reqsTotal?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className={cn("text-center", getVarianceColor(skill.varianceDay))}>
+      <TableCell className="text-center py-2">{skill.targetDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center py-2">{skill.targetNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center py-2">{skill.targetTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center py-2">{skill.hiredDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center py-2">{skill.hiredNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center py-2">{skill.hiredTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center py-2">{skill.reqsDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center py-2">{skill.reqsNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center py-2">{skill.reqsTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className={cn("text-center py-2", getVarianceColor(skill.varianceDay))}>
         {skill.varianceDay?.toFixed(1) || "0.0"}
       </TableCell>
-      <TableCell className={cn("text-center", getVarianceColor(skill.varianceNight))}>
+      <TableCell className={cn("text-center py-2", getVarianceColor(skill.varianceNight))}>
         {skill.varianceNight?.toFixed(1) || "0.0"}
       </TableCell>
-      <TableCell className={cn("text-center", getVarianceColor(skill.varianceTotal))}>
+      <TableCell className={cn("text-center py-2", getVarianceColor(skill.varianceTotal))}>
         {skill.varianceTotal?.toFixed(1) || "0.0"}
       </TableCell>
     </TableRow>
@@ -436,23 +436,23 @@ const SkillRow = ({
 const TotalRow = ({ data }: { data: VarianceData }) => {
   return (
     <TableRow className="font-semibold bg-muted/20 border-t-2">
-      <TableCell className="font-semibold">{data.skill}</TableCell>
-      <TableCell className="text-center font-semibold">{data.targetDay?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.targetNight?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.targetTotal?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.hiredDay?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.hiredNight?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.hiredTotal?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.reqsDay?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.reqsNight?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.reqsTotal?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceDay))}>
+      <TableCell className="font-semibold py-2">{data.skill}</TableCell>
+      <TableCell className="text-center font-semibold py-2">{data.targetDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold py-2">{data.targetNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold py-2">{data.targetTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold py-2">{data.hiredDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold py-2">{data.hiredNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold py-2">{data.hiredTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold py-2">{data.reqsDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold py-2">{data.reqsNight?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold py-2">{data.reqsTotal?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className={cn("text-center font-semibold py-2", getVarianceColor(data.varianceDay))}>
         {data.varianceDay?.toFixed(1) || "0.0"}
       </TableCell>
-      <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceNight))}>
+      <TableCell className={cn("text-center font-semibold py-2", getVarianceColor(data.varianceNight))}>
         {data.varianceNight?.toFixed(1) || "0.0"}
       </TableCell>
-      <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceTotal))}>
+      <TableCell className={cn("text-center font-semibold py-2", getVarianceColor(data.varianceTotal))}>
         {data.varianceTotal?.toFixed(1) || "0.0"}
       </TableCell>
     </TableRow>
