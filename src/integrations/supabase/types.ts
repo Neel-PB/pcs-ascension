@@ -148,7 +148,9 @@ export type Database = {
           facility_name: string
           fte: number
           id: string
+          is_gap_record: boolean | null
           market: string
+          parent_id: string | null
           reason_to_close: string
           skill_type: string
           status: string
@@ -164,7 +166,9 @@ export type Database = {
           facility_name: string
           fte: number
           id?: string
+          is_gap_record?: boolean | null
           market: string
+          parent_id?: string | null
           reason_to_close: string
           skill_type: string
           status?: string
@@ -180,13 +184,23 @@ export type Database = {
           facility_name?: string
           fte?: number
           id?: string
+          is_gap_record?: boolean | null
           market?: string
+          parent_id?: string | null
           reason_to_close?: string
           skill_type?: string
           status?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "forecast_positions_to_close_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "forecast_positions_to_close"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       forecast_positions_to_open: {
         Row: {
@@ -199,7 +213,9 @@ export type Database = {
           facility_name: string
           fte: number
           id: string
+          is_gap_record: boolean | null
           market: string
+          parent_id: string | null
           reason_to_open: string
           skill_type: string
           status: string
@@ -215,7 +231,9 @@ export type Database = {
           facility_name: string
           fte: number
           id?: string
+          is_gap_record?: boolean | null
           market: string
+          parent_id?: string | null
           reason_to_open: string
           skill_type: string
           status?: string
@@ -231,13 +249,23 @@ export type Database = {
           facility_name?: string
           fte?: number
           id?: string
+          is_gap_record?: boolean | null
           market?: string
+          parent_id?: string | null
           reason_to_open?: string
           skill_type?: string
           status?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "forecast_positions_to_open_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "forecast_positions_to_open"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       labor_performance: {
         Row: {
