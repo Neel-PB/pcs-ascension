@@ -2,6 +2,7 @@ import { ColumnDef } from '@/types/table';
 import { Position } from '@/types/position';
 import { BadgeCell } from '@/components/editable-table/cells/BadgeCell';
 import { BellIndicatorCell } from '@/components/editable-table/cells/BellIndicatorCell';
+import { ShiftCell } from '@/components/editable-table/cells/ShiftCell';
 
 export const employeeColumns: ColumnDef<Position>[] = [
   {
@@ -77,12 +78,13 @@ export const employeeColumns: ColumnDef<Position>[] = [
   {
     id: 'shift',
     label: 'Shift',
-    type: 'text',
-    width: 120,
-    minWidth: 100, // Increased from 80
+    type: 'custom',
+    width: 140,
+    minWidth: 120,
     sortable: true,
     resizable: true,
     draggable: true,
+    renderCell: (row) => <ShiftCell value={row.shift} />,
   },
   {
     id: 'payrollStatus',
