@@ -88,24 +88,23 @@ export function ForecastTab() {
             </p>
           </div>
           <Card className="overflow-hidden">
-            <div className="border rounded-md">
-              {/* Header */}
-              <div
-                className="grid h-10 items-center bg-muted font-medium text-sm border-b"
-                style={{
-                  gridTemplateColumns: "40px 120px 180px 180px 150px 1fr 100px 80px 180px",
-                }}
-              >
-                <div />
-                <div className="px-3">Market</div>
-                <div className="px-3">Facility</div>
-                <div className="px-3">Department</div>
-                <div className="px-3">Skill Type</div>
-                <div className="px-3">Reason to Close</div>
-                <div className="px-3">FTE Gap</div>
-                <div className="px-3 text-center">Status</div>
-                <div className="px-3">Actions</div>
-              </div>
+      <div className="border rounded-md">
+        {/* Header */}
+        <div
+          className="grid h-10 items-center bg-muted font-medium text-sm border-b"
+          style={{
+            gridTemplateColumns: "40px 120px 180px 180px 150px 1fr 100px 80px",
+          }}
+        >
+          <div />
+          <div className="px-3">Market</div>
+          <div className="px-3">Facility</div>
+          <div className="px-3">Department</div>
+          <div className="px-3">Skill Type</div>
+          <div className="px-3">Reason to Close</div>
+          <div className="px-3">FTE Gap</div>
+          <div className="px-3 text-center">Status</div>
+        </div>
 
               {/* Rows */}
               {isLoadingClose ? (
@@ -116,15 +115,14 @@ export function ForecastTab() {
                 <div className="p-8 text-center text-muted-foreground">
                   No positions to close found
                 </div>
-              ) : (
-                positionsToClose.map((position) => (
-                  <PositionClosureRow 
-                    key={position.id} 
-                    position={position}
-                    isAdmin={isAdmin}
-                  />
-                ))
-              )}
+        ) : (
+          positionsToClose.map((position) => (
+            <PositionClosureRow 
+              key={position.id} 
+              position={position}
+            />
+          ))
+        )}
             </div>
           </Card>
         </div>

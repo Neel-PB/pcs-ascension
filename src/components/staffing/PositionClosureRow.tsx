@@ -1,28 +1,23 @@
 import { useState, useMemo } from "react";
-import { ChevronRight, ChevronDown, Users } from "lucide-react";
+import { ChevronRight, Users } from "lucide-react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { ApprovalButtons } from "./ApprovalButtons";
 import { 
   ForecastPositionToClose,
   useEmployeesForClosureGap,
   useSaveEmployeeSelection,
-  useApprovePositionToClose,
-  useRejectPositionToClose,
-  useRevertPositionToClose
 } from "@/hooks/useForecastPositions";
 import { validateFteAllocation } from "@/lib/fteValidation";
-import { Position } from "@/types/position";
 
 interface PositionClosureRowProps {
   position: ForecastPositionToClose;
-  isAdmin: boolean;
 }
 
-export function PositionClosureRow({ position, isAdmin }: PositionClosureRowProps) {
+export function PositionClosureRow({ position }: PositionClosureRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>(
     position.selected_position_ids || []
@@ -30,10 +25,6 @@ export function PositionClosureRow({ position, isAdmin }: PositionClosureRowProp
 
   const { data: employees = [], isLoading } = useEmployeesForClosureGap(position);
   const saveSelection = useSaveEmployeeSelection();
-  
-  const { mutate: approveClose, isPending: isApprovingClose } = useApprovePositionToClose();
-  const { mutate: rejectClose, isPending: isRejectingClose } = useRejectPositionToClose();
-  const { mutate: revertClose, isPending: isRevertingClose } = useRevertPositionToClose();
 
   // Calculate selected FTE sum and validation
   const selectedEmployees = useMemo(() => 
@@ -51,7 +42,7 @@ export function PositionClosureRow({ position, isAdmin }: PositionClosureRowProp
     [position.fte, selectedFteSum]
   );
 
-  // Debounced save
+  // Auto-save selection
   const handleToggle = (employeeId: string, checked: boolean) => {
     const newSelection = checked
       ? [...selectedIds, employeeId]
@@ -66,22 +57,6 @@ export function PositionClosureRow({ position, isAdmin }: PositionClosureRowProp
     });
   };
 
-  const handleApprove = () => {
-    if (position.status === 'approved') {
-      revertClose(position.id);
-    } else {
-      approveClose(position.id);
-    }
-  };
-
-  const handleReject = () => {
-    if (position.status === 'rejected') {
-      revertClose(position.id);
-    } else {
-      rejectClose(position.id);
-    }
-  };
-
   // Validation indicator
   const getValidationIndicator = () => {
     if (selectedIds.length === 0) {
@@ -94,26 +69,24 @@ export function PositionClosureRow({ position, isAdmin }: PositionClosureRowProp
   };
 
   return (
-    <div className="border-b last:border-b-0">
+    <>
       {/* Parent Row */}
       <div
-        className="grid items-center hover:bg-muted/50 transition-colors"
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="grid items-center border-b hover:bg-muted/50 transition-colors cursor-pointer"
         style={{
-          gridTemplateColumns: "40px 120px 180px 180px 150px 1fr 100px 80px 180px",
+          gridTemplateColumns: "40px 120px 180px 180px 150px 1fr 100px 80px",
+          minHeight: "48px",
         }}
       >
-        {/* Expand/Collapse */}
-        <div className="px-3 py-3">
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="hover:bg-accent rounded p-1 transition-colors"
+        {/* Expand Button */}
+        <div className="px-3 flex items-center justify-center">
+          <motion.div
+            animate={{ rotate: isExpanded ? 90 : 0 }}
+            transition={{ duration: 0.2 }}
           >
-            {isExpanded ? (
-              <ChevronDown className="w-4 h-4" />
-            ) : (
-              <ChevronRight className="w-4 h-4" />
-            )}
-          </button>
+            <ChevronRight className="w-4 h-4" />
+          </motion.div>
         </div>
 
         {/* Market */}
@@ -138,22 +111,20 @@ export function PositionClosureRow({ position, isAdmin }: PositionClosureRowProp
         <div className="px-3 py-3 flex justify-center">
           {getValidationIndicator()}
         </div>
-
-        {/* Actions */}
-        <div className="px-3 py-3">
-          <ApprovalButtons
-            status={position.status}
-            onApprove={handleApprove}
-            onReject={handleReject}
-            isLoading={isApprovingClose || isRejectingClose || isRevertingClose}
-            disabled={!isAdmin}
-          />
-        </div>
       </div>
 
       {/* Expanded Section - Employee Selection */}
-      {isExpanded && (
-        <div className="bg-muted/30 border-t">
+      <motion.div
+        initial={false}
+        animate={{
+          height: isExpanded ? "auto" : 0,
+          opacity: isExpanded ? 1 : 0,
+        }}
+        transition={{ duration: 0.2 }}
+        style={{ overflow: "hidden" }}
+        className="border-b"
+      >
+        <div className="bg-muted/20">
           <div className="p-4">
             <div className="mb-3 flex items-center gap-2">
               <Users className="w-4 h-4 text-muted-foreground" />
@@ -186,12 +157,14 @@ export function PositionClosureRow({ position, isAdmin }: PositionClosureRowProp
                             "hover:bg-muted/50",
                             isSelected && "bg-primary/5 border border-primary/20"
                           )}
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <Checkbox
                             checked={isSelected}
                             onCheckedChange={(checked) => 
                               handleToggle(employee.id, checked as boolean)
                             }
+                            className="data-[state=checked]:bg-primary"
                           />
                           <div className="flex-1 grid grid-cols-[1fr_200px_80px] gap-4">
                             <div>
@@ -250,7 +223,7 @@ export function PositionClosureRow({ position, isAdmin }: PositionClosureRowProp
             )}
           </div>
         </div>
-      )}
-    </div>
+      </motion.div>
+    </>
   );
 }
