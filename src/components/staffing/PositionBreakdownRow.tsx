@@ -140,7 +140,7 @@ export function PositionBreakdownRow({ position }: PositionBreakdownRowProps) {
             <div 
               className="grid items-center py-2"
               style={{
-                gridTemplateColumns: "120px 180px 180px 150px 1fr 120px 40px",
+                gridTemplateColumns: "120px 180px 180px 150px 1fr 160px",
               }}
             >
               <div />
@@ -159,7 +159,6 @@ export function PositionBreakdownRow({ position }: PositionBreakdownRowProps) {
                   Add Position
                 </Button>
               </div>
-              <div />
             </div>
 
             {/* Running Total */}
