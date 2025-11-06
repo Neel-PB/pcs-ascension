@@ -152,6 +152,7 @@ export type Database = {
           market: string
           parent_id: string | null
           reason_to_close: string
+          selected_position_ids: Json | null
           skill_type: string
           status: string
           updated_at: string | null
@@ -170,6 +171,7 @@ export type Database = {
           market: string
           parent_id?: string | null
           reason_to_close: string
+          selected_position_ids?: Json | null
           skill_type: string
           status?: string
           updated_at?: string | null
@@ -188,6 +190,7 @@ export type Database = {
           market?: string
           parent_id?: string | null
           reason_to_close?: string
+          selected_position_ids?: Json | null
           skill_type?: string
           status?: string
           updated_at?: string | null

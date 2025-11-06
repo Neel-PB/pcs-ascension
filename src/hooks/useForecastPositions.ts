@@ -49,6 +49,7 @@ export interface ForecastPositionToClose {
   approved_at: string | null;
   created_at: string;
   updated_at: string;
+  selected_position_ids?: string[];
 }
 
 export function useForecastPositionsToOpen() {
@@ -442,6 +443,68 @@ export function useDeleteChildPosition() {
     onError: (error) => {
       toast({
         title: "Failed to remove position",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+}
+
+export function useEmployeesForClosureGap(closureRecord: ForecastPositionToClose | null) {
+  return useQuery({
+    queryKey: ['employees-for-closure', closureRecord?.id],
+    queryFn: async () => {
+      if (!closureRecord) return [];
+
+      const { data, error } = await supabase
+        .from('positions')
+        .select('*')
+        .eq('market', closureRecord.market)
+        .eq('facilityId', closureRecord.facility_id || '')
+        .eq('departmentId', closureRecord.department_id || '')
+        .eq('positionLifecycle', 'Filled')
+        .not('employmentFlag', 'like', '%Contingent%')
+        .order('employeeName', { ascending: true });
+
+      if (error) throw error;
+      
+      // Filter by skill type (match against jobFamily or jobTitle)
+      return (data || []).filter(emp => 
+        emp.jobFamily === closureRecord.skill_type || 
+        emp.jobTitle === closureRecord.skill_type
+      );
+    },
+    enabled: !!closureRecord?.id,
+  });
+}
+
+export function useSaveEmployeeSelection() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      closureId, 
+      selectedPositionIds 
+    }: { 
+      closureId: string; 
+      selectedPositionIds: string[] 
+    }) => {
+      const { data, error } = await supabase
+        .from('forecast_positions_to_close')
+        .update({ selected_position_ids: selectedPositionIds })
+        .eq('id', closureId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['forecast-positions-to-close'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to save selection",
         description: error.message,
         variant: "destructive",
       });

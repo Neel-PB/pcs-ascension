@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PositionCommentSection } from "@/components/positions/PositionCommentSection";
+import { useEmployeesForClosureGap } from "@/hooks/useForecastPositions";
 
 interface PositionToCloseDetailsSheetProps {
   open: boolean;
@@ -22,7 +23,18 @@ export function PositionToCloseDetailsSheet({
   onOpenChange,
   position,
 }: PositionToCloseDetailsSheetProps) {
+  const { data: employees = [] } = useEmployeesForClosureGap(position);
+  
   if (!position) return null;
+
+  const selectedEmployees = employees.filter(emp => 
+    position.selected_position_ids?.includes(emp.id)
+  );
+  
+  const totalSelectedFte = selectedEmployees.reduce(
+    (sum, emp) => sum + Number(emp.FTE || 0), 
+    0
+  );
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -98,6 +110,35 @@ export function PositionToCloseDetailsSheet({
                       <p className="text-sm font-medium">{position.department_name || "—"}</p>
                     </div>
                   </div>
+                </div>
+
+                <Separator />
+
+                {/* Selected Employees */}
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                    Selected Employees for Closure
+                  </h3>
+                  {selectedEmployees.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No employees selected</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {selectedEmployees.map(emp => (
+                        <div key={emp.id} className="flex justify-between items-center text-sm py-1">
+                          <div>
+                            <p className="font-medium">{emp.employeeName}</p>
+                            <p className="text-xs text-muted-foreground">{emp.jobTitle}</p>
+                          </div>
+                          <span className="text-muted-foreground">{Number(emp.FTE || 0).toFixed(2)} FTE</span>
+                        </div>
+                      ))}
+                      <Separator />
+                      <div className="flex justify-between font-medium pt-1">
+                        <span>Total</span>
+                        <span>{totalSelectedFte.toFixed(2)} FTE</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </ScrollArea>
