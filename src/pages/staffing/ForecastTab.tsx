@@ -78,7 +78,7 @@ export function ForecastTab() {
     },
     {
       id: "skill_type",
-      label: "Job Family",
+      label: "Skill Type",
       type: "text",
       width: 150,
       minWidth: 120,
@@ -186,7 +186,7 @@ export function ForecastTab() {
     },
     {
       id: "skill_type",
-      label: "Job Family",
+      label: "Skill Type",
       type: "text",
       width: 150,
       minWidth: 120,
