@@ -121,7 +121,7 @@ export function PositionClosureRow({ position }: PositionClosureRowProps) {
           opacity: isExpanded ? 1 : 0,
         }}
         transition={{ duration: 0.2 }}
-        style={{ overflow: "hidden" }}
+        style={{ overflow: isExpanded ? "visible" : "hidden" }}
         className="border-b"
       >
         <div className="bg-muted/20">
