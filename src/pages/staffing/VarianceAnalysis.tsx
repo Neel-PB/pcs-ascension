@@ -175,13 +175,6 @@ export function VarianceAnalysis({
     return `${value > 0 ? '+' : ''}${value.toFixed(1)}`;
   };
 
-  // Color code variance values (negative = surplus/green, positive = shortage/red, zero = balanced/yellow)
-  const getVarianceColor = (value: number): string => {
-    if (value < -0.1) return "text-green-600";
-    if (value > 0.1) return "text-red-600";
-    return "text-yellow-600";
-  };
-
   const getColumnHeader = (): string => {
     if (selectedDepartment !== "all-departments") return "Department";
     if (selectedFacility !== "all-facilities") return "Departments";
@@ -418,49 +411,49 @@ export function VarianceAnalysis({
               {row.name}
             </div>
           </TableCell>
-          <TableCell className={cn("text-center font-semibold border-l", getVarianceColor(row.clDay))}>
+          <TableCell className="text-center font-semibold border-l">
             {formatVariance(row.clDay)}
           </TableCell>
-          <TableCell className={cn("text-center font-semibold", getVarianceColor(row.clNight))}>
+          <TableCell className="text-center font-semibold">
             {formatVariance(row.clNight)}
           </TableCell>
-          <TableCell className={cn("text-center font-semibold", getVarianceColor(row.clTotal))}>
+          <TableCell className="text-center font-semibold">
             {formatVariance(row.clTotal)}
           </TableCell>
-          <TableCell className={cn("text-center font-semibold border-l", getVarianceColor(row.rnDay))}>
+          <TableCell className="text-center font-semibold border-l">
             {formatVariance(row.rnDay)}
           </TableCell>
-          <TableCell className={cn("text-center font-semibold", getVarianceColor(row.rnNight))}>
+          <TableCell className="text-center font-semibold">
             {formatVariance(row.rnNight)}
           </TableCell>
-          <TableCell className={cn("text-center font-semibold", getVarianceColor(row.rnTotal))}>
+          <TableCell className="text-center font-semibold">
             {formatVariance(row.rnTotal)}
           </TableCell>
-          <TableCell className={cn("text-center font-semibold border-l", getVarianceColor(row.pctDay))}>
+          <TableCell className="text-center font-semibold border-l">
             {formatVariance(row.pctDay)}
           </TableCell>
-          <TableCell className={cn("text-center font-semibold", getVarianceColor(row.pctNight))}>
+          <TableCell className="text-center font-semibold">
             {formatVariance(row.pctNight)}
           </TableCell>
-          <TableCell className={cn("text-center font-semibold", getVarianceColor(row.pctTotal))}>
+          <TableCell className="text-center font-semibold">
             {formatVariance(row.pctTotal)}
           </TableCell>
-          <TableCell className={cn("text-center font-semibold border-l", getVarianceColor(row.hucDay))}>
+          <TableCell className="text-center font-semibold border-l">
             {formatVariance(row.hucDay)}
           </TableCell>
-          <TableCell className={cn("text-center font-semibold", getVarianceColor(row.hucNight))}>
+          <TableCell className="text-center font-semibold">
             {formatVariance(row.hucNight)}
           </TableCell>
-          <TableCell className={cn("text-center font-semibold", getVarianceColor(row.hucTotal))}>
+          <TableCell className="text-center font-semibold">
             {formatVariance(row.hucTotal)}
           </TableCell>
-          <TableCell className={cn("text-center font-semibold border-l", getVarianceColor(row.overheadDay))}>
+          <TableCell className="text-center font-semibold border-l">
             {formatVariance(row.overheadDay)}
           </TableCell>
-          <TableCell className={cn("text-center font-semibold", getVarianceColor(row.overheadNight))}>
+          <TableCell className="text-center font-semibold">
             {formatVariance(row.overheadNight)}
           </TableCell>
-          <TableCell className={cn("text-center font-semibold", getVarianceColor(row.overheadTotal))}>
+          <TableCell className="text-center font-semibold">
             {formatVariance(row.overheadTotal)}
           </TableCell>
         </TableRow>
@@ -476,49 +469,49 @@ export function VarianceAnalysis({
       <TableCell className="font-medium sticky left-0 bg-primary/5 pl-8 whitespace-nowrap">
         {row.name}
       </TableCell>
-      <TableCell className={cn("text-center font-semibold border-l", getVarianceColor(row.clDay))}>
+      <TableCell className="text-center font-semibold border-l">
         {formatVariance(row.clDay)}
       </TableCell>
-      <TableCell className={cn("text-center font-semibold", getVarianceColor(row.clNight))}>
+      <TableCell className="text-center font-semibold">
         {formatVariance(row.clNight)}
       </TableCell>
-      <TableCell className={cn("text-center font-semibold", getVarianceColor(row.clTotal))}>
+      <TableCell className="text-center font-semibold">
         {formatVariance(row.clTotal)}
       </TableCell>
-      <TableCell className={cn("text-center font-semibold border-l", getVarianceColor(row.rnDay))}>
+      <TableCell className="text-center font-semibold border-l">
         {formatVariance(row.rnDay)}
       </TableCell>
-      <TableCell className={cn("text-center font-semibold", getVarianceColor(row.rnNight))}>
+      <TableCell className="text-center font-semibold">
         {formatVariance(row.rnNight)}
       </TableCell>
-      <TableCell className={cn("text-center font-semibold", getVarianceColor(row.rnTotal))}>
+      <TableCell className="text-center font-semibold">
         {formatVariance(row.rnTotal)}
       </TableCell>
-      <TableCell className={cn("text-center font-semibold border-l", getVarianceColor(row.pctDay))}>
+      <TableCell className="text-center font-semibold border-l">
         {formatVariance(row.pctDay)}
       </TableCell>
-      <TableCell className={cn("text-center font-semibold", getVarianceColor(row.pctNight))}>
+      <TableCell className="text-center font-semibold">
         {formatVariance(row.pctNight)}
       </TableCell>
-      <TableCell className={cn("text-center font-semibold", getVarianceColor(row.pctTotal))}>
+      <TableCell className="text-center font-semibold">
         {formatVariance(row.pctTotal)}
       </TableCell>
-      <TableCell className={cn("text-center font-semibold border-l", getVarianceColor(row.hucDay))}>
+      <TableCell className="text-center font-semibold border-l">
         {formatVariance(row.hucDay)}
       </TableCell>
-      <TableCell className={cn("text-center font-semibold", getVarianceColor(row.hucNight))}>
+      <TableCell className="text-center font-semibold">
         {formatVariance(row.hucNight)}
       </TableCell>
-      <TableCell className={cn("text-center font-semibold", getVarianceColor(row.hucTotal))}>
+      <TableCell className="text-center font-semibold">
         {formatVariance(row.hucTotal)}
       </TableCell>
-      <TableCell className={cn("text-center font-semibold border-l", getVarianceColor(row.overheadDay))}>
+      <TableCell className="text-center font-semibold border-l">
         {formatVariance(row.overheadDay)}
       </TableCell>
-      <TableCell className={cn("text-center font-semibold", getVarianceColor(row.overheadNight))}>
+      <TableCell className="text-center font-semibold">
         {formatVariance(row.overheadNight)}
       </TableCell>
-      <TableCell className={cn("text-center font-semibold", getVarianceColor(row.overheadTotal))}>
+      <TableCell className="text-center font-semibold">
         {formatVariance(row.overheadTotal)}
       </TableCell>
     </TableRow>
@@ -529,49 +522,49 @@ export function VarianceAnalysis({
       <TableCell className="font-bold sticky left-0 bg-muted/20">
         TOTAL
       </TableCell>
-      <TableCell className={cn("text-center font-bold border-l", getVarianceColor(totals.clDay))}>
+      <TableCell className="text-center font-bold border-l">
         {formatVariance(totals.clDay)}
       </TableCell>
-      <TableCell className={cn("text-center font-bold", getVarianceColor(totals.clNight))}>
+      <TableCell className="text-center font-bold">
         {formatVariance(totals.clNight)}
       </TableCell>
-      <TableCell className={cn("text-center font-bold", getVarianceColor(totals.clTotal))}>
+      <TableCell className="text-center font-bold">
         {formatVariance(totals.clTotal)}
       </TableCell>
-      <TableCell className={cn("text-center font-bold border-l", getVarianceColor(totals.rnDay))}>
+      <TableCell className="text-center font-bold border-l">
         {formatVariance(totals.rnDay)}
       </TableCell>
-      <TableCell className={cn("text-center font-bold", getVarianceColor(totals.rnNight))}>
+      <TableCell className="text-center font-bold">
         {formatVariance(totals.rnNight)}
       </TableCell>
-      <TableCell className={cn("text-center font-bold", getVarianceColor(totals.rnTotal))}>
+      <TableCell className="text-center font-bold">
         {formatVariance(totals.rnTotal)}
       </TableCell>
-      <TableCell className={cn("text-center font-bold border-l", getVarianceColor(totals.pctDay))}>
+      <TableCell className="text-center font-bold border-l">
         {formatVariance(totals.pctDay)}
       </TableCell>
-      <TableCell className={cn("text-center font-bold", getVarianceColor(totals.pctNight))}>
+      <TableCell className="text-center font-bold">
         {formatVariance(totals.pctNight)}
       </TableCell>
-      <TableCell className={cn("text-center font-bold", getVarianceColor(totals.pctTotal))}>
+      <TableCell className="text-center font-bold">
         {formatVariance(totals.pctTotal)}
       </TableCell>
-      <TableCell className={cn("text-center font-bold border-l", getVarianceColor(totals.hucDay))}>
+      <TableCell className="text-center font-bold border-l">
         {formatVariance(totals.hucDay)}
       </TableCell>
-      <TableCell className={cn("text-center font-bold", getVarianceColor(totals.hucNight))}>
+      <TableCell className="text-center font-bold">
         {formatVariance(totals.hucNight)}
       </TableCell>
-      <TableCell className={cn("text-center font-bold", getVarianceColor(totals.hucTotal))}>
+      <TableCell className="text-center font-bold">
         {formatVariance(totals.hucTotal)}
       </TableCell>
-      <TableCell className={cn("text-center font-bold border-l", getVarianceColor(totals.overheadDay))}>
+      <TableCell className="text-center font-bold border-l">
         {formatVariance(totals.overheadDay)}
       </TableCell>
-      <TableCell className={cn("text-center font-bold", getVarianceColor(totals.overheadNight))}>
+      <TableCell className="text-center font-bold">
         {formatVariance(totals.overheadNight)}
       </TableCell>
-      <TableCell className={cn("text-center font-bold", getVarianceColor(totals.overheadTotal))}>
+      <TableCell className="text-center font-bold">
         {formatVariance(totals.overheadTotal)}
       </TableCell>
     </TableRow>
