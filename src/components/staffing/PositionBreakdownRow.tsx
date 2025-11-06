@@ -81,78 +81,75 @@ export function PositionBreakdownRow({ position }: PositionBreakdownRowProps) {
         style={{ overflow: "hidden" }}
       >
         <div className="bg-muted/20 p-4 space-y-3">
-          {/* Add Position Button */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="text-sm text-muted-foreground">
-              Breakdown positions for {position.skill_type}
-            </div>
-            <Button
-              size="sm"
-              onClick={handleAddPosition}
-              disabled={addChild.isPending}
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              Add Position
-            </Button>
-          </div>
-
           {/* Child Positions */}
-          {position.children.length > 0 && (
-            <div className="space-y-2">
-              {position.children.map((child) => (
-                <div
-                  key={child.id}
-                  className="grid items-center bg-background rounded-md p-2 h-10"
-                  style={{
-                    gridTemplateColumns: "120px 180px 180px 150px 1fr 120px 40px",
-                  }}
-                >
-                  <div className="px-3 truncate text-sm text-muted-foreground">
-                    {child.market}
-                  </div>
-                  <div className="px-3 truncate text-sm text-muted-foreground">
-                    {child.facility_name}
-                  </div>
-                  <div className="px-3 truncate text-sm text-muted-foreground">
-                    {child.department_name}
-                  </div>
-                  <div className="px-3 truncate text-sm text-muted-foreground">
-                    {child.skill_type}
-                  </div>
-                  <div /> {/* Empty space for reason */}
-                  <div className="px-3">
-                    <Select
-                      value={child.fte.toString()}
-                      onValueChange={(val) => handleUpdateFte(child.id, parseFloat(val))}
-                      disabled={updateFte.isPending}
-                    >
-                      <SelectTrigger className="w-24 h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {VALID_FTE_VALUES.map((val) => (
-                          <SelectItem key={val} value={val.toString()}>
-                            {val.toFixed(2)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex items-center justify-center">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8"
-                      onClick={() => handleDeleteChild(child.id)}
-                      disabled={deleteChild.isPending}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
+          <div className="space-y-2">
+            {position.children.map((child) => (
+              <div
+                key={child.id}
+                className="grid items-center bg-background rounded-md p-2 h-10"
+                style={{
+                  gridTemplateColumns: "120px 180px 180px 150px 1fr 120px 40px",
+                }}
+              >
+                <div className="px-3 truncate text-sm text-muted-foreground">
+                  {child.market}
                 </div>
-              ))}
+                <div className="px-3 truncate text-sm text-muted-foreground">
+                  {child.facility_name}
+                </div>
+                <div className="px-3 truncate text-sm text-muted-foreground">
+                  {child.department_name}
+                </div>
+                <div className="px-3 truncate text-sm text-muted-foreground">
+                  {child.skill_type}
+                </div>
+                <div /> {/* Empty space for reason */}
+                <div className="px-3">
+                  <Select
+                    value={child.fte.toString()}
+                    onValueChange={(val) => handleUpdateFte(child.id, parseFloat(val))}
+                    disabled={updateFte.isPending}
+                  >
+                    <SelectTrigger className="w-24 h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {VALID_FTE_VALUES.map((val) => (
+                        <SelectItem key={val} value={val.toString()}>
+                          {val.toFixed(2)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center justify-center">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8"
+                    onClick={() => handleDeleteChild(child.id)}
+                    disabled={deleteChild.isPending}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
 
-              {/* Running Total */}
+            {/* Add Position Button */}
+            <div className="flex items-center justify-center py-2">
+              <Button
+                size="sm"
+                onClick={handleAddPosition}
+                disabled={addChild.isPending}
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Add Position
+              </Button>
+            </div>
+
+            {/* Running Total */}
+            {position.children.length > 0 && (
               <div className="flex items-center justify-between pt-2 border-t border-border">
                 <div className={cn(
                   "text-sm font-medium",
@@ -170,14 +167,8 @@ export function PositionBreakdownRow({ position }: PositionBreakdownRowProps) {
                   </div>
                 )}
               </div>
-            </div>
-          )}
-
-          {position.children.length === 0 && (
-            <div className="text-sm text-muted-foreground text-center py-4">
-              No positions added yet. Click "Add Position" to start breaking down the FTE gap.
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </motion.div>
     </div>
