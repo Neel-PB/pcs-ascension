@@ -137,15 +137,29 @@ export function PositionBreakdownRow({ position }: PositionBreakdownRowProps) {
             ))}
 
             {/* Add Position Button */}
-            <div className="flex items-center justify-center py-2">
-              <Button
-                size="sm"
-                onClick={handleAddPosition}
-                disabled={addChild.isPending}
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                Add Position
-              </Button>
+            <div 
+              className="grid items-center py-2"
+              style={{
+                gridTemplateColumns: "120px 180px 180px 150px 1fr 120px 40px",
+              }}
+            >
+              <div />
+              <div />
+              <div />
+              <div />
+              <div />
+              <div className="px-3">
+                <Button
+                  size="sm"
+                  onClick={handleAddPosition}
+                  disabled={addChild.isPending}
+                  className="w-full"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Position
+                </Button>
+              </div>
+              <div />
             </div>
 
             {/* Running Total */}
