@@ -357,7 +357,7 @@ const GroupRow = ({
       className="font-semibold bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer border-t-2 border-primary/20"
       onClick={() => onToggle?.(id)}
     >
-      <TableCell className="font-semibold py-2">
+      <TableCell className="font-semibold py-2 whitespace-nowrap">
         <div className="flex items-center gap-2">
           <motion.div
             initial={false}
@@ -436,7 +436,7 @@ const SkillRow = ({
 const TotalRow = ({ data }: { data: VarianceData }) => {
   return (
     <TableRow className="font-semibold bg-muted/20 border-t-2">
-      <TableCell className="font-semibold py-2">{data.skill}</TableCell>
+      <TableCell className="font-semibold py-2 whitespace-nowrap">{data.skill}</TableCell>
       <TableCell className="text-center font-semibold py-2">{data.targetDay?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold py-2">{data.targetNight?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold py-2">{data.targetTotal?.toFixed(1) || "0.0"}</TableCell>
