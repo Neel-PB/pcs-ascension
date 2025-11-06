@@ -488,7 +488,7 @@ const FTESkillShiftTable = ({
               Target FTEs
             </TableHead>
             <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
-              {viewMode === 'active' ? 'Active FTEs' : 'Hired FTEs'}
+              {viewMode === 'active' ? 'Actual FTEs' : 'Hired FTEs'}
             </TableHead>
             <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
               Open Req FTEs
