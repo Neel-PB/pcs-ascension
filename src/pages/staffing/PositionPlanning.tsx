@@ -686,7 +686,7 @@ export default function PositionPlanning() {
                     {viewMode === 'planned' && (
                       <motion.div
                         layoutId="viewModeIndicator"
-                        className="absolute inset-0 bg-gradient-primary rounded-md shadow-sm"
+                        className="absolute inset-0 bg-gradient-primary rounded-md"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -711,7 +711,7 @@ export default function PositionPlanning() {
                     {viewMode === 'active' && (
                       <motion.div
                         layoutId="viewModeIndicator"
-                        className="absolute inset-0 bg-gradient-primary rounded-md shadow-sm"
+                        className="absolute inset-0 bg-gradient-primary rounded-md"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -819,7 +819,7 @@ export default function PositionPlanning() {
                         {viewMode === 'planned' && (
                           <motion.div
                             layoutId="viewModeIndicatorModal"
-                            className="absolute inset-0 bg-gradient-primary rounded-md shadow-sm"
+                            className="absolute inset-0 bg-gradient-primary rounded-md"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
@@ -844,7 +844,7 @@ export default function PositionPlanning() {
                         {viewMode === 'active' && (
                           <motion.div
                             layoutId="viewModeIndicatorModal"
-                            className="absolute inset-0 bg-gradient-primary rounded-md shadow-sm"
+                            className="absolute inset-0 bg-gradient-primary rounded-md"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
