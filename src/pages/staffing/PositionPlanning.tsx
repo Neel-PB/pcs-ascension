@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, LayoutGroup } from "framer-motion";
 import { Download, Maximize2, ChevronRight } from "lucide-react";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import {
@@ -18,7 +18,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 
 interface VarianceData {
@@ -668,24 +667,67 @@ export default function PositionPlanning() {
             FTE Skill Shift Analysis
           </motion.h1>
 
-          {/* Toggle for Planned/Active */}
+          {/* Toggle for Hired/Actual */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.05 }}
           >
-            <ToggleGroup 
-              type="single" 
-              value={viewMode} 
-              onValueChange={(value) => value && setViewMode(value as 'planned' | 'active')}
-            >
-              <ToggleGroupItem value="planned" aria-label="Planned Resources">
-                Planned
-              </ToggleGroupItem>
-              <ToggleGroupItem value="active" aria-label="Active Resources">
-                Active
-              </ToggleGroupItem>
-            </ToggleGroup>
+            <div className="inline-flex h-7 items-center justify-center rounded-lg bg-muted p-0.5 text-muted-foreground">
+              <LayoutGroup>
+                <div className="flex gap-0.5">
+                  {/* Hired button */}
+                  <motion.button
+                    onClick={() => setViewMode('planned')}
+                    className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {viewMode === 'planned' && (
+                      <motion.div
+                        layoutId="viewModeIndicator"
+                        className="absolute inset-0 bg-gradient-primary rounded-md shadow-sm"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      />
+                    )}
+                    <span className={cn(
+                      "relative z-10 transition-colors",
+                      viewMode === 'planned' ? "text-white" : "text-muted-foreground"
+                    )}>
+                      Hired
+                    </span>
+                  </motion.button>
+
+                  {/* Actual button */}
+                  <motion.button
+                    onClick={() => setViewMode('active')}
+                    className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {viewMode === 'active' && (
+                      <motion.div
+                        layoutId="viewModeIndicator"
+                        className="absolute inset-0 bg-gradient-primary rounded-md shadow-sm"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      />
+                    )}
+                    <span className={cn(
+                      "relative z-10 transition-colors",
+                      viewMode === 'active' ? "text-white" : "text-muted-foreground"
+                    )}>
+                      Actual
+                    </span>
+                  </motion.button>
+                </div>
+              </LayoutGroup>
+            </div>
           </motion.div>
         </div>
 
@@ -763,19 +805,62 @@ export default function PositionPlanning() {
                   FTE Skill Shift Analysis (Expanded View)
                 </DialogTitle>
                 
-                {/* Toggle for Planned/Active in Modal */}
-                <ToggleGroup 
-                  type="single" 
-                  value={viewMode} 
-                  onValueChange={(value) => value && setViewMode(value as 'planned' | 'active')}
-                >
-                  <ToggleGroupItem value="planned" aria-label="Planned Resources">
-                    Planned
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="active" aria-label="Active Resources">
-                    Active
-                  </ToggleGroupItem>
-                </ToggleGroup>
+                {/* Toggle for Hired/Actual in Modal */}
+                <div className="inline-flex h-7 items-center justify-center rounded-lg bg-muted p-0.5 text-muted-foreground">
+                  <LayoutGroup>
+                    <div className="flex gap-0.5">
+                      {/* Hired button */}
+                      <motion.button
+                        onClick={() => setViewMode('planned')}
+                        className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        {viewMode === 'planned' && (
+                          <motion.div
+                            layoutId="viewModeIndicatorModal"
+                            className="absolute inset-0 bg-gradient-primary rounded-md shadow-sm"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                          />
+                        )}
+                        <span className={cn(
+                          "relative z-10 transition-colors",
+                          viewMode === 'planned' ? "text-white" : "text-muted-foreground"
+                        )}>
+                          Hired
+                        </span>
+                      </motion.button>
+
+                      {/* Actual button */}
+                      <motion.button
+                        onClick={() => setViewMode('active')}
+                        className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        {viewMode === 'active' && (
+                          <motion.div
+                            layoutId="viewModeIndicatorModal"
+                            className="absolute inset-0 bg-gradient-primary rounded-md shadow-sm"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                          />
+                        )}
+                        <span className={cn(
+                          "relative z-10 transition-colors",
+                          viewMode === 'active' ? "text-white" : "text-muted-foreground"
+                        )}>
+                          Actual
+                        </span>
+                      </motion.button>
+                    </div>
+                  </LayoutGroup>
+                </div>
               </div>
               
               <div className="flex items-center gap-4">
