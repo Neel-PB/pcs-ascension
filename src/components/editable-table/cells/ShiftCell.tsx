@@ -34,7 +34,7 @@ export function ShiftCell({ value, onClick }: ShiftCellProps) {
       
       {/* Bottom: Day/Night dropdown */}
       <Select value={selectedShift} onValueChange={setSelectedShift}>
-        <SelectTrigger className="h-6 text-xs border-0 bg-transparent px-0 py-0 focus:ring-1 focus:ring-ring">
+        <SelectTrigger className="h-6 text-xs border-0 bg-transparent px-0 py-0 focus:ring-0 focus-visible:ring-0 focus-visible:outline-none">
           <SelectValue placeholder="Select shift..." />
         </SelectTrigger>
         <SelectContent>
