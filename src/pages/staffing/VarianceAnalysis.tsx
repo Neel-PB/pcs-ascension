@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Download, Maximize2 } from "lucide-react";
+import { Download, Maximize2, ChevronRight } from "lucide-react";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useExpandStore } from "@/stores/useExpandStore";
+import { cn } from "@/lib/utils";
 
 interface VarianceData {
   name: string;
@@ -28,6 +30,12 @@ interface VarianceData {
   overheadDay: number;
   overheadNight: number;
   overheadTotal: number;
+}
+
+interface GroupedVarianceData extends VarianceData {
+  type: 'group' | 'skill' | 'total';
+  id: string;
+  children?: GroupedVarianceData[];
 }
 
 // Helper function to generate realistic variance data
@@ -160,10 +168,18 @@ export function VarianceAnalysis({
   selectedDepartment,
 }: VarianceAnalysisProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { isExpanded: isGroupExpanded, toggleExpanded } = useExpandStore();
 
   // Format variance value with +/- sign
   const formatVariance = (value: number): string => {
     return `${value > 0 ? '+' : ''}${value.toFixed(1)}`;
+  };
+
+  // Color code variance values (negative = surplus/green, positive = shortage/red, zero = balanced/yellow)
+  const getVarianceColor = (value: number): string => {
+    if (value < -0.1) return "text-green-600";
+    if (value > 0.1) return "text-red-600";
+    return "text-yellow-600";
   };
 
   const getColumnHeader = (): string => {
@@ -174,32 +190,169 @@ export function VarianceAnalysis({
     return "Regions";
   };
 
-  const getData = (): VarianceData[] => {
-    // Show departments when facility is selected
+  const getData = (): GroupedVarianceData[] => {
+    // Show departments when facility is selected (no grouping)
     if (selectedFacility !== "all-facilities") {
-      return varianceDataByLevel.departments;
+      return varianceDataByLevel.departments.map((dept, idx) => ({
+        ...dept,
+        type: 'skill' as const,
+        id: `dept-${idx}`,
+      }));
     }
 
-    // Show facilities when market (state) is selected
+    // Show facilities when market is selected (group by facility type or just list)
     if (selectedMarket !== "all-markets") {
       const facilityData = varianceDataByLevel.facilities[selectedMarket as keyof typeof varianceDataByLevel.facilities];
       if (facilityData) {
-        return facilityData;
+        // For simplicity, create groups for different facility types
+        const childrenHospitals = facilityData.filter(f => f.name.includes("Children"));
+        const otherFacilities = facilityData.filter(f => !f.name.includes("Children"));
+
+        const groups: GroupedVarianceData[] = [];
+
+        if (childrenHospitals.length > 0) {
+          const groupTotal = childrenHospitals.reduce((acc, curr) => ({
+            clDay: acc.clDay + curr.clDay,
+            clNight: acc.clNight + curr.clNight,
+            clTotal: acc.clTotal + curr.clTotal,
+            rnDay: acc.rnDay + curr.rnDay,
+            rnNight: acc.rnNight + curr.rnNight,
+            rnTotal: acc.rnTotal + curr.rnTotal,
+            pctDay: acc.pctDay + curr.pctDay,
+            pctNight: acc.pctNight + curr.pctNight,
+            pctTotal: acc.pctTotal + curr.pctTotal,
+            hucDay: acc.hucDay + curr.hucDay,
+            hucNight: acc.hucNight + curr.hucNight,
+            hucTotal: acc.hucTotal + curr.hucTotal,
+            overheadDay: acc.overheadDay + curr.overheadDay,
+            overheadNight: acc.overheadNight + curr.overheadNight,
+            overheadTotal: acc.overheadTotal + curr.overheadTotal,
+          }), {
+            clDay: 0, clNight: 0, clTotal: 0,
+            rnDay: 0, rnNight: 0, rnTotal: 0,
+            pctDay: 0, pctNight: 0, pctTotal: 0,
+            hucDay: 0, hucNight: 0, hucTotal: 0,
+            overheadDay: 0, overheadNight: 0, overheadTotal: 0,
+          });
+
+          groups.push({
+            name: "Children's Hospitals",
+            type: 'group',
+            id: 'group-children',
+            ...groupTotal,
+            children: childrenHospitals.map((f, idx) => ({
+              ...f,
+              type: 'skill' as const,
+              id: `child-${idx}`,
+            })),
+          });
+        }
+
+        if (otherFacilities.length > 0) {
+          const groupTotal = otherFacilities.reduce((acc, curr) => ({
+            clDay: acc.clDay + curr.clDay,
+            clNight: acc.clNight + curr.clNight,
+            clTotal: acc.clTotal + curr.clTotal,
+            rnDay: acc.rnDay + curr.rnDay,
+            rnNight: acc.rnNight + curr.rnNight,
+            rnTotal: acc.rnTotal + curr.rnTotal,
+            pctDay: acc.pctDay + curr.pctDay,
+            pctNight: acc.pctNight + curr.pctNight,
+            pctTotal: acc.pctTotal + curr.pctTotal,
+            hucDay: acc.hucDay + curr.hucDay,
+            hucNight: acc.hucNight + curr.hucNight,
+            hucTotal: acc.hucTotal + curr.hucTotal,
+            overheadDay: acc.overheadDay + curr.overheadDay,
+            overheadNight: acc.overheadNight + curr.overheadNight,
+            overheadTotal: acc.overheadTotal + curr.overheadTotal,
+          }), {
+            clDay: 0, clNight: 0, clTotal: 0,
+            rnDay: 0, rnNight: 0, rnTotal: 0,
+            pctDay: 0, pctNight: 0, pctTotal: 0,
+            hucDay: 0, hucNight: 0, hucTotal: 0,
+            overheadDay: 0, overheadNight: 0, overheadTotal: 0,
+          });
+
+          groups.push({
+            name: "Regional Medical Centers",
+            type: 'group',
+            id: 'group-regional',
+            ...groupTotal,
+            children: otherFacilities.map((f, idx) => ({
+              ...f,
+              type: 'skill' as const,
+              id: `regional-${idx}`,
+            })),
+          });
+        }
+
+        return groups;
       }
     }
 
-    // Show markets when region is selected
+    // Show markets grouped by region when region is selected
     if (selectedRegion !== "all-regions") {
       const marketsInRegion = regionMap[selectedRegion] || [];
-      return varianceDataByLevel.markets.filter(m => marketsInRegion.includes(m.name));
+      const marketData = varianceDataByLevel.markets.filter(m => marketsInRegion.includes(m.name));
+      
+      return marketData.map((market, idx) => ({
+        ...market,
+        type: 'skill' as const,
+        id: `market-${idx}`,
+      }));
     }
 
-    // Default: show all regions
-    return varianceDataByLevel.regions;
+    // Default: show all regions with markets as children
+    return varianceDataByLevel.regions.map((region, idx) => {
+      const marketsInRegion = regionMap[region.name] || [];
+      const marketData = varianceDataByLevel.markets.filter(m => marketsInRegion.includes(m.name));
+      
+      return {
+        ...region,
+        type: 'group' as const,
+        id: `region-${idx}`,
+        children: marketData.map((market, midx) => ({
+          ...market,
+          type: 'skill' as const,
+          id: `region-${idx}-market-${midx}`,
+        })),
+      };
+    });
   };
 
   const data = getData();
   const columnHeader = getColumnHeader();
+
+  // Calculate totals
+  const calculateTotals = (data: GroupedVarianceData[]): VarianceData => {
+    return data.reduce((acc, row) => ({
+      name: 'TOTAL',
+      clDay: acc.clDay + row.clDay,
+      clNight: acc.clNight + row.clNight,
+      clTotal: acc.clTotal + row.clTotal,
+      rnDay: acc.rnDay + row.rnDay,
+      rnNight: acc.rnNight + row.rnNight,
+      rnTotal: acc.rnTotal + row.rnTotal,
+      pctDay: acc.pctDay + row.pctDay,
+      pctNight: acc.pctNight + row.pctNight,
+      pctTotal: acc.pctTotal + row.pctTotal,
+      hucDay: acc.hucDay + row.hucDay,
+      hucNight: acc.hucNight + row.hucNight,
+      hucTotal: acc.hucTotal + row.hucTotal,
+      overheadDay: acc.overheadDay + row.overheadDay,
+      overheadNight: acc.overheadNight + row.overheadNight,
+      overheadTotal: acc.overheadTotal + row.overheadTotal,
+    }), {
+      name: 'TOTAL',
+      clDay: 0, clNight: 0, clTotal: 0,
+      rnDay: 0, rnNight: 0, rnTotal: 0,
+      pctDay: 0, pctNight: 0, pctTotal: 0,
+      hucDay: 0, hucNight: 0, hucTotal: 0,
+      overheadDay: 0, overheadNight: 0, overheadTotal: 0,
+    });
+  };
+
+  const totals = calculateTotals(data);
 
   const downloadCSV = () => {
     const headers = [
@@ -244,6 +397,186 @@ export function VarianceAnalysis({
     URL.revokeObjectURL(url);
   };
 
+  // Row components
+  const GroupRow = ({ row }: { row: GroupedVarianceData }) => {
+    const expanded = isGroupExpanded(row.id);
+    
+    return (
+      <>
+        <TableRow
+          className="bg-primary/5 hover:bg-primary/10 border-t-2 border-primary/20 cursor-pointer"
+          onClick={() => toggleExpanded(row.id)}
+        >
+          <TableCell className="font-semibold sticky left-0 bg-primary/5 whitespace-nowrap">
+            <div className="flex items-center gap-2">
+              <motion.div
+                animate={{ rotate: expanded ? 90 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </motion.div>
+              {row.name}
+            </div>
+          </TableCell>
+          <TableCell className={cn("text-center font-semibold border-l", getVarianceColor(row.clDay))}>
+            {formatVariance(row.clDay)}
+          </TableCell>
+          <TableCell className={cn("text-center font-semibold", getVarianceColor(row.clNight))}>
+            {formatVariance(row.clNight)}
+          </TableCell>
+          <TableCell className={cn("text-center font-semibold", getVarianceColor(row.clTotal))}>
+            {formatVariance(row.clTotal)}
+          </TableCell>
+          <TableCell className={cn("text-center font-semibold border-l", getVarianceColor(row.rnDay))}>
+            {formatVariance(row.rnDay)}
+          </TableCell>
+          <TableCell className={cn("text-center font-semibold", getVarianceColor(row.rnNight))}>
+            {formatVariance(row.rnNight)}
+          </TableCell>
+          <TableCell className={cn("text-center font-semibold", getVarianceColor(row.rnTotal))}>
+            {formatVariance(row.rnTotal)}
+          </TableCell>
+          <TableCell className={cn("text-center font-semibold border-l", getVarianceColor(row.pctDay))}>
+            {formatVariance(row.pctDay)}
+          </TableCell>
+          <TableCell className={cn("text-center font-semibold", getVarianceColor(row.pctNight))}>
+            {formatVariance(row.pctNight)}
+          </TableCell>
+          <TableCell className={cn("text-center font-semibold", getVarianceColor(row.pctTotal))}>
+            {formatVariance(row.pctTotal)}
+          </TableCell>
+          <TableCell className={cn("text-center font-semibold border-l", getVarianceColor(row.hucDay))}>
+            {formatVariance(row.hucDay)}
+          </TableCell>
+          <TableCell className={cn("text-center font-semibold", getVarianceColor(row.hucNight))}>
+            {formatVariance(row.hucNight)}
+          </TableCell>
+          <TableCell className={cn("text-center font-semibold", getVarianceColor(row.hucTotal))}>
+            {formatVariance(row.hucTotal)}
+          </TableCell>
+          <TableCell className={cn("text-center font-semibold border-l", getVarianceColor(row.overheadDay))}>
+            {formatVariance(row.overheadDay)}
+          </TableCell>
+          <TableCell className={cn("text-center font-semibold", getVarianceColor(row.overheadNight))}>
+            {formatVariance(row.overheadNight)}
+          </TableCell>
+          <TableCell className={cn("text-center font-semibold", getVarianceColor(row.overheadTotal))}>
+            {formatVariance(row.overheadTotal)}
+          </TableCell>
+        </TableRow>
+        {expanded && row.children?.map((child) => (
+          <SkillRow key={child.id} row={child} />
+        ))}
+      </>
+    );
+  };
+
+  const SkillRow = ({ row }: { row: GroupedVarianceData }) => (
+    <TableRow className="hover:bg-muted/30 bg-primary/5">
+      <TableCell className="font-medium sticky left-0 bg-primary/5 pl-8 whitespace-nowrap">
+        {row.name}
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold border-l", getVarianceColor(row.clDay))}>
+        {formatVariance(row.clDay)}
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(row.clNight))}>
+        {formatVariance(row.clNight)}
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(row.clTotal))}>
+        {formatVariance(row.clTotal)}
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold border-l", getVarianceColor(row.rnDay))}>
+        {formatVariance(row.rnDay)}
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(row.rnNight))}>
+        {formatVariance(row.rnNight)}
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(row.rnTotal))}>
+        {formatVariance(row.rnTotal)}
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold border-l", getVarianceColor(row.pctDay))}>
+        {formatVariance(row.pctDay)}
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(row.pctNight))}>
+        {formatVariance(row.pctNight)}
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(row.pctTotal))}>
+        {formatVariance(row.pctTotal)}
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold border-l", getVarianceColor(row.hucDay))}>
+        {formatVariance(row.hucDay)}
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(row.hucNight))}>
+        {formatVariance(row.hucNight)}
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(row.hucTotal))}>
+        {formatVariance(row.hucTotal)}
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold border-l", getVarianceColor(row.overheadDay))}>
+        {formatVariance(row.overheadDay)}
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(row.overheadNight))}>
+        {formatVariance(row.overheadNight)}
+      </TableCell>
+      <TableCell className={cn("text-center font-semibold", getVarianceColor(row.overheadTotal))}>
+        {formatVariance(row.overheadTotal)}
+      </TableCell>
+    </TableRow>
+  );
+
+  const TotalRow = ({ totals }: { totals: VarianceData }) => (
+    <TableRow className="bg-muted/20 border-t-2 font-bold">
+      <TableCell className="font-bold sticky left-0 bg-muted/20">
+        TOTAL
+      </TableCell>
+      <TableCell className={cn("text-center font-bold border-l", getVarianceColor(totals.clDay))}>
+        {formatVariance(totals.clDay)}
+      </TableCell>
+      <TableCell className={cn("text-center font-bold", getVarianceColor(totals.clNight))}>
+        {formatVariance(totals.clNight)}
+      </TableCell>
+      <TableCell className={cn("text-center font-bold", getVarianceColor(totals.clTotal))}>
+        {formatVariance(totals.clTotal)}
+      </TableCell>
+      <TableCell className={cn("text-center font-bold border-l", getVarianceColor(totals.rnDay))}>
+        {formatVariance(totals.rnDay)}
+      </TableCell>
+      <TableCell className={cn("text-center font-bold", getVarianceColor(totals.rnNight))}>
+        {formatVariance(totals.rnNight)}
+      </TableCell>
+      <TableCell className={cn("text-center font-bold", getVarianceColor(totals.rnTotal))}>
+        {formatVariance(totals.rnTotal)}
+      </TableCell>
+      <TableCell className={cn("text-center font-bold border-l", getVarianceColor(totals.pctDay))}>
+        {formatVariance(totals.pctDay)}
+      </TableCell>
+      <TableCell className={cn("text-center font-bold", getVarianceColor(totals.pctNight))}>
+        {formatVariance(totals.pctNight)}
+      </TableCell>
+      <TableCell className={cn("text-center font-bold", getVarianceColor(totals.pctTotal))}>
+        {formatVariance(totals.pctTotal)}
+      </TableCell>
+      <TableCell className={cn("text-center font-bold border-l", getVarianceColor(totals.hucDay))}>
+        {formatVariance(totals.hucDay)}
+      </TableCell>
+      <TableCell className={cn("text-center font-bold", getVarianceColor(totals.hucNight))}>
+        {formatVariance(totals.hucNight)}
+      </TableCell>
+      <TableCell className={cn("text-center font-bold", getVarianceColor(totals.hucTotal))}>
+        {formatVariance(totals.hucTotal)}
+      </TableCell>
+      <TableCell className={cn("text-center font-bold border-l", getVarianceColor(totals.overheadDay))}>
+        {formatVariance(totals.overheadDay)}
+      </TableCell>
+      <TableCell className={cn("text-center font-bold", getVarianceColor(totals.overheadNight))}>
+        {formatVariance(totals.overheadNight)}
+      </TableCell>
+      <TableCell className={cn("text-center font-bold", getVarianceColor(totals.overheadTotal))}>
+        {formatVariance(totals.overheadTotal)}
+      </TableCell>
+    </TableRow>
+  );
+
   const VarianceTable = () => (
     <Table>
       <TableHeader>
@@ -275,56 +608,14 @@ export function VarianceAnalysis({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data.map((row, index) => (
-          <TableRow key={index} className="hover:bg-muted/50">
-            <TableCell className="font-medium sticky left-0 bg-card">{row.name}</TableCell>
-            <TableCell className="text-center font-semibold border-l">
-              {formatVariance(row.clDay)}
-            </TableCell>
-            <TableCell className="text-center font-semibold">
-              {formatVariance(row.clNight)}
-            </TableCell>
-            <TableCell className="text-center font-semibold">
-              {formatVariance(row.clTotal)}
-            </TableCell>
-            <TableCell className="text-center font-semibold border-l">
-              {formatVariance(row.rnDay)}
-            </TableCell>
-            <TableCell className="text-center font-semibold">
-              {formatVariance(row.rnNight)}
-            </TableCell>
-            <TableCell className="text-center font-semibold">
-              {formatVariance(row.rnTotal)}
-            </TableCell>
-            <TableCell className="text-center font-semibold border-l">
-              {formatVariance(row.pctDay)}
-            </TableCell>
-            <TableCell className="text-center font-semibold">
-              {formatVariance(row.pctNight)}
-            </TableCell>
-            <TableCell className="text-center font-semibold">
-              {formatVariance(row.pctTotal)}
-            </TableCell>
-            <TableCell className="text-center font-semibold border-l">
-              {formatVariance(row.hucDay)}
-            </TableCell>
-            <TableCell className="text-center font-semibold">
-              {formatVariance(row.hucNight)}
-            </TableCell>
-            <TableCell className="text-center font-semibold">
-              {formatVariance(row.hucTotal)}
-            </TableCell>
-            <TableCell className="text-center font-semibold border-l">
-              {formatVariance(row.overheadDay)}
-            </TableCell>
-            <TableCell className="text-center font-semibold">
-              {formatVariance(row.overheadNight)}
-            </TableCell>
-            <TableCell className="text-center font-semibold">
-              {formatVariance(row.overheadTotal)}
-            </TableCell>
-          </TableRow>
-        ))}
+        {data.map((row) => {
+          if (row.type === 'group') {
+            return <GroupRow key={row.id} row={row} />;
+          } else {
+            return <SkillRow key={row.id} row={row} />;
+          }
+        })}
+        <TotalRow totals={totals} />
       </TableBody>
     </Table>
   );
