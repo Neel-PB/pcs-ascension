@@ -679,7 +679,7 @@ export default function PositionPlanning() {
                   {/* Hired button */}
                   <motion.button
                     onClick={() => setViewMode('planned')}
-                    className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -704,7 +704,7 @@ export default function PositionPlanning() {
                   {/* Actual button */}
                   <motion.button
                     onClick={() => setViewMode('active')}
-                    className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -812,7 +812,7 @@ export default function PositionPlanning() {
                       {/* Hired button */}
                       <motion.button
                         onClick={() => setViewMode('planned')}
-                        className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none"
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
@@ -837,7 +837,7 @@ export default function PositionPlanning() {
                       {/* Actual button */}
                       <motion.button
                         onClick={() => setViewMode('active')}
-                        className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none"
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
