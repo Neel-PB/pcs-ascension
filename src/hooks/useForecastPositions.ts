@@ -478,6 +478,39 @@ export function useEmployeesForClosureGap(closureRecord: ForecastPositionToClose
   });
 }
 
+export function useRequisitionsForClosureGap(closureRecord: ForecastPositionToClose | null) {
+  return useQuery({
+    queryKey: ['requisitions-for-closure', closureRecord?.id],
+    queryFn: async () => {
+      if (!closureRecord) return [];
+
+      let query = supabase
+        .from('positions')
+        .select('*')
+        .neq('positionLifecycle', 'Filled'); // Only unfilled positions
+
+      // Match against closure criteria
+      if (closureRecord.market) {
+        query = query.eq('market', closureRecord.market);
+      }
+      if (closureRecord.facility_id) {
+        query = query.eq('facilityId', closureRecord.facility_id);
+      }
+      if (closureRecord.department_id) {
+        query = query.eq('departmentId', closureRecord.department_id);
+      }
+      if (closureRecord.skill_type) {
+        query = query.eq('jobFamily', closureRecord.skill_type);
+      }
+
+      const { data, error } = await query.order('positionNum', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!closureRecord,
+  });
+}
+
 export function useSaveEmployeeSelection() {
   const queryClient = useQueryClient();
 

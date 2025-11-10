@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
-import { ChevronRight, Users } from "lucide-react";
+import { ChevronRight, FileText } from "lucide-react";
 import { motion } from "framer-motion";
+import { differenceInDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -8,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { 
   ForecastPositionToClose,
-  useEmployeesForClosureGap,
+  useRequisitionsForClosureGap,
   useSaveEmployeeSelection,
 } from "@/hooks/useForecastPositions";
 import { validateFteAllocation } from "@/lib/fteValidation";
@@ -23,18 +24,32 @@ export function PositionClosureRow({ position }: PositionClosureRowProps) {
     position.selected_position_ids || []
   );
 
-  const { data: employees = [], isLoading } = useEmployeesForClosureGap(position);
+  const { data: requisitions = [], isLoading } = useRequisitionsForClosureGap(position);
   const saveSelection = useSaveEmployeeSelection();
 
+  // Helper functions for vacancy age
+  const getVacancyAge = (statusDate: string | null) => {
+    if (!statusDate) return null;
+    return differenceInDays(new Date(), new Date(statusDate));
+  };
+
+  const getVacancyAgeDisplay = (statusDate: string | null) => {
+    const days = getVacancyAge(statusDate);
+    if (!days) return "—";
+    if (days > 60) return `${days}d - Urgent`;
+    if (days > 30) return `${days}d - Attention`;
+    return `${days}d - On Track`;
+  };
+
   // Calculate selected FTE sum and validation
-  const selectedEmployees = useMemo(() => 
-    employees.filter(e => selectedIds.includes(e.id)),
-    [employees, selectedIds]
+  const selectedRequisitions = useMemo(() => 
+    requisitions.filter(r => selectedIds.includes(r.id)),
+    [requisitions, selectedIds]
   );
 
   const selectedFteSum = useMemo(() => 
-    selectedEmployees.reduce((sum, emp) => sum + Number(emp.FTE || 0), 0),
-    [selectedEmployees]
+    selectedRequisitions.reduce((sum, req) => sum + Number(req.FTE || 0), 0),
+    [selectedRequisitions]
   );
 
   const validation = useMemo(() => 
@@ -43,10 +58,10 @@ export function PositionClosureRow({ position }: PositionClosureRowProps) {
   );
 
   // Auto-save selection
-  const handleToggle = (employeeId: string, checked: boolean) => {
+  const handleToggle = (requisitionId: string, checked: boolean) => {
     const newSelection = checked
-      ? [...selectedIds, employeeId]
-      : selectedIds.filter(id => id !== employeeId);
+      ? [...selectedIds, requisitionId]
+      : selectedIds.filter(id => id !== requisitionId);
     
     setSelectedIds(newSelection);
     
@@ -113,7 +128,7 @@ export function PositionClosureRow({ position }: PositionClosureRowProps) {
         </div>
       </div>
 
-      {/* Expanded Section - Employee Selection */}
+      {/* Expanded Section - Requisition Selection */}
       <motion.div
         initial={false}
         animate={{
@@ -127,31 +142,31 @@ export function PositionClosureRow({ position }: PositionClosureRowProps) {
         <div className="bg-muted/20">
           <div className="p-4">
             <div className="mb-3 flex items-center gap-2">
-              <Users className="w-4 h-4 text-muted-foreground" />
-              <h3 className="text-sm font-medium">Select Employees to Close</h3>
+              <FileText className="w-4 h-4 text-muted-foreground" />
+              <h3 className="text-sm font-medium">Select Requisitions to Close</h3>
               <Badge variant="outline" className="ml-auto">
-                {employees.length} matching employees
+                {requisitions.length} matching requisitions
               </Badge>
             </div>
 
             {isLoading ? (
               <div className="p-8 text-center text-muted-foreground">
-                Loading employees...
+                Loading requisitions...
               </div>
-            ) : employees.length === 0 ? (
+            ) : requisitions.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
-                <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>No employees found matching this criteria</p>
+                <FileText className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p>No requisitions found matching this criteria</p>
               </div>
             ) : (
               <>
                 <ScrollArea className="max-h-[300px] border rounded-md bg-background">
                   <div className="space-y-1 p-2">
-                    {employees.map((employee) => {
-                      const isSelected = selectedIds.includes(employee.id);
+                    {requisitions.map((requisition) => {
+                      const isSelected = selectedIds.includes(requisition.id);
                       return (
                         <label
-                          key={employee.id}
+                          key={requisition.id}
                           className={cn(
                             "flex items-center gap-3 p-3 rounded-md cursor-pointer transition-colors",
                             "hover:bg-muted/50",
@@ -162,20 +177,21 @@ export function PositionClosureRow({ position }: PositionClosureRowProps) {
                           <Checkbox
                             checked={isSelected}
                             onCheckedChange={(checked) => 
-                              handleToggle(employee.id, checked as boolean)
+                              handleToggle(requisition.id, checked as boolean)
                             }
                             className="data-[state=checked]:bg-primary"
                           />
-                          <div className="flex-1 grid grid-cols-[1fr_200px_80px] gap-4">
-                            <div>
-                              <p className="font-medium text-sm">{employee.employeeName}</p>
-                              <p className="text-xs text-muted-foreground">{employee.employeeId}</p>
+                          <div className="flex-1 grid grid-cols-[140px_180px_220px_160px_80px] gap-4">
+                            <div className="text-sm">{requisition.positionNum}</div>
+                            <div className="text-sm">
+                              {getVacancyAgeDisplay(requisition.positionStatusDate)}
                             </div>
+                            <div className="text-sm truncate">{requisition.jobTitle}</div>
                             <div className="text-sm text-muted-foreground truncate">
-                              {employee.jobTitle}
+                              {requisition.employmentType}
                             </div>
                             <div className="text-sm font-medium text-right">
-                              {Number(employee.FTE || 0).toFixed(2)} FTE
+                              {Number(requisition.FTE || 0).toFixed(2)} FTE
                             </div>
                           </div>
                         </label>
@@ -215,7 +231,7 @@ export function PositionClosureRow({ position }: PositionClosureRowProps) {
 
                   {selectedIds.length === 0 && (
                     <p className="text-xs text-muted-foreground">
-                      Select employees to match the FTE gap (within ±0.2 tolerance)
+                      Select requisitions to match the FTE gap (within ±0.2 tolerance)
                     </p>
                   )}
                 </div>

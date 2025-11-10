@@ -78,7 +78,7 @@ export function PositionBreakdownRow({ position }: PositionBreakdownRowProps) {
           opacity: isExpanded ? 1 : 0,
         }}
         transition={{ duration: 0.2 }}
-        style={{ overflow: "hidden" }}
+        style={{ overflow: isExpanded ? "visible" : "hidden" }}
       >
         <div className="bg-muted/20 p-4 space-y-3">
           {/* Child Positions */}
