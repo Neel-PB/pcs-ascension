@@ -1,8 +1,14 @@
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useAuth } from "@/hooks/useAuth";
+import { useRBAC } from "@/hooks/useRBAC";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { AvatarUploadCrop } from "./AvatarUploadCrop";
+import { Pencil } from "lucide-react";
 
 interface UserProfileModalProps {
   open: boolean;
@@ -12,6 +18,11 @@ interface UserProfileModalProps {
 
 export function UserProfileModal({ open, onOpenChange, userId }: UserProfileModalProps) {
   const { profile, roles, orgAccess, hasUnrestrictedAccess, isLoading } = useUserProfile(userId);
+  const { user } = useAuth();
+  const { hasRole } = useRBAC();
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  
+  const canEditAvatar = user?.id === userId || hasRole('admin');
 
   if (isLoading) {
     return (
@@ -38,22 +49,48 @@ export function UserProfileModal({ open, onOpenChange, userId }: UserProfileModa
         </DialogHeader>
         
         <div className="space-y-6 py-4">
-          {/* Personal Information */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-foreground">Personal Information</h3>
-            <Separator />
-            <div className="space-y-2">
-              <div className="flex justify-between items-start">
+          {/* Avatar and Personal Information */}
+          <div className="flex gap-4">
+            {/* Large Avatar */}
+            <div className="flex-shrink-0 relative group">
+              <Avatar 
+                className="h-24 w-24 cursor-pointer transition-opacity hover:opacity-80"
+                onClick={() => canEditAvatar && setUploadModalOpen(true)}
+              >
+                {profile?.avatar_url ? (
+                  <AvatarImage 
+                    src={profile.avatar_url} 
+                    alt={`${profile.first_name} ${profile.last_name}`} 
+                  />
+                ) : (
+                  <AvatarFallback className="text-lg">
+                    {profile?.first_name?.[0]}{profile?.last_name?.[0]}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              {canEditAvatar && (
+                <div 
+                  className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  onClick={() => setUploadModalOpen(true)}
+                >
+                  <Pencil className="h-6 w-6 text-foreground" />
+                </div>
+              )}
+            </div>
+            
+            {/* Info Rows */}
+            <div className="flex-1 space-y-3">
+              <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Name</span>
                 <span className="text-sm font-medium text-right">
                   {profile?.first_name} {profile?.last_name}
                 </span>
               </div>
-              <div className="flex justify-between items-start">
+              <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Email</span>
                 <span className="text-sm font-medium text-right break-all">{profile?.email}</span>
               </div>
-              <div className="flex justify-between items-start">
+              <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Job Title</span>
                 <span className="text-sm font-medium text-right">
                   {profile?.job_title || <span className="text-muted-foreground italic">Not Set</span>}
@@ -134,6 +171,13 @@ export function UserProfileModal({ open, onOpenChange, userId }: UserProfileModa
             )}
           </div>
         </div>
+        
+        <AvatarUploadCrop
+          open={uploadModalOpen}
+          onOpenChange={setUploadModalOpen}
+          userId={userId}
+          currentAvatarUrl={profile?.avatar_url}
+        />
       </DialogContent>
     </Dialog>
   );
