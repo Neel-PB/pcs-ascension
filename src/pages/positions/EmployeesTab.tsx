@@ -20,6 +20,7 @@ interface EmployeesTabProps {
   selectedRegion: string;
   selectedMarket: string;
   selectedFacility: string;
+  selectedDepartmentFamily: string;
   selectedDepartment: string;
 }
 
@@ -27,6 +28,7 @@ export function EmployeesTab({
   selectedRegion,
   selectedMarket,
   selectedFacility,
+  selectedDepartmentFamily,
   selectedDepartment,
 }: EmployeesTabProps) {
   const { data: employees, isLoading } = useEmployees({

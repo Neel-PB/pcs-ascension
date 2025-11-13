@@ -17,6 +17,7 @@ export default function StaffingSummary() {
   const [selectedRegion, setSelectedRegion] = useState("all-regions");
   const [selectedMarket, setSelectedMarket] = useState("all-markets");
   const [selectedFacility, setSelectedFacility] = useState("all-facilities");
+  const [selectedDepartmentFamily, setSelectedDepartmentFamily] = useState("all-dept-families");
   const [selectedDepartment, setSelectedDepartment] = useState("all-departments");
 
   const tabs = [
@@ -31,17 +32,25 @@ export default function StaffingSummary() {
     setSelectedRegion(value);
     setSelectedMarket("all-markets");
     setSelectedFacility("all-facilities");
+    setSelectedDepartmentFamily("all-dept-families");
     setSelectedDepartment("all-departments");
   };
 
   const handleMarketChange = (value: string) => {
     setSelectedMarket(value);
     setSelectedFacility("all-facilities");
+    setSelectedDepartmentFamily("all-dept-families");
     setSelectedDepartment("all-departments");
   };
 
   const handleFacilityChange = (value: string) => {
     setSelectedFacility(value);
+    setSelectedDepartmentFamily("all-dept-families");
+    setSelectedDepartment("all-departments");
+  };
+
+  const handleDepartmentFamilyChange = (value: string) => {
+    setSelectedDepartmentFamily(value);
     setSelectedDepartment("all-departments");
   };
   // Realistic chart data generators
@@ -409,10 +418,12 @@ This metric helps:
           onRegionChange={handleRegionChange}
           onMarketChange={handleMarketChange}
           onFacilityChange={handleFacilityChange}
+          onDepartmentFamilyChange={handleDepartmentFamilyChange}
           onDepartmentChange={setSelectedDepartment}
           selectedRegion={selectedRegion}
           selectedMarket={selectedMarket}
           selectedFacility={selectedFacility}
+          selectedDepartmentFamily={selectedDepartmentFamily}
           selectedDepartment={selectedDepartment}
         />
       </div>

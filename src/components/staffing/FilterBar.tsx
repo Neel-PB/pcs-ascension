@@ -6,10 +6,12 @@ interface FilterBarProps {
   onRegionChange?: (value: string) => void;
   onMarketChange?: (value: string) => void;
   onFacilityChange?: (value: string) => void;
+  onDepartmentFamilyChange?: (value: string) => void;
   onDepartmentChange?: (value: string) => void;
   selectedRegion?: string;
   selectedMarket?: string;
   selectedFacility?: string;
+  selectedDepartmentFamily?: string;
   selectedDepartment?: string;
 }
 
@@ -25,12 +27,37 @@ export function FilterBar({
   onRegionChange,
   onMarketChange,
   onFacilityChange,
+  onDepartmentFamilyChange,
   onDepartmentChange,
   selectedRegion = "all-regions",
   selectedMarket = "all-markets",
   selectedFacility = "all-facilities",
+  selectedDepartmentFamily = "all-dept-families",
   selectedDepartment = "all-departments",
 }: FilterBarProps) {
+  // Department Families (Job Families)
+  const departmentFamilies = [
+    "Clinical Nurse",
+    "Registered Nurse",
+    "Operating Room Nurse",
+    "Labor & Delivery Nurse",
+    "Nursing",
+    "Nursing Support",
+    "Patient Care Technician",
+    "Allied Health",
+    "Respiratory Therapy",
+    "Rehabilitation Services",
+    "Radiology Tech",
+    "Radiology Technician",
+    "Lab Tech",
+    "Pharmacy",
+    "Surgical Services",
+    "Patient Services",
+    "Physicians",
+    "Clinical Support",
+    "Administrative Support",
+    "Health Information Management",
+  ].sort();
   // Facilities mapped by market (state)
   const facilitiesByMarket: Record<string, Array<{ value: string; label: string }>> = {
     "Florida": [
@@ -162,11 +189,28 @@ export function FilterBar({
         </SelectContent>
       </Select>
 
+      {/* Department Family Filter */}
+      <Select 
+        value={selectedDepartmentFamily} 
+        onValueChange={onDepartmentFamilyChange}
+        disabled={selectedFacility === "all-facilities"}
+      >
+        <SelectTrigger className="w-[220px] bg-background border-border">
+          <SelectValue placeholder="Select dept family" />
+        </SelectTrigger>
+        <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
+          <SelectItem value="all-dept-families">All Dept Families</SelectItem>
+          {departmentFamilies.map(family => (
+            <SelectItem key={family} value={family}>{family}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
       {/* Department Filter */}
       <Select 
         value={selectedDepartment} 
         onValueChange={onDepartmentChange}
-        disabled={selectedFacility === "all-facilities"}
+        disabled={selectedDepartmentFamily === "all-dept-families"}
       >
         <SelectTrigger className="w-[180px] bg-background border-border">
           <SelectValue placeholder="Select department" />
