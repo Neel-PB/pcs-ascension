@@ -3,6 +3,7 @@ import { Search, Bell, Sun, Moon, Monitor } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { UserProfileModal } from "@/components/profile/UserProfileModal";
 import { GlobalSearchCommand } from "@/components/shell/GlobalSearchCommand";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ export function AppHeader() {
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
+  const { profile } = useUserProfile(user?.id);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,21 +40,10 @@ export function AppHeader() {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
-  const resolveAvatarUrl = (avatar_url?: string, first_name?: string, last_name?: string) => {
-    if (avatar_url) {
-      if (avatar_url.startsWith('http')) {
-        return avatar_url;
-      } else {
-        return supabase.storage.from('avatars').getPublicUrl(avatar_url).data.publicUrl;
-      }
-    }
-    const initials = `${first_name?.[0] || ''}${last_name?.[0] || ''}`.toUpperCase();
-    return `https://api.dicebear.com/7.x/initials/svg?seed=${initials}&backgroundColor=6366f1&color=ffffff`;
-  };
-
-  const userInitials = user?.user_metadata?.first_name?.[0] + user?.user_metadata?.last_name?.[0] || 'U';
-  const userName = `${user?.user_metadata?.first_name || ''} ${user?.user_metadata?.last_name || ''}`.trim() || 'User';
-  const userEmail = user?.email || '';
+  const userInitials = `${profile?.first_name?.[0] || ''}${profile?.last_name?.[0] || ''}` || 'U';
+  const userName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'User';
+  const userEmail = profile?.email || user?.email || '';
+  const avatarUrl = profile?.avatar_url;
 
   const cycleTheme = () => {
     if (theme === "light") setTheme("dark");
@@ -167,7 +158,7 @@ export function AppHeader() {
                 <Button variant="ghost" className="flex items-center gap-2 h-auto px-2 py-1.5">
                   <Avatar className="h-8 w-8">
                     <AvatarImage 
-                      src={resolveAvatarUrl(user.user_metadata?.avatar_url, user.user_metadata?.first_name, user.user_metadata?.last_name)} 
+                      src={avatarUrl || undefined} 
                       alt={userName} 
                     />
                     <AvatarFallback className="bg-gradient-primary text-white text-sm font-medium">
