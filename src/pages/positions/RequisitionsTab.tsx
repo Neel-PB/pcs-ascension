@@ -28,6 +28,7 @@ interface RequisitionsTabProps {
   selectedRegion: string;
   selectedMarket: string;
   selectedFacility: string;
+  selectedDepartmentFamily: string;
   selectedDepartment: string;
 }
 
@@ -35,6 +36,7 @@ export function RequisitionsTab({
   selectedRegion,
   selectedMarket,
   selectedFacility,
+  selectedDepartmentFamily,
   selectedDepartment,
 }: RequisitionsTabProps) {
   const { data: requisitions, isLoading } = useRequisitions({

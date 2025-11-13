@@ -20,6 +20,7 @@ interface ContractorsTabProps {
   selectedRegion: string;
   selectedMarket: string;
   selectedFacility: string;
+  selectedDepartmentFamily: string;
   selectedDepartment: string;
 }
 
@@ -27,6 +28,7 @@ export function ContractorsTab({
   selectedRegion,
   selectedMarket,
   selectedFacility,
+  selectedDepartmentFamily,
   selectedDepartment,
 }: ContractorsTabProps) {
   const { data: contractors, isLoading } = useContractors({
