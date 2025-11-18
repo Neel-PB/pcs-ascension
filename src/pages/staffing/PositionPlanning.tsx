@@ -56,7 +56,7 @@ const skillGroups: SkillGroup[] = [
   {
     id: 'overheads',
     name: 'Overheads',
-    skills: ['RN DIR', 'RN MGR', 'RN AST MGR', 'CORD', 'SPEC'],
+    skills: ['Director', 'RN MGR', 'RN AST MGR', 'CORD', 'SPEC'],
     defaultExpanded: false
   },
   {
@@ -75,7 +75,7 @@ const skillGroups: SkillGroup[] = [
 
 const varianceData: VarianceData[] = [
   {
-    skill: "RN DIR",
+    skill: "Director",
     targetDay: 0,
     targetNight: 0,
     targetTotal: 0,
