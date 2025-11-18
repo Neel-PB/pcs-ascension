@@ -82,7 +82,7 @@ export function ForecastTab() {
         {/* Positions to Close Section */}
         <div className="space-y-4">
           <div>
-            <h2 className="text-2xl font-bold">Positions to Close</h2>
+            <h2 className="text-2xl font-bold">FTE Surplus</h2>
             <p className="text-muted-foreground mt-1">
               Select employees from roster to match FTE gap
             </p>
