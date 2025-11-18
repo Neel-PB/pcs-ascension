@@ -261,10 +261,8 @@ const applyActiveVariation = (data: VarianceData[]): VarianceData[] => {
 };
 
 const getVarianceColor = (value: number) => {
-  if (value < 0) return "text-green-600 font-semibold";
   if (value > 0) return "text-red-600 font-semibold";
-  if (value === 0) return "text-yellow-600 font-semibold";
-  return "";
+  return "text-foreground font-semibold";
 };
 
 const computeGroupTotals = (skills: VarianceData[]): VarianceData => {
