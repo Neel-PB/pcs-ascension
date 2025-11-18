@@ -35,7 +35,7 @@ export function ForecastTab() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold">Positions to Open</h2>
+              <h2 className="text-2xl font-bold">FTE Shortage (Gap)</h2>
               <p className="text-muted-foreground mt-1">
                 Break down FTE gaps into individual position requests
               </p>
