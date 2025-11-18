@@ -62,7 +62,7 @@ const skillGroups: SkillGroup[] = [
   {
     id: 'clinical_staff',
     name: 'Clinical Staff',
-    skills: ['CL', 'RN'],
+    skills: ['CL', 'Registered Nurse'],
     defaultExpanded: false
   },
   {
@@ -165,7 +165,7 @@ const varianceData: VarianceData[] = [
     varianceTotal: 1.2,
   },
   {
-    skill: "RN",
+    skill: "Registered Nurse",
     targetDay: 14.3,
     targetNight: 14.3,
     targetTotal: 28.6,
