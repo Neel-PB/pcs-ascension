@@ -68,7 +68,7 @@ const skillGroups: SkillGroup[] = [
   {
     id: 'support_staff',
     name: 'Support Staff',
-    skills: ['PCT', 'CLERK'],
+    skills: ['Patient Care Technician', 'CLERK'],
     defaultExpanded: false
   }
 ];
@@ -180,7 +180,7 @@ const varianceData: VarianceData[] = [
     varianceTotal: -1.0,
   },
   {
-    skill: "PCT",
+    skill: "Patient Care Technician",
     targetDay: 9.6,
     targetNight: 9.6,
     targetTotal: 19.2,
