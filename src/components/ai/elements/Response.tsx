@@ -19,6 +19,10 @@ export const Response = memo(
             <Streamdown
               className={cn(
                 'prose prose-sm max-w-none dark:prose-invert size-full text-sm [&>*:first-child]:mt-0 [&>*:last-child]:mb-0',
+                '[&_h1]:text-lg [&_h1]:font-semibold',
+                '[&_h2]:text-base [&_h2]:font-semibold',
+                '[&_h3]:text-sm [&_h3]:font-semibold',
+                '[&_h4]:text-sm [&_h4]:font-medium',
                 className
               )}
               parseIncompleteMarkdown={isStreaming}
