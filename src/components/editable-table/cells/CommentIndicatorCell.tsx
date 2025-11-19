@@ -1,5 +1,6 @@
 import { MessageSquareText } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 import {
   Tooltip,
   TooltipContent,
@@ -28,19 +29,15 @@ export function CommentIndicatorCell({
       <Tooltip>
         <TooltipTrigger asChild>
           <CellButton onClick={handleClick} className={className}>
-            <div className="flex items-center gap-1.5">
-              <MessageSquareText
-                className={cn(
-                  'h-4 w-4 transition-colors',
-                  count === 0 ? 'text-muted-foreground/30' : 'text-primary'
-                )}
-              />
-              {count > 0 && (
-                <span className="text-xs font-medium tabular-nums text-primary">
-                  {count > 99 ? '99+' : count}
-                </span>
+            <Badge 
+              variant={count > 0 ? "default" : "outline"}
+              className={cn(
+                "font-medium tabular-nums",
+                count === 0 && "text-muted-foreground"
               )}
-            </div>
+            >
+              {count === 0 ? '-' : count > 99 ? '99+' : count}
+            </Badge>
           </CellButton>
         </TooltipTrigger>
         <TooltipContent>
