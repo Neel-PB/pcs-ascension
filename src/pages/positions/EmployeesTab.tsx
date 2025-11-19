@@ -200,7 +200,7 @@ export function EmployeesTab({
       }
       return col;
     });
-  }, [commentCounts]);
+  }, [commentCounts, handleRowClick, handleActualFteUpdate]);
 
   if (isLoading) {
     return (

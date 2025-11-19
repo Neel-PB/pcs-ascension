@@ -194,7 +194,7 @@ export function ContractorsTab({
       }
       return col;
     });
-  }, [commentCounts]);
+  }, [commentCounts, handleRowClick, handleActualFteUpdate]);
 
   if (isLoading) {
     return (

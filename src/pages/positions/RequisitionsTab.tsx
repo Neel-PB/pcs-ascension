@@ -198,7 +198,7 @@ export function RequisitionsTab({
 
   const columnsWithComments = useMemo(() => 
     createRequisitionColumnsWithComments(commentCounts, handleRowClick),
-    [commentCounts]
+    [commentCounts, handleRowClick]
   );
 
   if (isLoading) {
