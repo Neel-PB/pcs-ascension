@@ -40,10 +40,64 @@ export function PositionToOpenDetailsSheet({
             <TabsTrigger value="comments">Comments</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="details" className="flex-1 min-h-0 flex flex-col">
+          <TabsContent value="details" className="flex-1 min-h-0 overflow-auto">
+            <div className="space-y-6 pb-6">
+              {/* Status */}
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Status</h3>
+                <div className="flex items-center gap-2">
+                  <Badge variant={position.status === "approved" ? "default" : position.status === "rejected" ? "destructive" : "secondary"}>
+                    {position.status}
+                  </Badge>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Position Information */}
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-3">Position Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Skill Type</p>
+                    <p className="text-sm font-medium">{position.skill_type || "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">FTE</p>
+                    <p className="text-sm font-medium">{position.fte || "—"}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-xs text-muted-foreground">Reason to Open</p>
+                    <p className="text-sm font-medium">{position.reason_to_open || "—"}</p>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Location */}
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-3">Location</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Market</p>
+                    <p className="text-sm font-medium">{position.market || "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Facility</p>
+                    <p className="text-sm font-medium">{position.facility_name || "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Department</p>
+                    <p className="text-sm font-medium">{position.department_name || "—"}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="comments" className="flex-1 min-h-0 flex flex-col">
+            <PositionCommentSection positionId={position.id} />
           </TabsContent>
         </Tabs>
       </SheetContent>
