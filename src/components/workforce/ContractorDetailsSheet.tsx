@@ -153,7 +153,7 @@ export function ContractorDetailsSheet({
             </ScrollArea>
           </TabsContent>
 
-          <TabsContent value="comments" className="flex-1 min-h-0">
+          <TabsContent value="comments" className="flex-1 min-h-0 flex flex-col">
             <PositionCommentSection positionId={contractor.id} />
           </TabsContent>
         </Tabs>
