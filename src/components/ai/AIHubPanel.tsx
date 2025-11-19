@@ -398,7 +398,44 @@ export const AIHubPanel = () => {
         <div className="flex-1 overflow-y-auto px-4 lg:px-8 py-8 pb-32">
           {contentBlocks.length === 0 ? (
             <div className="h-full flex items-center justify-center">
-              {/* Welcome screen removed */}
+              <div className="max-w-2xl text-center space-y-6">
+                <div className="space-y-3">
+                  <h2 className="text-3xl font-bold text-foreground">
+                    Welcome to Staffing AI Assistant
+                  </h2>
+                  <p className="text-lg text-muted-foreground">
+                    How can I help you today?
+                  </p>
+                </div>
+                <div className="text-left space-y-4 text-muted-foreground">
+                  <p className="text-sm">I can help you with:</p>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>Analyze staffing trends and FTE metrics across departments</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>Review vacancy rates and open requisitions</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>Forecast workforce needs based on volume projections</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>Generate staffing reports and insights</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>Answer questions about productivity and labor metrics</span>
+                    </li>
+                  </ul>
+                </div>
+                <p className="text-sm text-muted-foreground/80 pt-4">
+                  Start by asking me a question or describing what you'd like to explore.
+                </p>
+              </div>
             </div>
           ) : (
             <div className="w-full px-4">
