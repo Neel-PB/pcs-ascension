@@ -104,7 +104,7 @@ export function DraggableColumnHeader<T = any>({
         <Tooltip>
           <TooltipTrigger asChild>
             <span className="truncate flex-1 min-w-0 text-left">
-              {column.label}
+              {column.renderHeader ? column.renderHeader(column) : column.label}
             </span>
           </TooltipTrigger>
           <TooltipContent side="top" className="max-w-xs font-medium">
@@ -112,7 +112,9 @@ export function DraggableColumnHeader<T = any>({
           </TooltipContent>
         </Tooltip>
       ) : (
-        <span className="truncate flex-1 min-w-0 text-left">{column.label}</span>
+        <span className="truncate flex-1 min-w-0 text-left">
+          {column.renderHeader ? column.renderHeader(column) : column.label}
+        </span>
       )}
 
       {/* Sort icon (if active) */}

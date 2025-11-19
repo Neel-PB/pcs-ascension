@@ -1,9 +1,10 @@
 import { ColumnDef } from '@/types/table';
 import { Position } from '@/types/position';
 import { BadgeCell } from '@/components/editable-table/cells/BadgeCell';
-import { BellIndicatorCell } from '@/components/editable-table/cells/BellIndicatorCell';
+import { CommentIndicatorCell } from '@/components/editable-table/cells/CommentIndicatorCell';
 import { ShiftCell } from '@/components/editable-table/cells/ShiftCell';
 import { differenceInDays } from 'date-fns';
+import { MessageSquare } from 'lucide-react';
 
 // Helper to calculate vacancy age
 const getVacancyAge = (statusDate: string | null) => {
@@ -122,15 +123,16 @@ export const createRequisitionColumnsWithComments = (
   ...requisitionColumns,
   {
     id: 'comments',
-    label: 'Alerts',
+    label: 'Comments',
     type: 'custom',
     width: 100,
     minWidth: 90,
     sortable: false,
     resizable: true,
     draggable: true,
+    renderHeader: () => <MessageSquare className="h-4 w-4" />,
     renderCell: (row) => (
-      <BellIndicatorCell
+      <CommentIndicatorCell
         count={commentCounts.get(row.id) ?? 0}
         onClick={() => onRowClick(row)}
       />
