@@ -312,7 +312,7 @@ Example: If 7,928 hours were paid in a 2-week period:
 7,928 / (40 hours × 2 weeks × 52 periods) = 38.2 FTEs`,
         breakdownData: [
           { skillType: 'RN', ftFtes: 45.0, ptFtes: 25.0, prnFtes: 8.5, totalActualPaidFtes: 78.5 },
-          { skillType: 'CL', ftFtes: 15.0, ptFtes: 5.0, prnFtes: 2.5, totalActualPaidFtes: 22.5 },
+          { skillType: 'Clinical Lead', ftFtes: 15.0, ptFtes: 5.0, prnFtes: 2.5, totalActualPaidFtes: 22.5 },
           { skillType: 'PCT', ftFtes: 10.0, ptFtes: 4.0, prnFtes: 1.0, totalActualPaidFtes: 15.0 },
           { skillType: 'RN Manager', ftFtes: 5.0, ptFtes: 2.0, prnFtes: 0.0, totalActualPaidFtes: 7.0 },
           { skillType: 'TOTAL', ftFtes: 75.0, ptFtes: 36.0, prnFtes: 12.0, totalActualPaidFtes: 123.0 },
