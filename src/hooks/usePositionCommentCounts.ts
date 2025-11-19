@@ -24,10 +24,10 @@ export function usePositionCommentCounts(positionIds: string[]) {
     // Initial fetch of comment counts
     const fetchCounts = async () => {
       try {
+        // Fetch ALL comments (more efficient than passing thousands of IDs)
         const { data, error } = await supabase
           .from('position_comments')
-          .select('position_id')
-          .in('position_id', validPositionIds);
+          .select('position_id');
 
         if (error) {
           console.error('Error fetching comment counts:', error);
@@ -35,12 +35,15 @@ export function usePositionCommentCounts(positionIds: string[]) {
           return;
         }
 
-        // Count comments per position
+        // Count comments per position (filter client-side)
         const countMap = new Map<string, number>();
         if (data) {
           data.forEach((comment) => {
-            const currentCount = countMap.get(comment.position_id) || 0;
-            countMap.set(comment.position_id, currentCount + 1);
+            // Only count if position is in our list
+            if (validPositionIds.includes(comment.position_id)) {
+              const currentCount = countMap.get(comment.position_id) || 0;
+              countMap.set(comment.position_id, currentCount + 1);
+            }
           });
         }
 
