@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useAIHub } from '@/hooks/useAIHub';
 import { useResizable } from '@/hooks/useResizable';
 import { PillChatBar } from './PillChatBar';
-import { AIWelcomeCards } from './AIWelcomeCards';
 import { ContentBlock } from '@/types/contentBlock';
 import { ContentBlockRenderer } from './ContentBlockRenderer';
 import { mockComplexResponse, simpleReasoningBlocks } from '@/data/mockContentBlocks';
@@ -17,7 +16,7 @@ interface ProcessedFile {
   extractedText?: string;
 }
 
-const MIN_WIDTH = 360;
+const MIN_WIDTH = 490;
 const MAX_WIDTH_VW = 0.7;
 const SNAP_POINTS = [400, 520, 640, 820];
 
@@ -313,10 +312,6 @@ export const AIHubPanel = () => {
     }, 800);
   };
 
-  const handleWelcomeCardClick = (action: string) => {
-    setCurrentInput(action);
-  };
-
   const handleClearChat = () => {
     setContentBlocks([]);
     setCurrentInput('');
@@ -403,7 +398,7 @@ export const AIHubPanel = () => {
         <div className="flex-1 overflow-y-auto px-4 lg:px-8 py-8 pb-32">
           {contentBlocks.length === 0 ? (
             <div className="h-full flex items-center justify-center">
-              <AIWelcomeCards onCardClick={handleWelcomeCardClick} />
+              {/* Welcome screen removed */}
             </div>
           ) : (
             <div className="w-full px-4">
