@@ -221,7 +221,6 @@ Example: If total volume is 7,602 over 365 days:
         id: '3m-low',
         title: "3M Low",
         value: "14.2",
-        isNegative: true,
         chartData: generateVolatileTrend(14.2, 3),
         chartType: "area" as const,
         delay: 0.1,
