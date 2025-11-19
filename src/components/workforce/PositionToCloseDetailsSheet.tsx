@@ -52,7 +52,7 @@ export function PositionToCloseDetailsSheet({
             <TabsTrigger value="comments">Comments</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="details" className="flex-1 min-h-0 overflow-auto">
+          <TabsContent value="details" className="flex-1">
             <div className="space-y-6 pb-6">
               {/* Status */}
               <div>
