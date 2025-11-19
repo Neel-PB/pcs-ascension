@@ -380,7 +380,7 @@ Lower NP% indicates better labor efficiency`,
       },
       {
         id: 'total-fullpart-ftes',
-        title: "Total Full/Part Time FTEs",
+        title: "EMPLOYED PRODUCTIVE FTES",
         value: "35.3 / 5.6",
         chartData: generateGrowthTrend(33.8, 40.9),
         chartType: "bar" as const,
