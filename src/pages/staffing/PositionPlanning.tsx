@@ -732,17 +732,17 @@ export default function PositionPlanning() {
         <div className="flex items-center gap-4">
           {/* Legend */}
           <motion.div
-            className="flex flex-col gap-2 text-sm"
+            className="flex flex-col gap-1 text-sm"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
           >
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-foreground">+</span>
+            <div className="flex items-center gap-1">
+              <span className="text-xl font-bold text-foreground leading-none">+</span>
               <span className="text-muted-foreground">FTE Surplus</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-red-500">-</span>
+            <div className="flex items-center gap-1">
+              <span className="text-xl font-bold text-red-500 leading-none">-</span>
               <span className="text-muted-foreground">FTE Shortage</span>
             </div>
           </motion.div>
@@ -863,13 +863,13 @@ export default function PositionPlanning() {
               
               <div className="flex items-center gap-4">
                 {/* Legend */}
-                <div className="flex flex-col gap-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-foreground">+</span>
+                <div className="flex flex-col gap-1 text-sm">
+                  <div className="flex items-center gap-1">
+                    <span className="text-xl font-bold text-foreground leading-none">+</span>
                     <span className="text-muted-foreground">FTE Surplus</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-red-500">-</span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-xl font-bold text-red-500 leading-none">-</span>
                     <span className="text-muted-foreground">FTE Shortage</span>
                   </div>
                 </div>
