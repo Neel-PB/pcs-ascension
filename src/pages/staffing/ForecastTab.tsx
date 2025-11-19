@@ -35,9 +35,9 @@ export function ForecastTab() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold">FTE Shortage (Gap)</h2>
+              <h2 className="text-2xl font-bold">FTE Shortage</h2>
               <p className="text-muted-foreground mt-1">
-                Break down FTE gaps into individual position requests
+                Forecasting positions to open for FTE shortage
               </p>
             </div>
             <DataRefreshButton dataSources={['forecast_data', 'staffing_grid']} />
@@ -84,7 +84,7 @@ export function ForecastTab() {
           <div>
             <h2 className="text-2xl font-bold">FTE Surplus</h2>
             <p className="text-muted-foreground mt-1">
-              Select employees from roster to match FTE gap
+              Forecasting positions to close for FTE surplus
             </p>
           </div>
           <Card className="overflow-hidden">
