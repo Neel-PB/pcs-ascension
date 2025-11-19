@@ -738,6 +738,10 @@ export default function PositionPlanning() {
             transition={{ duration: 0.3, delay: 0.1 }}
           >
             <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-green-500" />
+              <span className="text-muted-foreground">FTE Surplus (Negative)</span>
+            </div>
+            <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-red-500" />
               <span className="text-muted-foreground">FTE Shortage (Positive)</span>
             </div>
