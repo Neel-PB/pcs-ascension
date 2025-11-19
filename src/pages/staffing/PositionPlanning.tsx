@@ -738,7 +738,7 @@ export default function PositionPlanning() {
             transition={{ duration: 0.3, delay: 0.1 }}
           >
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-green-500" />
+              <div className="w-3 h-3 rounded-full bg-foreground" />
               <span className="text-muted-foreground">FTE Surplus (Negative)</span>
             </div>
             <div className="flex items-center gap-2">
@@ -865,7 +865,7 @@ export default function PositionPlanning() {
                 {/* Legend */}
                 <div className="flex items-center gap-6 text-sm">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-green-500" />
+                    <div className="w-3 h-3 rounded-full bg-foreground" />
                     <span className="text-muted-foreground">FTE Surplus (Negative)</span>
                   </div>
                   <div className="flex items-center gap-2">
