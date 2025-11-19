@@ -624,8 +624,15 @@ export function VarianceAnalysis({
         <h2 className="text-2xl font-bold">Variance Analysis</h2>
         <div className="flex items-center gap-4">
           {/* Legend */}
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span>Negative values indicate surplus, positive values indicate shortage</span>
+          <div className="flex flex-col gap-0.5 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-xl font-bold text-red-500 leading-none w-4 text-center">+</span>
+              <span className="text-muted-foreground">FTE Shortage</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xl font-bold text-foreground leading-none w-4 text-center">-</span>
+              <span className="text-muted-foreground">FTE Surplus</span>
+            </div>
           </div>
           
           {/* Action Buttons */}
@@ -677,8 +684,15 @@ export function VarianceAnalysis({
               </DialogTitle>
               <div className="flex items-center gap-4">
                 {/* Legend */}
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <span>Negative values indicate surplus, positive values indicate shortage</span>
+                <div className="flex flex-col gap-0.5 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl font-bold text-red-500 leading-none w-4 text-center">+</span>
+                    <span className="text-muted-foreground">FTE Shortage</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl font-bold text-foreground leading-none w-4 text-center">-</span>
+                    <span className="text-muted-foreground">FTE Surplus</span>
+                  </div>
                 </div>
                 {/* Download Button */}
                 <Button
