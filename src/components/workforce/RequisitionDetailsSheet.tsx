@@ -47,14 +47,14 @@ export function RequisitionDetailsSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <Tabs defaultValue="details" className="mt-6 flex flex-col flex-1 min-h-0">
+        <Tabs defaultValue="details" className="flex flex-col flex-1 min-h-0">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="comments">Comments</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="details" className="flex-1 flex flex-col relative">
-            <ScrollArea className="h-[calc(100%-80px)] pr-4">
+          <TabsContent value="details" className="flex-1 min-h-0 flex flex-col">
+            <ScrollArea className="h-full pr-4">
               <div className="space-y-6">
                 {/* Status & Vacancy Age */}
                 <div>
