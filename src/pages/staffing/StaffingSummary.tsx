@@ -94,7 +94,7 @@ export default function StaffingSummary() {
         chartData: generateDeclineTrend(16, 13.9),
         chartType: "bar" as const,
         delay: 0,
-        definition: "Vacancy Rate measures the percentage of authorized positions that are currently unfilled. A lower rate indicates better staffing levels and improved operational capacity.",
+        definition: "Vacancy Rate measures the percentage of Approved budgeted positions that are currently unfilled.",
         calculation: `Vacancy Rate = (Vacant Positions / Total Authorized Positions) × 100
 
 Example: If you have 6 vacant positions and 43.4 total authorized positions:
@@ -107,7 +107,7 @@ Example: If you have 6 vacant positions and 43.4 total authorized positions:
         chartData: generateGrowthTrend(37, 40.9),
         chartType: "bar" as const,
         delay: 0.05,
-        definition: "Hired FTEs represents the total number of full-time equivalent employees currently employed and actively working in the department.",
+        definition: "Total Full-time, Part-Time and PRNs equivalent labor resources currently employed by the organization (PRNs counted as 0.2 FTEs commitment).",
         calculation: `Hired FTEs = Sum of all active employee FTEs
 
 Includes:
@@ -122,7 +122,7 @@ Includes:
         chartData: generateSeasonalTrend(43.4, 2),
         chartType: "area" as const,
         delay: 0.1,
-        definition: "Target FTEs represents the planned number of full-time equivalent employees needed to meet operational requirements based on workload analysis and productivity standards.",
+        definition: "The number of resources needed to meet budgeted staffing levels based on specific type and amount of Unit of Service.",
         calculation: `Target FTEs = (Expected Volume × Hours per Unit) / (Standard Hours per FTE × Expected Productivity %)
 
 Determined by:
@@ -137,7 +137,7 @@ Determined by:
         chartData: generateGrowthTrend(1.7, 2.5),
         chartType: "area" as const,
         delay: 0.15,
-        definition: "FTE Variance shows the difference between target FTEs and hired FTEs. A positive variance indicates understaffing, while a negative variance indicates overstaffing.",
+        definition: "Variance between Hired FTEs and Target FTEs.",
         calculation: `FTE Variance = Target FTEs - Hired FTEs
 
 Example: If target is 43.4 and hired is 40.9:
@@ -151,7 +151,7 @@ Example: If target is 43.4 and hired is 40.9:
         chartType: "bar" as const,
         delay: 0.2,
         decimalPlaces: 0,
-        definition: "Open Requisitions represents the total number of approved job postings that are currently active and being recruited for. This includes positions that are in various stages of the hiring process.",
+        definition: "The number of approved requisitions that have not yet been successfully filled.",
         calculation: `Open Requisitions = Count of all active job postings
 
 Includes:
@@ -167,7 +167,7 @@ Excludes: Filled positions, withdrawn postings`,
         chartData: generateGrowthTrend(1.3, 2.5),
         chartType: "line" as const,
         delay: 0.25,
-        definition: "Requisition Variance shows the difference between FTE Variance and Open Requisitions. It indicates whether current recruiting efforts will meet staffing needs.",
+        definition: "Variance between Hire FTEs plus Open Requisition and Target FTEs.",
         calculation: `Requisition Variance = FTE Variance - Open Requisitions
 
 Example: If FTE Variance is 2.5 and Open Requisitions is 5:
@@ -304,7 +304,7 @@ Used when:
         chartData: generateGrowthTrend(35.8, 38.2),
         chartType: "bar" as const,
         delay: 0,
-        definition: "Total Paid Actual FTEs represents the actual number of FTEs based on paid hours during the reporting period. This includes regular, overtime, and other paid time.",
+        definition: "Total labor resources the organization actually pays for, regardless of whether those hours are productive or non-productive.",
         calculation: `Total Paid Actual FTEs = Total paid hours / Standard FTE hours
 
 Example: If 7,928 hours were paid in a 2-week period:
@@ -324,7 +324,7 @@ Example: If 7,928 hours were paid in a 2-week period:
         chartData: generateSeasonalTrend(5.7, 1.2),
         chartType: "bar" as const,
         delay: 0.05,
-        definition: "Total Contract Actual FTEs represents the number of contract labor FTEs (travelers, agency staff) working during the reporting period. These are temporary staff hired through external agencies.",
+        definition: "Total equivalent labor resources supplied by entities that are not Acute Ascension Hospitals, that are paid for and used by the organization.",
         calculation: `Total Contract Actual FTEs = Contract hours worked / Standard FTE hours
 
 Includes:
@@ -340,7 +340,7 @@ Excludes: Regular staff, PRN staff`,
         chartData: generateDeclineTrend(2.4, 2.1),
         chartType: "area" as const,
         delay: 0.1,
-        definition: "Total Overtime FTEs represents the equivalent number of FTEs based on overtime hours worked. High overtime can indicate understaffing or inefficient scheduling.",
+        definition: "Total worked hours above regular (FT) commitment the organization actually pays for.",
         calculation: `Total Overtime FTEs = Total overtime hours / Standard FTE hours
 
 Example: If 436 overtime hours worked in 2 weeks:
@@ -354,7 +354,7 @@ Note: This is the volume equivalent, not cost equivalent`,
         chartData: generateGrowthTrend(10.6, 12.4),
         chartType: "bar" as const,
         delay: 0.15,
-        definition: "Total PRN (Pro Re Nata - as needed) represents the number of FTEs working on an as-needed basis. PRN staff provide flexibility but may have higher costs and less continuity.",
+        definition: "Total PRNs productive equivalent labor resources the organization actually pays for.",
         calculation: `Total PRN = PRN hours worked / Standard FTE hours
 
 PRN staff characteristics:
@@ -370,7 +370,7 @@ PRN staff characteristics:
         chartData: generateGrowthTrend(8.1, 9.7),
         chartType: "area" as const,
         delay: 0.2,
-        definition: "The percentage of all paid hours that were not spent directly delivering patient care or performing operational work tied to Patient Volume (e.g., PTO, Holiday Pay, sick leave, education, admin or committee time, Training or onboarding.).",
+        definition: "The percentage of all paid hours that were not spent directly delivering patient care or performing operational work tied to Patient Volume (e.g., PTO, Holiday Pay, sick leave, education, admin or committee time, Training or onboarding).",
         calculation: `Total NP% = Total non-productive Man hours/ Total Paid hours *100
 
 Example: If 776 Non productive hours and 7,928 total paid hours:
@@ -385,7 +385,7 @@ Lower NP% indicates better labor efficiency`,
         chartData: generateGrowthTrend(33.8, 40.9),
         chartType: "bar" as const,
         delay: 0.25,
-        definition: "Total Full/Part Time FTEs shows the breakdown of hired employees by employment type. This helps understand workforce composition and scheduling flexibility.",
+        definition: "Total Full-time, Part-Time and PRNs productive equivalent labor resources the organization actually pays for.",
         calculation: `Full Time FTEs = Sum of all FTEs where employmentType = "Full Time"
 Part Time FTEs = Sum of all FTEs where employmentType = "Part Time"
 
