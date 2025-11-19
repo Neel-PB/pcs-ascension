@@ -626,7 +626,7 @@ export function VarianceAnalysis({
           {/* Legend */}
           <div className="flex flex-col gap-0.5 text-sm">
             <div className="flex items-center gap-2">
-              <span className="text-xl font-bold text-red-500 leading-none w-4 text-center">+</span>
+              <span className="text-xl font-bold text-foreground leading-none w-4 text-center">+</span>
               <span className="text-muted-foreground">FTE Shortage</span>
             </div>
             <div className="flex items-center gap-2">
@@ -686,7 +686,7 @@ export function VarianceAnalysis({
                 {/* Legend */}
                 <div className="flex flex-col gap-0.5 text-sm">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl font-bold text-red-500 leading-none w-4 text-center">+</span>
+                    <span className="text-xl font-bold text-foreground leading-none w-4 text-center">+</span>
                     <span className="text-muted-foreground">FTE Shortage</span>
                   </div>
                   <div className="flex items-center gap-2">
