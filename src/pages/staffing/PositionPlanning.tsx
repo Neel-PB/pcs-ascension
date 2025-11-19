@@ -720,7 +720,7 @@ export default function PositionPlanning() {
                       "relative z-10 transition-colors",
                       viewMode === 'active' ? "text-white" : "text-muted-foreground"
                     )}>
-                      Actual
+                      Active
                     </span>
                   </motion.button>
                 </div>
