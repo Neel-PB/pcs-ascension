@@ -6,6 +6,7 @@ import {
   BtnBulletList, 
   BtnNumberedList,
   Editor,
+  EditorProvider,
   Toolbar,
   createButton
 } from "react-simple-wysiwyg";
@@ -24,30 +25,32 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
 
   return (
     <div className="w-full">
-      <Editor
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        containerProps={{
-          className: "w-full",
-          style: {
-            minHeight: '120px',
-            maxHeight: '400px',
-          }
-        }}
-      >
-        <Toolbar className="flex items-center gap-1 p-2 border-b border-border/40 flex-wrap">
-          <BtnBold className="h-7 px-2 text-xs hover:bg-accent rounded" />
-          <BtnItalic className="h-7 px-2 text-xs hover:bg-accent rounded" />
-          <BtnUnderline className="h-7 px-2 text-xs hover:bg-accent rounded" />
-          <div className="w-px h-5 bg-border/40 mx-1" />
-          <BtnBulletList className="h-7 px-2 text-xs hover:bg-accent rounded" />
-          <BtnNumberedList className="h-7 px-2 text-xs hover:bg-accent rounded" />
-          <div className="w-px h-5 bg-border/40 mx-1" />
-          <BtnH1 className="h-7 px-2 text-xs hover:bg-accent rounded" />
-          <BtnH2 className="h-7 px-2 text-xs hover:bg-accent rounded" />
-          <BtnH3 className="h-7 px-2 text-xs hover:bg-accent rounded" />
-        </Toolbar>
-      </Editor>
+      <EditorProvider>
+        <Editor
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          containerProps={{
+            className: "w-full",
+            style: {
+              minHeight: '120px',
+              maxHeight: '400px',
+            }
+          }}
+        >
+          <Toolbar className="flex items-center gap-1 p-2 border-b border-border/40 flex-wrap">
+            <BtnBold className="h-7 px-2 text-xs hover:bg-accent rounded" />
+            <BtnItalic className="h-7 px-2 text-xs hover:bg-accent rounded" />
+            <BtnUnderline className="h-7 px-2 text-xs hover:bg-accent rounded" />
+            <div className="w-px h-5 bg-border/40 mx-1" />
+            <BtnBulletList className="h-7 px-2 text-xs hover:bg-accent rounded" />
+            <BtnNumberedList className="h-7 px-2 text-xs hover:bg-accent rounded" />
+            <div className="w-px h-5 bg-border/40 mx-1" />
+            <BtnH1 className="h-7 px-2 text-xs hover:bg-accent rounded" />
+            <BtnH2 className="h-7 px-2 text-xs hover:bg-accent rounded" />
+            <BtnH3 className="h-7 px-2 text-xs hover:bg-accent rounded" />
+          </Toolbar>
+        </Editor>
+      </EditorProvider>
     </div>
   );
 }
