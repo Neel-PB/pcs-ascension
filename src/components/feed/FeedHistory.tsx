@@ -108,11 +108,15 @@ export function FeedHistory() {
                 <div className="space-y-2">
                   <div className="text-sm">
                     {isExpanded || !isLongContent ? (
-                      <p className="whitespace-pre-wrap break-words">{post.content}</p>
+                      <div 
+                        className="prose prose-sm max-w-none dark:prose-invert prose-p:leading-relaxed prose-headings:mb-2"
+                        dangerouslySetInnerHTML={{ __html: post.content }}
+                      />
                     ) : (
-                      <p className="whitespace-pre-wrap break-words">
-                        {post.content.slice(0, 200)}...
-                      </p>
+                      <div 
+                        className="prose prose-sm max-w-none dark:prose-invert prose-p:leading-relaxed prose-headings:mb-2"
+                        dangerouslySetInnerHTML={{ __html: post.content.slice(0, 200) + '...' }}
+                      />
                     )}
                   </div>
 
@@ -138,11 +142,6 @@ export function FeedHistory() {
                   {post.attachments && post.attachments.length > 0 && (
                     <AttachmentDisplay attachments={post.attachments} />
                   )}
-                </div>
-
-                <div className="flex items-center gap-4 mt-3 pt-3 border-t text-xs text-muted-foreground">
-                  <span>{post.likes?.length || 0} likes</span>
-                  <span>{post.comments?.length || 0} comments</span>
                 </div>
               </Card>
             );
