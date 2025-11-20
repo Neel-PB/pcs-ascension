@@ -196,40 +196,44 @@ export function FeedComposer() {
     setActiveFormats(formats);
   };
 
-  const applyInlineTextSize = (size: 'text-xl' | 'text-lg') => {
+  const applyInlineTextSize = (fontSize: string, sizeKey: string) => {
+    editorRef.current?.focus();
+    
     const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
+    if (!selection) return;
     
-    const range = selection.getRangeAt(0);
-    
-    // Check if already in a text size span
-    const parentElement = range.commonAncestorContainer.nodeType === Node.TEXT_NODE 
-      ? range.commonAncestorContainer.parentElement 
-      : range.commonAncestorContainer as HTMLElement;
-    
-    const existingSizeElement = parentElement?.closest('[data-text-size]');
-    const sizeAttr = size === 'text-xl' ? 't1' : 't2';
-    
-    // If already in same size, remove it
-    if (existingSizeElement && existingSizeElement.getAttribute('data-text-size') === sizeAttr) {
-      const text = existingSizeElement.textContent || '';
-      const textNode = document.createTextNode(text);
-      existingSizeElement.parentNode?.replaceChild(textNode, existingSizeElement);
-    } else if (!range.collapsed) {
-      // Wrap selected text in span with size
-      const span = document.createElement('span');
-      span.className = size;
-      span.setAttribute('data-text-size', sizeAttr);
+    // Check if we're in a sized span already
+    if (selection.anchorNode) {
+      const parentElement = selection.anchorNode.nodeType === Node.TEXT_NODE 
+        ? selection.anchorNode.parentElement 
+        : selection.anchorNode as HTMLElement;
       
-      try {
-        range.surroundContents(span);
-      } catch {
-        // Fallback if selection spans multiple elements
-        const fragment = range.extractContents();
-        span.appendChild(fragment);
-        range.insertNode(span);
+      const existingSizeElement = parentElement?.closest('[data-text-size]');
+      const currentSize = existingSizeElement?.getAttribute('data-text-size');
+      
+      // If clicking same size, remove it
+      if (currentSize === sizeKey) {
+        document.execCommand('fontSize', false, '3'); // Reset to normal
+        // Remove the data attribute
+        const fontElements = editorRef.current?.querySelectorAll('font[size]');
+        fontElements?.forEach(el => {
+          const span = document.createElement('span');
+          span.textContent = el.textContent;
+          el.parentNode?.replaceChild(span, el);
+        });
+        setTimeout(updateActiveFormats, 10);
+        return;
       }
     }
+    
+    // Apply font size using execCommand
+    document.execCommand('fontSize', false, fontSize);
+    
+    // Add custom attribute for tracking
+    const fontElements = editorRef.current?.querySelectorAll('font[size="' + fontSize + '"]');
+    fontElements?.forEach(el => {
+      el.setAttribute('data-text-size', sizeKey);
+    });
     
     editorRef.current?.focus();
     setTimeout(updateActiveFormats, 10);
@@ -347,7 +351,7 @@ export function FeedComposer() {
             onInput={handleInput}
             onMouseUp={updateActiveFormats}
             onKeyUp={updateActiveFormats}
-            className="w-full bg-transparent border-0 resize-none outline-none placeholder:text-muted-foreground text-sm focus:ring-0 focus:border-0 min-h-[120px] max-h-[400px] overflow-y-auto [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1"
+            className="w-full bg-transparent border-0 resize-none outline-none placeholder:text-muted-foreground text-sm focus:ring-0 focus:border-0 min-h-[120px] max-h-[400px] overflow-y-auto [&_font[size='6']]:text-xl [&_font[size='5']]:text-lg [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1"
             data-placeholder="Type your feed post here..."
             style={{
               lineHeight: '1.5'
@@ -425,7 +429,7 @@ export function FeedComposer() {
                   size="icon"
                   className={`h-7 w-7 rounded-lg hover:bg-accent text-xs ${activeFormats.has('t1') ? 'bg-blue-500/20' : ''}`}
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => applyInlineTextSize('text-xl')}
+                  onClick={() => applyInlineTextSize('6', 't1')}
                   title="Large text (inline)"
                 >
                   T1
@@ -436,7 +440,7 @@ export function FeedComposer() {
                   size="icon"
                   className={`h-7 w-7 rounded-lg hover:bg-accent text-xs ${activeFormats.has('t2') ? 'bg-blue-500/20' : ''}`}
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => applyInlineTextSize('text-lg')}
+                  onClick={() => applyInlineTextSize('5', 't2')}
                   title="Medium text (inline)"
                 >
                   T2
