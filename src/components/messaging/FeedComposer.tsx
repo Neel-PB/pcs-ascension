@@ -202,41 +202,42 @@ export function FeedComposer() {
     const selection = window.getSelection();
     if (!selection) return;
     
-    // Check if we're in a sized span already
+    // Check if we're in a sized element already
     if (selection.anchorNode) {
       const parentElement = selection.anchorNode.nodeType === Node.TEXT_NODE 
         ? selection.anchorNode.parentElement 
         : selection.anchorNode as HTMLElement;
       
-      const existingSizeElement = parentElement?.closest('[data-text-size]');
+      const existingSizeElement = parentElement?.closest('font[data-text-size]');
       const currentSize = existingSizeElement?.getAttribute('data-text-size');
       
-      // If clicking same size, remove it
+      // If clicking same size, remove it (ONLY affects current selection)
       if (currentSize === sizeKey) {
-        document.execCommand('fontSize', false, '3'); // Reset to normal
-        // Remove the data attribute
-        const fontElements = editorRef.current?.querySelectorAll('font[size]');
-        fontElements?.forEach(el => {
-          const span = document.createElement('span');
-          span.textContent = el.textContent;
-          el.parentNode?.replaceChild(span, el);
-        });
+        document.execCommand('removeFormat'); // Only affects selection, not entire editor
         setTimeout(updateActiveFormats, 10);
         return;
       }
     }
     
-    // Apply font size using execCommand
+    // Apply font size using execCommand (only affects selection)
     document.execCommand('fontSize', false, fontSize);
     
-    // Add custom attribute for tracking
-    const fontElements = editorRef.current?.querySelectorAll('font[size="' + fontSize + '"]');
-    fontElements?.forEach(el => {
-      el.setAttribute('data-text-size', sizeKey);
-    });
+    // Add custom attribute for tracking - only to newly created element
+    setTimeout(() => {
+      if (editorRef.current && selection.anchorNode) {
+        const parentElement = selection.anchorNode.nodeType === Node.TEXT_NODE 
+          ? selection.anchorNode.parentElement 
+          : selection.anchorNode as HTMLElement;
+        
+        const fontElement = parentElement?.closest('font[size="' + fontSize + '"]');
+        if (fontElement && !fontElement.hasAttribute('data-text-size')) {
+          fontElement.setAttribute('data-text-size', sizeKey);
+        }
+      }
+      updateActiveFormats();
+    }, 10);
     
     editorRef.current?.focus();
-    setTimeout(updateActiveFormats, 10);
   };
 
   const execCommand = (command: string, value?: string) => {
