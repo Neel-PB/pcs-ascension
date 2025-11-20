@@ -1,11 +1,15 @@
-import { FileText, Download, ExternalLink } from "lucide-react";
+import { Download, ExternalLink, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { useState } from "react";
 
 interface AttachmentDisplayProps {
   attachments: string[];
 }
 
 export function AttachmentDisplay({ attachments }: AttachmentDisplayProps) {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  
   if (!attachments || attachments.length === 0) return null;
 
   const getFileExtension = (url: string): string => {
@@ -42,33 +46,33 @@ export function AttachmentDisplay({ attachments }: AttachmentDisplayProps) {
   };
 
   return (
-    <div className="space-y-2 mt-3">
-      {attachments.map((url, index) => {
-        if (isImage(url)) {
-          return (
-            <div key={index} className="rounded-lg overflow-hidden border border-border">
-              <img 
-                src={url} 
-                alt={`Attachment ${index + 1}`}
-                className="w-full h-auto max-h-[400px] object-contain bg-muted"
-                loading="lazy"
-              />
-            </div>
-          );
-        } else {
+    <>
+      <div className="space-y-2 mt-3">
+        {attachments.map((url, index) => {
+          if (isImage(url)) {
+            return (
+              <div 
+                key={index} 
+                className="rounded-lg overflow-hidden border border-border cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => setSelectedImage(url)}
+              >
+                <img 
+                  src={url} 
+                  alt={`Attachment ${index + 1}`}
+                  className="w-full h-auto max-h-[400px] object-contain bg-muted"
+                  loading="lazy"
+                />
+              </div>
+            );
+          } else {
           const filename = getFileName(url);
           return (
             <div 
               key={index}
               className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/30 hover:bg-muted/50 transition-colors"
             >
-              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <FileText className="h-5 w-5 text-primary" />
-              </div>
-              
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{filename}</p>
-                <p className="text-xs text-muted-foreground">Document</p>
               </div>
 
               <div className="flex items-center gap-1">
@@ -95,6 +99,30 @@ export function AttachmentDisplay({ attachments }: AttachmentDisplayProps) {
           );
         }
       })}
-    </div>
+      </div>
+
+      <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+        <DialogContent className="max-w-5xl p-0 bg-background/95 backdrop-blur">
+          <DialogTitle className="sr-only">Image Preview</DialogTitle>
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 right-2 z-10 bg-background/80 hover:bg-background"
+              onClick={() => setSelectedImage(null)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+            {selectedImage && (
+              <img
+                src={selectedImage}
+                alt="Full size preview"
+                className="w-full h-auto max-h-[90vh] object-contain"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
