@@ -57,7 +57,7 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-lg [&>button]:hidden p-0 flex flex-col">
-        <SheetHeader className="px-6 py-4 border-b">
+        <SheetHeader className="flex-shrink-0 px-6 py-4 border-b">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full grid grid-cols-3">
               <TabsTrigger value="feed">Feed</TabsTrigger>
@@ -74,8 +74,8 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
           </Tabs>
         </SheetHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-          <TabsContent value="feed" className="flex-1 m-0">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col">
+          <TabsContent value="feed" className="flex-1 overflow-hidden">
             <ScrollArea className="h-full px-6">
               {isLoadingPosts ? (
                 <div className="space-y-4 py-4">
@@ -159,7 +159,7 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
             </ScrollArea>
           </TabsContent>
 
-          <TabsContent value="alerts" className="flex-1 m-0">
+          <TabsContent value="alerts" className="flex-1 overflow-hidden">
             {isLoading ? (
               <div className="flex-1 px-6 py-4 space-y-3">
                 {[...Array(5)].map((_, i) => (
@@ -234,7 +234,7 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
             )}
           </TabsContent>
 
-          <TabsContent value="actions" className="flex-1 m-0">
+          <TabsContent value="actions" className="flex-1 overflow-hidden">
             <ScrollArea className="h-full px-6">
               <div className="text-center py-12">
                 <Check className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -246,7 +246,7 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
           </TabsContent>
         </Tabs>
 
-        <SheetFooter className="px-6 py-4 border-t flex-row justify-between gap-2">
+        <SheetFooter className="flex-shrink-0 px-6 py-4 border-t flex-row justify-between gap-2">
           {activeTab === "alerts" && unreadCount > 0 && (
             <Button
               variant="outline"
