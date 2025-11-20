@@ -23,6 +23,7 @@ export function FeedComposer() {
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [attachments, setAttachments] = useState<ProcessedFile[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [activeFormats, setActiveFormats] = useState<Set<string>>(new Set());
   const { mutate: sendMessage, isPending } = useSendMessage();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -170,10 +171,21 @@ export function FeedComposer() {
     fileInputRef.current?.click();
   };
 
+  const updateActiveFormats = () => {
+    const formats = new Set<string>();
+    if (document.queryCommandState('bold')) formats.add('bold');
+    if (document.queryCommandState('italic')) formats.add('italic');
+    if (document.queryCommandState('underline')) formats.add('underline');
+    if (document.queryCommandState('insertUnorderedList')) formats.add('ul');
+    if (document.queryCommandState('insertOrderedList')) formats.add('ol');
+    setActiveFormats(formats);
+  };
+
   const execCommand = (command: string, value?: string) => {
     editorRef.current?.focus();
     document.execCommand(command, false, value);
     editorRef.current?.focus();
+    setTimeout(updateActiveFormats, 10);
   };
 
   const handleSubmit = (e?: React.FormEvent) => {
@@ -279,7 +291,9 @@ export function FeedComposer() {
             ref={editorRef}
             contentEditable
             onInput={handleInput}
-            className="w-full bg-transparent border-0 resize-none outline-none placeholder:text-muted-foreground text-sm focus:ring-0 focus:border-0 min-h-[120px] max-h-[400px] overflow-y-auto [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:my-2 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:my-2 [&_h3]:text-lg [&_h3]:font-bold [&_h3]:my-1 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1"
+            onMouseUp={updateActiveFormats}
+            onKeyUp={updateActiveFormats}
+            className="w-full bg-transparent border-0 resize-none outline-none placeholder:text-muted-foreground text-sm focus:ring-0 focus:border-0 min-h-[120px] max-h-[400px] overflow-y-auto [&_h1]:text-2xl [&_h1]:my-2 [&_h2]:text-xl [&_h2]:my-2 [&_h3]:text-lg [&_h3]:my-1 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1"
             data-placeholder="Type your feed post here..."
             style={{
               lineHeight: '1.5'
@@ -294,7 +308,7 @@ export function FeedComposer() {
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 rounded-lg hover:bg-accent"
+                className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('bold') ? 'bg-accent' : ''}`}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => execCommand('bold')}
                 title="Bold"
@@ -305,7 +319,7 @@ export function FeedComposer() {
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 rounded-lg hover:bg-accent"
+                className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('italic') ? 'bg-accent' : ''}`}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => execCommand('italic')}
                 title="Italic"
@@ -316,7 +330,7 @@ export function FeedComposer() {
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 rounded-lg hover:bg-accent"
+                className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('underline') ? 'bg-accent' : ''}`}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => execCommand('underline')}
                 title="Underline"
@@ -330,7 +344,7 @@ export function FeedComposer() {
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 rounded-lg hover:bg-accent"
+                className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('ul') ? 'bg-accent' : ''}`}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => execCommand('insertUnorderedList')}
                 title="Bullet List"
@@ -341,7 +355,7 @@ export function FeedComposer() {
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 rounded-lg hover:bg-accent"
+                className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('ol') ? 'bg-accent' : ''}`}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => execCommand('insertOrderedList')}
                 title="Numbered List"
@@ -355,34 +369,34 @@ export function FeedComposer() {
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 rounded-lg hover:bg-accent text-xs font-bold"
+                className="h-7 w-7 rounded-lg hover:bg-accent text-xs"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => execCommand('formatBlock', 'h1')}
-                title="Heading 1"
+                title="Text Size 1"
               >
-                H1
+                T1
               </Button>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 rounded-lg hover:bg-accent text-xs font-bold"
+                className="h-7 w-7 rounded-lg hover:bg-accent text-xs"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => execCommand('formatBlock', 'h2')}
-                title="Heading 2"
+                title="Text Size 2"
               >
-                H2
+                T2
               </Button>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 rounded-lg hover:bg-accent text-xs font-bold"
+                className="h-7 w-7 rounded-lg hover:bg-accent text-xs"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => execCommand('formatBlock', 'h3')}
-                title="Heading 3"
+                title="Text Size 3"
               >
-                H3
+                T3
               </Button>
           </div>
 
