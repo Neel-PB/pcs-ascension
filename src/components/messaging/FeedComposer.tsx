@@ -198,23 +198,17 @@ export function FeedComposer() {
   const execCommand = (command: string, value?: string) => {
     editorRef.current?.focus();
     
-    // For formatBlock, only execute if there's content
-    if (command === 'formatBlock') {
-      const selection = window.getSelection();
-      const hasContent = editorRef.current?.textContent?.trim().length > 0;
-      const hasSelection = selection && !selection.isCollapsed;
-      
-      if (!hasContent && !hasSelection) {
-        return;
-      }
-      
+    // For formatBlock heading toggle
+    if (command === 'formatBlock' && value) {
       // Toggle heading: if already in this heading, revert to paragraph
-      if (value && activeFormats.has(value)) {
+      if (activeFormats.has(value)) {
         document.execCommand('formatBlock', false, 'p');
-        editorRef.current?.focus();
-        setTimeout(updateActiveFormats, 10);
-        return;
+      } else {
+        document.execCommand('formatBlock', false, value);
       }
+      editorRef.current?.focus();
+      setTimeout(updateActiveFormats, 10);
+      return;
     }
     
     document.execCommand(command, false, value);
@@ -327,7 +321,7 @@ export function FeedComposer() {
             onInput={handleInput}
             onMouseUp={updateActiveFormats}
             onKeyUp={updateActiveFormats}
-            className="w-full bg-transparent border-0 resize-none outline-none placeholder:text-muted-foreground text-sm focus:ring-0 focus:border-0 min-h-[120px] max-h-[400px] overflow-y-auto [&_h1]:text-2xl [&_h1]:my-2 [&_h2]:text-xl [&_h2]:my-2 [&_h3]:text-lg [&_h3]:my-1 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1"
+            className="w-full bg-transparent border-0 resize-none outline-none placeholder:text-muted-foreground text-sm focus:ring-0 focus:border-0 min-h-[120px] max-h-[400px] overflow-y-auto [&_h1]:text-xl [&_h1]:my-2 [&_h2]:text-lg [&_h2]:my-1.5 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1"
             data-placeholder="Type your feed post here..."
             style={{
               lineHeight: '1.5'
@@ -406,7 +400,7 @@ export function FeedComposer() {
                   className={`h-7 w-7 rounded-lg hover:bg-accent text-xs ${activeFormats.has('h1') ? 'bg-blue-500/20' : ''}`}
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => execCommand('formatBlock', 'h1')}
-                  title="Text Size 1"
+                  title="Large Text"
                 >
                   T1
                 </Button>
@@ -417,20 +411,9 @@ export function FeedComposer() {
                   className={`h-7 w-7 rounded-lg hover:bg-accent text-xs ${activeFormats.has('h2') ? 'bg-blue-500/20' : ''}`}
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => execCommand('formatBlock', 'h2')}
-                  title="Text Size 2"
+                  title="Medium Text"
                 >
                   T2
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className={`h-7 w-7 rounded-lg hover:bg-accent text-xs ${activeFormats.has('h3') ? 'bg-blue-500/20' : ''}`}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => execCommand('formatBlock', 'h3')}
-                  title="Text Size 3"
-                >
-                  T3
                 </Button>
           </div>
 
