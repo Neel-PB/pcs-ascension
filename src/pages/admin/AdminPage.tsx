@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { motion, LayoutGroup, AnimatePresence } from "framer-motion";
 import { Shield, Upload, Users, Lock, Settings, MessageSquare } from "lucide-react";
-import { ContentCard } from "@/components/shell/ContentCard";
 import { useRBAC } from "@/hooks/useRBAC";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -9,6 +8,7 @@ import DataImportPage from "./DataImportPage";
 import UsersManagement from "./UsersManagement";
 import { MessageComposer } from "@/components/messaging/MessageComposer";
 import { MessageHistory } from "@/components/messaging/MessageHistory";
+import { Button } from "@/components/ui/button";
 
 export default function AdminPage() {
   const { hasPermission, loading } = useRBAC();
@@ -46,35 +46,31 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <ContentCard title="Admin Panel" icon={Shield}>
-        <div className="flex items-center justify-center py-12">
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </ContentCard>
+      <div className="flex items-center justify-center py-12">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
     );
   }
 
   if (!hasPermission("admin.access")) {
     return (
-      <ContentCard title="Access Denied" icon={Shield}>
-        <div className="flex flex-col items-center justify-center py-12 space-y-4">
-          <p className="text-muted-foreground">You don't have permission to access this page.</p>
-          <button
-            onClick={handleGrantAdminAccess}
-            disabled={grantingAccess}
-            className="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 transition-colors"
-          >
-            {grantingAccess ? "Granting Access..." : "Unlock Admin Access"}
-          </button>
-        </div>
-      </ContentCard>
+      <div className="flex flex-col items-center justify-center py-12 space-y-4">
+        <Shield className="h-12 w-12 text-muted-foreground/50" />
+        <p className="text-muted-foreground">You don't have permission to access this page.</p>
+        <Button
+          onClick={handleGrantAdminAccess}
+          disabled={grantingAccess}
+        >
+          {grantingAccess ? "Granting Access..." : "Unlock Admin Access"}
+        </Button>
+      </div>
     );
   }
 
   return (
-    <ContentCard title="Admin Panel" icon={Shield}>
+    <div className="space-y-6">
       <LayoutGroup>
-        <div className="relative bg-secondary rounded-lg p-1 mb-6">
+        <div className="relative bg-secondary rounded-lg p-1">
           <div className="flex">
             {tabs.map((tab, index) => (
               <motion.button
@@ -153,6 +149,6 @@ export default function AdminPage() {
           )}
         </motion.div>
       </AnimatePresence>
-    </ContentCard>
+    </div>
   );
 }
