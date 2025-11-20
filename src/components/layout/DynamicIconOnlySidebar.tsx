@@ -112,7 +112,7 @@ export function DynamicIconOnlySidebar() {
   });
 
   return (
-    <div className="fixed left-0 top-0 z-50 h-screen border-r border-border bg-background" style={{ width: 'var(--sidebar-width)' }}>
+    <div className="fixed left-0 top-0 z-50 h-screen bg-background" style={{ width: 'var(--sidebar-width)' }}>
       <div className="flex h-full flex-col">
         {/* Organization switcher */}
         <div className="flex items-center justify-center py-3 px-2">
@@ -120,7 +120,7 @@ export function DynamicIconOnlySidebar() {
         </div>
 
         {/* Main navigation */}
-        <div className="flex-1 overflow-y-auto pt-0 pb-4">
+        <div className="flex-1 overflow-y-auto pt-0 pb-4 border-r border-border">
           <LayoutGroup>
             <div className="relative bg-secondary/30 rounded-xl p-1 space-y-1 mx-1">
               {accessibleModules.map((module, index) => {
