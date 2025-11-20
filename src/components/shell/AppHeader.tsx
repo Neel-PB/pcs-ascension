@@ -103,10 +103,7 @@ export function AppHeader() {
             variant="ghost" 
             size="icon" 
             className="relative" 
-            onClick={() => {
-              console.log("Bell clicked, opening notifications");
-              setNotificationsOpen(true);
-            }}
+            onClick={() => setNotificationsOpen(true)}
           >
             <Bell className="h-5 w-5" />
             {notifications && notifications.filter(n => !n.read).length > 0 && (
