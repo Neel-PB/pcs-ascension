@@ -1,19 +1,17 @@
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { useSendMessage } from "@/hooks/useMessages";
-import { Send, Paperclip, Image, FileText, FileSpreadsheet, X } from "lucide-react";
-import RichTextEditor from "./RichTextEditor";
+import { Send, Paperclip, Image, FileText, FileSpreadsheet, X, Bold, Italic, Underline, List, ListOrdered } from "lucide-react";
 import RecipientMultiSelect from "./RecipientMultiSelect";
 import { roleGroups } from "@/hooks/useMessages";
 import mammoth from "mammoth";
 import * as XLSX from "xlsx";
+import { useToast } from "@/hooks/use-toast";
 
 interface ProcessedFile {
   id: string;
   name: string;
-  type: string;
+  type: 'image' | 'pdf' | 'doc' | 'excel' | 'text' | 'csv';
   data: string;
   mimeType: string;
   size: number;
@@ -21,99 +19,146 @@ interface ProcessedFile {
 }
 
 export function FeedComposer() {
-  const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [attachments, setAttachments] = useState<ProcessedFile[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { mutate: sendMessage, isPending } = useSendMessage();
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
 
-  const processFiles = async (fileList: FileList): Promise<ProcessedFile[]> => {
-    const maxSize = 20 * 1024 * 1024; // 20MB
-    const maxFiles = 10;
-    const allowedTypes = [
-      'image/jpeg', 'image/png', 'image/webp',
-      'application/pdf',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/vnd.ms-excel',
-      'text/csv',
-      'text/plain'
-    ];
+  const processFiles = async (selectedFiles: FileList): Promise<ProcessedFile[]> => {
+    const processedFiles: ProcessedFile[] = [];
+    const filesArray = Array.from(selectedFiles);
 
-    const files = Array.from(fileList).slice(0, maxFiles);
-    const processed: ProcessedFile[] = [];
-
-    for (const file of files) {
-      if (file.size > maxSize) {
-        console.warn(`File ${file.name} exceeds 20MB limit`);
-        continue;
-      }
-
-      if (!allowedTypes.includes(file.type)) {
-        console.warn(`File type ${file.type} not supported`);
-        continue;
-      }
-
+    for (const file of filesArray) {
       try {
-        let data = '';
-        let extractedText = '';
+        const isImage = file.type.startsWith('image/');
+        const isPdf = file.type === 'application/pdf';
+        const isDoc = file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
+                      file.type === 'application/msword';
+        const isExcel = file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+                        file.type === 'application/vnd.ms-excel';
+        const isCsv = file.type === 'text/csv' || file.name.toLowerCase().endsWith('.csv');
+        const isText = file.type === 'text/plain' || file.type === 'application/json';
 
-        if (file.type.startsWith('image/')) {
-          data = await new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target?.result as string);
-            reader.readAsDataURL(file);
+        if (!isImage && !isPdf && !isDoc && !isExcel && !isCsv && !isText) {
+          toast({
+            title: "Unsupported file type",
+            description: `${file.name}: Only images, PDFs, Word docs, Excel files, CSV, and text files are supported`,
+            variant: "destructive",
           });
-        } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-          const arrayBuffer = await file.arrayBuffer();
-          const result = await mammoth.extractRawText({ arrayBuffer });
-          extractedText = result.value;
-          data = await new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target?.result as string);
-            reader.readAsDataURL(file);
-          });
-        } else if (file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
-                   file.type === 'application/vnd.ms-excel' || 
-                   file.type === 'text/csv') {
-          const arrayBuffer = await file.arrayBuffer();
-          const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          extractedText = XLSX.utils.sheet_to_txt(firstSheet);
-          data = await new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target?.result as string);
-            reader.readAsDataURL(file);
-          });
-        } else {
-          data = await new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target?.result as string);
-            reader.readAsDataURL(file);
-          });
+          continue;
         }
 
-        processed.push({
-          id: `${Date.now()}-${file.name}`,
-          name: file.name,
-          type: file.type,
-          data,
-          mimeType: file.type,
-          size: file.size,
-          extractedText,
-        });
+        if (file.size > 25 * 1024 * 1024) {
+          toast({
+            title: "File too large",
+            description: `${file.name}: Maximum 25MB allowed`,
+            variant: "destructive",
+          });
+          continue;
+        }
+
+        let processedFile: ProcessedFile;
+
+        if (isDoc) {
+          const arrayBuffer = await file.arrayBuffer();
+          const result = await mammoth.extractRawText({ arrayBuffer });
+          const cleanedText = result.value
+            .replace(/\n\s*\n\s*\n/g, '\n\n')
+            .replace(/[ \t]+/g, ' ')
+            .trim();
+            
+          processedFile = {
+            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            name: file.name,
+            type: 'doc',
+            data: cleanedText,
+            mimeType: file.type,
+            size: file.size,
+            extractedText: cleanedText
+          };
+        } else if (isExcel) {
+          const arrayBuffer = await file.arrayBuffer();
+          const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+          let csvData = '';
+          workbook.SheetNames.forEach(sheetName => {
+            const worksheet = workbook.Sheets[sheetName];
+            csvData += `Sheet: ${sheetName}\n`;
+            csvData += XLSX.utils.sheet_to_csv(worksheet);
+            csvData += '\n\n';
+          });
+          processedFile = {
+            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            name: file.name,
+            type: 'excel',
+            data: csvData,
+            mimeType: file.type,
+            size: file.size,
+            extractedText: csvData
+          };
+        } else if (isCsv || isText) {
+          const text = await file.text();
+          processedFile = {
+            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            name: file.name,
+            type: isCsv ? 'csv' : 'text',
+            data: text,
+            mimeType: file.type,
+            size: file.size,
+            extractedText: text
+          };
+        } else {
+          const reader = new FileReader();
+          await new Promise<void>((resolve) => {
+            reader.onload = () => {
+              const base64Data = (reader.result as string).split(',')[1];
+              processedFile = {
+                id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                name: file.name,
+                type: isImage ? 'image' : 'pdf',
+                data: base64Data,
+                mimeType: file.type,
+                size: file.size
+              };
+              processedFiles.push(processedFile);
+              resolve();
+            };
+            reader.readAsDataURL(file);
+          });
+          continue;
+        }
+
+        processedFiles.push(processedFile);
       } catch (error) {
-        console.error(`Error processing file ${file.name}:`, error);
+        toast({
+          title: "Error processing file",
+          description: `${file.name}: Failed to process file`,
+          variant: "destructive",
+        });
       }
     }
 
-    return processed;
+    return processedFiles;
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const processed = await processFiles(e.target.files);
-      setAttachments(prev => [...prev, ...processed].slice(0, 10));
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsProcessing(true);
+    try {
+      const processed = await processFiles(files);
+      if (processed.length > 0) {
+        setAttachments(prev => [...prev, ...processed].slice(0, 10));
+      }
+    } finally {
+      setIsProcessing(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -121,19 +166,30 @@ export function FeedComposer() {
     setAttachments(prev => prev.filter(f => f.id !== id));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAttachClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const execCommand = (command: string, value?: string) => {
+    document.execCommand(command, false, value);
+    editorRef.current?.focus();
+  };
+
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
     
-    if (!title.trim() || !content.trim() || selectedRoles.length === 0) {
+    if (!content.trim() || selectedRoles.length === 0) {
       return;
     }
 
     sendMessage(
-      { title: title.trim(), message: content.trim(), targetRoles: selectedRoles },
+      { title: "Feed Post", message: content.trim(), targetRoles: selectedRoles },
       {
         onSuccess: () => {
-          setTitle("");
           setContent("");
+          if (editorRef.current) {
+            editorRef.current.innerHTML = "";
+          }
           setSelectedRoles([]);
           setAttachments([]);
         },
@@ -141,14 +197,71 @@ export function FeedComposer() {
     );
   };
 
-  const getFileIcon = (type: string) => {
-    if (type.startsWith('image/')) return <Image className="h-4 w-4" />;
-    if (type.includes('spreadsheet') || type.includes('excel') || type === 'text/csv') 
-      return <FileSpreadsheet className="h-4 w-4" />;
-    return <FileText className="h-4 w-4" />;
+  const handleInput = () => {
+    if (editorRef.current) {
+      setContent(editorRef.current.innerHTML);
+    }
   };
 
-  const canSend = title.trim() && content.trim() && selectedRoles.length > 0 && !isPending;
+  const getFileIcon = (type: ProcessedFile['type']) => {
+    switch (type) {
+      case 'image':
+        return <Image className="h-3 w-3" />;
+      case 'excel':
+        return <FileSpreadsheet className="h-3 w-3" />;
+      case 'pdf':
+      case 'doc':
+      case 'text':
+      case 'csv':
+      default:
+        return <FileText className="h-3 w-3" />;
+    }
+  };
+
+  const renderAttachments = () => {
+    if (attachments.length === 0) return null;
+
+    const visibleAttachments = attachments.slice(0, 2);
+    const hiddenCount = attachments.length - 2;
+
+    return (
+      <div className="flex items-center gap-1 mb-2">
+        {visibleAttachments.map((attachment) => (
+          <div
+            key={attachment.id}
+            className="flex items-center gap-1 bg-secondary/50 rounded-full px-2 py-1 text-xs max-w-[100px]"
+          >
+            {getFileIcon(attachment.type)}
+            <span className="truncate text-secondary-foreground">
+              {attachment.name}
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-4 w-4 p-0 hover:bg-secondary"
+              onClick={() => handleRemoveAttachment(attachment.id)}
+              aria-label={`Remove ${attachment.name}`}
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
+        ))}
+        {hiddenCount > 0 && (
+          <div className="bg-secondary/50 rounded-full px-2 py-1 text-xs text-secondary-foreground">
+            +{hiddenCount}
+          </div>
+        )}
+        {isProcessing && (
+          <div className="bg-primary/10 rounded-full px-2 py-1 text-xs text-primary animate-pulse">
+            Processing...
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const canSend = content.trim().length > 0 && selectedRoles.length > 0 && !isPending && !isProcessing;
 
   return (
     <div className="space-y-4">
@@ -157,87 +270,162 @@ export function FeedComposer() {
         <h2 className="text-xl font-semibold">Create Feed Post</h2>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="title" className="text-sm text-muted-foreground">Subject</Label>
-          <Input
-            id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter post subject..."
-            maxLength={200}
-            className="bg-background/95 backdrop-blur-sm border-border/60 focus-visible:ring-primary/20 focus-visible:border-primary/40"
-            required
+      <div className="bg-background/95 backdrop-blur-sm border border-border/60 rounded-xl shadow-lg focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/40 transition-all duration-200">
+        <div className="px-3 pt-3">
+          {renderAttachments()}
+          
+          <div
+            ref={editorRef}
+            contentEditable
+            onInput={handleInput}
+            className="w-full bg-transparent border-0 resize-none outline-none placeholder:text-muted-foreground text-sm focus:ring-0 focus:border-0 min-h-[120px] max-h-[400px] overflow-y-auto"
+            data-placeholder="Type your feed post here..."
+            style={{
+              lineHeight: '1.5'
+            }}
           />
         </div>
 
-        <div className="relative">
-          <div className="bg-background/95 backdrop-blur-sm border border-border/60 rounded-xl shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/40 transition-all duration-200">
-            {attachments.length > 0 && (
-              <div className="flex gap-2 flex-wrap p-3 border-b border-border/40">
-                {attachments.map((file) => (
-                  <div
-                    key={file.id}
-                    className="flex items-center gap-2 bg-accent/50 rounded-lg px-3 py-1.5 text-xs"
-                  >
-                    {getFileIcon(file.type)}
-                    <span className="max-w-[120px] truncate">{file.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveAttachment(file.id)}
-                      className="hover:text-destructive"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+        <div className="flex items-center justify-between px-3 pb-3 pt-2">
+          {/* Left Side - Formatting Buttons */}
+          <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 rounded-lg hover:bg-accent"
+              onClick={() => execCommand('bold')}
+              title="Bold"
+            >
+              <Bold className="h-3 w-3" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 rounded-lg hover:bg-accent"
+              onClick={() => execCommand('italic')}
+              title="Italic"
+            >
+              <Italic className="h-3 w-3" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 rounded-lg hover:bg-accent"
+              onClick={() => execCommand('underline')}
+              title="Underline"
+            >
+              <Underline className="h-3 w-3" />
+            </Button>
+            
+            <div className="w-px h-5 bg-border/40 mx-1" />
+            
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 rounded-lg hover:bg-accent"
+              onClick={() => execCommand('insertUnorderedList')}
+              title="Bullet List"
+            >
+              <List className="h-3 w-3" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 rounded-lg hover:bg-accent"
+              onClick={() => execCommand('insertOrderedList')}
+              title="Numbered List"
+            >
+              <ListOrdered className="h-3 w-3" />
+            </Button>
+            
+            <div className="w-px h-5 bg-border/40 mx-1" />
+            
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 rounded-lg hover:bg-accent text-xs font-bold"
+              onClick={() => execCommand('formatBlock', '<h1>')}
+              title="Heading 1"
+            >
+              H1
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 rounded-lg hover:bg-accent text-xs font-bold"
+              onClick={() => execCommand('formatBlock', '<h2>')}
+              title="Heading 2"
+            >
+              H2
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 rounded-lg hover:bg-accent text-xs font-bold"
+              onClick={() => execCommand('formatBlock', '<h3>')}
+              title="Heading 3"
+            >
+              H3
+            </Button>
+          </div>
 
-            <RichTextEditor value={content} onChange={setContent} />
+          {/* Right Side - Actions */}
+          <div className="flex items-center gap-2">
+            <RecipientMultiSelect
+              selectedRoles={selectedRoles}
+              onRoleChange={setSelectedRoles}
+              roleGroups={roleGroups}
+            />
+            
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 rounded-lg hover:bg-accent"
+              onClick={handleAttachClick}
+              disabled={isPending || attachments.length >= 10}
+            >
+              <Paperclip className="h-3 w-3" />
+            </Button>
 
-            <div className="flex items-center justify-between gap-2 px-3 pb-3 pt-1 border-t border-border/40">
-              <div className="flex items-center gap-2">
-                <input
-                  type="file"
-                  id="file-upload"
-                  multiple
-                  accept="image/jpeg,image/png,image/webp,application/pdf,.docx,.xlsx,.xls,.csv,.txt"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  disabled={isPending || attachments.length >= 10}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => document.getElementById('file-upload')?.click()}
-                  disabled={isPending || attachments.length >= 10}
-                  className="h-7 w-7 p-0 rounded-lg hover:bg-accent"
-                >
-                  <Paperclip className="h-4 w-4" />
-                </Button>
-
-                <RecipientMultiSelect
-                  selectedRoles={selectedRoles}
-                  onRoleChange={setSelectedRoles}
-                  roleGroups={roleGroups}
-                />
-              </div>
-
-              <Button
-                type="submit"
-                disabled={!canSend}
-                size="sm"
-                className="h-7 px-3 gap-1.5"
-              >
-                <Send className="h-3 w-3" />
-                {isPending ? "Sending..." : "Send"}
-              </Button>
-            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 rounded-lg hover:bg-accent text-primary"
+              onClick={() => handleSubmit()}
+              disabled={!canSend}
+            >
+              <Send className="h-3 w-3" />
+            </Button>
           </div>
         </div>
-      </form>
+      </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        onChange={handleFileChange}
+        className="hidden"
+        multiple
+        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.json"
+      />
+
+      <style>{`
+        [contentEditable][data-placeholder]:empty:before {
+          content: attr(data-placeholder);
+          color: hsl(var(--muted-foreground));
+          pointer-events: none;
+        }
+      `}</style>
     </div>
   );
 }
