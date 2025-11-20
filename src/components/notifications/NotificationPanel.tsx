@@ -4,8 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Sheet, 
   SheetContent, 
-  SheetHeader, 
-  SheetTitle,
+  SheetHeader,
   SheetFooter 
 } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -40,8 +39,7 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-lg [&>button]:hidden p-0 flex flex-col">
-        <SheetHeader className="px-6 pt-6 pb-4 border-b">
-          <SheetTitle className="mb-4">Notifications</SheetTitle>
+        <SheetHeader className="px-6 py-4 border-b">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full grid grid-cols-3">
               <TabsTrigger value="feed">Feed</TabsTrigger>
