@@ -173,71 +173,14 @@ export function FeedComposer() {
 
   const updateActiveFormats = () => {
     const formats = new Set<string>();
+    
     if (document.queryCommandState('bold')) formats.add('bold');
     if (document.queryCommandState('italic')) formats.add('italic');
     if (document.queryCommandState('underline')) formats.add('underline');
     if (document.queryCommandState('insertUnorderedList')) formats.add('ul');
     if (document.queryCommandState('insertOrderedList')) formats.add('ol');
     
-    // Check inline text sizes
-    const selection = window.getSelection();
-    if (selection && selection.anchorNode) {
-      const parentElement = selection.anchorNode.nodeType === Node.TEXT_NODE 
-        ? selection.anchorNode.parentElement 
-        : selection.anchorNode as HTMLElement;
-      
-      const sizeElement = parentElement?.closest('[data-text-size]');
-      if (sizeElement) {
-        const size = sizeElement.getAttribute('data-text-size');
-        if (size) formats.add(size);
-      }
-    }
-    
     setActiveFormats(formats);
-  };
-
-  const applyInlineTextSize = (fontSize: string, sizeKey: string) => {
-    editorRef.current?.focus();
-    
-    const selection = window.getSelection();
-    if (!selection) return;
-    
-    // Check if we're in a sized element already
-    if (selection.anchorNode) {
-      const parentElement = selection.anchorNode.nodeType === Node.TEXT_NODE 
-        ? selection.anchorNode.parentElement 
-        : selection.anchorNode as HTMLElement;
-      
-      const existingSizeElement = parentElement?.closest('font[data-text-size]');
-      const currentSize = existingSizeElement?.getAttribute('data-text-size');
-      
-      // If clicking same size, remove it (ONLY affects current selection)
-      if (currentSize === sizeKey) {
-        document.execCommand('removeFormat'); // Only affects selection, not entire editor
-        setTimeout(updateActiveFormats, 10);
-        return;
-      }
-    }
-    
-    // Apply font size using execCommand (only affects selection)
-    document.execCommand('fontSize', false, fontSize);
-    
-    // Add custom attribute for tracking - only to newly created element
-    setTimeout(() => {
-      if (editorRef.current && selection.anchorNode) {
-        const parentElement = selection.anchorNode.nodeType === Node.TEXT_NODE 
-          ? selection.anchorNode.parentElement 
-          : selection.anchorNode as HTMLElement;
-        
-        const fontElement = parentElement?.closest('font[size="' + fontSize + '"]');
-        if (fontElement && !fontElement.hasAttribute('data-text-size')) {
-          fontElement.setAttribute('data-text-size', sizeKey);
-        }
-      }
-      updateActiveFormats();
-    }, 10);
-    
-    editorRef.current?.focus();
   };
 
   const execCommand = (command: string, value?: string) => {
@@ -352,7 +295,7 @@ export function FeedComposer() {
             onInput={handleInput}
             onMouseUp={updateActiveFormats}
             onKeyUp={updateActiveFormats}
-            className="w-full bg-transparent border-0 resize-none outline-none placeholder:text-muted-foreground text-sm focus:ring-0 focus:border-0 min-h-[120px] max-h-[400px] overflow-y-auto [&_font[size='6']]:text-xl [&_font[size='5']]:text-lg [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1"
+            className="w-full bg-transparent border-0 resize-none outline-none placeholder:text-muted-foreground text-sm focus:ring-0 focus:border-0 min-h-[120px] max-h-[400px] overflow-y-auto [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1"
             data-placeholder="Type your feed post here..."
             style={{
               lineHeight: '1.5'
@@ -420,31 +363,6 @@ export function FeedComposer() {
                   title="Numbered List"
                 >
                   <ListOrdered className="h-3 w-3" />
-                </Button>
-            
-            <div className="w-px h-5 bg-border/40 mx-1" />
-            
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className={`h-7 w-7 rounded-lg hover:bg-accent text-xs ${activeFormats.has('t1') ? 'bg-blue-500/20' : ''}`}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => applyInlineTextSize('6', 't1')}
-                  title="Large text (inline)"
-                >
-                  T1
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className={`h-7 w-7 rounded-lg hover:bg-accent text-xs ${activeFormats.has('t2') ? 'bg-blue-500/20' : ''}`}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => applyInlineTextSize('5', 't2')}
-                  title="Medium text (inline)"
-                >
-                  T2
                 </Button>
           </div>
 
