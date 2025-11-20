@@ -178,11 +178,37 @@ export function FeedComposer() {
     if (document.queryCommandState('underline')) formats.add('underline');
     if (document.queryCommandState('insertUnorderedList')) formats.add('ul');
     if (document.queryCommandState('insertOrderedList')) formats.add('ol');
+    
+    // Check heading levels
+    const selection = window.getSelection();
+    if (selection && selection.anchorNode) {
+      const parentElement = selection.anchorNode.nodeType === Node.TEXT_NODE 
+        ? selection.anchorNode.parentElement 
+        : selection.anchorNode as HTMLElement;
+      
+      const headingElement = parentElement?.closest('h1, h2, h3');
+      if (headingElement) {
+        formats.add(headingElement.tagName.toLowerCase());
+      }
+    }
+    
     setActiveFormats(formats);
   };
 
   const execCommand = (command: string, value?: string) => {
     editorRef.current?.focus();
+    
+    // For formatBlock, only execute if there's content
+    if (command === 'formatBlock') {
+      const selection = window.getSelection();
+      const hasContent = editorRef.current?.textContent?.trim().length > 0;
+      const hasSelection = selection && !selection.isCollapsed;
+      
+      if (!hasContent && !hasSelection) {
+        return;
+      }
+    }
+    
     document.execCommand(command, false, value);
     editorRef.current?.focus();
     setTimeout(updateActiveFormats, 10);
@@ -304,100 +330,100 @@ export function FeedComposer() {
         <div className="flex items-center justify-between px-3 pb-3 pt-2">
           {/* Left Side - Formatting Buttons */}
           <div className="flex items-center gap-1">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('bold') ? 'bg-accent' : ''}`}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => execCommand('bold')}
-                title="Bold"
-              >
-                <Bold className="h-3 w-3" />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('italic') ? 'bg-accent' : ''}`}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => execCommand('italic')}
-                title="Italic"
-              >
-                <Italic className="h-3 w-3" />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('underline') ? 'bg-accent' : ''}`}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => execCommand('underline')}
-                title="Underline"
-              >
-                <Underline className="h-3 w-3" />
-              </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('bold') ? 'bg-blue-500/20' : ''}`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => execCommand('bold')}
+                  title="Bold"
+                >
+                  <Bold className="h-3 w-3" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('italic') ? 'bg-blue-500/20' : ''}`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => execCommand('italic')}
+                  title="Italic"
+                >
+                  <Italic className="h-3 w-3" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('underline') ? 'bg-blue-500/20' : ''}`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => execCommand('underline')}
+                  title="Underline"
+                >
+                  <Underline className="h-3 w-3" />
+                </Button>
             
             <div className="w-px h-5 bg-border/40 mx-1" />
             
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('ul') ? 'bg-accent' : ''}`}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => execCommand('insertUnorderedList')}
-                title="Bullet List"
-              >
-                <List className="h-3 w-3" />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('ol') ? 'bg-accent' : ''}`}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => execCommand('insertOrderedList')}
-                title="Numbered List"
-              >
-                <ListOrdered className="h-3 w-3" />
-              </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('ul') ? 'bg-blue-500/20' : ''}`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => execCommand('insertUnorderedList')}
+                  title="Bullet List"
+                >
+                  <List className="h-3 w-3" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('ol') ? 'bg-blue-500/20' : ''}`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => execCommand('insertOrderedList')}
+                  title="Numbered List"
+                >
+                  <ListOrdered className="h-3 w-3" />
+                </Button>
             
             <div className="w-px h-5 bg-border/40 mx-1" />
             
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 rounded-lg hover:bg-accent text-xs"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => execCommand('formatBlock', 'h1')}
-                title="Text Size 1"
-              >
-                T1
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 rounded-lg hover:bg-accent text-xs"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => execCommand('formatBlock', 'h2')}
-                title="Text Size 2"
-              >
-                T2
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 rounded-lg hover:bg-accent text-xs"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => execCommand('formatBlock', 'h3')}
-                title="Text Size 3"
-              >
-                T3
-              </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={`h-7 w-7 rounded-lg hover:bg-accent text-xs ${activeFormats.has('h1') ? 'bg-blue-500/20' : ''}`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => execCommand('formatBlock', 'h1')}
+                  title="Text Size 1"
+                >
+                  T1
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={`h-7 w-7 rounded-lg hover:bg-accent text-xs ${activeFormats.has('h2') ? 'bg-blue-500/20' : ''}`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => execCommand('formatBlock', 'h2')}
+                  title="Text Size 2"
+                >
+                  T2
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={`h-7 w-7 rounded-lg hover:bg-accent text-xs ${activeFormats.has('h3') ? 'bg-blue-500/20' : ''}`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => execCommand('formatBlock', 'h3')}
+                  title="Text Size 3"
+                >
+                  T3
+                </Button>
           </div>
 
           {/* Right Side - Actions */}
