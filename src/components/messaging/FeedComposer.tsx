@@ -207,6 +207,14 @@ export function FeedComposer() {
       if (!hasContent && !hasSelection) {
         return;
       }
+      
+      // Toggle heading: if already in this heading, revert to paragraph
+      if (value && activeFormats.has(value)) {
+        document.execCommand('formatBlock', false, 'p');
+        editorRef.current?.focus();
+        setTimeout(updateActiveFormats, 10);
+        return;
+      }
     }
     
     document.execCommand(command, false, value);
