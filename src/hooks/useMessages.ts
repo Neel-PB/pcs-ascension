@@ -42,7 +42,7 @@ export function useSendMessage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["messages"] });
-      toast.success("Message sent successfully!");
+      toast.success("Feed post sent successfully!");
     },
     onError: (error) => {
       toast.error("Failed to send message");
