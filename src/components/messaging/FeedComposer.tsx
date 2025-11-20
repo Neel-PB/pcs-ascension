@@ -321,7 +321,7 @@ export function FeedComposer() {
             onInput={handleInput}
             onMouseUp={updateActiveFormats}
             onKeyUp={updateActiveFormats}
-            className="w-full bg-transparent border-0 resize-none outline-none placeholder:text-muted-foreground text-sm focus:ring-0 focus:border-0 min-h-[120px] max-h-[400px] overflow-y-auto [&_h1]:text-xl [&_h1]:my-2 [&_h2]:text-lg [&_h2]:my-1.5 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1"
+            className="w-full bg-transparent border-0 resize-none outline-none placeholder:text-muted-foreground text-sm focus:ring-0 focus:border-0 min-h-[120px] max-h-[400px] overflow-y-auto [&_h1]:text-xl [&_h2]:text-lg [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1"
             data-placeholder="Type your feed post here..."
             style={{
               lineHeight: '1.5'
