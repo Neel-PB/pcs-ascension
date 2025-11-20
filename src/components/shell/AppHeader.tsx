@@ -4,7 +4,9 @@ import { useTheme } from "next-themes";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useNotifications } from "@/hooks/useNotifications";
 import { UserProfileModal } from "@/components/profile/UserProfileModal";
+import { NotificationPanel } from "@/components/notifications/NotificationPanel";
 import { GlobalSearchCommand } from "@/components/shell/GlobalSearchCommand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,9 +26,11 @@ import { cn } from "@/lib/utils";
 export function AppHeader() {
   const [commandOpen, setCommandOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
   const { profile } = useUserProfile(user?.id);
+  const { data: notifications } = useNotifications();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -94,56 +98,23 @@ export function AppHeader() {
         {/* Right Section - Utilities */}
         <div className="flex items-center gap-2">
           {/* Notifications */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                <Badge
-                  variant="destructive"
-                  className="absolute -top-1 -right-1 h-4 w-4 rounded-full p-0 flex items-center justify-center text-[10px] font-semibold"
-                >
-                  3
-                </Badge>
-                <span className="sr-only">Notifications</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80">
-              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <div className="space-y-2 p-2">
-                <div className="flex items-start gap-3 rounded-lg p-3 hover:bg-shell-elevated">
-                  <div className="h-2 w-2 rounded-full bg-primary mt-2"></div>
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium">Position Filled</p>
-                    <p className="text-xs text-shell-muted">
-                      ICU Registered Nurse position has been successfully filled
-                    </p>
-                    <p className="text-xs text-shell-subtle">5 minutes ago</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 rounded-lg p-3 hover:bg-shell-elevated">
-                  <div className="h-2 w-2 rounded-full bg-warning mt-2"></div>
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium">Overtime Alert</p>
-                    <p className="text-xs text-shell-muted">
-                      Sarah Johnson is approaching 40-hour overtime limit
-                    </p>
-                    <p className="text-xs text-shell-subtle">15 minutes ago</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 rounded-lg p-3 hover:bg-shell-elevated">
-                  <div className="h-2 w-2 rounded-full bg-primary mt-2"></div>
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium">New Requisition</p>
-                    <p className="text-xs text-shell-muted">
-                      Emergency Department submitted request for 2 RN positions
-                    </p>
-                    <p className="text-xs text-shell-subtle">30 minutes ago</p>
-                  </div>
-                </div>
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="relative" 
+            onClick={() => setNotificationsOpen(true)}
+          >
+            <Bell className="h-5 w-5" />
+            {notifications && notifications.filter(n => !n.read).length > 0 && (
+              <Badge
+                variant="destructive"
+                className="absolute -top-1 -right-1 h-4 w-4 rounded-full p-0 flex items-center justify-center text-[10px] font-semibold"
+              >
+                {notifications.filter(n => !n.read).length}
+              </Badge>
+            )}
+            <span className="sr-only">Notifications</span>
+          </Button>
 
           {/* Theme Selector */}
           <Button variant="ghost" size="icon" onClick={cycleTheme}>
@@ -199,6 +170,12 @@ export function AppHeader() {
           userId={user.id}
         />
       )}
+
+      {/* Notification Panel */}
+      <NotificationPanel 
+        open={notificationsOpen}
+        onOpenChange={setNotificationsOpen}
+      />
 
     </header>
   );
