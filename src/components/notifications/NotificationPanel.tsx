@@ -8,9 +8,12 @@ import {
   SheetFooter 
 } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { AttachmentDisplay } from "@/components/feed/AttachmentDisplay";
 import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from "@/hooks/useNotifications";
+import { useEmployeeFeed } from "@/hooks/useEmployeeFeed";
 import { Bell, Check, MessageCircle, Heart, Users, Megaphone, MessageSquare, X } from "lucide-react";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
@@ -30,9 +33,10 @@ interface NotificationPanelProps {
 
 export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps) {
   const { data: notifications, isLoading } = useNotifications();
+  const { data: posts, isLoading: isLoadingPosts } = useEmployeeFeed();
   const markAsRead = useMarkNotificationRead();
   const markAllAsRead = useMarkAllNotificationsRead();
-  const [activeTab, setActiveTab] = useState("alerts");
+  const [activeTab, setActiveTab] = useState("feed");
 
   const unreadCount = notifications?.filter(n => !n.read).length || 0;
 
@@ -59,12 +63,73 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
           <TabsContent value="feed" className="flex-1 m-0">
             <ScrollArea className="h-full px-6">
-              <div className="text-center py-12">
-                <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">
-                  Feed updates coming soon
-                </p>
-              </div>
+              {isLoadingPosts ? (
+                <div className="space-y-4 py-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="animate-pulse space-y-3">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-full bg-muted" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 bg-muted rounded w-32" />
+                          <div className="h-3 bg-muted rounded w-24" />
+                        </div>
+                      </div>
+                      <div className="h-16 bg-muted rounded" />
+                    </div>
+                  ))}
+                </div>
+              ) : posts && posts.length > 0 ? (
+                <div className="space-y-4 py-4">
+                  {posts.map((post) => (
+                    <div 
+                      key={post.id}
+                      className="border border-border rounded-lg p-4 hover:bg-accent/5 transition-colors cursor-pointer"
+                      onClick={() => {
+                        onOpenChange(false);
+                        window.location.href = '/';
+                      }}
+                    >
+                      <div className="flex items-start gap-3 mb-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={post.author.avatar_url || ''} />
+                          <AvatarFallback>
+                            {post.author.first_name?.[0]}{post.author.last_name?.[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium">
+                            {post.author.first_name} {post.author.last_name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div 
+                        className="text-sm prose prose-sm max-w-none dark:prose-invert"
+                        dangerouslySetInnerHTML={{ __html: post.content }}
+                      />
+
+                      {post.attachments && post.attachments.length > 0 && (
+                        <AttachmentDisplay attachments={post.attachments} />
+                      )}
+
+                      <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
+                        <span>❤️ {post.likes?.length || 0}</span>
+                        <span>💬 {post.comments?.length || 0}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">
+                    No feed posts yet
+                  </p>
+                </div>
+              )}
             </ScrollArea>
           </TabsContent>
 
