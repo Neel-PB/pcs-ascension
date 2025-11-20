@@ -17,11 +17,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 interface ColumnVisibilityPanelProps<T = any> {
   columns: ColumnDef<T>[];
   storeNamespace: string;
+  iconOnly?: boolean;
 }
 
 export function ColumnVisibilityPanel<T = any>({
   columns,
   storeNamespace,
+  iconOnly = false,
 }: ColumnVisibilityPanelProps<T>) {
   const { getColumns, setColumnVisibility, resetToDefault } = useColumnStore();
   const columnStates = getColumns(storeNamespace);
@@ -43,10 +45,21 @@ export function ColumnVisibilityPanel<T = any>({
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <Columns3 className="h-4 w-4" />
-          Columns
-        </Button>
+        {iconOnly ? (
+          <Button
+            variant="ascension"
+            size="icon"
+            aria-label="Column visibility"
+            title="Column visibility"
+          >
+            <Columns3 className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button variant="outline" size="sm" className="gap-2">
+            <Columns3 className="h-4 w-4" />
+            Columns
+          </Button>
+        )}
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>

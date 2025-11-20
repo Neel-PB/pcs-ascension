@@ -245,18 +245,20 @@ export function ContractorsTab({
           <ColumnVisibilityPanel
             columns={contractorColumns}
             storeNamespace="contractors-columns"
+            iconOnly
           />
           
           <Button
-            variant="outline"
-            size="sm"
+            variant="ascension"
+            size="icon"
             onClick={() => setFilterOpen(true)}
-            className="gap-2"
+            className="relative"
+            aria-label="Filters"
+            title="Filters"
           >
             <Filter className="h-4 w-4" />
-            Filters
             {activeFilterCount > 0 && (
-              <Badge variant="secondary" className="ml-1">
+              <Badge variant="secondary" className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
                 {activeFilterCount}
               </Badge>
             )}
