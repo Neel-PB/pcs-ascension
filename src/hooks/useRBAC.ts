@@ -9,7 +9,6 @@ export function useRBAC() {
 
   useEffect(() => {
     const fetchUserRoles = async () => {
-      setLoading(true);
       try {
         const { data: { user } } = await supabase.auth.getUser();
         
