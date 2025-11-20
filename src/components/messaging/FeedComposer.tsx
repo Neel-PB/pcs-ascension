@@ -281,7 +281,6 @@ export function FeedComposer() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <Send className="h-5 w-5 text-primary" />
         <h2 className="text-xl font-semibold">Create Feed Post</h2>
       </div>
 
