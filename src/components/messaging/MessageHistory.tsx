@@ -6,15 +6,23 @@ import { useMessageHistory, roleGroups } from "@/hooks/useMessages";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronDown, ChevronUp, MessageSquare } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import DOMPurify from "dompurify";
 
 export function MessageHistory() {
   const { data: messages, isLoading } = useMessageHistory();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  const sanitizeHtml = (html: string) => {
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'ul', 'ol', 'li'],
+      ALLOWED_ATTR: []
+    });
+  };
+
   if (isLoading) {
     return (
       <Card className="p-6">
-        <h3 className="text-xl font-semibold mb-4">Message History</h3>
+        <h3 className="text-xl font-semibold mb-4">Feed History</h3>
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-20 w-full" />
@@ -32,13 +40,13 @@ export function MessageHistory() {
     <div className="bg-background/95 backdrop-blur-sm border border-border/60 rounded-xl shadow-sm p-6">
       <div className="flex items-center gap-2 mb-6">
         <MessageSquare className="h-5 w-5 text-primary" />
-        <h3 className="text-xl font-semibold">Message History</h3>
+        <h3 className="text-xl font-semibold">Feed History</h3>
       </div>
 
       {!messages || messages.length === 0 ? (
         <div className="text-center py-12">
           <MessageSquare className="h-12 w-12 text-muted-foreground/40 mx-auto mb-3" />
-          <p className="text-muted-foreground">No messages sent yet</p>
+          <p className="text-muted-foreground">No feed posts yet</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -81,9 +89,10 @@ export function MessageHistory() {
 
               {expandedId === msg.id && (
                 <div className="mt-4 pt-4 border-t border-border/40 animate-in fade-in-50 slide-in-from-top-2 duration-200">
-                  <p className="text-sm whitespace-pre-wrap text-foreground/90 leading-relaxed">
-                    {msg.message}
-                  </p>
+                  <div 
+                    className="text-sm prose prose-sm max-w-none text-foreground/90 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(msg.message) }}
+                  />
                 </div>
               )}
             </div>

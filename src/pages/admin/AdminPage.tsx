@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import DataImportPage from "./DataImportPage";
 import UsersManagement from "./UsersManagement";
-import { MessageComposer } from "@/components/messaging/MessageComposer";
+import { FeedComposer } from "@/components/messaging/FeedComposer";
 import { MessageHistory } from "@/components/messaging/MessageHistory";
 import { Button } from "@/components/ui/button";
 
@@ -18,7 +18,7 @@ export default function AdminPage() {
   const tabs = [
     { id: "data-import", label: "Data Import", icon: Upload },
     { id: "users", label: "Users", icon: Users },
-    { id: "messages", label: "Messages", icon: MessageSquare },
+    { id: "feed", label: "Feed", icon: MessageSquare },
     { id: "roles", label: "Roles", icon: Shield },
     { id: "permissions", label: "Permissions", icon: Lock },
     { id: "settings", label: "Settings", icon: Settings },
@@ -123,12 +123,12 @@ export default function AdminPage() {
           
           {activeTab === "users" && <UsersManagement />}
           
-          {activeTab === "messages" && (
-            <div className="space-y-6">
-              <MessageComposer />
-              <MessageHistory />
-            </div>
-          )}
+            {activeTab === "feed" && (
+              <div className="space-y-6">
+                <FeedComposer />
+                <MessageHistory />
+              </div>
+            )}
           
           {activeTab === "roles" && (
             <div className="py-8 text-center text-muted-foreground">
