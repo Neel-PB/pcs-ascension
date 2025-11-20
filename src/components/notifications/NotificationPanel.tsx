@@ -246,7 +246,7 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
           </TabsContent>
         </Tabs>
 
-        <SheetFooter className="flex-shrink-0 px-6 py-4 border-t flex-row justify-between gap-2">
+        <SheetFooter className="flex-shrink-0 px-6 py-3 border-t flex-row justify-between gap-2">
           {activeTab === "alerts" && unreadCount > 0 && (
             <Button
               variant="outline"
