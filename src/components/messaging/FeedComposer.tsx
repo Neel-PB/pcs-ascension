@@ -448,7 +448,7 @@ export function FeedComposer() {
             <Button
               type="button"
               size="icon"
-              className="h-8 w-8 rounded-full"
+              className="h-8 w-8 rounded-full disabled:opacity-50"
               onClick={() => handleSubmit()}
               disabled={!canSend}
               title="Send"
