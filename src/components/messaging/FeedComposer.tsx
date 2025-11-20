@@ -408,7 +408,7 @@ export function FeedComposer() {
                   className={`h-7 w-7 rounded-lg hover:bg-accent text-xs ${activeFormats.has('h1') ? 'bg-blue-500/20' : ''}`}
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => execCommand('formatBlock', 'h1')}
-                  title="Large Text"
+                  title="Large text (formats entire paragraph)"
                 >
                   T1
                 </Button>
@@ -419,7 +419,7 @@ export function FeedComposer() {
                   className={`h-7 w-7 rounded-lg hover:bg-accent text-xs ${activeFormats.has('h2') ? 'bg-blue-500/20' : ''}`}
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => execCommand('formatBlock', 'h2')}
-                  title="Medium Text"
+                  title="Medium text (formats entire paragraph)"
                 >
                   T2
                 </Button>
