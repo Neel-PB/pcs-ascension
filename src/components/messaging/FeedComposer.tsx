@@ -1,12 +1,9 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { useSendMessage } from "@/hooks/useMessages";
+import { useCreatePost } from "@/hooks/useEmployeeFeed";
 import { Send, Paperclip, Image, FileText, FileSpreadsheet, X, Bold, Italic, Underline, List, ListOrdered, ArrowUp } from "lucide-react";
-import RecipientMultiSelect from "./RecipientMultiSelect";
-import { roleGroups } from "@/hooks/useMessages";
-import mammoth from "mammoth";
-import * as XLSX from "xlsx";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProcessedFile {
   id: string;
@@ -20,11 +17,11 @@ interface ProcessedFile {
 
 export function FeedComposer() {
   const [content, setContent] = useState("");
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [attachments, setAttachments] = useState<ProcessedFile[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [activeFormats, setActiveFormats] = useState<Set<string>>(new Set());
-  const { mutate: sendMessage, isPending } = useSendMessage();
+  const { mutate: createPost, isPending } = useCreatePost();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<HTMLDivElement>(null);
@@ -37,17 +34,11 @@ export function FeedComposer() {
       try {
         const isImage = file.type.startsWith('image/');
         const isPdf = file.type === 'application/pdf';
-        const isDoc = file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
-                      file.type === 'application/msword';
-        const isExcel = file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
-                        file.type === 'application/vnd.ms-excel';
-        const isCsv = file.type === 'text/csv' || file.name.toLowerCase().endsWith('.csv');
-        const isText = file.type === 'text/plain' || file.type === 'application/json';
 
-        if (!isImage && !isPdf && !isDoc && !isExcel && !isCsv && !isText) {
+        if (!isImage && !isPdf) {
           toast({
             title: "Unsupported file type",
-            description: `${file.name}: Only images, PDFs, Word docs, Excel files, CSV, and text files are supported`,
+            description: `${file.name}: Only images and PDFs are supported`,
             variant: "destructive",
           });
           continue;
@@ -62,77 +53,23 @@ export function FeedComposer() {
           continue;
         }
 
-        let processedFile: ProcessedFile;
-
-        if (isDoc) {
-          const arrayBuffer = await file.arrayBuffer();
-          const result = await mammoth.extractRawText({ arrayBuffer });
-          const cleanedText = result.value
-            .replace(/\n\s*\n\s*\n/g, '\n\n')
-            .replace(/[ \t]+/g, ' ')
-            .trim();
-            
-          processedFile = {
-            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            name: file.name,
-            type: 'doc',
-            data: cleanedText,
-            mimeType: file.type,
-            size: file.size,
-            extractedText: cleanedText
-          };
-        } else if (isExcel) {
-          const arrayBuffer = await file.arrayBuffer();
-          const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-          let csvData = '';
-          workbook.SheetNames.forEach(sheetName => {
-            const worksheet = workbook.Sheets[sheetName];
-            csvData += `Sheet: ${sheetName}\n`;
-            csvData += XLSX.utils.sheet_to_csv(worksheet);
-            csvData += '\n\n';
-          });
-          processedFile = {
-            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            name: file.name,
-            type: 'excel',
-            data: csvData,
-            mimeType: file.type,
-            size: file.size,
-            extractedText: csvData
-          };
-        } else if (isCsv || isText) {
-          const text = await file.text();
-          processedFile = {
-            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            name: file.name,
-            type: isCsv ? 'csv' : 'text',
-            data: text,
-            mimeType: file.type,
-            size: file.size,
-            extractedText: text
-          };
-        } else {
-          const reader = new FileReader();
-          await new Promise<void>((resolve) => {
-            reader.onload = () => {
-              const base64Data = (reader.result as string).split(',')[1];
-              processedFile = {
-                id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                name: file.name,
-                type: isImage ? 'image' : 'pdf',
-                data: base64Data,
-                mimeType: file.type,
-                size: file.size
-              };
-              processedFiles.push(processedFile);
-              resolve();
+        const reader = new FileReader();
+        await new Promise<void>((resolve) => {
+          reader.onload = () => {
+            const base64Data = (reader.result as string).split(',')[1];
+            const processedFile: ProcessedFile = {
+              id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              name: file.name,
+              type: isImage ? 'image' : 'pdf',
+              data: base64Data,
+              mimeType: file.type,
+              size: file.size
             };
-            reader.readAsDataURL(file);
-          });
-          continue;
-        }
-
-        processedFiles.push(processedFile);
+            processedFiles.push(processedFile);
+            resolve();
+          };
+          reader.readAsDataURL(file);
+        });
       } catch (error) {
         toast({
           title: "Error processing file",
@@ -190,26 +127,94 @@ export function FeedComposer() {
     setTimeout(updateActiveFormats, 10);
   };
 
-  const handleSubmit = (e?: React.FormEvent) => {
+  const uploadAttachmentToStorage = async (file: ProcessedFile): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      // Convert base64 to blob for images/PDFs
+      let fileToUpload: Blob;
+      if (file.type === 'image' || file.type === 'pdf') {
+        const base64Response = await fetch(`data:${file.mimeType};base64,${file.data}`);
+        fileToUpload = await base64Response.blob();
+      } else {
+        // For text-based files, create blob from extracted text
+        fileToUpload = new Blob([file.data], { type: file.mimeType });
+      }
+
+      const { data, error } = await supabase.storage
+        .from('post-images')
+        .upload(filePath, fileToUpload, {
+          contentType: file.mimeType,
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('post-images')
+        .getPublicUrl(data.path);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Upload failed:', error);
+      toast({
+        title: "Upload failed",
+        description: `Failed to upload ${file.name}`,
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
+
+  const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     
-    if (!content.trim() || selectedRoles.length === 0) {
+    if (!content.trim()) {
       return;
     }
 
-    sendMessage(
-      { title: "Feed Post", message: content.trim(), targetRoles: selectedRoles },
-      {
-        onSuccess: () => {
-          setContent("");
-          if (editorRef.current) {
-            editorRef.current.innerHTML = "";
-          }
-          setSelectedRoles([]);
-          setAttachments([]);
-        },
+    setIsUploading(true);
+    
+    try {
+      // Upload all attachments
+      const uploadedUrls: string[] = [];
+      for (const file of attachments) {
+        const url = await uploadAttachmentToStorage(file);
+        if (url) uploadedUrls.push(url);
       }
-    );
+
+      createPost(
+        { 
+          content: content.trim(), 
+          post_type: 'general',
+          attachments: uploadedUrls
+        },
+        {
+          onSuccess: () => {
+            setContent("");
+            if (editorRef.current) {
+              editorRef.current.innerHTML = "";
+            }
+            setAttachments([]);
+            toast({
+              title: "Success",
+              description: "Post created successfully",
+            });
+          },
+          onError: () => {
+            toast({
+              title: "Error",
+              description: "Failed to create post",
+              variant: "destructive",
+            });
+          },
+        }
+      );
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleInput = () => {
@@ -276,7 +281,7 @@ export function FeedComposer() {
     );
   };
 
-  const canSend = content.trim().length > 0 && selectedRoles.length > 0 && !isPending && !isProcessing;
+  const canSend = content.trim().length > 0 && !isPending && !isProcessing && !isUploading;
 
   return (
     <div className="space-y-4">
@@ -367,19 +372,13 @@ export function FeedComposer() {
 
           {/* Right Side - Actions */}
           <div className="flex items-center gap-2">
-            <RecipientMultiSelect
-              selectedRoles={selectedRoles}
-              onRoleChange={setSelectedRoles}
-              roleGroups={roleGroups}
-            />
-            
             <Button
               type="button"
               variant="ghost"
               size="icon"
               className="h-7 w-7 rounded-lg hover:bg-accent"
               onClick={handleAttachClick}
-              disabled={isPending || attachments.length >= 10}
+              disabled={isPending || attachments.length >= 10 || isUploading}
             >
               <Paperclip className="h-3 w-3" />
             </Button>
@@ -390,7 +389,7 @@ export function FeedComposer() {
               className="h-8 w-8 rounded-full disabled:opacity-50"
               onClick={() => handleSubmit()}
               disabled={!canSend}
-              title="Send"
+              title={isUploading ? "Uploading..." : "Send"}
             >
               <ArrowUp className="h-4 w-4" />
             </Button>
@@ -404,7 +403,7 @@ export function FeedComposer() {
         onChange={handleFileChange}
         className="hidden"
         multiple
-        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.json"
+        accept="image/*,.pdf"
       />
 
       <style>{`
