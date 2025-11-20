@@ -1,9 +1,15 @@
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetHeader, 
+  SheetTitle,
+  SheetFooter 
+} from "@/components/ui/sheet";
 import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from "@/hooks/useNotifications";
-import { Bell, Check, MessageCircle, Heart, Users, Megaphone } from "lucide-react";
+import { Bell, Check, MessageCircle, Heart, Users, Megaphone, MessageSquare, X } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -12,58 +18,46 @@ const notificationIcons = {
   comment: MessageCircle,
   mention: Users,
   announcement: Megaphone,
+  message: MessageSquare,
   default: Bell,
 };
 
-export function NotificationPanel() {
+interface NotificationPanelProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps) {
   const { data: notifications, isLoading } = useNotifications();
   const markAsRead = useMarkNotificationRead();
   const markAllAsRead = useMarkAllNotificationsRead();
 
   const unreadCount = notifications?.filter(n => !n.read).length || 0;
 
-  if (isLoading) {
-    return (
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <Skeleton className="h-6 w-32" />
-          <Skeleton className="h-8 w-20" />
-        </div>
-        <div className="space-y-3">
-          {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} className="h-20 w-full" />
-          ))}
-        </div>
-      </Card>
-    );
-  }
-
   return (
-    <Card className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
-          <h3 className="text-lg font-semibold">Notifications</h3>
-          {unreadCount > 0 && (
-            <span className="bg-primary text-primary-foreground text-xs font-medium px-2 py-1 rounded-full">
-              {unreadCount}
-            </span>
-          )}
-        </div>
-        {unreadCount > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => markAllAsRead.mutate()}
-            disabled={markAllAsRead.isPending}
-            className="text-xs"
-          >
-            <Check className="h-3 w-3 mr-1" />
-            Mark all read
-          </Button>
-        )}
-      </div>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-full sm:max-w-lg [&>button]:hidden p-0 flex flex-col">
+        <SheetHeader className="px-6 pt-6 pb-4 border-b">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <SheetTitle>Notifications</SheetTitle>
+              {unreadCount > 0 && (
+                <span className="bg-primary text-primary-foreground text-xs font-medium px-2 py-1 rounded-full">
+                  {unreadCount}
+                </span>
+              )}
+            </div>
+          </div>
+        </SheetHeader>
 
-      <ScrollArea className="h-[calc(100vh-200px)]">
+        {isLoading ? (
+          <div className="flex-1 px-6 py-4 space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-20 w-full" />
+            ))}
+          </div>
+        ) : (
+          <ScrollArea className="flex-1 px-6">
         {!notifications || notifications.length === 0 ? (
           <div className="text-center py-12">
             <Bell className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -99,7 +93,8 @@ export function NotificationPanel() {
                       notification.type === 'comment' && "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
                       notification.type === 'mention' && "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400",
                       notification.type === 'announcement' && "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400",
-                      !notification.type && "bg-muted text-muted-foreground"
+                      notification.type === 'message' && "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
+                      !['like', 'comment', 'mention', 'announcement', 'message'].includes(notification.type) && "bg-gray-100 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400"
                     )}>
                       <IconComponent className="h-5 w-5" />
                     </div>
@@ -126,6 +121,28 @@ export function NotificationPanel() {
           </div>
         )}
       </ScrollArea>
-    </Card>
+        )}
+
+        <SheetFooter className="px-6 py-4 border-t flex-row justify-between gap-2">
+          {unreadCount > 0 && (
+            <Button
+              variant="outline"
+              onClick={() => markAllAsRead.mutate()}
+              disabled={markAllAsRead.isPending}
+            >
+              <Check className="h-4 w-4 mr-2" />
+              Mark as Read
+            </Button>
+          )}
+          <Button
+            variant="default"
+            onClick={() => onOpenChange(false)}
+            className="ml-auto"
+          >
+            Close
+          </Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
