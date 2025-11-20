@@ -198,17 +198,25 @@ export function FeedComposer() {
   const execCommand = (command: string, value?: string) => {
     editorRef.current?.focus();
     
-    // For formatBlock heading toggle
+    // For formatBlock heading toggle - check DOM directly
     if (command === 'formatBlock' && value) {
-      // Toggle heading: if already in this heading, revert to paragraph
-      if (activeFormats.has(value)) {
-        document.execCommand('formatBlock', false, 'p');
-      } else {
-        document.execCommand('formatBlock', false, value);
+      const selection = window.getSelection();
+      if (selection && selection.anchorNode) {
+        const parentElement = selection.anchorNode.nodeType === Node.TEXT_NODE 
+          ? selection.anchorNode.parentElement 
+          : selection.anchorNode as HTMLElement;
+        
+        const headingElement = parentElement?.closest('h1, h2, h3');
+        const currentTag = headingElement?.tagName.toLowerCase();
+        
+        // If already in this heading, toggle off to paragraph
+        if (currentTag === value) {
+          document.execCommand('formatBlock', false, 'p');
+          editorRef.current?.focus();
+          setTimeout(updateActiveFormats, 10);
+          return;
+        }
       }
-      editorRef.current?.focus();
-      setTimeout(updateActiveFormats, 10);
-      return;
     }
     
     document.execCommand(command, false, value);
