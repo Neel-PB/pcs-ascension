@@ -179,46 +179,64 @@ export function FeedComposer() {
     if (document.queryCommandState('insertUnorderedList')) formats.add('ul');
     if (document.queryCommandState('insertOrderedList')) formats.add('ol');
     
-    // Check heading levels
+    // Check inline text sizes
     const selection = window.getSelection();
     if (selection && selection.anchorNode) {
       const parentElement = selection.anchorNode.nodeType === Node.TEXT_NODE 
         ? selection.anchorNode.parentElement 
         : selection.anchorNode as HTMLElement;
       
-      const headingElement = parentElement?.closest('h1, h2, h3');
-      if (headingElement) {
-        formats.add(headingElement.tagName.toLowerCase());
+      const sizeElement = parentElement?.closest('[data-text-size]');
+      if (sizeElement) {
+        const size = sizeElement.getAttribute('data-text-size');
+        if (size) formats.add(size);
       }
     }
     
     setActiveFormats(formats);
   };
 
-  const execCommand = (command: string, value?: string) => {
-    editorRef.current?.focus();
+  const applyInlineTextSize = (size: 'text-xl' | 'text-lg') => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
     
-    // For formatBlock heading toggle - check DOM directly
-    if (command === 'formatBlock' && value) {
-      const selection = window.getSelection();
-      if (selection && selection.anchorNode) {
-        const parentElement = selection.anchorNode.nodeType === Node.TEXT_NODE 
-          ? selection.anchorNode.parentElement 
-          : selection.anchorNode as HTMLElement;
-        
-        const headingElement = parentElement?.closest('h1, h2, h3');
-        const currentTag = headingElement?.tagName.toLowerCase();
-        
-        // If already in this heading, toggle off to paragraph
-        if (currentTag === value) {
-          document.execCommand('formatBlock', false, 'p');
-          editorRef.current?.focus();
-          setTimeout(updateActiveFormats, 10);
-          return;
-        }
+    const range = selection.getRangeAt(0);
+    
+    // Check if already in a text size span
+    const parentElement = range.commonAncestorContainer.nodeType === Node.TEXT_NODE 
+      ? range.commonAncestorContainer.parentElement 
+      : range.commonAncestorContainer as HTMLElement;
+    
+    const existingSizeElement = parentElement?.closest('[data-text-size]');
+    const sizeAttr = size === 'text-xl' ? 't1' : 't2';
+    
+    // If already in same size, remove it
+    if (existingSizeElement && existingSizeElement.getAttribute('data-text-size') === sizeAttr) {
+      const text = existingSizeElement.textContent || '';
+      const textNode = document.createTextNode(text);
+      existingSizeElement.parentNode?.replaceChild(textNode, existingSizeElement);
+    } else if (!range.collapsed) {
+      // Wrap selected text in span with size
+      const span = document.createElement('span');
+      span.className = size;
+      span.setAttribute('data-text-size', sizeAttr);
+      
+      try {
+        range.surroundContents(span);
+      } catch {
+        // Fallback if selection spans multiple elements
+        const fragment = range.extractContents();
+        span.appendChild(fragment);
+        range.insertNode(span);
       }
     }
     
+    editorRef.current?.focus();
+    setTimeout(updateActiveFormats, 10);
+  };
+
+  const execCommand = (command: string, value?: string) => {
+    editorRef.current?.focus();
     document.execCommand(command, false, value);
     editorRef.current?.focus();
     setTimeout(updateActiveFormats, 10);
@@ -329,7 +347,7 @@ export function FeedComposer() {
             onInput={handleInput}
             onMouseUp={updateActiveFormats}
             onKeyUp={updateActiveFormats}
-            className="w-full bg-transparent border-0 resize-none outline-none placeholder:text-muted-foreground text-sm focus:ring-0 focus:border-0 min-h-[120px] max-h-[400px] overflow-y-auto [&_h1]:text-xl [&_h2]:text-lg [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1"
+            className="w-full bg-transparent border-0 resize-none outline-none placeholder:text-muted-foreground text-sm focus:ring-0 focus:border-0 min-h-[120px] max-h-[400px] overflow-y-auto [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1"
             data-placeholder="Type your feed post here..."
             style={{
               lineHeight: '1.5'
@@ -405,10 +423,10 @@ export function FeedComposer() {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className={`h-7 w-7 rounded-lg hover:bg-accent text-xs ${activeFormats.has('h1') ? 'bg-blue-500/20' : ''}`}
+                  className={`h-7 w-7 rounded-lg hover:bg-accent text-xs ${activeFormats.has('t1') ? 'bg-blue-500/20' : ''}`}
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => execCommand('formatBlock', 'h1')}
-                  title="Large text (formats entire paragraph)"
+                  onClick={() => applyInlineTextSize('text-xl')}
+                  title="Large text (inline)"
                 >
                   T1
                 </Button>
@@ -416,10 +434,10 @@ export function FeedComposer() {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className={`h-7 w-7 rounded-lg hover:bg-accent text-xs ${activeFormats.has('h2') ? 'bg-blue-500/20' : ''}`}
+                  className={`h-7 w-7 rounded-lg hover:bg-accent text-xs ${activeFormats.has('t2') ? 'bg-blue-500/20' : ''}`}
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => execCommand('formatBlock', 'h2')}
-                  title="Medium text (formats entire paragraph)"
+                  onClick={() => applyInlineTextSize('text-lg')}
+                  title="Medium text (inline)"
                 >
                   T2
                 </Button>
