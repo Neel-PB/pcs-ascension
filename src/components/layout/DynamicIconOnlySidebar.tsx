@@ -67,43 +67,6 @@ const ModuleItem = forwardRef<HTMLDivElement, ModuleItemProps>(
         <span className="relative z-10 text-[10px] font-medium leading-tight text-center">
           {module.label}
         </span>
-
-        {/* Sub-items tooltip on hover */}
-        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-48 bg-background border shadow-lg rounded-lg p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none group-hover:pointer-events-auto">
-          <div className="space-y-1">
-            {module.items
-              .filter(item => {
-                if (!item.permissions || item.permissions.length === 0) return true;
-                return item.permissions.some(permission => hasPermission(permission));
-              })
-              .map((item, idx) => (
-                <NavLink
-                  key={idx}
-                  to={item.url || '#'}
-                  className={({ isActive }) => cn(
-                    "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-all duration-200",
-                    isActive 
-                      ? "bg-primary text-primary-foreground shadow-sm" 
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  )}
-                >
-                  <item.icon className="w-4 h-4" />
-                  <span className="flex-1">{item.title}</span>
-                  {item.badge && (
-                    <Badge variant="secondary" className="text-xs px-1.5 py-0">
-                      {item.badge}
-                    </Badge>
-                  )}
-                  {item.isNew && (
-                    <Badge variant="default" className="text-xs px-1.5 py-0">
-                      New
-                    </Badge>
-                  )}
-                  {item.title === "Inbox" && <InboxBadge />}
-                </NavLink>
-              ))}
-          </div>
-        </div>
       </motion.div>
     );
   }
