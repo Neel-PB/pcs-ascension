@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useSendMessage } from "@/hooks/useMessages";
-import { Send, Paperclip, Image, FileText, FileSpreadsheet, X, Bold, Italic, Underline, List, ListOrdered } from "lucide-react";
+import { Send, Paperclip, Image, FileText, FileSpreadsheet, X, Bold, Italic, Underline, List, ListOrdered, ArrowUp } from "lucide-react";
 import RecipientMultiSelect from "./RecipientMultiSelect";
 import { roleGroups } from "@/hooks/useMessages";
 import mammoth from "mammoth";
@@ -447,13 +447,13 @@ export function FeedComposer() {
 
             <Button
               type="button"
-              variant="ghost"
               size="icon"
-              className="h-7 w-7 rounded-lg hover:bg-accent text-primary"
+              className="h-8 w-8 rounded-full"
               onClick={() => handleSubmit()}
               disabled={!canSend}
+              title="Send"
             >
-              <Send className="h-3 w-3" />
+              <ArrowUp className="h-4 w-4" />
             </Button>
           </div>
         </div>
