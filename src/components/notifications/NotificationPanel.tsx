@@ -21,9 +21,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from "@/hooks/useNotifications";
-import { useEmployeeFeed, useDeletePost } from "@/hooks/useEmployeeFeed";
-import { useRBAC } from "@/hooks/useRBAC";
-import { Bell, Check, MessageCircle, Heart, Users, Megaphone, MessageSquare, X, Trash2 } from "lucide-react";
+import { useEmployeeFeed } from "@/hooks/useEmployeeFeed";
+import { Bell, Check, MessageCircle, Heart, Users, Megaphone, MessageSquare, X } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -47,10 +46,7 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
   const { data: posts, isLoading: isLoadingPosts } = useEmployeeFeed();
   const markAsRead = useMarkNotificationRead();
   const markAllAsRead = useMarkAllNotificationsRead();
-  const deletePost = useDeletePost();
-  const { hasRole } = useRBAC();
   const [activeTab, setActiveTab] = useState("feed");
-  const [postToDelete, setPostToDelete] = useState<string | null>(null);
 
   const unreadCount = notifications?.filter(n => !n.read).length || 0;
 
@@ -111,29 +107,12 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-medium">
-                                {post.author.first_name} {post.author.last_name}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                              </p>
-                            </div>
-                            {hasRole('admin') && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setPostToDelete(post.id);
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
+                          <p className="text-sm font-medium">
+                            {post.author.first_name} {post.author.last_name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                          </p>
                         </div>
                       </div>
 
@@ -266,31 +245,6 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
           </Button>
         </SheetFooter>
       </SheetContent>
-
-      <AlertDialog open={!!postToDelete} onOpenChange={() => setPostToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Post</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this post? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (postToDelete) {
-                  deletePost.mutate(postToDelete);
-                  setPostToDelete(null);
-                }
-              }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </Sheet>
   );
 }

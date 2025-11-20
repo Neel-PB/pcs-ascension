@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import DataImportPage from "./DataImportPage";
 import UsersManagement from "./UsersManagement";
 import { FeedComposer } from "@/components/messaging/FeedComposer";
-import { MessageHistory } from "@/components/messaging/MessageHistory";
+import { FeedHistory } from "@/components/feed/FeedHistory";
 import { Button } from "@/components/ui/button";
 
 export default function AdminPage() {
@@ -126,7 +126,7 @@ export default function AdminPage() {
             {activeTab === "feed" && (
               <div className="space-y-6">
                 <FeedComposer />
-                <MessageHistory />
+                <FeedHistory />
               </div>
             )}
           
