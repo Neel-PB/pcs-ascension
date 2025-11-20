@@ -67,6 +67,7 @@ export function AppHeader() {
   };
 
   return (
+    <>
     <header className="fixed top-0 z-40 flex items-center border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" style={{ left: 'var(--sidebar-width)', right: 0, height: 'var(--header-height)' }}>
       <div className="flex w-full items-center justify-between px-6" style={{ height: 'var(--header-height)' }}>
         {/* Left Section - Title */}
@@ -102,7 +103,10 @@ export function AppHeader() {
             variant="ghost" 
             size="icon" 
             className="relative" 
-            onClick={() => setNotificationsOpen(true)}
+            onClick={() => {
+              console.log("Bell clicked, opening notifications");
+              setNotificationsOpen(true);
+            }}
           >
             <Bell className="h-5 w-5" />
             {notifications && notifications.filter(n => !n.read).length > 0 && (
@@ -170,13 +174,13 @@ export function AppHeader() {
           userId={user.id}
         />
       )}
-
-      {/* Notification Panel */}
-      <NotificationPanel 
-        open={notificationsOpen}
-        onOpenChange={setNotificationsOpen}
-      />
-
     </header>
+
+    {/* Notification Panel - Outside header to avoid z-index issues */}
+    <NotificationPanel 
+      open={notificationsOpen}
+      onOpenChange={setNotificationsOpen}
+    />
+    </>
   );
 }

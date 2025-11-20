@@ -32,6 +32,8 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
   const markAsRead = useMarkNotificationRead();
   const markAllAsRead = useMarkAllNotificationsRead();
 
+  console.log("NotificationPanel render - open:", open);
+
   const unreadCount = notifications?.filter(n => !n.read).length || 0;
 
   return (
