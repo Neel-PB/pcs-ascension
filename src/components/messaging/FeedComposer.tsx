@@ -171,6 +171,7 @@ export function FeedComposer() {
   };
 
   const execCommand = (command: string, value?: string) => {
+    editorRef.current?.focus();
     document.execCommand(command, false, value);
     editorRef.current?.focus();
   };
@@ -289,92 +290,100 @@ export function FeedComposer() {
         <div className="flex items-center justify-between px-3 pb-3 pt-2">
           {/* Left Side - Formatting Buttons */}
           <div className="flex items-center gap-1">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 rounded-lg hover:bg-accent"
-              onClick={() => execCommand('bold')}
-              title="Bold"
-            >
-              <Bold className="h-3 w-3" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 rounded-lg hover:bg-accent"
-              onClick={() => execCommand('italic')}
-              title="Italic"
-            >
-              <Italic className="h-3 w-3" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 rounded-lg hover:bg-accent"
-              onClick={() => execCommand('underline')}
-              title="Underline"
-            >
-              <Underline className="h-3 w-3" />
-            </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 rounded-lg hover:bg-accent"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => execCommand('bold')}
+                title="Bold"
+              >
+                <Bold className="h-3 w-3" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 rounded-lg hover:bg-accent"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => execCommand('italic')}
+                title="Italic"
+              >
+                <Italic className="h-3 w-3" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 rounded-lg hover:bg-accent"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => execCommand('underline')}
+                title="Underline"
+              >
+                <Underline className="h-3 w-3" />
+              </Button>
             
             <div className="w-px h-5 bg-border/40 mx-1" />
             
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 rounded-lg hover:bg-accent"
-              onClick={() => execCommand('insertUnorderedList')}
-              title="Bullet List"
-            >
-              <List className="h-3 w-3" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 rounded-lg hover:bg-accent"
-              onClick={() => execCommand('insertOrderedList')}
-              title="Numbered List"
-            >
-              <ListOrdered className="h-3 w-3" />
-            </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 rounded-lg hover:bg-accent"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => execCommand('insertUnorderedList')}
+                title="Bullet List"
+              >
+                <List className="h-3 w-3" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 rounded-lg hover:bg-accent"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => execCommand('insertOrderedList')}
+                title="Numbered List"
+              >
+                <ListOrdered className="h-3 w-3" />
+              </Button>
             
             <div className="w-px h-5 bg-border/40 mx-1" />
             
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 rounded-lg hover:bg-accent text-xs font-bold"
-              onClick={() => execCommand('formatBlock', '<h1>')}
-              title="Heading 1"
-            >
-              H1
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 rounded-lg hover:bg-accent text-xs font-bold"
-              onClick={() => execCommand('formatBlock', '<h2>')}
-              title="Heading 2"
-            >
-              H2
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 rounded-lg hover:bg-accent text-xs font-bold"
-              onClick={() => execCommand('formatBlock', '<h3>')}
-              title="Heading 3"
-            >
-              H3
-            </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 rounded-lg hover:bg-accent text-xs font-bold"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => execCommand('formatBlock', 'h1')}
+                title="Heading 1"
+              >
+                H1
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 rounded-lg hover:bg-accent text-xs font-bold"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => execCommand('formatBlock', 'h2')}
+                title="Heading 2"
+              >
+                H2
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 rounded-lg hover:bg-accent text-xs font-bold"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => execCommand('formatBlock', 'h3')}
+                title="Heading 3"
+              >
+                H3
+              </Button>
           </div>
 
           {/* Right Side - Actions */}
