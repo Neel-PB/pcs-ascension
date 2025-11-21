@@ -25,7 +25,7 @@ export function TabNavigation({ tabs, className }: TabNavigationProps) {
 
   return (
     <div className={cn("w-full", className)}>
-      <div className="bg-shell-elevated rounded-xl p-2 shadow-soft">
+      <div className="bg-background rounded-xl p-2 shadow-soft">
         <LayoutGroup>
           <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
             {tabs.map((tab, index) => {
