@@ -65,7 +65,7 @@ export default function PositionsPage() {
       </div>
 
       <LayoutGroup>
-        <div className="relative bg-secondary rounded-lg p-1 mb-6">
+        <div className="relative bg-background rounded-lg p-1 mb-6">
           <div className="flex">
             {tabs.map((tab, index) => (
               <motion.button
