@@ -61,11 +61,11 @@ export function ShellLayout({ children }: ShellLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background w-full">
+    <div className="min-h-screen bg-shell-elevated w-full">
       <DynamicIconOnlySidebar />
       <AppHeader />
       
-      <main className="px-4 py-4" style={{ marginLeft: 'var(--sidebar-width)', marginTop: 'var(--header-height)' }}>
+      <main className="px-4 py-4 bg-shell-elevated" style={{ marginLeft: 'var(--sidebar-width)', marginTop: 'var(--header-height)' }}>
         {children}
       </main>
     </div>
