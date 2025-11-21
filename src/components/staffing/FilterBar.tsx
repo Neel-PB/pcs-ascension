@@ -152,9 +152,9 @@ export function FilterBar({
     selectedDepartment !== "all-departments";
 
   return (
-    <div className="flex items-center gap-3 justify-center">
+    <div className="relative">
       <motion.div
-        className={`flex flex-wrap gap-3 ${className}`}
+        className={`flex flex-wrap gap-3 justify-center ${className}`}
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
@@ -242,6 +242,7 @@ export function FilterBar({
       <AnimatePresence>
         {hasActiveFilters && (
           <motion.div
+            className="absolute right-0 top-1/2 -translate-y-1/2"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
