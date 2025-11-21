@@ -53,6 +53,15 @@ export default function StaffingSummary() {
     setSelectedDepartmentFamily(value);
     setSelectedDepartment("all-departments");
   };
+
+  const handleClearFilters = () => {
+    setSelectedRegion("all-regions");
+    setSelectedMarket("all-markets");
+    setSelectedFacility("all-facilities");
+    setSelectedDepartmentFamily("all-dept-families");
+    setSelectedDepartment("all-departments");
+  };
+  
   // Realistic chart data generators
   const generateGrowthTrend = (start: number, end: number, points: number = 24) => 
     Array.from({ length: points }, (_, i) => ({
@@ -424,6 +433,7 @@ This metric helps:
           selectedFacility={selectedFacility}
           selectedDepartmentFamily={selectedDepartmentFamily}
           selectedDepartment={selectedDepartment}
+          onClearFilters={handleClearFilters}
         />
       </div>
 

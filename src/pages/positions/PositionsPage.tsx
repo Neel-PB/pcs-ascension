@@ -47,6 +47,14 @@ export default function PositionsPage() {
     setSelectedDepartment("all-departments");
   };
 
+  const handleClearFilters = () => {
+    setSelectedRegion("all-regions");
+    setSelectedMarket("all-markets");
+    setSelectedFacility("all-facilities");
+    setSelectedDepartmentFamily("all-dept-families");
+    setSelectedDepartment("all-departments");
+  };
+
   return (
     <div className="space-y-6">
       <div className="py-2">
@@ -61,6 +69,7 @@ export default function PositionsPage() {
           onFacilityChange={handleFacilityChange}
           onDepartmentFamilyChange={handleDepartmentFamilyChange}
           onDepartmentChange={setSelectedDepartment}
+          onClearFilters={handleClearFilters}
         />
       </div>
 

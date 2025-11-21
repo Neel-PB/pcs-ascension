@@ -1,5 +1,7 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 
 interface FilterBarProps {
   className?: string;
@@ -8,6 +10,7 @@ interface FilterBarProps {
   onFacilityChange?: (value: string) => void;
   onDepartmentFamilyChange?: (value: string) => void;
   onDepartmentChange?: (value: string) => void;
+  onClearFilters?: () => void;
   selectedRegion?: string;
   selectedMarket?: string;
   selectedFacility?: string;
@@ -29,6 +32,7 @@ export function FilterBar({
   onFacilityChange,
   onDepartmentFamilyChange,
   onDepartmentChange,
+  onClearFilters,
   selectedRegion = "all-regions",
   selectedMarket = "all-markets",
   selectedFacility = "all-facilities",
@@ -139,13 +143,22 @@ export function FilterBar({
   const availableMarkets = getAvailableMarkets();
   const availableFacilities = getAvailableFacilities();
 
+  // Check if any filters are active (not in default state)
+  const hasActiveFilters = 
+    selectedRegion !== "all-regions" ||
+    selectedMarket !== "all-markets" ||
+    selectedFacility !== "all-facilities" ||
+    selectedDepartmentFamily !== "all-dept-families" ||
+    selectedDepartment !== "all-departments";
+
   return (
-    <motion.div
-      className={`flex flex-wrap gap-3 justify-center ${className}`}
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
+    <div className="flex items-center gap-3 justify-center">
+      <motion.div
+        className={`flex flex-wrap gap-3 ${className}`}
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
       {/* Region Filter */}
       <Select value={selectedRegion} onValueChange={onRegionChange}>
         <SelectTrigger className="w-[200px] bg-background border-border">
@@ -223,6 +236,29 @@ export function FilterBar({
           <SelectItem value="cardiology">Cardiology</SelectItem>
         </SelectContent>
       </Select>
-    </motion.div>
+      </motion.div>
+
+      {/* Clear Filters Button - only shows when filters are active */}
+      <AnimatePresence>
+        {hasActiveFilters && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Button
+              variant="ascension"
+              size="icon"
+              onClick={onClearFilters}
+              title="Clear all filters"
+              aria-label="Clear all filters"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
