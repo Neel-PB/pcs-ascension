@@ -18,6 +18,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 interface VarianceData {
@@ -652,6 +658,7 @@ export default function PositionPlanning() {
   };
 
   return (
+    <TooltipProvider delayDuration={300}>
     <div className="space-y-6">
       {/* Header with Legend */}
       <div className="flex items-center justify-between">
@@ -675,54 +682,74 @@ export default function PositionPlanning() {
               <LayoutGroup>
                 <div className="flex gap-0.5">
                   {/* Hired button */}
-                  <motion.button
-                    onClick={() => setViewMode('planned')}
-                    className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    {viewMode === 'planned' && (
-                      <motion.div
-                        layoutId="viewModeIndicator"
-                        className="absolute inset-0 bg-gradient-primary rounded-md"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                      />
-                    )}
-                    <span className={cn(
-                      "relative z-10 transition-colors",
-                      viewMode === 'planned' ? "text-white" : "text-muted-foreground"
-                    )}>
-                      Hired
-                    </span>
-                  </motion.button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <motion.button
+                        onClick={() => setViewMode('planned')}
+                        className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        {viewMode === 'planned' && (
+                          <motion.div
+                            layoutId="viewModeIndicator"
+                            className="absolute inset-0 bg-gradient-primary rounded-md"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                          />
+                        )}
+                        <span className={cn(
+                          "relative z-10 transition-colors",
+                          viewMode === 'planned' ? "text-white" : "text-muted-foreground"
+                        )}>
+                          Hired
+                        </span>
+                      </motion.button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-sm">
+                        <span className="font-semibold">Hired FTE:</span> Shows all hired employees,
+                        including those on leave or inactive status
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
 
                   {/* Actual button */}
-                  <motion.button
-                    onClick={() => setViewMode('active')}
-                    className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    {viewMode === 'active' && (
-                      <motion.div
-                        layoutId="viewModeIndicator"
-                        className="absolute inset-0 bg-gradient-primary rounded-md"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                      />
-                    )}
-                    <span className={cn(
-                      "relative z-10 transition-colors",
-                      viewMode === 'active' ? "text-white" : "text-muted-foreground"
-                    )}>
-                      Active
-                    </span>
-                  </motion.button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <motion.button
+                        onClick={() => setViewMode('active')}
+                        className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        {viewMode === 'active' && (
+                          <motion.div
+                            layoutId="viewModeIndicator"
+                            className="absolute inset-0 bg-gradient-primary rounded-md"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                          />
+                        )}
+                        <span className={cn(
+                          "relative z-10 transition-colors",
+                          viewMode === 'active' ? "text-white" : "text-muted-foreground"
+                        )}>
+                          Active
+                        </span>
+                      </motion.button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-sm">
+                        <span className="font-semibold">Active FTE:</span> Shows only actively working employees,
+                        excluding those on leave, LOA, or inactive
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               </LayoutGroup>
             </div>
@@ -897,6 +924,7 @@ export default function PositionPlanning() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+     </div>
+    </TooltipProvider>
   );
 }
