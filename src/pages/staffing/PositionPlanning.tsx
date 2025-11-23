@@ -658,7 +658,7 @@ export default function PositionPlanning() {
   };
 
   return (
-    <TooltipProvider delayDuration={300}>
+    <TooltipProvider delayDuration={300} skipDelayDuration={300}>
     <div className="space-y-6">
       {/* Header with Legend */}
       <div className="flex items-center justify-between">
