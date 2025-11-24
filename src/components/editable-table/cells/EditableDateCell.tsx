@@ -12,6 +12,7 @@ interface EditableDateCellProps {
   onSave: (value: string | null) => void | Promise<void>;
   className?: string;
   minDate?: Date;
+  maxDate?: Date;
   formatString?: string;
 }
 
@@ -21,6 +22,7 @@ export function EditableDateCell({
   onSave,
   className,
   minDate = new Date(),
+  maxDate,
   formatString = 'MMM d, yyyy',
 }: EditableDateCellProps) {
   const [date, setDate] = useState<Date | undefined>(
@@ -89,7 +91,11 @@ export function EditableDateCell({
             mode="single"
             selected={date}
             onSelect={handleSelect}
-            disabled={(date) => date < minDate}
+            disabled={(date) => {
+              if (date < minDate) return true;
+              if (maxDate && date > maxDate) return true;
+              return false;
+            }}
             initialFocus
             className={cn("p-3 pointer-events-auto")}
           />

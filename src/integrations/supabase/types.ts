@@ -834,6 +834,59 @@ export type Database = {
         }
         Relationships: []
       }
+      volume_override_config: {
+        Row: {
+          backfill_lookback_months: number
+          created_at: string
+          created_by: string | null
+          enable_backfill: boolean
+          fiscal_year_end_day: number
+          fiscal_year_end_month: number
+          id: string
+          max_override_months_full_history: number
+          min_months_for_target: number
+          min_months_mandatory_override: number
+          min_volume_threshold: number | null
+          updated_at: string
+        }
+        Insert: {
+          backfill_lookback_months?: number
+          created_at?: string
+          created_by?: string | null
+          enable_backfill?: boolean
+          fiscal_year_end_day?: number
+          fiscal_year_end_month?: number
+          id?: string
+          max_override_months_full_history?: number
+          min_months_for_target?: number
+          min_months_mandatory_override?: number
+          min_volume_threshold?: number | null
+          updated_at?: string
+        }
+        Update: {
+          backfill_lookback_months?: number
+          created_at?: string
+          created_by?: string | null
+          enable_backfill?: boolean
+          fiscal_year_end_day?: number
+          fiscal_year_end_month?: number
+          id?: string
+          max_override_months_full_history?: number
+          min_months_for_target?: number
+          min_months_mandatory_override?: number
+          min_volume_threshold?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "volume_override_config_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       volume_overrides: {
         Row: {
           created_at: string
@@ -843,10 +896,16 @@ export type Database = {
           expiry_date: string
           facility_id: string
           facility_name: string
+          historical_months_count: number | null
           id: string
           market: string
+          max_allowed_expiry_date: string | null
+          override_mandatory: boolean | null
           override_volume: number
+          target_volume: number | null
           updated_at: string
+          validation_message: string | null
+          validation_status: string | null
         }
         Insert: {
           created_at?: string
@@ -856,10 +915,16 @@ export type Database = {
           expiry_date: string
           facility_id: string
           facility_name: string
+          historical_months_count?: number | null
           id?: string
           market: string
+          max_allowed_expiry_date?: string | null
+          override_mandatory?: boolean | null
           override_volume: number
+          target_volume?: number | null
           updated_at?: string
+          validation_message?: string | null
+          validation_status?: string | null
         }
         Update: {
           created_at?: string
@@ -869,10 +934,16 @@ export type Database = {
           expiry_date?: string
           facility_id?: string
           facility_name?: string
+          historical_months_count?: number | null
           id?: string
           market?: string
+          max_allowed_expiry_date?: string | null
+          override_mandatory?: boolean | null
           override_volume?: number
+          target_volume?: number | null
           updated_at?: string
+          validation_message?: string | null
+          validation_status?: string | null
         }
         Relationships: []
       }
