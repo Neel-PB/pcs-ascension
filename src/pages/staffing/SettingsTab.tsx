@@ -155,7 +155,7 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
   };
 
   const columns = useMemo(
-    () => createVolumeOverrideColumns(handleSaveVolume, handleSaveDate, handleDelete),
+    () => createVolumeOverrideColumns(handleSaveVolume, handleSaveDate),
     [tableData]
   );
 

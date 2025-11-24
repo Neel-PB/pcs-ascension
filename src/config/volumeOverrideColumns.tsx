@@ -1,8 +1,7 @@
 import { ColumnDef } from '@/types/table';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { X, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { EditableNumberCell } from '@/components/editable-table/cells/EditableNumberCell';
 import { EditableDateCell } from '@/components/editable-table/cells/EditableDateCell';
 import { differenceInDays, format } from 'date-fns';
@@ -32,8 +31,7 @@ export interface VolumeOverrideRow {
 
 export const createVolumeOverrideColumns = (
   onSaveVolume: (departmentId: string, volume: number | null) => Promise<void>,
-  onSaveDate: (departmentId: string, date: string | null) => Promise<void>,
-  onDelete: (id: string) => void
+  onSaveDate: (departmentId: string, date: string | null) => Promise<void>
 ): ColumnDef<VolumeOverrideRow>[] => [
   {
     id: 'department_name',
@@ -53,7 +51,7 @@ export const createVolumeOverrideColumns = (
     id: 'historical_months',
     label: 'Historical Months',
     type: 'custom',
-    width: 180,
+    width: 200,
     minWidth: 150,
     sortable: true,
     renderCell: (row) => {
@@ -89,7 +87,7 @@ export const createVolumeOverrideColumns = (
     id: 'target_volume',
     label: 'Target Volume',
     type: 'custom',
-    width: 150,
+    width: 180,
     minWidth: 120,
     sortable: true,
     renderCell: (row) => (
@@ -117,7 +115,7 @@ export const createVolumeOverrideColumns = (
     id: 'override_status',
     label: 'Override Status',
     type: 'custom',
-    width: 150,
+    width: 180,
     minWidth: 120,
     sortable: true,
     renderCell: (row) => {
@@ -263,27 +261,5 @@ export const createVolumeOverrideColumns = (
         </div>
       );
     },
-  },
-  {
-    id: 'actions',
-    label: 'Actions',
-    type: 'custom',
-    width: 100,
-    minWidth: 80,
-    renderCell: (row) => (
-      <div className="px-3 py-2">
-        {row.override_volume && row.expiry_date && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onDelete(row.id)}
-            className="h-8 w-8 p-0"
-            title="Remove override"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
-    ),
   },
 ];
