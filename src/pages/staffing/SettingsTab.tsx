@@ -4,8 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { EditableTable } from '@/components/editable-table/EditableTable';
 import { createVolumeOverrideColumns, VolumeOverrideRow } from '@/config/volumeOverrideColumns';
 import { useVolumeOverrides, useUpsertVolumeOverride, useDeleteVolumeOverride } from '@/hooks/useVolumeOverrides';
-import { Database, AlertCircle } from 'lucide-react';
+import { useHistoricalVolumeAnalysis } from '@/hooks/useHistoricalVolumeAnalysis';
+import { Database, AlertCircle, AlertTriangle, Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface SettingsTabProps {
   selectedMarket: string;
@@ -14,6 +17,7 @@ interface SettingsTabProps {
 
 export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabProps) {
   const { data: overrides = [], isLoading: isLoadingOverrides } = useVolumeOverrides(selectedFacility);
+  const { data: volumeAnalysis = [], isLoading: isLoadingAnalysis } = useHistoricalVolumeAnalysis();
   const upsertMutation = useUpsertVolumeOverride();
   const deleteMutation = useDeleteVolumeOverride();
 
@@ -53,12 +57,15 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
     enabled: !!selectedFacility && selectedFacility !== 'all-facilities',
   });
 
-  // Merge departments with overrides
+  // Merge departments with overrides and historical analysis
   const tableData = useMemo((): VolumeOverrideRow[] => {
     if (!departments.length) return [];
 
     return departments.map((dept) => {
       const override = overrides.find((o) => o.department_id === dept.department_id);
+      const analysis = volumeAnalysis.find(
+        (a) => a.facility_id === selectedFacility && a.department_id === dept.department_id
+      );
       
       return {
         id: override?.id || `dept-${dept.department_id}`,
@@ -69,9 +76,28 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
         market: selectedMarket,
         facility_id: selectedFacility,
         facility_name: facilityData?.facility_name || '',
+        // Add historical analysis data
+        historical_months_count: analysis?.historical_months_count,
+        target_volume: analysis?.target_volume,
+        override_mandatory: analysis?.override_mandatory,
+        max_allowed_expiry_date: analysis?.max_allowed_expiry_date,
+        category: analysis?.category,
       };
     });
-  }, [departments, overrides, selectedMarket, selectedFacility, facilityData]);
+  }, [departments, overrides, volumeAnalysis, selectedMarket, selectedFacility, facilityData]);
+
+  // Calculate warning stats
+  const stats = useMemo(() => {
+    const mandatoryCount = tableData.filter(row => row.override_mandatory && !row.override_volume).length;
+    const expiringSoonCount = tableData.filter(row => {
+      if (!row.expiry_date) return false;
+      const daysUntilExpiry = Math.ceil((new Date(row.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+      return daysUntilExpiry > 0 && daysUntilExpiry <= 7;
+    }).length;
+    const usingTargetCount = tableData.filter(row => !row.override_volume && row.target_volume).length;
+
+    return { mandatoryCount, expiringSoonCount, usingTargetCount };
+  }, [tableData]);
 
   const handleSaveVolume = async (departmentId: string, volume: number | null) => {
     const row = tableData.find((r) => r.department_id === departmentId);
@@ -149,10 +175,10 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
   }
 
   // Show loading state
-  if (isLoadingDepartments || isLoadingOverrides) {
+  if (isLoadingDepartments || isLoadingOverrides || isLoadingAnalysis) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-pulse text-muted-foreground">Loading departments...</div>
+        <div className="animate-pulse text-muted-foreground">Analyzing historical data...</div>
       </div>
     );
   }
@@ -174,11 +200,51 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
 
   return (
     <div className="space-y-4">
+      {/* Warning Banners */}
+      {stats.mandatoryCount > 0 && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="flex items-center justify-between">
+            <span>
+              <strong>{stats.mandatoryCount}</strong> department{stats.mandatoryCount !== 1 ? 's' : ''} require override volumes due to insufficient historical data
+            </span>
+            <Button variant="outline" size="sm" className="ml-4">
+              View Required
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {stats.expiringSoonCount > 0 && (
+        <Alert className="border-yellow-500 bg-yellow-500/10">
+          <AlertTriangle className="h-4 w-4 text-yellow-600" />
+          <AlertDescription className="flex items-center justify-between">
+            <span className="text-yellow-800 dark:text-yellow-200">
+              <strong>{stats.expiringSoonCount}</strong> override{stats.expiringSoonCount !== 1 ? 's' : ''} expiring within 7 days
+            </span>
+            <Button variant="outline" size="sm" className="ml-4">
+              View Expiring
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {stats.usingTargetCount > 0 && (
+        <Alert className="border-blue-500 bg-blue-500/10">
+          <Info className="h-4 w-4 text-blue-600" />
+          <AlertDescription>
+            <span className="text-blue-800 dark:text-blue-200">
+              <strong>{stats.usingTargetCount}</strong> department{stats.usingTargetCount !== 1 ? 's' : ''} using target volume (sufficient historical data)
+            </span>
+          </AlertDescription>
+        </Alert>
+      )}
+
       <Alert>
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
-          Set override volumes for specific departments. Both override volume and expiry date are required to save changes. 
-          After the expiry date, the system will revert to using the target volume.
+          The system automatically determines whether to use target volume (12-month historical average) or require override volumes based on historical data availability. 
+          Both override volume and expiry date are required to save changes.
         </AlertDescription>
       </Alert>
 

@@ -9,6 +9,7 @@ import UsersManagement from "./UsersManagement";
 import { FeedComposer } from "@/components/messaging/FeedComposer";
 import { FeedHistory } from "@/components/feed/FeedHistory";
 import { Button } from "@/components/ui/button";
+import { VolumeOverrideSettings } from "@/components/admin/VolumeOverrideSettings";
 
 export default function AdminPage() {
   const { hasPermission, loading } = useRBAC();
@@ -142,11 +143,7 @@ export default function AdminPage() {
             </div>
           )}
           
-          {activeTab === "settings" && (
-            <div className="py-8 text-center text-muted-foreground">
-              Admin settings coming soon...
-            </div>
-          )}
+          {activeTab === "settings" && <VolumeOverrideSettings />}
         </motion.div>
       </AnimatePresence>
     </div>
