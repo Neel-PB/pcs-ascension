@@ -93,3 +93,49 @@ export function getCategoryTooltip(historicalMonths: number, config: VolumeOverr
   }
   return "Full 12-month history - override optional";
 }
+
+/**
+ * Get the badge color for historical data status
+ */
+export function getHistoricalDataBadgeColor(count: number): string {
+  if (count === 0) return 'bg-red-600 text-white hover:bg-red-700 border-red-700';
+  if (count < 3) return 'bg-red-600 text-white hover:bg-red-700 border-red-700';
+  if (count < 12) return 'bg-yellow-500 text-black hover:bg-yellow-600 border-yellow-600';
+  return 'bg-green-600 text-white hover:bg-green-700 border-green-700';
+}
+
+/**
+ * Get the label for historical data status
+ */
+export function getHistoricalDataLabel(count: number): string {
+  if (count === 0) return 'No Data';
+  if (count < 3) return 'Limited';
+  if (count < 12) return 'Partial';
+  return 'Full';
+}
+
+/**
+ * Get the badge color for override status
+ */
+export function getOverrideStatusBadgeColor(mandatory: boolean): string {
+  return mandatory 
+    ? 'bg-red-600 text-white hover:bg-red-700 border-red-700'
+    : 'bg-green-600 text-white hover:bg-green-700 border-green-700';
+}
+
+/**
+ * Get the label for override status
+ */
+export function getOverrideStatusLabel(mandatory: boolean): string {
+  return mandatory ? 'Required' : 'Optional';
+}
+
+/**
+ * Get the tooltip for override status
+ */
+export function getOverrideStatusTooltip(mandatory: boolean, historicalMonths: number): string {
+  if (mandatory) {
+    return `Override required: Insufficient historical data (${historicalMonths} months < 3 months minimum)`;
+  }
+  return `Override optional: Sufficient historical data (${historicalMonths} months ≥ 3 months). Will use target volume if not set.`;
+}
