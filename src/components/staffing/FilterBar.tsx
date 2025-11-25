@@ -62,70 +62,24 @@ export function FilterBar({
     "Administrative Support",
     "Health Information Management",
   ].sort();
-  // Facilities mapped by market (state)
+  // Facilities mapped by market (state) - using numeric facility IDs from labor_performance
   const facilitiesByMarket: Record<string, Array<{ value: string; label: string }>> = {
     "Florida": [
-      { value: "ascension-sacred-heart-pensacola", label: "Ascension Sacred Heart Pensacola" },
-      { value: "studer-family-childrens-hospital", label: "Studer Family Children's Hospital" },
-      { value: "st-vincents-riverside", label: "Ascension St. Vincent's Riverside" },
-      { value: "st-vincents-southside", label: "Ascension St. Vincent's Southside" },
-      { value: "st-vincents-st-clairs", label: "Ascension St. Vincent's St. Clair's" },
-      { value: "st-vincents-clay-county", label: "Ascension St. Vincent's Clay County" },
+      { value: "26012", label: "Sacred Heart Pensacola" },
+      { value: "52009", label: "St. Vincent's Riverside" },
+      { value: "52005", label: "St. Vincent's Southside" },
     ],
-    "Illinois": [
-      { value: "ascension-illinois", label: "Ascension Illinois" },
-    ],
-    "Indiana": [
-      { value: "peyton-manning-childrens-hospital", label: "Peyton Manning Children's Hospital" },
-      { value: "st-vincent-indianapolis", label: "Ascension St. Vincent Indianapolis" },
-      { value: "st-vincent-heart-center", label: "Ascension St. Vincent Heart Center" },
-      { value: "st-vincent-kokomo", label: "Ascension St. Vincent Kokomo" },
-      { value: "st-vincent-anderson", label: "Ascension St. Vincent Anderson" },
-      { value: "st-vincent-fishers", label: "Ascension St. Vincent Fishers" },
-      { value: "st-vincent-carmel", label: "Ascension St. Vincent Carmel" },
-      { value: "st-vincent-warrick", label: "Ascension St. Vincent Warrick" },
-      { value: "st-vincent-evansville", label: "Ascension St. Vincent Evansville" },
-    ],
-    "Kansas": [
-      { value: "via-christi-wichita", label: "Ascension Via Christi Wichita" },
-      { value: "via-christi-pittsburg", label: "Ascension Via Christi Pittsburg" },
-      { value: "via-christi-st-joseph", label: "Ascension Via Christi St. Joseph" },
-      { value: "via-christi-manhattan", label: "Ascension Via Christi Manhattan" },
-      { value: "via-christi-st-teresa", label: "Ascension Via Christi St. Teresa" },
-    ],
-    "Maryland": [
-      { value: "st-agnes-hospital", label: "Ascension St. Agnes Hospital" },
-    ],
-    "Oklahoma": [
-      { value: "st-john-medical-center", label: "St. John Medical Center" },
-      { value: "st-john-sapulpa", label: "St. John Sapulpa" },
-      { value: "st-john-owasso", label: "St. John Owasso" },
-      { value: "st-john-broken-arrow", label: "St. John Broken Arrow" },
-      { value: "jane-phillips-medical-center", label: "Jane Phillips Medical Center" },
-    ],
-    "Tennessee": [
-      { value: "saint-thomas-midtown", label: "Ascension Saint Thomas Midtown" },
-      { value: "saint-thomas-west", label: "Ascension Saint Thomas West" },
-      { value: "saint-thomas-rutherford", label: "Ascension Saint Thomas Rutherford" },
-      { value: "saint-thomas-hickman", label: "Ascension Saint Thomas Hickman" },
-      { value: "saint-thomas-dekalb", label: "Ascension Saint Thomas DeKalb" },
-      { value: "saint-thomas-highlands", label: "Ascension Saint Thomas Highlands" },
-      { value: "saint-thomas-river-park", label: "Ascension Saint Thomas River Park" },
-    ],
+    "Illinois": [],
+    "Indiana": [],
+    "Kansas": [],
+    "Maryland": [],
+    "Oklahoma": [],
+    "Tennessee": [],
     "Texas": [
-      { value: "seton-medical-center-austin", label: "Ascension Seton Austin" },
-      { value: "seton-northwest", label: "Ascension Seton Northwest" },
-      { value: "seton-southwest", label: "Ascension Seton Southwest" },
-      { value: "dell-childrens-medical-center", label: "Dell Children's Medical Center" },
-      { value: "seton-hays", label: "Ascension Seton Hays" },
-      { value: "seton-williamson", label: "Ascension Seton Williamson" },
-      { value: "seton-harker-heights", label: "Ascension Seton Harker Heights" },
-      { value: "ascension-providence", label: "Ascension Providence" },
+      { value: "30049", label: "Dell Seton" },
+      { value: "30024", label: "Seton Hays" },
     ],
-    "Wisconsin": [
-      { value: "columbia-st-marys-milwaukee", label: "Ascension Columbia St. Mary's Milwaukee" },
-      { value: "columbia-st-marys-ozaukee", label: "Ascension Columbia St. Mary's Ozaukee" },
-    ],
+    "Wisconsin": [],
   };
 
   // Get available markets based on selected region
