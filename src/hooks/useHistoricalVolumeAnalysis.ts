@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { subMonths, format, parseISO } from 'date-fns';
+import { subMonths, format, parseISO, getDaysInMonth } from 'date-fns';
 import { 
   calculateMaxOverrideExpiry, 
   determineOverrideCategory, 
@@ -12,6 +12,7 @@ import {
 export interface HistoricalMonthData {
   month: string;
   volume: number;
+  daysInMonth: number;
 }
 
 export interface DepartmentVolumeAnalysis {
@@ -113,10 +114,14 @@ async function analyzeDepartmentHistory(
              record.volume !== null && 
              record.volume > config.min_volume_threshold;
     })
-    .map((record: any) => ({
-      month: format(parseISO(record.month), 'yyyy-MM'),
-      volume: record.volume,
-    }));
+    .map((record: any) => {
+      const recordDate = parseISO(record.month);
+      return {
+        month: format(recordDate, 'yyyy-MM'),
+        volume: record.volume,
+        daysInMonth: getDaysInMonth(recordDate),
+      };
+    });
 
   // Step 2: If less than 12 months, perform backfill
   if (validMonths.length < 12 && config.enable_backfill) {
@@ -127,10 +132,14 @@ async function analyzeDepartmentHistory(
                record.volume !== null && 
                record.volume > config.min_volume_threshold;
       })
-      .map((record: any) => ({
-        month: format(parseISO(record.month), 'yyyy-MM'),
-        volume: record.volume,
-      }));
+      .map((record: any) => {
+        const recordDate = parseISO(record.month);
+        return {
+          month: format(recordDate, 'yyyy-MM'),
+          volume: record.volume,
+          daysInMonth: getDaysInMonth(recordDate),
+        };
+      });
 
     validMonths = [...validMonths, ...backfillMonths]
       .sort((a, b) => b.month.localeCompare(a.month))
@@ -138,8 +147,12 @@ async function analyzeDepartmentHistory(
   }
 
   // Step 3: Calculate target volume (average daily volume)
-  const targetVolume = validMonths.length >= config.min_months_for_target
-    ? validMonths.reduce((sum, m) => sum + m.volume, 0) / validMonths.length
+  // Sum total volume and total days across all valid months
+  const totalVolume = validMonths.reduce((sum, m) => sum + m.volume, 0);
+  const totalDays = validMonths.reduce((sum, m) => sum + m.daysInMonth, 0);
+  
+  const targetVolume = validMonths.length >= config.min_months_for_target && totalDays > 0
+    ? totalVolume / totalDays
     : null;
 
   // Step 4: Determine override requirements
