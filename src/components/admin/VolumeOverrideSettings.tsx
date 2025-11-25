@@ -135,10 +135,10 @@ export function VolumeOverrideSettings() {
           </CardContent>
         </Card>
 
-        {/* Fiscal Year & Volume Thresholds - Merged */}
+        {/* Fiscal, Volume & Backfill - Right Column */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Fiscal Year & Volume Settings</CardTitle>
+            <CardTitle className="text-base">Fiscal, Volume & Backfill</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 p-4 pt-0">
             <div className="grid grid-cols-2 gap-3">
@@ -177,8 +177,6 @@ export function VolumeOverrideSettings() {
               </div>
             </div>
 
-            <Separator />
-
             <div className="space-y-2">
               <Label htmlFor="min_volume_threshold" className="text-sm">
                 Minimum Volume Threshold
@@ -195,15 +193,9 @@ export function VolumeOverrideSettings() {
                 Below this is invalid (default: 0)
               </p>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Backfill Settings - Compact */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Backfill Settings</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 p-4 pt-0">
+            <Separator />
+
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="enable_backfill" className="text-sm">Enable Backfill</Label>
@@ -237,18 +229,18 @@ export function VolumeOverrideSettings() {
             </div>
           </CardContent>
         </Card>
+      </div>
 
-        {/* Save Button - Aligned Right */}
-        <div className="flex items-end justify-end">
-          <Button 
-            onClick={handleSave} 
-            disabled={updateConfig.isPending}
-            className="flex items-center gap-2"
-          >
-            <Save className="h-4 w-4" />
-            Save Configuration
-          </Button>
-        </div>
+      {/* Save Button - Full Width Row */}
+      <div className="flex justify-end">
+        <Button 
+          onClick={handleSave} 
+          disabled={updateConfig.isPending}
+          className="flex items-center gap-2 min-w-[200px]"
+        >
+          <Save className="h-4 w-4" />
+          {updateConfig.isPending ? "Saving..." : "Save Configuration"}
+        </Button>
       </div>
 
       {/* Rule Matrix Preview - Collapsible, Full Width */}
