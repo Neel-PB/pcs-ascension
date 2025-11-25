@@ -196,36 +196,38 @@ export function VolumeOverrideSettings() {
 
             <Separator />
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="enable_backfill" className="text-sm">Enable Backfill</Label>
+            <div className="grid grid-cols-2 gap-3 items-start">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="enable_backfill" className="text-sm">Enable Backfill</Label>
+                  <Switch
+                    id="enable_backfill"
+                    checked={formData.enable_backfill}
+                    onCheckedChange={(checked) => setFormData({ ...formData, enable_backfill: checked })}
+                  />
+                </div>
                 <p className="text-xs text-muted-foreground">
                   Look beyond 12 months
                 </p>
               </div>
-              <Switch
-                id="enable_backfill"
-                checked={formData.enable_backfill}
-                onCheckedChange={(checked) => setFormData({ ...formData, enable_backfill: checked })}
-              />
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="backfill_lookback_months" className="text-sm">
-                Lookback Period (Months)
-              </Label>
-              <Input
-                id="backfill_lookback_months"
-                type="number"
-                min={12}
-                max={36}
-                value={formData.backfill_lookback_months}
-                onChange={(e) => setFormData({ ...formData, backfill_lookback_months: parseInt(e.target.value) })}
-                disabled={!formData.enable_backfill}
-              />
-              <p className="text-xs text-muted-foreground">
-                How far back to look (default: 24)
-              </p>
+              <div className="space-y-2">
+                <Label htmlFor="backfill_lookback_months" className="text-sm">
+                  Lookback Period
+                </Label>
+                <Input
+                  id="backfill_lookback_months"
+                  type="number"
+                  min={12}
+                  max={36}
+                  value={formData.backfill_lookback_months}
+                  onChange={(e) => setFormData({ ...formData, backfill_lookback_months: parseInt(e.target.value) })}
+                  disabled={!formData.enable_backfill}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Months (default: 24)
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
