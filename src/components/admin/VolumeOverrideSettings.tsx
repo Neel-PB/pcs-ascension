@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { InfoIcon, Save, ChevronDown } from 'lucide-react';
+import { Save, ChevronDown } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
@@ -67,12 +67,57 @@ export function VolumeOverrideSettings() {
         </p>
       </div>
 
-      <Alert>
-        <InfoIcon className="h-4 w-4" />
-        <AlertDescription>
-          These settings control when override volumes are mandatory vs optional based on historical data availability.
-        </AlertDescription>
-      </Alert>
+      {/* Rule Matrix Preview - Collapsible, Full Width */}
+      <Collapsible open={isMatrixOpen} onOpenChange={setIsMatrixOpen}>
+        <Card className="bg-muted/30">
+          <CollapsibleTrigger className="w-full">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="text-left">
+                  <CardTitle className="text-base">Rule Matrix Preview</CardTitle>
+                  <CardDescription className="text-xs">
+                    How these settings affect override requirements
+                  </CardDescription>
+                </div>
+                <ChevronDown className={`h-4 w-4 transition-transform ${isMatrixOpen ? 'rotate-180' : ''}`} />
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="p-4 pt-0">
+              <div className="space-y-3">
+                <div className="grid grid-cols-4 gap-2 text-xs font-medium">
+                  <div>Historical Months</div>
+                  <div>Target Volume</div>
+                  <div>Override Status</div>
+                  <div>Max Expiry</div>
+                </div>
+                <Separator />
+                <div className="space-y-2 text-xs">
+                  <div className="grid grid-cols-4 gap-2 py-2">
+                    <div className="font-medium">0-{formData.min_months_mandatory_override}</div>
+                    <div className="text-muted-foreground">Not Available</div>
+                    <div className="text-red-600 font-medium">Mandatory</div>
+                    <div>{formData.max_override_months_full_history} months</div>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2 py-2">
+                    <div className="font-medium">{formData.min_months_for_target}-11</div>
+                    <div className="text-green-600">Available</div>
+                    <div className="text-blue-600 font-medium">Optional</div>
+                    <div>12 - historical months</div>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2 py-2">
+                    <div className="font-medium">12+</div>
+                    <div className="text-green-600">Available</div>
+                    <div className="text-blue-600 font-medium">Optional</div>
+                    <div>Next fiscal year end ({formData.fiscal_year_end_month}/{formData.fiscal_year_end_day})</div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
 
       {/* 2-Column Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -244,58 +289,6 @@ export function VolumeOverrideSettings() {
           {updateConfig.isPending ? "Saving..." : "Save Configuration"}
         </Button>
       </div>
-
-      {/* Rule Matrix Preview - Collapsible, Full Width */}
-      <Collapsible open={isMatrixOpen} onOpenChange={setIsMatrixOpen}>
-        <Card className="bg-muted/30">
-          <CollapsibleTrigger className="w-full">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="text-left">
-                  <CardTitle className="text-base">Rule Matrix Preview</CardTitle>
-                  <CardDescription className="text-xs">
-                    How these settings affect override requirements
-                  </CardDescription>
-                </div>
-                <ChevronDown className={`h-4 w-4 transition-transform ${isMatrixOpen ? 'rotate-180' : ''}`} />
-              </div>
-            </CardHeader>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <CardContent className="p-4 pt-0">
-              <div className="space-y-3">
-                <div className="grid grid-cols-4 gap-2 text-xs font-medium">
-                  <div>Historical Months</div>
-                  <div>Target Volume</div>
-                  <div>Override Status</div>
-                  <div>Max Expiry</div>
-                </div>
-                <Separator />
-                <div className="space-y-2 text-xs">
-                  <div className="grid grid-cols-4 gap-2 py-2">
-                    <div className="font-medium">0-{formData.min_months_mandatory_override}</div>
-                    <div className="text-muted-foreground">Not Available</div>
-                    <div className="text-red-600 font-medium">Mandatory</div>
-                    <div>{formData.max_override_months_full_history} months</div>
-                  </div>
-                  <div className="grid grid-cols-4 gap-2 py-2">
-                    <div className="font-medium">{formData.min_months_for_target}-11</div>
-                    <div className="text-green-600">Available</div>
-                    <div className="text-blue-600 font-medium">Optional</div>
-                    <div>12 - historical months</div>
-                  </div>
-                  <div className="grid grid-cols-4 gap-2 py-2">
-                    <div className="font-medium">12+</div>
-                    <div className="text-green-600">Available</div>
-                    <div className="text-blue-600 font-medium">Optional</div>
-                    <div>Next fiscal year end ({formData.fiscal_year_end_month}/{formData.fiscal_year_end_day})</div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </CollapsibleContent>
-        </Card>
-      </Collapsible>
     </div>
   );
 }
