@@ -86,9 +86,9 @@ export function UserManagementTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users.map((user) => {
-            const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown User';
-            const initials = `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase() || 'U';
+          {users.filter(user => user != null).map((user) => {
+            const fullName = `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || 'Unknown User';
+            const initials = `${user?.first_name?.[0] || ''}${user?.last_name?.[0] || ''}`.toUpperCase() || 'U';
 
             return (
               <TableRow key={user.id}>
