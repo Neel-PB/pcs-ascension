@@ -52,7 +52,6 @@ export function useHistoricalVolumeAnalysis() {
   return useQuery({
     queryKey: ['historical-volume-analysis', config],
     queryFn: async () => {
-      console.log('🔄 Running historical volume analysis...');
       if (!config) return [];
 
       const currentDate = new Date();
@@ -155,8 +154,6 @@ async function analyzeDepartmentHistory(
   const targetVolume = validMonths.length >= config.min_months_for_target && totalDays > 0
     ? totalVolume / totalDays
     : null;
-
-  console.log(`[${dept.department_name}] Months: ${validMonths.length}, Total Volume: ${totalVolume}, Total Days: ${totalDays}, Daily Avg: ${targetVolume?.toFixed(2)}`);
 
   // Step 4: Determine override requirements
   const overrideMandatory = isOverrideMandatory(validMonths.length, config);

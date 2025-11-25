@@ -5,10 +5,8 @@ import { EditableTable } from '@/components/editable-table/EditableTable';
 import { createVolumeOverrideColumns, VolumeOverrideRow } from '@/config/volumeOverrideColumns';
 import { useVolumeOverrides, useUpsertVolumeOverride, useDeleteVolumeOverride } from '@/hooks/useVolumeOverrides';
 import { useHistoricalVolumeAnalysis } from '@/hooks/useHistoricalVolumeAnalysis';
-import { Database, AlertCircle, AlertTriangle, Info } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 
 interface SettingsTabProps {
   selectedMarket: string;
@@ -200,53 +198,46 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
 
   return (
     <div className="space-y-4">
-      {/* Warning Banners */}
-      {stats.mandatoryCount > 0 && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription className="flex items-center justify-between">
-            <span>
-              <strong>{stats.mandatoryCount}</strong> department{stats.mandatoryCount !== 1 ? 's' : ''} require override volumes due to insufficient historical data
+      {/* Consolidated Stats Banner */}
+      <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+        <div className="flex items-center gap-8">
+          {/* Require Override Stat */}
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${stats.mandatoryCount > 0 ? 'bg-destructive' : 'bg-green-500'}`} />
+            <span className="text-sm">
+              <strong className={stats.mandatoryCount > 0 ? 'text-destructive' : 'text-green-600'}>{stats.mandatoryCount}</strong>
+              {' '}Require Override
             </span>
-            <Button variant="outline" size="sm" className="ml-4">
-              View Required
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {stats.expiringSoonCount > 0 && (
-        <Alert className="border-yellow-500 bg-yellow-500/10">
-          <AlertTriangle className="h-4 w-4 text-yellow-600" />
-          <AlertDescription className="flex items-center justify-between">
-            <span className="text-yellow-800 dark:text-yellow-200">
-              <strong>{stats.expiringSoonCount}</strong> override{stats.expiringSoonCount !== 1 ? 's' : ''} expiring within 7 days
+          </div>
+          
+          {/* Using Target Volume Stat */}
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-blue-500" />
+            <span className="text-sm">
+              <strong className="text-blue-600">{stats.usingTargetCount}</strong>
+              {' '}Using Target Volume
             </span>
-            <Button variant="outline" size="sm" className="ml-4">
-              View Expiring
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {stats.usingTargetCount > 0 && (
-        <Alert className="border-blue-500 bg-blue-500/10">
-          <Info className="h-4 w-4 text-blue-600" />
-          <AlertDescription>
-            <span className="text-blue-800 dark:text-blue-200">
-              <strong>{stats.usingTargetCount}</strong> department{stats.usingTargetCount !== 1 ? 's' : ''} using target volume (sufficient historical data)
-            </span>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      <Alert>
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          The system automatically determines whether to use target volume (12-month historical average) or require override volumes based on historical data availability. 
-          Both override volume and expiry date are required to save changes.
-        </AlertDescription>
-      </Alert>
+          </div>
+          
+          {/* Expiring Soon (if any) */}
+          {stats.expiringSoonCount > 0 && (
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-yellow-500" />
+              <span className="text-sm">
+                <strong className="text-yellow-600">{stats.expiringSoonCount}</strong>
+                {' '}Expiring Soon
+              </span>
+            </div>
+          )}
+        </div>
+        
+        {/* Action Button */}
+        {stats.mandatoryCount > 0 && (
+          <Button variant="outline" size="sm">
+            View Required
+          </Button>
+        )}
+      </div>
 
       <EditableTable
         columns={columns}
