@@ -55,7 +55,7 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
       <SheetContent side="right" className="w-full sm:max-w-lg [&>button]:hidden p-0 flex flex-col">
         <SheetHeader className="flex-shrink-0 px-6 py-4 border-b">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full grid grid-cols-3 bg-muted rounded-xl p-1">
+            <TabsList className="w-full grid grid-cols-3 bg-muted rounded-xl p-1.5 h-10">
               <TabsTrigger value="feed">Feed</TabsTrigger>
               <TabsTrigger value="alerts" className="gap-2">
                 Alerts
