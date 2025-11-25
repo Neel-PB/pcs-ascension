@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from "@/hooks/useNotifications";
 import { useEmployeeFeed } from "@/hooks/useEmployeeFeed";
+import { VolumeOverrideChecklist } from "@/components/notifications/VolumeOverrideChecklist";
 import { Bell, Check, MessageCircle, Heart, Users, Megaphone, MessageSquare, X } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -215,12 +216,7 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
 
           <TabsContent value="actions" className="flex-1 overflow-hidden">
             <ScrollArea className="h-full px-6">
-              <div className="text-center py-12">
-                <Check className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">
-                  Action items coming soon
-                </p>
-              </div>
+              <VolumeOverrideChecklist />
             </ScrollArea>
           </TabsContent>
         </Tabs>
