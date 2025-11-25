@@ -678,7 +678,7 @@ export default function PositionPlanning() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.05 }}
           >
-            <div className="inline-flex h-7 items-center justify-center rounded-lg bg-muted p-0.5 text-muted-foreground">
+            <div className="inline-flex h-7 items-center justify-center rounded-lg bg-muted/50 border border-border p-0.5 text-muted-foreground">
               <LayoutGroup>
                 <div className="flex gap-0.5">
                   {/* Hired button */}
