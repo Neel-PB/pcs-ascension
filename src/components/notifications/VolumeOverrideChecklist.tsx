@@ -48,7 +48,7 @@ const mockFacilityTasks = {
   ],
 };
 
-export function VolumeOverrideChecklist() {
+export function MonthlyVolumeChecklist() {
   const [tasks, setTasks] = useState<Task[]>(mockFacilityTasks.tasks);
   const navigate = useNavigate();
 
@@ -75,12 +75,15 @@ export function VolumeOverrideChecklist() {
           <div>
             <p className="font-medium">{mockFacilityTasks.facilityName}</p>
             <p className="text-sm text-muted-foreground">
-              Volume Override Setup
+              Monthly Volume Checklist
             </p>
           </div>
-          <span className="text-sm text-muted-foreground">
-            {completedCount} of {totalCount} complete
-          </span>
+          <div className="text-right">
+            <p className="text-xs text-muted-foreground">December 2025</p>
+            <span className="text-sm text-muted-foreground">
+              {completedCount} of {totalCount} complete
+            </span>
+          </div>
         </div>
 
         {/* Checklist items - clean, no icons */}
