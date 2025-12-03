@@ -15,6 +15,7 @@ import { contractorColumns, createContractorColumnsWithComments } from "@/config
 import { useUpdateActualFte } from "@/hooks/useUpdateActualFte";
 import { EditableNumberCell } from "@/components/editable-table/cells/EditableNumberCell";
 import { usePositionCommentCounts } from "@/hooks/usePositionCommentCounts";
+import { KPISummaryModal } from "@/components/staffing/KPISummaryModal";
 
 interface ContractorsTabProps {
   selectedRegion: string;
@@ -242,6 +243,7 @@ export function ContractorsTab({
         
         <div className="flex gap-2 flex-shrink-0">
           <DataRefreshButton dataSources={['positions_data']} />
+          <KPISummaryModal />
           <ColumnVisibilityPanel
             columns={contractorColumns}
             storeNamespace="contractors-columns"
