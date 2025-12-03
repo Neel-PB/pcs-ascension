@@ -63,7 +63,7 @@ export const employeeColumns: ColumnDef<Position>[] = [
     sortable: true,
     resizable: true,
     draggable: true,
-    tooltip: 'Hired FTEs represents the total number of full-time equivalent employees currently employed and actively working in the department.',
+    tooltip: 'The FTE at which the employee is hired for the position.',
   },
   {
     id: 'actual_fte',
@@ -74,7 +74,7 @@ export const employeeColumns: ColumnDef<Position>[] = [
     sortable: true,
     resizable: true,
     draggable: true,
-    tooltip: 'Active FTEs represents the total number of full-time equivalent employees currently employed and actively working in the department.',
+    tooltip: 'Represents the actual FTE effort the employee is currently working.',
   },
   {
     id: 'shift',
