@@ -92,23 +92,22 @@ export function TargetVolumePopover({
           </div>
         </div>
       </PopoverTrigger>
-      <PopoverContent className="w-[420px] p-4" align="start">
+      <PopoverContent className="w-80 p-4" align="start">
         {hasEnoughData && chartData.length > 0 ? (
           <>
             {/* Line Chart */}
-            <div className="h-40 w-full">
+            <div className="h-36 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 5, right: 45, left: 0, bottom: 5 }}>
+                <LineChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
                   <XAxis 
                     dataKey="month" 
-                    tick={{ fontSize: 9 }} 
-                    interval={0}
+                    tick={{ fontSize: 10 }} 
                     axisLine={{ stroke: 'hsl(var(--border))' }}
                     tickLine={{ stroke: 'hsl(var(--border))' }}
                   />
                   <YAxis 
                     tick={{ fontSize: 10 }} 
-                    width={45}
+                    width={50}
                     axisLine={{ stroke: 'hsl(var(--border))' }}
                     tickLine={{ stroke: 'hsl(var(--border))' }}
                     tickFormatter={(value) => value.toLocaleString()}
@@ -143,14 +142,14 @@ export function TargetVolumePopover({
             </div>
             
             {/* Legend */}
-            <div className="flex items-center justify-center gap-4 mt-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-0.5 rounded-full" style={{ backgroundColor: 'hsl(142 71% 45%)' }} />
                 <span>Monthly Volume</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-0.5 rounded-full border-dashed border-t-2" style={{ borderColor: 'hsl(var(--primary))' }} />
-                <span>Target (Daily Avg)</span>
+                <span>Target (Avg)</span>
               </div>
             </div>
             
@@ -160,7 +159,7 @@ export function TargetVolumePopover({
             {/* Reasoning text */}
             <p className="text-xs text-muted-foreground">
               {historicalMonthsCount} month{historicalMonthsCount !== 1 ? 's' : ''} historical volume available, 
-              target calculated as daily average across all months
+              calculated based on {historicalMonthsCount}-month average
             </p>
           </>
         ) : (
