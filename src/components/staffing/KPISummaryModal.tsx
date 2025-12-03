@@ -1,12 +1,11 @@
 import { useState, useMemo } from "react";
-import { LayoutDashboard, X } from "lucide-react";
+import { LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -295,26 +294,17 @@ export function KPISummaryModal() {
       </Tooltip>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-none w-[95vw] max-h-[95vh] p-0">
-          <DialogHeader className="px-6 py-4 border-b">
-            <div className="flex items-center justify-between">
-              <DialogTitle className="text-xl font-semibold">Staffing KPI Summary</DialogTitle>
-              <DialogClose asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <X className="h-4 w-4" />
-                </Button>
-              </DialogClose>
-            </div>
+        <DialogContent className="max-w-none w-[95vw] max-h-[95vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-semibold">KPIs</DialogTitle>
           </DialogHeader>
           
-          <ScrollArea className="max-h-[calc(95vh-80px)]">
-            <div className="p-6">
-              <DraggableSectionsContainer
-                sections={sections}
-                sectionOrder={sectionOrder}
-                onSectionReorder={setSectionOrder}
-              />
-            </div>
+          <ScrollArea className="flex-1 max-h-[calc(95vh-100px)]">
+            <DraggableSectionsContainer
+              sections={sections}
+              sectionOrder={sectionOrder}
+              onSectionReorder={setSectionOrder}
+            />
           </ScrollArea>
         </DialogContent>
       </Dialog>
