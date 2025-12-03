@@ -98,7 +98,7 @@ export function TargetVolumePopover({
             {/* Line Chart */}
             <div className="h-40 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 5, right: 20, left: 5, bottom: 5 }}>
+                <LineChart data={chartData} margin={{ top: 5, right: 45, left: 0, bottom: 5 }}>
                   <XAxis 
                     dataKey="month" 
                     tick={{ fontSize: 9 }} 
@@ -108,7 +108,7 @@ export function TargetVolumePopover({
                   />
                   <YAxis 
                     tick={{ fontSize: 10 }} 
-                    width={50}
+                    width={45}
                     axisLine={{ stroke: 'hsl(var(--border))' }}
                     tickLine={{ stroke: 'hsl(var(--border))' }}
                     tickFormatter={(value) => value.toLocaleString()}
