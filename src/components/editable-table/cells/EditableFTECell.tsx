@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { RotateCcw, CalendarIcon } from 'lucide-react';
+import { RotateCcw, CalendarIcon, Pencil } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Textarea } from '@/components/ui/textarea';
@@ -90,17 +90,21 @@ export function EditableFTECell({
             "text-sm font-medium",
             "hover:bg-muted/50 transition-colors",
             "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-            "relative",
+            "relative group",
             isModified && "text-red-600 dark:text-red-400",
             className
           )}
           type="button"
         >
           <span className="block">{value != null ? value : '—'}</span>
-          {isModified && (
+          {isModified ? (
             <RotateCcw
               className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
               onClick={handleRevert}
+            />
+          ) : (
+            <Pencil
+              className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 opacity-0 group-hover:opacity-50 transition-opacity"
             />
           )}
         </button>
