@@ -98,7 +98,7 @@ export function TargetVolumePopover({
             {/* Line Chart */}
             <div className="h-40 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 5, right: 10, left: -15, bottom: 5 }}>
+                <LineChart data={chartData} margin={{ top: 5, right: 20, left: 5, bottom: 5 }}>
                   <XAxis 
                     dataKey="month" 
                     tick={{ fontSize: 9 }} 
@@ -143,7 +143,7 @@ export function TargetVolumePopover({
             </div>
             
             {/* Legend */}
-            <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+            <div className="flex items-center justify-center gap-4 mt-2 text-xs text-muted-foreground">
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-0.5 rounded-full" style={{ backgroundColor: 'hsl(142 71% 45%)' }} />
                 <span>Monthly Volume</span>
