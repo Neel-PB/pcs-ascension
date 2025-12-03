@@ -203,7 +203,7 @@ export function EditableTable<T = any>({
   };
 
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={300}>
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
         <div className={cn("flex flex-col rounded-lg border bg-card shadow-sm overflow-hidden", className)}>
           {isMobile && (
