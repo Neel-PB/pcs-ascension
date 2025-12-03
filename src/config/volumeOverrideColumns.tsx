@@ -3,25 +3,26 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { 
   AlertCircle, 
-  TrendingDown, 
-  TrendingUp, 
-  CheckCircle,
   ShieldAlert,
   ShieldCheck
 } from 'lucide-react';
-import { BadgeWithValue } from '@/components/editable-table/cells/BadgeWithValue';
 import { BadgeWithEditableValue } from '@/components/editable-table/cells/BadgeWithEditableValue';
 import { EditableDateCell } from '@/components/editable-table/cells/EditableDateCell';
 import { differenceInDays, format } from 'date-fns';
 import { 
-  getCategoryTooltip,
-  getHistoricalDataBadgeColor,
-  getHistoricalDataLabel,
   getOverrideStatusBadgeColor,
   getOverrideStatusLabel,
   getOverrideStatusTooltip,
-  type OverrideCategory 
+  type OverrideCategory,
+  type VolumeOverrideConfig
 } from '@/lib/volumeOverrideRules';
+import { TargetVolumePopover } from '@/components/staffing/TargetVolumePopover';
+
+interface HistoricalMonthData {
+  month: string;
+  volume: number;
+  daysInMonth: number;
+}
 
 export interface VolumeOverrideRow {
   id: string;
@@ -34,6 +35,7 @@ export interface VolumeOverrideRow {
   facility_name: string;
   // New fields from historical analysis
   historical_months_count?: number;
+  historical_months_data?: HistoricalMonthData[];
   target_volume?: number | null;
   override_mandatory?: boolean;
   max_allowed_expiry_date?: Date | null;
@@ -42,7 +44,8 @@ export interface VolumeOverrideRow {
 
 export const createVolumeOverrideColumns = (
   onSaveVolume: (departmentId: string, volume: number | null) => Promise<void>,
-  onSaveDate: (departmentId: string, date: string | null) => Promise<void>
+  onSaveDate: (departmentId: string, date: string | null) => Promise<void>,
+  config?: VolumeOverrideConfig
 ): ColumnDef<VolumeOverrideRow>[] => [
   {
     id: 'department_name',
@@ -66,42 +69,12 @@ export const createVolumeOverrideColumns = (
     minWidth: 200,
     sortable: true,
     renderCell: (row) => {
-      const count = row.historical_months_count ?? 0;
-      
-      // Get icon based on historical months
-      const getIcon = () => {
-        if (count === 0) return AlertCircle;
-        if (count < 3) return TrendingDown;
-        if (count < 12) return TrendingUp;
-        return CheckCircle;
-      };
-
       return (
-        <BadgeWithValue
-          badge={{
-            icon: getIcon(),
-            label: getHistoricalDataLabel(count),
-            className: getHistoricalDataBadgeColor(count),
-            tooltip: getCategoryTooltip(count, {
-              min_months_for_target: 3,
-              min_months_mandatory_override: 2,
-              max_override_months_full_history: 12,
-              fiscal_year_end_month: 6,
-              fiscal_year_end_day: 30,
-              enable_backfill: true,
-              backfill_lookback_months: 24,
-              min_volume_threshold: 0,
-            }),
-          }}
-          value={{
-            display: row.target_volume 
-              ? row.target_volume.toLocaleString(undefined, { maximumFractionDigits: 0 })
-              : "—",
-            className: row.target_volume ? "text-foreground" : "text-muted-foreground",
-            tooltip: row.target_volume 
-              ? `12-month average daily volume based on ${count} months of data`
-              : "Insufficient historical data to calculate target volume",
-          }}
+        <TargetVolumePopover
+          historicalMonthsCount={row.historical_months_count ?? 0}
+          historicalMonthsData={row.historical_months_data ?? []}
+          targetVolume={row.target_volume ?? null}
+          minMonthsForTarget={config?.min_months_for_target ?? 3}
         />
       );
     },
