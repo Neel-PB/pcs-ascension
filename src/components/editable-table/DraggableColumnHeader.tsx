@@ -1,6 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ArrowUp, ArrowDown, ChevronDown } from 'lucide-react';
+import { ArrowUp, ArrowDown, ChevronDown, Info, Maximize2, RotateCcw, EyeOff } from 'lucide-react';
 import { ColumnDef } from '@/types/table';
 import { ColumnResizeHandle } from './ColumnResizeHandle';
 import {
@@ -15,7 +15,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Maximize2, RotateCcw, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface DraggableColumnHeaderProps<T = any> {
@@ -99,22 +98,21 @@ export function DraggableColumnHeader<T = any>({
         </div>
       )}
 
-      {/* Column label with tooltip */}
-      {column.tooltip ? (
+      {/* Column label */}
+      <span className="truncate flex-1 min-w-0 text-left">
+        {column.renderHeader ? column.renderHeader(column) : column.label}
+      </span>
+
+      {/* Info icon with tooltip - only shown when column has tooltip */}
+      {column.tooltip && (
         <Tooltip>
           <TooltipTrigger asChild>
-            <span className="truncate flex-1 min-w-0 text-left">
-              {column.renderHeader ? column.renderHeader(column) : column.label}
-            </span>
+            <Info className="h-3 w-3 text-muted-foreground/60 hover:text-muted-foreground cursor-help flex-shrink-0" />
           </TooltipTrigger>
-          <TooltipContent side="top" className="max-w-xs font-medium">
-            <p className="text-sm whitespace-normal">{column.tooltip}</p>
+          <TooltipContent side="top" className="max-w-xs">
+            <p className="text-sm">{column.tooltip}</p>
           </TooltipContent>
         </Tooltip>
-      ) : (
-        <span className="truncate flex-1 min-w-0 text-left">
-          {column.renderHeader ? column.renderHeader(column) : column.label}
-        </span>
       )}
 
       {/* Sort icon (if active) */}
