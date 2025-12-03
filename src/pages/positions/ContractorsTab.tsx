@@ -13,7 +13,7 @@ import { EditableTable } from "@/components/editable-table/EditableTable";
 import { ColumnVisibilityPanel } from "@/components/editable-table/ColumnVisibilityPanel";
 import { contractorColumns, createContractorColumnsWithComments } from "@/config/contractorColumns";
 import { useUpdateActualFte } from "@/hooks/useUpdateActualFte";
-import { EditableNumberCell } from "@/components/editable-table/cells/EditableNumberCell";
+import { EditableFTECell } from "@/components/editable-table/cells/EditableFTECell";
 import { usePositionCommentCounts } from "@/hooks/usePositionCommentCounts";
 import { KPISummaryModal } from "@/components/staffing/KPISummaryModal";
 
@@ -84,8 +84,12 @@ export function ContractorsTab({
     return count;
   }, [filters]);
 
-  const handleActualFteUpdate = (id: string, newValue: number | null) => {
-    updateActualFte.mutate({ id, actual_fte: newValue });
+  const handleActualFteUpdate = (id: string, data: {
+    actual_fte: number | null;
+    actual_fte_expiry: string | null;
+    actual_fte_status: string | null;
+  }) => {
+    updateActualFte.mutate({ id, ...data });
   };
 
   const filteredAndSortedContractors = useMemo(() => {
@@ -184,11 +188,12 @@ export function ContractorsTab({
         return {
           ...col,
           renderCell: (row: any) => (
-            <EditableNumberCell
+            <EditableFTECell
               value={row.actual_fte}
               originalValue={row.FTE}
-              onSave={(newValue) => handleActualFteUpdate(row.id, newValue)}
-              showModified={true}
+              expiryDate={row.actual_fte_expiry}
+              status={row.actual_fte_status}
+              onSave={(data) => handleActualFteUpdate(row.id, data)}
             />
           ),
         };
