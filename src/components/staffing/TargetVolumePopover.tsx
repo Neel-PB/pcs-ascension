@@ -142,7 +142,7 @@ export function TargetVolumePopover({
             </div>
             
             {/* Legend */}
-            <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+            <div className="flex items-center justify-center gap-4 mt-2 text-xs text-muted-foreground">
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-0.5 rounded-full" style={{ backgroundColor: 'hsl(142 71% 45%)' }} />
                 <span>Monthly Volume</span>
