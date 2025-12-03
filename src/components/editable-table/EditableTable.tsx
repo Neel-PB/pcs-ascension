@@ -6,6 +6,7 @@ import { TableHeader } from './TableHeader';
 import { TableRow } from './TableRow';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 export function EditableTable<T = any>({
   columns: columnDefinitions,
@@ -202,47 +203,49 @@ export function EditableTable<T = any>({
   };
 
   return (
-    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-      <div className={cn("flex flex-col rounded-lg border bg-card shadow-sm overflow-hidden", className)}>
-        {isMobile && (
-          <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800">
-            <p className="text-sm text-yellow-800 dark:text-yellow-200">
-              📱 This table is optimized for desktop viewing. Please open on a desktop or laptop for the best experience.
-            </p>
-          </div>
-        )}
-        <div ref={containerRef} className="flex-1 overflow-auto">
-          <div style={{ minWidth: 'max-content', width: '100%' }}>
-            {/* Header */}
-            <TableHeader
-              columns={visibleColumns}
-              gridTemplate={gridTemplate}
-              onSort={onSort}
-              onColumnResize={handleColumnResize}
-              onColumnHide={handleColumnHide}
-              onColumnResetWidth={handleColumnResetWidth}
-              onColumnAutoFit={handleColumnAutoFit}
-              sortField={sortField}
-              sortDirection={sortDirection}
-            />
+    <TooltipProvider>
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <div className={cn("flex flex-col rounded-lg border bg-card shadow-sm overflow-hidden", className)}>
+          {isMobile && (
+            <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                📱 This table is optimized for desktop viewing. Please open on a desktop or laptop for the best experience.
+              </p>
+            </div>
+          )}
+          <div ref={containerRef} className="flex-1 overflow-auto">
+            <div style={{ minWidth: 'max-content', width: '100%' }}>
+              {/* Header */}
+              <TableHeader
+                columns={visibleColumns}
+                gridTemplate={gridTemplate}
+                onSort={onSort}
+                onColumnResize={handleColumnResize}
+                onColumnHide={handleColumnHide}
+                onColumnResetWidth={handleColumnResetWidth}
+                onColumnAutoFit={handleColumnAutoFit}
+                sortField={sortField}
+                sortDirection={sortDirection}
+              />
 
-            {/* Data rows */}
-            {data.map((row) => {
-              const rowId = getRowId(row);
-              return (
-                <TableRow
-                  key={rowId}
-                  data={row}
-                  columns={visibleColumns}
-                  gridTemplate={gridTemplate}
-                  onClick={() => onRowClick?.(row)}
-                  className={typeof rowClassName === 'function' ? rowClassName(row) : rowClassName}
-                />
-              );
-            })}
+              {/* Data rows */}
+              {data.map((row) => {
+                const rowId = getRowId(row);
+                return (
+                  <TableRow
+                    key={rowId}
+                    data={row}
+                    columns={visibleColumns}
+                    gridTemplate={gridTemplate}
+                    onClick={() => onRowClick?.(row)}
+                    className={typeof rowClassName === 'function' ? rowClassName(row) : rowClassName}
+                  />
+                );
+              })}
+            </div>
           </div>
         </div>
-      </div>
-    </DndContext>
+      </DndContext>
+    </TooltipProvider>
   );
 }
