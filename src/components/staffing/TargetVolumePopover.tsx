@@ -92,7 +92,7 @@ export function TargetVolumePopover({
           </div>
         </div>
       </PopoverTrigger>
-      <PopoverContent className="w-96 p-5" align="start">
+      <PopoverContent className="w-96 p-3" align="start">
         {hasEnoughData && chartData.length > 0 ? (
           <>
             {/* Line Chart */}
@@ -108,7 +108,7 @@ export function TargetVolumePopover({
                   />
                   <YAxis 
                     tick={{ fontSize: 10 }} 
-                    width={50}
+                    width={38}
                     axisLine={{ stroke: 'hsl(var(--border))' }}
                     tickLine={{ stroke: 'hsl(var(--border))' }}
                     tickFormatter={(value) => {
