@@ -92,16 +92,17 @@ export function TargetVolumePopover({
           </div>
         </div>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-4" align="start">
+      <PopoverContent className="w-96 p-5" align="start">
         {hasEnoughData && chartData.length > 0 ? (
           <>
             {/* Line Chart */}
-            <div className="h-36 w-full">
+            <div className="h-44 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData} margin={{ top: 5, right: 5, left: -30, bottom: 5 }}>
                   <XAxis 
                     dataKey="month" 
                     tick={{ fontSize: 10 }} 
+                    interval={0}
                     axisLine={{ stroke: 'hsl(var(--border))' }}
                     tickLine={{ stroke: 'hsl(var(--border))' }}
                   />
