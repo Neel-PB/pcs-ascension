@@ -99,12 +99,12 @@ export function EditableFTECell({
           <span className="block">{value != null ? value : '—'}</span>
           {isModified ? (
             <RotateCcw
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
+              className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               onClick={handleRevert}
             />
           ) : (
             <Pencil
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 opacity-0 group-hover:opacity-50 transition-opacity"
+              className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground"
             />
           )}
         </button>
