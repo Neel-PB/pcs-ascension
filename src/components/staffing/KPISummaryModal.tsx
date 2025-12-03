@@ -307,7 +307,7 @@ export function KPISummaryModal() {
             </div>
           </DialogHeader>
           
-          <ScrollArea className="h-[calc(95vh-80px)]">
+          <ScrollArea className="max-h-[calc(95vh-80px)]">
             <div className="p-6">
               <DraggableSectionsContainer
                 sections={sections}
