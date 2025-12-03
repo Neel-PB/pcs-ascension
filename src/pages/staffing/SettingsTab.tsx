@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { EditableTable } from '@/components/editable-table/EditableTable';
 import { createVolumeOverrideColumns, VolumeOverrideRow } from '@/config/volumeOverrideColumns';
 import { useVolumeOverrides, useUpsertVolumeOverride, useDeleteVolumeOverride } from '@/hooks/useVolumeOverrides';
-import { useHistoricalVolumeAnalysis } from '@/hooks/useHistoricalVolumeAnalysis';
+import { useHistoricalVolumeAnalysis, useVolumeOverrideConfig } from '@/hooks/useHistoricalVolumeAnalysis';
 import { Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -16,6 +16,7 @@ interface SettingsTabProps {
 export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabProps) {
   const { data: overrides = [], isLoading: isLoadingOverrides } = useVolumeOverrides(selectedFacility);
   const { data: volumeAnalysis = [], isLoading: isLoadingAnalysis } = useHistoricalVolumeAnalysis();
+  const { data: config } = useVolumeOverrideConfig();
   const upsertMutation = useUpsertVolumeOverride();
   const deleteMutation = useDeleteVolumeOverride();
 
@@ -76,6 +77,7 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
         facility_name: facilityData?.facility_name || '',
         // Add historical analysis data
         historical_months_count: analysis?.historical_months_count,
+        historical_months_data: analysis?.historical_months_data,
         target_volume: analysis?.target_volume,
         override_mandatory: analysis?.override_mandatory,
         max_allowed_expiry_date: analysis?.max_allowed_expiry_date,
@@ -153,8 +155,8 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
   };
 
   const columns = useMemo(
-    () => createVolumeOverrideColumns(handleSaveVolume, handleSaveDate),
-    [tableData]
+    () => createVolumeOverrideColumns(handleSaveVolume, handleSaveDate, config ?? undefined),
+    [tableData, config]
   );
 
   // Show message if no facility selected
