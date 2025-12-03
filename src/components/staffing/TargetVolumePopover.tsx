@@ -98,7 +98,7 @@ export function TargetVolumePopover({
             {/* Line Chart */}
             <div className="h-44 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 5, right: 5, left: -30, bottom: 5 }}>
+                <LineChart data={chartData} margin={{ top: 5, right: 5, left: -10, bottom: 5 }}>
                   <XAxis 
                     dataKey="month" 
                     tick={{ fontSize: 10 }} 
@@ -111,7 +111,12 @@ export function TargetVolumePopover({
                     width={50}
                     axisLine={{ stroke: 'hsl(var(--border))' }}
                     tickLine={{ stroke: 'hsl(var(--border))' }}
-                    tickFormatter={(value) => value.toLocaleString()}
+                    tickFormatter={(value) => {
+                      if (value >= 1000) {
+                        return `${(value / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })}k`;
+                      }
+                      return value.toLocaleString();
+                    }}
                   />
                   <Tooltip 
                     contentStyle={{ 
