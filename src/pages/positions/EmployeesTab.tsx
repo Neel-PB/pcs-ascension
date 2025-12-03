@@ -15,6 +15,7 @@ import { employeeColumns, createEmployeeColumnsWithComments } from "@/config/emp
 import { useUpdateActualFte } from "@/hooks/useUpdateActualFte";
 import { EditableNumberCell } from "@/components/editable-table/cells/EditableNumberCell";
 import { usePositionCommentCounts } from "@/hooks/usePositionCommentCounts";
+import { KPISummaryModal } from "@/components/staffing/KPISummaryModal";
 
 interface EmployeesTabProps {
   selectedRegion: string;
@@ -248,6 +249,7 @@ export function EmployeesTab({
         
         <div className="flex gap-2 flex-shrink-0">
           <DataRefreshButton dataSources={['positions_data']} />
+          <KPISummaryModal />
           <ColumnVisibilityPanel
             columns={employeeColumns}
             storeNamespace="employees-columns"
