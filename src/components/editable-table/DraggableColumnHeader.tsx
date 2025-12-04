@@ -107,11 +107,15 @@ export function DraggableColumnHeader<T = any>({
       {column.tooltip && (
         <Tooltip>
           <TooltipTrigger asChild>
-            <span className="flex-shrink-0 cursor-help">
-              <Info className="h-3 w-3 text-muted-foreground/60 hover:text-muted-foreground" />
-            </span>
+            <button
+              type="button"
+              className="flex-shrink-0 inline-flex items-center justify-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Info className="h-3 w-3 text-muted-foreground/60 hover:text-muted-foreground cursor-help" />
+            </button>
           </TooltipTrigger>
-          <TooltipContent side="top" className="max-w-xs">
+          <TooltipContent side="top" className="max-w-xs z-[100]">
             <p className="text-sm">{column.tooltip}</p>
           </TooltipContent>
         </Tooltip>
