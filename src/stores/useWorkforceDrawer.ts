@@ -14,7 +14,7 @@ const DEFAULT_HEIGHT_PERCENT = 0.3; // 30% of viewport
 export const useWorkforceDrawer = create<WorkforceDrawerState>()(
   persist(
     (set) => ({
-      isOpen: false,
+      isOpen: true,
       height: typeof window !== 'undefined' ? window.innerHeight * DEFAULT_HEIGHT_PERCENT : 300,
       setOpen: (isOpen) => set({ isOpen }),
       toggle: () => set((state) => ({ isOpen: !state.isOpen })),

@@ -27,7 +27,11 @@ export function WorkforceDrawer({ activeTab }: WorkforceDrawerProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40"
+            className="fixed bottom-4 z-40"
+            style={{ 
+              left: 'calc(var(--sidebar-width) + (100vw - var(--sidebar-width)) / 2)',
+              transform: 'translateX(-50%)'
+            }}
           >
             <Button
               onClick={toggle}
@@ -50,10 +54,10 @@ export function WorkforceDrawer({ activeTab }: WorkforceDrawerProps) {
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border shadow-2xl"
+            className="fixed bottom-0 right-0 z-40 bg-background border-t border-border shadow-2xl"
             style={{ 
               height: currentHeight,
-              marginLeft: '56px', // Account for sidebar width
+              left: 'var(--sidebar-width)',
             }}
           >
             {/* Drag handle */}
