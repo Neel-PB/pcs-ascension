@@ -1,10 +1,8 @@
-import { useMemo } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { getKPIsForTab, WorkforceKPIConfig } from "@/config/workforceKPIs";
+import { getKPIsForTab } from "@/config/workforceKPIs";
 import { useEmployees } from "@/hooks/useEmployees";
 import { useContractors } from "@/hooks/useContractors";
 import { useRequisitions } from "@/hooks/useRequisitions";
-import { Eye } from "lucide-react";
+import { KPICard } from "@/components/staffing/KPICard";
 
 interface WorkforceKPISectionProps {
   activeTab: string;
@@ -79,36 +77,19 @@ export function WorkforceKPISection({
         KPIs
       </h3>
       <div className="space-y-2">
-        {kpis.map((kpi) => (
-          <KPICompactCard key={kpi.id} kpi={kpi} value={getKPIValue(kpi.id)} />
+        {kpis.map((kpi, index) => (
+          <KPICard
+            key={kpi.id}
+            title={kpi.title}
+            value={getKPIValue(kpi.id)}
+            chartData={kpi.chartData}
+            chartType={kpi.chartType}
+            definition={kpi.definition}
+            calculation={kpi.calculation}
+            delay={index * 0.05}
+          />
         ))}
       </div>
     </div>
-  );
-}
-
-interface KPICompactCardProps {
-  kpi: WorkforceKPIConfig;
-  value: string | number;
-}
-
-function KPICompactCard({ kpi, value }: KPICompactCardProps) {
-  return (
-    <Card className="border-border/50">
-      <CardContent className="p-3">
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5 flex-1 min-w-0">
-            <p className="text-xs text-muted-foreground truncate">{kpi.title}</p>
-            <p className="text-lg font-semibold leading-none">{value}</p>
-          </div>
-          <button
-            className="p-1.5 rounded hover:bg-accent transition-colors flex-shrink-0"
-            title={kpi.definition}
-          >
-            <Eye className="h-3.5 w-3.5 text-muted-foreground" />
-          </button>
-        </div>
-      </CardContent>
-    </Card>
   );
 }
