@@ -15,6 +15,7 @@ interface WorkforceKPICardProps {
   calculation?: string;
   breakdownData?: Array<any>;
   xAxisLabels?: string[];
+  decimalPlaces?: number;
 }
 
 export const WorkforceKPICard = ({ 
@@ -29,6 +30,7 @@ export const WorkforceKPICard = ({
   calculation = '',
   breakdownData,
   xAxisLabels,
+  decimalPlaces = 1,
 }: WorkforceKPICardProps) => {
   const [showChartModal, setShowChartModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
@@ -90,6 +92,7 @@ export const WorkforceKPICard = ({
         chartType={chartType}
         breakdownData={breakdownData}
         xAxisLabels={xAxisLabels}
+        decimalPlaces={decimalPlaces}
       />
 
       {/* Info Modal */}

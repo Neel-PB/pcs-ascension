@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { WorkforceKPICard } from './WorkforceKPICard';
+import { Separator } from '@/components/ui/separator';
 import { 
   getFTEKPIs, 
   getProductivityKPIs, 
@@ -80,23 +81,60 @@ export const WorkforceKPISection = ({
     }
   };
 
-  const allKPIs = [...commonKPIs, ...getTabSpecificKPIs()];
+  const tabSpecificKPIs = getTabSpecificKPIs();
 
   return (
-    <div className="grid grid-cols-2 gap-2">
-      {allKPIs.map((kpi) => (
-        <WorkforceKPICard
-          key={kpi.id}
-          label={kpi.title}
-          value={kpi.value}
-          chartData={kpi.chartData}
-          chartType={kpi.chartType}
-          definition={kpi.definition}
-          calculation={kpi.calculation}
-          breakdownData={kpi.breakdownData}
-          xAxisLabels={kpi.xAxisLabels}
-        />
-      ))}
+    <div className="space-y-3">
+      {/* Fixed KPIs Section */}
+      <div>
+        <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-2 px-0.5">
+          Fixed KPIs
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          {commonKPIs.map((kpi) => (
+            <WorkforceKPICard
+              key={kpi.id}
+              label={kpi.title}
+              value={kpi.value}
+              chartData={kpi.chartData}
+              chartType={kpi.chartType}
+              definition={kpi.definition}
+              calculation={kpi.calculation}
+              breakdownData={kpi.breakdownData}
+              xAxisLabels={kpi.xAxisLabels}
+              decimalPlaces={kpi.decimalPlaces}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Separator and Variable KPIs - only show if there are tab-specific KPIs */}
+      {tabSpecificKPIs.length > 0 && (
+        <>
+          <Separator className="my-2" />
+          <div>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-2 px-0.5">
+              Variable KPIs
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {tabSpecificKPIs.map((kpi) => (
+                <WorkforceKPICard
+                  key={kpi.id}
+                  label={kpi.title}
+                  value={kpi.value}
+                  chartData={kpi.chartData}
+                  chartType={kpi.chartType}
+                  definition={kpi.definition}
+                  calculation={kpi.calculation}
+                  breakdownData={kpi.breakdownData}
+                  xAxisLabels={kpi.xAxisLabels}
+                  decimalPlaces={kpi.decimalPlaces}
+                />
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
