@@ -97,14 +97,14 @@ export function CompactPositionClosureRow({ position }: CompactPositionClosureRo
         <div className="flex-1 min-w-0">
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="text-sm font-medium truncate">{position.department_name}</div>
+              <div className="text-sm font-medium truncate">{position.skill_type}</div>
             </TooltipTrigger>
             <TooltipContent side="top" className="max-w-xs">
-              <p>{position.department_name}</p>
+              <p>{position.skill_type}</p>
             </TooltipContent>
           </Tooltip>
           <div className="text-xs text-muted-foreground truncate">
-            {position.facility_name} • {position.skill_type}
+            {position.facility_name} • {position.department_name}
           </div>
         </div>
 
