@@ -1,9 +1,15 @@
 import { useState } from "react";
 import { motion, LayoutGroup, AnimatePresence } from "framer-motion";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
 import { FilterBar } from "@/components/staffing/FilterBar";
 import { EmployeesTab } from "./EmployeesTab";
 import { ContractorsTab } from "./ContractorsTab";
 import { RequisitionsTab } from "./RequisitionsTab";
+import { WorkforceSidebar } from "@/components/workforce/WorkforceSidebar";
 
 export default function PositionsPage() {
   const [activeTab, setActiveTab] = useState("employees");
@@ -56,8 +62,8 @@ export default function PositionsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="py-2">
+    <div className="h-full flex flex-col">
+      <div className="py-2 flex-shrink-0">
         <FilterBar
           selectedRegion={selectedRegion}
           selectedMarket={selectedMarket}
@@ -73,84 +79,104 @@ export default function PositionsPage() {
         />
       </div>
 
-      <LayoutGroup>
-        <div className="relative bg-background rounded-lg p-1 mb-6">
-          <div className="flex">
-            {tabs.map((tab, index) => (
-              <motion.button
-                key={tab.id}
-                className={`relative flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors z-10 ${
-                  activeTab === tab.id
-                    ? "text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-                onClick={() => setActiveTab(tab.id)}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+      <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0">
+        {/* Main Content Panel */}
+        <ResizablePanel defaultSize={75} minSize={50}>
+          <div className="h-full overflow-auto pr-4">
+            <LayoutGroup>
+              <div className="relative bg-background rounded-lg p-1 mb-6">
+                <div className="flex">
+                  {tabs.map((tab, index) => (
+                    <motion.button
+                      key={tab.id}
+                      className={`relative flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors z-10 ${
+                        activeTab === tab.id
+                          ? "text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                      onClick={() => setActiveTab(tab.id)}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      style={{ flex: 1 }}
+                    >
+                      {tab.label}
+                    </motion.button>
+                  ))}
+                  
+                  <motion.div
+                    layoutId="positionsTabIndicator"
+                    className="absolute inset-y-1 bg-primary rounded-sm"
+                    style={{
+                      left: `${(tabs.findIndex((t) => t.id === activeTab) / tabs.length) * 100}%`,
+                      width: `${100 / tabs.length}%`,
+                    }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 30,
+                    }}
+                  />
+                </div>
+              </div>
+            </LayoutGroup>
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                style={{ flex: 1 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-6 animate-fade-in"
               >
-                {tab.label}
-              </motion.button>
-            ))}
-            
-            <motion.div
-              layoutId="positionsTabIndicator"
-              className="absolute inset-y-1 bg-primary rounded-sm"
-              style={{
-                left: `${(tabs.findIndex((t) => t.id === activeTab) / tabs.length) * 100}%`,
-                width: `${100 / tabs.length}%`,
-              }}
-              transition={{
-                type: "spring",
-                stiffness: 300,
-                damping: 30,
-              }}
-            />
+                {activeTab === "employees" && (
+                  <EmployeesTab
+                    selectedRegion={selectedRegion}
+                    selectedMarket={selectedMarket}
+                    selectedFacility={selectedFacility}
+                    selectedDepartmentFamily={selectedDepartmentFamily}
+                    selectedDepartment={selectedDepartment}
+                  />
+                )}
+                {activeTab === "contractors" && (
+                  <ContractorsTab
+                    selectedRegion={selectedRegion}
+                    selectedMarket={selectedMarket}
+                    selectedFacility={selectedFacility}
+                    selectedDepartmentFamily={selectedDepartmentFamily}
+                    selectedDepartment={selectedDepartment}
+                  />
+                )}
+                {activeTab === "requisitions" && (
+                  <RequisitionsTab
+                    selectedRegion={selectedRegion}
+                    selectedMarket={selectedMarket}
+                    selectedFacility={selectedFacility}
+                    selectedDepartmentFamily={selectedDepartmentFamily}
+                    selectedDepartment={selectedDepartment}
+                  />
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
-        </div>
-      </LayoutGroup>
+        </ResizablePanel>
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="space-y-6 animate-fade-in"
-        >
-          {activeTab === "employees" && (
-            <EmployeesTab
-              selectedRegion={selectedRegion}
-              selectedMarket={selectedMarket}
-              selectedFacility={selectedFacility}
-              selectedDepartmentFamily={selectedDepartmentFamily}
-              selectedDepartment={selectedDepartment}
-            />
-          )}
-          {activeTab === "contractors" && (
-            <ContractorsTab
-              selectedRegion={selectedRegion}
-              selectedMarket={selectedMarket}
-              selectedFacility={selectedFacility}
-              selectedDepartmentFamily={selectedDepartmentFamily}
-              selectedDepartment={selectedDepartment}
-            />
-          )}
-          {activeTab === "requisitions" && (
-            <RequisitionsTab
-              selectedRegion={selectedRegion}
-              selectedMarket={selectedMarket}
-              selectedFacility={selectedFacility}
-              selectedDepartmentFamily={selectedDepartmentFamily}
-              selectedDepartment={selectedDepartment}
-            />
-          )}
-        </motion.div>
-      </AnimatePresence>
+        {/* Resize Handle */}
+        <ResizableHandle withHandle />
+
+        {/* Sidebar Panel */}
+        <ResizablePanel defaultSize={25} minSize={15} maxSize={40}>
+          <WorkforceSidebar
+            activeTab={activeTab}
+            selectedMarket={selectedMarket}
+            selectedFacility={selectedFacility}
+            selectedDepartment={selectedDepartment}
+          />
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 }
