@@ -76,6 +76,9 @@ export const WorkforceDrawer = ({
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto px-4 lg:px-6 py-4">
+          {/* Header - matching global header style */}
+          <h1 className="text-lg font-semibold text-foreground mb-4">Positions Checklist</h1>
+          
           {/* KPI Section */}
           <WorkforceKPISection
             activeTab={activeTab}
