@@ -47,7 +47,7 @@ export function WorkforceForecastTable({ type }: WorkforceForecastTableProps) {
             No {type === 'shortage' ? 'positions to open' : 'positions to close'} found
           </div>
         ) : (
-          <div className="max-h-[400px] overflow-y-auto">
+          <div className="overflow-y-auto">
             {type === 'shortage' ? (
               shortageData?.map((position) => (
                 <CompactPositionBreakdownRow key={position.id} position={position} />

@@ -108,7 +108,7 @@ export const WorkforceKPISection = ({
   const forecastTableType = getForecastTableType();
 
   return (
-    <div className="space-y-3">
+    <div className="flex-1 flex flex-col min-h-0 space-y-3">
       {/* Common KPIs Section */}
       <div className="grid grid-cols-3 gap-2">
         {commonKPIs.map((kpi) => (
@@ -167,14 +167,16 @@ function ForecastTableWithTitle({ type }: { type: 'shortage' | 'surplus' }) {
   const title = type === 'shortage' ? 'FTE Shortage' : 'FTE Surplus';
 
   return (
-    <>
+    <div className="flex-1 flex flex-col min-h-0">
       <Separator className="my-2" />
-      <div className="mt-3">
-        <h3 className="text-sm font-medium text-foreground mb-2">
+      <div className="flex-1 flex flex-col min-h-0 mt-3">
+        <h3 className="text-sm font-medium text-foreground mb-2 flex-shrink-0">
           {title} <span className="text-muted-foreground">({count})</span>
         </h3>
-        <WorkforceForecastTable type={type} />
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <WorkforceForecastTable type={type} />
+        </div>
       </div>
-    </>
+    </div>
   );
 }

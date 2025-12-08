@@ -74,11 +74,16 @@ export const WorkforceDrawer = ({
           )}
         </div>
 
+        {/* Fixed Header Row - matching global header */}
+        <div 
+          className="flex items-center px-6 border-b border-border flex-shrink-0" 
+          style={{ height: 'var(--header-height)' }}
+        >
+          <h1 className="text-lg font-semibold text-foreground">Positions Checklist</h1>
+        </div>
+
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto px-4 lg:px-6 py-4">
-          {/* Header - matching global header style */}
-          <h1 className="text-lg font-semibold text-foreground mb-4">Positions Checklist</h1>
-          
+        <div className="flex-1 overflow-y-auto px-4 lg:px-6 py-4 flex flex-col min-h-0">
           {/* KPI Section */}
           <WorkforceKPISection
             activeTab={activeTab}
