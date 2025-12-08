@@ -32,6 +32,7 @@ export interface KPIConfig {
   calculation: string;
   xAxisLabels?: string[];
   isHighlighted?: boolean;
+  decimalPlaces?: number;
   breakdownData?: Array<{
     skillType: string;
     ftFtes: number;
@@ -71,11 +72,12 @@ Includes:
 • Full-time staff (1.0 FTE each)
 • Part-time staff (0.5, 0.8, etc.)
 • Active employees only (excludes open positions)`,
+      decimalPlaces: 1,
       breakdownData: [
-        { skillType: 'RN', ftFtes: 25.0, ptFtes: 12.0, prnFtes: 4.0, totalActualPaidFtes: 41.0 },
-        { skillType: 'Clinical Lead', ftFtes: 8.0, ptFtes: 3.0, prnFtes: 1.0, totalActualPaidFtes: 12.0 },
-        { skillType: 'PCT', ftFtes: 6.0, ptFtes: 2.5, prnFtes: 0.5, totalActualPaidFtes: 9.0 },
-        { skillType: 'TOTAL', ftFtes: 39.0, ptFtes: 17.5, prnFtes: 5.5, totalActualPaidFtes: 62.0 },
+        { skillType: 'RN', ftFtes: 22.0, ptFtes: 8.5, prnFtes: 2.4, totalActualPaidFtes: 32.9 },
+        { skillType: 'Clinical Lead', ftFtes: 3.0, ptFtes: 1.5, prnFtes: 0.5, totalActualPaidFtes: 5.0 },
+        { skillType: 'PCT', ftFtes: 2.0, ptFtes: 0.8, prnFtes: 0.2, totalActualPaidFtes: 3.0 },
+        { skillType: 'TOTAL', ftFtes: 27.0, ptFtes: 10.8, prnFtes: 3.1, totalActualPaidFtes: 40.9 },
       ],
     },
     {

@@ -1,9 +1,10 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface KPIChartModalProps {
   open: boolean;
@@ -87,7 +88,12 @@ export function KPIChartModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden pb-4 flex flex-col">
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-2 border-b">
-          <DialogTitle className="text-2xl">{title}</DialogTitle>
+          <div>
+            <DialogTitle className="text-2xl">{title}</DialogTitle>
+            <DialogDescription className="sr-only">
+              Chart and table data for {title}
+            </DialogDescription>
+          </div>
           
           {/* Current Value and Trend */}
           <div className="flex items-center gap-6">
@@ -123,7 +129,7 @@ export function KPIChartModal({
             </TabsList>
 
             {/* Chart Tab */}
-            <TabsContent value="chart" className="space-y-4 overflow-hidden flex flex-col">
+            <TabsContent value="chart" className="space-y-4 overflow-hidden flex flex-col min-h-[380px]">
               {enrichedData && enrichedData.length > 0 && (
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -253,10 +259,10 @@ export function KPIChartModal({
             </TabsContent>
 
             {/* Table Tab */}
-            <TabsContent value="table" className="space-y-4 overflow-hidden flex flex-col">
+            <TabsContent value="table" className="space-y-4 overflow-hidden flex flex-col min-h-[380px]">
               {breakdownData && breakdownData.length > 0 ? (
                 <div className="rounded-lg border overflow-hidden">
-                  <div className="max-h-[300px] overflow-auto">
+                  <ScrollArea className="h-[300px]">
                     {/* Header */}
                     <div 
                       className="grid sticky top-0 z-10 bg-blue-50 dark:bg-blue-950/30 border-b"
@@ -296,11 +302,11 @@ export function KPIChartModal({
                         </div>
                       </div>
                     ))}
-                  </div>
+                  </ScrollArea>
                 </div>
               ) : enrichedData && enrichedData.length > 0 ? (
                 <div className="rounded-lg border overflow-hidden">
-                  <div className="max-h-[300px] overflow-auto">
+                  <ScrollArea className="h-[300px]">
                     {/* Header */}
                     <div 
                       className="grid sticky top-0 z-10 bg-muted/50 backdrop-blur-sm border-b"
@@ -321,7 +327,7 @@ export function KPIChartModal({
                         <div className="px-4 py-3 text-right text-sm">{item.value.toFixed(decimalPlaces)}</div>
                       </div>
                     ))}
-                  </div>
+                  </ScrollArea>
                 </div>
               ) : null}
 
