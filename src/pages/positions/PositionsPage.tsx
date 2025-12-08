@@ -4,6 +4,7 @@ import { FilterBar } from "@/components/staffing/FilterBar";
 import { EmployeesTab } from "./EmployeesTab";
 import { ContractorsTab } from "./ContractorsTab";
 import { RequisitionsTab } from "./RequisitionsTab";
+import { WorkforceDrawer } from "@/components/workforce/WorkforceDrawer";
 
 export default function PositionsPage() {
   const [activeTab, setActiveTab] = useState("employees");
@@ -151,6 +152,8 @@ export default function PositionsPage() {
           )}
         </motion.div>
       </AnimatePresence>
+
+      <WorkforceDrawer activeTab={activeTab} />
     </div>
   );
 }
