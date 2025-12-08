@@ -8,6 +8,10 @@ import {
   getVolumeKPIForWorkforce,
   KPIConfig 
 } from '@/config/kpiConfigs';
+import { 
+  useForecastPositionsToOpenWithChildren,
+  useForecastPositionsToClose,
+} from '@/hooks/useForecastPositions';
 
 interface WorkforceKPISectionProps {
   activeTab?: string;
@@ -146,13 +150,31 @@ export const WorkforceKPISection = ({
         </>
       )}
 
-      {/* Forecast Table */}
+      {/* Forecast Table with Title */}
       {forecastTableType && (
-        <>
-          <Separator className="my-2" />
-          <WorkforceForecastTable type={forecastTableType} />
-        </>
+        <ForecastTableWithTitle type={forecastTableType} />
       )}
     </div>
   );
 };
+
+// Sub-component to handle forecast table with title
+function ForecastTableWithTitle({ type }: { type: 'shortage' | 'surplus' }) {
+  const { data: shortageData } = useForecastPositionsToOpenWithChildren();
+  const { data: surplusData } = useForecastPositionsToClose();
+  
+  const count = type === 'shortage' ? (shortageData?.length || 0) : (surplusData?.length || 0);
+  const title = type === 'shortage' ? 'FTE Shortage' : 'FTE Surplus';
+
+  return (
+    <>
+      <Separator className="my-2" />
+      <div className="mt-3">
+        <h3 className="text-sm font-medium text-foreground mb-2">
+          {title} <span className="text-muted-foreground">({count})</span>
+        </h3>
+        <WorkforceForecastTable type={type} />
+      </div>
+    </>
+  );
+}
