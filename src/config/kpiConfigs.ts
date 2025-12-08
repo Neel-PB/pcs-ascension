@@ -361,6 +361,56 @@ This metric helps:
   ];
 };
 
+// FTE Shortage KPI for Employees and Contractors tabs
+export const getFTEShortageKPI = (): KPIConfig => {
+  return {
+    id: 'fte-shortage',
+    title: 'FTE Shortage',
+    value: '2.5',
+    chartData: generateGrowthTrend(1.2, 2.5),
+    chartType: 'area',
+    delay: 0.3,
+    definition: 'Forecasting positions to open for FTE shortage. This represents the gap between current staffing and target staffing levels.',
+    calculation: `FTE Shortage = Target FTEs - (Hired FTEs + Open Requisitions)
+
+Example: If target is 43.4, hired is 40.9, and open reqs is 5:
+43.4 - 40.9 = 2.5 FTE shortage
+
+A positive value indicates understaffing that needs to be addressed.`,
+    decimalPlaces: 1,
+    breakdownData: [
+      { skillType: 'RN', ftFtes: 1.5, ptFtes: 0.5, prnFtes: 0, totalActualPaidFtes: 2.0 },
+      { skillType: 'Clinical Lead', ftFtes: 0.3, ptFtes: 0.2, prnFtes: 0, totalActualPaidFtes: 0.5 },
+      { skillType: 'TOTAL', ftFtes: 1.8, ptFtes: 0.7, prnFtes: 0, totalActualPaidFtes: 2.5 },
+    ],
+  };
+};
+
+// FTE Surplus KPI for Requisitions tab
+export const getFTESurplusKPI = (): KPIConfig => {
+  return {
+    id: 'fte-surplus',
+    title: 'FTE Surplus',
+    value: '1.2',
+    chartData: generateDeclineTrend(2.1, 1.2),
+    chartType: 'area',
+    delay: 0.3,
+    definition: 'Forecasting positions to close for FTE surplus. This represents overstaffing relative to target staffing levels.',
+    calculation: `FTE Surplus = Hired FTEs - Target FTEs
+
+Example: If hired is 44.6 and target is 43.4:
+44.6 - 43.4 = 1.2 FTE surplus
+
+A positive value indicates overstaffing that may need reduction.`,
+    decimalPlaces: 1,
+    breakdownData: [
+      { skillType: 'RN', ftFtes: 0.8, ptFtes: 0.2, prnFtes: 0, totalActualPaidFtes: 1.0 },
+      { skillType: 'PCT', ftFtes: 0.1, ptFtes: 0.1, prnFtes: 0, totalActualPaidFtes: 0.2 },
+      { skillType: 'TOTAL', ftFtes: 0.9, ptFtes: 0.3, prnFtes: 0, totalActualPaidFtes: 1.2 },
+    ],
+  };
+};
+
 // Get Volume KPI for workforce panel (with department context)
 export const getVolumeKPIForWorkforce = (
   selectedDepartment: string | null | undefined,

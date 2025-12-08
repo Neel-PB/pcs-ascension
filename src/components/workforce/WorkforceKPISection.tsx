@@ -5,6 +5,8 @@ import {
   getFTEKPIs, 
   getProductivityKPIs, 
   getVolumeKPIForWorkforce,
+  getFTEShortageKPI,
+  getFTESurplusKPI,
   KPIConfig 
 } from '@/config/kpiConfigs';
 
@@ -48,25 +50,34 @@ export const WorkforceKPISection = ({
     ].filter(Boolean) as KPIConfig[];
   }, [fteKPIs, volumeKPI]);
 
-  // Employee-specific KPIs (from Productivity KPIs)
+  // Employee-specific KPIs (from Productivity KPIs + FTE Shortage)
   const employeeKPIs = useMemo(() => {
     const employedProductive = productivityKPIs.find(k => k.id === 'total-fullpart-ftes');
     const overtimeFtes = productivityKPIs.find(k => k.id === 'overtime-ftes');
     const totalPrn = productivityKPIs.find(k => k.id === 'total-prn');
+    const fteShortage = getFTEShortageKPI();
 
     return [
       employedProductive,
       overtimeFtes,
       totalPrn,
+      fteShortage,
     ].filter(Boolean) as KPIConfig[];
   }, [productivityKPIs]);
 
-  // Contractor-specific KPIs (from Productivity KPIs)
+  // Contractor-specific KPIs (from Productivity KPIs + FTE Shortage)
   const contractorKPIs = useMemo(() => {
     const contractFtes = productivityKPIs.find(k => k.id === 'contract-ftes');
+    const fteShortage = getFTEShortageKPI();
 
-    return [contractFtes].filter(Boolean) as KPIConfig[];
+    return [contractFtes, fteShortage].filter(Boolean) as KPIConfig[];
   }, [productivityKPIs]);
+
+  // Requisition-specific KPIs (FTE Surplus)
+  const requisitionKPIs = useMemo(() => {
+    const fteSurplus = getFTESurplusKPI();
+    return [fteSurplus] as KPIConfig[];
+  }, []);
 
   // Determine which KPIs to show based on active tab
   const getTabSpecificKPIs = (): KPIConfig[] => {
@@ -76,6 +87,7 @@ export const WorkforceKPISection = ({
       case 'contractors':
         return contractorKPIs;
       case 'requisitions':
+        return requisitionKPIs;
       default:
         return [];
     }
@@ -85,53 +97,43 @@ export const WorkforceKPISection = ({
 
   return (
     <div className="space-y-3">
-      {/* Fixed KPIs Section */}
-      <div>
-        <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-2 px-0.5">
-          Fixed KPIs
-        </p>
-        <div className="grid grid-cols-3 gap-2">
-          {commonKPIs.map((kpi) => (
-            <WorkforceKPICard
-              key={kpi.id}
-              label={kpi.title}
-              value={kpi.value}
-              chartData={kpi.chartData}
-              chartType={kpi.chartType}
-              definition={kpi.definition}
-              calculation={kpi.calculation}
-              breakdownData={kpi.breakdownData}
-              xAxisLabels={kpi.xAxisLabels}
-              decimalPlaces={kpi.decimalPlaces}
-            />
-          ))}
-        </div>
+      {/* Common KPIs Section */}
+      <div className="grid grid-cols-3 gap-2">
+        {commonKPIs.map((kpi) => (
+          <WorkforceKPICard
+            key={kpi.id}
+            label={kpi.title}
+            value={kpi.value}
+            chartData={kpi.chartData}
+            chartType={kpi.chartType}
+            definition={kpi.definition}
+            calculation={kpi.calculation}
+            breakdownData={kpi.breakdownData}
+            xAxisLabels={kpi.xAxisLabels}
+            decimalPlaces={kpi.decimalPlaces}
+          />
+        ))}
       </div>
 
-      {/* Separator and Variable KPIs - only show if there are tab-specific KPIs */}
+      {/* Separator and Tab-specific KPIs */}
       {tabSpecificKPIs.length > 0 && (
         <>
           <Separator className="my-2" />
-          <div>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-2 px-0.5">
-              Variable KPIs
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              {tabSpecificKPIs.map((kpi) => (
-                <WorkforceKPICard
-                  key={kpi.id}
-                  label={kpi.title}
-                  value={kpi.value}
-                  chartData={kpi.chartData}
-                  chartType={kpi.chartType}
-                  definition={kpi.definition}
-                  calculation={kpi.calculation}
-                  breakdownData={kpi.breakdownData}
-                  xAxisLabels={kpi.xAxisLabels}
-                  decimalPlaces={kpi.decimalPlaces}
-                />
-              ))}
-            </div>
+          <div className="grid grid-cols-3 gap-2">
+            {tabSpecificKPIs.map((kpi) => (
+              <WorkforceKPICard
+                key={kpi.id}
+                label={kpi.title}
+                value={kpi.value}
+                chartData={kpi.chartData}
+                chartType={kpi.chartType}
+                definition={kpi.definition}
+                calculation={kpi.calculation}
+                breakdownData={kpi.breakdownData}
+                xAxisLabels={kpi.xAxisLabels}
+                decimalPlaces={kpi.decimalPlaces}
+              />
+            ))}
           </div>
         </>
       )}
