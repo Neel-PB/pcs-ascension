@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import { useWorkforceDrawerStore } from '@/stores/useWorkforceDrawerStore';
 import { useWorkforceResizable } from '@/hooks/useWorkforceResizable';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
 
 const MIN_WIDTH = 490;
 const MAX_WIDTH_VW = 0.7;
@@ -66,19 +65,16 @@ export const WorkforceDrawer = ({ activeTab }: WorkforceDrawerProps) => {
           )}
         </div>
 
-        {/* Content Area - Empty with close button */}
+        {/* Content Area */}
         <div className="flex-1 overflow-y-auto px-4 lg:px-8 py-8">
-          <div className="flex justify-end">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setOpen(false)}
-              aria-label="Close drawer"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
           {/* Blank content area - ready for tab-specific content */}
+        </div>
+
+        {/* Footer with Close Button */}
+        <div className="flex-shrink-0 px-6 py-3 border-t flex justify-end">
+          <Button variant="default" onClick={() => setOpen(false)}>
+            Close
+          </Button>
         </div>
       </div>
     </>
