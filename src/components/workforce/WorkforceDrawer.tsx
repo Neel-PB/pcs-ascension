@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useWorkforceDrawerStore } from '@/stores/useWorkforceDrawerStore';
 import { useWorkforceResizable } from '@/hooks/useWorkforceResizable';
 import { Button } from '@/components/ui/button';
+import { WorkforceKPISection } from './WorkforceKPISection';
 
 const MIN_WIDTH = 490;
 const MAX_WIDTH_VW = 0.7;
@@ -9,9 +10,17 @@ const SNAP_POINTS = [400, 520, 640, 820];
 
 interface WorkforceDrawerProps {
   activeTab?: string;
+  selectedDepartment?: string | null;
+  volumeType?: 'target' | 'override' | null;
+  volumeValue?: number | null;
 }
 
-export const WorkforceDrawer = ({ activeTab }: WorkforceDrawerProps) => {
+export const WorkforceDrawer = ({ 
+  activeTab,
+  selectedDepartment,
+  volumeType,
+  volumeValue 
+}: WorkforceDrawerProps) => {
   const { isOpen, setOpen } = useWorkforceDrawerStore();
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -66,8 +75,19 @@ export const WorkforceDrawer = ({ activeTab }: WorkforceDrawerProps) => {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto px-4 lg:px-8 py-8">
-          {/* Blank content area - ready for tab-specific content */}
+        <div className="flex-1 overflow-y-auto px-4 lg:px-6 py-4">
+          {/* KPI Section */}
+          <WorkforceKPISection
+            activeTab={activeTab}
+            selectedDepartment={selectedDepartment}
+            volumeType={volumeType}
+            volumeValue={volumeValue}
+          />
+          
+          {/* Future content area below KPIs */}
+          <div className="mt-4">
+            {/* Content to be discussed next */}
+          </div>
         </div>
 
         {/* Footer with Close Button */}
