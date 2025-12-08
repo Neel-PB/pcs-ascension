@@ -1,12 +1,11 @@
 import { useMemo } from 'react';
 import { WorkforceKPICard } from './WorkforceKPICard';
+import { WorkforceForecastTable } from './WorkforceForecastTable';
 import { Separator } from '@/components/ui/separator';
 import { 
   getFTEKPIs, 
   getProductivityKPIs, 
   getVolumeKPIForWorkforce,
-  getFTEShortageKPI,
-  getFTESurplusKPI,
   KPIConfig 
 } from '@/config/kpiConfigs';
 
@@ -50,34 +49,28 @@ export const WorkforceKPISection = ({
     ].filter(Boolean) as KPIConfig[];
   }, [fteKPIs, volumeKPI]);
 
-  // Employee-specific KPIs (from Productivity KPIs + FTE Shortage)
+  // Employee-specific KPIs (from Productivity KPIs, no FTE Shortage card)
   const employeeKPIs = useMemo(() => {
     const employedProductive = productivityKPIs.find(k => k.id === 'total-fullpart-ftes');
     const overtimeFtes = productivityKPIs.find(k => k.id === 'overtime-ftes');
     const totalPrn = productivityKPIs.find(k => k.id === 'total-prn');
-    const fteShortage = getFTEShortageKPI();
 
     return [
       employedProductive,
       overtimeFtes,
       totalPrn,
-      fteShortage,
     ].filter(Boolean) as KPIConfig[];
   }, [productivityKPIs]);
 
-  // Contractor-specific KPIs (from Productivity KPIs + FTE Shortage)
+  // Contractor-specific KPIs (from Productivity KPIs, no FTE Shortage card)
   const contractorKPIs = useMemo(() => {
     const contractFtes = productivityKPIs.find(k => k.id === 'contract-ftes');
-    const fteShortage = getFTEShortageKPI();
 
-    return [contractFtes, fteShortage].filter(Boolean) as KPIConfig[];
+    return [contractFtes].filter(Boolean) as KPIConfig[];
   }, [productivityKPIs]);
 
-  // Requisition-specific KPIs (FTE Surplus)
-  const requisitionKPIs = useMemo(() => {
-    const fteSurplus = getFTESurplusKPI();
-    return [fteSurplus] as KPIConfig[];
-  }, []);
+  // No KPI cards for requisitions (table only)
+  const requisitionKPIs: KPIConfig[] = [];
 
   // Determine which KPIs to show based on active tab
   const getTabSpecificKPIs = (): KPIConfig[] => {
@@ -94,6 +87,21 @@ export const WorkforceKPISection = ({
   };
 
   const tabSpecificKPIs = getTabSpecificKPIs();
+
+  // Determine which forecast table to show
+  const getForecastTableType = (): 'shortage' | 'surplus' | null => {
+    switch (activeTab) {
+      case 'employees':
+      case 'contractors':
+        return 'shortage';
+      case 'requisitions':
+        return 'surplus';
+      default:
+        return null;
+    }
+  };
+
+  const forecastTableType = getForecastTableType();
 
   return (
     <div className="space-y-3">
@@ -135,6 +143,14 @@ export const WorkforceKPISection = ({
               />
             ))}
           </div>
+        </>
+      )}
+
+      {/* Forecast Table */}
+      {forecastTableType && (
+        <>
+          <Separator className="my-2" />
+          <WorkforceForecastTable type={forecastTableType} />
         </>
       )}
     </div>
