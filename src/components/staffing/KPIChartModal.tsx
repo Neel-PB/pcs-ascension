@@ -263,51 +263,7 @@ export function KPIChartModal({
             {/* Table Tab */}
             <TabsContent value="table" className="space-y-4">
               <div className="h-[340px]">
-                {breakdownData && breakdownData.length > 0 ? (
-                  <div className="rounded-lg border overflow-hidden h-full">
-                    <ScrollArea className="h-full">
-                      {/* Header */}
-                      <div 
-                        className="grid sticky top-0 z-10 bg-blue-50 dark:bg-blue-950/30 border-b"
-                        style={{ gridTemplateColumns: '2fr repeat(4, 1fr)' }}
-                      >
-                        <div className="px-4 py-3 text-left font-semibold text-sm">Job Families</div>
-                        <div className="px-4 py-3 text-right font-semibold text-sm">FT FTEs</div>
-                        <div className="px-4 py-3 text-right font-semibold text-sm">PT FTEs</div>
-                        <div className="px-4 py-3 text-right font-semibold text-sm">PRN FTEs</div>
-                        <div className="px-4 py-3 text-right font-semibold text-sm">Total Actual Paid FTEs</div>
-                      </div>
-                      
-                      {/* Body */}
-                      {breakdownData.map((item, index) => (
-                        <div
-                          key={index}
-                          className={cn(
-                            "grid border-b hover:bg-muted/50 transition-colors",
-                            item.skillType === 'TOTAL' && "border-t-2 font-bold bg-muted/30"
-                          )}
-                          style={{ gridTemplateColumns: '2fr repeat(4, 1fr)' }}
-                        >
-                          <div className={cn("px-4 py-3 text-left text-sm", item.skillType === 'TOTAL' && "font-bold")}>
-                            {item.skillType}
-                          </div>
-                          <div className={cn("px-4 py-3 text-right text-sm", item.skillType === 'TOTAL' && "font-bold")}>
-                            {item.ftFtes.toFixed(1)}
-                          </div>
-                          <div className={cn("px-4 py-3 text-right text-sm", item.skillType === 'TOTAL' && "font-bold")}>
-                            {item.ptFtes.toFixed(1)}
-                          </div>
-                          <div className={cn("px-4 py-3 text-right text-sm", item.skillType === 'TOTAL' && "font-bold")}>
-                            {item.prnFtes.toFixed(1)}
-                          </div>
-                          <div className={cn("px-4 py-3 text-right text-sm", item.skillType === 'TOTAL' && "font-bold")}>
-                            {item.totalActualPaidFtes.toFixed(1)}
-                          </div>
-                        </div>
-                      ))}
-                    </ScrollArea>
-                  </div>
-                ) : enrichedData && enrichedData.length > 0 ? (
+                {enrichedData && enrichedData.length > 0 ? (
                   <div className="rounded-lg border overflow-hidden h-full">
                     <ScrollArea className="h-full">
                       {/* Header */}
