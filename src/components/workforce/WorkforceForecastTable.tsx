@@ -1,5 +1,4 @@
 import { TrendingDown, TrendingUp } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { 
@@ -82,7 +81,7 @@ export function WorkforceForecastTable({ type }: WorkforceForecastTableProps) {
             No {type === 'shortage' ? 'positions to open' : 'positions to close'} found
           </div>
         ) : (
-          <ScrollArea className="max-h-[300px]">
+          <div className="max-h-[400px] overflow-y-auto">
             {type === 'shortage' ? (
               shortageData?.map((position) => (
                 <CompactPositionBreakdownRow key={position.id} position={position} />
@@ -92,7 +91,7 @@ export function WorkforceForecastTable({ type }: WorkforceForecastTableProps) {
                 <CompactPositionClosureRow key={position.id} position={position} />
               ))
             )}
-          </ScrollArea>
+          </div>
         )}
       </div>
     </TooltipProvider>
