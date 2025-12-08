@@ -125,7 +125,7 @@ export function CompactPositionClosureRow({ position }: CompactPositionClosureRo
           opacity: isExpanded ? 1 : 0,
         }}
         transition={{ duration: 0.2 }}
-        style={{ overflow: isExpanded ? "visible" : "hidden" }}
+        className="overflow-hidden"
       >
         <div className="bg-muted/20 p-3 space-y-2">
           {/* Full Details */}
