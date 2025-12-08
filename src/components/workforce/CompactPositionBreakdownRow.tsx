@@ -75,13 +75,11 @@ export function CompactPositionBreakdownRow({ position }: CompactPositionBreakdo
           </div>
         </div>
 
-        {/* FTE Value */}
-        <div className="text-sm font-medium tabular-nums flex-shrink-0">
-          {Number(position.fte).toFixed(2)}
-        </div>
-
-        {/* Status Indicator */}
-        <div className="flex-shrink-0">
+        {/* FTE Value + Status Indicator */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="text-sm font-medium tabular-nums">
+            {Number(position.fte).toFixed(2)}
+          </div>
           {getStatusIcon()}
         </div>
       </div>
