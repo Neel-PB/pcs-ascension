@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Loader2, Pencil, Trash2, Send, MessageSquare } from "lucide-react";
+import { Loader2, Pencil, Trash2, ArrowUp, MessageSquare } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import TextareaAutosize from "react-textarea-autosize";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   usePositionComments,
@@ -187,35 +188,35 @@ export function PositionCommentSection({ positionId }: PositionCommentSectionPro
         </div>
       </ScrollArea>
 
-      {/* Elevated Textarea Input */}
+      {/* PillChatBar-style Composer */}
       <div className="pt-4 border-t mt-4">
-        <div className="bg-muted/20 rounded-xl p-3">
-          <Textarea
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Write a comment..."
-            className="min-h-[80px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                handleAddComment();
-              }
-            }}
-          />
-          <div className="flex items-center justify-between mt-3">
-            <span className="text-xs text-muted-foreground">⌘ + Enter to send</span>
+        <div className="bg-background/95 backdrop-blur-sm border border-border/60 rounded-xl shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/40 transition-all duration-200">
+          <div className="flex items-end gap-2 p-2">
+            <TextareaAutosize
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Write a comment..."
+              minRows={1}
+              maxRows={4}
+              className="flex-1 bg-transparent border-0 resize-none outline-none placeholder:text-muted-foreground text-sm focus:ring-0 px-2 py-1.5"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                  e.preventDefault();
+                  handleAddComment();
+                }
+              }}
+            />
             <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-lg hover:bg-accent flex-shrink-0"
               onClick={handleAddComment}
               disabled={!newComment.trim() || addComment.isPending}
-              size="sm"
-              className="gap-2"
             >
               {addComment.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <>
-                  <span>Send</span>
-                  <Send className="h-3.5 w-3.5" />
-                </>
+                <ArrowUp className="h-4 w-4" />
               )}
             </Button>
           </div>
