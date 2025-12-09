@@ -37,10 +37,10 @@ export function useDynamicSidebar() {
       ],
     },
     {
-      label: "Workforce",
+      label: "Positions",
       icon: UserCog,
       items: [
-        { title: "Workforce", url: "/positions", icon: UserCog },
+        { title: "Positions", url: "/positions", icon: UserCog },
       ],
     },
     {

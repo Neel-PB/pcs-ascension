@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useWorkforceDrawerStore } from '@/stores/useWorkforceDrawerStore';
-import { Sparkles } from 'lucide-react';
+import { UserCog } from 'lucide-react';
 
 export const WorkforceDrawerTrigger: React.FC = () => {
   const { toggle } = useWorkforceDrawerStore();
@@ -10,9 +10,9 @@ export const WorkforceDrawerTrigger: React.FC = () => {
       onClick={toggle}
       variant="ghost"
       className="fixed right-0 bottom-[20%] h-24 w-6 rounded-l-xl rounded-r-none bg-[#7BB5FF] hover:bg-[#6BA5EF] shadow-xl active:scale-95 transition-all duration-300 ease-out z-50 flex items-center justify-center text-gray-900"
-      aria-label="Open Workforce Drawer"
+      aria-label="Open Positions Drawer"
     >
-      <Sparkles className="h-5 w-5" />
+      <UserCog className="h-5 w-5" />
     </Button>
   );
 };
