@@ -156,11 +156,10 @@ export function FilterBar({
         </SelectContent>
       </Select>
 
-      {/* Department Family Filter */}
+      {/* Department Family Filter - Independent filter */}
       <Select 
         value={selectedDepartmentFamily} 
         onValueChange={onDepartmentFamilyChange}
-        disabled={selectedFacility === "all-facilities"}
       >
         <SelectTrigger className="w-[220px] bg-background border-border">
           <SelectValue placeholder="Select dept family" />
@@ -173,11 +172,11 @@ export function FilterBar({
         </SelectContent>
       </Select>
 
-      {/* Department Filter */}
+      {/* Department Filter - Depends on Facility */}
       <Select 
         value={selectedDepartment} 
         onValueChange={onDepartmentChange}
-        disabled={selectedDepartmentFamily === "all-dept-families"}
+        disabled={selectedFacility === "all-facilities"}
       >
         <SelectTrigger className="w-[180px] bg-background border-border">
           <SelectValue placeholder="Select department" />

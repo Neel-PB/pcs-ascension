@@ -40,13 +40,11 @@ export default function PositionsPage() {
 
   const handleFacilityChange = (value: string) => {
     setSelectedFacility(value);
-    setSelectedDepartmentFamily("all-dept-families");
     setSelectedDepartment("all-departments");
   };
 
   const handleDepartmentFamilyChange = (value: string) => {
     setSelectedDepartmentFamily(value);
-    setSelectedDepartment("all-departments");
   };
 
   const handleClearFilters = () => {
