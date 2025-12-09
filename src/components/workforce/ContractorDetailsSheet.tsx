@@ -1,13 +1,12 @@
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
+  SheetFooter,
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PositionCommentSection } from "@/components/positions/PositionCommentSection";
 
@@ -26,137 +25,153 @@ export function ContractorDetailsSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-xl flex h-full flex-col">
-        <SheetHeader>
-          <SheetTitle className="text-2xl">{contractor.employeeName}</SheetTitle>
-          <SheetDescription>
+      <SheetContent 
+        className="w-full sm:max-w-xl flex h-full flex-col p-0" 
+        hideCloseButton
+      >
+        {/* Fixed Header */}
+        <div className="flex flex-col px-6 py-4 border-b bg-background" style={{ minHeight: 'var(--header-height)' }}>
+          <h2 className="text-xl font-semibold text-foreground">{contractor.employeeName}</h2>
+          <p className="text-sm text-muted-foreground">
             {contractor.jobTitle} • Position #{contractor.positionNum}
-          </SheetDescription>
-        </SheetHeader>
+          </p>
+        </div>
 
+        {/* Content Area */}
         <Tabs defaultValue="details" className="flex flex-col flex-1 min-h-0">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="comments">Comments</TabsTrigger>
-          </TabsList>
+          <div className="px-6 pt-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="comments">Comments</TabsTrigger>
+            </TabsList>
+          </div>
 
-          <TabsContent value="details" className="flex-1">
-            <div className="space-y-6 pb-6">
-              {/* Status */}
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-2">Status</h3>
-                <div className="flex gap-2">
-                  <Badge variant="secondary">Contingent</Badge>
-                  {contractor.payrollStatus && (
-                    <Badge variant={contractor.payrollStatus === "Active" ? "default" : "secondary"}>
-                      {contractor.payrollStatus}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Position Information */}
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3">Position Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Job Title</p>
-                    <p className="text-sm font-medium">{contractor.jobTitle || "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Job Code</p>
-                    <p className="text-sm font-medium">{contractor.jobcode || "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Job Family</p>
-                    <p className="text-sm font-medium">{contractor.jobFamily || "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">FTE</p>
-                    <p className="text-sm font-medium">{contractor.FTE || "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Shift</p>
-                    <p className="text-sm font-medium">{contractor.shift || "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Standard Hours</p>
-                    <p className="text-sm font-medium">{contractor.standardHours || "—"}</p>
+          <TabsContent value="details" className="flex-1 min-h-0 mt-0">
+            <ScrollArea className="h-full">
+              <div className="space-y-6 px-6 py-4">
+                {/* Status */}
+                <div>
+                  <h3 className="text-base font-semibold text-foreground mb-3">Status</h3>
+                  <div className="flex gap-2">
+                    <Badge variant="secondary">Contingent</Badge>
+                    {contractor.payrollStatus && (
+                      <Badge variant={contractor.payrollStatus === "Active" ? "default" : "secondary"}>
+                        {contractor.payrollStatus}
+                      </Badge>
+                    )}
                   </div>
                 </div>
-              </div>
 
-              <Separator />
+                <Separator />
 
-              {/* Contract Details */}
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3">Contract Details</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Employee Type</p>
-                    <p className="text-sm font-medium">{contractor.employeeType || "—"}</p>
+                {/* Position Information */}
+                <div>
+                  <h3 className="text-base font-semibold text-foreground mb-4">Position Information</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Job Title</p>
+                      <p className="text-sm font-medium text-foreground">{contractor.jobTitle || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Job Code</p>
+                      <p className="text-sm font-medium text-foreground">{contractor.jobcode || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Job Family</p>
+                      <p className="text-sm font-medium text-foreground">{contractor.jobFamily || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">FTE</p>
+                      <p className="text-sm font-medium text-foreground">{contractor.FTE || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Shift</p>
+                      <p className="text-sm font-medium text-foreground">{contractor.shift || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Standard Hours</p>
+                      <p className="text-sm font-medium text-foreground">{contractor.standardHours || "—"}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Employment Type</p>
-                    <p className="text-sm font-medium">{contractor.employmentType || "—"}</p>
+                </div>
+
+                <Separator />
+
+                {/* Contract Details */}
+                <div>
+                  <h3 className="text-base font-semibold text-foreground mb-4">Contract Details</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Employee Type</p>
+                      <p className="text-sm font-medium text-foreground">{contractor.employeeType || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Employment Type</p>
+                      <p className="text-sm font-medium text-foreground">{contractor.employmentType || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Employment Flag</p>
+                      <p className="text-sm font-medium text-foreground">{contractor.employmentFlag || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Contractor ID</p>
+                      <p className="text-sm font-medium text-foreground">{contractor.employeeId || "—"}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Employment Flag</p>
-                    <p className="text-sm font-medium">{contractor.employmentFlag || "—"}</p>
+                </div>
+
+                <Separator />
+
+                {/* Location */}
+                <div>
+                  <h3 className="text-base font-semibold text-foreground mb-4">Location</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Market</p>
+                      <p className="text-sm font-medium text-foreground">{contractor.market || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Facility</p>
+                      <p className="text-sm font-medium text-foreground">{contractor.facilityName || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Department</p>
+                      <p className="text-sm font-medium text-foreground">{contractor.departmentName || "—"}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Contractor ID</p>
-                    <p className="text-sm font-medium">{contractor.employeeId || "—"}</p>
+                </div>
+
+                <Separator />
+
+                {/* Manager Information */}
+                <div>
+                  <h3 className="text-base font-semibold text-foreground mb-4">Manager</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Manager Name</p>
+                      <p className="text-sm font-medium text-foreground">{contractor.managerName || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Manager Employee ID</p>
+                      <p className="text-sm font-medium text-foreground">{contractor.managerEmployeeId || "—"}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-
-              <Separator />
-
-              {/* Location */}
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3">Location</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Market</p>
-                    <p className="text-sm font-medium">{contractor.market || "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Facility</p>
-                    <p className="text-sm font-medium">{contractor.facilityName || "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Department</p>
-                    <p className="text-sm font-medium">{contractor.departmentName || "—"}</p>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Manager Information */}
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3">Manager</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Manager Name</p>
-                    <p className="text-sm font-medium">{contractor.managerName || "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Manager Employee ID</p>
-                    <p className="text-sm font-medium">{contractor.managerEmployeeId || "—"}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            </ScrollArea>
           </TabsContent>
 
-          <TabsContent value="comments" className="flex-1 min-h-0 flex flex-col">
+          <TabsContent value="comments" className="flex-1 min-h-0 flex flex-col px-6">
             <PositionCommentSection positionId={contractor.id} />
           </TabsContent>
         </Tabs>
+
+        {/* Fixed Footer */}
+        <SheetFooter className="border-t px-6 py-4 bg-background">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full">
+            Close
+          </Button>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );
