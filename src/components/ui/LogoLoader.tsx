@@ -3,7 +3,7 @@ import AscensionEmblem from "@/assets/Ascension-Emblem.png";
 
 interface LogoLoaderProps {
   size?: "sm" | "md" | "lg";
-  variant?: "default" | "spin" | "pulse-spin" | "orbit" | "corners" | "glow-spin";
+  variant?: "default" | "scan" | "glow" | "pulse" | "dots";
   className?: string;
 }
 
@@ -13,102 +13,88 @@ const sizeMap = {
   lg: 64,
 };
 
-// Orbit dot size relative to logo size
-const orbitDotSizeMap = {
-  sm: 6,
-  md: 8,
-  lg: 10,
-};
-
-// Corner dot size relative to logo size
-const cornerDotSizeMap = {
-  sm: 5,
-  md: 7,
-  lg: 9,
-};
-
 export function LogoLoader({ size = "md", variant = "default", className = "" }: LogoLoaderProps) {
   const dimension = sizeMap[size];
-  const orbitDotSize = orbitDotSizeMap[size];
-  const cornerDotSize = cornerDotSizeMap[size];
-  const orbitRadius = dimension * 0.8;
 
-  // Triangle vertices for orbit path (pointing up)
-  const trianglePoints = [
-    { x: 0, y: -orbitRadius }, // Top
-    { x: orbitRadius * 0.866, y: orbitRadius * 0.5 }, // Bottom right
-    { x: -orbitRadius * 0.866, y: orbitRadius * 0.5 }, // Bottom left
-  ];
-
-  // Corner positions for corners variant (slightly outside the logo)
-  const cornerOffset = dimension * 0.6;
-  const cornerPositions = [
-    { x: 0, y: -cornerOffset }, // Top
-    { x: cornerOffset * 0.866, y: cornerOffset * 0.5 }, // Bottom right
-    { x: -cornerOffset * 0.866, y: cornerOffset * 0.5 }, // Bottom left
-  ];
-
-  // Triangle clip-path for ripples and backdrop
-  const triangleClipPath = "polygon(50% 0%, 0% 100%, 100% 100%)";
-
-  // Ripple rings component - triangular shape for visibility on both themes
-  const RippleRings = () => (
-    <>
-      {[0, 1, 2].map((i) => (
-        <motion.div
-          key={i}
-          className="absolute border-2 border-primary"
-          style={{
-            width: dimension * 1.2,
-            height: dimension * 1.2,
-            left: "50%",
-            top: "50%",
-            marginLeft: -(dimension * 1.2) / 2,
-            marginTop: -(dimension * 1.2) / 2 + dimension * 0.1,
-            clipPath: triangleClipPath,
-          }}
-          initial={{ scale: 0.8, opacity: 0.5 }}
-          animate={{
-            scale: [0.8, 2, 2.5],
-            opacity: [0.5, 0.2, 0],
-          }}
-          transition={{
-            duration: 2.4,
-            delay: i * 0.8,
-            repeat: Infinity,
-            ease: "easeOut",
-          }}
-        />
-      ))}
-    </>
-  );
-
-  // Backdrop pulse - triangular shape for contrast on light backgrounds
-  const BackdropPulse = () => (
+  // Scan line that moves up and down across the logo
+  const ScanLine = () => (
     <motion.div
-      className="absolute bg-primary/15 dark:bg-primary/25"
+      className="absolute rounded-full bg-primary/60 dark:bg-primary/80"
       style={{
-        width: dimension * 1.6,
-        height: dimension * 1.6,
+        width: dimension * 1.2,
+        height: 2,
         left: "50%",
-        top: "50%",
-        marginLeft: -(dimension * 1.6) / 2,
-        marginTop: -(dimension * 1.6) / 2 + dimension * 0.1,
-        clipPath: triangleClipPath,
+        marginLeft: -(dimension * 1.2) / 2,
       }}
       animate={{
-        scale: [1, 1.2, 1],
-        opacity: [0.4, 0.2, 0.4],
+        y: [-dimension * 0.4, dimension * 0.4],
+        opacity: [0.8, 1, 0.8],
       }}
       transition={{
-        duration: 2,
+        duration: 1.5,
         repeat: Infinity,
+        repeatType: "reverse",
         ease: "easeInOut",
       }}
     />
   );
 
-  const renderLogo = (animationProps: object) => (
+  // Soft rotating glow behind the logo
+  const SoftGlow = () => (
+    <motion.div
+      className="absolute rounded-full bg-primary/10 dark:bg-primary/20 blur-md"
+      style={{
+        width: dimension * 1.5,
+        height: dimension * 1.5,
+      }}
+      animate={{
+        rotate: [0, 360],
+        scale: [0.9, 1.1, 0.9],
+      }}
+      transition={{
+        rotate: {
+          duration: 8,
+          repeat: Infinity,
+          ease: "linear",
+        },
+        scale: {
+          duration: 2.5,
+          repeat: Infinity,
+          ease: "easeInOut",
+        },
+      }}
+    />
+  );
+
+  // Three pulsing dots below the logo
+  const LoadingDots = () => (
+    <div className="flex gap-1.5 mt-3">
+      {[0, 1, 2].map((i) => (
+        <motion.div
+          key={i}
+          className="rounded-full bg-primary"
+          style={{
+            width: dimension * 0.1,
+            height: dimension * 0.1,
+            minWidth: 4,
+            minHeight: 4,
+          }}
+          animate={{
+            scale: [1, 1.4, 1],
+            opacity: [0.4, 1, 0.4],
+          }}
+          transition={{
+            duration: 1,
+            delay: i * 0.2,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </div>
+  );
+
+  const renderLogo = (animationProps: object = {}) => (
     <motion.div className="relative z-10" {...animationProps}>
       <img
         src={AscensionEmblem}
@@ -120,140 +106,21 @@ export function LogoLoader({ size = "md", variant = "default", className = "" }:
     </motion.div>
   );
 
-  // Default: pulse/breathe/glow animation with ripples
+  // Default: Scan line + subtle breathe (professional, modern)
   if (variant === "default") {
     return (
       <div
         className={`relative flex items-center justify-center ${className}`}
-        style={{ width: dimension * 2.5, height: dimension * 2.5 }}
+        style={{ width: dimension * 2, height: dimension * 2 }}
       >
-        <BackdropPulse />
-        <RippleRings />
-        {renderLogo({
-          animate: {
-            scale: [1, 1.08, 1],
-            opacity: [0.85, 1, 0.85],
-          },
-          transition: {
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut",
-          },
-        })}
-      </div>
-    );
-  }
-
-  // Spin: slow elegant rotation with backdrop
-  if (variant === "spin") {
-    return (
-      <div
-        className={`relative flex items-center justify-center ${className}`}
-        style={{ width: dimension * 2.5, height: dimension * 2.5 }}
-      >
-        <BackdropPulse />
-        {renderLogo({
-          animate: {
-            rotate: [0, 360],
-          },
-          transition: {
-            duration: 3.5,
-            repeat: Infinity,
-            ease: "linear",
-          },
-        })}
-      </div>
-    );
-  }
-
-  // Pulse-spin: combination of pulse/breathe with slow spin and ripples
-  if (variant === "pulse-spin") {
-    return (
-      <div
-        className={`relative flex items-center justify-center ${className}`}
-        style={{ width: dimension * 2.5, height: dimension * 2.5 }}
-      >
-        <BackdropPulse />
-        <RippleRings />
-        {renderLogo({
-          animate: {
-            scale: [1, 1.08, 1],
-            opacity: [0.85, 1, 0.85],
-            rotate: [0, 360],
-          },
-          transition: {
-            duration: 3.5,
-            repeat: Infinity,
-            ease: "linear",
-            scale: {
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            },
-            opacity: {
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            },
-          },
-        })}
-      </div>
-    );
-  }
-
-  // Orbit: three dots orbiting in triangular path with backdrop
-  if (variant === "orbit") {
-    return (
-      <div
-        className={`relative flex items-center justify-center ${className}`}
-        style={{ width: dimension * 2.5, height: dimension * 2.5 }}
-      >
-        <BackdropPulse />
-
-        {/* Orbiting dots */}
-        {[0, 1, 2].map((i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full bg-primary shadow-lg"
-            style={{
-              width: orbitDotSize,
-              height: orbitDotSize,
-              left: "50%",
-              top: "50%",
-              marginLeft: -orbitDotSize / 2,
-              marginTop: -orbitDotSize / 2,
-              boxShadow: "0 0 8px hsl(var(--primary) / 0.6)",
-            }}
-            animate={{
-              x: [
-                trianglePoints[0].x,
-                trianglePoints[1].x,
-                trianglePoints[2].x,
-                trianglePoints[0].x,
-              ],
-              y: [
-                trianglePoints[0].y,
-                trianglePoints[1].y,
-                trianglePoints[2].y,
-                trianglePoints[0].y,
-              ],
-              opacity: [0.7, 1, 0.7, 0.7],
-            }}
-            transition={{
-              duration: 2.5,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: i * 0.833,
-            }}
-          />
-        ))}
-
+        <SoftGlow />
+        <ScanLine />
         {renderLogo({
           animate: {
             scale: [1, 1.03, 1],
           },
           transition: {
-            duration: 2,
+            duration: 2.5,
             repeat: Infinity,
             ease: "easeInOut",
           },
@@ -262,48 +129,52 @@ export function LogoLoader({ size = "md", variant = "default", className = "" }:
     );
   }
 
-  // Corners: three dots pulsing at triangle vertices with backdrop
-  if (variant === "corners") {
+  // Scan: Just the scanning line
+  if (variant === "scan") {
     return (
       <div
         className={`relative flex items-center justify-center ${className}`}
-        style={{ width: dimension * 2.5, height: dimension * 2.5 }}
+        style={{ width: dimension * 2, height: dimension * 2 }}
       >
-        <BackdropPulse />
+        <ScanLine />
+        {renderLogo()}
+      </div>
+    );
+  }
 
-        {/* Corner dots */}
-        {cornerPositions.map((pos, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full bg-primary shadow-lg"
-            style={{
-              width: cornerDotSize,
-              height: cornerDotSize,
-              left: "50%",
-              top: "50%",
-              marginLeft: -cornerDotSize / 2,
-              marginTop: -cornerDotSize / 2,
-              x: pos.x,
-              y: pos.y,
-              boxShadow: "0 0 10px hsl(var(--primary) / 0.5)",
-            }}
-            animate={{
-              scale: [1, 1.6, 1],
-              opacity: [0.6, 1, 0.6],
-            }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: i * 0.5,
-            }}
-          />
-        ))}
-
+  // Glow: Soft rotating glow
+  if (variant === "glow") {
+    return (
+      <div
+        className={`relative flex items-center justify-center ${className}`}
+        style={{ width: dimension * 2, height: dimension * 2 }}
+      >
+        <SoftGlow />
         {renderLogo({
           animate: {
-            scale: [1, 1.02, 1],
-            opacity: [0.9, 1, 0.9],
+            scale: [1, 1.05, 1],
+          },
+          transition: {
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+          },
+        })}
+      </div>
+    );
+  }
+
+  // Pulse: Simple breathe only (minimalist)
+  if (variant === "pulse") {
+    return (
+      <div
+        className={`relative flex items-center justify-center ${className}`}
+        style={{ width: dimension * 2, height: dimension * 2 }}
+      >
+        {renderLogo({
+          animate: {
+            scale: [1, 1.08, 1],
+            opacity: [0.8, 1, 0.8],
           },
           transition: {
             duration: 2,
@@ -315,55 +186,24 @@ export function LogoLoader({ size = "md", variant = "default", className = "" }:
     );
   }
 
-  // Glow-spin: enhanced glow with slow rotation and ripples
-  if (variant === "glow-spin") {
+  // Dots: Logo + loading dots below
+  if (variant === "dots") {
     return (
       <div
-        className={`relative flex items-center justify-center ${className}`}
-        style={{ width: dimension * 2.5, height: dimension * 2.5 }}
+        className={`relative flex flex-col items-center justify-center ${className}`}
+        style={{ width: dimension * 2, height: dimension * 2.5 }}
       >
-        <BackdropPulse />
-        <RippleRings />
-
-        <motion.div
-          className="relative z-10"
-          animate={{
-            rotate: [0, 360],
-          }}
-          transition={{
-            duration: 4,
+        {renderLogo({
+          animate: {
+            scale: [1, 1.02, 1],
+          },
+          transition: {
+            duration: 2,
             repeat: Infinity,
-            ease: "linear",
-          }}
-        >
-          <motion.div
-            className="absolute bg-primary/30"
-            style={{
-              width: dimension,
-              height: dimension,
-              clipPath: triangleClipPath,
-            }}
-            animate={{
-              scale: [1, 1.4, 1],
-              opacity: [0.5, 0.8, 0.5],
-            }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-          <img
-            src={AscensionEmblem}
-            alt="Loading"
-            width={dimension}
-            height={dimension}
-            className="object-contain"
-            style={{
-              filter: "drop-shadow(0 0 12px hsl(var(--primary) / 0.6))",
-            }}
-          />
-        </motion.div>
+            ease: "easeInOut",
+          },
+        })}
+        <LoadingDots />
       </div>
     );
   }
@@ -372,17 +212,16 @@ export function LogoLoader({ size = "md", variant = "default", className = "" }:
   return (
     <div
       className={`relative flex items-center justify-center ${className}`}
-      style={{ width: dimension * 2.5, height: dimension * 2.5 }}
+      style={{ width: dimension * 2, height: dimension * 2 }}
     >
-      <BackdropPulse />
-      <RippleRings />
+      <SoftGlow />
+      <ScanLine />
       {renderLogo({
         animate: {
-          scale: [1, 1.08, 1],
-          opacity: [0.85, 1, 0.85],
+          scale: [1, 1.03, 1],
         },
         transition: {
-          duration: 2,
+          duration: 2.5,
           repeat: Infinity,
           ease: "easeInOut",
         },
