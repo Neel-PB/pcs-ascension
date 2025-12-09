@@ -24,7 +24,7 @@ export function usePositionComments(positionId: string) {
         .from("position_comments")
         .select("*")
         .eq("position_id", positionId)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
 
