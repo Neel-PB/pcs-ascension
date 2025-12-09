@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Loader2, Pencil, Trash2, ArrowUp, MessageSquare, Copy, Check } from "lucide-react";
+import { Loader2, Pencil, Trash2, ArrowUp, MessageSquare, Copy, Check, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import TextareaAutosize from "react-textarea-autosize";
@@ -16,9 +16,10 @@ import { toast } from "sonner";
 
 interface PositionCommentSectionProps {
   positionId: string;
+  onClose?: () => void;
 }
 
-export function PositionCommentSection({ positionId }: PositionCommentSectionProps) {
+export function PositionCommentSection({ positionId, onClose }: PositionCommentSectionProps) {
   const [newComment, setNewComment] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
@@ -213,37 +214,50 @@ export function PositionCommentSection({ positionId }: PositionCommentSectionPro
         </div>
       </ScrollArea>
 
-      {/* PillChatBar-style Composer */}
+      {/* PillChatBar-style Composer with Close button */}
       <div className="pt-4 border-t mt-4">
-        <div className="bg-background/95 backdrop-blur-sm border border-border/60 rounded-xl shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/40 transition-all duration-200">
-          <div className="flex items-end gap-2 p-2">
-            <TextareaAutosize
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Write a comment..."
-              minRows={1}
-              maxRows={4}
-              className="flex-1 bg-transparent border-0 resize-none outline-none placeholder:text-muted-foreground text-sm focus:ring-0 px-2 py-1.5"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                  e.preventDefault();
-                  handleAddComment();
-                }
-              }}
-            />
+        <div className="flex items-center gap-2">
+          {/* Minimize button like AI Hub */}
+          {onClose && (
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8 rounded-lg hover:bg-accent flex-shrink-0"
-              onClick={handleAddComment}
-              disabled={!newComment.trim() || addComment.isPending}
+              onClick={onClose}
             >
-              {addComment.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <ArrowUp className="h-4 w-4" />
-              )}
+              <ChevronRight className="h-4 w-4" />
             </Button>
+          )}
+          <div className="flex-1 bg-background/95 backdrop-blur-sm border border-border/60 rounded-xl shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/40 transition-all duration-200">
+            <div className="flex items-end gap-2 p-2">
+              <TextareaAutosize
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Write a comment..."
+                minRows={1}
+                maxRows={4}
+                className="flex-1 bg-transparent border-0 resize-none outline-none placeholder:text-muted-foreground text-sm focus:ring-0 px-2 py-1.5"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                    e.preventDefault();
+                    handleAddComment();
+                  }
+                }}
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-lg hover:bg-accent flex-shrink-0"
+                onClick={handleAddComment}
+                disabled={!newComment.trim() || addComment.isPending}
+              >
+                {addComment.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ArrowUp className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

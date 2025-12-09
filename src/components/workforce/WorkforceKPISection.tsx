@@ -167,13 +167,13 @@ function ForecastTableWithTitle({ type }: { type: 'shortage' | 'surplus' }) {
   const title = type === 'shortage' ? 'FTE Shortage' : 'FTE Surplus';
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
+    <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
       <Separator className="my-2" />
-      <div className="flex-1 flex flex-col min-h-0 mt-3">
+      <div className="flex-1 flex flex-col min-h-0 mt-3 overflow-hidden">
         <h3 className="text-sm font-medium text-foreground mb-2 flex-shrink-0">
           {title} <span className="text-muted-foreground">({count})</span>
         </h3>
-        <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="flex-1 min-h-0 overflow-y-auto">
           <WorkforceForecastTable type={type} />
         </div>
       </div>
