@@ -102,14 +102,14 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
                     >
                       <div className="flex items-start gap-3 mb-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={post.author.avatar_url || ''} />
+                          <AvatarImage src={post.author?.avatar_url || ''} />
                           <AvatarFallback>
-                            {post.author.first_name?.[0]}{post.author.last_name?.[0]}
+                            {post.author?.first_name?.[0]}{post.author?.last_name?.[0]}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium">
-                            {post.author.first_name} {post.author.last_name}
+                            {post.author?.first_name || 'Unknown'} {post.author?.last_name || 'User'}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
