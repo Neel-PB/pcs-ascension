@@ -30,7 +30,7 @@ export function RequisitionsTab({
   selectedDepartmentFamily,
   selectedDepartment,
 }: RequisitionsTabProps) {
-  const { data: requisitions, isLoading } = useRequisitions({
+  const { data: requisitions, isFetching } = useRequisitions({
     selectedRegion,
     selectedMarket,
     selectedFacility,
@@ -192,7 +192,7 @@ export function RequisitionsTab({
     [commentCounts, handleRowClick]
   );
 
-  const showEmptyState = !isLoading && (!requisitions || requisitions.length === 0);
+  const showEmptyState = !isFetching && (!requisitions || requisitions.length === 0);
 
   return (
     <div className="flex flex-col h-full">
@@ -235,7 +235,7 @@ export function RequisitionsTab({
         </div>
       </div>
 
-      {isLoading ? (
+      {isFetching ? (
         <div className="flex-1 flex items-center justify-center min-h-[300px]">
           <LogoLoader size="lg" />
         </div>
