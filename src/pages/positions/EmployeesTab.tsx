@@ -1,11 +1,10 @@
-import { motion } from "framer-motion";
 import { useState, useMemo } from "react";
 import { Filter, Search } from "lucide-react";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import { useEmployees } from "@/hooks/useEmployees";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { LogoLoader } from "@/components/ui/LogoLoader";
 import { Input } from "@/components/ui/input";
 import { EmployeeDetailsSheet } from "@/components/workforce/EmployeeDetailsSheet";
 import { EmployeesFilterSheet } from "@/components/positions/EmployeesFilterSheet";
@@ -208,31 +207,7 @@ export function EmployeesTab({
     });
   }, [commentCounts, handleRowClick, handleActualFteUpdate]);
 
-  if (isLoading) {
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="space-y-3"
-      >
-        {[...Array(5)].map((_, i) => (
-          <Skeleton key={i} className="h-16 w-full" />
-        ))}
-      </motion.div>
-    );
-  }
-
-  if (!employees || employees.length === 0) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col items-center justify-center min-h-[400px] bg-muted/20 rounded-xl border border-border/50 p-12"
-      >
-        <p className="text-muted-foreground">No employees found matching the filters.</p>
-      </motion.div>
-    );
-  }
+  const showEmptyState = !isLoading && (!employees || employees.length === 0);
 
   return (
     <div className="flex flex-col h-full">
@@ -275,17 +250,27 @@ export function EmployeesTab({
         </div>
       </div>
 
-      <EditableTable
-        columns={columnsWithHandlers}
-        data={filteredAndSortedEmployees}
-        getRowId={(row) => row.id}
-        sortField={sortColumn}
-        sortDirection={sortDirection}
-        onSort={handleSort}
-        onRowClick={handleRowClick}
-        storeNamespace="employees-columns"
-        className="flex-1 min-h-0"
-      />
+      {isLoading ? (
+        <div className="flex-1 flex items-center justify-center min-h-[300px]">
+          <LogoLoader size="lg" />
+        </div>
+      ) : showEmptyState ? (
+        <div className="flex-1 flex flex-col items-center justify-center min-h-[300px] bg-muted/20 rounded-xl border border-border/50">
+          <p className="text-muted-foreground">No employees found matching the filters.</p>
+        </div>
+      ) : (
+        <EditableTable
+          columns={columnsWithHandlers}
+          data={filteredAndSortedEmployees}
+          getRowId={(row) => row.id}
+          sortField={sortColumn}
+          sortDirection={sortDirection}
+          onSort={handleSort}
+          onRowClick={handleRowClick}
+          storeNamespace="employees-columns"
+          className="flex-1 min-h-0"
+        />
+      )}
 
       <EmployeeDetailsSheet
         open={sheetOpen}
