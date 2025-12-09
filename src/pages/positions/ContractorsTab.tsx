@@ -31,7 +31,7 @@ export function ContractorsTab({
   selectedDepartmentFamily,
   selectedDepartment,
 }: ContractorsTabProps) {
-  const { data: contractors, isLoading } = useContractors({
+  const { data: contractors, isFetching } = useContractors({
     selectedRegion,
     selectedMarket,
     selectedFacility,
@@ -201,7 +201,7 @@ export function ContractorsTab({
     });
   }, [commentCounts, handleRowClick, handleActualFteUpdate]);
 
-  const showEmptyState = !isLoading && (!contractors || contractors.length === 0);
+  const showEmptyState = !isFetching && (!contractors || contractors.length === 0);
 
   return (
     <div className="flex flex-col h-full">
@@ -244,7 +244,7 @@ export function ContractorsTab({
         </div>
       </div>
 
-      {isLoading ? (
+      {isFetching ? (
         <div className="flex-1 flex items-center justify-center min-h-[300px]">
           <LogoLoader size="lg" />
         </div>

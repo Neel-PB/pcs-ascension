@@ -31,7 +31,7 @@ export function EmployeesTab({
   selectedDepartmentFamily,
   selectedDepartment,
 }: EmployeesTabProps) {
-  const { data: employees, isLoading } = useEmployees({
+  const { data: employees, isFetching } = useEmployees({
     selectedRegion,
     selectedMarket,
     selectedFacility,
@@ -207,7 +207,7 @@ export function EmployeesTab({
     });
   }, [commentCounts, handleRowClick, handleActualFteUpdate]);
 
-  const showEmptyState = !isLoading && (!employees || employees.length === 0);
+  const showEmptyState = !isFetching && (!employees || employees.length === 0);
 
   return (
     <div className="flex flex-col h-full">
@@ -250,7 +250,7 @@ export function EmployeesTab({
         </div>
       </div>
 
-      {isLoading ? (
+      {isFetching ? (
         <div className="flex-1 flex items-center justify-center min-h-[300px]">
           <LogoLoader size="lg" />
         </div>
