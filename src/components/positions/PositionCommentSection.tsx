@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Loader2, Pencil, Trash2, ArrowUp, MessageSquare } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Loader2, Pencil, Trash2, ArrowUp, MessageSquare, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import TextareaAutosize from "react-textarea-autosize";
@@ -13,6 +12,7 @@ import {
   useDeletePositionComment,
 } from "@/hooks/usePositionComments";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface PositionCommentSectionProps {
   positionId: string;
@@ -22,6 +22,7 @@ export function PositionCommentSection({ positionId }: PositionCommentSectionPro
   const [newComment, setNewComment] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   
   const { data: comments, isLoading } = usePositionComments(positionId);
   const addComment = useAddPositionComment();
@@ -36,6 +37,38 @@ export function PositionCommentSection({ positionId }: PositionCommentSectionPro
       setCurrentUserId(data.user?.id || null);
     });
   });
+
+  // Group consecutive comments by the same user
+  const groupedComments = useMemo(() => {
+    if (!comments) return [];
+    
+    const groups: Array<{
+      userId: string;
+      displayName: string;
+      avatarUrl: string | null;
+      comments: typeof comments;
+    }> = [];
+
+    comments.forEach((comment) => {
+      const lastGroup = groups[groups.length - 1];
+      const displayName = comment.profiles
+        ? `${comment.profiles.first_name || ""} ${comment.profiles.last_name || ""}`.trim() || "Unknown User"
+        : "Unknown User";
+      
+      if (lastGroup && lastGroup.userId === comment.user_id) {
+        lastGroup.comments.push(comment);
+      } else {
+        groups.push({
+          userId: comment.user_id,
+          displayName,
+          avatarUrl: comment.profiles?.avatar_url || null,
+          comments: [comment],
+        });
+      }
+    });
+
+    return groups;
+  }, [comments]);
 
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
@@ -66,6 +99,13 @@ export function PositionCommentSection({ positionId }: PositionCommentSectionPro
     await deleteComment.mutateAsync({ id, positionId });
   };
 
+  const handleCopyComment = async (id: string, content: string) => {
+    await navigator.clipboard.writeText(content);
+    setCopiedId(id);
+    toast.success("Copied to clipboard");
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   const startEditing = (id: string, content: string) => {
     setEditingId(id);
     setEditContent(content);
@@ -87,7 +127,7 @@ export function PositionCommentSection({ positionId }: PositionCommentSectionPro
   return (
     <div className="flex h-full min-h-0 flex-col py-6">
       <ScrollArea className="flex-1 min-h-0 pr-4">
-        <div className="space-y-4">
+        <div className="space-y-6">
           {/* Enhanced Empty State */}
           {comments && comments.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -99,88 +139,103 @@ export function PositionCommentSection({ positionId }: PositionCommentSectionPro
             </div>
           )}
 
-          {/* Premium Comment Bubbles */}
-          {comments?.map((comment) => {
-            const isOwner = currentUserId === comment.user_id;
-            const displayName = comment.profiles
-              ? `${comment.profiles.first_name || ""} ${comment.profiles.last_name || ""}`.trim() || "Unknown User"
-              : "Unknown User";
+          {/* Grouped Comments - AI Hub Style */}
+          {groupedComments.map((group, groupIndex) => {
+            const isOwner = currentUserId === group.userId;
 
             return (
-              <div key={comment.id} className="group">
-                {/* Header: Avatar + Name + Timestamp */}
-                <div className="flex items-center gap-3 mb-2">
-                  <Avatar className="h-8 w-8 ring-2 ring-background shadow-sm">
-                    <AvatarImage src={comment.profiles?.avatar_url || ""} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
-                      {displayName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <span className="font-semibold text-sm text-foreground">{displayName}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
-                    </span>
-                  </div>
+              <div key={groupIndex} className="space-y-2">
+                {/* Author label - appears once per group */}
+                <div className="text-xs font-medium text-muted-foreground">
+                  {group.displayName}
                 </div>
 
-                {/* Message Bubble + Actions */}
-                <div className="flex items-start gap-2 ml-11">
-                  {editingId === comment.id ? (
-                    <div className="flex-1 space-y-3">
-                      <Textarea
-                        value={editContent}
-                        onChange={(e) => setEditContent(e.target.value)}
-                        className="min-h-[80px] resize-none"
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => handleUpdateComment(comment.id)}
-                          disabled={updateComment.isPending}
-                        >
-                          Save
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={cancelEditing}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex-1 bg-muted/40 rounded-xl rounded-tl-sm px-4 py-3">
-                        <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
-                          {comment.content}
-                        </p>
-                      </div>
-                      
-                      {/* Edit/Delete Actions */}
-                      {isOwner && (
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity pt-1">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 w-7 p-0 hover:bg-muted"
-                            onClick={() => startEditing(comment.id, comment.content)}
-                          >
-                            <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 w-7 p-0 hover:bg-destructive/10"
-                            onClick={() => handleDeleteComment(comment.id)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
-                          </Button>
+                {/* Messages in this group */}
+                <div className="space-y-2">
+                  {group.comments.map((comment) => (
+                    <div key={comment.id} className="group flex items-start gap-2">
+                      {editingId === comment.id ? (
+                        <div className="flex-1 space-y-3">
+                          <Textarea
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value)}
+                            className="min-h-[80px] resize-none"
+                          />
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleUpdateComment(comment.id)}
+                              disabled={updateComment.isPending}
+                            >
+                              Save
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={cancelEditing}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
                         </div>
+                      ) : (
+                        <>
+                          {/* Message Bubble */}
+                          <div className="max-w-[85%]">
+                            <div className="bg-muted px-4 py-3 rounded-2xl rounded-bl-sm">
+                              <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                                {comment.content}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Actions: Copy + Edit/Delete */}
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity pt-2">
+                            {/* Timestamp on hover */}
+                            <span className="text-xs text-muted-foreground mr-1">
+                              {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                            </span>
+
+                            {/* Copy button - always available */}
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 hover:bg-accent"
+                              onClick={() => handleCopyComment(comment.id, comment.content)}
+                            >
+                              {copiedId === comment.id ? (
+                                <Check className="h-3.5 w-3.5 text-primary" />
+                              ) : (
+                                <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                              )}
+                            </Button>
+
+                            {/* Edit/Delete - only for owner */}
+                            {isOwner && (
+                              <>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-7 w-7 hover:bg-accent"
+                                  onClick={() => startEditing(comment.id, comment.content)}
+                                >
+                                  <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                                </Button>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-7 w-7 hover:bg-destructive/10"
+                                  onClick={() => handleDeleteComment(comment.id)}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </>
                       )}
-                    </>
-                  )}
+                    </div>
+                  ))}
                 </div>
               </div>
             );
