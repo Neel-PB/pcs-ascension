@@ -39,32 +39,6 @@ export function LogoLoader({ size = "md", variant = "default", className = "" }:
     />
   );
 
-  // Soft rotating glow behind the logo
-  const SoftGlow = () => (
-    <motion.div
-      className="absolute rounded-full bg-primary/10 dark:bg-primary/20 blur-md"
-      style={{
-        width: dimension * 1.5,
-        height: dimension * 1.5,
-      }}
-      animate={{
-        rotate: [0, 360],
-        scale: [0.9, 1.1, 0.9],
-      }}
-      transition={{
-        rotate: {
-          duration: 8,
-          repeat: Infinity,
-          ease: "linear",
-        },
-        scale: {
-          duration: 2.5,
-          repeat: Infinity,
-          ease: "easeInOut",
-        },
-      }}
-    />
-  );
 
   // Three pulsing dots below the logo
   const LoadingDots = () => (
@@ -106,14 +80,13 @@ export function LogoLoader({ size = "md", variant = "default", className = "" }:
     </motion.div>
   );
 
-  // Default: Soft glow + breathe + loading dots (professional, modern)
+  // Default: breathe + loading dots (professional, modern)
   if (variant === "default") {
     return (
       <div
         className={`relative flex flex-col items-center justify-center ${className}`}
         style={{ width: dimension * 2, height: dimension * 2.5 }}
       >
-        <SoftGlow />
         {renderLogo({
           animate: {
             scale: [1, 1.03, 1],
@@ -149,7 +122,6 @@ export function LogoLoader({ size = "md", variant = "default", className = "" }:
         className={`relative flex items-center justify-center ${className}`}
         style={{ width: dimension * 2, height: dimension * 2 }}
       >
-        <SoftGlow />
         {renderLogo({
           animate: {
             scale: [1, 1.05, 1],
@@ -213,10 +185,9 @@ export function LogoLoader({ size = "md", variant = "default", className = "" }:
     <div
       className={`relative flex items-center justify-center ${className}`}
       style={{ width: dimension * 2, height: dimension * 2 }}
-    >
-      <SoftGlow />
-      <ScanLine />
-      {renderLogo({
+      >
+        <ScanLine />
+        {renderLogo({
         animate: {
           scale: [1, 1.03, 1],
         },
