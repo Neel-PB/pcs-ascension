@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { useState, useMemo } from "react";
 import { Filter, Search } from "lucide-react";
 import { differenceInDays } from "date-fns";
@@ -6,16 +5,7 @@ import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import { useRequisitions } from "@/hooks/useRequisitions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { LogoLoader } from "@/components/ui/LogoLoader";
 import { Input } from "@/components/ui/input";
 import { RequisitionDetailsSheet } from "@/components/workforce/RequisitionDetailsSheet";
 import { RequisitionsFilterSheet } from "@/components/positions/RequisitionsFilterSheet";
@@ -202,31 +192,7 @@ export function RequisitionsTab({
     [commentCounts, handleRowClick]
   );
 
-  if (isLoading) {
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="space-y-3"
-      >
-        {[...Array(5)].map((_, i) => (
-          <Skeleton key={i} className="h-16 w-full" />
-        ))}
-      </motion.div>
-    );
-  }
-
-  if (!requisitions || requisitions.length === 0) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col items-center justify-center min-h-[400px] bg-muted/20 rounded-xl border border-border/50 p-12"
-      >
-        <p className="text-muted-foreground">No open requisitions found matching the filters.</p>
-      </motion.div>
-    );
-  }
+  const showEmptyState = !isLoading && (!requisitions || requisitions.length === 0);
 
   return (
     <div className="flex flex-col h-full">
@@ -269,17 +235,27 @@ export function RequisitionsTab({
         </div>
       </div>
 
-      <EditableTable
-        columns={columnsWithComments}
-        data={filteredAndSortedRequisitions}
-        getRowId={(row) => row.id}
-        sortField={sortColumn}
-        sortDirection={sortDirection}
-        onSort={handleSort}
-        onRowClick={handleRowClick}
-        storeNamespace="requisitions-columns"
-        className="flex-1 min-h-0"
-      />
+      {isLoading ? (
+        <div className="flex-1 flex items-center justify-center min-h-[300px]">
+          <LogoLoader size="lg" />
+        </div>
+      ) : showEmptyState ? (
+        <div className="flex-1 flex flex-col items-center justify-center min-h-[300px] bg-muted/20 rounded-xl border border-border/50">
+          <p className="text-muted-foreground">No open requisitions found matching the filters.</p>
+        </div>
+      ) : (
+        <EditableTable
+          columns={columnsWithComments}
+          data={filteredAndSortedRequisitions}
+          getRowId={(row) => row.id}
+          sortField={sortColumn}
+          sortDirection={sortDirection}
+          onSort={handleSort}
+          onRowClick={handleRowClick}
+          storeNamespace="requisitions-columns"
+          className="flex-1 min-h-0"
+        />
+      )}
 
       <RequisitionDetailsSheet
         open={sheetOpen}
