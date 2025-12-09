@@ -58,10 +58,17 @@ export default function PositionsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <>
       <WorkforceDrawerTrigger />
       <WorkforceDrawer activeTab={activeTab} />
-        <div className="py-2">
+      
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="flex flex-col h-full space-y-6"
+      >
+        <div className="flex-shrink-0 py-2">
           <FilterBar
             selectedRegion={selectedRegion}
             selectedMarket={selectedMarket}
@@ -78,7 +85,7 @@ export default function PositionsPage() {
         </div>
 
         <LayoutGroup>
-          <div className="relative bg-background rounded-lg p-1 mb-6">
+          <div className="relative bg-background rounded-lg p-1 flex-shrink-0 mb-6">
             <div className="flex">
               {tabs.map((tab, index) => (
                 <motion.button
@@ -91,6 +98,9 @@ export default function PositionsPage() {
                   onClick={() => setActiveTab(tab.id)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
                   style={{ flex: 1 }}
                 >
                   {tab.label}
@@ -117,11 +127,11 @@ export default function PositionsPage() {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="flex-1 min-h-0 flex flex-col"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="flex-1 min-h-0 flex flex-col animate-fade-in"
           >
             {activeTab === "employees" && (
               <EmployeesTab
@@ -152,6 +162,7 @@ export default function PositionsPage() {
             )}
           </motion.div>
         </AnimatePresence>
-    </div>
+      </motion.div>
+    </>
   );
 }

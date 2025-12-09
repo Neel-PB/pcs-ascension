@@ -235,7 +235,12 @@ export function EmployeesTab({
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="flex flex-col h-full"
+    >
       <div className="flex justify-between items-center mb-4 gap-4 flex-shrink-0">
         <div className="relative w-full max-w-2xl">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -301,6 +306,6 @@ export function EmployeesTab({
         onClearFilters={clearFilters}
         activeFilterCount={activeFilterCount}
       />
-    </div>
+    </motion.div>
   );
 }
