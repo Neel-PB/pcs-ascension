@@ -21,7 +21,7 @@ export function ShellLayout({ children }: ShellLayoutProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background w-full">
+      <div className="h-screen bg-background w-full overflow-hidden">
         {/* Sidebar skeleton */}
         <div className="fixed left-0 top-0 z-50 h-screen border-r border-border bg-background" style={{ width: 'var(--sidebar-width)' }}>
           <div className="flex h-full flex-col">
@@ -50,7 +50,14 @@ export function ShellLayout({ children }: ShellLayoutProps) {
         </div>
 
         {/* Content skeleton */}
-        <div className="px-4 py-4" style={{ marginLeft: 'var(--sidebar-width)', marginTop: 'var(--header-height)' }}>
+        <div 
+          className="px-4 py-4 overflow-auto" 
+          style={{ 
+            marginLeft: 'var(--sidebar-width)', 
+            marginTop: 'var(--header-height)',
+            height: 'calc(100vh - var(--header-height))'
+          }}
+        >
           <div className="space-y-4">
             <Skeleton className="h-8 w-64" />
             <Skeleton className="h-64 w-full" />
@@ -61,11 +68,18 @@ export function ShellLayout({ children }: ShellLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-shell-elevated w-full">
+    <div className="h-screen bg-shell-elevated w-full overflow-hidden">
       <DynamicIconOnlySidebar />
       <AppHeader />
       
-      <main className="px-4 py-4 bg-shell-elevated" style={{ marginLeft: 'var(--sidebar-width)', marginTop: 'var(--header-height)' }}>
+      <main 
+        className="px-4 py-4 bg-shell-elevated overflow-auto" 
+        style={{ 
+          marginLeft: 'var(--sidebar-width)', 
+          marginTop: 'var(--header-height)',
+          height: 'calc(100vh - var(--header-height))'
+        }}
+      >
         {children}
       </main>
     </div>
