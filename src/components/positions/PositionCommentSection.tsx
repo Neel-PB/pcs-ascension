@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Loader2, Pencil, Trash2, ArrowUp, MessageSquare, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -37,38 +37,6 @@ export function PositionCommentSection({ positionId }: PositionCommentSectionPro
       setCurrentUserId(data.user?.id || null);
     });
   });
-
-  // Group consecutive comments by the same user
-  const groupedComments = useMemo(() => {
-    if (!comments) return [];
-    
-    const groups: Array<{
-      userId: string;
-      displayName: string;
-      avatarUrl: string | null;
-      comments: typeof comments;
-    }> = [];
-
-    comments.forEach((comment) => {
-      const lastGroup = groups[groups.length - 1];
-      const displayName = comment.profiles
-        ? `${comment.profiles.first_name || ""} ${comment.profiles.last_name || ""}`.trim() || "Unknown User"
-        : "Unknown User";
-      
-      if (lastGroup && lastGroup.userId === comment.user_id) {
-        lastGroup.comments.push(comment);
-      } else {
-        groups.push({
-          userId: comment.user_id,
-          displayName,
-          avatarUrl: comment.profiles?.avatar_url || null,
-          comments: [comment],
-        });
-      }
-    });
-
-    return groups;
-  }, [comments]);
 
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
@@ -139,103 +107,102 @@ export function PositionCommentSection({ positionId }: PositionCommentSectionPro
             </div>
           )}
 
-          {/* Grouped Comments - AI Hub Style */}
-          {groupedComments.map((group, groupIndex) => {
-            const isOwner = currentUserId === group.userId;
+          {/* Individual Comments - AI Hub Style */}
+          {comments?.map((comment) => {
+            const isOwner = currentUserId === comment.user_id;
+            const displayName = comment.profiles
+              ? `${comment.profiles.first_name || ""} ${comment.profiles.last_name || ""}`.trim() || "Unknown User"
+              : "Unknown User";
 
             return (
-              <div key={groupIndex} className="space-y-2">
-                {/* Author label - appears once per group */}
+              <div key={comment.id} className="space-y-1">
+                {/* Author label */}
                 <div className="text-xs font-medium text-muted-foreground">
-                  {group.displayName}
+                  {displayName}
                 </div>
 
-                {/* Messages in this group */}
-                <div className="space-y-2">
-                  {group.comments.map((comment) => (
-                    <div key={comment.id} className="group flex items-start gap-2">
-                      {editingId === comment.id ? (
-                        <div className="flex-1 space-y-3">
-                          <Textarea
-                            value={editContent}
-                            onChange={(e) => setEditContent(e.target.value)}
-                            className="min-h-[80px] resize-none"
-                          />
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              onClick={() => handleUpdateComment(comment.id)}
-                              disabled={updateComment.isPending}
-                            >
-                              Save
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={cancelEditing}
-                            >
-                              Cancel
-                            </Button>
-                          </div>
+                {/* Message with actions */}
+                <div className="group flex items-start gap-2">
+                  {editingId === comment.id ? (
+                    <div className="flex-1 space-y-3">
+                      <Textarea
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        className="min-h-[80px] resize-none"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleUpdateComment(comment.id)}
+                          disabled={updateComment.isPending}
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={cancelEditing}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Message Bubble */}
+                      <div className="max-w-[85%]">
+                        <div className="bg-muted px-4 py-3 rounded-2xl rounded-bl-sm">
+                          <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                            {comment.content}
+                          </p>
                         </div>
-                      ) : (
-                        <>
-                          {/* Message Bubble */}
-                          <div className="max-w-[85%]">
-                            <div className="bg-muted px-4 py-3 rounded-2xl rounded-bl-sm">
-                              <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
-                                {comment.content}
-                              </p>
-                            </div>
-                          </div>
+                      </div>
 
-                          {/* Actions: Copy + Edit/Delete */}
-                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity pt-2">
-                            {/* Timestamp on hover */}
-                            <span className="text-xs text-muted-foreground mr-1">
-                              {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
-                            </span>
+                      {/* Actions: Copy + Edit/Delete */}
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity pt-2">
+                        {/* Timestamp on hover */}
+                        <span className="text-xs text-muted-foreground mr-1">
+                          {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                        </span>
 
-                            {/* Copy button - always available */}
+                        {/* Copy button */}
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 hover:bg-accent"
+                          onClick={() => handleCopyComment(comment.id, comment.content)}
+                        >
+                          {copiedId === comment.id ? (
+                            <Check className="h-3.5 w-3.5 text-primary" />
+                          ) : (
+                            <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                          )}
+                        </Button>
+
+                        {/* Edit/Delete - only for owner */}
+                        {isOwner && (
+                          <>
                             <Button
                               size="icon"
                               variant="ghost"
                               className="h-7 w-7 hover:bg-accent"
-                              onClick={() => handleCopyComment(comment.id, comment.content)}
+                              onClick={() => startEditing(comment.id, comment.content)}
                             >
-                              {copiedId === comment.id ? (
-                                <Check className="h-3.5 w-3.5 text-primary" />
-                              ) : (
-                                <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                              )}
+                              <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                             </Button>
-
-                            {/* Edit/Delete - only for owner */}
-                            {isOwner && (
-                              <>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-7 w-7 hover:bg-accent"
-                                  onClick={() => startEditing(comment.id, comment.content)}
-                                >
-                                  <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                                </Button>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-7 w-7 hover:bg-destructive/10"
-                                  onClick={() => handleDeleteComment(comment.id)}
-                                >
-                                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ))}
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 hover:bg-destructive/10"
+                              onClick={() => handleDeleteComment(comment.id)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             );
