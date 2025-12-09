@@ -135,6 +135,10 @@ Modern enterprise shell with clean aesthetics and accessibility
     @apply border-border;
   }
 
+  html, body {
+    @apply overflow-hidden h-full;
+  }
+
   body {
     @apply bg-background text-foreground font-sans;
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
