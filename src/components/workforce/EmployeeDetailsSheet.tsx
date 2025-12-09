@@ -1,13 +1,12 @@
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
+  SheetFooter,
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PositionCommentSection } from "@/components/positions/PositionCommentSection";
 
@@ -26,132 +25,148 @@ export function EmployeeDetailsSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-xl flex h-full flex-col">
-        <SheetHeader>
-          <SheetTitle className="text-2xl">{employee.employeeName}</SheetTitle>
-          <SheetDescription>
+      <SheetContent 
+        className="w-full sm:max-w-xl flex h-full flex-col p-0" 
+        hideCloseButton
+      >
+        {/* Fixed Header */}
+        <div className="flex flex-col px-6 py-4 border-b bg-background" style={{ minHeight: 'var(--header-height)' }}>
+          <h2 className="text-xl font-semibold text-foreground">{employee.employeeName}</h2>
+          <p className="text-sm text-muted-foreground">
             {employee.jobTitle} • Position #{employee.positionNum}
-          </SheetDescription>
-        </SheetHeader>
+          </p>
+        </div>
 
+        {/* Content Area */}
         <Tabs defaultValue="details" className="flex flex-col flex-1 min-h-0">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="comments">Comments</TabsTrigger>
-          </TabsList>
+          <div className="px-6 pt-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="comments">Comments</TabsTrigger>
+            </TabsList>
+          </div>
 
-          <TabsContent value="details" className="flex-1">
-            <div className="space-y-6 pb-6">
-              {/* Status */}
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-2">Status</h3>
-                <Badge variant={employee.payrollStatus === "Active" ? "default" : "secondary"}>
-                  {employee.payrollStatus || "Unknown"}
-                </Badge>
-              </div>
+          <TabsContent value="details" className="flex-1 min-h-0 mt-0">
+            <ScrollArea className="h-full">
+              <div className="space-y-6 px-6 py-4">
+                {/* Status */}
+                <div>
+                  <h3 className="text-base font-semibold text-foreground mb-3">Status</h3>
+                  <Badge variant={employee.payrollStatus === "Active" ? "default" : "secondary"}>
+                    {employee.payrollStatus || "Unknown"}
+                  </Badge>
+                </div>
 
-              <Separator />
+                <Separator />
 
-              {/* Position Information */}
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3">Position Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Job Title</p>
-                    <p className="text-sm font-medium">{employee.jobTitle || "—"}</p>
+                {/* Position Information */}
+                <div>
+                  <h3 className="text-base font-semibold text-foreground mb-4">Position Information</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Job Title</p>
+                      <p className="text-sm font-medium text-foreground">{employee.jobTitle || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Job Code</p>
+                      <p className="text-sm font-medium text-foreground">{employee.jobcode || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Job Family</p>
+                      <p className="text-sm font-medium text-foreground">{employee.jobFamily || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">FTE</p>
+                      <p className="text-sm font-medium text-foreground">{employee.FTE || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Shift</p>
+                      <p className="text-sm font-medium text-foreground">{employee.shift || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Standard Hours</p>
+                      <p className="text-sm font-medium text-foreground">{employee.standardHours || "—"}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Job Code</p>
-                    <p className="text-sm font-medium">{employee.jobcode || "—"}</p>
+                </div>
+
+                <Separator />
+
+                {/* Employment Details */}
+                <div>
+                  <h3 className="text-base font-semibold text-foreground mb-4">Employment Details</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Employee Type</p>
+                      <p className="text-sm font-medium text-foreground">{employee.employeeType || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Employment Type</p>
+                      <p className="text-sm font-medium text-foreground">{employee.employmentType || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Employment Flag</p>
+                      <p className="text-sm font-medium text-foreground">{employee.employmentFlag || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Employee ID</p>
+                      <p className="text-sm font-medium text-foreground">{employee.employeeId || "—"}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Job Family</p>
-                    <p className="text-sm font-medium">{employee.jobFamily || "—"}</p>
+                </div>
+
+                <Separator />
+
+                {/* Location */}
+                <div>
+                  <h3 className="text-base font-semibold text-foreground mb-4">Location</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Market</p>
+                      <p className="text-sm font-medium text-foreground">{employee.market || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Facility</p>
+                      <p className="text-sm font-medium text-foreground">{employee.facilityName || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Department</p>
+                      <p className="text-sm font-medium text-foreground">{employee.departmentName || "—"}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">FTE</p>
-                    <p className="text-sm font-medium">{employee.FTE || "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Shift</p>
-                    <p className="text-sm font-medium">{employee.shift || "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Standard Hours</p>
-                    <p className="text-sm font-medium">{employee.standardHours || "—"}</p>
+                </div>
+
+                <Separator />
+
+                {/* Manager Information */}
+                <div>
+                  <h3 className="text-base font-semibold text-foreground mb-4">Manager</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Manager Name</p>
+                      <p className="text-sm font-medium text-foreground">{employee.managerName || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Manager Employee ID</p>
+                      <p className="text-sm font-medium text-foreground">{employee.managerEmployeeId || "—"}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-
-              <Separator />
-
-              {/* Employment Details */}
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3">Employment Details</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Employee Type</p>
-                    <p className="text-sm font-medium">{employee.employeeType || "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Employment Type</p>
-                    <p className="text-sm font-medium">{employee.employmentType || "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Employment Flag</p>
-                    <p className="text-sm font-medium">{employee.employmentFlag || "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Employee ID</p>
-                    <p className="text-sm font-medium">{employee.employeeId || "—"}</p>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Location */}
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3">Location</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Market</p>
-                    <p className="text-sm font-medium">{employee.market || "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Facility</p>
-                    <p className="text-sm font-medium">{employee.facilityName || "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Department</p>
-                    <p className="text-sm font-medium">{employee.departmentName || "—"}</p>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Manager Information */}
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3">Manager</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Manager Name</p>
-                    <p className="text-sm font-medium">{employee.managerName || "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Manager Employee ID</p>
-                    <p className="text-sm font-medium">{employee.managerEmployeeId || "—"}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            </ScrollArea>
           </TabsContent>
 
-          <TabsContent value="comments" className="flex-1 min-h-0 flex flex-col">
+          <TabsContent value="comments" className="flex-1 min-h-0 flex flex-col px-6">
             <PositionCommentSection positionId={employee.id} />
           </TabsContent>
         </Tabs>
+
+        {/* Fixed Footer */}
+        <SheetFooter className="border-t px-6 py-4 bg-background">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full">
+            Close
+          </Button>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );

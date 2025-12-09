@@ -1,13 +1,12 @@
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
+  SheetFooter,
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PositionCommentSection } from "@/components/positions/PositionCommentSection";
 
@@ -26,80 +25,96 @@ export function PositionToOpenDetailsSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-xl flex h-full flex-col">
-        <SheetHeader>
-          <SheetTitle className="text-2xl">Position to Open</SheetTitle>
-          <SheetDescription>
+      <SheetContent 
+        className="w-full sm:max-w-xl flex h-full flex-col p-0" 
+        hideCloseButton
+      >
+        {/* Fixed Header */}
+        <div className="flex flex-col px-6 py-4 border-b bg-background" style={{ minHeight: 'var(--header-height)' }}>
+          <h2 className="text-xl font-semibold text-foreground">Position to Open</h2>
+          <p className="text-sm text-muted-foreground">
             {position.skill_type} (Skill Type) • FTE: {position.fte}
-          </SheetDescription>
-        </SheetHeader>
+          </p>
+        </div>
 
+        {/* Content Area */}
         <Tabs defaultValue="details" className="flex flex-col flex-1 min-h-0">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="comments">Comments</TabsTrigger>
-          </TabsList>
+          <div className="px-6 pt-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="comments">Comments</TabsTrigger>
+            </TabsList>
+          </div>
 
-          <TabsContent value="details" className="flex-1">
-            <div className="space-y-6 pb-6">
-              {/* Status */}
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-2">Status</h3>
-                <div className="flex items-center gap-2">
-                  <Badge variant={position.status === "approved" ? "default" : position.status === "rejected" ? "destructive" : "secondary"}>
-                    {position.status}
-                  </Badge>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Position Information */}
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3">Position Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Skill Type</p>
-                    <p className="text-sm font-medium">{position.skill_type || "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">FTE</p>
-                    <p className="text-sm font-medium">{position.fte || "—"}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-xs text-muted-foreground">Reason to Open</p>
-                    <p className="text-sm font-medium">{position.reason_to_open || "—"}</p>
+          <TabsContent value="details" className="flex-1 min-h-0 mt-0">
+            <ScrollArea className="h-full">
+              <div className="space-y-6 px-6 py-4">
+                {/* Status */}
+                <div>
+                  <h3 className="text-base font-semibold text-foreground mb-3">Status</h3>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={position.status === "approved" ? "default" : position.status === "rejected" ? "destructive" : "secondary"}>
+                      {position.status}
+                    </Badge>
                   </div>
                 </div>
-              </div>
 
-              <Separator />
+                <Separator />
 
-              {/* Location */}
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3">Location</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Market</p>
-                    <p className="text-sm font-medium">{position.market || "—"}</p>
+                {/* Position Information */}
+                <div>
+                  <h3 className="text-base font-semibold text-foreground mb-4">Position Information</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Skill Type</p>
+                      <p className="text-sm font-medium text-foreground">{position.skill_type || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">FTE</p>
+                      <p className="text-sm font-medium text-foreground">{position.fte || "—"}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-xs text-muted-foreground mb-1">Reason to Open</p>
+                      <p className="text-sm font-medium text-foreground">{position.reason_to_open || "—"}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Facility</p>
-                    <p className="text-sm font-medium">{position.facility_name || "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Department</p>
-                    <p className="text-sm font-medium">{position.department_name || "—"}</p>
+                </div>
+
+                <Separator />
+
+                {/* Location */}
+                <div>
+                  <h3 className="text-base font-semibold text-foreground mb-4">Location</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Market</p>
+                      <p className="text-sm font-medium text-foreground">{position.market || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Facility</p>
+                      <p className="text-sm font-medium text-foreground">{position.facility_name || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Department</p>
+                      <p className="text-sm font-medium text-foreground">{position.department_name || "—"}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </ScrollArea>
           </TabsContent>
 
-          <TabsContent value="comments" className="flex-1 min-h-0 flex flex-col">
+          <TabsContent value="comments" className="flex-1 min-h-0 flex flex-col px-6">
             <PositionCommentSection positionId={position.id} />
           </TabsContent>
         </Tabs>
+
+        {/* Fixed Footer */}
+        <SheetFooter className="border-t px-6 py-4 bg-background">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full">
+            Close
+          </Button>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );
