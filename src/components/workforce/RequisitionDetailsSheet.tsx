@@ -58,7 +58,7 @@ export function RequisitionDetailsSheet({
           </div>
 
           <TabsContent value="details" className="mt-0 overflow-auto">
-            <div className="space-y-6 px-6 py-4">
+            <div className="space-y-6 px-6 py-6">
                 {/* Status & Vacancy Age */}
                 <div>
                   <h3 className="text-base font-semibold text-foreground mb-3">Status</h3>
@@ -170,7 +170,7 @@ export function RequisitionDetailsSheet({
             </div>
           </TabsContent>
 
-          <TabsContent value="comments" className="flex-1 min-h-0 flex flex-col px-6">
+          <TabsContent value="comments" className="flex-1 min-h-0 flex flex-col px-6 py-0">
             <PositionCommentSection positionId={requisition.id} />
           </TabsContent>
         </Tabs>

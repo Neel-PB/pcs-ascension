@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Loader2, Pencil, Trash2, ArrowUp } from "lucide-react";
+import { Loader2, Pencil, Trash2, Send, MessageSquare } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   usePositionComments,
@@ -85,15 +84,21 @@ export function PositionCommentSection({ positionId }: PositionCommentSectionPro
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="flex h-full min-h-0 flex-col py-6">
       <ScrollArea className="flex-1 min-h-0 pr-4">
         <div className="space-y-4">
+          {/* Enhanced Empty State */}
           {comments && comments.length === 0 && (
-            <div className="text-center text-muted-foreground py-12">
-              <p>No comments yet. Be the first to comment!</p>
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted mb-4">
+                <MessageSquare className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <p className="text-base font-medium text-foreground">No comments yet</p>
+              <p className="text-sm text-muted-foreground mt-1">Be the first to share your thoughts</p>
             </div>
           )}
 
+          {/* Premium Comment Bubbles */}
           {comments?.map((comment) => {
             const isOwner = currentUserId === comment.user_id;
             const displayName = comment.profiles
@@ -101,50 +106,31 @@ export function PositionCommentSection({ positionId }: PositionCommentSectionPro
               : "Unknown User";
 
             return (
-              <div key={comment.id} className="flex gap-3 group">
-                <Avatar className="h-8 w-8 shrink-0">
-                  <AvatarImage src={comment.profiles?.avatar_url || ""} />
-                  <AvatarFallback>
-                    {displayName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
-                  </AvatarFallback>
-                </Avatar>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="font-medium text-sm truncate">{displayName}</span>
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
-                      </span>
-                    </div>
-                    {isOwner && editingId !== comment.id && (
-                      <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 w-6 p-0"
-                          onClick={() => startEditing(comment.id, comment.content)}
-                        >
-                          <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 w-6 p-0"
-                          onClick={() => handleDeleteComment(comment.id)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                        </Button>
-                      </div>
-                    )}
+              <div key={comment.id} className="group">
+                {/* Header: Avatar + Name + Timestamp */}
+                <div className="flex items-center gap-3 mb-2">
+                  <Avatar className="h-8 w-8 ring-2 ring-background shadow-sm">
+                    <AvatarImage src={comment.profiles?.avatar_url || ""} />
+                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+                      {displayName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <span className="font-semibold text-sm text-foreground">{displayName}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                    </span>
                   </div>
+                </div>
 
+                {/* Message Bubble + Actions */}
+                <div className="flex items-start gap-2 ml-11">
                   {editingId === comment.id ? (
-                    <div className="space-y-2 mt-1">
+                    <div className="flex-1 space-y-3">
                       <Textarea
                         value={editContent}
                         onChange={(e) => setEditContent(e.target.value)}
-                        className="min-h-[60px]"
+                        className="min-h-[80px] resize-none"
                       />
                       <div className="flex gap-2">
                         <Button
@@ -164,7 +150,35 @@ export function PositionCommentSection({ positionId }: PositionCommentSectionPro
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm whitespace-pre-wrap mt-1">{comment.content}</p>
+                    <>
+                      <div className="flex-1 bg-muted/40 rounded-xl rounded-tl-sm px-4 py-3">
+                        <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                          {comment.content}
+                        </p>
+                      </div>
+                      
+                      {/* Edit/Delete Actions */}
+                      {isOwner && (
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity pt-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 w-7 p-0 hover:bg-muted"
+                            onClick={() => startEditing(comment.id, comment.content)}
+                          >
+                            <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 w-7 p-0 hover:bg-destructive/10"
+                            onClick={() => handleDeleteComment(comment.id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
+                          </Button>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
@@ -173,31 +187,38 @@ export function PositionCommentSection({ positionId }: PositionCommentSectionPro
         </div>
       </ScrollArea>
 
-      <div className="pt-4 border-t">
-        <div className="relative">
-          <Input
+      {/* Elevated Textarea Input */}
+      <div className="pt-4 border-t mt-4">
+        <div className="bg-muted/20 rounded-xl p-3">
+          <Textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Write a comment..."
-            className="pr-12"
+            className="min-h-[80px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
             onKeyDown={(e) => {
               if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                 handleAddComment();
               }
             }}
           />
-          <Button
-            onClick={handleAddComment}
-            disabled={!newComment.trim() || addComment.isPending}
-            size="icon"
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full"
-          >
-            {addComment.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <ArrowUp className="h-4 w-4" />
-            )}
-          </Button>
+          <div className="flex items-center justify-between mt-3">
+            <span className="text-xs text-muted-foreground">⌘ + Enter to send</span>
+            <Button
+              onClick={handleAddComment}
+              disabled={!newComment.trim() || addComment.isPending}
+              size="sm"
+              className="gap-2"
+            >
+              {addComment.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <span>Send</span>
+                  <Send className="h-3.5 w-3.5" />
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
