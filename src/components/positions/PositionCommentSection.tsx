@@ -148,60 +148,63 @@ export function PositionCommentSection({ positionId }: PositionCommentSectionPro
                       </div>
                     </div>
                   ) : (
-                    <>
-                      {/* Message Bubble */}
-                      <div className="max-w-[85%]">
-                        <div className="bg-muted px-4 py-3 rounded-2xl rounded-bl-sm">
-                          <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
-                            {comment.content}
-                          </p>
+                    <div className="space-y-1">
+                      {/* Message row with copy button only */}
+                      <div className="flex items-start gap-2">
+                        {/* Message Bubble */}
+                        <div className="max-w-[85%]">
+                          <div className="bg-muted px-4 py-3 rounded-2xl rounded-bl-sm">
+                            <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                              {comment.content}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Copy button only - on hover */}
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity pt-2">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 hover:bg-accent"
+                            onClick={() => handleCopyComment(comment.id, comment.content)}
+                          >
+                            {copiedId === comment.id ? (
+                              <Check className="h-3.5 w-3.5 text-primary" />
+                            ) : (
+                              <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                            )}
+                          </Button>
                         </div>
                       </div>
 
-                      {/* Actions: Copy + Edit/Delete */}
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity pt-2">
-                        {/* Timestamp on hover */}
-                        <span className="text-xs text-muted-foreground mr-1">
+                      {/* Below bubble: Timestamp + Edit/Delete */}
+                      <div className="flex items-center gap-2 pl-1">
+                        <span className="text-xs text-muted-foreground">
                           {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
                         </span>
-
-                        {/* Copy button */}
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-7 w-7 hover:bg-accent"
-                          onClick={() => handleCopyComment(comment.id, comment.content)}
-                        >
-                          {copiedId === comment.id ? (
-                            <Check className="h-3.5 w-3.5 text-primary" />
-                          ) : (
-                            <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                          )}
-                        </Button>
-
-                        {/* Edit/Delete - only for owner */}
+                        
                         {isOwner && (
-                          <>
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="h-7 w-7 hover:bg-accent"
+                              className="h-6 w-6 hover:bg-accent"
                               onClick={() => startEditing(comment.id, comment.content)}
                             >
-                              <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                              <Pencil className="h-3 w-3 text-muted-foreground" />
                             </Button>
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="h-7 w-7 hover:bg-destructive/10"
+                              className="h-6 w-6 hover:bg-destructive/10"
                               onClick={() => handleDeleteComment(comment.id)}
                             >
-                              <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
+                              <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
                             </Button>
-                          </>
+                          </div>
                         )}
                       </div>
-                    </>
+                    </div>
                   )}
                 </div>
               </div>
