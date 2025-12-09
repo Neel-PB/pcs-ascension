@@ -62,8 +62,8 @@ export default function PositionsPage() {
       <WorkforceDrawerTrigger />
       <WorkforceDrawer activeTab={activeTab} />
       
-      <div className="space-y-6">
-        <div className="py-2">
+      <div className="flex flex-col h-full">
+        <div className="py-2 flex-shrink-0">
           <FilterBar
             selectedRegion={selectedRegion}
             selectedMarket={selectedMarket}
@@ -80,7 +80,7 @@ export default function PositionsPage() {
         </div>
 
         <LayoutGroup>
-          <div className="relative bg-background rounded-lg p-1 mb-6">
+          <div className="relative bg-background rounded-lg p-1 mb-4 flex-shrink-0">
             <div className="flex">
               {tabs.map((tab, index) => (
                 <motion.button
@@ -126,7 +126,7 @@ export default function PositionsPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="space-y-6 animate-fade-in"
+            className="flex-1 min-h-0 flex flex-col"
           >
             {activeTab === "employees" && (
               <EmployeesTab

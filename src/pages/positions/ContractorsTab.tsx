@@ -233,8 +233,9 @@ export function ContractorsTab({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
+      className="flex flex-col h-full"
     >
-      <div className="flex justify-between items-center mb-4 gap-4">
+      <div className="flex justify-between items-center mb-4 gap-4 flex-shrink-0">
         <div className="relative w-full max-w-2xl">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -282,7 +283,7 @@ export function ContractorsTab({
         onSort={handleSort}
         onRowClick={handleRowClick}
         storeNamespace="contractors-columns"
-        className="h-[calc(100vh-280px)]"
+        className="flex-1 min-h-0"
       />
 
       <ContractorDetailsSheet
