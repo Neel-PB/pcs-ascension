@@ -189,24 +189,29 @@ export function FilterBar({
         </Button>
       </motion.div>
 
-      {/* SEPARATOR */}
-      <div className="h-8 w-px bg-border" />
+      {/* SEPARATOR - stronger visual break */}
+      <div className="h-10 w-px bg-border mx-4" />
 
-      {/* RIGHT GROUP: Independent Department Family Filter */}
-      <Select 
-        value={selectedDepartmentFamily} 
-        onValueChange={onDepartmentFamilyChange}
-      >
-        <SelectTrigger className="w-[220px] bg-background border-border">
-          <SelectValue placeholder="Select dept family" />
-        </SelectTrigger>
-        <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
-          <SelectItem value="all-dept-families">All Dept Families</SelectItem>
-          {departmentFamilies.map(family => (
-            <SelectItem key={family} value={family}>{family}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {/* RIGHT GROUP: Optional Department Family Filter */}
+      <div className="flex flex-col items-start gap-1">
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium">
+          Optional
+        </span>
+        <Select 
+          value={selectedDepartmentFamily} 
+          onValueChange={onDepartmentFamilyChange}
+        >
+          <SelectTrigger className="w-[200px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
+            <SelectValue placeholder="Dept Family" />
+          </SelectTrigger>
+          <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
+            <SelectItem value="all-dept-families">All Dept Families</SelectItem>
+            {departmentFamilies.map(family => (
+              <SelectItem key={family} value={family}>{family}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   );
 }
