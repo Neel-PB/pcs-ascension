@@ -106,15 +106,14 @@ export function LogoLoader({ size = "md", variant = "default", className = "" }:
     </motion.div>
   );
 
-  // Default: Scan line + subtle breathe (professional, modern)
+  // Default: Soft glow + breathe + loading dots (professional, modern)
   if (variant === "default") {
     return (
       <div
-        className={`relative flex items-center justify-center ${className}`}
-        style={{ width: dimension * 2, height: dimension * 2 }}
+        className={`relative flex flex-col items-center justify-center ${className}`}
+        style={{ width: dimension * 2, height: dimension * 2.5 }}
       >
         <SoftGlow />
-        <ScanLine />
         {renderLogo({
           animate: {
             scale: [1, 1.03, 1],
@@ -125,6 +124,7 @@ export function LogoLoader({ size = "md", variant = "default", className = "" }:
             ease: "easeInOut",
           },
         })}
+        <LoadingDots />
       </div>
     );
   }
