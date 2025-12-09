@@ -1,10 +1,8 @@
 import {
   Sheet,
   SheetContent,
-  SheetFooter,
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { differenceInDays, format } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PositionCommentSection } from "@/components/positions/PositionCommentSection";
@@ -59,7 +57,7 @@ export function RequisitionDetailsSheet({
           <TabsContent value="details" className="mt-5 overflow-auto">
             <div className="space-y-4 px-6 pb-6">
               {/* Status & Vacancy Age */}
-              <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+              <div className="bg-muted/50 rounded-xl p-4 space-y-3">
                 <h3 className="text-sm font-semibold text-foreground">Status</h3>
                 <div className="flex gap-2 flex-wrap">
                   <Badge variant={getVacancyBadgeVariant(vacancyAge)}>
@@ -72,7 +70,7 @@ export function RequisitionDetailsSheet({
               </div>
 
               {/* Position Information */}
-              <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+              <div className="bg-muted/50 rounded-xl p-4 space-y-3">
                 <h3 className="text-sm font-semibold text-foreground">Position Information</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -103,7 +101,7 @@ export function RequisitionDetailsSheet({
               </div>
 
               {/* Employment Details */}
-              <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+              <div className="bg-muted/50 rounded-xl p-4 space-y-3">
                 <h3 className="text-sm font-semibold text-foreground">Employment Details</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -126,7 +124,7 @@ export function RequisitionDetailsSheet({
               </div>
 
               {/* Location */}
-              <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+              <div className="bg-muted/50 rounded-xl p-4 space-y-3">
                 <h3 className="text-sm font-semibold text-foreground">Location</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -145,7 +143,7 @@ export function RequisitionDetailsSheet({
               </div>
 
               {/* Manager Information */}
-              <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+              <div className="bg-muted/50 rounded-xl p-4 space-y-3">
                 <h3 className="text-sm font-semibold text-foreground">Manager</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -162,16 +160,9 @@ export function RequisitionDetailsSheet({
           </TabsContent>
 
           <TabsContent value="comments" className="flex-1 min-h-0 flex flex-col px-6 py-0">
-            <PositionCommentSection positionId={requisition.id} />
+            <PositionCommentSection positionId={requisition.id} onClose={() => onOpenChange(false)} />
           </TabsContent>
         </Tabs>
-
-        {/* Fixed Footer */}
-        <SheetFooter className="border-t px-6 py-4 bg-background flex justify-end">
-          <Button variant="ascension" onClick={() => onOpenChange(false)} className="px-6">
-            Close
-          </Button>
-        </SheetFooter>
       </SheetContent>
     </Sheet>
   );

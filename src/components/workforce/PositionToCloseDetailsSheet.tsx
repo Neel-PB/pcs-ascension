@@ -1,10 +1,8 @@
 import {
   Sheet,
   SheetContent,
-  SheetFooter,
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PositionCommentSection } from "@/components/positions/PositionCommentSection";
 import { useEmployeesForClosureGap } from "@/hooks/useForecastPositions";
@@ -59,7 +57,7 @@ export function PositionToCloseDetailsSheet({
           <TabsContent value="details" className="mt-5 overflow-auto">
             <div className="space-y-4 px-6 pb-6">
               {/* Status */}
-              <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+              <div className="bg-muted/50 rounded-xl p-4 space-y-3">
                 <h3 className="text-sm font-semibold text-foreground">Status</h3>
                 <div className="flex items-center gap-2">
                   <Badge variant={position.status === "approved" ? "default" : position.status === "rejected" ? "destructive" : "secondary"}>
@@ -69,7 +67,7 @@ export function PositionToCloseDetailsSheet({
               </div>
 
               {/* Position Information */}
-              <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+              <div className="bg-muted/50 rounded-xl p-4 space-y-3">
                 <h3 className="text-sm font-semibold text-foreground">Position Information</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -88,7 +86,7 @@ export function PositionToCloseDetailsSheet({
               </div>
 
               {/* Location */}
-              <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+              <div className="bg-muted/50 rounded-xl p-4 space-y-3">
                 <h3 className="text-sm font-semibold text-foreground">Location</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -108,7 +106,7 @@ export function PositionToCloseDetailsSheet({
 
               {/* Selected Employees */}
               {employees && employees.length > 0 && (
-                <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+                <div className="bg-muted/50 rounded-xl p-4 space-y-3">
                   <h3 className="text-sm font-semibold text-foreground">Selected Employees</h3>
                   <div className="space-y-2">
                     {employees.map((emp: any) => (
@@ -131,16 +129,9 @@ export function PositionToCloseDetailsSheet({
           </TabsContent>
 
           <TabsContent value="comments" className="flex-1 min-h-0 flex flex-col px-6 py-0">
-            <PositionCommentSection positionId={position.id} />
+            <PositionCommentSection positionId={position.id} onClose={() => onOpenChange(false)} />
           </TabsContent>
         </Tabs>
-
-        {/* Fixed Footer */}
-        <SheetFooter className="border-t px-6 py-4 bg-background flex justify-end">
-          <Button variant="ascension" onClick={() => onOpenChange(false)} className="px-6">
-            Close
-          </Button>
-        </SheetFooter>
       </SheetContent>
     </Sheet>
   );
