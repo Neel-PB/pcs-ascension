@@ -62,7 +62,12 @@ export default function PositionsPage() {
       <WorkforceDrawerTrigger />
       <WorkforceDrawer activeTab={activeTab} />
       
-      <div className="flex flex-col h-full space-y-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="flex flex-col h-full space-y-6"
+      >
         <div className="flex-shrink-0 py-2">
           <FilterBar
             selectedRegion={selectedRegion}
@@ -157,7 +162,7 @@ export default function PositionsPage() {
             )}
           </motion.div>
         </AnimatePresence>
-      </div>
+      </motion.div>
     </>
   );
 }
