@@ -55,8 +55,12 @@ export function useEmployeeFeed() {
 
       return posts.map((post: any) => ({
         ...post,
+        author: post.author || { first_name: 'Unknown', last_name: 'User', avatar_url: undefined },
         likes: post.post_likes?.map((like: any) => like.user_id) || [],
-        comments: post.comments || [],
+        comments: (post.comments || []).map((comment: any) => ({
+          ...comment,
+          author: comment.author || { first_name: 'Unknown', last_name: 'User', avatar_url: undefined },
+        })),
       })) as Post[];
     },
   });
