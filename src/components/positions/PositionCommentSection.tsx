@@ -101,24 +101,46 @@ export function PositionCommentSection({ positionId }: PositionCommentSectionPro
               : "Unknown User";
 
             return (
-              <div key={comment.id} className="flex gap-3">
-                <Avatar className="h-8 w-8">
+              <div key={comment.id} className="flex gap-3 group">
+                <Avatar className="h-8 w-8 shrink-0">
                   <AvatarImage src={comment.profiles?.avatar_url || ""} />
                   <AvatarFallback>
                     {displayName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
                   </AvatarFallback>
                 </Avatar>
 
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm">{displayName}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
-                    </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="font-medium text-sm truncate">{displayName}</span>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                      </span>
+                    </div>
+                    {isOwner && editingId !== comment.id && (
+                      <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 w-6 p-0"
+                          onClick={() => startEditing(comment.id, comment.content)}
+                        >
+                          <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 w-6 p-0"
+                          onClick={() => handleDeleteComment(comment.id)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
 
                   {editingId === comment.id ? (
-                    <div className="space-y-2">
+                    <div className="space-y-2 mt-1">
                       <Textarea
                         value={editContent}
                         onChange={(e) => setEditContent(e.target.value)}
@@ -142,29 +164,7 @@ export function PositionCommentSection({ positionId }: PositionCommentSectionPro
                       </div>
                     </div>
                   ) : (
-                    <>
-                      <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
-                      {isOwner && (
-                        <div className="flex gap-2 pt-1">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 px-2"
-                            onClick={() => startEditing(comment.id, comment.content)}
-                          >
-                            <Pencil className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 px-2"
-                            onClick={() => handleDeleteComment(comment.id)}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      )}
-                    </>
+                    <p className="text-sm whitespace-pre-wrap mt-1">{comment.content}</p>
                   )}
                 </div>
               </div>
