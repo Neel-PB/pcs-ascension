@@ -63,7 +63,7 @@ export default function PositionsPage() {
       <WorkforceDrawer activeTab={activeTab} />
       
       <div className="flex flex-col h-full space-y-6">
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 py-2">
           <FilterBar
             selectedRegion={selectedRegion}
             selectedMarket={selectedMarket}
@@ -80,7 +80,7 @@ export default function PositionsPage() {
         </div>
 
         <LayoutGroup>
-          <div className="relative bg-background rounded-lg p-1 flex-shrink-0">
+          <div className="relative bg-background rounded-lg p-1 flex-shrink-0 mb-6">
             <div className="flex">
               {tabs.map((tab, index) => (
                 <motion.button
