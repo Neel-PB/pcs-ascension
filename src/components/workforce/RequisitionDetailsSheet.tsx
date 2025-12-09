@@ -5,7 +5,6 @@ import {
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { differenceInDays, format } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -58,9 +57,8 @@ export function RequisitionDetailsSheet({
             </TabsList>
           </div>
 
-          <TabsContent value="details" className="flex-1 min-h-0 mt-0 data-[state=active]:flex data-[state=active]:flex-col overflow-hidden">
-            <ScrollArea className="flex-1">
-              <div className="space-y-6 px-6 py-4">
+          <TabsContent value="details" className="mt-0 overflow-auto">
+            <div className="space-y-6 px-6 py-4">
                 {/* Status & Vacancy Age */}
                 <div>
                   <h3 className="text-base font-semibold text-foreground mb-3">Status</h3>
@@ -169,8 +167,7 @@ export function RequisitionDetailsSheet({
                     </div>
                   </div>
                 </div>
-              </div>
-            </ScrollArea>
+            </div>
           </TabsContent>
 
           <TabsContent value="comments" className="flex-1 min-h-0 flex flex-col px-6">
@@ -179,8 +176,8 @@ export function RequisitionDetailsSheet({
         </Tabs>
 
         {/* Fixed Footer */}
-        <SheetFooter className="border-t px-6 py-4 bg-background">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full">
+        <SheetFooter className="border-t px-6 py-4 bg-background flex justify-end">
+          <Button variant="ascension" onClick={() => onOpenChange(false)} className="px-6">
             Close
           </Button>
         </SheetFooter>
