@@ -58,8 +58,8 @@ export function RequisitionDetailsSheet({
             </TabsList>
           </div>
 
-          <TabsContent value="details" className="flex-1 min-h-0 mt-0">
-            <ScrollArea className="h-full">
+          <TabsContent value="details" className="flex-1 min-h-0 mt-0 data-[state=active]:flex data-[state=active]:flex-col overflow-hidden">
+            <ScrollArea className="flex-1">
               <div className="space-y-6 px-6 py-4">
                 {/* Status & Vacancy Age */}
                 <div>
