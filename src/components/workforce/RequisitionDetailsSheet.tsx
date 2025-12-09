@@ -4,7 +4,6 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { differenceInDays, format } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -50,123 +49,115 @@ export function RequisitionDetailsSheet({
 
         {/* Content Area */}
         <Tabs defaultValue="details" className="flex flex-col flex-1 min-h-0">
-          <div className="px-6 pt-4">
+          <div className="px-6 pt-3">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="comments">Comments</TabsTrigger>
             </TabsList>
           </div>
 
-          <TabsContent value="details" className="mt-0 overflow-auto">
-            <div className="space-y-6 px-6 py-6">
-                {/* Status & Vacancy Age */}
-                <div>
-                  <h3 className="text-base font-semibold text-foreground mb-3">Status</h3>
-                  <div className="flex gap-2 flex-wrap">
-                    <Badge variant={getVacancyBadgeVariant(vacancyAge)}>
-                      Vacancy Age: {vacancyAge} days
-                    </Badge>
-                    {requisition.positionStatus && (
-                      <Badge variant="outline">{requisition.positionStatus}</Badge>
-                    )}
+          <TabsContent value="details" className="mt-5 overflow-auto">
+            <div className="space-y-4 px-6 pb-6">
+              {/* Status & Vacancy Age */}
+              <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-foreground">Status</h3>
+                <div className="flex gap-2 flex-wrap">
+                  <Badge variant={getVacancyBadgeVariant(vacancyAge)}>
+                    Vacancy Age: {vacancyAge} days
+                  </Badge>
+                  {requisition.positionStatus && (
+                    <Badge variant="outline">{requisition.positionStatus}</Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Position Information */}
+              <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-foreground">Position Information</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Job Title</p>
+                    <p className="text-sm font-medium text-foreground">{requisition.jobTitle || "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Job Code</p>
+                    <p className="text-sm font-medium text-foreground">{requisition.jobcode || "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Job Family</p>
+                    <p className="text-sm font-medium text-foreground">{requisition.jobFamily || "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">FTE</p>
+                    <p className="text-sm font-medium text-foreground">{requisition.FTE || "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Position Number</p>
+                    <p className="text-sm font-medium text-foreground">{requisition.positionNum || "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Shift</p>
+                    <p className="text-sm font-medium text-foreground">{requisition.shift || "—"}</p>
                   </div>
                 </div>
+              </div>
 
-                <Separator />
-
-                {/* Position Information */}
-                <div>
-                  <h3 className="text-base font-semibold text-foreground mb-4">Position Information</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Job Title</p>
-                      <p className="text-sm font-medium text-foreground">{requisition.jobTitle || "—"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Job Code</p>
-                      <p className="text-sm font-medium text-foreground">{requisition.jobcode || "—"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Job Family</p>
-                      <p className="text-sm font-medium text-foreground">{requisition.jobFamily || "—"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">FTE</p>
-                      <p className="text-sm font-medium text-foreground">{requisition.FTE || "—"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Position Number</p>
-                      <p className="text-sm font-medium text-foreground">{requisition.positionNum || "—"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Shift</p>
-                      <p className="text-sm font-medium text-foreground">{requisition.shift || "—"}</p>
-                    </div>
+              {/* Employment Details */}
+              <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-foreground">Employment Details</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Employment Type</p>
+                    <p className="text-sm font-medium text-foreground">{requisition.employmentType || "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Standard Hours</p>
+                    <p className="text-sm font-medium text-foreground">{requisition.standardHours || "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Position Status Date</p>
+                    <p className="text-sm font-medium text-foreground">
+                      {requisition.positionStatusDate 
+                        ? format(new Date(requisition.positionStatusDate), "MMM dd, yyyy")
+                        : "—"}
+                    </p>
                   </div>
                 </div>
+              </div>
 
-                <Separator />
-
-                {/* Employment Details */}
-                <div>
-                  <h3 className="text-base font-semibold text-foreground mb-4">Employment Details</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Employment Type</p>
-                      <p className="text-sm font-medium text-foreground">{requisition.employmentType || "—"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Standard Hours</p>
-                      <p className="text-sm font-medium text-foreground">{requisition.standardHours || "—"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Position Status Date</p>
-                      <p className="text-sm font-medium text-foreground">
-                        {requisition.positionStatusDate 
-                          ? format(new Date(requisition.positionStatusDate), "MMM dd, yyyy")
-                          : "—"}
-                      </p>
-                    </div>
+              {/* Location */}
+              <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-foreground">Location</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Market</p>
+                    <p className="text-sm font-medium text-foreground">{requisition.market || "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Facility</p>
+                    <p className="text-sm font-medium text-foreground">{requisition.facilityName || "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Department</p>
+                    <p className="text-sm font-medium text-foreground">{requisition.departmentName || "—"}</p>
                   </div>
                 </div>
+              </div>
 
-                <Separator />
-
-                {/* Location */}
-                <div>
-                  <h3 className="text-base font-semibold text-foreground mb-4">Location</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Market</p>
-                      <p className="text-sm font-medium text-foreground">{requisition.market || "—"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Facility</p>
-                      <p className="text-sm font-medium text-foreground">{requisition.facilityName || "—"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Department</p>
-                      <p className="text-sm font-medium text-foreground">{requisition.departmentName || "—"}</p>
-                    </div>
+              {/* Manager Information */}
+              <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-foreground">Manager</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Manager Name</p>
+                    <p className="text-sm font-medium text-foreground">{requisition.managerName || "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Manager Position</p>
+                    <p className="text-sm font-medium text-foreground">{requisition.managerPositionNum || "—"}</p>
                   </div>
                 </div>
-
-                <Separator />
-
-                {/* Manager Information */}
-                <div>
-                  <h3 className="text-base font-semibold text-foreground mb-4">Manager</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Manager Name</p>
-                      <p className="text-sm font-medium text-foreground">{requisition.managerName || "—"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Manager Position</p>
-                      <p className="text-sm font-medium text-foreground">{requisition.managerPositionNum || "—"}</p>
-                    </div>
-                  </div>
-                </div>
+              </div>
             </div>
           </TabsContent>
 
