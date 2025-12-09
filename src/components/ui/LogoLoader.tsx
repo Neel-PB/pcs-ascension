@@ -48,20 +48,24 @@ export function LogoLoader({ size = "md", variant = "default", className = "" }:
     { x: -cornerOffset * 0.866, y: cornerOffset * 0.5 }, // Bottom left
   ];
 
-  // Ripple rings component for visibility on both themes
+  // Triangle clip-path for ripples and backdrop
+  const triangleClipPath = "polygon(50% 0%, 0% 100%, 100% 100%)";
+
+  // Ripple rings component - triangular shape for visibility on both themes
   const RippleRings = () => (
     <>
       {[0, 1, 2].map((i) => (
         <motion.div
           key={i}
-          className="absolute rounded-full border-2 border-primary"
+          className="absolute border-2 border-primary"
           style={{
-            width: dimension,
-            height: dimension,
+            width: dimension * 1.2,
+            height: dimension * 1.2,
             left: "50%",
             top: "50%",
-            marginLeft: -dimension / 2,
-            marginTop: -dimension / 2,
+            marginLeft: -(dimension * 1.2) / 2,
+            marginTop: -(dimension * 1.2) / 2 + dimension * 0.1,
+            clipPath: triangleClipPath,
           }}
           initial={{ scale: 0.8, opacity: 0.5 }}
           animate={{
@@ -79,17 +83,18 @@ export function LogoLoader({ size = "md", variant = "default", className = "" }:
     </>
   );
 
-  // Backdrop pulse for contrast on light backgrounds
+  // Backdrop pulse - triangular shape for contrast on light backgrounds
   const BackdropPulse = () => (
     <motion.div
-      className="absolute rounded-full bg-primary/15 dark:bg-primary/25"
+      className="absolute bg-primary/15 dark:bg-primary/25"
       style={{
         width: dimension * 1.6,
         height: dimension * 1.6,
         left: "50%",
         top: "50%",
         marginLeft: -(dimension * 1.6) / 2,
-        marginTop: -(dimension * 1.6) / 2,
+        marginTop: -(dimension * 1.6) / 2 + dimension * 0.1,
+        clipPath: triangleClipPath,
       }}
       animate={{
         scale: [1, 1.2, 1],
@@ -332,11 +337,11 @@ export function LogoLoader({ size = "md", variant = "default", className = "" }:
           }}
         >
           <motion.div
-            className="absolute inset-0 rounded-full"
+            className="absolute bg-primary/30"
             style={{
               width: dimension,
               height: dimension,
-              background: "radial-gradient(circle, hsl(var(--primary) / 0.4) 0%, transparent 70%)",
+              clipPath: triangleClipPath,
             }}
             animate={{
               scale: [1, 1.4, 1],
