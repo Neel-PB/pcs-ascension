@@ -52,7 +52,7 @@ export function EmployeeDetailsSheet({
 
           <TabsContent value="details" className="flex-1 min-h-0 !mt-0">
             <ScrollArea className="h-full">
-              <div className="space-y-4 px-6 pt-6 pb-4">
+              <div className="space-y-4 px-6 pt-3 pb-4">
               {/* Position Information */}
               <div className="bg-muted/50 rounded-xl p-4 space-y-3">
                 <h3 className="text-sm font-semibold text-foreground">Position Information</h3>
