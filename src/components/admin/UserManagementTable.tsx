@@ -23,6 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { LogoLoader } from "@/components/ui/LogoLoader";
 
 interface UserManagementTableProps {
   users: UserWithProfile[];
@@ -56,8 +57,8 @@ export function UserManagementTable({
   if (isLoading) {
     return (
       <div className="border rounded-lg">
-        <div className="p-8 text-center text-muted-foreground">
-          Loading users...
+        <div className="flex justify-center items-center py-12">
+          <LogoLoader size="lg" />
         </div>
       </div>
     );

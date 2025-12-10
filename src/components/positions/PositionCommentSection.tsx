@@ -12,7 +12,8 @@ const formatCommentTimestamp = (dateString: string) => {
     return format(date, "MMM d, yyyy");
   }
 };
-import { Loader2, Pencil, Trash2, ArrowUp, MessageSquare, Copy, Check, ChevronRight } from "lucide-react";
+import { Pencil, Trash2, ArrowUp, MessageSquare, Copy, Check, ChevronRight, Loader2 } from "lucide-react";
+import { LogoLoader } from "@/components/ui/LogoLoader";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import TextareaAutosize from "react-textarea-autosize";
@@ -100,7 +101,7 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <LogoLoader size="md" />
       </div>
     );
   }

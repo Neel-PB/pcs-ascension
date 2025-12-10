@@ -7,6 +7,7 @@ import { useRBAC } from "@/hooks/useRBAC";
 import { OrganizationSwitcher } from "@/components/layout/OrganizationSwitcher";
 import { InboxBadge } from "@/components/inbox/InboxBadge";
 import { useDynamicSidebar, type DynamicMenuGroup } from "@/hooks/useDynamicSidebar";
+import { LogoLoader } from "@/components/ui/LogoLoader";
 
 interface ModuleItemProps {
   module: DynamicMenuGroup;
@@ -99,7 +100,7 @@ export function DynamicIconOnlySidebar() {
   if (isLoading || rbacLoading) {
     return (
       <div className="fixed left-0 top-0 z-50 h-screen border-r bg-background flex items-center justify-center" style={{ width: 'var(--sidebar-width)' }}>
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+        <LogoLoader size="sm" variant="pulse" />
       </div>
     );
   }
