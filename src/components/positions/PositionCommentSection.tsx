@@ -94,7 +94,7 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col py-6">
+    <div className="flex h-full min-h-0 flex-col pt-4">
       <ScrollArea className="flex-1 min-h-0 pr-4">
         <div className="space-y-6">
           {/* Enhanced Empty State */}
@@ -215,7 +215,7 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
       </ScrollArea>
 
       {/* PillChatBar-style Composer with Close button */}
-      <div className="py-4 border-t">
+      <div className="py-4 border-t bg-background shrink-0 -mx-6 px-6">
         <div className="flex items-center gap-2">
           {/* Minimize button like AI Hub */}
           {onClose && (
