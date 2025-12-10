@@ -373,16 +373,16 @@ const GroupRow = ({
           <span className="text-foreground">{name}</span>
         </div>
       </TableCell>
-      <TableCell className="text-center font-semibold">{data.targetDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold border-l-2 border-border">{data.targetDay?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold">{data.targetNight?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold">{data.targetTotal?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.hiredDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold border-l-2 border-border">{data.hiredDay?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold">{data.hiredNight?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold">{data.hiredTotal?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.reqsDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold border-l-2 border-border">{data.reqsDay?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold">{data.reqsNight?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold">{data.reqsTotal?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceDay))}>
+      <TableCell className={cn("text-center font-semibold border-l-2 border-border", getVarianceColor(data.varianceDay))}>
         {data.varianceDay?.toFixed(1) || "0.0"}
       </TableCell>
       <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceNight))}>
@@ -395,7 +395,7 @@ const GroupRow = ({
   );
 };
 
-const SkillRow = ({ 
+const SkillRow = ({
   skill, 
   isChildRow 
 }: { 
@@ -415,16 +415,16 @@ const SkillRow = ({
       )}>
         {skill.skill}
       </TableCell>
-      <TableCell className="text-center">{skill.targetDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center border-l-2 border-border">{skill.targetDay?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center">{skill.targetNight?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center">{skill.targetTotal?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center">{skill.hiredDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center border-l-2 border-border">{skill.hiredDay?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center">{skill.hiredNight?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center">{skill.hiredTotal?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center">{skill.reqsDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center border-l-2 border-border">{skill.reqsDay?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center">{skill.reqsNight?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center">{skill.reqsTotal?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className={cn("text-center", getVarianceColor(skill.varianceDay))}>
+      <TableCell className={cn("text-center border-l-2 border-border", getVarianceColor(skill.varianceDay))}>
         {skill.varianceDay?.toFixed(1) || "0.0"}
       </TableCell>
       <TableCell className={cn("text-center", getVarianceColor(skill.varianceNight))}>
@@ -441,16 +441,16 @@ const TotalRow = ({ data }: { data: VarianceData }) => {
   return (
     <TableRow className="font-semibold bg-muted/20 border-t-2">
       <TableCell className="font-semibold whitespace-nowrap">{data.skill}</TableCell>
-      <TableCell className="text-center font-semibold">{data.targetDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold border-l-2 border-border">{data.targetDay?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold">{data.targetNight?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold">{data.targetTotal?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.hiredDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold border-l-2 border-border">{data.hiredDay?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold">{data.hiredNight?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold">{data.hiredTotal?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold">{data.reqsDay?.toFixed(1) || "0.0"}</TableCell>
+      <TableCell className="text-center font-semibold border-l-2 border-border">{data.reqsDay?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold">{data.reqsNight?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold">{data.reqsTotal?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceDay))}>
+      <TableCell className={cn("text-center font-semibold border-l-2 border-border", getVarianceColor(data.varianceDay))}>
         {data.varianceDay?.toFixed(1) || "0.0"}
       </TableCell>
       <TableCell className={cn("text-center font-semibold", getVarianceColor(data.varianceNight))}>
@@ -488,35 +488,35 @@ const FTESkillShiftTable = ({
         <TableHeader>
           <TableRow>
             <TableHead className="font-semibold text-foreground w-32">Skills</TableHead>
-            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
+            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30 border-l-2 border-border">
               Target FTEs
             </TableHead>
-            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
+            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30 border-l-2 border-border">
               {viewMode === 'active' ? 'Active FTEs' : 'Hired FTEs'}
             </TableHead>
-            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
+            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30 border-l-2 border-border">
               Open Req FTEs
             </TableHead>
-            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30">
+            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30 border-l-2 border-border">
               Variance
             </TableHead>
           </TableRow>
           <TableRow>
             <TableHead></TableHead>
             {/* Target FTEs */}
-            <TableHead className="text-center text-xs">Day</TableHead>
+            <TableHead className="text-center text-xs border-l-2 border-border">Day</TableHead>
             <TableHead className="text-center text-xs">Night</TableHead>
             <TableHead className="text-center text-xs">Total</TableHead>
             {/* Hired FTEs */}
-            <TableHead className="text-center text-xs">Day</TableHead>
+            <TableHead className="text-center text-xs border-l-2 border-border">Day</TableHead>
             <TableHead className="text-center text-xs">Night</TableHead>
             <TableHead className="text-center text-xs">Total</TableHead>
             {/* Reqs */}
-            <TableHead className="text-center text-xs">Day</TableHead>
+            <TableHead className="text-center text-xs border-l-2 border-border">Day</TableHead>
             <TableHead className="text-center text-xs">Night</TableHead>
             <TableHead className="text-center text-xs">Total</TableHead>
             {/* Variance */}
-            <TableHead className="text-center text-xs">Day</TableHead>
+            <TableHead className="text-center text-xs border-l-2 border-border">Day</TableHead>
             <TableHead className="text-center text-xs">Night</TableHead>
             <TableHead className="text-center text-xs">Total</TableHead>
           </TableRow>
