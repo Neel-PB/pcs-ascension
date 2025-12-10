@@ -1,23 +1,38 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useState } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 
 interface ShiftCellProps {
   value: string | null | undefined;
+  selectedDayNight?: string | null;
+  onSave?: (selection: string | null) => void;
   onClick?: () => void;
 }
 
 const SPECIAL_SHIFTS = ['rotating', 'weekend option', 'evening'];
 
-export function ShiftCell({ value, onClick }: ShiftCellProps) {
-  const [selectedShift, setSelectedShift] = useState<string>("");
+export function ShiftCell({ value, selectedDayNight, onSave, onClick }: ShiftCellProps) {
+  const [localSelection, setLocalSelection] = useState<string>(selectedDayNight || "");
   const [open, setOpen] = useState(false);
   
   const normalizedShift = value?.toLowerCase() || '';
   const isSpecialShift = SPECIAL_SHIFTS.some(s => normalizedShift.includes(s));
+  const isModified = !!selectedDayNight;
+
+  const handleReset = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setLocalSelection("");
+    onSave?.(null);
+  };
+
+  const handleSelect = (val: string) => {
+    setLocalSelection(val);
+    onSave?.(val);
+    setOpen(false);
+  };
 
   if (!isSpecialShift) {
     // Normal text cell
@@ -38,7 +53,7 @@ export function ShiftCell({ value, onClick }: ShiftCellProps) {
     );
   }
 
-  // Special shift with pencil icon and popover
+  // Special shift with pencil/reset icon and popover
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -51,10 +66,25 @@ export function ShiftCell({ value, onClick }: ShiftCellProps) {
           )}
           type="button"
         >
-          <span className="truncate pr-6">{value || "—"}</span>
-          <Pencil
-            className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground"
-          />
+          {isModified ? (
+            <span className="flex items-center gap-1 pr-6">
+              <span className="text-muted-foreground line-through text-xs">{value}</span>
+              <span className="text-muted-foreground">→</span>
+              <span className="font-medium capitalize">{selectedDayNight}</span>
+            </span>
+          ) : (
+            <span className="truncate pr-6">{value || "—"}</span>
+          )}
+          {isModified ? (
+            <RotateCcw
+              className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground hover:text-foreground cursor-pointer"
+              onClick={handleReset}
+            />
+          ) : (
+            <Pencil
+              className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground"
+            />
+          )}
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-56 p-3" align="start">
@@ -66,7 +96,7 @@ export function ShiftCell({ value, onClick }: ShiftCellProps) {
           
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Day/Night Selection</Label>
-            <Select value={selectedShift} onValueChange={setSelectedShift}>
+            <Select value={localSelection} onValueChange={handleSelect}>
               <SelectTrigger className="h-8 text-sm">
                 <SelectValue placeholder="Select shift..." />
               </SelectTrigger>
