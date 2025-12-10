@@ -215,7 +215,7 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
       </ScrollArea>
 
       {/* PillChatBar-style Composer with Close button */}
-      <div className="pt-4 border-t mt-4">
+      <div className="py-4 border-t mt-4">
         <div className="flex items-center gap-2">
           {/* Minimize button like AI Hub */}
           {onClose && (

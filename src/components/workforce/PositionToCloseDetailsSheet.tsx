@@ -46,15 +46,15 @@ export function PositionToCloseDetailsSheet({
         </div>
 
         {/* Content Area */}
-        <Tabs defaultValue="details" onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">
-          <div className="bg-muted p-1.5 mx-6 mt-3 mb-3 rounded-lg">
+        <Tabs defaultValue="details" onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="bg-muted p-1.5 mx-6 mt-3 mb-3 rounded-lg shrink-0">
             <TabsList className="grid w-full grid-cols-2 bg-transparent">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="comments">Comments</TabsTrigger>
             </TabsList>
           </div>
 
-          <TabsContent value="details" className="flex-1 min-h-0 !mt-0">
+          <TabsContent value="details" className="flex-1 min-h-0 overflow-hidden !mt-0">
             <ScrollArea className="h-full">
               <div className="space-y-4 px-6 pt-3 pb-4">
               {/* Position Information */}
