@@ -47,7 +47,7 @@ export function PositionToCloseDetailsSheet({
 
         {/* Content Area */}
         <Tabs defaultValue="details" onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <div className="border-t border-b py-4 px-6 shrink-0">
+          <div className="border-b pb-4 px-6 shrink-0">
             <div className="bg-muted p-1.5 rounded-lg">
               <TabsList className="grid w-full grid-cols-2 bg-transparent">
                 <TabsTrigger value="details">Details</TabsTrigger>
