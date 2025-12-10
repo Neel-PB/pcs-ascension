@@ -55,7 +55,7 @@ export function RequisitionDetailsSheet({
 
         {/* Content Area */}
         <Tabs defaultValue="details" onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <div className="bg-muted p-1.5 mx-6 mt-3 mb-3 rounded-lg shrink-0">
+          <div className="bg-muted p-1.5 mx-6 rounded-lg shrink-0">
             <TabsList className="grid w-full grid-cols-2 bg-transparent">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="comments">Comments</TabsTrigger>
@@ -64,7 +64,7 @@ export function RequisitionDetailsSheet({
 
           <TabsContent value="details" className="flex-1 min-h-0 overflow-hidden !mt-0">
             <ScrollArea className="h-full">
-              <div className="space-y-4 px-6 pt-3 pb-4">
+              <div className="space-y-4 px-6 pb-4">
               {/* Position Information */}
               <div className="bg-muted/50 rounded-xl p-4 space-y-3">
                 <h3 className="text-sm font-semibold text-foreground">Position Information</h3>
@@ -169,7 +169,7 @@ export function RequisitionDetailsSheet({
 
         {/* Fixed Footer with Close Button - Only on Details Tab */}
         {activeTab === "details" && (
-          <div className="px-6 py-4 border-t bg-background shrink-0">
+          <div className="px-6 pb-4 border-t bg-background shrink-0">
             <div className="flex justify-end">
               <Button 
                 variant="ascension" 
