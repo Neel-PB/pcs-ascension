@@ -40,7 +40,7 @@ export function EmployeeDetailsSheet({ open, onOpenChange, employee }: EmployeeD
           onValueChange={setActiveTab}
           className="flex flex-col flex-1 min-h-0 overflow-hidden"
         >
-          <div className="bg-muted p-1.5 mx-6 rounded-lg shrink-0">
+          <div className="bg-muted p-1.5 mx-6 my-4 rounded-lg shrink-0">
             <TabsList className="grid w-full grid-cols-2 bg-transparent">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="comments">Comments</TabsTrigger>
@@ -49,7 +49,7 @@ export function EmployeeDetailsSheet({ open, onOpenChange, employee }: EmployeeD
 
           <TabsContent value="details" className="flex-1 min-h-0 overflow-hidden !mt-0">
             <ScrollArea className="h-full">
-              <div className="space-y-4 px-6 pb-4">
+              <div className="space-y-4 px-6 py-4">
                 {/* Position Information */}
                 <div className="bg-muted/50 rounded-xl p-4 space-y-3">
                   <h3 className="text-sm font-semibold text-foreground">Position Information</h3>
