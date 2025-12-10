@@ -22,15 +22,6 @@ export function PositionToCloseDetailsSheet({
   
   if (!position) return null;
 
-  const selectedEmployees = employees.filter(emp => 
-    position.selected_position_ids?.includes(emp.id)
-  );
-  
-  const totalSelectedFte = selectedEmployees.reduce(
-    (sum, emp) => sum + Number(emp.FTE || 0), 
-    0
-  );
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent 
@@ -38,17 +29,22 @@ export function PositionToCloseDetailsSheet({
         hideCloseButton
       >
         {/* Fixed Header */}
-        <div className="flex flex-col px-6 py-4 border-b bg-background" style={{ minHeight: 'var(--header-height)' }}>
-          <h2 className="text-xl font-semibold text-foreground">Position to Close</h2>
-          <p className="text-sm text-muted-foreground">
-            {position.skill_type} (Job Family) • FTE: {position.fte}
-          </p>
+        <div className="flex items-center justify-between px-6 border-b bg-background" style={{ height: 'var(--header-height)' }}>
+          <div className="flex flex-col">
+            <h2 className="text-xl font-semibold text-foreground">Position to Close</h2>
+            <p className="text-sm text-muted-foreground">
+              {position.skill_type} (Job Family) • FTE: {position.fte}
+            </p>
+          </div>
+          <Badge variant={position.status === "approved" ? "default" : position.status === "rejected" ? "destructive" : "secondary"}>
+            {position.status}
+          </Badge>
         </div>
 
         {/* Content Area */}
         <Tabs defaultValue="details" className="flex flex-col flex-1 min-h-0">
-          <div className="px-6 pt-3">
-            <TabsList className="grid w-full grid-cols-2">
+          <div className="bg-muted p-1.5 mx-6 mt-3 rounded-lg">
+            <TabsList className="grid w-full grid-cols-2 bg-transparent">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="comments">Comments</TabsTrigger>
             </TabsList>
@@ -56,16 +52,6 @@ export function PositionToCloseDetailsSheet({
 
           <TabsContent value="details" className="mt-5 overflow-auto">
             <div className="space-y-4 px-6 pb-6">
-              {/* Status */}
-              <div className="bg-muted/50 rounded-xl p-4 space-y-3">
-                <h3 className="text-sm font-semibold text-foreground">Status</h3>
-                <div className="flex items-center gap-2">
-                  <Badge variant={position.status === "approved" ? "default" : position.status === "rejected" ? "destructive" : "secondary"}>
-                    {position.status}
-                  </Badge>
-                </div>
-              </div>
-
               {/* Position Information */}
               <div className="bg-muted/50 rounded-xl p-4 space-y-3">
                 <h3 className="text-sm font-semibold text-foreground">Position Information</h3>

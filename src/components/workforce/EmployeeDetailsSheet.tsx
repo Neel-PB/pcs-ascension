@@ -26,17 +26,20 @@ export function EmployeeDetailsSheet({
         hideCloseButton
       >
         {/* Fixed Header */}
-        <div className="flex flex-col px-6 py-4 border-b bg-background" style={{ minHeight: 'var(--header-height)' }}>
-          <h2 className="text-xl font-semibold text-foreground">{employee.employeeName}</h2>
-          <p className="text-sm text-muted-foreground">
-            {employee.jobTitle} • Position #{employee.positionNum}
-          </p>
+        <div className="flex items-center justify-between px-6 border-b bg-background" style={{ height: 'var(--header-height)' }}>
+          <div className="flex flex-col">
+            <h2 className="text-xl font-semibold text-foreground">{employee.employeeName}</h2>
+            <p className="text-sm text-muted-foreground">{employee.jobTitle}</p>
+          </div>
+          <Badge variant={employee.payrollStatus === "Active" ? "default" : "secondary"}>
+            {employee.payrollStatus || "Unknown"}
+          </Badge>
         </div>
 
         {/* Content Area */}
         <Tabs defaultValue="details" className="flex flex-col flex-1 min-h-0">
-          <div className="px-6 pt-3">
-            <TabsList className="grid w-full grid-cols-2">
+          <div className="bg-muted p-1.5 mx-6 mt-3 rounded-lg">
+            <TabsList className="grid w-full grid-cols-2 bg-transparent">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="comments">Comments</TabsTrigger>
             </TabsList>
@@ -44,18 +47,14 @@ export function EmployeeDetailsSheet({
 
           <TabsContent value="details" className="mt-5 overflow-auto">
             <div className="space-y-4 px-6 pb-6">
-              {/* Status */}
-              <div className="bg-muted/50 rounded-xl p-4 space-y-3">
-                <h3 className="text-sm font-semibold text-foreground">Status</h3>
-                <Badge variant={employee.payrollStatus === "Active" ? "default" : "secondary"}>
-                  {employee.payrollStatus || "Unknown"}
-                </Badge>
-              </div>
-
               {/* Position Information */}
               <div className="bg-muted/50 rounded-xl p-4 space-y-3">
                 <h3 className="text-sm font-semibold text-foreground">Position Information</h3>
                 <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Position Number</p>
+                    <p className="text-sm font-medium text-foreground">{employee.positionNum || "—"}</p>
+                  </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Job Title</p>
                     <p className="text-sm font-medium text-foreground">{employee.jobTitle || "—"}</p>
