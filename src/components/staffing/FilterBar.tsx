@@ -185,7 +185,7 @@ export function FilterBar({
           title="Clear all filters"
           aria-label="Clear all filters"
         >
-          <X className="h-4 w-4" />
+          <X className="h-3 w-3" />
         </Button>
       </motion.div>
 
