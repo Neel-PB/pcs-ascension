@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -19,6 +20,8 @@ export function RequisitionDetailsSheet({
   onOpenChange,
   requisition,
 }: RequisitionDetailsSheetProps) {
+  const [activeTab, setActiveTab] = useState("details");
+
   if (!requisition) return null;
 
   const vacancyAge = requisition.positionStatusDate
@@ -50,7 +53,7 @@ export function RequisitionDetailsSheet({
         </div>
 
         {/* Content Area */}
-        <Tabs defaultValue="details" className="flex flex-col flex-1 min-h-0">
+        <Tabs defaultValue="details" onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">
           <div className="bg-muted p-1.5 mx-6 mt-3 rounded-lg">
             <TabsList className="grid w-full grid-cols-2 bg-transparent">
               <TabsTrigger value="details">Details</TabsTrigger>
@@ -58,7 +61,7 @@ export function RequisitionDetailsSheet({
             </TabsList>
           </div>
 
-          <TabsContent value="details" className="flex-1 min-h-0 overflow-auto mt-0">
+          <TabsContent value="details" className="flex-1 min-h-0 overflow-auto !mt-0">
             <div className="space-y-4 px-6 pt-6 pb-4">
               {/* Position Information */}
               <div className="bg-muted/50 rounded-xl p-4 space-y-3">
@@ -156,23 +159,25 @@ export function RequisitionDetailsSheet({
             </div>
           </TabsContent>
 
-          <TabsContent value="comments" className="flex-1 min-h-0 mt-0 px-6">
+          <TabsContent value="comments" className="flex-1 min-h-0 !mt-0 px-6">
             <PositionCommentSection positionId={requisition.id} onClose={() => onOpenChange(false)} />
           </TabsContent>
         </Tabs>
 
-        {/* Fixed Footer with Close Button - Outside Tabs */}
-        <div className="px-6 py-4 border-t bg-background shrink-0">
-          <div className="flex justify-end">
-            <Button 
-              variant="ascension" 
-              className="rounded-full"
-              onClick={() => onOpenChange(false)}
-            >
-              Close
-            </Button>
+        {/* Fixed Footer with Close Button - Only on Details Tab */}
+        {activeTab === "details" && (
+          <div className="px-6 py-4 border-t bg-background shrink-0">
+            <div className="flex justify-end">
+              <Button 
+                variant="ascension" 
+                className="rounded-full"
+                onClick={() => onOpenChange(false)}
+              >
+                Close
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
       </SheetContent>
     </Sheet>
   );
