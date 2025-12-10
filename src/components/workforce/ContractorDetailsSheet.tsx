@@ -43,7 +43,7 @@ export function ContractorDetailsSheet({
         </div>
 
         {/* Content Area */}
-        <Tabs defaultValue="details" className="flex flex-col flex-1 min-h-0 pt-2">
+        <Tabs defaultValue="details" className="flex flex-col flex-1 min-h-0">
           <div className="bg-muted p-1.5 mx-6 rounded-lg">
             <TabsList className="grid w-full grid-cols-2 bg-transparent">
               <TabsTrigger value="details">Details</TabsTrigger>
