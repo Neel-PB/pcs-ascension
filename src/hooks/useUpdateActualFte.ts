@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Position } from '@/types/position';
 
 interface UpdateActualFteParams {
   id: string;
@@ -29,9 +30,30 @@ export function useUpdateActualFte() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
-      queryClient.invalidateQueries({ queryKey: ['contractors'] });
+    onSuccess: (updatedData) => {
+      const updatePositionInCache = (oldData: Position[] | undefined) => {
+        if (!oldData) return oldData;
+        return oldData.map(position =>
+          position.id === updatedData.id
+            ? {
+                ...position,
+                actual_fte: updatedData.actual_fte,
+                actual_fte_expiry: updatedData.actual_fte_expiry,
+                actual_fte_status: updatedData.actual_fte_status,
+              }
+            : position
+        );
+      };
+
+      queryClient.setQueriesData<Position[]>(
+        { queryKey: ['employees'] },
+        updatePositionInCache
+      );
+      queryClient.setQueriesData<Position[]>(
+        { queryKey: ['contractors'] },
+        updatePositionInCache
+      );
+
       toast.success('Active FTE updated successfully');
     },
     onError: (error) => {
