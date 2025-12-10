@@ -1,5 +1,17 @@
 import { useState } from "react";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format, differenceInHours } from "date-fns";
+
+// Smart timestamp: relative time within 24h, actual date after
+const formatCommentTimestamp = (dateString: string) => {
+  const date = new Date(dateString);
+  const hoursAgo = differenceInHours(new Date(), date);
+  
+  if (hoursAgo < 24) {
+    return formatDistanceToNow(date, { addSuffix: true });
+  } else {
+    return format(date, "MMM d, yyyy");
+  }
+};
 import { Loader2, Pencil, Trash2, ArrowUp, MessageSquare, Copy, Check, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -181,7 +193,7 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
                       {/* Below bubble: Timestamp + Edit/Delete */}
                       <div className="flex items-center gap-2 pl-1">
                         <span className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                          {formatCommentTimestamp(comment.created_at)}
                         </span>
                         
                         {isOwner && (
