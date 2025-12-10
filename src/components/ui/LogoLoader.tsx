@@ -85,6 +85,7 @@ export function LogoLoader({ size = "md", variant = "default", className = "" }:
         height={dimension}
         loading="eager"
         decoding="sync"
+        fetchPriority="high"
         className="object-contain"
         style={{ 
           minWidth: dimension, 
