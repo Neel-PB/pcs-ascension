@@ -222,21 +222,21 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 rounded-lg hover:bg-accent flex-shrink-0"
+              className="h-9 w-9 rounded-lg hover:bg-accent flex-shrink-0"
               onClick={onClose}
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
           )}
           <div className="flex-1 bg-background/95 backdrop-blur-sm border border-border/60 rounded-xl shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/40 transition-all duration-200">
-            <div className="flex items-end gap-2 p-2">
+            <div className="flex items-end gap-2 px-2 py-1">
               <TextareaAutosize
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Write a comment..."
                 minRows={1}
                 maxRows={4}
-                className="flex-1 bg-transparent border-0 resize-none outline-none placeholder:text-muted-foreground text-sm focus:ring-0 px-2 py-1.5"
+                className="flex-1 bg-transparent border-0 resize-none outline-none placeholder:text-muted-foreground text-sm focus:ring-0 px-2 py-0.5"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                     e.preventDefault();
@@ -247,7 +247,7 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 rounded-lg hover:bg-accent flex-shrink-0"
+                className="h-9 w-9 rounded-lg hover:bg-accent flex-shrink-0"
                 onClick={handleAddComment}
                 disabled={!newComment.trim() || addComment.isPending}
               >
