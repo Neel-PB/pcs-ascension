@@ -103,7 +103,7 @@ export function PositionToOpenDetailsSheet({
 
         {/* Fixed Footer with Close Button - Only on Details Tab */}
         {activeTab === "details" && (
-          <div className="px-6 pb-4 border-t bg-background shrink-0">
+          <div className="px-6 py-4 border-t bg-background shrink-0">
             <div className="flex justify-end">
               <Button 
                 variant="ascension" 
