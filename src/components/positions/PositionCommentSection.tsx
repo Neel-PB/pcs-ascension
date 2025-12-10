@@ -108,7 +108,7 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
 
   return (
     <div className="flex h-full min-h-0 flex-col pt-4">
-      <ScrollArea className="flex-1 min-h-0 pr-4">
+      <ScrollArea className="flex-1 min-h-0 pb-4">
         <div className="space-y-6">
           {/* Enhanced Empty State */}
           {comments && comments.length === 0 && (
