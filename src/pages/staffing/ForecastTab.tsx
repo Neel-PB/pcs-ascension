@@ -10,6 +10,7 @@ import {
   useForecastPositionsToClose,
 } from "@/hooks/useForecastPositions";
 import { useRBAC } from "@/hooks/useRBAC";
+import { LogoLoader } from "@/components/ui/LogoLoader";
 
 export function ForecastTab() {
   const [selectedClosePosition, setSelectedClosePosition] = useState<any>(null);
@@ -63,8 +64,8 @@ export function ForecastTab() {
 
               {/* Rows */}
               {isLoadingOpen ? (
-                <div className="p-8 text-center text-muted-foreground">
-                  Loading positions...
+                <div className="flex justify-center items-center py-12">
+                  <LogoLoader size="md" />
                 </div>
               ) : positionsToOpen.length === 0 ? (
                 <div className="p-8 text-center text-muted-foreground">
@@ -108,8 +109,8 @@ export function ForecastTab() {
 
               {/* Rows */}
               {isLoadingClose ? (
-                <div className="p-8 text-center text-muted-foreground">
-                  Loading positions...
+                <div className="flex justify-center items-center py-12">
+                  <LogoLoader size="md" />
                 </div>
               ) : positionsToClose.length === 0 ? (
                 <div className="p-8 text-center text-muted-foreground">

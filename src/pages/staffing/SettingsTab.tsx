@@ -7,6 +7,7 @@ import { useVolumeOverrides, useUpsertVolumeOverride, useDeleteVolumeOverride } 
 import { useHistoricalVolumeAnalysis, useVolumeOverrideConfig } from '@/hooks/useHistoricalVolumeAnalysis';
 import { Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { LogoLoader } from '@/components/ui/LogoLoader';
 
 interface SettingsTabProps {
   selectedMarket: string;
@@ -178,7 +179,7 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
   if (isLoadingDepartments || isLoadingOverrides || isLoadingAnalysis) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-pulse text-muted-foreground">Analyzing historical data...</div>
+        <LogoLoader size="lg" />
       </div>
     );
   }

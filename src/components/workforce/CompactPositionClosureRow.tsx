@@ -13,6 +13,7 @@ import {
   useSaveEmployeeSelection,
 } from "@/hooks/useForecastPositions";
 import { validateFteAllocation } from "@/lib/fteValidation";
+import { LogoLoader } from "@/components/ui/LogoLoader";
 
 interface CompactPositionClosureRowProps {
   position: ForecastPositionToClose;
@@ -155,8 +156,8 @@ export function CompactPositionClosureRow({ position }: CompactPositionClosureRo
             </div>
 
             {isLoading ? (
-              <div className="p-4 text-center text-xs text-muted-foreground">
-                Loading...
+              <div className="flex justify-center items-center py-4">
+                <LogoLoader size="sm" variant="pulse" />
               </div>
             ) : requisitions.length === 0 ? (
               <div className="p-4 text-center text-xs text-muted-foreground">
