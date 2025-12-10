@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Filter, Search } from "lucide-react";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import { useContractors } from "@/hooks/useContractors";
@@ -12,6 +12,7 @@ import { EditableTable } from "@/components/editable-table/EditableTable";
 import { ColumnVisibilityPanel } from "@/components/editable-table/ColumnVisibilityPanel";
 import { contractorColumns, createContractorColumnsWithComments } from "@/config/contractorColumns";
 import { useUpdateActualFte } from "@/hooks/useUpdateActualFte";
+import { useUpdateShiftOverride } from "@/hooks/useUpdateShiftOverride";
 import { EditableFTECell } from "@/components/editable-table/cells/EditableFTECell";
 import { usePositionCommentCounts } from "@/hooks/usePositionCommentCounts";
 import { KPISummaryModal } from "@/components/staffing/KPISummaryModal";
@@ -39,6 +40,7 @@ export function ContractorsTab({
   });
 
   const updateActualFte = useUpdateActualFte();
+  const updateShiftOverride = useUpdateShiftOverride();
   const [selectedContractor, setSelectedContractor] = useState<any>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -83,13 +85,17 @@ export function ContractorsTab({
     return count;
   }, [filters]);
 
-  const handleActualFteUpdate = (id: string, data: {
+  const handleActualFteUpdate = useCallback((id: string, data: {
     actual_fte: number | null;
     actual_fte_expiry: string | null;
     actual_fte_status: string | null;
   }) => {
     updateActualFte.mutate({ id, ...data });
-  };
+  }, [updateActualFte]);
+
+  const handleShiftOverrideUpdate = useCallback((id: string, value: string | null) => {
+    updateShiftOverride.mutate({ id, shift_override: value });
+  }, [updateShiftOverride]);
 
   const filteredAndSortedContractors = useMemo(() => {
     if (!contractors) return [];
@@ -181,7 +187,11 @@ export function ContractorsTab({
   const commentCounts = usePositionCommentCounts(positionIds);
 
   const columnsWithHandlers = useMemo(() => {
-    const baseColumns = createContractorColumnsWithComments(commentCounts, handleRowClick);
+    const baseColumns = createContractorColumnsWithComments(
+      commentCounts, 
+      handleRowClick,
+      handleShiftOverrideUpdate
+    );
     return baseColumns.map(col => {
       if (col.id === 'actual_fte') {
         return {
@@ -199,7 +209,7 @@ export function ContractorsTab({
       }
       return col;
     });
-  }, [commentCounts, handleRowClick, handleActualFteUpdate]);
+  }, [commentCounts, handleRowClick, handleActualFteUpdate, handleShiftOverrideUpdate]);
 
   const showEmptyState = !isFetching && (!contractors || contractors.length === 0);
 

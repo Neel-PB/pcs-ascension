@@ -5,6 +5,9 @@ import { CommentIndicatorCell } from '@/components/editable-table/cells/CommentI
 import { ShiftCell } from '@/components/editable-table/cells/ShiftCell';
 import { MessageSquare } from 'lucide-react';
 
+// Type for the shift override handler
+type ShiftOverrideHandler = (positionId: string, value: string | null) => void;
+
 export const employeeColumns: ColumnDef<Position>[] = [
   {
     id: 'employeeName',
@@ -128,24 +131,44 @@ export const employeeColumns: ColumnDef<Position>[] = [
 // Function to create columns with comment counts and handlers
 export const createEmployeeColumnsWithComments = (
   commentCounts: Map<string, number>,
-  onRowClick: (row: Position) => void
-): ColumnDef<Position>[] => [
-  ...employeeColumns,
-  {
-    id: 'comments',
-    label: 'Comments',
-    type: 'custom',
-    width: 100,
-    minWidth: 90,
-    sortable: false,
-    resizable: true,
-    draggable: true,
-    renderHeader: () => <MessageSquare className="h-4 w-4" />,
-    renderCell: (row) => (
-      <CommentIndicatorCell
-        count={commentCounts.get(row.id) ?? 0}
-        onClick={() => onRowClick(row)}
-      />
-    ),
-  },
-];
+  onRowClick: (row: Position) => void,
+  onUpdateShiftOverride?: ShiftOverrideHandler
+): ColumnDef<Position>[] => {
+  // Map columns and enhance the shift column with handlers
+  const columnsWithShift = employeeColumns.map(col => {
+    if (col.id === 'shift') {
+      return {
+        ...col,
+        renderCell: (row: Position) => (
+          <ShiftCell 
+            value={row.shift} 
+            selectedDayNight={row.shift_override}
+            onSave={(val) => onUpdateShiftOverride?.(row.id, val)}
+          />
+        ),
+      };
+    }
+    return col;
+  });
+
+  return [
+    ...columnsWithShift,
+    {
+      id: 'comments',
+      label: 'Comments',
+      type: 'custom',
+      width: 100,
+      minWidth: 90,
+      sortable: false,
+      resizable: true,
+      draggable: true,
+      renderHeader: () => <MessageSquare className="h-4 w-4" />,
+      renderCell: (row) => (
+        <CommentIndicatorCell
+          count={commentCounts.get(row.id) ?? 0}
+          onClick={() => onRowClick(row)}
+        />
+      ),
+    },
+  ];
+};

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Filter, Search } from "lucide-react";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import { useEmployees } from "@/hooks/useEmployees";
@@ -12,6 +12,7 @@ import { EditableTable } from "@/components/editable-table/EditableTable";
 import { ColumnVisibilityPanel } from "@/components/editable-table/ColumnVisibilityPanel";
 import { employeeColumns, createEmployeeColumnsWithComments } from "@/config/employeeColumns";
 import { useUpdateActualFte } from "@/hooks/useUpdateActualFte";
+import { useUpdateShiftOverride } from "@/hooks/useUpdateShiftOverride";
 import { EditableFTECell } from "@/components/editable-table/cells/EditableFTECell";
 import { usePositionCommentCounts } from "@/hooks/usePositionCommentCounts";
 import { KPISummaryModal } from "@/components/staffing/KPISummaryModal";
@@ -39,6 +40,7 @@ export function EmployeesTab({
   });
 
   const updateActualFte = useUpdateActualFte();
+  const updateShiftOverride = useUpdateShiftOverride();
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -86,13 +88,17 @@ export function EmployeesTab({
     return count;
   }, [filters]);
 
-  const handleActualFteUpdate = (id: string, data: {
+  const handleActualFteUpdate = useCallback((id: string, data: {
     actual_fte: number | null;
     actual_fte_expiry: string | null;
     actual_fte_status: string | null;
   }) => {
     updateActualFte.mutate({ id, ...data });
-  };
+  }, [updateActualFte]);
+
+  const handleShiftOverrideUpdate = useCallback((id: string, value: string | null) => {
+    updateShiftOverride.mutate({ id, shift_override: value });
+  }, [updateShiftOverride]);
 
   const filteredAndSortedEmployees = useMemo(() => {
     if (!employees) return [];
@@ -187,7 +193,11 @@ export function EmployeesTab({
   const commentCounts = usePositionCommentCounts(positionIds);
 
   const columnsWithHandlers = useMemo(() => {
-    const baseColumns = createEmployeeColumnsWithComments(commentCounts, handleRowClick);
+    const baseColumns = createEmployeeColumnsWithComments(
+      commentCounts, 
+      handleRowClick,
+      handleShiftOverrideUpdate
+    );
     return baseColumns.map(col => {
       if (col.id === 'actual_fte') {
         return {
@@ -205,7 +215,7 @@ export function EmployeesTab({
       }
       return col;
     });
-  }, [commentCounts, handleRowClick, handleActualFteUpdate]);
+  }, [commentCounts, handleRowClick, handleActualFteUpdate, handleShiftOverrideUpdate]);
 
   const showEmptyState = !isFetching && (!employees || employees.length === 0);
 

@@ -472,6 +472,7 @@ export type Database = {
           positionStatus: string | null
           positionStatusDate: string | null
           shift: string | null
+          shift_override: string | null
           standardHours: number | null
           updated_at: string
         }
@@ -504,6 +505,7 @@ export type Database = {
           positionStatus?: string | null
           positionStatusDate?: string | null
           shift?: string | null
+          shift_override?: string | null
           standardHours?: number | null
           updated_at?: string
         }
@@ -536,6 +538,7 @@ export type Database = {
           positionStatus?: string | null
           positionStatusDate?: string | null
           shift?: string | null
+          shift_override?: string | null
           standardHours?: number | null
           updated_at?: string
         }
