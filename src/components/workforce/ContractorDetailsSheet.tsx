@@ -26,17 +26,25 @@ export function ContractorDetailsSheet({
         hideCloseButton
       >
         {/* Fixed Header */}
-        <div className="flex flex-col px-6 py-4 border-b bg-background" style={{ minHeight: 'var(--header-height)' }}>
-          <h2 className="text-xl font-semibold text-foreground">{contractor.employeeName}</h2>
-          <p className="text-sm text-muted-foreground">
-            {contractor.jobTitle} • Position #{contractor.positionNum}
-          </p>
+        <div className="flex items-center justify-between px-6 border-b bg-background" style={{ height: 'var(--header-height)' }}>
+          <div className="flex flex-col">
+            <h2 className="text-xl font-semibold text-foreground">{contractor.employeeName}</h2>
+            <p className="text-sm text-muted-foreground">{contractor.jobTitle}</p>
+          </div>
+          <div className="flex gap-2">
+            <Badge variant="secondary">Contingent</Badge>
+            {contractor.payrollStatus && (
+              <Badge variant={contractor.payrollStatus === "Active" ? "default" : "secondary"}>
+                {contractor.payrollStatus}
+              </Badge>
+            )}
+          </div>
         </div>
 
         {/* Content Area */}
         <Tabs defaultValue="details" className="flex flex-col flex-1 min-h-0">
-          <div className="px-6 pt-3">
-            <TabsList className="grid w-full grid-cols-2">
+          <div className="bg-muted p-1.5 mx-6 mt-3 rounded-lg">
+            <TabsList className="grid w-full grid-cols-2 bg-transparent">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="comments">Comments</TabsTrigger>
             </TabsList>
@@ -44,23 +52,14 @@ export function ContractorDetailsSheet({
 
           <TabsContent value="details" className="mt-5 overflow-auto">
             <div className="space-y-4 px-6 pb-6">
-              {/* Status */}
-              <div className="bg-muted/50 rounded-xl p-4 space-y-3">
-                <h3 className="text-sm font-semibold text-foreground">Status</h3>
-                <div className="flex gap-2">
-                  <Badge variant="secondary">Contingent</Badge>
-                  {contractor.payrollStatus && (
-                    <Badge variant={contractor.payrollStatus === "Active" ? "default" : "secondary"}>
-                      {contractor.payrollStatus}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-
               {/* Position Information */}
               <div className="bg-muted/50 rounded-xl p-4 space-y-3">
                 <h3 className="text-sm font-semibold text-foreground">Position Information</h3>
                 <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Position Number</p>
+                    <p className="text-sm font-medium text-foreground">{contractor.positionNum || "—"}</p>
+                  </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Job Title</p>
                     <p className="text-sm font-medium text-foreground">{contractor.jobTitle || "—"}</p>
