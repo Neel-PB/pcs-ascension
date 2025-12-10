@@ -69,13 +69,27 @@ export function LogoLoader({ size = "md", variant = "default", className = "" }:
   );
 
   const renderLogo = (animationProps: object = {}) => (
-    <motion.div className="relative z-10" {...animationProps}>
+    <motion.div 
+      className="relative z-10 flex items-center justify-center rounded-full"
+      style={{ 
+        width: dimension, 
+        height: dimension,
+        backgroundColor: 'hsl(var(--primary) / 0.08)',
+      }}
+      {...animationProps}
+    >
       <img
         src={AscensionEmblem}
         alt="Loading"
         width={dimension}
         height={dimension}
+        loading="eager"
+        decoding="sync"
         className="object-contain"
+        style={{ 
+          minWidth: dimension, 
+          minHeight: dimension 
+        }}
       />
     </motion.div>
   );

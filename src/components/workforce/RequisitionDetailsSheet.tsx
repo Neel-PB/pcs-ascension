@@ -3,6 +3,7 @@ import {
   SheetContent,
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { differenceInDays, format } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PositionCommentSection } from "@/components/positions/PositionCommentSection";
@@ -50,15 +51,15 @@ export function RequisitionDetailsSheet({
 
         {/* Content Area */}
         <Tabs defaultValue="details" className="flex flex-col flex-1 min-h-0">
-          <div className="bg-muted p-1.5 mx-6 mt-3 rounded-lg">
+          <div className="bg-muted p-1.5 mx-6 mt-2 rounded-lg">
             <TabsList className="grid w-full grid-cols-2 bg-transparent">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="comments">Comments</TabsTrigger>
             </TabsList>
           </div>
 
-          <TabsContent value="details" className="mt-5 overflow-auto">
-            <div className="space-y-4 px-6 pb-6">
+          <TabsContent value="details" className="mt-3 overflow-auto flex-1 flex flex-col">
+            <div className="space-y-4 px-6 pb-4 flex-1">
               {/* Position Information */}
               <div className="bg-muted/50 rounded-xl p-4 space-y-3">
                 <h3 className="text-sm font-semibold text-foreground">Position Information</h3>
@@ -153,9 +154,22 @@ export function RequisitionDetailsSheet({
                 </div>
               </div>
             </div>
+            
+            {/* Fixed Footer with Close Button */}
+            <div className="px-6 py-4 border-t bg-background mt-auto">
+              <div className="flex justify-end">
+                <Button 
+                  variant="ascension" 
+                  className="rounded-full"
+                  onClick={() => onOpenChange(false)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
           </TabsContent>
 
-          <TabsContent value="comments" className="flex-1 min-h-0 flex flex-col px-6 py-0">
+          <TabsContent value="comments" className="mt-3 flex-1 min-h-0 flex flex-col px-6 py-0">
             <PositionCommentSection positionId={requisition.id} onClose={() => onOpenChange(false)} />
           </TabsContent>
         </Tabs>
