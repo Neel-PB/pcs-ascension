@@ -47,7 +47,7 @@ export function PositionToCloseDetailsSheet({
 
         {/* Content Area */}
         <Tabs defaultValue="details" onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">
-          <div className="bg-muted p-1.5 mx-6 mt-3 rounded-lg">
+          <div className="bg-muted p-1.5 mx-6 mt-3 mb-3 rounded-lg">
             <TabsList className="grid w-full grid-cols-2 bg-transparent">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="comments">Comments</TabsTrigger>
