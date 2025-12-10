@@ -41,16 +41,16 @@ export function PositionToOpenDetailsSheet({
 
         {/* Content Area */}
         <Tabs defaultValue="details" className="flex flex-col flex-1 min-h-0">
-          <div className="bg-muted p-1.5 mx-6 rounded-lg">
+          <div className="bg-muted p-1.5 mx-6 mt-3 rounded-lg">
             <TabsList className="grid w-full grid-cols-2 bg-transparent">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="comments">Comments</TabsTrigger>
             </TabsList>
           </div>
 
-          <TabsContent value="details" className="mt-3 flex-1 min-h-0 flex flex-col">
+          <TabsContent value="details" className="flex-1 min-h-0 flex flex-col">
             <div className="flex-1 overflow-auto">
-              <div className="space-y-4 px-6 pb-4">
+              <div className="space-y-4 px-6 pt-3 pb-4">
                 {/* Position Information */}
                 <div className="bg-muted/50 rounded-xl p-4 space-y-3">
                   <h3 className="text-sm font-semibold text-foreground">Position Information</h3>
@@ -105,7 +105,7 @@ export function PositionToOpenDetailsSheet({
             </div>
           </TabsContent>
 
-          <TabsContent value="comments" className="mt-3 flex-1 min-h-0 flex flex-col px-6 py-0">
+          <TabsContent value="comments" className="flex-1 min-h-0 flex flex-col px-6 py-0">
             <PositionCommentSection positionId={position.id} onClose={() => onOpenChange(false)} />
           </TabsContent>
         </Tabs>
