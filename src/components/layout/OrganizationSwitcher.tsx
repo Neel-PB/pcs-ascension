@@ -1,4 +1,4 @@
-import AscensionLogo from "@/assets/Ascension-Emblem.png";
+import AscensionLogo from "@/assets/Ascension-Emblem.svg";
 
 export function OrganizationSwitcher() {
   return (
