@@ -59,7 +59,7 @@ const generateVariance = () => ({
 
 // Region groupings
 const regionMap: { [key: string]: string[] } = {
-  "Southeast": ["Florida", "Tennessee", "Maryland"],
+  "Southeast": ["Florida", "Tennessee", "Baltimore"],
   "Midwest": ["Illinois", "Indiana", "Wisconsin"],
   "South Central": ["Kansas", "Oklahoma", "Texas"],
 };
@@ -72,17 +72,22 @@ const varianceDataByLevel = {
     { name: "South Central", ...generateVariance() },
   ],
   markets: [
+    { name: "Baltimore", ...generateVariance() },
     { name: "Florida", ...generateVariance() },
     { name: "Illinois", ...generateVariance() },
     { name: "Indiana", ...generateVariance() },
     { name: "Kansas", ...generateVariance() },
-    { name: "Maryland", ...generateVariance() },
     { name: "Oklahoma", ...generateVariance() },
     { name: "Tennessee", ...generateVariance() },
     { name: "Texas", ...generateVariance() },
     { name: "Wisconsin", ...generateVariance() },
   ],
   facilities: {
+    "Baltimore": {
+      "MDBAL": [
+        { name: "St Agnes Healthcare", ...generateVariance() },
+      ],
+    },
     "Florida": {
       "FLJAC": [
         { name: "ASV Clay County Hospital", ...generateVariance() },
@@ -90,11 +95,17 @@ const varianceDataByLevel = {
         { name: "ASV Southside Hospital", ...generateVariance() },
         { name: "St Johns County Hospital", ...generateVariance() },
       ],
+      "FLPEN": [
+        { name: "ASH Gulf Coast Hospital", ...generateVariance() },
+        { name: "ASH Panama City Bay Hosp", ...generateVariance() },
+        { name: "ASH Pensacola Hospital", ...generateVariance() },
+      ],
     },
     "Illinois": {
       "ILARL": [
         { name: "Alexian Bros Medical Ctr", ...generateVariance() },
         { name: "Saint Joseph Hosp Chgo", ...generateVariance() },
+        { name: "St Alexius Medical Center", ...generateVariance() },
       ],
     },
     "Indiana": {
@@ -102,23 +113,21 @@ const varianceDataByLevel = {
         { name: "St Vincent Fishers Hosp", ...generateVariance() },
         { name: "St Vincent Heart Ctr", ...generateVariance() },
         { name: "St Vincent Indpls Acute", ...generateVariance() },
-        { name: "St Vincent Kokomo", ...generateVariance() },
-        { name: "St Vincent Anderson", ...generateVariance() },
-        { name: "St Vincent Carmel", ...generateVariance() },
-        { name: "St Vincent Evansville", ...generateVariance() },
+        { name: "St V Anderson Hosp", ...generateVariance() },
+        { name: "St V Carmel Hosp", ...generateVariance() },
+        { name: "St V Mercy Hosp", ...generateVariance() },
+        { name: "St V Randolph Hosp", ...generateVariance() },
         { name: "Peyton Manning Children's Hospital", ...generateVariance() },
+      ],
+      "INEVA": [
+        { name: "St Vincent Evansville", ...generateVariance() },
       ],
     },
     "Kansas": {
-      "KSWICH": [
+      "KSWIC": [
         { name: "Via Christi Hosp Pittsburg", ...generateVariance() },
         { name: "Via Christi Hosp St Joseph", ...generateVariance() },
         { name: "Via Christi Hosp Wichita", ...generateVariance() },
-      ],
-    },
-    "Maryland": {
-      "MDBAL": [
-        { name: "St Agnes Healthcare", ...generateVariance() },
       ],
     },
     "Oklahoma": {
