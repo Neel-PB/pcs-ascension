@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { motion, LayoutGroup } from "framer-motion";
 import { cn } from "@/lib/utils";
-import AscensionLogo from "@/assets/Ascension-Emblem.png";
+import AscensionLogo from "@/assets/Ascension-Emblem.svg";
 
 interface SidebarItem {
   id: string;

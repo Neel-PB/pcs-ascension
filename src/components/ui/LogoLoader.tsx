@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import AscensionEmblem from "@/assets/Ascension-Emblem.png";
+import AscensionEmblem from "@/assets/Ascension-Emblem.svg";
 
 interface LogoLoaderProps {
   size?: "sm" | "md" | "lg";
