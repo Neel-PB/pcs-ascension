@@ -83,68 +83,77 @@ const varianceDataByLevel = {
     { name: "Wisconsin", ...generateVariance() },
   ],
   facilities: {
-    "Florida": [
-      { name: "Ascension Sacred Heart Pensacola", ...generateVariance() },
-      { name: "Studer Family Children's Hospital", ...generateVariance() },
-      { name: "Ascension St. Vincent's Riverside", ...generateVariance() },
-      { name: "Ascension St. Vincent's Southside", ...generateVariance() },
-      { name: "Ascension St. Vincent's St. Clair's", ...generateVariance() },
-      { name: "Ascension St. Vincent's Clay County", ...generateVariance() },
-    ],
-    "Illinois": [
-      { name: "Ascension Illinois", ...generateVariance() },
-    ],
-    "Indiana": [
-      { name: "Peyton Manning Children's Hospital", ...generateVariance() },
-      { name: "Ascension St. Vincent Indianapolis", ...generateVariance() },
-      { name: "Ascension St. Vincent Heart Center", ...generateVariance() },
-      { name: "Ascension St. Vincent Kokomo", ...generateVariance() },
-      { name: "Ascension St. Vincent Anderson", ...generateVariance() },
-      { name: "Ascension St. Vincent Fishers", ...generateVariance() },
-      { name: "Ascension St. Vincent Carmel", ...generateVariance() },
-      { name: "Ascension St. Vincent Warrick", ...generateVariance() },
-      { name: "Ascension St. Vincent Evansville", ...generateVariance() },
-    ],
-    "Kansas": [
-      { name: "Ascension Via Christi Wichita", ...generateVariance() },
-      { name: "Ascension Via Christi Pittsburg", ...generateVariance() },
-      { name: "Ascension Via Christi St. Joseph", ...generateVariance() },
-      { name: "Ascension Via Christi Manhattan", ...generateVariance() },
-      { name: "Ascension Via Christi St. Teresa", ...generateVariance() },
-    ],
-    "Maryland": [
-      { name: "Ascension St. Agnes Hospital", ...generateVariance() },
-    ],
-    "Oklahoma": [
-      { name: "St. John Medical Center", ...generateVariance() },
-      { name: "St. John Sapulpa", ...generateVariance() },
-      { name: "St. John Owasso", ...generateVariance() },
-      { name: "St. John Broken Arrow", ...generateVariance() },
-      { name: "Jane Phillips Medical Center", ...generateVariance() },
-    ],
-    "Tennessee": [
-      { name: "Ascension Saint Thomas Midtown", ...generateVariance() },
-      { name: "Ascension Saint Thomas West", ...generateVariance() },
-      { name: "Ascension Saint Thomas Rutherford", ...generateVariance() },
-      { name: "Ascension Saint Thomas Hickman", ...generateVariance() },
-      { name: "Ascension Saint Thomas DeKalb", ...generateVariance() },
-      { name: "Ascension Saint Thomas Highlands", ...generateVariance() },
-      { name: "Ascension Saint Thomas River Park", ...generateVariance() },
-    ],
-    "Texas": [
-      { name: "Ascension Seton Austin", ...generateVariance() },
-      { name: "Ascension Seton Northwest", ...generateVariance() },
-      { name: "Ascension Seton Southwest", ...generateVariance() },
-      { name: "Dell Children's Medical Center", ...generateVariance() },
-      { name: "Ascension Seton Hays", ...generateVariance() },
-      { name: "Ascension Seton Williamson", ...generateVariance() },
-      { name: "Ascension Seton Harker Heights", ...generateVariance() },
-      { name: "Ascension Providence", ...generateVariance() },
-    ],
-    "Wisconsin": [
-      { name: "Ascension Columbia St. Mary's Milwaukee", ...generateVariance() },
-      { name: "Ascension Columbia St. Mary's Ozaukee", ...generateVariance() },
-    ],
+    "Florida": {
+      "FLJAC": [
+        { name: "ASV Clay County Hospital", ...generateVariance() },
+        { name: "ASV Riverside Hospital", ...generateVariance() },
+        { name: "ASV Southside Hospital", ...generateVariance() },
+        { name: "St Johns County Hospital", ...generateVariance() },
+      ],
+    },
+    "Illinois": {
+      "ILARL": [
+        { name: "Alexian Bros Medical Ctr", ...generateVariance() },
+        { name: "Saint Joseph Hosp Chgo", ...generateVariance() },
+      ],
+    },
+    "Indiana": {
+      "ININD": [
+        { name: "St Vincent Fishers Hosp", ...generateVariance() },
+        { name: "St Vincent Heart Ctr", ...generateVariance() },
+        { name: "St Vincent Indpls Acute", ...generateVariance() },
+        { name: "St Vincent Kokomo", ...generateVariance() },
+        { name: "St Vincent Anderson", ...generateVariance() },
+        { name: "St Vincent Carmel", ...generateVariance() },
+        { name: "St Vincent Evansville", ...generateVariance() },
+        { name: "Peyton Manning Children's Hospital", ...generateVariance() },
+      ],
+    },
+    "Kansas": {
+      "KSWICH": [
+        { name: "Via Christi Hosp Pittsburg", ...generateVariance() },
+        { name: "Via Christi Hosp St Joseph", ...generateVariance() },
+        { name: "Via Christi Hosp Wichita", ...generateVariance() },
+      ],
+    },
+    "Maryland": {
+      "MDBAL": [
+        { name: "St Agnes Healthcare", ...generateVariance() },
+      ],
+    },
+    "Oklahoma": {
+      "OKTUL": [
+        { name: "St John Medical Center", ...generateVariance() },
+        { name: "St John Owasso", ...generateVariance() },
+        { name: "St John Sapulpa", ...generateVariance() },
+        { name: "St John Broken Arrow", ...generateVariance() },
+        { name: "Jane Phillips Medical Center", ...generateVariance() },
+      ],
+    },
+    "Tennessee": {
+      "TNNAS": [
+        { name: "AST DeKalb Hosp", ...generateVariance() },
+        { name: "AST Hickman Hosp", ...generateVariance() },
+        { name: "Saint Thomas Midtown", ...generateVariance() },
+        { name: "Saint Thomas West", ...generateVariance() },
+        { name: "Saint Thomas Rutherford", ...generateVariance() },
+      ],
+    },
+    "Texas": {
+      "TXAUS": [
+        { name: "Asc Seton Williamson", ...generateVariance() },
+        { name: "Dell Childrens MedCtr TX", ...generateVariance() },
+        { name: "Seton Medical Center Austin", ...generateVariance() },
+        { name: "Seton Northwest Hospital", ...generateVariance() },
+        { name: "Seton Southwest Hospital", ...generateVariance() },
+      ],
+    },
+    "Wisconsin": {
+      "WIMIL": [
+        { name: "All Saints Hospital", ...generateVariance() },
+        { name: "CSM Milwaukee Hosp", ...generateVariance() },
+      ],
+    },
   },
   departments: [
     { name: "Emergency", ...generateVariance() },
@@ -193,91 +202,52 @@ export function VarianceAnalysis({
       }));
     }
 
-    // Show facilities when market is selected (group by facility type or just list)
+    // Show facilities when market is selected (group by submarket)
     if (selectedMarket !== "all-markets") {
-      const facilityData = varianceDataByLevel.facilities[selectedMarket as keyof typeof varianceDataByLevel.facilities];
-      if (facilityData) {
-        // For simplicity, create groups for different facility types
-        const childrenHospitals = facilityData.filter(f => f.name.includes("Children"));
-        const otherFacilities = facilityData.filter(f => !f.name.includes("Children"));
-
+      const marketData = varianceDataByLevel.facilities[selectedMarket as keyof typeof varianceDataByLevel.facilities];
+      if (marketData) {
         const groups: GroupedVarianceData[] = [];
 
-        if (childrenHospitals.length > 0) {
-          const groupTotal = childrenHospitals.reduce((acc, curr) => ({
-            clDay: acc.clDay + curr.clDay,
-            clNight: acc.clNight + curr.clNight,
-            clTotal: acc.clTotal + curr.clTotal,
-            rnDay: acc.rnDay + curr.rnDay,
-            rnNight: acc.rnNight + curr.rnNight,
-            rnTotal: acc.rnTotal + curr.rnTotal,
-            pctDay: acc.pctDay + curr.pctDay,
-            pctNight: acc.pctNight + curr.pctNight,
-            pctTotal: acc.pctTotal + curr.pctTotal,
-            hucDay: acc.hucDay + curr.hucDay,
-            hucNight: acc.hucNight + curr.hucNight,
-            hucTotal: acc.hucTotal + curr.hucTotal,
-            overheadDay: acc.overheadDay + curr.overheadDay,
-            overheadNight: acc.overheadNight + curr.overheadNight,
-            overheadTotal: acc.overheadTotal + curr.overheadTotal,
-          }), {
-            clDay: 0, clNight: 0, clTotal: 0,
-            rnDay: 0, rnNight: 0, rnTotal: 0,
-            pctDay: 0, pctNight: 0, pctTotal: 0,
-            hucDay: 0, hucNight: 0, hucTotal: 0,
-            overheadDay: 0, overheadNight: 0, overheadTotal: 0,
-          });
+        // Iterate over submarkets
+        Object.entries(marketData).forEach(([submarket, facilities]) => {
+          if (facilities.length > 0) {
+            const groupTotal = facilities.reduce((acc, curr) => ({
+              clDay: acc.clDay + curr.clDay,
+              clNight: acc.clNight + curr.clNight,
+              clTotal: acc.clTotal + curr.clTotal,
+              rnDay: acc.rnDay + curr.rnDay,
+              rnNight: acc.rnNight + curr.rnNight,
+              rnTotal: acc.rnTotal + curr.rnTotal,
+              pctDay: acc.pctDay + curr.pctDay,
+              pctNight: acc.pctNight + curr.pctNight,
+              pctTotal: acc.pctTotal + curr.pctTotal,
+              hucDay: acc.hucDay + curr.hucDay,
+              hucNight: acc.hucNight + curr.hucNight,
+              hucTotal: acc.hucTotal + curr.hucTotal,
+              overheadDay: acc.overheadDay + curr.overheadDay,
+              overheadNight: acc.overheadNight + curr.overheadNight,
+              overheadTotal: acc.overheadTotal + curr.overheadTotal,
+            }), {
+              clDay: 0, clNight: 0, clTotal: 0,
+              rnDay: 0, rnNight: 0, rnTotal: 0,
+              pctDay: 0, pctNight: 0, pctTotal: 0,
+              hucDay: 0, hucNight: 0, hucTotal: 0,
+              overheadDay: 0, overheadNight: 0, overheadTotal: 0,
+            });
 
-          groups.push({
-            name: "Children's Hospitals",
-            type: 'group',
-            id: 'group-children',
-            ...groupTotal,
-            children: childrenHospitals.map((f, idx) => ({
-              ...f,
-              type: 'skill' as const,
-              id: `child-${idx}`,
-            })),
-          });
-        }
-
-        if (otherFacilities.length > 0) {
-          const groupTotal = otherFacilities.reduce((acc, curr) => ({
-            clDay: acc.clDay + curr.clDay,
-            clNight: acc.clNight + curr.clNight,
-            clTotal: acc.clTotal + curr.clTotal,
-            rnDay: acc.rnDay + curr.rnDay,
-            rnNight: acc.rnNight + curr.rnNight,
-            rnTotal: acc.rnTotal + curr.rnTotal,
-            pctDay: acc.pctDay + curr.pctDay,
-            pctNight: acc.pctNight + curr.pctNight,
-            pctTotal: acc.pctTotal + curr.pctTotal,
-            hucDay: acc.hucDay + curr.hucDay,
-            hucNight: acc.hucNight + curr.hucNight,
-            hucTotal: acc.hucTotal + curr.hucTotal,
-            overheadDay: acc.overheadDay + curr.overheadDay,
-            overheadNight: acc.overheadNight + curr.overheadNight,
-            overheadTotal: acc.overheadTotal + curr.overheadTotal,
-          }), {
-            clDay: 0, clNight: 0, clTotal: 0,
-            rnDay: 0, rnNight: 0, rnTotal: 0,
-            pctDay: 0, pctNight: 0, pctTotal: 0,
-            hucDay: 0, hucNight: 0, hucTotal: 0,
-            overheadDay: 0, overheadNight: 0, overheadTotal: 0,
-          });
-
-          groups.push({
-            name: "Regional Medical Centers",
-            type: 'group',
-            id: 'group-regional',
-            ...groupTotal,
-            children: otherFacilities.map((f, idx) => ({
-              ...f,
-              type: 'skill' as const,
-              id: `regional-${idx}`,
-            })),
-          });
-        }
+            groups.push({
+              name: submarket,
+              type: 'group',
+              id: `group-${submarket}`,
+              ...groupTotal,
+              children: facilities.map((f, idx) => ({
+                ...f,
+                type: 'skill' as const,
+                id: `${submarket}-${idx}`,
+              })),
+            });
+          }
+        });
 
         return groups;
       }
