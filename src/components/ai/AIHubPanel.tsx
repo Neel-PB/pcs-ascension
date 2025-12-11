@@ -5,7 +5,7 @@ import { PillChatBar } from './PillChatBar';
 import { ContentBlock } from '@/types/contentBlock';
 import { ContentBlockRenderer } from './ContentBlockRenderer';
 import { mockComplexResponse, simpleReasoningBlocks } from '@/data/mockContentBlocks';
-import ascensionLogo from '@/assets/Ascension-Emblem.png';
+import ascensionLogo from '@/assets/Ascension-Emblem.svg';
 
 interface ProcessedFile {
   id: string;
