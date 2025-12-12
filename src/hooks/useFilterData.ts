@@ -89,13 +89,13 @@ export function useFilterData() {
 
   // Helper: get facilities filtered by market
   const getFacilitiesByMarket = (marketName: string | null) => {
-    if (!marketName || marketName === "all-markets") return [];
-    return facilities.filter((f) => f.market === marketName);
+    if (!marketName || marketName === "all-markets") return facilities;
+    return facilities.filter((f) => f.market.toUpperCase() === marketName.toUpperCase());
   };
 
   // Helper: get departments filtered by facility
   const getDepartmentsByFacility = (facilityId: string | null) => {
-    if (!facilityId || facilityId === "all-facilities") return [];
+    if (!facilityId || facilityId === "all-facilities") return departments;
     return departments.filter((d) => d.facility_id === facilityId);
   };
 
