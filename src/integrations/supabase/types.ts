@@ -120,6 +120,8 @@ export type Database = {
           facility_name: string
           id: string
           market: string
+          region: string | null
+          submarket: string | null
         }
         Insert: {
           created_at?: string
@@ -127,6 +129,8 @@ export type Database = {
           facility_name: string
           id?: string
           market: string
+          region?: string | null
+          submarket?: string | null
         }
         Update: {
           created_at?: string
@@ -134,6 +138,8 @@ export type Database = {
           facility_name?: string
           id?: string
           market?: string
+          region?: string | null
+          submarket?: string | null
         }
         Relationships: []
       }
@@ -323,16 +329,19 @@ export type Database = {
           created_at: string
           id: string
           market: string
+          region: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           market: string
+          region?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           market?: string
+          region?: string | null
         }
         Relationships: []
       }
@@ -651,6 +660,24 @@ export type Database = {
           job_title?: string | null
           last_name?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      regions: {
+        Row: {
+          created_at: string | null
+          id: string
+          region: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          region: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          region?: string
         }
         Relationships: []
       }

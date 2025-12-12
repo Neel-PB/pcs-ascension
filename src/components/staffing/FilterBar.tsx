@@ -2,6 +2,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { useFilterData } from "@/hooks/useFilterData";
 
 interface FilterBarProps {
   className?: string;
@@ -18,13 +19,6 @@ interface FilterBarProps {
   selectedDepartment?: string;
 }
 
-// Region groupings
-const regions = {
-  "Southeast": ["Florida", "Tennessee", "Maryland"],
-  "Midwest": ["Illinois", "Indiana", "Wisconsin"],
-  "South Central": ["Kansas", "Oklahoma", "Texas"],
-};
-
 export function FilterBar({ 
   className,
   onRegionChange,
@@ -39,6 +33,13 @@ export function FilterBar({
   selectedDepartmentFamily = "all-dept-families",
   selectedDepartment = "all-departments",
 }: FilterBarProps) {
+  const { 
+    regions, 
+    getMarketsByRegion, 
+    getFacilitiesByMarket, 
+    getDepartmentsByFacility 
+  } = useFilterData();
+
   // Department Families (Job Families)
   const departmentFamilies = [
     "Clinical Nurse",
@@ -62,40 +63,15 @@ export function FilterBar({
     "Administrative Support",
     "Health Information Management",
   ].sort();
-  // Facilities mapped by market (state) - using numeric facility IDs from labor_performance
-  const facilitiesByMarket: Record<string, Array<{ value: string; label: string }>> = {
-    "Florida": [
-      { value: "26012", label: "Sacred Heart Pensacola" },
-      { value: "52009", label: "St. Vincent's Riverside" },
-      { value: "52005", label: "St. Vincent's Southside" },
-    ],
-    "Illinois": [],
-    "Indiana": [],
-    "Kansas": [],
-    "Maryland": [],
-    "Oklahoma": [],
-    "Tennessee": [],
-    "Texas": [
-      { value: "30049", label: "Dell Seton" },
-      { value: "30024", label: "Seton Hays" },
-    ],
-    "Wisconsin": [],
-  };
 
   // Get available markets based on selected region
-  const getAvailableMarkets = () => {
-    if (selectedRegion === "all-regions") return Object.keys(facilitiesByMarket);
-    return regions[selectedRegion as keyof typeof regions] || [];
-  };
+  const availableMarkets = getMarketsByRegion(selectedRegion);
 
   // Get available facilities based on selected market
-  const getAvailableFacilities = () => {
-    if (selectedMarket === "all-markets") return [];
-    return facilitiesByMarket[selectedMarket] || [];
-  };
+  const availableFacilities = getFacilitiesByMarket(selectedMarket);
 
-  const availableMarkets = getAvailableMarkets();
-  const availableFacilities = getAvailableFacilities();
+  // Get available departments based on selected facility
+  const availableDepartments = getDepartmentsByFacility(selectedFacility);
 
   // Check if any filters are active (not in default state)
   const hasActiveFilters = 
@@ -121,9 +97,9 @@ export function FilterBar({
           </SelectTrigger>
           <SelectContent className="bg-popover border-border z-50">
             <SelectItem value="all-regions">All Regions</SelectItem>
-            <SelectItem value="Southeast">Southeast</SelectItem>
-            <SelectItem value="Midwest">Midwest</SelectItem>
-            <SelectItem value="South Central">South Central</SelectItem>
+            {regions.map(region => (
+              <SelectItem key={region.id} value={region.region}>{region.region}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
@@ -135,7 +111,7 @@ export function FilterBar({
           <SelectContent className="bg-popover border-border z-50">
             <SelectItem value="all-markets">All Markets</SelectItem>
             {availableMarkets.map(market => (
-              <SelectItem key={market} value={market}>{market}</SelectItem>
+              <SelectItem key={market.id} value={market.market}>{market.market}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -152,7 +128,7 @@ export function FilterBar({
           <SelectContent className="bg-popover border-border z-50">
             <SelectItem value="all-facilities">All Facilities</SelectItem>
             {availableFacilities.map(facility => (
-              <SelectItem key={facility.value} value={facility.value}>{facility.label}</SelectItem>
+              <SelectItem key={facility.id} value={facility.facility_id}>{facility.facility_name}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -168,10 +144,9 @@ export function FilterBar({
           </SelectTrigger>
           <SelectContent className="bg-popover border-border z-50">
             <SelectItem value="all-departments">All Departments</SelectItem>
-            <SelectItem value="emergency">Emergency</SelectItem>
-            <SelectItem value="icu">ICU</SelectItem>
-            <SelectItem value="surgery">Surgery</SelectItem>
-            <SelectItem value="cardiology">Cardiology</SelectItem>
+            {availableDepartments.map(dept => (
+              <SelectItem key={dept.id} value={dept.department_id}>{dept.department_name}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
 

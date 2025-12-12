@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Download, Maximize2, ChevronRight } from "lucide-react";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { useExpandStore } from "@/stores/useExpandStore";
 import { cn } from "@/lib/utils";
+import { useFilterData } from "@/hooks/useFilterData";
 
 interface VarianceData {
   name: string;
@@ -57,12 +58,7 @@ const generateVariance = () => ({
   overheadTotal: (Math.random() * 1 - 0.5),
 });
 
-// Region groupings
-const regionMap: { [key: string]: string[] } = {
-  "Southeast": ["Florida", "Tennessee", "Baltimore"],
-  "Midwest": ["Illinois", "Indiana", "Wisconsin"],
-  "South Central": ["Kansas", "Oklahoma", "Texas"],
-};
+// Note: regionMap is now derived from database via useFilterData hook
 
 // Real hierarchical data structure
 const varianceDataByLevel = {
@@ -187,6 +183,21 @@ export function VarianceAnalysis({
 }: VarianceAnalysisProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { isExpanded: isGroupExpanded, toggleExpanded } = useExpandStore();
+  const { markets, getMarketsByRegion, getFacilitiesGroupedBySubmarket } = useFilterData();
+
+  // Build region-to-markets map from database
+  const regionMap = useMemo(() => {
+    const map: Record<string, string[]> = {};
+    markets.forEach(m => {
+      if (m.region) {
+        if (!map[m.region]) map[m.region] = [];
+        if (!map[m.region].includes(m.market)) {
+          map[m.region].push(m.market);
+        }
+      }
+    });
+    return map;
+  }, [markets]);
 
   // Format variance value with +/- sign
   const formatVariance = (value: number): string => {
@@ -211,55 +222,58 @@ export function VarianceAnalysis({
       }));
     }
 
-    // Show facilities when market is selected (group by submarket)
+    // Show facilities when market is selected (group by submarket from DB)
     if (selectedMarket !== "all-markets") {
-      const marketData = varianceDataByLevel.facilities[selectedMarket as keyof typeof varianceDataByLevel.facilities];
-      if (marketData) {
-        const groups: GroupedVarianceData[] = [];
+      const submarketGroups = getFacilitiesGroupedBySubmarket(selectedMarket);
+      const groups: GroupedVarianceData[] = [];
 
-        // Iterate over submarkets
-        Object.entries(marketData).forEach(([submarket, facilities]) => {
-          if (facilities.length > 0) {
-            const groupTotal = facilities.reduce((acc, curr) => ({
-              clDay: acc.clDay + curr.clDay,
-              clNight: acc.clNight + curr.clNight,
-              clTotal: acc.clTotal + curr.clTotal,
-              rnDay: acc.rnDay + curr.rnDay,
-              rnNight: acc.rnNight + curr.rnNight,
-              rnTotal: acc.rnTotal + curr.rnTotal,
-              pctDay: acc.pctDay + curr.pctDay,
-              pctNight: acc.pctNight + curr.pctNight,
-              pctTotal: acc.pctTotal + curr.pctTotal,
-              hucDay: acc.hucDay + curr.hucDay,
-              hucNight: acc.hucNight + curr.hucNight,
-              hucTotal: acc.hucTotal + curr.hucTotal,
-              overheadDay: acc.overheadDay + curr.overheadDay,
-              overheadNight: acc.overheadNight + curr.overheadNight,
-              overheadTotal: acc.overheadTotal + curr.overheadTotal,
-            }), {
-              clDay: 0, clNight: 0, clTotal: 0,
-              rnDay: 0, rnNight: 0, rnTotal: 0,
-              pctDay: 0, pctNight: 0, pctTotal: 0,
-              hucDay: 0, hucNight: 0, hucTotal: 0,
-              overheadDay: 0, overheadNight: 0, overheadTotal: 0,
-            });
+      Object.entries(submarketGroups).forEach(([submarket, facilities]) => {
+        if (facilities.length > 0) {
+          // Generate mock variance data for each facility
+          const facilitiesWithVariance = facilities.map(f => ({
+            name: f.facility_name,
+            ...generateVariance(),
+          }));
 
-            groups.push({
-              name: submarket,
-              type: 'group',
-              id: `group-${submarket}`,
-              ...groupTotal,
-              children: facilities.map((f, idx) => ({
-                ...f,
-                type: 'skill' as const,
-                id: `${submarket}-${idx}`,
-              })),
-            });
-          }
-        });
+          const groupTotal = facilitiesWithVariance.reduce((acc, curr) => ({
+            clDay: acc.clDay + curr.clDay,
+            clNight: acc.clNight + curr.clNight,
+            clTotal: acc.clTotal + curr.clTotal,
+            rnDay: acc.rnDay + curr.rnDay,
+            rnNight: acc.rnNight + curr.rnNight,
+            rnTotal: acc.rnTotal + curr.rnTotal,
+            pctDay: acc.pctDay + curr.pctDay,
+            pctNight: acc.pctNight + curr.pctNight,
+            pctTotal: acc.pctTotal + curr.pctTotal,
+            hucDay: acc.hucDay + curr.hucDay,
+            hucNight: acc.hucNight + curr.hucNight,
+            hucTotal: acc.hucTotal + curr.hucTotal,
+            overheadDay: acc.overheadDay + curr.overheadDay,
+            overheadNight: acc.overheadNight + curr.overheadNight,
+            overheadTotal: acc.overheadTotal + curr.overheadTotal,
+          }), {
+            clDay: 0, clNight: 0, clTotal: 0,
+            rnDay: 0, rnNight: 0, rnTotal: 0,
+            pctDay: 0, pctNight: 0, pctTotal: 0,
+            hucDay: 0, hucNight: 0, hucTotal: 0,
+            overheadDay: 0, overheadNight: 0, overheadTotal: 0,
+          });
 
-        return groups;
-      }
+          groups.push({
+            name: submarket,
+            type: 'group',
+            id: `group-${submarket}`,
+            ...groupTotal,
+            children: facilitiesWithVariance.map((f, idx) => ({
+              ...f,
+              type: 'skill' as const,
+              id: `${submarket}-${idx}`,
+            })),
+          });
+        }
+      });
+
+      return groups;
     }
 
     // Show markets grouped by region when region is selected
