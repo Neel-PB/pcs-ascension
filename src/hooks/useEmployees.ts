@@ -23,9 +23,9 @@ export function useEmployees({
         .eq("positionLifecycle", "Filled")
         .not("employmentFlag", "like", "%Contingent%");
 
-      // Apply filters
+      // Apply filters - use ilike for case-insensitive market matching
       if (selectedMarket && selectedMarket !== "all-markets") {
-        query = query.eq("market", selectedMarket);
+        query = query.ilike("market", selectedMarket);
       }
 
       if (selectedFacility && selectedFacility !== "all-facilities") {
