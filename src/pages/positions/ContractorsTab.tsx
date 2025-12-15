@@ -85,12 +85,18 @@ export function ContractorsTab({
     return count;
   }, [filters]);
 
-  const handleActualFteUpdate = useCallback((id: string, previousValue: number | null, data: {
-    actual_fte: number | null;
-    actual_fte_expiry: string | null;
-    actual_fte_status: string | null;
-  }) => {
-    updateActualFte.mutate({ id, ...data, previousValue });
+  const handleActualFteUpdate = useCallback((
+    id: string, 
+    previousFte: number | null, 
+    previousExpiry: string | null,
+    previousStatus: string | null,
+    data: {
+      actual_fte: number | null;
+      actual_fte_expiry: string | null;
+      actual_fte_status: string | null;
+    }
+  ) => {
+    updateActualFte.mutate({ id, ...data, previousFte, previousExpiry, previousStatus });
   }, [updateActualFte]);
 
   const handleShiftOverrideUpdate = useCallback((id: string, originalShift: string | null, value: string | null) => {
@@ -202,7 +208,13 @@ export function ContractorsTab({
               originalValue={row.FTE}
               expiryDate={row.actual_fte_expiry}
               status={row.actual_fte_status}
-              onSave={(data) => handleActualFteUpdate(row.id, row.actual_fte, data)}
+              onSave={(data) => handleActualFteUpdate(
+                row.id, 
+                row.actual_fte, 
+                row.actual_fte_expiry,
+                row.actual_fte_status,
+                data
+              )}
             />
           ),
         };

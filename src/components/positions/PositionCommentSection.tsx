@@ -1,18 +1,6 @@
 import { useState } from "react";
 import { formatDistanceToNow, format, differenceInHours } from "date-fns";
-
-// Smart timestamp: relative time within 24h, actual date after
-const formatCommentTimestamp = (dateString: string) => {
-  const date = new Date(dateString);
-  const hoursAgo = differenceInHours(new Date(), date);
-  
-  if (hoursAgo < 24) {
-    return formatDistanceToNow(date, { addSuffix: true });
-  } else {
-    return format(date, "MMM d, yyyy");
-  }
-};
-import { Pencil, Trash2, ArrowUp, MessageSquare, Copy, Check, ChevronRight, Loader2 } from "lucide-react";
+import { Pencil, Trash2, ArrowUp, MessageSquare, Copy, Check, ChevronRight, Loader2, ArrowRight, RotateCcw } from "lucide-react";
 import { LogoLoader } from "@/components/ui/LogoLoader";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,9 +16,122 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+// Smart timestamp: relative time within 24h, actual date after
+const formatCommentTimestamp = (dateString: string) => {
+  const date = new Date(dateString);
+  const hoursAgo = differenceInHours(new Date(), date);
+  
+  if (hoursAgo < 24) {
+    return formatDistanceToNow(date, { addSuffix: true });
+  } else {
+    return format(date, "MMM d, yyyy");
+  }
+};
+
 interface PositionCommentSectionProps {
   positionId: string;
   onClose?: () => void;
+}
+
+// Component to render a single field row in activity log
+function ActivityFieldRow({ 
+  label, 
+  oldValue, 
+  newValue, 
+  showArrow = true 
+}: { 
+  label: string; 
+  oldValue: string | number | null | undefined; 
+  newValue: string | number | null | undefined;
+  showArrow?: boolean;
+}) {
+  const hasOld = oldValue !== null && oldValue !== undefined && oldValue !== '';
+  const hasNew = newValue !== null && newValue !== undefined && newValue !== '';
+  const hasChange = hasOld || hasNew;
+
+  if (!hasChange) {
+    return (
+      <div className="flex items-center gap-3 text-sm">
+        <span className="text-muted-foreground w-16 shrink-0">{label}</span>
+        <span className="text-muted-foreground/50">—</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-3 text-sm">
+      <span className="text-muted-foreground w-16 shrink-0">{label}</span>
+      <div className="flex items-center gap-2">
+        {hasOld && (
+          <span className="text-muted-foreground">{oldValue}</span>
+        )}
+        {showArrow && (hasOld || hasNew) && (
+          <ArrowRight className="h-3.5 w-3.5 text-primary shrink-0" />
+        )}
+        {hasNew && (
+          <span className="font-medium text-foreground">{newValue}</span>
+        )}
+        {!hasOld && hasNew && !showArrow && (
+          <span className="font-medium text-foreground">{newValue}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Render FTE activity log card
+function FteActivityCard({ metadata, displayName }: { metadata: Record<string, unknown>; displayName: string }) {
+  const fteOld = metadata.fte_old as number | null;
+  const fteNew = metadata.fte_new as number | null;
+  const reasonOld = metadata.reason_old as string | null;
+  const reasonNew = metadata.reason_new as string | null;
+  const expiryOld = metadata.expiry_old as string | null;
+  const expiryNew = metadata.expiry_new as string | null;
+
+  return (
+    <div className="space-y-2">
+      <ActivityFieldRow label="FTE" oldValue={fteOld} newValue={fteNew} />
+      <ActivityFieldRow label="Reason" oldValue={reasonOld} newValue={reasonNew} />
+      <ActivityFieldRow 
+        label="Expiry" 
+        oldValue={expiryOld ? format(new Date(expiryOld), "MMM d, yyyy") : null} 
+        newValue={expiryNew ? format(new Date(expiryNew), "MMM d, yyyy") : null} 
+      />
+      <div className="flex justify-end pt-1">
+        <span className="text-xs text-muted-foreground">by {displayName}</span>
+      </div>
+    </div>
+  );
+}
+
+// Render Shift activity log card
+function ShiftActivityCard({ metadata, displayName }: { metadata: Record<string, unknown>; displayName: string }) {
+  const shiftOld = metadata.shift_old as string | null;
+  const shiftNew = metadata.shift_new as string | null;
+  const isRevert = metadata.is_revert as boolean;
+
+  return (
+    <div className="space-y-2">
+      {isRevert ? (
+        <div className="flex items-center gap-2 text-sm">
+          <RotateCcw className="h-4 w-4 text-primary" />
+          <span className="text-foreground">Reverted to</span>
+          <span className="font-medium text-foreground">{shiftNew}</span>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 text-sm">
+          {shiftOld && (
+            <span className="text-muted-foreground">{shiftOld}</span>
+          )}
+          <ArrowRight className="h-4 w-4 text-primary shrink-0" />
+          <span className="font-medium text-foreground">{shiftNew}</span>
+        </div>
+      )}
+      <div className="flex justify-end pt-1">
+        <span className="text-xs text-muted-foreground">by {displayName}</span>
+      </div>
+    </div>
+  );
 }
 
 export function PositionCommentSection({ positionId, onClose }: PositionCommentSectionProps) {
@@ -122,7 +223,7 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
             </div>
           )}
 
-          {/* Individual Comments - AI Hub Style */}
+          {/* Individual Comments */}
           {comments?.map((comment) => {
             const isOwner = currentUserId === comment.user_id;
             const displayName = comment.profiles
@@ -130,11 +231,12 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
               : "Unknown User";
             
             const isActivityLog = comment.comment_type === 'activity_fte' || comment.comment_type === 'activity_shift';
-            const activityLabel = comment.comment_type === 'activity_fte' 
-              ? '📊 FTE Change' 
-              : comment.comment_type === 'activity_shift' 
-                ? '🔄 Shift Change' 
-                : null;
+            const isFteActivity = comment.comment_type === 'activity_fte';
+            const isShiftActivity = comment.comment_type === 'activity_shift';
+            const activityLabel = isFteActivity ? 'FTE Change' : isShiftActivity ? 'Shift Change' : null;
+            
+            // Parse metadata for activity logs
+            const metadata = (comment.metadata || {}) as Record<string, unknown>;
 
             return (
               <div key={comment.id} className={`space-y-1 ${isActivityLog ? 'flex flex-col items-end' : ''}`}>
@@ -173,20 +275,24 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
                     <div className="space-y-1">
                       {/* Message row with copy button only for activity logs */}
                       <div className={`flex items-start gap-2 ${isActivityLog ? 'flex-row-reverse' : ''}`}>
-                        {/* Message Bubble - Blue tint for activity logs */}
+                        {/* Message Bubble */}
                         <div className="max-w-[85%]">
                           <div className={`px-4 py-3 rounded-2xl ${
                             isActivityLog 
-                              ? 'rounded-br-sm bg-primary/15 border border-primary/20' 
+                              ? 'rounded-br-sm bg-primary/10 border border-primary/20' 
                               : 'rounded-bl-sm bg-muted'
                           }`}>
-                            <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
-                              {comment.content}
-                            </p>
-                            {/* User name inside bubble for activity logs */}
-                            {isActivityLog && (
-                              <p className="text-xs text-muted-foreground mt-2">
-                                by {displayName}
+                            {/* Structured content for activity logs */}
+                            {isFteActivity && (
+                              <FteActivityCard metadata={metadata} displayName={displayName} />
+                            )}
+                            {isShiftActivity && (
+                              <ShiftActivityCard metadata={metadata} displayName={displayName} />
+                            )}
+                            {/* Regular comment content */}
+                            {!isActivityLog && (
+                              <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                                {comment.content}
                               </p>
                             )}
                           </div>
@@ -199,7 +305,7 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
                               size="icon"
                               variant="ghost"
                               className="h-7 w-7 hover:bg-accent"
-                              onClick={() => handleCopyComment(comment.id, comment.content)}
+                              onClick={() => handleCopyComment(comment.id, JSON.stringify(metadata, null, 2))}
                             >
                               {copiedId === comment.id ? (
                                 <Check className="h-3.5 w-3.5 text-primary" />

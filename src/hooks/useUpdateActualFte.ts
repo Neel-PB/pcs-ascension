@@ -9,7 +9,10 @@ interface UpdateActualFteParams {
   actual_fte: number | null;
   actual_fte_expiry?: string | null;
   actual_fte_status?: string | null;
-  previousValue?: number | null;
+  // Previous values for activity logging
+  previousFte?: number | null;
+  previousExpiry?: string | null;
+  previousStatus?: string | null;
 }
 
 export function useUpdateActualFte() {
@@ -17,7 +20,15 @@ export function useUpdateActualFte() {
   const addActivityLog = useAddActivityLog();
 
   return useMutation({
-    mutationFn: async ({ id, actual_fte, actual_fte_expiry, actual_fte_status, previousValue }: UpdateActualFteParams) => {
+    mutationFn: async ({ 
+      id, 
+      actual_fte, 
+      actual_fte_expiry, 
+      actual_fte_status, 
+      previousFte,
+      previousExpiry,
+      previousStatus,
+    }: UpdateActualFteParams) => {
       const { data, error } = await supabase
         .from('positions')
         .update({
@@ -31,7 +42,12 @@ export function useUpdateActualFte() {
         .single();
 
       if (error) throw error;
-      return { ...data, previousValue };
+      return { 
+        ...data, 
+        previousFte,
+        previousExpiry,
+        previousStatus,
+      };
     },
     onSuccess: (updatedData) => {
       const updatePositionInCache = (oldData: Position[] | undefined) => {
@@ -57,15 +73,17 @@ export function useUpdateActualFte() {
         updatePositionInCache
       );
 
-      // Log activity
+      // Log activity with structured field details
       addActivityLog.mutate({
         positionId: updatedData.id,
         changeType: 'fte',
-        oldValue: updatedData.previousValue ?? null,
-        newValue: updatedData.actual_fte,
-        additionalInfo: {
-          expiryDate: updatedData.actual_fte_expiry,
-          status: updatedData.actual_fte_status,
+        fteDetails: {
+          fte_old: updatedData.previousFte ?? null,
+          fte_new: updatedData.actual_fte,
+          reason_old: updatedData.previousStatus ?? null,
+          reason_new: updatedData.actual_fte_status ?? null,
+          expiry_old: updatedData.previousExpiry ?? null,
+          expiry_new: updatedData.actual_fte_expiry ?? null,
         },
       });
 
