@@ -1,6 +1,7 @@
 import { addMonths } from "date-fns";
 
 export interface VolumeOverrideConfig {
+  id?: string;
   min_months_for_target: number;
   min_months_mandatory_override: number;
   max_override_months_full_history: number;
@@ -9,6 +10,13 @@ export interface VolumeOverrideConfig {
   enable_backfill: boolean;
   backfill_lookback_months: number;
   min_volume_threshold: number;
+  // Location fields for department-specific configs
+  is_global?: boolean;
+  market?: string | null;
+  facility_id?: string | null;
+  facility_name?: string | null;
+  department_id?: string | null;
+  department_name?: string | null;
 }
 
 export type OverrideCategory = '0-months' | '1-2-months' | '3-11-months' | '12-months';

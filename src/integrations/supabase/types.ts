@@ -881,10 +881,16 @@ export type Database = {
           backfill_lookback_months: number
           created_at: string
           created_by: string | null
+          department_id: string | null
+          department_name: string | null
           enable_backfill: boolean
+          facility_id: string | null
+          facility_name: string | null
           fiscal_year_end_day: number
           fiscal_year_end_month: number
           id: string
+          is_global: boolean | null
+          market: string | null
           max_override_months_full_history: number
           min_months_for_target: number
           min_months_mandatory_override: number
@@ -895,10 +901,16 @@ export type Database = {
           backfill_lookback_months?: number
           created_at?: string
           created_by?: string | null
+          department_id?: string | null
+          department_name?: string | null
           enable_backfill?: boolean
+          facility_id?: string | null
+          facility_name?: string | null
           fiscal_year_end_day?: number
           fiscal_year_end_month?: number
           id?: string
+          is_global?: boolean | null
+          market?: string | null
           max_override_months_full_history?: number
           min_months_for_target?: number
           min_months_mandatory_override?: number
@@ -909,10 +921,16 @@ export type Database = {
           backfill_lookback_months?: number
           created_at?: string
           created_by?: string | null
+          department_id?: string | null
+          department_name?: string | null
           enable_backfill?: boolean
+          facility_id?: string | null
+          facility_name?: string | null
           fiscal_year_end_day?: number
           fiscal_year_end_month?: number
           id?: string
+          is_global?: boolean | null
+          market?: string | null
           max_override_months_full_history?: number
           min_months_for_target?: number
           min_months_mandatory_override?: number

@@ -1,53 +1,276 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useVolumeOverrideConfig } from '@/hooks/useHistoricalVolumeAnalysis';
-import { useUpdateVolumeOverrideConfig } from '@/hooks/useVolumeOverrideConfig';
+import { 
+  useUpdateVolumeOverrideConfig, 
+  useDepartmentOverrideConfigs,
+  useUpsertDepartmentConfig,
+  useDeleteDepartmentConfig 
+} from '@/hooks/useVolumeOverrideConfig';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Save, ChevronDown } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Save, ChevronDown, Trash2, Edit2, Globe, Building2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import type { VolumeOverrideConfig } from '@/lib/volumeOverrideRules';
+
+type ConfigMode = 'universal' | 'department';
+
+const DEFAULT_FORM_DATA = {
+  min_months_for_target: 3,
+  min_months_mandatory_override: 2,
+  max_override_months_full_history: 12,
+  fiscal_year_end_month: 6,
+  fiscal_year_end_day: 30,
+  enable_backfill: true,
+  backfill_lookback_months: 24,
+  min_volume_threshold: 0,
+};
 
 export function VolumeOverrideSettings() {
-  const { data: config, isLoading } = useVolumeOverrideConfig();
-  const updateConfig = useUpdateVolumeOverrideConfig();
+  const { data: globalConfig, isLoading: isLoadingGlobal } = useVolumeOverrideConfig();
+  const { data: deptConfigs = [], isLoading: isLoadingDepts } = useDepartmentOverrideConfigs();
+  const updateGlobalConfig = useUpdateVolumeOverrideConfig();
+  const upsertDeptConfig = useUpsertDepartmentConfig();
+  const deleteDeptConfig = useDeleteDepartmentConfig();
   
-  const [formData, setFormData] = useState({
-    min_months_for_target: 3,
-    min_months_mandatory_override: 2,
-    max_override_months_full_history: 12,
-    fiscal_year_end_month: 6,
-    fiscal_year_end_day: 30,
-    enable_backfill: true,
-    backfill_lookback_months: 24,
-    min_volume_threshold: 0,
-  });
-  
-  // Move useState before any early returns to follow React hook rules
+  const [mode, setMode] = useState<ConfigMode>('universal');
+  const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
   const [isMatrixOpen, setIsMatrixOpen] = useState(false);
+  
+  // Department selection state
+  const [selectedMarket, setSelectedMarket] = useState<string>('');
+  const [selectedFacility, setSelectedFacility] = useState<string>('');
+  const [selectedDepartment, setSelectedDepartment] = useState<string>('');
+  const [editingConfigId, setEditingConfigId] = useState<string | null>(null);
 
-  // Update form when config loads
+  // Fetch markets
+  const { data: markets = [] } = useQuery({
+    queryKey: ['markets'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('markets')
+        .select('market')
+        .order('market');
+      if (error) throw error;
+      return data.map(m => m.market);
+    },
+  });
+
+  // Fetch facilities for selected market
+  const { data: facilities = [] } = useQuery({
+    queryKey: ['facilities', selectedMarket],
+    queryFn: async () => {
+      if (!selectedMarket) return [];
+      const { data, error } = await supabase
+        .from('facilities')
+        .select('facility_id, facility_name')
+        .eq('market', selectedMarket)
+        .order('facility_name');
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedMarket,
+  });
+
+  // Fetch departments for selected facility
+  const { data: departments = [] } = useQuery({
+    queryKey: ['departments', selectedFacility],
+    queryFn: async () => {
+      if (!selectedFacility) return [];
+      const { data, error } = await supabase
+        .from('departments')
+        .select('department_id, department_name')
+        .eq('facility_id', selectedFacility)
+        .order('department_name');
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedFacility,
+  });
+
+  // Get facility name for selected facility
+  const selectedFacilityName = useMemo(() => {
+    return facilities.find(f => f.facility_id === selectedFacility)?.facility_name || '';
+  }, [facilities, selectedFacility]);
+
+  // Get department name for selected department
+  const selectedDepartmentName = useMemo(() => {
+    return departments.find(d => d.department_id === selectedDepartment)?.department_name || '';
+  }, [departments, selectedDepartment]);
+
+  // Update form when global config loads (for universal mode)
   useEffect(() => {
-    if (config) {
+    if (globalConfig && mode === 'universal' && !editingConfigId) {
       setFormData({
-        min_months_for_target: config.min_months_for_target,
-        min_months_mandatory_override: config.min_months_mandatory_override,
-        max_override_months_full_history: config.max_override_months_full_history,
-        fiscal_year_end_month: config.fiscal_year_end_month,
-        fiscal_year_end_day: config.fiscal_year_end_day,
-        enable_backfill: config.enable_backfill,
-        backfill_lookback_months: config.backfill_lookback_months,
-        min_volume_threshold: config.min_volume_threshold,
+        min_months_for_target: globalConfig.min_months_for_target,
+        min_months_mandatory_override: globalConfig.min_months_mandatory_override,
+        max_override_months_full_history: globalConfig.max_override_months_full_history,
+        fiscal_year_end_month: globalConfig.fiscal_year_end_month,
+        fiscal_year_end_day: globalConfig.fiscal_year_end_day,
+        enable_backfill: globalConfig.enable_backfill,
+        backfill_lookback_months: globalConfig.backfill_lookback_months,
+        min_volume_threshold: globalConfig.min_volume_threshold,
       });
     }
-  }, [config]);
+  }, [globalConfig, mode, editingConfigId]);
+
+  // Reset form when switching modes
+  useEffect(() => {
+    if (mode === 'universal') {
+      setSelectedMarket('');
+      setSelectedFacility('');
+      setSelectedDepartment('');
+      setEditingConfigId(null);
+      if (globalConfig) {
+        setFormData({
+          min_months_for_target: globalConfig.min_months_for_target,
+          min_months_mandatory_override: globalConfig.min_months_mandatory_override,
+          max_override_months_full_history: globalConfig.max_override_months_full_history,
+          fiscal_year_end_month: globalConfig.fiscal_year_end_month,
+          fiscal_year_end_day: globalConfig.fiscal_year_end_day,
+          enable_backfill: globalConfig.enable_backfill,
+          backfill_lookback_months: globalConfig.backfill_lookback_months,
+          min_volume_threshold: globalConfig.min_volume_threshold,
+        });
+      }
+    } else {
+      setFormData(DEFAULT_FORM_DATA);
+    }
+  }, [mode, globalConfig]);
+
+  // Handle market change - reset downstream selections
+  const handleMarketChange = (value: string) => {
+    setSelectedMarket(value);
+    setSelectedFacility('');
+    setSelectedDepartment('');
+    setEditingConfigId(null);
+    setFormData(DEFAULT_FORM_DATA);
+  };
+
+  // Handle facility change - reset department
+  const handleFacilityChange = (value: string) => {
+    setSelectedFacility(value);
+    setSelectedDepartment('');
+    setEditingConfigId(null);
+    setFormData(DEFAULT_FORM_DATA);
+  };
+
+  // Handle department change - check for existing config
+  const handleDepartmentChange = (value: string) => {
+    setSelectedDepartment(value);
+    setEditingConfigId(null);
+    
+    // Check if config exists for this department
+    const existingConfig = deptConfigs.find(
+      c => c.market === selectedMarket && 
+           c.facility_id === selectedFacility && 
+           c.department_id === value
+    );
+    
+    if (existingConfig) {
+      setEditingConfigId(existingConfig.id || null);
+      setFormData({
+        min_months_for_target: existingConfig.min_months_for_target,
+        min_months_mandatory_override: existingConfig.min_months_mandatory_override,
+        max_override_months_full_history: existingConfig.max_override_months_full_history,
+        fiscal_year_end_month: existingConfig.fiscal_year_end_month,
+        fiscal_year_end_day: existingConfig.fiscal_year_end_day,
+        enable_backfill: existingConfig.enable_backfill,
+        backfill_lookback_months: existingConfig.backfill_lookback_months,
+        min_volume_threshold: existingConfig.min_volume_threshold,
+      });
+    } else {
+      // Use global as starting point for new department config
+      if (globalConfig) {
+        setFormData({
+          min_months_for_target: globalConfig.min_months_for_target,
+          min_months_mandatory_override: globalConfig.min_months_mandatory_override,
+          max_override_months_full_history: globalConfig.max_override_months_full_history,
+          fiscal_year_end_month: globalConfig.fiscal_year_end_month,
+          fiscal_year_end_day: globalConfig.fiscal_year_end_day,
+          enable_backfill: globalConfig.enable_backfill,
+          backfill_lookback_months: globalConfig.backfill_lookback_months,
+          min_volume_threshold: globalConfig.min_volume_threshold,
+        });
+      }
+    }
+  };
+
+  // Handle editing an existing department config from the list
+  const handleEditConfig = (config: VolumeOverrideConfig) => {
+    setMode('department');
+    setSelectedMarket(config.market || '');
+    setSelectedFacility(config.facility_id || '');
+    setSelectedDepartment(config.department_id || '');
+    setEditingConfigId(config.id || null);
+    setFormData({
+      min_months_for_target: config.min_months_for_target,
+      min_months_mandatory_override: config.min_months_mandatory_override,
+      max_override_months_full_history: config.max_override_months_full_history,
+      fiscal_year_end_month: config.fiscal_year_end_month,
+      fiscal_year_end_day: config.fiscal_year_end_day,
+      enable_backfill: config.enable_backfill,
+      backfill_lookback_months: config.backfill_lookback_months,
+      min_volume_threshold: config.min_volume_threshold,
+    });
+  };
 
   const handleSave = () => {
-    updateConfig.mutate(formData);
+    if (mode === 'universal') {
+      updateGlobalConfig.mutate(formData);
+    } else {
+      if (!selectedMarket || !selectedFacility || !selectedDepartment) {
+        return;
+      }
+      upsertDeptConfig.mutate({
+        ...formData,
+        market: selectedMarket,
+        facility_id: selectedFacility,
+        facility_name: selectedFacilityName,
+        department_id: selectedDepartment,
+        department_name: selectedDepartmentName,
+      });
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    deleteDeptConfig.mutate(id);
+  };
+
+  const isLoading = isLoadingGlobal || isLoadingDepts;
+  const isSaving = updateGlobalConfig.isPending || upsertDeptConfig.isPending;
+  const canSaveDepartment = selectedMarket && selectedFacility && selectedDepartment;
+
+  // Build the Rule Matrix Preview label
+  const matrixLabel = useMemo(() => {
+    if (mode === 'universal') {
+      return '(Universal)';
+    }
+    if (selectedMarket && selectedFacilityName && selectedDepartmentName) {
+      return `(${selectedMarket} > ${selectedFacilityName} > ${selectedDepartmentName})`;
+    }
+    if (selectedMarket && selectedFacilityName) {
+      return `(${selectedMarket} > ${selectedFacilityName} > ...)`;
+    }
+    if (selectedMarket) {
+      return `(${selectedMarket} > ...)`;
+    }
+    return '(Select Department)';
+  }, [mode, selectedMarket, selectedFacilityName, selectedDepartmentName]);
+
+  // Format config summary for department list
+  const formatConfigSummary = (config: VolumeOverrideConfig) => {
+    return `Min: ${config.min_months_for_target}mo | Mandatory: ${config.min_months_mandatory_override}mo | FY: ${config.fiscal_year_end_month}/${config.fiscal_year_end_day} | Backfill: ${config.enable_backfill ? `${config.backfill_lookback_months}mo` : 'Off'}`;
   };
 
   if (isLoading) {
@@ -68,6 +291,96 @@ export function VolumeOverrideSettings() {
         </p>
       </div>
 
+      {/* Mode Toggle */}
+      <Tabs value={mode} onValueChange={(v) => setMode(v as ConfigMode)} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 max-w-md">
+          <TabsTrigger value="universal" className="flex items-center gap-2">
+            <Globe className="h-4 w-4" />
+            Universal
+          </TabsTrigger>
+          <TabsTrigger value="department" className="flex items-center gap-2">
+            <Building2 className="h-4 w-4" />
+            Department-Specific
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {/* Department Selection (only in department mode) */}
+      {mode === 'department' && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Select Department</CardTitle>
+            <CardDescription className="text-xs">
+              Configure custom rules for a specific department (overrides universal settings)
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-4 pt-0">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm">Market</Label>
+                <Select value={selectedMarket} onValueChange={handleMarketChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select market..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {markets.map((market) => (
+                      <SelectItem key={market} value={market}>
+                        {market}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm">Facility</Label>
+                <Select 
+                  value={selectedFacility} 
+                  onValueChange={handleFacilityChange}
+                  disabled={!selectedMarket}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select facility..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {facilities.map((facility) => (
+                      <SelectItem key={facility.facility_id} value={facility.facility_id}>
+                        {facility.facility_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm">Department</Label>
+                <Select 
+                  value={selectedDepartment} 
+                  onValueChange={handleDepartmentChange}
+                  disabled={!selectedFacility}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select department..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {departments.map((dept) => (
+                      <SelectItem key={dept.department_id} value={dept.department_id}>
+                        {dept.department_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            {editingConfigId && (
+              <div className="mt-3">
+                <Badge variant="secondary" className="text-xs">
+                  Editing existing configuration
+                </Badge>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Rule Matrix Preview - Collapsible, Full Width */}
       <Collapsible open={isMatrixOpen} onOpenChange={setIsMatrixOpen}>
         <Card className="bg-muted/30">
@@ -75,7 +388,10 @@ export function VolumeOverrideSettings() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="text-left">
-                  <CardTitle className="text-base">Rule Matrix Preview</CardTitle>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    Rule Matrix Preview
+                    <span className="text-sm font-normal text-muted-foreground">{matrixLabel}</span>
+                  </CardTitle>
                   <CardDescription className="text-xs">
                     How these settings affect override requirements
                   </CardDescription>
@@ -283,13 +599,86 @@ export function VolumeOverrideSettings() {
       <div className="flex justify-end">
         <Button 
           onClick={handleSave} 
-          disabled={updateConfig.isPending}
+          disabled={isSaving || (mode === 'department' && !canSaveDepartment)}
           className="flex items-center gap-2 min-w-[200px]"
         >
           <Save className="h-4 w-4" />
-          {updateConfig.isPending ? "Saving..." : "Save Configuration"}
+          {isSaving ? "Saving..." : mode === 'universal' ? "Save Universal Configuration" : "Save Department Configuration"}
         </Button>
       </div>
+
+      {/* Department Exceptions List */}
+      {deptConfigs.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              Department Exceptions
+              <Badge variant="secondary">{deptConfigs.length}</Badge>
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Departments with custom override rules (override universal settings)
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-4 pt-0">
+            <div className="space-y-2">
+              {deptConfigs.map((config) => (
+                <div 
+                  key={config.id}
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/40 hover:bg-muted/60 transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm truncate">
+                      {config.market} &gt; {config.facility_name} &gt; {config.department_name}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5 truncate">
+                      {formatConfigSummary(config)}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 ml-4 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditConfig(config)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Department Configuration</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete the custom configuration for{' '}
+                            <strong>{config.department_name}</strong>? This department will revert to using the universal settings.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => handleDelete(config.id!)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
