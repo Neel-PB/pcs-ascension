@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useVolumeOverrideConfig } from '@/hooks/useHistoricalVolumeAnalysis';
 import { 
@@ -228,6 +228,9 @@ export function VolumeOverrideSettings() {
     }
   };
 
+  // Ref for scrolling to form top
+  const formTopRef = useRef<HTMLDivElement>(null);
+
   // Handle editing an existing department config from the list
   const handleEditConfig = (config: VolumeOverrideConfig) => {
     setMode('department');
@@ -245,6 +248,14 @@ export function VolumeOverrideSettings() {
       backfill_lookback_months: config.backfill_lookback_months,
       min_volume_threshold: config.min_volume_threshold,
     });
+    
+    // Smooth scroll to the top of the form
+    setTimeout(() => {
+      formTopRef.current?.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }, 100);
   };
 
   const handleSave = () => {
@@ -319,7 +330,7 @@ export function VolumeOverrideSettings() {
       </motion.div>
 
       {/* Mode Toggle */}
-      <motion.div variants={itemVariants}>
+      <motion.div variants={itemVariants} ref={formTopRef}>
         <Tabs value={mode} onValueChange={(v) => setMode(v as ConfigMode)} className="w-full max-w-md">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="universal">
