@@ -12,7 +12,7 @@ const formatCommentTimestamp = (dateString: string) => {
     return format(date, "MMM d, yyyy");
   }
 };
-import { Pencil, Trash2, ArrowUp, MessageSquare, Copy, Check, ChevronRight, Loader2, BarChart3, RefreshCw } from "lucide-react";
+import { Pencil, Trash2, ArrowUp, MessageSquare, Copy, Check, ChevronRight, Loader2 } from "lucide-react";
 import { LogoLoader } from "@/components/ui/LogoLoader";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -130,22 +130,21 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
               : "Unknown User";
             
             const isActivityLog = comment.comment_type === 'activity_fte' || comment.comment_type === 'activity_shift';
-            const activityIcon = comment.comment_type === 'activity_fte' ? (
-              <BarChart3 className="h-3.5 w-3.5 text-primary" />
-            ) : comment.comment_type === 'activity_shift' ? (
-              <RefreshCw className="h-3.5 w-3.5 text-primary" />
-            ) : null;
+            const activityLabel = comment.comment_type === 'activity_fte' 
+              ? '📊 FTE Change' 
+              : comment.comment_type === 'activity_shift' 
+                ? '🔄 Shift Change' 
+                : null;
 
             return (
-              <div key={comment.id} className="space-y-1">
-                {/* Author label with activity icon */}
-                <div className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                  {activityIcon}
-                  {displayName}
+              <div key={comment.id} className={`space-y-1 ${isActivityLog ? 'flex flex-col items-end' : ''}`}>
+                {/* Label above bubble: type label for activity logs, user name for regular comments */}
+                <div className={`text-xs font-medium text-muted-foreground ${isActivityLog ? 'text-right' : ''}`}>
+                  {isActivityLog ? activityLabel : displayName}
                 </div>
 
                 {/* Message with actions */}
-                <div className="group flex items-start gap-2">
+                <div className={`group flex items-start gap-2 ${isActivityLog ? 'flex-row-reverse' : ''}`}>
                   {editingId === comment.id ? (
                     <div className="flex-1 space-y-3">
                       <Textarea
@@ -172,40 +171,48 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
                     </div>
                   ) : (
                     <div className="space-y-1">
-                      {/* Message row with copy button only */}
-                      <div className="flex items-start gap-2">
+                      {/* Message row with copy button only for activity logs */}
+                      <div className={`flex items-start gap-2 ${isActivityLog ? 'flex-row-reverse' : ''}`}>
                         {/* Message Bubble - Blue tint for activity logs */}
                         <div className="max-w-[85%]">
-                          <div className={`px-4 py-3 rounded-2xl rounded-bl-sm ${
+                          <div className={`px-4 py-3 rounded-2xl ${
                             isActivityLog 
-                              ? 'bg-primary/15 border border-primary/20' 
-                              : 'bg-muted'
+                              ? 'rounded-br-sm bg-primary/15 border border-primary/20' 
+                              : 'rounded-bl-sm bg-muted'
                           }`}>
                             <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
                               {comment.content}
                             </p>
+                            {/* User name inside bubble for activity logs */}
+                            {isActivityLog && (
+                              <p className="text-xs text-muted-foreground mt-2">
+                                by {displayName}
+                              </p>
+                            )}
                           </div>
                         </div>
 
-                        {/* Copy button only - on hover */}
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity pt-2">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7 hover:bg-accent"
-                            onClick={() => handleCopyComment(comment.id, comment.content)}
-                          >
-                            {copiedId === comment.id ? (
-                              <Check className="h-3.5 w-3.5 text-primary" />
-                            ) : (
-                              <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                            )}
-                          </Button>
-                        </div>
+                        {/* Copy button only for activity logs - on hover */}
+                        {isActivityLog && (
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity pt-2">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 hover:bg-accent"
+                              onClick={() => handleCopyComment(comment.id, comment.content)}
+                            >
+                              {copiedId === comment.id ? (
+                                <Check className="h-3.5 w-3.5 text-primary" />
+                              ) : (
+                                <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                              )}
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
                       {/* Below bubble: Timestamp + Edit/Delete (only for regular comments owned by user) */}
-                      <div className="flex items-center gap-2 pl-1">
+                      <div className={`flex items-center gap-2 ${isActivityLog ? 'justify-end pr-1' : 'pl-1'}`}>
                         <span className="text-xs text-muted-foreground">
                           {formatCommentTimestamp(comment.created_at)}
                         </span>
