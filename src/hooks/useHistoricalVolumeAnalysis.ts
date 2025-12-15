@@ -32,12 +32,13 @@ export interface DepartmentVolumeAnalysis {
 
 export function useVolumeOverrideConfig() {
   return useQuery({
-    queryKey: ['volume-override-config'],
+    queryKey: ['volume-override-config', 'global'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('volume_override_config')
         .select('*')
-        .single();
+        .eq('is_global', true)
+        .maybeSingle();
 
       if (error) throw error;
       return data as VolumeOverrideConfig;
