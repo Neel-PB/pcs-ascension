@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useVolumeOverrideConfig } from '@/hooks/useHistoricalVolumeAnalysis';
 import { 
   useUpdateVolumeOverrideConfig, 
@@ -22,6 +23,27 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import type { VolumeOverrideConfig } from '@/lib/volumeOverrideRules';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
+};
+
+const listItemVariants = {
+  hidden: { opacity: 0, x: -10 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.15 } },
+  exit: { opacity: 0, x: 10, transition: { duration: 0.15 } },
+};
 
 type ConfigMode = 'universal' | 'department';
 
@@ -283,161 +305,189 @@ export function VolumeOverrideSettings() {
   }
 
   return (
-    <div className="space-y-4">
-      <div>
+    <motion.div 
+      className="space-y-4"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div variants={itemVariants}>
         <h3 className="text-lg font-semibold">Volume Override Configuration</h3>
         <p className="text-sm text-muted-foreground">
           Configure rules for target volume vs override volume decision-making
         </p>
-      </div>
+      </motion.div>
 
       {/* Mode Toggle */}
-      <Tabs value={mode} onValueChange={(v) => setMode(v as ConfigMode)} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
-          <TabsTrigger value="universal" className="flex items-center gap-2">
-            <Globe className="h-4 w-4" />
-            Universal
-          </TabsTrigger>
-          <TabsTrigger value="department" className="flex items-center gap-2">
-            <Building2 className="h-4 w-4" />
-            Department-Specific
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <motion.div variants={itemVariants}>
+        <Tabs value={mode} onValueChange={(v) => setMode(v as ConfigMode)} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 max-w-md">
+            <TabsTrigger value="universal" className="flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              Universal
+            </TabsTrigger>
+            <TabsTrigger value="department" className="flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              Department-Specific
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </motion.div>
 
       {/* Department Selection (only in department mode) */}
-      {mode === 'department' && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Select Department</CardTitle>
-            <CardDescription className="text-xs">
-              Configure custom rules for a specific department (overrides universal settings)
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label className="text-sm">Market</Label>
-                <Select value={selectedMarket} onValueChange={handleMarketChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select market..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {markets.map((market) => (
-                      <SelectItem key={market} value={market}>
-                        {market}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm">Facility</Label>
-                <Select 
-                  value={selectedFacility} 
-                  onValueChange={handleFacilityChange}
-                  disabled={!selectedMarket}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select facility..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {facilities.map((facility) => (
-                      <SelectItem key={facility.facility_id} value={facility.facility_id}>
-                        {facility.facility_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm">Department</Label>
-                <Select 
-                  value={selectedDepartment} 
-                  onValueChange={handleDepartmentChange}
-                  disabled={!selectedFacility}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select department..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {departments.map((dept) => (
-                      <SelectItem key={dept.department_id} value={dept.department_id}>
-                        {dept.department_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            {editingConfigId && (
-              <div className="mt-3">
-                <Badge variant="secondary" className="text-xs">
-                  Editing existing configuration
-                </Badge>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+      <AnimatePresence mode="wait">
+        {mode === 'department' && (
+          <motion.div
+            key="department-selection"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Select Department</CardTitle>
+                <CardDescription className="text-xs">
+                  Configure custom rules for a specific department (overrides universal settings)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 pt-0">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm">Market</Label>
+                    <Select value={selectedMarket} onValueChange={handleMarketChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select market..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {markets.map((market) => (
+                          <SelectItem key={market} value={market}>
+                            {market}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm">Facility</Label>
+                    <Select 
+                      value={selectedFacility} 
+                      onValueChange={handleFacilityChange}
+                      disabled={!selectedMarket}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select facility..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {facilities.map((facility) => (
+                          <SelectItem key={facility.facility_id} value={facility.facility_id}>
+                            {facility.facility_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm">Department</Label>
+                    <Select 
+                      value={selectedDepartment} 
+                      onValueChange={handleDepartmentChange}
+                      disabled={!selectedFacility}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select department..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {departments.map((dept) => (
+                          <SelectItem key={dept.department_id} value={dept.department_id}>
+                            {dept.department_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                {editingConfigId && (
+                  <motion.div 
+                    className="mt-3"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    <Badge variant="secondary" className="text-xs">
+                      Editing existing configuration
+                    </Badge>
+                  </motion.div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Rule Matrix Preview - Collapsible, Full Width */}
-      <Collapsible open={isMatrixOpen} onOpenChange={setIsMatrixOpen}>
-        <Card className="bg-muted/30">
-          <CollapsibleTrigger className="w-full">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="text-left">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    Rule Matrix Preview
-                    <span className="text-sm font-normal text-muted-foreground">{matrixLabel}</span>
-                  </CardTitle>
-                  <CardDescription className="text-xs">
-                    How these settings affect override requirements
-                  </CardDescription>
-                </div>
-                <ChevronDown className={`h-4 w-4 transition-transform ${isMatrixOpen ? 'rotate-180' : ''}`} />
-              </div>
-            </CardHeader>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <CardContent className="p-4 pt-0">
-              <div className="space-y-3">
-                <div className="grid grid-cols-4 gap-2 text-xs font-medium">
-                  <div>Historical Months</div>
-                  <div>Target Volume</div>
-                  <div>Override Status</div>
-                  <div>Max Expiry</div>
-                </div>
-                <Separator />
-                <div className="space-y-2 text-xs">
-                  <div className="grid grid-cols-4 gap-2 py-2">
-                    <div className="font-medium">0-{formData.min_months_mandatory_override}</div>
-                    <div className="text-muted-foreground">Not Available</div>
-                    <div className="text-red-600 font-medium">Mandatory</div>
-                    <div>{formData.max_override_months_full_history} months</div>
+      <motion.div variants={itemVariants}>
+        <Collapsible open={isMatrixOpen} onOpenChange={setIsMatrixOpen}>
+          <Card className="bg-muted/30">
+            <CollapsibleTrigger className="w-full">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="text-left">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      Rule Matrix Preview
+                      <span className="text-sm font-normal text-muted-foreground">{matrixLabel}</span>
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      How these settings affect override requirements
+                    </CardDescription>
                   </div>
-                  <div className="grid grid-cols-4 gap-2 py-2">
-                    <div className="font-medium">{formData.min_months_for_target}-11</div>
-                    <div className="text-green-600">Available</div>
-                    <div className="text-blue-600 font-medium">Optional</div>
-                    <div>12 - historical months</div>
+                  <motion.div
+                    animate={{ rotate: isMatrixOpen ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                  </motion.div>
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="p-4 pt-0">
+                <div className="space-y-3">
+                  <div className="grid grid-cols-4 gap-2 text-xs font-medium">
+                    <div>Historical Months</div>
+                    <div>Target Volume</div>
+                    <div>Override Status</div>
+                    <div>Max Expiry</div>
                   </div>
-                  <div className="grid grid-cols-4 gap-2 py-2">
-                    <div className="font-medium">12+</div>
-                    <div className="text-green-600">Available</div>
-                    <div className="text-blue-600 font-medium">Optional</div>
-                    <div>Next fiscal year end ({formData.fiscal_year_end_month}/{formData.fiscal_year_end_day})</div>
+                  <Separator />
+                  <div className="space-y-2 text-xs">
+                    <div className="grid grid-cols-4 gap-2 py-2">
+                      <div className="font-medium">0-{formData.min_months_mandatory_override}</div>
+                      <div className="text-muted-foreground">Not Available</div>
+                      <div className="text-destructive font-medium">Mandatory</div>
+                      <div>{formData.max_override_months_full_history} months</div>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2 py-2">
+                      <div className="font-medium">{formData.min_months_for_target}-11</div>
+                      <div className="text-green-600">Available</div>
+                      <div className="text-primary font-medium">Optional</div>
+                      <div>12 - historical months</div>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2 py-2">
+                      <div className="font-medium">12+</div>
+                      <div className="text-green-600">Available</div>
+                      <div className="text-primary font-medium">Optional</div>
+                      <div>Next fiscal year end ({formData.fiscal_year_end_month}/{formData.fiscal_year_end_day})</div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </CollapsibleContent>
-        </Card>
-      </Collapsible>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+      </motion.div>
 
       {/* 2-Column Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Rule Thresholds - Compact */}
         <Card>
           <CardHeader className="pb-3">
@@ -593,92 +643,109 @@ export function VolumeOverrideSettings() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </motion.div>
 
       {/* Save Button - Full Width Row */}
-      <div className="flex justify-end">
+      <motion.div variants={itemVariants} className="flex justify-end">
         <Button 
           onClick={handleSave} 
           disabled={isSaving || (mode === 'department' && !canSaveDepartment)}
-          className="flex items-center gap-2 min-w-[200px]"
+          className="flex items-center gap-2"
         >
           <Save className="h-4 w-4" />
-          {isSaving ? "Saving..." : mode === 'universal' ? "Save Universal Configuration" : "Save Department Configuration"}
+          {isSaving ? "Saving..." : "Save"}
         </Button>
-      </div>
+      </motion.div>
 
       {/* Department Exceptions List */}
-      {deptConfigs.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              Department Exceptions
-              <Badge variant="secondary">{deptConfigs.length}</Badge>
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Departments with custom override rules (override universal settings)
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <div className="space-y-2">
-              {deptConfigs.map((config) => (
-                <div 
-                  key={config.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/40 hover:bg-muted/60 transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm truncate">
-                      {config.market} &gt; {config.facility_name} &gt; {config.department_name}
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-0.5 truncate">
-                      {formatConfigSummary(config)}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 ml-4 shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEditConfig(config)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Department Configuration</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete the custom configuration for{' '}
-                            <strong>{config.department_name}</strong>? This department will revert to using the universal settings.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction 
-                            onClick={() => handleDelete(config.id!)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+      <AnimatePresence>
+        {deptConfigs.length > 0 && (
+          <motion.div
+            variants={itemVariants}
+            initial="hidden"
+            animate="visible"
+            exit={{ opacity: 0, y: -10 }}
+          >
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  Department Exceptions
+                  <Badge variant="secondary">{deptConfigs.length}</Badge>
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Departments with custom override rules (override universal settings)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 pt-0">
+                <div className="space-y-2">
+                  <AnimatePresence mode="popLayout">
+                    {deptConfigs.map((config, index) => (
+                      <motion.div 
+                        key={config.id}
+                        variants={listItemVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        transition={{ delay: index * 0.03 }}
+                        layout
+                        className="flex items-center justify-between p-3 rounded-lg bg-muted/40 hover:bg-muted/60 transition-colors"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm truncate">
+                            {config.market} &gt; {config.facility_name} &gt; {config.department_name}
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-0.5 truncate">
+                            {formatConfigSummary(config)}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 ml-4 shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditConfig(config)}
+                            className="h-8 w-8 p-0"
                           >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Department Configuration</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete the custom configuration for{' '}
+                                  <strong>{config.department_name}</strong>? This department will revert to using the universal settings.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => handleDelete(config.id!)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
