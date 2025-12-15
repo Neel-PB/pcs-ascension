@@ -230,6 +230,7 @@ export function VolumeOverrideSettings() {
 
   // Ref for scrolling to form top
   const formTopRef = useRef<HTMLDivElement>(null);
+  const [isScrollHighlight, setIsScrollHighlight] = useState(false);
 
   // Handle editing an existing department config from the list
   const handleEditConfig = (config: VolumeOverrideConfig) => {
@@ -249,12 +250,20 @@ export function VolumeOverrideSettings() {
       min_volume_threshold: config.min_volume_threshold,
     });
     
+    // Trigger highlight animation
+    setIsScrollHighlight(true);
+    
     // Smooth scroll to the top of the form
     setTimeout(() => {
       formTopRef.current?.scrollIntoView({ 
         behavior: 'smooth', 
         block: 'start' 
       });
+      
+      // Remove highlight after animation completes
+      setTimeout(() => {
+        setIsScrollHighlight(false);
+      }, 1500);
     }, 100);
   };
 
@@ -330,7 +339,15 @@ export function VolumeOverrideSettings() {
       </motion.div>
 
       {/* Mode Toggle */}
-      <motion.div variants={itemVariants} ref={formTopRef}>
+      <motion.div 
+        variants={itemVariants} 
+        ref={formTopRef}
+        animate={isScrollHighlight ? { 
+          boxShadow: ['0 0 0 0 hsl(var(--primary) / 0)', '0 0 20px 8px hsl(var(--primary) / 0.4)', '0 0 0 0 hsl(var(--primary) / 0)']
+        } : {}}
+        transition={{ duration: 1.5, ease: 'easeInOut' }}
+        className="rounded-lg"
+      >
         <Tabs value={mode} onValueChange={(v) => setMode(v as ConfigMode)} className="w-full max-w-md">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="universal">
