@@ -88,16 +88,16 @@ export function EmployeesTab({
     return count;
   }, [filters]);
 
-  const handleActualFteUpdate = useCallback((id: string, data: {
+  const handleActualFteUpdate = useCallback((id: string, previousValue: number | null, data: {
     actual_fte: number | null;
     actual_fte_expiry: string | null;
     actual_fte_status: string | null;
   }) => {
-    updateActualFte.mutate({ id, ...data });
+    updateActualFte.mutate({ id, ...data, previousValue });
   }, [updateActualFte]);
 
-  const handleShiftOverrideUpdate = useCallback((id: string, value: string | null) => {
-    updateShiftOverride.mutate({ id, shift_override: value });
+  const handleShiftOverrideUpdate = useCallback((id: string, originalShift: string | null, value: string | null) => {
+    updateShiftOverride.mutate({ id, shift_override: value, originalShift });
   }, [updateShiftOverride]);
 
   const filteredAndSortedEmployees = useMemo(() => {
@@ -208,7 +208,7 @@ export function EmployeesTab({
               originalValue={row.FTE}
               expiryDate={row.actual_fte_expiry}
               status={row.actual_fte_status}
-              onSave={(data) => handleActualFteUpdate(row.id, data)}
+              onSave={(data) => handleActualFteUpdate(row.id, row.actual_fte, data)}
             />
           ),
         };

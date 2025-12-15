@@ -6,7 +6,7 @@ import { ShiftCell } from '@/components/editable-table/cells/ShiftCell';
 import { MessageSquare } from 'lucide-react';
 
 // Type for the shift override handler
-type ShiftOverrideHandler = (positionId: string, value: string | null) => void;
+type ShiftOverrideHandler = (positionId: string, originalShift: string | null, value: string | null) => void;
 
 export const employeeColumns: ColumnDef<Position>[] = [
   {
@@ -143,7 +143,7 @@ export const createEmployeeColumnsWithComments = (
           <ShiftCell 
             value={row.shift} 
             selectedDayNight={row.shift_override}
-            onSave={(val) => onUpdateShiftOverride?.(row.id, val)}
+            onSave={(val) => onUpdateShiftOverride?.(row.id, row.shift, val)}
           />
         ),
       };

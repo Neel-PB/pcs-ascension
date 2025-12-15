@@ -2,13 +2,21 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-interface PositionComment {
+export interface PositionComment {
   id: string;
   position_id: string;
   user_id: string;
   content: string;
   created_at: string;
   updated_at: string;
+  comment_type: 'comment' | 'activity_fte' | 'activity_shift';
+  metadata?: {
+    field?: string;
+    old_value?: string | number | null;
+    new_value?: string | number | null;
+    expiryDate?: string | null;
+    status?: string | null;
+  } | null;
   profiles?: {
     first_name: string | null;
     last_name: string | null;
