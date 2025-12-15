@@ -12,7 +12,7 @@ const formatCommentTimestamp = (dateString: string) => {
     return format(date, "MMM d, yyyy");
   }
 };
-import { Pencil, Trash2, ArrowUp, MessageSquare, Copy, Check, ChevronRight, Loader2 } from "lucide-react";
+import { Pencil, Trash2, ArrowUp, MessageSquare, Copy, Check, ChevronRight, Loader2, BarChart3, RefreshCw } from "lucide-react";
 import { LogoLoader } from "@/components/ui/LogoLoader";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,6 +23,7 @@ import {
   useAddPositionComment,
   useUpdatePositionComment,
   useDeletePositionComment,
+  PositionComment,
 } from "@/hooks/usePositionComments";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -127,11 +128,19 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
             const displayName = comment.profiles
               ? `${comment.profiles.first_name || ""} ${comment.profiles.last_name || ""}`.trim() || "Unknown User"
               : "Unknown User";
+            
+            const isActivityLog = comment.comment_type === 'activity_fte' || comment.comment_type === 'activity_shift';
+            const activityIcon = comment.comment_type === 'activity_fte' ? (
+              <BarChart3 className="h-3.5 w-3.5 text-primary" />
+            ) : comment.comment_type === 'activity_shift' ? (
+              <RefreshCw className="h-3.5 w-3.5 text-primary" />
+            ) : null;
 
             return (
               <div key={comment.id} className="space-y-1">
-                {/* Author label */}
-                <div className="text-xs font-medium text-muted-foreground">
+                {/* Author label with activity icon */}
+                <div className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                  {activityIcon}
                   {displayName}
                 </div>
 
@@ -165,9 +174,13 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
                     <div className="space-y-1">
                       {/* Message row with copy button only */}
                       <div className="flex items-start gap-2">
-                        {/* Message Bubble */}
+                        {/* Message Bubble - Blue tint for activity logs */}
                         <div className="max-w-[85%]">
-                          <div className="bg-muted px-4 py-3 rounded-2xl rounded-bl-sm">
+                          <div className={`px-4 py-3 rounded-2xl rounded-bl-sm ${
+                            isActivityLog 
+                              ? 'bg-primary/15 border border-primary/20' 
+                              : 'bg-muted'
+                          }`}>
                             <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
                               {comment.content}
                             </p>
@@ -191,13 +204,14 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
                         </div>
                       </div>
 
-                      {/* Below bubble: Timestamp + Edit/Delete */}
+                      {/* Below bubble: Timestamp + Edit/Delete (only for regular comments owned by user) */}
                       <div className="flex items-center gap-2 pl-1">
                         <span className="text-xs text-muted-foreground">
                           {formatCommentTimestamp(comment.created_at)}
                         </span>
                         
-                        {isOwner && (
+                        {/* Activity logs are read-only, no edit/delete */}
+                        {isOwner && !isActivityLog && (
                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <Button
                               size="icon"
