@@ -55,40 +55,51 @@ function ActivityFieldRow({
   // No change - show em dash
   if (!hasActualChange) {
     return (
-      <div className="flex items-center gap-3 py-1.5">
+      <div className="flex items-center gap-3 py-2">
         <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide w-14 shrink-0">{label}</span>
         <span className="text-sm text-muted-foreground/60">—</span>
       </div>
     );
   }
 
-  // For multi-line content (like reasons), use vertical layout
-  if (isMultiline && (oldStr.length > 30 || newStr.length > 30)) {
+  // Determine if we need vertical layout:
+  // - Always for multiline content with long text
+  // - For any field where combined content exceeds ~25 chars (dates, etc.)
+  const combinedLength = oldStr.length + newStr.length;
+  const useVerticalLayout = isMultiline 
+    ? (oldStr.length > 20 || newStr.length > 20) 
+    : (combinedLength > 25 || newStr.length > 15);
+
+  // Vertical layout for long content
+  if (useVerticalLayout) {
     return (
-      <div className="py-1.5 space-y-1.5">
+      <div className="py-2 space-y-1.5">
         <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</span>
-        <div className="flex flex-col gap-1.5 pl-0.5">
+        <div className="flex flex-col gap-1 pl-0.5">
           {hasOld && (
-            <div className="text-sm text-muted-foreground line-through leading-relaxed">{oldStr}</div>
+            <div className="text-sm text-muted-foreground line-through leading-relaxed break-words">{oldStr}</div>
           )}
-          <div className="flex items-start gap-2">
-            <ArrowRight className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-            <span className="text-sm font-medium text-foreground leading-relaxed">{newStr}</span>
+          <div className="inline-flex items-center gap-1.5">
+            <ArrowRight className="h-3.5 w-3.5 text-primary shrink-0" />
+            <span className="text-sm font-medium text-foreground leading-relaxed break-words">{newStr}</span>
           </div>
         </div>
       </div>
     );
   }
 
+  // Inline layout - arrow and new value stay together as a unit
   return (
-    <div className="flex items-center gap-3 py-1.5">
+    <div className="flex items-center gap-3 py-2">
       <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide w-14 shrink-0">{label}</span>
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-2 min-w-0">
         {hasOld && (
-          <span className="text-sm text-muted-foreground">{oldStr}</span>
+          <span className="text-sm text-muted-foreground shrink-0">{oldStr}</span>
         )}
-        <ArrowRight className="h-3.5 w-3.5 text-primary shrink-0" />
-        <span className="text-sm font-medium text-foreground">{newStr}</span>
+        <span className="inline-flex items-center gap-1.5 shrink-0">
+          <ArrowRight className="h-3.5 w-3.5 text-primary" />
+          <span className="text-sm font-medium text-foreground whitespace-nowrap">{newStr}</span>
+        </span>
       </div>
     </div>
   );
