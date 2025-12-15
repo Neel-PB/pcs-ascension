@@ -48,27 +48,32 @@ function ActivityFieldRow({
   const oldStr = oldValue?.toString() || '';
   const newStr = newValue?.toString() || '';
   
-  // Only show if there's an actual change
   const hasOld = oldValue !== null && oldValue !== undefined && oldValue !== '';
   const hasNew = newValue !== null && newValue !== undefined && newValue !== '';
   const hasActualChange = oldStr !== newStr && (hasOld || hasNew);
 
+  // No change - show em dash
   if (!hasActualChange) {
-    return null;
+    return (
+      <div className="flex items-center gap-3 py-1.5">
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide w-14 shrink-0">{label}</span>
+        <span className="text-sm text-muted-foreground/60">—</span>
+      </div>
+    );
   }
 
   // For multi-line content (like reasons), use vertical layout
   if (isMultiline && (oldStr.length > 30 || newStr.length > 30)) {
     return (
-      <div className="space-y-1.5">
+      <div className="py-1.5 space-y-1.5">
         <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</span>
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1.5 pl-0.5">
           {hasOld && (
-            <div className="text-sm text-muted-foreground line-through">{oldStr}</div>
+            <div className="text-sm text-muted-foreground line-through leading-relaxed">{oldStr}</div>
           )}
           <div className="flex items-start gap-2">
             <ArrowRight className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-            <span className="text-sm font-medium text-foreground">{newStr}</span>
+            <span className="text-sm font-medium text-foreground leading-relaxed">{newStr}</span>
           </div>
         </div>
       </div>
@@ -76,7 +81,7 @@ function ActivityFieldRow({
   }
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3 py-1.5">
       <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide w-14 shrink-0">{label}</span>
       <div className="flex items-center gap-2 flex-wrap">
         {hasOld && (
@@ -89,7 +94,7 @@ function ActivityFieldRow({
   );
 }
 
-// Render FTE activity log card - only shows fields that actually changed
+// Render FTE activity log card - ALWAYS shows all 3 sections
 function FteActivityCard({ metadata, displayName }: { metadata: Record<string, unknown>; displayName: string }) {
   const fteOld = metadata.fte_old as number | null;
   const fteNew = metadata.fte_new as number | null;
@@ -102,28 +107,12 @@ function FteActivityCard({ metadata, displayName }: { metadata: Record<string, u
   const formattedExpiryOld = expiryOld ? format(new Date(expiryOld), "MMM d, yyyy") : null;
   const formattedExpiryNew = expiryNew ? format(new Date(expiryNew), "MMM d, yyyy") : null;
 
-  // Check which fields have actual changes
-  const fteChanged = fteOld !== fteNew;
-  const reasonChanged = (reasonOld || '') !== (reasonNew || '');
-  const expiryChanged = formattedExpiryOld !== formattedExpiryNew;
-  
-  const hasAnyChange = fteChanged || reasonChanged || expiryChanged;
-
   return (
-    <div className="space-y-3">
-      {fteChanged && (
-        <ActivityFieldRow label="FTE" oldValue={fteOld} newValue={fteNew} />
-      )}
-      {reasonChanged && (
-        <ActivityFieldRow label="Reason" oldValue={reasonOld} newValue={reasonNew} isMultiline />
-      )}
-      {expiryChanged && (
-        <ActivityFieldRow label="Expiry" oldValue={formattedExpiryOld} newValue={formattedExpiryNew} />
-      )}
-      {!hasAnyChange && (
-        <p className="text-sm text-muted-foreground italic">No changes detected</p>
-      )}
-      <div className="flex justify-end pt-1 border-t border-border/30">
+    <div className="divide-y divide-border/30">
+      <ActivityFieldRow label="FTE" oldValue={fteOld} newValue={fteNew} />
+      <ActivityFieldRow label="Reason" oldValue={reasonOld} newValue={reasonNew} isMultiline />
+      <ActivityFieldRow label="Expiry" oldValue={formattedExpiryOld} newValue={formattedExpiryNew} />
+      <div className="flex justify-end pt-2">
         <span className="text-xs text-muted-foreground">by {displayName}</span>
       </div>
     </div>
@@ -413,14 +402,14 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
             </Button>
           )}
           <div className="flex-1 bg-background/95 backdrop-blur-sm border border-border/60 rounded-xl shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/40 transition-all duration-200">
-            <div className="flex items-end gap-2 px-2 py-1">
+            <div className="flex items-center gap-2 px-3 py-2">
               <TextareaAutosize
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Write a comment..."
                 minRows={1}
                 maxRows={4}
-                className="flex-1 bg-transparent border-0 resize-none outline-none placeholder:text-muted-foreground text-sm focus:ring-0 px-2 py-0.5"
+                className="flex-1 bg-transparent border-0 resize-none outline-none placeholder:text-muted-foreground text-sm focus:ring-0 py-1"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                     e.preventDefault();
