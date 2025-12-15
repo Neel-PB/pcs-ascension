@@ -322,13 +322,17 @@ export function VolumeOverrideSettings() {
       <motion.div variants={itemVariants}>
         <Tabs value={mode} onValueChange={(v) => setMode(v as ConfigMode)} className="w-full max-w-md">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="universal" className="flex items-center gap-2">
-              <Globe className="h-4 w-4" />
-              Universal
+            <TabsTrigger value="universal">
+              <span className="flex items-center gap-2">
+                <Globe className="h-4 w-4" />
+                Universal
+              </span>
             </TabsTrigger>
-            <TabsTrigger value="department" className="flex items-center gap-2">
-              <Building2 className="h-4 w-4" />
-              Department-Specific
+            <TabsTrigger value="department">
+              <span className="flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                Department-Specific
+              </span>
             </TabsTrigger>
           </TabsList>
         </Tabs>
