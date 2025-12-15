@@ -1,66 +1,74 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+interface FteChangeDetails {
+  fte_old: number | null;
+  fte_new: number | null;
+  reason_old: string | null;
+  reason_new: string | null;
+  expiry_old: string | null;
+  expiry_new: string | null;
+}
+
+interface ShiftChangeDetails {
+  shift_old: string | null;
+  shift_new: string | null;
+  is_revert: boolean;
+}
+
 interface ActivityLogParams {
   positionId: string;
   changeType: 'fte' | 'shift';
-  oldValue: string | number | null;
-  newValue: string | number | null;
-  additionalInfo?: {
-    expiryDate?: string | null;
-    status?: string | null;
-  };
+  fteDetails?: FteChangeDetails;
+  shiftDetails?: ShiftChangeDetails;
 }
 
 export function useAddActivityLog() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ positionId, changeType, oldValue, newValue, additionalInfo }: ActivityLogParams) => {
+    mutationFn: async ({ positionId, changeType, fteDetails, shiftDetails }: ActivityLogParams) => {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error('User not authenticated');
 
-      // Format the activity message
-      let content: string;
       const commentType = changeType === 'fte' ? 'activity_fte' : 'activity_shift';
       
-      if (changeType === 'fte') {
-        const oldDisplay = oldValue !== null && oldValue !== undefined ? oldValue : 'none';
-        const newDisplay = newValue !== null && newValue !== undefined ? newValue : 'none';
-        content = `Active FTE changed from ${oldDisplay} to ${newDisplay}`;
-        
-        if (additionalInfo?.expiryDate) {
-          content += ` (expires: ${additionalInfo.expiryDate})`;
-        }
-        if (additionalInfo?.status) {
-          content += ` — ${additionalInfo.status}`;
-        }
-      } else {
-        // Shift change
-        if (newValue === null) {
-          content = `Shift reset to original value`;
-        } else {
-          const oldDisplay = oldValue || 'original';
-          content = `Shift changed from ${oldDisplay} to ${newValue}`;
-        }
-      }
+      // Store minimal content, actual display will be built from metadata
+      let content: string;
+      let metadata: Record<string, unknown>;
 
-      const metadata = {
-        field: changeType === 'fte' ? 'active_fte' : 'shift_override',
-        old_value: oldValue,
-        new_value: newValue,
-        ...(additionalInfo || {}),
-      };
+      if (changeType === 'fte' && fteDetails) {
+        content = 'FTE Change';
+        metadata = {
+          type: 'fte',
+          fte_old: fteDetails.fte_old,
+          fte_new: fteDetails.fte_new,
+          reason_old: fteDetails.reason_old,
+          reason_new: fteDetails.reason_new,
+          expiry_old: fteDetails.expiry_old,
+          expiry_new: fteDetails.expiry_new,
+        };
+      } else if (changeType === 'shift' && shiftDetails) {
+        content = shiftDetails.is_revert ? 'Shift Reverted' : 'Shift Change';
+        metadata = {
+          type: 'shift',
+          shift_old: shiftDetails.shift_old,
+          shift_new: shiftDetails.shift_new,
+          is_revert: shiftDetails.is_revert,
+        };
+      } else {
+        throw new Error('Invalid activity log parameters');
+      }
 
       const { data, error } = await supabase
         .from('position_comments')
-        .insert({
+        .insert([{
           position_id: positionId,
           user_id: userData.user.id,
           content,
           comment_type: commentType,
-          metadata,
-        })
+          metadata: metadata as unknown as import('@/integrations/supabase/types').Json,
+        }])
         .select()
         .single();
 
