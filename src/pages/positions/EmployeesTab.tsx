@@ -43,6 +43,7 @@ export function EmployeesTab({
   const updateShiftOverride = useUpdateShiftOverride();
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetDefaultTab, setSheetDefaultTab] = useState<"details" | "comments">("details");
   const [filterOpen, setFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortColumn, setSortColumn] = useState<string>("");
@@ -58,6 +59,13 @@ export function EmployeesTab({
 
   const handleRowClick = (employee: any) => {
     setSelectedEmployee(employee);
+    setSheetDefaultTab("details");
+    setSheetOpen(true);
+  };
+
+  const handleCommentClick = (employee: any) => {
+    setSelectedEmployee(employee);
+    setSheetDefaultTab("comments");
     setSheetOpen(true);
   };
 
@@ -201,7 +209,7 @@ export function EmployeesTab({
   const columnsWithHandlers = useMemo(() => {
     const baseColumns = createEmployeeColumnsWithComments(
       commentCounts, 
-      handleRowClick,
+      handleCommentClick,
       handleShiftOverrideUpdate
     );
     return baseColumns.map(col => {
@@ -298,6 +306,7 @@ export function EmployeesTab({
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         employee={selectedEmployee}
+        defaultTab={sheetDefaultTab}
       />
 
       <EmployeesFilterSheet

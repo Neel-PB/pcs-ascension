@@ -43,6 +43,7 @@ export function ContractorsTab({
   const updateShiftOverride = useUpdateShiftOverride();
   const [selectedContractor, setSelectedContractor] = useState<any>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetDefaultTab, setSheetDefaultTab] = useState<"details" | "comments">("details");
   const [filterOpen, setFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortColumn, setSortColumn] = useState<string>("");
@@ -57,6 +58,13 @@ export function ContractorsTab({
 
   const handleRowClick = (contractor: any) => {
     setSelectedContractor(contractor);
+    setSheetDefaultTab("details");
+    setSheetOpen(true);
+  };
+
+  const handleCommentClick = (contractor: any) => {
+    setSelectedContractor(contractor);
+    setSheetDefaultTab("comments");
     setSheetOpen(true);
   };
 
@@ -195,7 +203,7 @@ export function ContractorsTab({
   const columnsWithHandlers = useMemo(() => {
     const baseColumns = createContractorColumnsWithComments(
       commentCounts, 
-      handleRowClick,
+      handleCommentClick,
       handleShiftOverrideUpdate
     );
     return baseColumns.map(col => {
@@ -292,6 +300,7 @@ export function ContractorsTab({
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         contractor={selectedContractor}
+        defaultTab={sheetDefaultTab}
       />
 
       <ContractorsFilterSheet

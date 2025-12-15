@@ -10,10 +10,16 @@ interface EmployeeDetailsSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   employee: any;
+  defaultTab?: "details" | "comments";
 }
 
-export function EmployeeDetailsSheet({ open, onOpenChange, employee }: EmployeeDetailsSheetProps) {
-  const [activeTab, setActiveTab] = useState("details");
+export function EmployeeDetailsSheet({ open, onOpenChange, employee, defaultTab = "details" }: EmployeeDetailsSheetProps) {
+  const [activeTab, setActiveTab] = useState(defaultTab);
+  
+  // Reset tab when defaultTab changes
+  useState(() => {
+    setActiveTab(defaultTab);
+  });
 
   if (!employee) return null;
 
@@ -36,8 +42,8 @@ export function EmployeeDetailsSheet({ open, onOpenChange, employee }: EmployeeD
 
         {/* Content Area */}
         <Tabs
-          defaultValue="details"
-          onValueChange={setActiveTab}
+          value={activeTab}
+          onValueChange={(v) => setActiveTab(v as "details" | "comments")}
           className="flex flex-col flex-1 min-h-0 overflow-hidden"
         >
           <div className="border-b pb-4 px-6 shrink-0">

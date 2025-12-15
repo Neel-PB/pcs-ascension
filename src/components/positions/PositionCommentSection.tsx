@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { formatDistanceToNow, format, differenceInHours } from "date-fns";
 import { Pencil, Trash2, ArrowUp, MessageSquare, Copy, Check, ChevronRight, Loader2, ArrowRight, RotateCcw } from "lucide-react";
 import { LogoLoader } from "@/components/ui/LogoLoader";
@@ -33,53 +33,63 @@ interface PositionCommentSectionProps {
   onClose?: () => void;
 }
 
-// Component to render a single field row in activity log
+// Component to render a single changed field row in activity log
 function ActivityFieldRow({ 
   label, 
   oldValue, 
-  newValue, 
-  showArrow = true 
+  newValue,
+  isMultiline = false,
 }: { 
   label: string; 
   oldValue: string | number | null | undefined; 
   newValue: string | number | null | undefined;
-  showArrow?: boolean;
+  isMultiline?: boolean;
 }) {
+  const oldStr = oldValue?.toString() || '';
+  const newStr = newValue?.toString() || '';
+  
+  // Only show if there's an actual change
   const hasOld = oldValue !== null && oldValue !== undefined && oldValue !== '';
   const hasNew = newValue !== null && newValue !== undefined && newValue !== '';
-  const hasChange = hasOld || hasNew;
+  const hasActualChange = oldStr !== newStr && (hasOld || hasNew);
 
-  if (!hasChange) {
+  if (!hasActualChange) {
+    return null;
+  }
+
+  // For multi-line content (like reasons), use vertical layout
+  if (isMultiline && (oldStr.length > 30 || newStr.length > 30)) {
     return (
-      <div className="flex items-center gap-3 text-sm">
-        <span className="text-muted-foreground w-16 shrink-0">{label}</span>
-        <span className="text-muted-foreground/50">—</span>
+      <div className="space-y-1.5">
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</span>
+        <div className="flex flex-col gap-1">
+          {hasOld && (
+            <div className="text-sm text-muted-foreground line-through">{oldStr}</div>
+          )}
+          <div className="flex items-start gap-2">
+            <ArrowRight className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+            <span className="text-sm font-medium text-foreground">{newStr}</span>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-3 text-sm">
-      <span className="text-muted-foreground w-16 shrink-0">{label}</span>
-      <div className="flex items-center gap-2">
+    <div className="flex items-center gap-3">
+      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide w-14 shrink-0">{label}</span>
+      <div className="flex items-center gap-2 flex-wrap">
         {hasOld && (
-          <span className="text-muted-foreground">{oldValue}</span>
+          <span className="text-sm text-muted-foreground">{oldStr}</span>
         )}
-        {showArrow && (hasOld || hasNew) && (
-          <ArrowRight className="h-3.5 w-3.5 text-primary shrink-0" />
-        )}
-        {hasNew && (
-          <span className="font-medium text-foreground">{newValue}</span>
-        )}
-        {!hasOld && hasNew && !showArrow && (
-          <span className="font-medium text-foreground">{newValue}</span>
-        )}
+        <ArrowRight className="h-3.5 w-3.5 text-primary shrink-0" />
+        <span className="text-sm font-medium text-foreground">{newStr}</span>
       </div>
     </div>
   );
 }
 
-// Render FTE activity log card
+// Render FTE activity log card - only shows fields that actually changed
 function FteActivityCard({ metadata, displayName }: { metadata: Record<string, unknown>; displayName: string }) {
   const fteOld = metadata.fte_old as number | null;
   const fteNew = metadata.fte_new as number | null;
@@ -88,16 +98,32 @@ function FteActivityCard({ metadata, displayName }: { metadata: Record<string, u
   const expiryOld = metadata.expiry_old as string | null;
   const expiryNew = metadata.expiry_new as string | null;
 
+  // Format expiry dates
+  const formattedExpiryOld = expiryOld ? format(new Date(expiryOld), "MMM d, yyyy") : null;
+  const formattedExpiryNew = expiryNew ? format(new Date(expiryNew), "MMM d, yyyy") : null;
+
+  // Check which fields have actual changes
+  const fteChanged = fteOld !== fteNew;
+  const reasonChanged = (reasonOld || '') !== (reasonNew || '');
+  const expiryChanged = formattedExpiryOld !== formattedExpiryNew;
+  
+  const hasAnyChange = fteChanged || reasonChanged || expiryChanged;
+
   return (
-    <div className="space-y-2">
-      <ActivityFieldRow label="FTE" oldValue={fteOld} newValue={fteNew} />
-      <ActivityFieldRow label="Reason" oldValue={reasonOld} newValue={reasonNew} />
-      <ActivityFieldRow 
-        label="Expiry" 
-        oldValue={expiryOld ? format(new Date(expiryOld), "MMM d, yyyy") : null} 
-        newValue={expiryNew ? format(new Date(expiryNew), "MMM d, yyyy") : null} 
-      />
-      <div className="flex justify-end pt-1">
+    <div className="space-y-3">
+      {fteChanged && (
+        <ActivityFieldRow label="FTE" oldValue={fteOld} newValue={fteNew} />
+      )}
+      {reasonChanged && (
+        <ActivityFieldRow label="Reason" oldValue={reasonOld} newValue={reasonNew} isMultiline />
+      )}
+      {expiryChanged && (
+        <ActivityFieldRow label="Expiry" oldValue={formattedExpiryOld} newValue={formattedExpiryNew} />
+      )}
+      {!hasAnyChange && (
+        <p className="text-sm text-muted-foreground italic">No changes detected</p>
+      )}
+      <div className="flex justify-end pt-1 border-t border-border/30">
         <span className="text-xs text-muted-foreground">by {displayName}</span>
       </div>
     </div>
@@ -111,23 +137,23 @@ function ShiftActivityCard({ metadata, displayName }: { metadata: Record<string,
   const isRevert = metadata.is_revert as boolean;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {isRevert ? (
-        <div className="flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-2">
           <RotateCcw className="h-4 w-4 text-primary" />
-          <span className="text-foreground">Reverted to</span>
-          <span className="font-medium text-foreground">{shiftNew}</span>
+          <span className="text-sm text-foreground">Reverted to</span>
+          <span className="text-sm font-medium text-foreground">{shiftNew}</span>
         </div>
       ) : (
-        <div className="flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-2">
           {shiftOld && (
-            <span className="text-muted-foreground">{shiftOld}</span>
+            <span className="text-sm text-muted-foreground">{shiftOld}</span>
           )}
           <ArrowRight className="h-4 w-4 text-primary shrink-0" />
-          <span className="font-medium text-foreground">{shiftNew}</span>
+          <span className="text-sm font-medium text-foreground">{shiftNew}</span>
         </div>
       )}
-      <div className="flex justify-end pt-1">
+      <div className="flex justify-end pt-1 border-t border-border/30">
         <span className="text-xs text-muted-foreground">by {displayName}</span>
       </div>
     </div>
@@ -135,6 +161,7 @@ function ShiftActivityCard({ metadata, displayName }: { metadata: Record<string,
 }
 
 export function PositionCommentSection({ positionId, onClose }: PositionCommentSectionProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [newComment, setNewComment] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
@@ -153,6 +180,18 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
       setCurrentUserId(data.user?.id || null);
     });
   });
+
+  // Scroll to bottom when comments load or new comment added
+  useEffect(() => {
+    if (scrollRef.current && comments && comments.length > 0) {
+      // Small delay to ensure content is rendered
+      setTimeout(() => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+      }, 100);
+    }
+  }, [comments]);
 
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
@@ -208,12 +247,17 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
     );
   }
 
+  // Reverse comments so oldest first, newest last (chat style)
+  const sortedComments = comments ? [...comments].sort((a, b) => 
+    new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  ) : [];
+
   return (
     <div className="flex h-full min-h-0 flex-col pt-4">
-      <ScrollArea className="flex-1 min-h-0 pb-4">
-        <div className="space-y-6">
+      <div className="flex-1 min-h-0 pb-4 overflow-y-auto" ref={scrollRef}>
+        <div className="space-y-4">
           {/* Enhanced Empty State */}
-          {comments && comments.length === 0 && (
+          {sortedComments.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted mb-4">
                 <MessageSquare className="h-6 w-6 text-muted-foreground" />
@@ -223,8 +267,8 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
             </div>
           )}
 
-          {/* Individual Comments */}
-          {comments?.map((comment) => {
+          {/* Individual Comments - oldest first, newest at bottom */}
+          {sortedComments.map((comment) => {
             const isOwner = currentUserId === comment.user_id;
             const displayName = comment.profiles
               ? `${comment.profiles.first_name || ""} ${comment.profiles.last_name || ""}`.trim() || "Unknown User"
@@ -239,9 +283,9 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
             const metadata = (comment.metadata || {}) as Record<string, unknown>;
 
             return (
-              <div key={comment.id} className={`space-y-1 ${isActivityLog ? 'flex flex-col items-end' : ''}`}>
+              <div key={comment.id} className={`space-y-1 ${isActivityLog ? 'flex flex-col items-end' : 'flex flex-col items-start'}`}>
                 {/* Label above bubble: type label for activity logs, user name for regular comments */}
-                <div className={`text-xs font-medium text-muted-foreground ${isActivityLog ? 'text-right' : ''}`}>
+                <div className={`text-xs font-medium text-muted-foreground ${isActivityLog ? 'text-right pr-1' : 'pl-1'}`}>
                   {isActivityLog ? activityLabel : displayName}
                 </div>
 
@@ -352,7 +396,7 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
             );
           })}
         </div>
-      </ScrollArea>
+      </div>
 
       {/* PillChatBar-style Composer with Close button */}
       <div className="py-4 border-t bg-background shrink-0 -mx-6 px-6">
