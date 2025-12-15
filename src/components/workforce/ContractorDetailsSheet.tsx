@@ -13,14 +13,21 @@ interface ContractorDetailsSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   contractor: any;
+  defaultTab?: "details" | "comments";
 }
 
 export function ContractorDetailsSheet({
   open,
   onOpenChange,
   contractor,
+  defaultTab = "details",
 }: ContractorDetailsSheetProps) {
-  const [activeTab, setActiveTab] = useState("details");
+  const [activeTab, setActiveTab] = useState(defaultTab);
+  
+  // Reset tab when defaultTab changes
+  useState(() => {
+    setActiveTab(defaultTab);
+  });
 
   if (!contractor) return null;
 
@@ -46,8 +53,8 @@ export function ContractorDetailsSheet({
           </div>
         </div>
 
-        {/* Content Area */}
-        <Tabs defaultValue="details" onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          {/* Content Area */}
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "details" | "comments")} className="flex flex-col flex-1 min-h-0 overflow-hidden">
           <div className="border-b pb-4 px-6 shrink-0">
             <div className="bg-muted p-1.5 rounded-lg">
               <TabsList className="grid w-full grid-cols-2 bg-transparent">

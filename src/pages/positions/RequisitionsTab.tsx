@@ -39,6 +39,7 @@ export function RequisitionsTab({
 
   const [selectedRequisition, setSelectedRequisition] = useState<any>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetDefaultTab, setSheetDefaultTab] = useState<"details" | "comments">("details");
   const [filterOpen, setFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortColumn, setSortColumn] = useState<string>("");
@@ -54,6 +55,13 @@ export function RequisitionsTab({
 
   const handleRowClick = (requisition: any) => {
     setSelectedRequisition(requisition);
+    setSheetDefaultTab("details");
+    setSheetOpen(true);
+  };
+
+  const handleCommentClick = (requisition: any) => {
+    setSelectedRequisition(requisition);
+    setSheetDefaultTab("comments");
     setSheetOpen(true);
   };
 
@@ -188,8 +196,8 @@ export function RequisitionsTab({
   const commentCounts = usePositionCommentCounts(positionIds);
 
   const columnsWithComments = useMemo(() => 
-    createRequisitionColumnsWithComments(commentCounts, handleRowClick),
-    [commentCounts, handleRowClick]
+    createRequisitionColumnsWithComments(commentCounts, handleCommentClick),
+    [commentCounts, handleCommentClick]
   );
 
   const showEmptyState = !isFetching && (!requisitions || requisitions.length === 0);
@@ -261,6 +269,7 @@ export function RequisitionsTab({
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         requisition={selectedRequisition}
+        defaultTab={sheetDefaultTab}
       />
 
       <RequisitionsFilterSheet

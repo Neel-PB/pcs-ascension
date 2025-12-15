@@ -14,14 +14,21 @@ interface RequisitionDetailsSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   requisition: any;
+  defaultTab?: "details" | "comments";
 }
 
 export function RequisitionDetailsSheet({
   open,
   onOpenChange,
   requisition,
+  defaultTab = "details",
 }: RequisitionDetailsSheetProps) {
-  const [activeTab, setActiveTab] = useState("details");
+  const [activeTab, setActiveTab] = useState(defaultTab);
+  
+  // Reset tab when defaultTab changes
+  useState(() => {
+    setActiveTab(defaultTab);
+  });
 
   if (!requisition) return null;
 
@@ -54,7 +61,7 @@ export function RequisitionDetailsSheet({
         </div>
 
         {/* Content Area */}
-        <Tabs defaultValue="details" onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "details" | "comments")} className="flex flex-col flex-1 min-h-0 overflow-hidden">
           <div className="border-b pb-4 px-6 shrink-0">
             <div className="bg-muted p-1.5 rounded-lg">
               <TabsList className="grid w-full grid-cols-2 bg-transparent">
