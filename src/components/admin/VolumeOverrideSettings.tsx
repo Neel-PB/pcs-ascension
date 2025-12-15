@@ -26,6 +26,9 @@ export function VolumeOverrideSettings() {
     backfill_lookback_months: 24,
     min_volume_threshold: 0,
   });
+  
+  // Move useState before any early returns to follow React hook rules
+  const [isMatrixOpen, setIsMatrixOpen] = useState(false);
 
   // Update form when config loads
   useEffect(() => {
@@ -55,8 +58,6 @@ export function VolumeOverrideSettings() {
       </div>
     );
   }
-
-  const [isMatrixOpen, setIsMatrixOpen] = useState(false);
 
   return (
     <div className="space-y-4">
