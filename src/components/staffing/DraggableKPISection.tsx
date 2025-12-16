@@ -1,4 +1,4 @@
-import { KPICard } from './KPICard';
+import { KPICard, EmploymentBreakdown } from './KPICard';
 
 interface KPIData {
   id: string;
@@ -13,6 +13,8 @@ interface KPIData {
   isHighlighted?: boolean;
   useVacancyModal?: boolean;
   vacancyData?: any[];
+  employmentBreakdown?: EmploymentBreakdown;
+  breakdownVariant?: 'green' | 'red';
 }
 
 interface DragHandleProps {
