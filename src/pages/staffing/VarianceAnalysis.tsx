@@ -60,13 +60,8 @@ const generateVariance = () => ({
 
 // Note: regionMap is now derived from database via useFilterData hook
 
-// Real hierarchical data structure
+// Real hierarchical data structure (regions are now dynamic from database)
 const varianceDataByLevel = {
-  regions: [
-    { name: "Southeast", ...generateVariance() },
-    { name: "Midwest", ...generateVariance() },
-    { name: "South Central", ...generateVariance() },
-  ],
   markets: [
     { name: "Baltimore", ...generateVariance() },
     { name: "Florida", ...generateVariance() },
@@ -288,13 +283,43 @@ export function VarianceAnalysis({
       }));
     }
 
-    // Default: show all regions with markets as children
-    return varianceDataByLevel.regions.map((region, idx) => {
-      const marketsInRegion = regionMap[region.name] || [];
+    // Default: show all regions with markets as children (dynamically from database)
+    const dynamicRegions = Object.keys(regionMap);
+    
+    return dynamicRegions.map((regionName, idx) => {
+      const marketsInRegion = regionMap[regionName] || [];
       const marketData = varianceDataByLevel.markets.filter(m => marketsInRegion.includes(m.name));
       
+      // Calculate aggregated variance for the region from its markets
+      const regionVariance = marketData.length > 0 
+        ? marketData.reduce((acc, curr) => ({
+            clDay: acc.clDay + curr.clDay,
+            clNight: acc.clNight + curr.clNight,
+            clTotal: acc.clTotal + curr.clTotal,
+            rnDay: acc.rnDay + curr.rnDay,
+            rnNight: acc.rnNight + curr.rnNight,
+            rnTotal: acc.rnTotal + curr.rnTotal,
+            pctDay: acc.pctDay + curr.pctDay,
+            pctNight: acc.pctNight + curr.pctNight,
+            pctTotal: acc.pctTotal + curr.pctTotal,
+            hucDay: acc.hucDay + curr.hucDay,
+            hucNight: acc.hucNight + curr.hucNight,
+            hucTotal: acc.hucTotal + curr.hucTotal,
+            overheadDay: acc.overheadDay + curr.overheadDay,
+            overheadNight: acc.overheadNight + curr.overheadNight,
+            overheadTotal: acc.overheadTotal + curr.overheadTotal,
+          }), {
+            clDay: 0, clNight: 0, clTotal: 0,
+            rnDay: 0, rnNight: 0, rnTotal: 0,
+            pctDay: 0, pctNight: 0, pctTotal: 0,
+            hucDay: 0, hucNight: 0, hucTotal: 0,
+            overheadDay: 0, overheadNight: 0, overheadTotal: 0,
+          })
+        : generateVariance();
+      
       return {
-        ...region,
+        name: regionName,
+        ...regionVariance,
         type: 'group' as const,
         id: `region-${idx}`,
         children: marketData.map((market, midx) => ({
