@@ -10,6 +10,7 @@ export interface VolumeOverrideConfig {
   enable_backfill: boolean;
   backfill_lookback_months: number;
   min_volume_threshold: number;
+  spread_threshold: number; // Max % difference between 3-mo low and N-mo avg
   // Location fields for department-specific configs
   is_global?: boolean;
   market?: string | null;

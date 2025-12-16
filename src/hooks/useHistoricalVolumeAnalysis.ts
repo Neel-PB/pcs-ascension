@@ -28,6 +28,12 @@ export interface DepartmentVolumeAnalysis {
   override_optional: boolean;
   max_allowed_expiry_date: Date;
   category: OverrideCategory;
+  // New fields for 3-month low logic
+  three_month_low_avg: number | null;
+  n_month_avg: number | null;
+  spread_percentage: number | null;
+  used_three_month_low: boolean;
+  lowest_three_months: string[];
 }
 
 export function useVolumeOverrideConfig() {
@@ -147,16 +153,50 @@ async function analyzeDepartmentHistory(
       .slice(0, 12);
   }
 
-  // Step 3: Calculate target volume (average daily volume)
-  // Sum total volume and total days across all valid months
+  // Step 3: Calculate N-month average (existing logic - average daily volume across all months)
   const totalVolume = validMonths.reduce((sum, m) => sum + m.volume, 0);
   const totalDays = validMonths.reduce((sum, m) => sum + m.daysInMonth, 0);
   
-  const targetVolume = validMonths.length >= config.min_months_for_target && totalDays > 0
+  const nMonthAvg = validMonths.length >= config.min_months_for_target && totalDays > 0
     ? totalVolume / totalDays
     : null;
 
-  // Step 4: Determine override requirements
+  // Step 4: Calculate 3-month low average (new logic)
+  let threeMonthLowAvg: number | null = null;
+  let lowestThreeMonths: string[] = [];
+  let spreadPercentage: number | null = null;
+  let usedThreeMonthLow = false;
+
+  if (validMonths.length >= config.min_months_for_target) {
+    // Sort months by volume (ascending) to find lowest 3
+    const sortedByVolume = [...validMonths].sort((a, b) => a.volume - b.volume);
+    const lowest3 = sortedByVolume.slice(0, Math.min(3, validMonths.length));
+    
+    lowestThreeMonths = lowest3.map(m => m.month);
+    
+    // Calculate 3-month low daily average
+    const lowest3Volume = lowest3.reduce((sum, m) => sum + m.volume, 0);
+    const lowest3Days = lowest3.reduce((sum, m) => sum + m.daysInMonth, 0);
+    
+    if (lowest3Days > 0) {
+      threeMonthLowAvg = lowest3Volume / lowest3Days;
+    }
+
+    // Step 5: Calculate spread percentage
+    if (nMonthAvg && threeMonthLowAvg && nMonthAvg > 0) {
+      spreadPercentage = Math.abs(threeMonthLowAvg - nMonthAvg) / nMonthAvg * 100;
+      
+      // Step 6: Determine which method to use based on spread threshold
+      usedThreeMonthLow = spreadPercentage <= (config.spread_threshold ?? 15);
+    }
+  }
+
+  // Step 7: Determine final target volume
+  const targetVolume = usedThreeMonthLow && threeMonthLowAvg !== null
+    ? threeMonthLowAvg
+    : nMonthAvg;
+
+  // Step 8: Determine override requirements
   const overrideMandatory = isOverrideMandatory(validMonths.length, config);
   const maxAllowedExpiry = calculateMaxOverrideExpiry(validMonths.length, config, currentDate);
   const category = determineOverrideCategory(validMonths.length, config);
@@ -174,5 +214,11 @@ async function analyzeDepartmentHistory(
     override_optional: !overrideMandatory,
     max_allowed_expiry_date: maxAllowedExpiry,
     category,
+    // New fields
+    three_month_low_avg: threeMonthLowAvg,
+    n_month_avg: nMonthAvg,
+    spread_percentage: spreadPercentage,
+    used_three_month_low: usedThreeMonthLow,
+    lowest_three_months: lowestThreeMonths,
   };
 }

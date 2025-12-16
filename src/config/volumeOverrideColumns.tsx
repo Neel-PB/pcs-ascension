@@ -33,13 +33,19 @@ export interface VolumeOverrideRow {
   market: string;
   facility_id: string;
   facility_name: string;
-  // New fields from historical analysis
+  // Fields from historical analysis
   historical_months_count?: number;
   historical_months_data?: HistoricalMonthData[];
   target_volume?: number | null;
   override_mandatory?: boolean;
   max_allowed_expiry_date?: Date | null;
   category?: OverrideCategory;
+  // New fields for 3-month low logic
+  three_month_low_avg?: number | null;
+  n_month_avg?: number | null;
+  spread_percentage?: number | null;
+  used_three_month_low?: boolean;
+  lowest_three_months?: string[];
 }
 
 export const createVolumeOverrideColumns = (
@@ -75,6 +81,12 @@ export const createVolumeOverrideColumns = (
           historicalMonthsData={row.historical_months_data ?? []}
           targetVolume={row.target_volume ?? null}
           minMonthsForTarget={config?.min_months_for_target ?? 3}
+          threeMonthLowAvg={row.three_month_low_avg}
+          nMonthAvg={row.n_month_avg}
+          spreadPercentage={row.spread_percentage}
+          usedThreeMonthLow={row.used_three_month_low}
+          lowestThreeMonths={row.lowest_three_months}
+          spreadThreshold={config?.spread_threshold ?? 15}
         />
       );
     },

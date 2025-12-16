@@ -56,6 +56,7 @@ const DEFAULT_FORM_DATA = {
   enable_backfill: true,
   backfill_lookback_months: 24,
   min_volume_threshold: 0,
+  spread_threshold: 15,
 };
 
 export function VolumeOverrideSettings() {
@@ -142,6 +143,7 @@ export function VolumeOverrideSettings() {
         enable_backfill: globalConfig.enable_backfill,
         backfill_lookback_months: globalConfig.backfill_lookback_months,
         min_volume_threshold: globalConfig.min_volume_threshold,
+        spread_threshold: globalConfig.spread_threshold ?? 15,
       });
     }
   }, [globalConfig, mode, editingConfigId]);
@@ -163,6 +165,7 @@ export function VolumeOverrideSettings() {
           enable_backfill: globalConfig.enable_backfill,
           backfill_lookback_months: globalConfig.backfill_lookback_months,
           min_volume_threshold: globalConfig.min_volume_threshold,
+          spread_threshold: globalConfig.spread_threshold ?? 15,
         });
       }
     } else {
@@ -210,6 +213,7 @@ export function VolumeOverrideSettings() {
         enable_backfill: existingConfig.enable_backfill,
         backfill_lookback_months: existingConfig.backfill_lookback_months,
         min_volume_threshold: existingConfig.min_volume_threshold,
+        spread_threshold: existingConfig.spread_threshold ?? 15,
       });
     } else {
       // Use global as starting point for new department config
@@ -223,6 +227,7 @@ export function VolumeOverrideSettings() {
           enable_backfill: globalConfig.enable_backfill,
           backfill_lookback_months: globalConfig.backfill_lookback_months,
           min_volume_threshold: globalConfig.min_volume_threshold,
+          spread_threshold: globalConfig.spread_threshold ?? 15,
         });
       }
     }
@@ -248,6 +253,7 @@ export function VolumeOverrideSettings() {
       enable_backfill: config.enable_backfill,
       backfill_lookback_months: config.backfill_lookback_months,
       min_volume_threshold: config.min_volume_threshold,
+      spread_threshold: config.spread_threshold ?? 15,
     });
     
     // Trigger highlight animation
@@ -312,7 +318,7 @@ export function VolumeOverrideSettings() {
 
   // Format config summary for department list
   const formatConfigSummary = (config: VolumeOverrideConfig) => {
-    return `Min: ${config.min_months_for_target}mo | Mandatory: ${config.min_months_mandatory_override}mo | FY: ${config.fiscal_year_end_month}/${config.fiscal_year_end_day} | Backfill: ${config.enable_backfill ? `${config.backfill_lookback_months}mo` : 'Off'}`;
+    return `Min: ${config.min_months_for_target}mo | Spread: ${config.spread_threshold ?? 15}% | FY: ${config.fiscal_year_end_month}/${config.fiscal_year_end_day} | Backfill: ${config.enable_backfill ? `${config.backfill_lookback_months}mo` : 'Off'}`;
   };
 
   if (isLoading) {
@@ -574,6 +580,24 @@ export function VolumeOverrideSettings() {
               />
               <p className="text-xs text-muted-foreground">
                 Max months for minimal history (default: 12)
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="spread_threshold" className="text-sm">
+                Spread Threshold (%)
+              </Label>
+              <Input
+                id="spread_threshold"
+                type="number"
+                min={0}
+                max={100}
+                step={1}
+                value={formData.spread_threshold}
+                onChange={(e) => setFormData({ ...formData, spread_threshold: parseFloat(e.target.value) })}
+              />
+              <p className="text-xs text-muted-foreground">
+                Max % diff between 3-mo low and N-mo avg (default: 15)
               </p>
             </div>
           </CardContent>
