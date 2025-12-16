@@ -128,7 +128,7 @@ export function KPICard({
         {/* Employment Breakdown Section - Outside Card */}
         {employmentBreakdown && (
           <div className={cn(
-            "absolute left-0 right-0 top-[calc(100%+6px)] z-10 flex items-center gap-2 px-2 py-1 rounded-md text-xs",
+            "absolute left-0 right-0 top-full z-10 flex items-center gap-2 px-2 py-1 rounded-b-lg text-xs",
             breakdownVariant === 'green' && "bg-emerald-500/10",
             breakdownVariant === 'red' && "bg-destructive/10"
           )}>
