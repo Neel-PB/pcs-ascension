@@ -134,7 +134,7 @@ export function KPICard({
                   ease: "easeOut"
                 }}
                 className={cn(
-                  "flex items-center gap-2 mt-2 -mx-4 -mb-4 px-3 py-1.5 rounded-b-lg text-xs",
+                  "flex items-center gap-2 mt-2 -ml-4 -mr-10 -mb-4 px-3 py-1.5 rounded-b-lg text-xs",
                   breakdownVariant === 'green' && "bg-emerald-500/10",
                   breakdownVariant === 'red' && "bg-destructive/10"
                 )}
