@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { BarChart3, Eye } from "lucide-react";
+import { BarChart3, Eye, Info } from "lucide-react";
 import { KPIChartModal } from "./KPIChartModal";
 import { KPIInfoModal } from "./KPIInfoModal";
 import {
@@ -11,6 +11,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
+export interface EmploymentBreakdown {
+  ft: number;  // percentage
+  pt: number;  // percentage
+  prn: number; // percentage
+}
 
 interface KPICardProps {
   title: string;
@@ -27,6 +33,8 @@ interface KPICardProps {
   breakdownData?: Array<any>;
   decimalPlaces?: number;
   xAxisLabels?: string[];
+  employmentBreakdown?: EmploymentBreakdown;
+  breakdownVariant?: 'green' | 'red';
 }
 
 export function KPICard({
@@ -44,6 +52,8 @@ export function KPICard({
   breakdownData,
   decimalPlaces = 1,
   xAxisLabels,
+  employmentBreakdown,
+  breakdownVariant,
 }: KPICardProps) {
   const [showChartModal, setShowChartModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
@@ -112,6 +122,44 @@ export function KPICard({
                 </div>
               )}
             </div>
+
+            {/* Employment Breakdown Section */}
+            {employmentBreakdown && (
+              <div className={cn(
+                "mt-3 pt-2 border-t text-xs flex items-center gap-2",
+                breakdownVariant === 'green' && "border-emerald-500/20",
+                breakdownVariant === 'red' && "border-destructive/20"
+              )}>
+                <div className={cn(
+                  "flex items-center gap-2 px-2 py-1 rounded-md w-full",
+                  breakdownVariant === 'green' && "bg-emerald-500/10",
+                  breakdownVariant === 'red' && "bg-destructive/10"
+                )}>
+                  <Info className={cn(
+                    "h-3 w-3 shrink-0",
+                    breakdownVariant === 'green' && "text-emerald-600",
+                    breakdownVariant === 'red' && "text-destructive"
+                  )} />
+                  {(() => {
+                    const sorted = [
+                      { label: 'FT', value: employmentBreakdown.ft },
+                      { label: 'PT', value: employmentBreakdown.pt },
+                      { label: 'PRN', value: employmentBreakdown.prn },
+                    ].sort((a, b) => b.value - a.value);
+                    
+                    return (
+                      <span className={cn(
+                        "font-medium",
+                        breakdownVariant === 'green' && "text-emerald-700",
+                        breakdownVariant === 'red' && "text-destructive"
+                      )}>
+                        {sorted[0].value}% {sorted[0].label} · {sorted[1].value}% {sorted[1].label} · {sorted[2].value}% {sorted[2].label}
+                      </span>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </motion.div>
