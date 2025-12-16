@@ -743,12 +743,11 @@ export default function PositionPlanning() {
                         </span>
                       </motion.button>
                     </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="text-sm">
-                        <span className="font-semibold">Active FTE:</span> Shows only actively working employees,
-                        excluding those on leave, LOA, or inactive
-                      </p>
-                    </TooltipContent>
+                          <TooltipContent>
+                            <p className="text-sm">
+                              <span className="font-semibold">Active FTE:</span> Total FT, PT, PRN adjusted by the Dept leader based on their current availability. Eg, LOA, Training, education.
+                            </p>
+                          </TooltipContent>
                   </Tooltip>
                 </div>
               </LayoutGroup>
