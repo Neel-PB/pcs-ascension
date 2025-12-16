@@ -59,109 +59,7 @@ const generateVariance = () => ({
 });
 
 // Note: regionMap is now derived from database via useFilterData hook
-
-// Real hierarchical data structure (regions are now dynamic from database)
-const varianceDataByLevel = {
-  markets: [
-    { name: "Baltimore", ...generateVariance() },
-    { name: "Florida", ...generateVariance() },
-    { name: "Illinois", ...generateVariance() },
-    { name: "Indiana", ...generateVariance() },
-    { name: "Kansas", ...generateVariance() },
-    { name: "Oklahoma", ...generateVariance() },
-    { name: "Tennessee", ...generateVariance() },
-    { name: "Texas", ...generateVariance() },
-    { name: "Wisconsin", ...generateVariance() },
-  ],
-  facilities: {
-    "Baltimore": {
-      "MDBAL": [
-        { name: "St Agnes Healthcare", ...generateVariance() },
-      ],
-    },
-    "Florida": {
-      "FLJAC": [
-        { name: "ASV Clay County Hospital", ...generateVariance() },
-        { name: "ASV Riverside Hospital", ...generateVariance() },
-        { name: "ASV Southside Hospital", ...generateVariance() },
-        { name: "St Johns County Hospital", ...generateVariance() },
-      ],
-      "FLPEN": [
-        { name: "ASH Gulf Coast Hospital", ...generateVariance() },
-        { name: "ASH Panama City Bay Hosp", ...generateVariance() },
-        { name: "ASH Pensacola Hospital", ...generateVariance() },
-      ],
-    },
-    "Illinois": {
-      "ILARL": [
-        { name: "Alexian Bros Medical Ctr", ...generateVariance() },
-        { name: "Saint Joseph Hosp Chgo", ...generateVariance() },
-        { name: "St Alexius Medical Center", ...generateVariance() },
-      ],
-    },
-    "Indiana": {
-      "ININD": [
-        { name: "St Vincent Fishers Hosp", ...generateVariance() },
-        { name: "St Vincent Heart Ctr", ...generateVariance() },
-        { name: "St Vincent Indpls Acute", ...generateVariance() },
-        { name: "St V Anderson Hosp", ...generateVariance() },
-        { name: "St V Carmel Hosp", ...generateVariance() },
-        { name: "St V Mercy Hosp", ...generateVariance() },
-        { name: "St V Randolph Hosp", ...generateVariance() },
-        { name: "Peyton Manning Children's Hospital", ...generateVariance() },
-      ],
-      "INEVA": [
-        { name: "St Vincent Evansville", ...generateVariance() },
-      ],
-    },
-    "Kansas": {
-      "KSWIC": [
-        { name: "Via Christi Hosp Pittsburg", ...generateVariance() },
-        { name: "Via Christi Hosp St Joseph", ...generateVariance() },
-        { name: "Via Christi Hosp Wichita", ...generateVariance() },
-      ],
-    },
-    "Oklahoma": {
-      "OKTUL": [
-        { name: "St John Medical Center", ...generateVariance() },
-        { name: "St John Owasso", ...generateVariance() },
-        { name: "St John Sapulpa", ...generateVariance() },
-        { name: "St John Broken Arrow", ...generateVariance() },
-        { name: "Jane Phillips Medical Center", ...generateVariance() },
-      ],
-    },
-    "Tennessee": {
-      "TNNAS": [
-        { name: "AST DeKalb Hosp", ...generateVariance() },
-        { name: "AST Hickman Hosp", ...generateVariance() },
-        { name: "Saint Thomas Midtown", ...generateVariance() },
-        { name: "Saint Thomas West", ...generateVariance() },
-        { name: "Saint Thomas Rutherford", ...generateVariance() },
-      ],
-    },
-    "Texas": {
-      "TXAUS": [
-        { name: "Asc Seton Williamson", ...generateVariance() },
-        { name: "Dell Childrens MedCtr TX", ...generateVariance() },
-        { name: "Seton Medical Center Austin", ...generateVariance() },
-        { name: "Seton Northwest Hospital", ...generateVariance() },
-        { name: "Seton Southwest Hospital", ...generateVariance() },
-      ],
-    },
-    "Wisconsin": {
-      "WIMIL": [
-        { name: "All Saints Hospital", ...generateVariance() },
-        { name: "CSM Milwaukee Hosp", ...generateVariance() },
-      ],
-    },
-  },
-  departments: [
-    { name: "Emergency", ...generateVariance() },
-    { name: "ICU", ...generateVariance() },
-    { name: "Surgery", ...generateVariance() },
-    { name: "Cardiology", ...generateVariance() },
-  ],
-};
+// Markets and departments are now fetched dynamically from database
 
 interface VarianceAnalysisProps {
   selectedRegion: string;
@@ -178,7 +76,7 @@ export function VarianceAnalysis({
 }: VarianceAnalysisProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { isExpanded: isGroupExpanded, toggleExpanded } = useExpandStore();
-  const { markets, getMarketsByRegion, getFacilitiesGroupedBySubmarket } = useFilterData();
+  const { markets, getFacilitiesGroupedBySubmarket, getDepartmentsByFacility } = useFilterData();
 
   // Build region-to-markets map from database
   const regionMap = useMemo(() => {
@@ -193,6 +91,24 @@ export function VarianceAnalysis({
     });
     return map;
   }, [markets]);
+
+  // Dynamic markets data from database with mock variance numbers
+  const dynamicMarkets = useMemo(() => 
+    markets.map(m => ({
+      name: m.market,
+      ...generateVariance()
+    })), [markets]
+  );
+
+  // Dynamic departments data from database based on selected facility
+  const dynamicDepartments = useMemo(() => {
+    if (selectedFacility === "all-facilities") return [];
+    const facilityDepts = getDepartmentsByFacility(selectedFacility);
+    return facilityDepts.map(d => ({
+      name: d.department_name,
+      ...generateVariance()
+    }));
+  }, [selectedFacility, getDepartmentsByFacility]);
 
   // Format variance value with +/- sign
   const formatVariance = (value: number): string => {
@@ -210,7 +126,7 @@ export function VarianceAnalysis({
   const getData = (): GroupedVarianceData[] => {
     // Show departments when facility is selected (no grouping)
     if (selectedFacility !== "all-facilities") {
-      return varianceDataByLevel.departments.map((dept, idx) => ({
+      return dynamicDepartments.map((dept, idx) => ({
         ...dept,
         type: 'skill' as const,
         id: `dept-${idx}`,
@@ -274,7 +190,7 @@ export function VarianceAnalysis({
     // Show markets grouped by region when region is selected
     if (selectedRegion !== "all-regions") {
       const marketsInRegion = regionMap[selectedRegion] || [];
-      const marketData = varianceDataByLevel.markets.filter(m => 
+      const marketData = dynamicMarkets.filter(m => 
         marketsInRegion.some(mr => mr.toUpperCase() === m.name.toUpperCase())
       );
       
@@ -290,7 +206,7 @@ export function VarianceAnalysis({
     
     return dynamicRegions.map((regionName, idx) => {
       const marketsInRegion = regionMap[regionName] || [];
-      const marketData = varianceDataByLevel.markets.filter(m => 
+      const marketData = dynamicMarkets.filter(m => 
         marketsInRegion.some(mr => mr.toUpperCase() === m.name.toUpperCase())
       );
       
