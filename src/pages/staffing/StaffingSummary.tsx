@@ -17,6 +17,7 @@ export default function StaffingSummary() {
   const [selectedRegion, setSelectedRegion] = useState("all-regions");
   const [selectedMarket, setSelectedMarket] = useState("all-markets");
   const [selectedFacility, setSelectedFacility] = useState("all-facilities");
+  const [selectedSubmarket, setSelectedSubmarket] = useState("all-submarkets");
   const [selectedDepartmentFamily, setSelectedDepartmentFamily] = useState("all-dept-families");
   const [selectedDepartment, setSelectedDepartment] = useState("all-departments");
 
@@ -32,6 +33,7 @@ export default function StaffingSummary() {
     setSelectedRegion(value);
     setSelectedMarket("all-markets");
     setSelectedFacility("all-facilities");
+    setSelectedSubmarket("all-submarkets");
     setSelectedDepartmentFamily("all-dept-families");
     setSelectedDepartment("all-departments");
   };
@@ -39,6 +41,7 @@ export default function StaffingSummary() {
   const handleMarketChange = (value: string) => {
     setSelectedMarket(value);
     setSelectedFacility("all-facilities");
+    setSelectedSubmarket("all-submarkets");
     setSelectedDepartmentFamily("all-dept-families");
     setSelectedDepartment("all-departments");
   };
@@ -47,6 +50,10 @@ export default function StaffingSummary() {
     setSelectedFacility(value);
     setSelectedDepartmentFamily("all-dept-families");
     setSelectedDepartment("all-departments");
+  };
+
+  const handleSubmarketChange = (value: string) => {
+    setSelectedSubmarket(value);
   };
 
   const handleDepartmentFamilyChange = (value: string) => {
@@ -58,6 +65,7 @@ export default function StaffingSummary() {
     setSelectedRegion("all-regions");
     setSelectedMarket("all-markets");
     setSelectedFacility("all-facilities");
+    setSelectedSubmarket("all-submarkets");
     setSelectedDepartmentFamily("all-dept-families");
     setSelectedDepartment("all-departments");
   };
@@ -426,11 +434,13 @@ This metric helps:
           onRegionChange={handleRegionChange}
           onMarketChange={handleMarketChange}
           onFacilityChange={handleFacilityChange}
+          onSubmarketChange={handleSubmarketChange}
           onDepartmentFamilyChange={handleDepartmentFamilyChange}
           onDepartmentChange={setSelectedDepartment}
           selectedRegion={selectedRegion}
           selectedMarket={selectedMarket}
           selectedFacility={selectedFacility}
+          selectedSubmarket={selectedSubmarket}
           selectedDepartmentFamily={selectedDepartmentFamily}
           selectedDepartment={selectedDepartment}
           onClearFilters={handleClearFilters}
