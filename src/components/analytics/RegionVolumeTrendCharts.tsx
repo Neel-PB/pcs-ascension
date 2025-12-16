@@ -8,6 +8,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend,
   ResponsiveContainer,
 } from "recharts";
 
@@ -17,28 +18,34 @@ const formatCompact = (value: number) => {
   return value.toString();
 };
 
-interface VolumeChartCardProps {
-  title: string;
-  data: { month: string; volume: number }[];
-  color: string;
-}
+export function RegionVolumeTrendCharts() {
+  const { combinedData, isLoading } = useRegionVolumeData();
 
-function VolumeChartCard({ title, data, color }: VolumeChartCardProps) {
-  const hasData = data.some((d) => d.volume > 0);
+  if (isLoading) {
+    return (
+      <div className="h-[400px] flex items-center justify-center">
+        <LogoLoader size="md" variant="pulse" />
+      </div>
+    );
+  }
+
+  const hasData = combinedData.some((d) => d.region1 > 0 || d.region2 > 0);
 
   return (
-    <Card className="h-full">
+    <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base font-medium">{title}</CardTitle>
+        <CardTitle className="text-base font-medium">
+          Regional Volume Trends – Last 12 Months
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {!hasData ? (
-          <div className="h-[250px] flex items-center justify-center text-muted-foreground">
+          <div className="h-[350px] flex items-center justify-center text-muted-foreground">
             No data available
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+          <ResponsiveContainer width="100%" height={350}>
+            <LineChart data={combinedData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis
                 dataKey="month"
@@ -53,11 +60,14 @@ function VolumeChartCard({ title, data, color }: VolumeChartCardProps) {
                 tick={{ fontSize: 11 }}
                 tickLine={false}
                 axisLine={false}
-                width={45}
+                width={50}
                 className="fill-muted-foreground"
               />
               <Tooltip
-                formatter={(value: number) => [value.toLocaleString(), "Volume"]}
+                formatter={(value: number, name: string) => [
+                  value.toLocaleString(),
+                  name === "region1" ? "Region 1" : "Region 2",
+                ]}
                 labelStyle={{ color: "hsl(var(--foreground))" }}
                 contentStyle={{
                   backgroundColor: "hsl(var(--background))",
@@ -65,12 +75,25 @@ function VolumeChartCard({ title, data, color }: VolumeChartCardProps) {
                   borderRadius: "8px",
                 }}
               />
+              <Legend
+                formatter={(value) => (value === "region1" ? "Region 1" : "Region 2")}
+              />
               <Line
                 type="monotone"
-                dataKey="volume"
-                stroke={color}
+                dataKey="region1"
+                name="region1"
+                stroke="hsl(142, 76%, 36%)"
                 strokeWidth={2}
-                dot={{ r: 3, fill: color }}
+                dot={{ r: 3, fill: "hsl(142, 76%, 36%)" }}
+                activeDot={{ r: 5 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="region2"
+                name="region2"
+                stroke="hsl(221, 83%, 53%)"
+                strokeWidth={2}
+                dot={{ r: 3, fill: "hsl(221, 83%, 53%)" }}
                 activeDot={{ r: 5 }}
               />
             </LineChart>
@@ -78,37 +101,5 @@ function VolumeChartCard({ title, data, color }: VolumeChartCardProps) {
         )}
       </CardContent>
     </Card>
-  );
-}
-
-export function RegionVolumeTrendCharts() {
-  const { allRegionsData, region1Data, region2Data, isLoading } = useRegionVolumeData();
-
-  if (isLoading) {
-    return (
-      <div className="h-[350px] flex items-center justify-center">
-        <LogoLoader size="md" variant="pulse" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <VolumeChartCard
-        title="All Regions – Last 12 Months Volume"
-        data={allRegionsData}
-        color="hsl(var(--primary))"
-      />
-      <VolumeChartCard
-        title="Region 1 – Last 12 Months Volume"
-        data={region1Data}
-        color="hsl(142, 76%, 36%)"
-      />
-      <VolumeChartCard
-        title="Region 2 – Last 12 Months Volume"
-        data={region2Data}
-        color="hsl(221, 83%, 53%)"
-      />
-    </div>
   );
 }

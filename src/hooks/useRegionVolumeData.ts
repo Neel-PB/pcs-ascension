@@ -2,15 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subMonths, startOfMonth } from "date-fns";
 
-interface MonthlyVolume {
+export interface CombinedMonthlyVolume {
   month: string;
-  volume: number;
+  region1: number;
+  region2: number;
 }
 
-interface RegionVolumeData {
-  allRegionsData: MonthlyVolume[];
-  region1Data: MonthlyVolume[];
-  region2Data: MonthlyVolume[];
+export interface RegionVolumeData {
+  combinedData: CombinedMonthlyVolume[];
   isLoading: boolean;
   error: Error | null;
 }
@@ -51,12 +50,10 @@ export function useRegionVolumeData(): RegionVolumeData {
       }
 
       // Initialize data structures
-      const allRegionsMap: Record<string, number> = {};
       const region1Map: Record<string, number> = {};
       const region2Map: Record<string, number> = {};
 
       months.forEach((m) => {
-        allRegionsMap[m] = 0;
         region1Map[m] = 0;
         region2Map[m] = 0;
       });
@@ -69,9 +66,7 @@ export function useRegionVolumeData(): RegionVolumeData {
         const region = marketToRegion[record.market] || "Unknown";
         const volume = Number(record.volume) || 0;
 
-        if (allRegionsMap[monthKey] !== undefined) {
-          allRegionsMap[monthKey] += volume;
-
+        if (region1Map[monthKey] !== undefined) {
           if (region === "Region 1") {
             region1Map[monthKey] += volume;
           } else if (region === "Region 2") {
@@ -80,30 +75,19 @@ export function useRegionVolumeData(): RegionVolumeData {
         }
       });
 
-      // Convert to array format for recharts
-      const allRegionsData = months.map((month) => ({
+      // Convert to combined array format for multi-line chart
+      const combinedData: CombinedMonthlyVolume[] = months.map((month) => ({
         month,
-        volume: allRegionsMap[month],
+        region1: region1Map[month],
+        region2: region2Map[month],
       }));
 
-      const region1Data = months.map((month) => ({
-        month,
-        volume: region1Map[month],
-      }));
-
-      const region2Data = months.map((month) => ({
-        month,
-        volume: region2Map[month],
-      }));
-
-      return { allRegionsData, region1Data, region2Data };
+      return { combinedData };
     },
   });
 
   return {
-    allRegionsData: data?.allRegionsData || [],
-    region1Data: data?.region1Data || [],
-    region2Data: data?.region2Data || [],
+    combinedData: data?.combinedData || [],
     isLoading,
     error: error as Error | null,
   };
