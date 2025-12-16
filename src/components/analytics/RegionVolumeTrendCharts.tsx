@@ -1,22 +1,32 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogoLoader } from "@/components/ui/LogoLoader";
 import { useRegionVolumeData } from "@/hooks/useRegionVolumeData";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
 
 const formatCompact = (value: number) => {
   if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
   if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
   return value.toString();
 };
+
+const chartConfig = {
+  region1: {
+    label: "Region 1",
+    color: "hsl(142, 76%, 36%)",
+  },
+  region2: {
+    label: "Region 2",
+    color: "hsl(221, 83%, 53%)",
+  },
+} satisfies ChartConfig;
 
 export function RegionVolumeTrendCharts() {
   const { combinedData, isLoading } = useRegionVolumeData();
@@ -44,9 +54,19 @@ export function RegionVolumeTrendCharts() {
             No data available
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={350}>
-            <LineChart data={combinedData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+          <ChartContainer config={chartConfig} className="h-[350px] w-full">
+            <AreaChart data={combinedData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="fillRegion1" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--color-region1)" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="var(--color-region1)" stopOpacity={0.1} />
+                </linearGradient>
+                <linearGradient id="fillRegion2" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--color-region2)" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="var(--color-region2)" stopOpacity={0.1} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border" />
               <XAxis
                 dataKey="month"
                 tick={{ fontSize: 11 }}
@@ -63,41 +83,27 @@ export function RegionVolumeTrendCharts() {
                 width={50}
                 className="fill-muted-foreground"
               />
-              <Tooltip
-                formatter={(value: number, name: string) => [
-                  value.toLocaleString(),
-                  name === "region1" ? "Region 1" : "Region 2",
-                ]}
-                labelStyle={{ color: "hsl(var(--foreground))" }}
-                contentStyle={{
-                  backgroundColor: "hsl(var(--background))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "8px",
-                }}
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent indicator="dot" />}
               />
-              <Legend
-                formatter={(value) => (value === "region1" ? "Region 1" : "Region 2")}
-              />
-              <Line
-                type="monotone"
-                dataKey="region1"
-                name="region1"
-                stroke="hsl(142, 76%, 36%)"
-                strokeWidth={2}
-                dot={{ r: 3, fill: "hsl(142, 76%, 36%)" }}
-                activeDot={{ r: 5 }}
-              />
-              <Line
-                type="monotone"
+              <ChartLegend content={<ChartLegendContent />} />
+              <Area
                 dataKey="region2"
-                name="region2"
-                stroke="hsl(221, 83%, 53%)"
+                type="natural"
+                fill="url(#fillRegion2)"
+                stroke="var(--color-region2)"
                 strokeWidth={2}
-                dot={{ r: 3, fill: "hsl(221, 83%, 53%)" }}
-                activeDot={{ r: 5 }}
               />
-            </LineChart>
-          </ResponsiveContainer>
+              <Area
+                dataKey="region1"
+                type="natural"
+                fill="url(#fillRegion1)"
+                stroke="var(--color-region1)"
+                strokeWidth={2}
+              />
+            </AreaChart>
+          </ChartContainer>
         )}
       </CardContent>
     </Card>
