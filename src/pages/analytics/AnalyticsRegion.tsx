@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, LayoutGroup, AnimatePresence } from "framer-motion";
 import { BarChart3 } from "lucide-react";
+import { RegionVolumeTrendCharts } from "@/components/analytics/RegionVolumeTrendCharts";
 
 export default function AnalyticsRegion() {
   const [activeTab, setActiveTab] = useState("region");
@@ -74,11 +75,15 @@ export default function AnalyticsRegion() {
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
         >
-          <div className="h-[400px] bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg flex flex-col items-center justify-center border border-border/50">
-            <BarChart3 className="h-16 w-16 text-muted-foreground/40 mb-4" />
-            <h3 className="text-lg font-medium text-muted-foreground">{tabLabels[activeTab]}</h3>
-            <p className="text-sm text-muted-foreground/60">Dashboard coming soon</p>
-          </div>
+          {activeTab === "region" ? (
+            <RegionVolumeTrendCharts />
+          ) : (
+            <div className="h-[400px] bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg flex flex-col items-center justify-center border border-border/50">
+              <BarChart3 className="h-16 w-16 text-muted-foreground/40 mb-4" />
+              <h3 className="text-lg font-medium text-muted-foreground">{tabLabels[activeTab]}</h3>
+              <p className="text-sm text-muted-foreground/60">Dashboard coming soon</p>
+            </div>
+          )}
         </motion.div>
       </AnimatePresence>
     </motion.div>
