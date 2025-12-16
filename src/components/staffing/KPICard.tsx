@@ -71,7 +71,7 @@ export function KPICard({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay }}
-        className="flex flex-col"
+        className="relative"
       >
         <Card
           className={cn(
@@ -128,7 +128,7 @@ export function KPICard({
         {/* Employment Breakdown Section - Outside Card */}
         {employmentBreakdown && (
           <div className={cn(
-            "mt-1.5 flex items-center gap-2 px-2 py-1 rounded-md text-xs",
+            "absolute left-0 right-0 top-[calc(100%+6px)] z-10 flex items-center gap-2 px-2 py-1 rounded-md text-xs",
             breakdownVariant === 'green' && "bg-emerald-500/10",
             breakdownVariant === 'red' && "bg-destructive/10"
           )}>
