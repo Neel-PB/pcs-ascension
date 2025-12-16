@@ -77,7 +77,8 @@ export function KPICard({
           className={cn(
             "hover:shadow-lg transition-all duration-300",
             isHighlighted && "border-emerald-500/50 bg-emerald-500/5",
-            isNegative && "border-destructive/50 bg-destructive/5"
+            isNegative && "border-destructive/50 bg-destructive/5",
+            employmentBreakdown && "rounded-b-none"
           )}
         >
           <CardContent className="p-4 pr-10 relative">
