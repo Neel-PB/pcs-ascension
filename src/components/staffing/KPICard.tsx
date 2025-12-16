@@ -71,11 +71,11 @@ export function KPICard({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay }}
-        className="h-full"
+        className="flex flex-col"
       >
         <Card
           className={cn(
-            "h-full hover:shadow-lg transition-all duration-300",
+            "hover:shadow-lg transition-all duration-300",
             isHighlighted && "border-emerald-500/50 bg-emerald-500/5",
             isNegative && "border-destructive/50 bg-destructive/5"
           )}
@@ -122,46 +122,40 @@ export function KPICard({
                 </div>
               )}
             </div>
-
-            {/* Employment Breakdown Section */}
-            {employmentBreakdown && (
-              <div className={cn(
-                "mt-3 pt-2 border-t text-xs flex items-center gap-2",
-                breakdownVariant === 'green' && "border-emerald-500/20",
-                breakdownVariant === 'red' && "border-destructive/20"
-              )}>
-                <div className={cn(
-                  "flex items-center gap-2 px-2 py-1 rounded-md w-full",
-                  breakdownVariant === 'green' && "bg-emerald-500/10",
-                  breakdownVariant === 'red' && "bg-destructive/10"
-                )}>
-                  <Info className={cn(
-                    "h-3 w-3 shrink-0",
-                    breakdownVariant === 'green' && "text-emerald-600",
-                    breakdownVariant === 'red' && "text-destructive"
-                  )} />
-                  {(() => {
-                    const sorted = [
-                      { label: 'FT', value: employmentBreakdown.ft },
-                      { label: 'PT', value: employmentBreakdown.pt },
-                      { label: 'PRN', value: employmentBreakdown.prn },
-                    ].sort((a, b) => b.value - a.value);
-                    
-                    return (
-                      <span className={cn(
-                        "font-medium",
-                        breakdownVariant === 'green' && "text-emerald-700",
-                        breakdownVariant === 'red' && "text-destructive"
-                      )}>
-                        {sorted[0].value}% {sorted[0].label} · {sorted[1].value}% {sorted[1].label} · {sorted[2].value}% {sorted[2].label}
-                      </span>
-                    );
-                  })()}
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
+
+        {/* Employment Breakdown Section - Outside Card */}
+        {employmentBreakdown && (
+          <div className={cn(
+            "mt-1.5 flex items-center gap-2 px-2 py-1 rounded-md text-xs",
+            breakdownVariant === 'green' && "bg-emerald-500/10",
+            breakdownVariant === 'red' && "bg-destructive/10"
+          )}>
+            <Info className={cn(
+              "h-3 w-3 shrink-0",
+              breakdownVariant === 'green' && "text-emerald-600",
+              breakdownVariant === 'red' && "text-destructive"
+            )} />
+            {(() => {
+              const sorted = [
+                { label: 'FT', value: employmentBreakdown.ft },
+                { label: 'PT', value: employmentBreakdown.pt },
+                { label: 'PRN', value: employmentBreakdown.prn },
+              ].sort((a, b) => b.value - a.value);
+              
+              return (
+                <span className={cn(
+                  "font-medium",
+                  breakdownVariant === 'green' && "text-emerald-700",
+                  breakdownVariant === 'red' && "text-destructive"
+                )}>
+                  {sorted[0].value}% {sorted[0].label} · {sorted[1].value}% {sorted[1].label} · {sorted[2].value}% {sorted[2].label}
+                </span>
+              );
+            })()}
+          </div>
+        )}
       </motion.div>
 
       {/* Chart Modal */}
