@@ -76,13 +76,19 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
         market: selectedMarket,
         facility_id: selectedFacility,
         facility_name: facilityData?.facility_name || '',
-        // Add historical analysis data
+        // Historical analysis data
         historical_months_count: analysis?.historical_months_count,
         historical_months_data: analysis?.historical_months_data,
         target_volume: analysis?.target_volume,
         override_mandatory: analysis?.override_mandatory,
         max_allowed_expiry_date: analysis?.max_allowed_expiry_date,
         category: analysis?.category,
+        // New 3-month low fields
+        three_month_low_avg: analysis?.three_month_low_avg,
+        n_month_avg: analysis?.n_month_avg,
+        spread_percentage: analysis?.spread_percentage,
+        used_three_month_low: analysis?.used_three_month_low,
+        lowest_three_months: analysis?.lowest_three_months,
       };
     });
   }, [departments, overrides, volumeAnalysis, selectedMarket, selectedFacility, facilityData]);

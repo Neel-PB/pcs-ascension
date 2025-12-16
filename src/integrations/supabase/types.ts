@@ -895,6 +895,7 @@ export type Database = {
           min_months_for_target: number
           min_months_mandatory_override: number
           min_volume_threshold: number | null
+          spread_threshold: number
           updated_at: string
         }
         Insert: {
@@ -915,6 +916,7 @@ export type Database = {
           min_months_for_target?: number
           min_months_mandatory_override?: number
           min_volume_threshold?: number | null
+          spread_threshold?: number
           updated_at?: string
         }
         Update: {
@@ -935,6 +937,7 @@ export type Database = {
           min_months_for_target?: number
           min_months_mandatory_override?: number
           min_volume_threshold?: number | null
+          spread_threshold?: number
           updated_at?: string
         }
         Relationships: [
