@@ -77,7 +77,8 @@ export function KPICard({
           className={cn(
             "hover:shadow-lg transition-all duration-300",
             isHighlighted && "border-emerald-500/50 bg-emerald-500/5",
-            isNegative && "border-destructive/50 bg-destructive/5"
+            isNegative && "border-destructive/50 bg-destructive/5",
+            employmentBreakdown && "rounded-b-none"
           )}
         >
           <CardContent className="p-4 pr-10 relative">
@@ -122,49 +123,49 @@ export function KPICard({
                 </div>
               )}
             </div>
-
-            {/* Employment Breakdown - Inside Card */}
-            {employmentBreakdown && (
-              <motion.div
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ 
-                  duration: 0.25, 
-                  delay: delay + 0.3,
-                  ease: "easeOut"
-                }}
-                className={cn(
-                  "flex items-center gap-2 mt-2 -ml-4 -mr-10 -mb-4 px-3 py-1.5 rounded-b-lg text-xs",
-                  breakdownVariant === 'green' && "bg-emerald-500/10",
-                  breakdownVariant === 'red' && "bg-destructive/10"
-                )}
-              >
-                <Info className={cn(
-                  "h-3 w-3 shrink-0",
-                  breakdownVariant === 'green' && "text-emerald-600",
-                  breakdownVariant === 'red' && "text-destructive"
-                )} />
-                {(() => {
-                  const sorted = [
-                    { label: 'FT', value: employmentBreakdown.ft },
-                    { label: 'PT', value: employmentBreakdown.pt },
-                    { label: 'PRN', value: employmentBreakdown.prn },
-                  ].sort((a, b) => b.value - a.value);
-                  
-                  return (
-                    <span className={cn(
-                      "font-medium",
-                      breakdownVariant === 'green' && "text-emerald-700",
-                      breakdownVariant === 'red' && "text-destructive"
-                    )}>
-                      {sorted[0].value}% {sorted[0].label} · {sorted[1].value}% {sorted[1].label} · {sorted[2].value}% {sorted[2].label}
-                    </span>
-                  );
-                })()}
-              </motion.div>
-            )}
           </CardContent>
         </Card>
+
+        {/* Employment Breakdown Section - Outside Card */}
+        {employmentBreakdown && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ 
+              duration: 0.25, 
+              delay: delay + 0.3,
+              ease: "easeOut"
+            }}
+            className={cn(
+              "absolute left-0 right-0 top-full z-10 flex items-center gap-2 px-2 py-1 rounded-b-lg text-xs",
+              breakdownVariant === 'green' && "bg-emerald-500/10",
+              breakdownVariant === 'red' && "bg-destructive/10"
+            )}
+          >
+            <Info className={cn(
+              "h-3 w-3 shrink-0",
+              breakdownVariant === 'green' && "text-emerald-600",
+              breakdownVariant === 'red' && "text-destructive"
+            )} />
+            {(() => {
+              const sorted = [
+                { label: 'FT', value: employmentBreakdown.ft },
+                { label: 'PT', value: employmentBreakdown.pt },
+                { label: 'PRN', value: employmentBreakdown.prn },
+              ].sort((a, b) => b.value - a.value);
+              
+              return (
+                <span className={cn(
+                  "font-medium",
+                  breakdownVariant === 'green' && "text-emerald-700",
+                  breakdownVariant === 'red' && "text-destructive"
+                )}>
+                  {sorted[0].value}% {sorted[0].label} · {sorted[1].value}% {sorted[1].label} · {sorted[2].value}% {sorted[2].label}
+                </span>
+              );
+            })()}
+          </motion.div>
+        )}
       </motion.div>
 
       {/* Chart Modal */}

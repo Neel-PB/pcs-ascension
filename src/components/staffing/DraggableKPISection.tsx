@@ -45,7 +45,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
         )}
         <h2 className="text-lg font-semibold text-foreground">{title}</h2>
       </div>
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 items-start">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
         {kpis.map((kpi) => (
           <KPICard key={kpi.id} {...kpi} />
         ))}
