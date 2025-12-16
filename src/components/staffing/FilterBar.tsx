@@ -9,12 +9,14 @@ interface FilterBarProps {
   onRegionChange?: (value: string) => void;
   onMarketChange?: (value: string) => void;
   onFacilityChange?: (value: string) => void;
+  onSubmarketChange?: (value: string) => void;
   onDepartmentFamilyChange?: (value: string) => void;
   onDepartmentChange?: (value: string) => void;
   onClearFilters?: () => void;
   selectedRegion?: string;
   selectedMarket?: string;
   selectedFacility?: string;
+  selectedSubmarket?: string;
   selectedDepartmentFamily?: string;
   selectedDepartment?: string;
 }
@@ -24,12 +26,14 @@ export function FilterBar({
   onRegionChange,
   onMarketChange,
   onFacilityChange,
+  onSubmarketChange,
   onDepartmentFamilyChange,
   onDepartmentChange,
   onClearFilters,
   selectedRegion = "all-regions",
   selectedMarket = "all-markets",
   selectedFacility = "all-facilities",
+  selectedSubmarket = "all-submarkets",
   selectedDepartmentFamily = "all-dept-families",
   selectedDepartment = "all-departments",
 }: FilterBarProps) {
@@ -37,7 +41,8 @@ export function FilterBar({
     regions, 
     getMarketsByRegion, 
     getFacilitiesByMarket, 
-    getDepartmentsByFacility 
+    getDepartmentsByFacility,
+    getSubmarketsByMarket,
   } = useFilterData();
 
   // Department Families (Job Families)
@@ -73,11 +78,15 @@ export function FilterBar({
   // Get available departments based on selected facility
   const availableDepartments = getDepartmentsByFacility(selectedFacility);
 
+  // Get available submarkets based on selected market
+  const availableSubmarkets = getSubmarketsByMarket(selectedMarket);
+
   // Check if any filters are active (not in default state)
   const hasActiveFilters = 
     selectedRegion !== "all-regions" ||
     selectedMarket !== "all-markets" ||
     selectedFacility !== "all-facilities" ||
+    selectedSubmarket !== "all-submarkets" ||
     selectedDepartmentFamily !== "all-dept-families" ||
     selectedDepartment !== "all-departments";
 
@@ -167,21 +176,41 @@ export function FilterBar({
       {/* SEPARATOR - thicker visual break */}
       <div className="h-10 w-[2px] bg-border/60 mx-6" />
 
-      {/* RIGHT GROUP: Secondary Department Family Filter */}
-      <Select 
-        value={selectedDepartmentFamily} 
-        onValueChange={onDepartmentFamilyChange}
-      >
-        <SelectTrigger className="w-[200px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
-          <SelectValue placeholder="Dept Family" />
-        </SelectTrigger>
-        <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
-          <SelectItem value="all-dept-families">All Dept Families</SelectItem>
-          {departmentFamilies.map(family => (
-            <SelectItem key={family} value={family}>{family}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {/* RIGHT GROUP: Optional Filters - Submarket and Department Family */}
+      <div className="flex gap-3">
+        {/* Submarket Filter */}
+        <Select 
+          value={selectedSubmarket} 
+          onValueChange={onSubmarketChange}
+          disabled={selectedMarket === "all-markets" || availableSubmarkets.length === 0}
+        >
+          <SelectTrigger className="w-[180px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            <SelectValue placeholder="Submarket" />
+          </SelectTrigger>
+          <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
+            <SelectItem value="all-submarkets">All Submarkets</SelectItem>
+            {availableSubmarkets.map(submarket => (
+              <SelectItem key={submarket} value={submarket}>{submarket}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Department Family Filter */}
+        <Select 
+          value={selectedDepartmentFamily} 
+          onValueChange={onDepartmentFamilyChange}
+        >
+          <SelectTrigger className="w-[200px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
+            <SelectValue placeholder="Dept Family" />
+          </SelectTrigger>
+          <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
+            <SelectItem value="all-dept-families">All Dept Families</SelectItem>
+            {departmentFamilies.map(family => (
+              <SelectItem key={family} value={family}>{family}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   );
 }

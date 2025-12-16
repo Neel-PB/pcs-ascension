@@ -115,6 +115,14 @@ export function useFilterData() {
     return grouped;
   };
 
+  // Helper: get unique submarkets for a given market
+  const getSubmarketsByMarket = (marketName: string | null) => {
+    if (!marketName || marketName === "all-markets") return [];
+    const marketFacilities = facilities.filter((f) => f.market.toUpperCase() === marketName.toUpperCase());
+    const submarkets = [...new Set(marketFacilities.map(f => f.submarket).filter(Boolean))] as string[];
+    return submarkets.sort();
+  };
+
   return {
     regions,
     markets,
@@ -125,5 +133,6 @@ export function useFilterData() {
     getFacilitiesByMarket,
     getDepartmentsByFacility,
     getFacilitiesGroupedBySubmarket,
+    getSubmarketsByMarket,
   };
 }
