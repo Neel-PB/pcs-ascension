@@ -274,7 +274,9 @@ export function VarianceAnalysis({
     // Show markets grouped by region when region is selected
     if (selectedRegion !== "all-regions") {
       const marketsInRegion = regionMap[selectedRegion] || [];
-      const marketData = varianceDataByLevel.markets.filter(m => marketsInRegion.includes(m.name));
+      const marketData = varianceDataByLevel.markets.filter(m => 
+        marketsInRegion.some(mr => mr.toUpperCase() === m.name.toUpperCase())
+      );
       
       return marketData.map((market, idx) => ({
         ...market,
@@ -288,7 +290,9 @@ export function VarianceAnalysis({
     
     return dynamicRegions.map((regionName, idx) => {
       const marketsInRegion = regionMap[regionName] || [];
-      const marketData = varianceDataByLevel.markets.filter(m => marketsInRegion.includes(m.name));
+      const marketData = varianceDataByLevel.markets.filter(m => 
+        marketsInRegion.some(mr => mr.toUpperCase() === m.name.toUpperCase())
+      );
       
       // Calculate aggregated variance for the region from its markets
       const regionVariance = marketData.length > 0 
