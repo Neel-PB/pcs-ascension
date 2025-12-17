@@ -1,6 +1,6 @@
-import { FTEBreakdown, RecommendedChanges, PositionChange } from "@/hooks/useForecastBalance";
+import { FTEBreakdown, RecommendedChanges, PositionChange, ClosureRecommendation } from "@/hooks/useForecastBalance";
 import { Card } from "@/components/ui/card";
-import { Check, ArrowRight } from "lucide-react";
+import { Check, ArrowRight, FileX, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BalanceTwoPanelProps {
@@ -69,38 +69,76 @@ function PositionChangeList({ changes, type }: { changes: PositionChange[]; type
   );
 }
 
+// New component for closure lists with source distinction
+function ClosureChangeList({ 
+  changes, 
+  type, 
+  source 
+}: { 
+  changes: PositionChange[]; 
+  type: string; 
+  source: 'reqs' | 'employed';
+}) {
+  if (changes.length === 0) return null;
+  
+  const totalChange = changes.reduce((sum, c) => sum + (c.fteValue * c.count), 0);
+  const bgColor = source === 'reqs' ? 'bg-emerald-500/10' : 'bg-amber-500/10';
+  
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium text-foreground">{type}</span>
+        <span className="text-xs font-semibold text-foreground">
+          -{totalChange.toFixed(1)} FTE
+        </span>
+      </div>
+      <div className="space-y-1">
+        {changes.map((change, i) => (
+          <div key={i} className={cn("flex items-center justify-between text-xs text-muted-foreground rounded px-2 py-1", bgColor)}>
+            <span>{change.fteValue} FTE × {change.count}</span>
+            <span>= {(change.fteValue * change.count).toFixed(1)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function BalanceTwoPanel({
   hiredFTE,
   targetFTE,
   recommendation,
   aiSummary,
 }: BalanceTwoPanelProps) {
-  // Separate recommendations by action type
-  const positionsToClose = {
-    ft: recommendation.ft.filter(c => c.action === 'close'),
-    pt: recommendation.pt.filter(c => c.action === 'close'),
-    prn: recommendation.prn.filter(c => c.action === 'close'),
-  };
+  // Get closure recommendations with priority split
+  const { ftClosure, ptClosure, prnClosure } = recommendation;
   
+  // Check if there are any closures from each source
+  const hasReqClosures = ftClosure.totalFromReqs > 0 || ptClosure.totalFromReqs > 0 || prnClosure.totalFromReqs > 0;
+  const hasEmployedClosures = ftClosure.totalFromEmployed > 0 || ptClosure.totalFromEmployed > 0 || prnClosure.totalFromEmployed > 0;
+  const hasAnyClosures = hasReqClosures || hasEmployedClosures;
+
+  const totalReqClosures = ftClosure.totalFromReqs + ptClosure.totalFromReqs + prnClosure.totalFromReqs;
+  const totalEmployedClosures = ftClosure.totalFromEmployed + ptClosure.totalFromEmployed + prnClosure.totalFromEmployed;
+  const totalClosures = totalReqClosures + totalEmployedClosures;
+
+  // Positions to Open (unchanged)
   const positionsToOpen = {
     ft: recommendation.ft.filter(c => c.action === 'open'),
     pt: recommendation.pt.filter(c => c.action === 'open'),
     prn: recommendation.prn.filter(c => c.action === 'open'),
   };
   
-  const hasClosures = positionsToClose.ft.length > 0 || positionsToClose.pt.length > 0 || positionsToClose.prn.length > 0;
   const hasOpenings = positionsToOpen.ft.length > 0 || positionsToOpen.pt.length > 0 || positionsToOpen.prn.length > 0;
   
-  const totalToClose = [...positionsToClose.ft, ...positionsToClose.pt, ...positionsToClose.prn]
-    .reduce((sum, c) => sum + (c.fteValue * c.count), 0);
   const totalToOpen = [...positionsToOpen.ft, ...positionsToOpen.pt, ...positionsToOpen.prn]
     .reduce((sum, c) => sum + (c.fteValue * c.count), 0);
   
   return (
     <div className="space-y-4">
-      {/* Two Panel Layout - 30/70 split */}
+      {/* Two Panel Layout - 35/65 split */}
       <div className="grid gap-4" style={{ gridTemplateColumns: '35% 65%' }}>
-        {/* Current State Panel - 30% */}
+        {/* Current State Panel - 35% */}
         <Card className="pt-1.5 px-4 pb-0 border-l-4 border-l-muted-foreground/30">
           <div className="flex flex-col h-full">
             {/* TOP: Title + FTE bars */}
@@ -140,7 +178,7 @@ export function BalanceTwoPanel({
           </div>
         </Card>
         
-        {/* Recommended Panel - 70% with dual columns */}
+        {/* Recommended Panel - 65% with dual columns */}
         <Card className="pt-1.5 px-4 pb-1.5 border-l-4 border-l-primary">
           <div className="flex flex-col h-full">
             {/* Main content wrapper */}
@@ -156,64 +194,100 @@ export function BalanceTwoPanel({
               
               {/* Dual column layout for Close and Open */}
               <div className="grid grid-cols-2 gap-4">
-              {/* Position to Close Column */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-primary underline">Position to Close</span>
-                  {hasClosures && (
-                    <span className="text-xs font-semibold text-primary">-{totalToClose.toFixed(1)} FTE</span>
+                {/* Position to Close Column - Now with two-tier system */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-primary underline">Position to Close</span>
+                    {hasAnyClosures && (
+                      <span className="text-xs font-semibold text-primary">-{totalClosures.toFixed(1)} FTE</span>
+                    )}
+                  </div>
+                  
+                  {hasAnyClosures ? (
+                    <div className="space-y-3">
+                      {/* Open Requisitions to Cancel - Primary (Green) */}
+                      {hasReqClosures && (
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-1.5">
+                            <FileX className="h-3.5 w-3.5 text-emerald-600" />
+                            <span className="text-xs font-medium text-emerald-700">Open Requisitions to Cancel</span>
+                            <span className="text-xs text-emerald-600 ml-auto">-{totalReqClosures.toFixed(1)}</span>
+                          </div>
+                          <div className="pl-1 space-y-2">
+                            {ftClosure.fromReqs.length > 0 && (
+                              <ClosureChangeList changes={ftClosure.fromReqs} type="Full-Time" source="reqs" />
+                            )}
+                            {ptClosure.fromReqs.length > 0 && (
+                              <ClosureChangeList changes={ptClosure.fromReqs} type="Part-Time" source="reqs" />
+                            )}
+                            {prnClosure.fromReqs.length > 0 && (
+                              <ClosureChangeList changes={prnClosure.fromReqs} type="PRN" source="reqs" />
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Additional from Employed - Secondary (Amber) */}
+                      {hasEmployedClosures && (
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-1.5">
+                            <Users className="h-3.5 w-3.5 text-amber-600" />
+                            <span className="text-xs font-medium text-amber-700">
+                              {hasReqClosures ? 'Additional from Employed' : 'From Employed Positions'}
+                            </span>
+                            <span className="text-xs text-amber-600 ml-auto">-{totalEmployedClosures.toFixed(1)}</span>
+                          </div>
+                          <div className="pl-1 space-y-2">
+                            {ftClosure.fromEmployed.length > 0 && (
+                              <ClosureChangeList changes={ftClosure.fromEmployed} type="Full-Time" source="employed" />
+                            )}
+                            {ptClosure.fromEmployed.length > 0 && (
+                              <ClosureChangeList changes={ptClosure.fromEmployed} type="Part-Time" source="employed" />
+                            )}
+                            {prnClosure.fromEmployed.length > 0 && (
+                              <ClosureChangeList changes={prnClosure.fromEmployed} type="PRN" source="employed" />
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center py-4 text-xs text-muted-foreground bg-primary/10 rounded">
+                      <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
+                      No closures needed
+                    </div>
                   )}
                 </div>
                 
-                {hasClosures ? (
-                  <div className="space-y-2">
-                    {positionsToClose.ft.length > 0 && (
-                      <PositionChangeList changes={positionsToClose.ft} type="Full-Time" />
-                    )}
-                    {positionsToClose.pt.length > 0 && (
-                      <PositionChangeList changes={positionsToClose.pt} type="Part-Time" />
-                    )}
-                    {positionsToClose.prn.length > 0 && (
-                      <PositionChangeList changes={positionsToClose.prn} type="PRN" />
+                {/* Position to Open Column */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-primary underline">Position to Open</span>
+                    {hasOpenings && (
+                      <span className="text-xs font-semibold text-primary">+{totalToOpen.toFixed(1)} FTE</span>
                     )}
                   </div>
-                ) : (
-                  <div className="flex items-center justify-center py-4 text-xs text-muted-foreground bg-primary/10 rounded">
-                    <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
-                    No closures needed
-                  </div>
-                )}
-              </div>
-              
-              {/* Position to Open Column */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-primary underline">Position to Open</span>
-                  {hasOpenings && (
-                    <span className="text-xs font-semibold text-primary">+{totalToOpen.toFixed(1)} FTE</span>
+                  
+                  {hasOpenings ? (
+                    <div className="space-y-2">
+                      {positionsToOpen.ft.length > 0 && (
+                        <PositionChangeList changes={positionsToOpen.ft} type="Full-Time" />
+                      )}
+                      {positionsToOpen.pt.length > 0 && (
+                        <PositionChangeList changes={positionsToOpen.pt} type="Part-Time" />
+                      )}
+                      {positionsToOpen.prn.length > 0 && (
+                        <PositionChangeList changes={positionsToOpen.prn} type="PRN" />
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center py-4 text-xs text-muted-foreground bg-primary/10 rounded">
+                      <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
+                      No openings needed
+                    </div>
                   )}
                 </div>
-                
-                {hasOpenings ? (
-                  <div className="space-y-2">
-                    {positionsToOpen.ft.length > 0 && (
-                      <PositionChangeList changes={positionsToOpen.ft} type="Full-Time" />
-                    )}
-                    {positionsToOpen.pt.length > 0 && (
-                      <PositionChangeList changes={positionsToOpen.pt} type="Part-Time" />
-                    )}
-                    {positionsToOpen.prn.length > 0 && (
-                      <PositionChangeList changes={positionsToOpen.prn} type="PRN" />
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center py-4 text-xs text-muted-foreground bg-primary/10 rounded">
-                    <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
-                    No openings needed
-                  </div>
-                )}
               </div>
-            </div>
             </div>
             
             {/* Target split preview - pinned to bottom */}
