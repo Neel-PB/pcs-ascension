@@ -151,7 +151,7 @@ export function BalanceTwoPanel({
       {/* Two Panel Layout - 35/65 split */}
       <div className="grid gap-4" style={{ gridTemplateColumns: '35% 65%' }}>
         {/* Current State Panel - 35% */}
-        <Card className="py-1 px-0 border-l-4 border-l-muted-foreground/30">
+        <Card className="pt-1.5 px-4 pb-0 border-l-4 border-l-muted-foreground/30">
           <div className="flex flex-col h-full">
             {/* TOP: Title + FTE bars */}
             <div>
@@ -193,7 +193,7 @@ export function BalanceTwoPanel({
         </Card>
         
         {/* Recommended Panel - 65% with dual columns */}
-        <Card className="py-1 px-0 border-l-4 border-l-primary">
+        <Card className="pt-1.5 px-4 pb-1.5 border-l-4 border-l-primary">
           <div className="flex flex-col h-full">
             {/* Main content wrapper */}
             <div className="flex-1">
