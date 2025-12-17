@@ -20,7 +20,6 @@ function PercentageBar({ actual, target, label, value }: { actual: number; targe
       <div className="flex items-center justify-between text-sm">
         <span className="font-medium">{label}</span>
         <div className="flex items-center gap-2">
-          <span className="text-muted-foreground text-xs">target {target}%</span>
           <span className={cn(
             "font-semibold",
             isBalanced ? "text-emerald-600" : isOver ? "text-amber-600" : "text-destructive"
@@ -135,6 +134,21 @@ export function BalanceTwoPanel({
                 value={hiredFTE.prn}
               />
             </div>
+            
+            {/* AI Recommendation */}
+            <div className="border-t pt-3 mt-3">
+              <div className="flex gap-2">
+                <div className="shrink-0">
+                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Lightbulb className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                </div>
+                <div className="space-y-0.5">
+                  <p className="text-xs font-medium text-muted-foreground">AI Recommendation</p>
+                  <p className="text-xs leading-relaxed">{aiSummary}</p>
+                </div>
+              </div>
+            </div>
           </div>
         </Card>
         
@@ -224,20 +238,6 @@ export function BalanceTwoPanel({
         </Card>
       </div>
       
-      {/* AI Recommendation Block */}
-      <Card className="p-4 bg-muted/30 border-dashed">
-        <div className="flex gap-3">
-          <div className="shrink-0">
-            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <Lightbulb className="h-4 w-4 text-primary" />
-            </div>
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">AI Recommendation</p>
-            <p className="text-sm leading-relaxed">{aiSummary}</p>
-          </div>
-        </div>
-      </Card>
     </div>
   );
 }
