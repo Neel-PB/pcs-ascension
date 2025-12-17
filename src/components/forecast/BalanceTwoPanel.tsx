@@ -101,14 +101,14 @@ export function BalanceTwoPanel({
       {/* Two Panel Layout - 30/70 split */}
       <div className="grid gap-4" style={{ gridTemplateColumns: '35% 65%' }}>
         {/* Current State Panel - 30% */}
-        <Card className="pt-4 px-4 pb-1.5 border-l-4 border-l-muted-foreground/30">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b">
+        <Card className="pt-1.5 px-4 pb-1.5 border-l-4 border-l-muted-foreground/30">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between pb-2 border-b">
               <h4 className="font-semibold text-sm">Current State</h4>
               <span className="text-lg font-bold">{hiredFTE.total.toFixed(1)} FTE</span>
             </div>
             
-            <div className="space-y-3">
+            <div className="space-y-2">
               <PercentageBar 
                 actual={hiredFTE.ftPercent} 
                 target={70} 
@@ -130,7 +130,7 @@ export function BalanceTwoPanel({
             </div>
             
             {/* AI Recommendation */}
-            <div className="border-t pt-1.5 mt-3 space-y-1">
+            <div className="bg-muted/60 rounded-md p-2 mt-2 space-y-1">
               <p className="text-xs font-medium text-muted-foreground">AI Recommendation</p>
               <p className="text-xs leading-relaxed">{aiSummary}</p>
             </div>
