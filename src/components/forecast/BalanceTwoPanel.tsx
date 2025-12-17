@@ -55,8 +55,8 @@ function PositionChangeList({ changes, type }: { changes: PositionChange[]; type
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-primary underline">{type}</span>
-        <span className="text-xs font-semibold text-primary">
+        <span className="text-xs font-medium text-foreground">{type}</span>
+        <span className="text-xs font-semibold text-foreground">
           {isOpen ? '+' : '-'}{totalChange.toFixed(1)} FTE
         </span>
       </div>
@@ -142,18 +142,20 @@ export function BalanceTwoPanel({
         
         {/* Recommended Panel - 70% with dual columns */}
         <Card className="p-4 border-l-4 border-l-primary">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b">
-              <h4 className="font-semibold text-sm">Recommended</h4>
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground text-sm">{hiredFTE.total.toFixed(1)}</span>
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                <span className="text-lg font-bold text-primary">{targetFTE.toFixed(1)} FTE</span>
+          <div className="flex flex-col h-full">
+            {/* Main content wrapper */}
+            <div className="flex-1 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b">
+                <h4 className="font-semibold text-sm">Recommended</h4>
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground text-sm">{hiredFTE.total.toFixed(1)}</span>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-lg font-bold text-primary">{targetFTE.toFixed(1)} FTE</span>
+                </div>
               </div>
-            </div>
-            
-            {/* Dual column layout for Close and Open */}
-            <div className="grid grid-cols-2 gap-4">
+              
+              {/* Dual column layout for Close and Open */}
+              <div className="grid grid-cols-2 gap-4">
               {/* Position to Close Column */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -212,9 +214,10 @@ export function BalanceTwoPanel({
                 )}
               </div>
             </div>
+            </div>
             
-            {/* Target split preview */}
-            <div className="pt-1.5 border-t">
+            {/* Target split preview - pinned to bottom */}
+            <div className="pt-1.5 border-t mt-auto">
               <div className="text-xs text-muted-foreground mb-1">Target Split:</div>
               <div className="flex gap-2 text-xs font-medium">
                 <span className="text-emerald-600 bg-emerald-500/10 px-1.5 py-0 rounded">70% FT</span>
