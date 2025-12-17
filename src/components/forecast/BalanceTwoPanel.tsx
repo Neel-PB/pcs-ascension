@@ -156,11 +156,11 @@ export function BalanceTwoPanel({
             {/* TOP: Title + FTE bars */}
             <div>
               <div className="flex items-center justify-between pb-2 border-b">
-                <h4 className="font-semibold text-sm">Current State</h4>
+                <h4 className="font-semibold text-sm">Hired FTE</h4>
                 <span className="text-lg font-bold">{hiredFTE.total.toFixed(1)} FTE</span>
               </div>
               
-              <div className="space-y-2 mt-2">
+              <div className="space-y-2">
                 <PercentageBar 
                   actual={hiredFTE.ftPercent} 
                   target={70} 
@@ -184,9 +184,9 @@ export function BalanceTwoPanel({
             
             {/* BOTTOM: AI Summary - pinned with mt-auto */}
             <div className="border-t mt-auto">
-              <div className="bg-muted/60 rounded-md mt-1.5 mx-1.5 mb-1.5 space-y-1">
-                <p className="text-xs font-medium text-muted-foreground mx-1.5 mt-1.5">AI Summary</p>
-                <p className="text-xs leading-relaxed mx-1.5 mb-1.5">{aiSummary}</p>
+              <div className="bg-muted/60 rounded-md mt-1.5 mb-1.5 space-y-1">
+                <p className="text-xs font-medium text-muted-foreground mt-1.5">AI Summary</p>
+                <p className="text-xs leading-relaxed mb-1.5">{aiSummary}</p>
               </div>
             </div>
           </div>
@@ -198,7 +198,7 @@ export function BalanceTwoPanel({
             {/* Main content wrapper */}
             <div className="flex-1 space-y-4">
               <div className="flex items-center justify-between pb-2 border-b">
-                <h4 className="font-semibold text-sm">Recommended</h4>
+                <h4 className="font-semibold text-sm">Recommended Target FTE</h4>
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground text-sm">{hiredFTE.total.toFixed(1)}</span>
                   <ArrowRight className="h-4 w-4 text-muted-foreground" />
