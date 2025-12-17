@@ -91,7 +91,7 @@ function ClosureChangeList({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-medium text-foreground">{type}</span>
-          <span className={cn("text-[10px] px-1.5 py-0.5 rounded font-medium", badgeBg)}>
+          <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full font-medium", badgeBg)}>
             {badgeText}
           </span>
         </div>
@@ -182,10 +182,12 @@ export function BalanceTwoPanel({
               </div>
             </div>
             
-            {/* BOTTOM: AI Recommendation - pinned with mt-auto */}
-            <div className="bg-muted/60 rounded-md p-1.5 mt-auto space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">AI Recommendation</p>
-              <p className="text-xs leading-relaxed">{aiSummary}</p>
+            {/* BOTTOM: AI Summary - pinned with mt-auto */}
+            <div className="border-t mt-auto">
+              <div className="bg-muted/60 rounded-md mt-1.5 mx-1.5 mb-1.5 space-y-1">
+                <p className="text-xs font-medium text-muted-foreground mx-1.5 mt-1.5">AI Summary</p>
+                <p className="text-xs leading-relaxed mx-1.5 mb-1.5">{aiSummary}</p>
+              </div>
             </div>
           </div>
         </Card>
@@ -277,7 +279,7 @@ export function BalanceTwoPanel({
             </div>
             
             {/* Target split preview - pinned to bottom */}
-            <div className="pt-1.5 border-t mt-auto">
+            <div className="mt-1.5 border-t mt-auto">
               <div className="text-xs text-muted-foreground mb-1">Target Split:</div>
               <div className="flex gap-2 text-xs font-medium">
                 <span className="text-emerald-600 bg-emerald-500/10 px-1.5 py-0 rounded">70% FT</span>
