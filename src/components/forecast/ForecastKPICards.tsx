@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 interface ForecastKPICardsProps {
   totalShortage: number;
@@ -7,6 +8,8 @@ interface ForecastKPICardsProps {
   shortageCount: number;
   surplusCount: number;
   isLoading?: boolean;
+  activeFilter?: 'all' | 'shortage' | 'surplus';
+  onFilterClick?: (filter: 'shortage' | 'surplus') => void;
 }
 
 export function ForecastKPICards({
@@ -15,6 +18,8 @@ export function ForecastKPICards({
   shortageCount,
   surplusCount,
   isLoading,
+  activeFilter = 'all',
+  onFilterClick,
 }: ForecastKPICardsProps) {
   if (isLoading) {
     return (
@@ -32,7 +37,13 @@ export function ForecastKPICards({
   return (
     <div className="grid grid-cols-2 gap-6">
       {/* FTE Shortage + Positions to Open Card */}
-      <Card className="py-2 px-4 border-destructive/30 bg-destructive/5">
+      <Card 
+        className={cn(
+          "py-2 px-4 border-destructive/30 bg-destructive/5 cursor-pointer transition-all",
+          activeFilter === 'shortage' && "ring-2 ring-destructive ring-offset-2"
+        )}
+        onClick={() => onFilterClick?.('shortage')}
+      >
         <div className="flex items-center justify-around">
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-semibold uppercase tracking-wide text-destructive">
@@ -55,7 +66,13 @@ export function ForecastKPICards({
       </Card>
 
       {/* FTE Surplus + Positions to Close Card */}
-      <Card className="py-2 px-4 border-primary/30 bg-primary/5">
+      <Card 
+        className={cn(
+          "py-2 px-4 border-primary/30 bg-primary/5 cursor-pointer transition-all",
+          activeFilter === 'surplus' && "ring-2 ring-primary ring-offset-2"
+        )}
+        onClick={() => onFilterClick?.('surplus')}
+      >
         <div className="flex items-center justify-around">
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-semibold uppercase tracking-wide text-primary">
