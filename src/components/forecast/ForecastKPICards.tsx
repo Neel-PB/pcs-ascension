@@ -19,11 +19,11 @@ export function ForecastKPICards({
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 gap-6">
-        <Card className="p-4 animate-pulse bg-muted/30">
-          <div className="h-16" />
+        <Card className="py-2 px-4 animate-pulse bg-muted/30">
+          <div className="h-10" />
         </Card>
-        <Card className="p-4 animate-pulse bg-muted/30">
-          <div className="h-16" />
+        <Card className="py-2 px-4 animate-pulse bg-muted/30">
+          <div className="h-10" />
         </Card>
       </div>
     );
@@ -32,8 +32,8 @@ export function ForecastKPICards({
   return (
     <div className="grid grid-cols-2 gap-6">
       {/* FTE Shortage + Positions to Open Card */}
-      <Card className="p-4 border-destructive/30 bg-destructive/5">
-        <div className="flex items-center justify-around h-16">
+      <Card className="py-2 px-4 border-destructive/30 bg-destructive/5">
+        <div className="flex items-center justify-around">
           <div className="flex flex-col items-center text-center">
             <span className="text-xs font-semibold uppercase tracking-wide text-destructive">
               FTE Shortage
@@ -42,7 +42,7 @@ export function ForecastKPICards({
               +{totalShortage.toFixed(1)}
             </div>
           </div>
-          <Separator orientation="vertical" className="h-12 bg-destructive/30" />
+          <Separator orientation="vertical" className="h-8 bg-destructive/30" />
           <div className="flex flex-col items-center text-center">
             <span className="text-xs font-semibold uppercase tracking-wide text-destructive">
               Positions to Open
@@ -55,8 +55,8 @@ export function ForecastKPICards({
       </Card>
 
       {/* FTE Surplus + Positions to Close Card */}
-      <Card className="p-4 border-primary/30 bg-primary/5">
-        <div className="flex items-center justify-around h-16">
+      <Card className="py-2 px-4 border-primary/30 bg-primary/5">
+        <div className="flex items-center justify-around">
           <div className="flex flex-col items-center text-center">
             <span className="text-xs font-semibold uppercase tracking-wide text-primary">
               FTE Surplus
@@ -65,7 +65,7 @@ export function ForecastKPICards({
               -{totalSurplus.toFixed(1)}
             </div>
           </div>
-          <Separator orientation="vertical" className="h-12 bg-primary/30" />
+          <Separator orientation="vertical" className="h-8 bg-primary/30" />
           <div className="flex flex-col items-center text-center">
             <span className="text-xs font-semibold uppercase tracking-wide text-primary">
               Positions to Close
