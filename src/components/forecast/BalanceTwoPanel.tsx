@@ -196,7 +196,7 @@ export function BalanceTwoPanel({
         <Card className="pt-1.5 px-4 pb-1.5 border-l-4 border-l-primary">
           <div className="flex flex-col h-full">
             {/* Main content wrapper */}
-            <div className="flex-1 space-y-4">
+            <div className="flex-1">
               <div className="flex items-center justify-between pb-2 border-b">
                 <h4 className="font-semibold text-sm">Recommended Target FTE</h4>
                 <div className="flex items-center gap-2">
