@@ -29,10 +29,24 @@ export interface FTEBreakdown {
   prnPercent: number;
 }
 
+export interface OpenReqsBreakdown {
+  ft: number;
+  pt: number;
+  prn: number;
+  total: number;
+}
+
 export interface PositionChange {
   fteValue: number;
   count: number;
   action: 'open' | 'close';
+}
+
+export interface ClosureRecommendation {
+  fromReqs: PositionChange[];
+  fromEmployed: PositionChange[];
+  totalFromReqs: number;
+  totalFromEmployed: number;
 }
 
 export interface RecommendedChanges {
@@ -42,6 +56,10 @@ export interface RecommendedChanges {
   totalFTChange: number;
   totalPTChange: number;
   totalPRNChange: number;
+  // New: Split closure recommendations
+  ftClosure: ClosureRecommendation;
+  ptClosure: ClosureRecommendation;
+  prnClosure: ClosureRecommendation;
 }
 
 export interface ForecastBalanceRow {
@@ -54,6 +72,7 @@ export interface ForecastBalanceRow {
   skillType: string;
   shift: 'Day' | 'Night';
   hiredFTE: FTEBreakdown;
+  openReqsFTE: OpenReqsBreakdown;
   targetFTE: number;
   fteGap: number;
   gapType: 'shortage' | 'surplus' | 'balanced' | 'split-imbalanced';
@@ -135,12 +154,51 @@ function mapToValidPositions(
   return positions;
 }
 
+// Calculate closure recommendation with open reqs priority
+function calculateClosureWithPriority(
+  closureNeeded: number,
+  openReqsAvailable: number,
+  validValues: number[]
+): ClosureRecommendation {
+  if (closureNeeded <= 0) {
+    return {
+      fromReqs: [],
+      fromEmployed: [],
+      totalFromReqs: 0,
+      totalFromEmployed: 0,
+    };
+  }
+
+  // First, allocate from open requisitions
+  const fromReqsAmount = Math.min(closureNeeded, openReqsAvailable);
+  const remainingAfterReqs = closureNeeded - fromReqsAmount;
+
+  const fromReqs = fromReqsAmount > 0.05 
+    ? mapToValidPositions(fromReqsAmount, validValues, 'close')
+    : [];
+
+  // Then, if still needed, allocate from employed positions
+  const fromEmployed = remainingAfterReqs > 0.05
+    ? mapToValidPositions(remainingAfterReqs, validValues, 'close')
+    : [];
+
+  return {
+    fromReqs,
+    fromEmployed,
+    totalFromReqs: fromReqs.reduce((sum, c) => sum + c.fteValue * c.count, 0),
+    totalFromEmployed: fromEmployed.reduce((sum, c) => sum + c.fteValue * c.count, 0),
+  };
+}
+
 // Calculate recommended changes to reach 70/20/10 split
 function calculateBalancedRecommendation(
   currentFT: number,
   currentPT: number,
   currentPRN: number,
-  targetFTE: number
+  targetFTE: number,
+  openReqsFT: number,
+  openReqsPT: number,
+  openReqsPRN: number
 ): RecommendedChanges {
   // Target splits for the END state
   const targetFT = targetFTE * TARGET_FT_PERCENT;
@@ -152,18 +210,43 @@ function calculateBalancedRecommendation(
   const ptChange = targetPT - currentPT;
   const prnChange = targetPRN - currentPRN;
   
-  // Map to valid FTE values
-  const ftAction = ftChange >= 0 ? 'open' : 'close';
-  const ptAction = ptChange >= 0 ? 'open' : 'close';
-  const prnAction = prnChange >= 0 ? 'open' : 'close';
-  
+  // Calculate closure recommendations with open reqs priority
+  const ftClosure = calculateClosureWithPriority(
+    ftChange < 0 ? Math.abs(ftChange) : 0,
+    openReqsFT,
+    FT_VALUES
+  );
+  const ptClosure = calculateClosureWithPriority(
+    ptChange < 0 ? Math.abs(ptChange) : 0,
+    openReqsPT,
+    PT_VALUES
+  );
+  const prnClosure = calculateClosureWithPriority(
+    prnChange < 0 ? Math.abs(prnChange) : 0,
+    openReqsPRN,
+    [PRN_VALUE]
+  );
+
+  // For openings, use standard mapping
+  const ftOpenings = ftChange > 0 ? mapToValidPositions(ftChange, FT_VALUES, 'open') : [];
+  const ptOpenings = ptChange > 0 ? mapToValidPositions(ptChange, PT_VALUES, 'open') : [];
+  const prnOpenings = prnChange > 0 ? mapToValidPositions(prnChange, [PRN_VALUE], 'open') : [];
+
+  // Combine all closures for backward compatibility
+  const ftClosures = [...ftClosure.fromReqs, ...ftClosure.fromEmployed];
+  const ptClosures = [...ptClosure.fromReqs, ...ptClosure.fromEmployed];
+  const prnClosures = [...prnClosure.fromReqs, ...prnClosure.fromEmployed];
+
   return {
-    ft: mapToValidPositions(ftChange, FT_VALUES, ftAction as 'open' | 'close'),
-    pt: mapToValidPositions(ptChange, PT_VALUES, ptAction as 'open' | 'close'),
-    prn: mapToValidPositions(prnChange, [PRN_VALUE], prnAction as 'open' | 'close'),
+    ft: ftChange >= 0 ? ftOpenings : ftClosures,
+    pt: ptChange >= 0 ? ptOpenings : ptClosures,
+    prn: prnChange >= 0 ? prnOpenings : prnClosures,
     totalFTChange: ftChange,
     totalPTChange: ptChange,
     totalPRNChange: prnChange,
+    ftClosure,
+    ptClosure,
+    prnClosure,
   };
 }
 
@@ -180,19 +263,33 @@ function generateAISummary(
   
   const currentSplit = `${hiredFTE.ftPercent.toFixed(0)}% FT / ${hiredFTE.ptPercent.toFixed(0)}% PT / ${hiredFTE.prnPercent.toFixed(0)}% PRN`;
   
-  const ftAction = recommendation.totalFTChange >= 0 ? 'opening' : 'closing';
-  const ptAction = recommendation.totalPTChange >= 0 ? 'opening' : 'closing';
-  const prnAction = recommendation.totalPRNChange >= 0 ? 'opening' : 'closing';
-  
+  // Check if there are any closures
+  const totalReqClosures = recommendation.ftClosure.totalFromReqs + 
+    recommendation.ptClosure.totalFromReqs + 
+    recommendation.prnClosure.totalFromReqs;
+  const totalEmployedClosures = recommendation.ftClosure.totalFromEmployed + 
+    recommendation.ptClosure.totalFromEmployed + 
+    recommendation.prnClosure.totalFromEmployed;
+
   const actions: string[] = [];
-  if (Math.abs(recommendation.totalFTChange) >= 0.1) {
-    actions.push(`${ftAction} ${Math.abs(recommendation.totalFTChange).toFixed(1)} FTE in Full-Time positions`);
+  
+  // Opening actions
+  if (recommendation.totalFTChange > 0.05) {
+    actions.push(`opening ${recommendation.totalFTChange.toFixed(1)} FTE in Full-Time positions`);
   }
-  if (Math.abs(recommendation.totalPTChange) >= 0.1) {
-    actions.push(`${ptAction} ${Math.abs(recommendation.totalPTChange).toFixed(1)} FTE in Part-Time positions`);
+  if (recommendation.totalPTChange > 0.05) {
+    actions.push(`opening ${recommendation.totalPTChange.toFixed(1)} FTE in Part-Time positions`);
   }
-  if (Math.abs(recommendation.totalPRNChange) >= 0.1) {
-    actions.push(`${prnAction} ${Math.abs(recommendation.totalPRNChange).toFixed(1)} FTE in PRN positions`);
+  if (recommendation.totalPRNChange > 0.05) {
+    actions.push(`opening ${recommendation.totalPRNChange.toFixed(1)} FTE in PRN positions`);
+  }
+
+  // Closure actions with priority explanation
+  if (totalReqClosures > 0.05) {
+    actions.push(`canceling ${totalReqClosures.toFixed(1)} FTE in open requisitions`);
+  }
+  if (totalEmployedClosures > 0.05) {
+    actions.push(`additionally closing ${totalEmployedClosures.toFixed(1)} FTE from employed positions`);
   }
   
   if (actions.length === 0) {
@@ -201,7 +298,14 @@ function generateAISummary(
   
   const actionText = actions.join(', ');
   
-  return `Based on your current mix of ${currentSplit}, we recommend ${actionText}. This will ${isShortage ? 'fill' : 'reduce'} the ${gapAmount} FTE ${isShortage ? 'shortage' : 'surplus'} while achieving the optimal 70/20/10 split for your ${skillType} ${shift} shift workforce.`;
+  let priorityNote = '';
+  if (totalReqClosures > 0.05 && totalEmployedClosures > 0.05) {
+    priorityNote = ' We recommend first canceling open requisitions before considering any employed position changes.';
+  } else if (totalReqClosures > 0.05) {
+    priorityNote = ' This can be achieved entirely by canceling open requisitions without affecting employed staff.';
+  }
+  
+  return `Based on your current mix of ${currentSplit}, we recommend ${actionText}.${priorityNote} This will ${isShortage ? 'fill' : 'reduce'} the ${gapAmount} FTE ${isShortage ? 'shortage' : 'surplus'} while achieving the optimal 70/20/10 split for your ${skillType} ${shift} shift workforce.`;
 }
 
 // Determine shift from position shift field
@@ -232,14 +336,22 @@ export function useForecastBalance() {
     queryKey: ['forecast-balance'],
     queryFn: async (): Promise<ForecastBalanceSummary> => {
       // Fetch all filled positions (employees)
-      const { data: positions, error } = await supabase
+      const { data: employedPositions, error: empError } = await supabase
         .from('positions')
         .select('*')
         .not('employeeName', 'is', null);
       
-      if (error) throw error;
+      if (empError) throw empError;
+
+      // Fetch all open requisitions (unfilled positions)
+      const { data: openReqs, error: reqError } = await supabase
+        .from('positions')
+        .select('*')
+        .is('employeeName', null);
       
-      // Group by market/facility/department/skillType/shift
+      if (reqError) throw reqError;
+      
+      // Group employed positions by market/facility/department/skillType/shift
       const groupedData = new Map<string, {
         market: string;
         facilityId: string;
@@ -251,13 +363,17 @@ export function useForecastBalance() {
         ftFTE: number;
         ptFTE: number;
         prnFTE: number;
+        // Open requisitions FTE available for closure
+        openReqsFT: number;
+        openReqsPT: number;
+        openReqsPRN: number;
       }>();
       
-      for (const pos of positions || []) {
+      // Process employed positions
+      for (const pos of employedPositions || []) {
         const shift = normalizeShift(pos.shift_override || pos.shift);
         if (!shift) continue;
         
-        // Map to standardized skill type and skip overhead roles
         const skillType = normalizeSkillType(pos.jobTitle);
         if (!skillType) continue;
         if (OVERHEAD_SKILL_TYPES.includes(skillType)) continue;
@@ -279,18 +395,48 @@ export function useForecastBalance() {
             ftFTE: 0,
             ptFTE: 0,
             prnFTE: 0,
+            openReqsFT: 0,
+            openReqsPT: 0,
+            openReqsPRN: 0,
           });
         }
         
         const group = groupedData.get(key)!;
         
-        // PRN positions use flat 0.2 FTE regardless of database value (often stored as 0)
         if (empType === 'PRN') {
-          group.prnFTE += PRN_VALUE; // 0.2 FTE per PRN
+          group.prnFTE += PRN_VALUE;
         } else {
           const fte = pos.FTE || 0;
           if (empType === 'FT') group.ftFTE += fte;
           else if (empType === 'PT') group.ptFTE += fte;
+        }
+      }
+
+      // Process open requisitions
+      for (const req of openReqs || []) {
+        const shift = normalizeShift(req.shift_override || req.shift);
+        if (!shift) continue;
+        
+        const skillType = normalizeSkillType(req.jobTitle);
+        if (!skillType) continue;
+        if (OVERHEAD_SKILL_TYPES.includes(skillType)) continue;
+        
+        const empType = categorizeEmploymentType(req.employmentType, req.employmentFlag);
+        if (!empType) continue;
+        
+        const key = `${req.market}|${req.facilityId}|${req.departmentId}|${skillType}|${shift}`;
+        
+        // Only add to existing groups (we need employed positions to have a baseline)
+        if (groupedData.has(key)) {
+          const group = groupedData.get(key)!;
+          
+          if (empType === 'PRN') {
+            group.openReqsPRN += PRN_VALUE;
+          } else {
+            const fte = req.FTE || 0;
+            if (empType === 'FT') group.openReqsFT += fte;
+            else if (empType === 'PT') group.openReqsPT += fte;
+          }
         }
       }
       
@@ -303,7 +449,7 @@ export function useForecastBalance() {
       
       for (const [key, group] of groupedData) {
         const total = group.ftFTE + group.ptFTE + group.prnFTE;
-        if (total < 0.5) continue; // Skip very small groups
+        if (total < 0.5) continue;
         
         const hiredFTE: FTEBreakdown = {
           ft: group.ftFTE,
@@ -314,40 +460,42 @@ export function useForecastBalance() {
           ptPercent: total > 0 ? (group.ptFTE / total) * 100 : 0,
           prnPercent: total > 0 ? (group.prnFTE / total) * 100 : 0,
         };
+
+        const openReqsFTE: OpenReqsBreakdown = {
+          ft: group.openReqsFT,
+          pt: group.openReqsPT,
+          prn: group.openReqsPRN,
+          total: group.openReqsFT + group.openReqsPT + group.openReqsPRN,
+        };
         
         // Demo: Create realistic variety using deterministic hash
         const hash = key.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-        const variation = (hash % 9) - 4; // Results in -4 to +4
+        const variation = (hash % 9) - 4;
         
         let targetFTE: number;
         if (variation >= 2) {
-          // Shortage scenario: Target +10-25% higher
           targetFTE = Math.ceil(total * (1.10 + (variation - 2) * 0.05) * 10) / 10;
         } else if (variation <= -2) {
-          // Surplus scenario: Target -5-20% lower
           targetFTE = Math.ceil(total * (0.85 + (Math.abs(variation) - 2) * 0.05) * 10) / 10;
         } else {
-          // Balanced FTE scenario (may still have split imbalance)
           targetFTE = Math.ceil(total * 10) / 10;
         }
         
         const fteGap = targetFTE - total;
         
-        // Check if current split is within tolerance of 70/20/10
         const ftDiff = Math.abs(hiredFTE.ftPercent - 70);
         const ptDiff = Math.abs(hiredFTE.ptPercent - 20);
         const prnDiff = Math.abs(hiredFTE.prnPercent - 10);
         const currentSplitStatus: 'balanced' | 'imbalanced' = 
           (ftDiff <= 5 && ptDiff <= 5 && prnDiff <= 5) ? 'balanced' : 'imbalanced';
         
-        // Determine gap type with split consideration
         let gapType: 'shortage' | 'surplus' | 'balanced' | 'split-imbalanced';
         if (fteGap > 0.1) {
           gapType = 'shortage';
         } else if (fteGap < -0.1) {
           gapType = 'surplus';
         } else if (currentSplitStatus === 'imbalanced') {
-          gapType = 'split-imbalanced'; // Balanced FTE but wrong 70/20/10 mix
+          gapType = 'split-imbalanced';
         } else {
           gapType = 'balanced';
         }
@@ -356,7 +504,10 @@ export function useForecastBalance() {
           group.ftFTE,
           group.ptFTE,
           group.prnFTE,
-          targetFTE
+          targetFTE,
+          group.openReqsFT,
+          group.openReqsPT,
+          group.openReqsPRN
         );
         
         const aiSummary = generateAISummary(
@@ -385,6 +536,7 @@ export function useForecastBalance() {
           skillType: group.skillType,
           shift: group.shift,
           hiredFTE,
+          openReqsFTE,
           targetFTE,
           fteGap,
           gapType,
@@ -394,7 +546,6 @@ export function useForecastBalance() {
         });
       }
       
-      // Sort by absolute gap descending (most urgent first)
       rows.sort((a, b) => Math.abs(b.fteGap) - Math.abs(a.fteGap));
       
       return {
