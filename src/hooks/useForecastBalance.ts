@@ -237,11 +237,15 @@ export function useForecastBalance() {
         }
         
         const group = groupedData.get(key)!;
-        const fte = pos.FTE || 0;
         
-        if (empType === 'FT') group.ftFTE += fte;
-        else if (empType === 'PT') group.ptFTE += fte;
-        else if (empType === 'PRN') group.prnFTE += fte;
+        // PRN positions use flat 0.2 FTE regardless of database value (often stored as 0)
+        if (empType === 'PRN') {
+          group.prnFTE += PRN_VALUE; // 0.2 FTE per PRN
+        } else {
+          const fte = pos.FTE || 0;
+          if (empType === 'FT') group.ftFTE += fte;
+          else if (empType === 'PT') group.ptFTE += fte;
+        }
       }
       
       // Convert to forecast rows with calculations
