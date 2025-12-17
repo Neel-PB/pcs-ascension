@@ -16,21 +16,21 @@ function PercentageBar({ actual, target, label, value }: { actual: number; targe
   const isOver = actual > target;
   
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1">
       <div className="flex items-center justify-between text-sm">
-        <span className="font-medium">{label}</span>
-        <div className="flex items-center gap-2">
+        <span className="font-medium text-foreground">{label}</span>
+        <div className="flex items-center gap-1.5">
           <span className={cn(
             "font-semibold",
             isBalanced ? "text-emerald-600" : isOver ? "text-amber-600" : "text-destructive"
           )}>
             {actual.toFixed(0)}%
           </span>
-          {isBalanced && <Check className="h-3.5 w-3.5 text-emerald-600" />}
+          {isBalanced && <Check className="h-3 w-3 text-emerald-600" />}
         </div>
       </div>
-      <div className="flex items-center gap-3">
-        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+      <div className="flex items-center gap-2">
+        <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
           <div 
             className={cn(
               "h-full rounded-full transition-all",
@@ -39,7 +39,7 @@ function PercentageBar({ actual, target, label, value }: { actual: number; targe
             style={{ width: `${Math.min(actual, 100)}%` }}
           />
         </div>
-        <span className="text-sm text-muted-foreground w-16 text-right">{value.toFixed(1)} FTE</span>
+        <span className="text-xs text-muted-foreground w-14 text-right">{value.toFixed(1)} FTE</span>
       </div>
     </div>
   );
@@ -53,19 +53,16 @@ function PositionChangeList({ changes, type }: { changes: PositionChange[]; type
   const isOpen = action === 'open';
   
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <span className="font-medium text-sm">{type}</span>
-        <span className={cn(
-          "font-semibold text-sm",
-          isOpen ? "text-emerald-600" : "text-amber-600"
-        )}>
+        <span className="text-xs text-muted-foreground">{type}</span>
+        <span className="text-xs font-semibold text-primary">
           {isOpen ? '+' : '-'}{totalChange.toFixed(1)} FTE
         </span>
       </div>
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         {changes.map((change, i) => (
-          <div key={i} className="flex items-center justify-between text-xs text-muted-foreground bg-muted/50 rounded px-2 py-1">
+          <div key={i} className="flex items-center justify-between text-xs text-muted-foreground bg-muted/40 rounded px-2 py-0.5">
             <span>{change.fteValue} FTE × {change.count}</span>
             <span>= {(change.fteValue * change.count).toFixed(1)}</span>
           </div>
@@ -103,18 +100,18 @@ export function BalanceTwoPanel({
     .reduce((sum, c) => sum + (c.fteValue * c.count), 0);
   
   return (
-    <div className="space-y-4">
-      {/* Two Panel Layout - 30/70 split */}
-      <div className="grid gap-4" style={{ gridTemplateColumns: '35% 65%' }}>
-        {/* Current State Panel - 30% */}
-        <Card className="p-4 border-l-4 border-l-muted-foreground/30">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b">
-              <h4 className="font-semibold text-sm">Current State</h4>
-              <span className="text-lg font-bold">{hiredFTE.total.toFixed(1)} FTE</span>
+    <div className="space-y-3">
+      {/* Two Panel Layout - 35/65 split */}
+      <div className="grid gap-3" style={{ gridTemplateColumns: '35% 65%' }}>
+        {/* Current State Panel */}
+        <Card className="p-3">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b">
+              <h4 className="text-xs font-medium uppercase tracking-wide text-primary">Current State</h4>
+              <span className="text-lg font-semibold text-foreground">{hiredFTE.total.toFixed(1)} FTE</span>
             </div>
             
-            <div className="space-y-3">
+            <div className="space-y-2">
               <PercentageBar 
                 actual={hiredFTE.ftPercent} 
                 target={70} 
@@ -136,38 +133,38 @@ export function BalanceTwoPanel({
             </div>
             
             {/* AI Recommendation */}
-            <div className="border-t pt-3 mt-3 space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">AI Recommendation</p>
-              <p className="text-xs leading-relaxed">{aiSummary}</p>
+            <div className="border-t pt-2 mt-2 space-y-1">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">AI Recommendation</p>
+              <p className="text-xs leading-relaxed text-muted-foreground">{aiSummary}</p>
             </div>
           </div>
         </Card>
         
-        {/* Recommended Panel - 70% with dual columns */}
-        <Card className="p-4 border-l-4 border-l-primary">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b">
-              <h4 className="font-semibold text-sm">Recommended</h4>
-              <div className="flex items-center gap-2">
+        {/* Recommended Panel */}
+        <Card className="p-3">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b">
+              <h4 className="text-xs font-medium uppercase tracking-wide text-primary">Recommended</h4>
+              <div className="flex items-center gap-1.5">
                 <span className="text-muted-foreground text-sm">{hiredFTE.total.toFixed(1)}</span>
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                <span className="text-lg font-bold text-primary">{targetFTE.toFixed(1)} FTE</span>
+                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-lg font-semibold text-primary">{targetFTE.toFixed(1)} FTE</span>
               </div>
             </div>
             
             {/* Dual column layout for Close and Open */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               {/* Position to Close Column */}
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-amber-600">Position to Close</span>
+                  <span className="text-xs font-medium text-primary underline decoration-1 underline-offset-2">Position to Close</span>
                   {hasClosures && (
-                    <span className="text-sm font-semibold text-amber-600">-{totalToClose.toFixed(1)} FTE</span>
+                    <span className="text-xs font-semibold text-primary">-{totalToClose.toFixed(1)} FTE</span>
                   )}
                 </div>
                 
                 {hasClosures ? (
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     {positionsToClose.ft.length > 0 && (
                       <PositionChangeList changes={positionsToClose.ft} type="Full-Time" />
                     )}
@@ -179,24 +176,24 @@ export function BalanceTwoPanel({
                     )}
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center py-4 text-xs text-muted-foreground bg-muted/30 rounded">
-                    <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
+                  <div className="flex items-center justify-center py-3 text-xs text-muted-foreground bg-muted/30 rounded">
+                    <Check className="h-3 w-3 mr-1 text-emerald-600" />
                     No closures needed
                   </div>
                 )}
               </div>
               
               {/* Position to Open Column */}
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-emerald-600">Position to Open</span>
+                  <span className="text-xs font-medium text-primary">Position to Open</span>
                   {hasOpenings && (
-                    <span className="text-sm font-semibold text-emerald-600">+{totalToOpen.toFixed(1)} FTE</span>
+                    <span className="text-xs font-semibold text-primary">+{totalToOpen.toFixed(1)} FTE</span>
                   )}
                 </div>
                 
                 {hasOpenings ? (
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     {positionsToOpen.ft.length > 0 && (
                       <PositionChangeList changes={positionsToOpen.ft} type="Full-Time" />
                     )}
@@ -208,8 +205,8 @@ export function BalanceTwoPanel({
                     )}
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center py-4 text-xs text-muted-foreground bg-muted/30 rounded">
-                    <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
+                  <div className="flex items-center justify-center py-3 text-xs text-muted-foreground bg-muted/30 rounded">
+                    <Check className="h-3 w-3 mr-1 text-emerald-600" />
                     No openings needed
                   </div>
                 )}
@@ -217,12 +214,12 @@ export function BalanceTwoPanel({
             </div>
             
             {/* Target split preview */}
-            <div className="pt-3 border-t">
-              <div className="text-xs text-muted-foreground mb-2">Target Split:</div>
-              <div className="flex gap-3 text-xs font-medium">
-                <span className="text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded">70% FT</span>
+            <div className="pt-2 border-t">
+              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1.5">Target Split</div>
+              <div className="flex gap-2 text-xs font-medium">
+                <span className="text-primary bg-primary/10 px-2 py-0.5 rounded">70% FT</span>
                 <span className="text-primary bg-primary/10 px-2 py-0.5 rounded">20% PT</span>
-                <span className="text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded">10% PRN</span>
+                <span className="text-primary bg-primary/10 px-2 py-0.5 rounded">10% PRN</span>
               </div>
             </div>
           </div>
