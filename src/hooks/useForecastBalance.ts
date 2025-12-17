@@ -11,6 +11,14 @@ const TARGET_FT_PERCENT = 0.70;
 const TARGET_PT_PERCENT = 0.20;
 const TARGET_PRN_PERCENT = 0.10;
 
+// Valid skill types for 70/20/10 analysis (from Position Planning)
+const CLINICAL_STAFF = ['Clinical Lead', 'Registered Nurse'];
+const SUPPORT_STAFF = ['Patient Care Technician', 'CLERK'];
+const VALID_SKILL_TYPES = [...CLINICAL_STAFF, ...SUPPORT_STAFF];
+
+// Overhead types - EXCLUDED from 70/20/10 analysis (fixed FT-only roles)
+const OVERHEAD_SKILL_TYPES = ['Director', 'Manager', 'Assistant Manager', 'Coordinator', 'SPEC'];
+
 export interface FTEBreakdown {
   ft: number;
   pt: number;
@@ -48,7 +56,7 @@ export interface ForecastBalanceRow {
   hiredFTE: FTEBreakdown;
   targetFTE: number;
   fteGap: number;
-  gapType: 'shortage' | 'surplus' | 'balanced';
+  gapType: 'shortage' | 'surplus' | 'balanced' | 'split-imbalanced';
   currentSplitStatus: 'balanced' | 'imbalanced';
   recommendation: RecommendedChanges;
   aiSummary: string;
@@ -60,6 +68,29 @@ export interface ForecastBalanceSummary {
   shortageCount: number;
   surplusCount: number;
   rows: ForecastBalanceRow[];
+}
+
+// Normalize skill type from jobFamily to standardized names
+function normalizeSkillType(jobFamily: string | null): string | null {
+  if (!jobFamily) return null;
+  const normalized = jobFamily.toLowerCase().trim();
+  
+  // Map to standard clinical staff names
+  if (normalized.includes('clinical lead') || normalized === 'cl') return 'Clinical Lead';
+  if (normalized.includes('registered nurse') || normalized === 'rn' || normalized.includes('nurse')) return 'Registered Nurse';
+  
+  // Map to standard support staff names
+  if (normalized.includes('patient care') || normalized === 'pct' || normalized.includes('tech')) return 'Patient Care Technician';
+  if (normalized.includes('clerk')) return 'CLERK';
+  
+  // Check for overhead types (to be excluded)
+  if (normalized.includes('director')) return 'Director';
+  if (normalized.includes('manager') && !normalized.includes('assistant')) return 'Manager';
+  if (normalized.includes('assistant manager') || normalized.includes('asst')) return 'Assistant Manager';
+  if (normalized.includes('coordinator')) return 'Coordinator';
+  if (normalized.includes('spec') || normalized.includes('specialist')) return 'SPEC';
+  
+  return null;
 }
 
 // Map FTE change to valid position values
@@ -215,7 +246,11 @@ export function useForecastBalance() {
         const shift = normalizeShift(pos.shift_override || pos.shift);
         if (!shift) continue;
         
-        const skillType = pos.jobFamily || 'Other';
+        // Map to standardized skill type and skip overhead roles
+        const skillType = normalizeSkillType(pos.jobFamily);
+        if (!skillType) continue;
+        if (OVERHEAD_SKILL_TYPES.includes(skillType)) continue;
+        
         const empType = categorizeEmploymentType(pos.employmentType, pos.employmentFlag);
         if (!empType) continue;
         
@@ -269,13 +304,23 @@ export function useForecastBalance() {
           prnPercent: total > 0 ? (group.prnFTE / total) * 100 : 0,
         };
         
-        // For demo: Target FTE is 15% higher than current (simulating growth)
-        // In production, this would come from staffing standards
-        const targetFTE = Math.ceil(total * 1.15 * 10) / 10;
+        // Demo: Create realistic variety using deterministic hash
+        const hash = key.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const variation = (hash % 9) - 4; // Results in -4 to +4
+        
+        let targetFTE: number;
+        if (variation >= 2) {
+          // Shortage scenario: Target +10-25% higher
+          targetFTE = Math.ceil(total * (1.10 + (variation - 2) * 0.05) * 10) / 10;
+        } else if (variation <= -2) {
+          // Surplus scenario: Target -5-20% lower
+          targetFTE = Math.ceil(total * (0.85 + (Math.abs(variation) - 2) * 0.05) * 10) / 10;
+        } else {
+          // Balanced FTE scenario (may still have split imbalance)
+          targetFTE = Math.ceil(total * 10) / 10;
+        }
         
         const fteGap = targetFTE - total;
-        const gapType: 'shortage' | 'surplus' | 'balanced' = 
-          fteGap > 0.1 ? 'shortage' : fteGap < -0.1 ? 'surplus' : 'balanced';
         
         // Check if current split is within tolerance of 70/20/10
         const ftDiff = Math.abs(hiredFTE.ftPercent - 70);
@@ -283,6 +328,18 @@ export function useForecastBalance() {
         const prnDiff = Math.abs(hiredFTE.prnPercent - 10);
         const currentSplitStatus: 'balanced' | 'imbalanced' = 
           (ftDiff <= 5 && ptDiff <= 5 && prnDiff <= 5) ? 'balanced' : 'imbalanced';
+        
+        // Determine gap type with split consideration
+        let gapType: 'shortage' | 'surplus' | 'balanced' | 'split-imbalanced';
+        if (fteGap > 0.1) {
+          gapType = 'shortage';
+        } else if (fteGap < -0.1) {
+          gapType = 'surplus';
+        } else if (currentSplitStatus === 'imbalanced') {
+          gapType = 'split-imbalanced'; // Balanced FTE but wrong 70/20/10 mix
+        } else {
+          gapType = 'balanced';
+        }
         
         const recommendation = calculateBalancedRecommendation(
           group.ftFTE,

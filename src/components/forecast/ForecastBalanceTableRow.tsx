@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, AlertTriangle, TrendingUp, TrendingDown, CheckCircle } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { ForecastBalanceRow } from "@/hooks/useForecastBalance";
 import { BalanceTwoPanel } from "./BalanceTwoPanel";
 import { cn } from "@/lib/utils";
@@ -11,25 +11,29 @@ interface ForecastBalanceRowProps {
 export function ForecastBalanceTableRow({ row }: ForecastBalanceRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   
-  const gapColor = row.gapType === 'shortage' 
+  // Both shortage and surplus are red
+  const gapColor = row.gapType === 'shortage' || row.gapType === 'surplus'
     ? 'text-destructive' 
-    : row.gapType === 'surplus' 
-      ? 'text-primary' 
+    : row.gapType === 'split-imbalanced'
+      ? 'text-amber-600'
       : 'text-muted-foreground';
   
   const gapSign = row.gapType === 'shortage' ? '+' : row.gapType === 'surplus' ? '-' : '';
   
-  const StatusIcon = row.gapType === 'shortage' 
-    ? TrendingUp 
-    : row.gapType === 'surplus' 
-      ? TrendingDown 
-      : CheckCircle;
-  
-  const statusColor = row.gapType === 'shortage'
+  // Status badge colors - red for shortage/surplus, yellow for split issue, green for balanced
+  const statusColor = row.gapType === 'shortage' || row.gapType === 'surplus'
     ? 'text-destructive bg-destructive/10'
-    : row.gapType === 'surplus'
-      ? 'text-primary bg-primary/10'
+    : row.gapType === 'split-imbalanced'
+      ? 'text-amber-600 bg-amber-500/10'
       : 'text-emerald-600 bg-emerald-500/10';
+  
+  const statusLabel = row.gapType === 'shortage' 
+    ? 'Shortage' 
+    : row.gapType === 'surplus' 
+      ? 'Surplus' 
+      : row.gapType === 'split-imbalanced'
+        ? 'Split Issue'
+        : 'Balanced';
   
   return (
     <div className="border-b last:border-b-0">
@@ -58,11 +62,10 @@ export function ForecastBalanceTableRow({ row }: ForecastBalanceRowProps) {
         </div>
         <div className="px-2">
           <div className={cn(
-            "inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium",
+            "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium",
             statusColor
           )}>
-            <StatusIcon className="h-3 w-3" />
-            {row.gapType === 'shortage' ? 'Shortage' : row.gapType === 'surplus' ? 'Surplus' : 'Balanced'}
+            {statusLabel}
           </div>
         </div>
       </div>
