@@ -160,9 +160,9 @@ export function BalanceTwoPanel({
               {/* Position to Close Column */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-amber-600">Position to Close</span>
+                  <span className="text-xs font-medium text-primary underline">Position to Close</span>
                   {hasClosures && (
-                    <span className="text-sm font-semibold text-amber-600">-{totalToClose.toFixed(1)} FTE</span>
+                    <span className="text-sm font-semibold text-primary">-{totalToClose.toFixed(1)} FTE</span>
                   )}
                 </div>
                 
@@ -189,9 +189,9 @@ export function BalanceTwoPanel({
               {/* Position to Open Column */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-emerald-600">Position to Open</span>
+                  <span className="text-xs font-medium text-primary underline">Position to Open</span>
                   {hasOpenings && (
-                    <span className="text-sm font-semibold text-emerald-600">+{totalToOpen.toFixed(1)} FTE</span>
+                    <span className="text-sm font-semibold text-primary">+{totalToOpen.toFixed(1)} FTE</span>
                   )}
                 </div>
                 
