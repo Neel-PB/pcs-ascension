@@ -418,33 +418,30 @@ export function VarianceAnalysis({
         <TooltipProvider delayDuration={200}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center gap-2 cursor-default">
-                <span className="truncate max-w-[160px] font-medium">
+              <div className="flex items-center gap-2 cursor-default group/tooltip transition-all duration-200 hover:scale-[1.02] hover:bg-primary/5 rounded-md px-1 py-0.5 -mx-1">
+                <span className="truncate max-w-[160px] font-medium group-hover/tooltip:text-primary transition-colors duration-200">
                   {row.name}
                 </span>
                 {row.subText && (
                   <Badge 
                     variant="secondary" 
-                    className="bg-primary/10 text-primary border-primary/20 text-[10px] px-1.5 py-0 shrink-0 font-mono"
+                    className="bg-primary/10 text-primary border-primary/20 text-[10px] px-1.5 py-0 shrink-0 font-mono group-hover/tooltip:bg-primary/20 transition-colors duration-200"
                   >
                     {row.subText}
                   </Badge>
                 )}
               </div>
             </TooltipTrigger>
-            <TooltipContent side="right" className="max-w-xs">
+            <TooltipContent side="right" sideOffset={8} showArrow>
               <div className="flex flex-col gap-1.5">
                 <p className="font-semibold text-foreground">{row.name}</p>
                 {row.subText && (
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-muted-foreground text-xs">ID:</span>
-                    <Badge 
-                      variant="secondary" 
-                      className="bg-primary/15 text-primary border-primary/25 text-xs font-mono"
-                    >
-                      {row.subText}
-                    </Badge>
-                  </div>
+                  <Badge 
+                    variant="secondary" 
+                    className="bg-primary/15 text-primary border-primary/25 text-xs font-mono w-fit"
+                  >
+                    {row.subText}
+                  </Badge>
                 )}
               </div>
             </TooltipContent>

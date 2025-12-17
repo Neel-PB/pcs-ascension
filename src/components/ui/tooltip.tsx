@@ -9,10 +9,24 @@ const Tooltip = TooltipPrimitive.Root;
 
 const TooltipTrigger = TooltipPrimitive.Trigger;
 
+const TooltipArrow = React.forwardRef<
+  React.ElementRef<typeof TooltipPrimitive.Arrow>,
+  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Arrow>
+>(({ className, ...props }, ref) => (
+  <TooltipPrimitive.Arrow
+    ref={ref}
+    className={cn("fill-popover drop-shadow-sm", className)}
+    {...props}
+  />
+));
+TooltipArrow.displayName = TooltipPrimitive.Arrow.displayName;
+
 const TooltipContent = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
->(({ className, sideOffset = 4, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content> & {
+    showArrow?: boolean;
+  }
+>(({ className, sideOffset = 4, showArrow = false, children, ...props }, ref) => (
   <TooltipPrimitive.Content
     ref={ref}
     sideOffset={sideOffset}
@@ -21,8 +35,11 @@ const TooltipContent = React.forwardRef<
       className,
     )}
     {...props}
-  />
+  >
+    {children}
+    {showArrow && <TooltipArrow />}
+  </TooltipPrimitive.Content>
 ));
 TooltipContent.displayName = TooltipPrimitive.Content.displayName;
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider, TooltipArrow };
