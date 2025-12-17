@@ -138,7 +138,7 @@ export function BalanceTwoPanel({
         </Card>
         
         {/* Recommended Panel - 70% with dual columns */}
-        <Card className="pt-4 px-4 pb-1 border-l-4 border-l-primary">
+        <Card className="pt-4 px-4 pb-1.5 border-l-4 border-l-primary">
           <div className="flex flex-col h-full">
             {/* Main content wrapper */}
             <div className="flex-1 space-y-4">
