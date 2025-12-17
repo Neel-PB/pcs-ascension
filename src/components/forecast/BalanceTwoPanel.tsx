@@ -205,7 +205,7 @@ export function BalanceTwoPanel({
               </div>
               
               {/* Dual column layout for Close and Open */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 mb-3">
                 {/* Position to Close Column - Now with two-tier system */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
