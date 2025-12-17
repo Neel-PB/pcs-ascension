@@ -34,18 +34,18 @@ export function ForecastKPICards({
       {/* FTE Shortage + Positions to Open Card */}
       <Card className="py-2 px-4 border-destructive/30 bg-destructive/5">
         <div className="flex items-center justify-around">
-          <div className="flex flex-col items-center text-center">
+          <div className="flex items-center gap-1.5">
             <span className="text-xs font-semibold uppercase tracking-wide text-destructive">
-              FTE Shortage
+              FTE Shortage:
             </span>
             <div className="text-2xl font-bold text-destructive">
               +{totalShortage.toFixed(1)}
             </div>
           </div>
           <Separator orientation="vertical" className="h-8 bg-destructive/30" />
-          <div className="flex flex-col items-center text-center">
+          <div className="flex items-center gap-1.5">
             <span className="text-xs font-semibold uppercase tracking-wide text-destructive">
-              Positions to Open
+              Positions to Open:
             </span>
             <div className="text-2xl font-bold text-destructive">
               {shortageCount}
@@ -57,18 +57,18 @@ export function ForecastKPICards({
       {/* FTE Surplus + Positions to Close Card */}
       <Card className="py-2 px-4 border-primary/30 bg-primary/5">
         <div className="flex items-center justify-around">
-          <div className="flex flex-col items-center text-center">
+          <div className="flex items-center gap-1.5">
             <span className="text-xs font-semibold uppercase tracking-wide text-primary">
-              FTE Surplus
+              FTE Surplus:
             </span>
             <div className="text-2xl font-bold text-primary">
               -{totalSurplus.toFixed(1)}
             </div>
           </div>
           <Separator orientation="vertical" className="h-8 bg-primary/30" />
-          <div className="flex flex-col items-center text-center">
+          <div className="flex items-center gap-1.5">
             <span className="text-xs font-semibold uppercase tracking-wide text-primary">
-              Positions to Close
+              Positions to Close:
             </span>
             <div className="text-2xl font-bold text-primary">
               {surplusCount}
