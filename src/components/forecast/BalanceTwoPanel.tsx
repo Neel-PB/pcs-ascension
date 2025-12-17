@@ -19,15 +19,12 @@ function PercentageBar({ actual, target, label, value }: { actual: number; targe
     <div className="space-y-1.5">
       <div className="flex items-center justify-between text-sm">
         <span className="text-xs font-medium">{label}</span>
-        <div className="flex items-center gap-2">
-          <span className={cn(
-            "font-semibold",
-            isBalanced ? "text-emerald-600" : isOver ? "text-amber-600" : "text-destructive"
-          )}>
-            {actual.toFixed(0)}%
-          </span>
-          {isBalanced && <Check className="h-3.5 w-3.5 text-emerald-600" />}
-        </div>
+        <span className={cn(
+          "font-semibold",
+          isBalanced ? "text-emerald-600" : isOver ? "text-amber-600" : "text-destructive"
+        )}>
+          {actual.toFixed(0)}%
+        </span>
       </div>
       <div className="flex items-center gap-3">
         <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
