@@ -55,11 +55,8 @@ function PositionChangeList({ changes, type }: { changes: PositionChange[]; type
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="font-medium text-sm">{type}</span>
-        <span className={cn(
-          "font-semibold text-sm",
-          isOpen ? "text-emerald-600" : "text-amber-600"
-        )}>
+        <span className="text-xs font-medium text-primary underline">{type}</span>
+        <span className="text-sm font-semibold text-primary">
           {isOpen ? '+' : '-'}{totalChange.toFixed(1)} FTE
         </span>
       </div>
