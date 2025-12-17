@@ -160,7 +160,7 @@ export function BalanceTwoPanel({
                 <span className="text-lg font-bold">{hiredFTE.total.toFixed(1)} FTE</span>
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-2 mt-4">
                 <PercentageBar 
                   actual={hiredFTE.ftPercent} 
                   target={70} 
@@ -207,7 +207,7 @@ export function BalanceTwoPanel({
               </div>
               
               {/* Dual column layout for Close and Open */}
-              <div className="grid grid-cols-2 gap-4 mb-3">
+              <div className="grid grid-cols-2 gap-4 mb-3 mt-4">
                 {/* Position to Close Column - Now with two-tier system */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
