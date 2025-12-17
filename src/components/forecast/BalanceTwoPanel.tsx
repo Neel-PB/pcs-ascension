@@ -59,7 +59,7 @@ function PositionChangeList({ changes, type }: { changes: PositionChange[]; type
       </div>
       <div className="space-y-1">
         {changes.map((change, i) => (
-          <div key={i} className="flex items-center justify-between text-xs text-muted-foreground bg-muted/50 rounded px-2 py-1">
+          <div key={i} className="flex items-center justify-between text-xs text-muted-foreground bg-primary/10 rounded px-2 py-1">
             <span>{change.fteValue} FTE × {change.count}</span>
             <span>= {(change.fteValue * change.count).toFixed(1)}</span>
           </div>
@@ -178,7 +178,7 @@ export function BalanceTwoPanel({
                     )}
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center py-4 text-xs text-muted-foreground bg-muted/30 rounded">
+                  <div className="flex items-center justify-center py-4 text-xs text-muted-foreground bg-primary/10 rounded">
                     <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
                     No closures needed
                   </div>
@@ -207,7 +207,7 @@ export function BalanceTwoPanel({
                     )}
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center py-4 text-xs text-muted-foreground bg-muted/30 rounded">
+                  <div className="flex items-center justify-center py-4 text-xs text-muted-foreground bg-primary/10 rounded">
                     <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
                     No openings needed
                   </div>
