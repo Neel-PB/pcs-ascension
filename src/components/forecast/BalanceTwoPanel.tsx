@@ -18,7 +18,7 @@ function PercentageBar({ actual, target, label, value }: { actual: number; targe
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between text-sm">
-        <span className="font-medium">{label}</span>
+        <span className="text-xs font-medium">{label}</span>
         <div className="flex items-center gap-2">
           <span className={cn(
             "font-semibold",
@@ -39,7 +39,7 @@ function PercentageBar({ actual, target, label, value }: { actual: number; targe
             style={{ width: `${Math.min(actual, 100)}%` }}
           />
         </div>
-        <span className="text-sm text-muted-foreground w-16 text-right">{value.toFixed(1)} FTE</span>
+        <span className="text-xs text-muted-foreground w-16 text-right">{value.toFixed(1)} FTE</span>
       </div>
     </div>
   );
@@ -56,7 +56,7 @@ function PositionChangeList({ changes, type }: { changes: PositionChange[]; type
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-primary underline">{type}</span>
-        <span className="text-sm font-semibold text-primary">
+        <span className="text-xs font-semibold text-primary">
           {isOpen ? '+' : '-'}{totalChange.toFixed(1)} FTE
         </span>
       </div>
@@ -159,7 +159,7 @@ export function BalanceTwoPanel({
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-primary underline">Position to Close</span>
                   {hasClosures && (
-                    <span className="text-sm font-semibold text-primary">-{totalToClose.toFixed(1)} FTE</span>
+                    <span className="text-xs font-semibold text-primary">-{totalToClose.toFixed(1)} FTE</span>
                   )}
                 </div>
                 
@@ -188,7 +188,7 @@ export function BalanceTwoPanel({
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-primary underline">Position to Open</span>
                   {hasOpenings && (
-                    <span className="text-sm font-semibold text-primary">+{totalToOpen.toFixed(1)} FTE</span>
+                    <span className="text-xs font-semibold text-primary">+{totalToOpen.toFixed(1)} FTE</span>
                   )}
                 </div>
                 
@@ -214,12 +214,12 @@ export function BalanceTwoPanel({
             </div>
             
             {/* Target split preview */}
-            <div className="pt-3 border-t">
-              <div className="text-xs text-muted-foreground mb-2">Target Split:</div>
-              <div className="flex gap-3 text-xs font-medium">
-                <span className="text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded">70% FT</span>
-                <span className="text-primary bg-primary/10 px-2 py-0.5 rounded">20% PT</span>
-                <span className="text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded">10% PRN</span>
+            <div className="pt-1.5 border-t">
+              <div className="text-xs text-muted-foreground mb-1">Target Split:</div>
+              <div className="flex gap-2 text-xs font-medium">
+                <span className="text-emerald-600 bg-emerald-500/10 px-1.5 py-0 rounded">70% FT</span>
+                <span className="text-primary bg-primary/10 px-1.5 py-0 rounded">20% PT</span>
+                <span className="text-amber-600 bg-amber-500/10 px-1.5 py-0 rounded">10% PRN</span>
               </div>
             </div>
           </div>
