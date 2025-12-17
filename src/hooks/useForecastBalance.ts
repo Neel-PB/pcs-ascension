@@ -70,27 +70,38 @@ export interface ForecastBalanceSummary {
   rows: ForecastBalanceRow[];
 }
 
-// Normalize skill type from jobFamily to standardized names
-function normalizeSkillType(jobFamily: string | null): string | null {
-  if (!jobFamily) return null;
-  const normalized = jobFamily.toLowerCase().trim();
+// Normalize skill type from jobTitle to standardized names
+function normalizeSkillType(jobTitle: string | null): string | null {
+  if (!jobTitle) return null;
+  const normalized = jobTitle.toLowerCase().trim();
   
-  // Map to standard clinical staff names
-  if (normalized.includes('clinical lead') || normalized === 'cl') return 'Clinical Lead';
-  if (normalized.includes('registered nurse') || normalized === 'rn' || normalized.includes('nurse')) return 'Registered Nurse';
+  // OVERHEAD - Check these FIRST (Supervisors, Managers, Directors, Coordinators, Specialists)
+  if (normalized.includes(' spv') || normalized.includes('spv-')) return 'Supervisor';
+  if (normalized.includes(' mgr') || normalized.includes('mgr-')) return 'Manager';
+  if (normalized.includes(' dir') || normalized.includes('dir-')) return 'Director';
+  if (normalized.includes('coord-') || normalized.includes('coordinator')) return 'Coordinator';
+  if (normalized.includes('specialist')) return 'SPEC';
+  if (normalized.includes('physician') || normalized.includes('practitioner')) return 'SPEC';
+  if (normalized.includes('pharmacist')) return 'SPEC';
   
-  // Map to standard support staff names
-  if (normalized.includes('patient care') || normalized === 'pct' || normalized.includes('tech')) return 'Patient Care Technician';
+  // CLINICAL LEAD - Must check before general RN
+  if (normalized.includes('clinical lead')) return 'Clinical Lead';
+  
+  // REGISTERED NURSE - Starts with "rn-" or "rn " or contains nurse/lpn/lvn
+  if (normalized.startsWith('rn-') || normalized.startsWith('rn ')) return 'Registered Nurse';
+  if (normalized.includes('lpn') || normalized.includes('lvn')) return 'Registered Nurse';
+  if (normalized.includes('nurse') && !normalized.includes('practitioner')) return 'Registered Nurse';
+  
+  // PATIENT CARE TECHNICIAN - Contains PCT or Patient Care
+  if (normalized.includes('pct') || normalized.includes('patient care')) return 'Patient Care Technician';
+  if (normalized.includes('patient attendant')) return 'Patient Care Technician';
+  
+  // CLERK - Contains Clerk, Secretary, Unit Assistant
   if (normalized.includes('clerk')) return 'CLERK';
+  if (normalized.includes('secretary')) return 'CLERK';
+  if (normalized === 'asst-unit') return 'CLERK';
   
-  // Check for overhead types (to be excluded)
-  if (normalized.includes('director')) return 'Director';
-  if (normalized.includes('manager') && !normalized.includes('assistant')) return 'Manager';
-  if (normalized.includes('assistant manager') || normalized.includes('asst')) return 'Assistant Manager';
-  if (normalized.includes('coordinator')) return 'Coordinator';
-  if (normalized.includes('spec') || normalized.includes('specialist')) return 'SPEC';
-  
-  return null;
+  return null; // Skip unknown types
 }
 
 // Map FTE change to valid position values
@@ -247,7 +258,7 @@ export function useForecastBalance() {
         if (!shift) continue;
         
         // Map to standardized skill type and skip overhead roles
-        const skillType = normalizeSkillType(pos.jobFamily);
+        const skillType = normalizeSkillType(pos.jobTitle);
         if (!skillType) continue;
         if (OVERHEAD_SKILL_TYPES.includes(skillType)) continue;
         
