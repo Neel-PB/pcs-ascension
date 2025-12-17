@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { LogoLoader } from "@/components/ui/LogoLoader";
 
 interface ForecastKPICardsProps {
   totalShortage: number;
@@ -23,13 +24,8 @@ export function ForecastKPICards({
 }: ForecastKPICardsProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 gap-6">
-        <Card className="py-2 px-4 animate-pulse bg-muted/30">
-          <div className="h-10" />
-        </Card>
-        <Card className="py-2 px-4 animate-pulse bg-muted/30">
-          <div className="h-10" />
-        </Card>
+      <div className="flex items-center justify-center py-4">
+        <LogoLoader size="sm" />
       </div>
     );
   }
