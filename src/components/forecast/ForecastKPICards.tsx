@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 interface ForecastKPICardsProps {
   totalShortage: number;
@@ -18,11 +19,11 @@ export function ForecastKPICards({
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 gap-6">
-        <Card className="p-8 animate-pulse bg-muted/30">
-          <div className="h-32" />
+        <Card className="p-4 animate-pulse bg-muted/30">
+          <div className="h-16" />
         </Card>
-        <Card className="p-8 animate-pulse bg-muted/30">
-          <div className="h-32" />
+        <Card className="p-4 animate-pulse bg-muted/30">
+          <div className="h-16" />
         </Card>
       </div>
     );
@@ -30,33 +31,49 @@ export function ForecastKPICards({
 
   return (
     <div className="grid grid-cols-2 gap-6">
-      {/* FTE Shortage Card */}
-      <Card className="p-8 border-destructive/30 bg-destructive/5">
-        <div className="flex flex-col items-center text-center space-y-4">
-          <span className="text-lg font-semibold uppercase tracking-wide text-destructive">
-            FTE Shortage
-          </span>
-          <div className="text-5xl font-bold text-destructive">
-            +{totalShortage.toFixed(1)}
+      {/* FTE Shortage + Positions to Open Card */}
+      <Card className="p-4 border-destructive/30 bg-destructive/5">
+        <div className="flex items-center justify-around h-16">
+          <div className="flex flex-col items-center text-center">
+            <span className="text-xs font-semibold uppercase tracking-wide text-destructive">
+              FTE Shortage
+            </span>
+            <div className="text-2xl font-bold text-destructive">
+              +{totalShortage.toFixed(1)}
+            </div>
           </div>
-          <p className="text-muted-foreground">
-            {shortageCount} position{shortageCount !== 1 ? 's' : ''} to open
-          </p>
+          <Separator orientation="vertical" className="h-12 bg-destructive/30" />
+          <div className="flex flex-col items-center text-center">
+            <span className="text-xs font-semibold uppercase tracking-wide text-destructive">
+              Positions to Open
+            </span>
+            <div className="text-2xl font-bold text-destructive">
+              {shortageCount}
+            </div>
+          </div>
         </div>
       </Card>
 
-      {/* FTE Surplus Card */}
-      <Card className="p-8 border-primary/30 bg-primary/5">
-        <div className="flex flex-col items-center text-center space-y-4">
-          <span className="text-lg font-semibold uppercase tracking-wide text-primary">
-            FTE Surplus
-          </span>
-          <div className="text-5xl font-bold text-primary">
-            -{totalSurplus.toFixed(1)}
+      {/* FTE Surplus + Positions to Close Card */}
+      <Card className="p-4 border-primary/30 bg-primary/5">
+        <div className="flex items-center justify-around h-16">
+          <div className="flex flex-col items-center text-center">
+            <span className="text-xs font-semibold uppercase tracking-wide text-primary">
+              FTE Surplus
+            </span>
+            <div className="text-2xl font-bold text-primary">
+              -{totalSurplus.toFixed(1)}
+            </div>
           </div>
-          <p className="text-muted-foreground">
-            {surplusCount} position{surplusCount !== 1 ? 's' : ''} to close
-          </p>
+          <Separator orientation="vertical" className="h-12 bg-primary/30" />
+          <div className="flex flex-col items-center text-center">
+            <span className="text-xs font-semibold uppercase tracking-wide text-primary">
+              Positions to Close
+            </span>
+            <div className="text-2xl font-bold text-primary">
+              {surplusCount}
+            </div>
+          </div>
         </div>
       </Card>
     </div>
