@@ -36,6 +36,7 @@ interface VarianceData {
 interface GroupedVarianceData extends VarianceData {
   type: 'group' | 'skill' | 'total';
   id: string;
+  subText?: string;
   children?: GroupedVarianceData[];
 }
 
@@ -106,6 +107,7 @@ export function VarianceAnalysis({
     const facilityDepts = getDepartmentsByFacility(selectedFacility);
     return facilityDepts.map(d => ({
       name: d.department_name,
+      subText: d.department_id,
       ...generateVariance()
     }));
   }, [selectedFacility, getDepartmentsByFacility]);
@@ -143,6 +145,7 @@ export function VarianceAnalysis({
           // Generate mock variance data for each facility
           const facilitiesWithVariance = facilities.map(f => ({
             name: f.facility_name,
+            subText: f.facility_id,
             ...generateVariance(),
           }));
 
@@ -405,7 +408,12 @@ export function VarianceAnalysis({
   const SkillRow = ({ row }: { row: GroupedVarianceData }) => (
     <TableRow className="hover:bg-muted/30 bg-primary/5">
       <TableCell className="font-medium sticky left-0 bg-primary/5 pl-8 whitespace-nowrap">
-        {row.name}
+        <div className="flex flex-col">
+          <span>{row.name}</span>
+          {row.subText && (
+            <span className="text-xs text-muted-foreground">{row.subText}</span>
+          )}
+        </div>
       </TableCell>
       <TableCell className="text-center font-semibold border-l-2 border-muted-foreground/30">
         {formatVariance(row.clDay)}
