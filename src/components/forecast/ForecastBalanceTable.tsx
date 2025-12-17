@@ -36,7 +36,7 @@ export function ForecastBalanceTable({ rows, isLoading }: ForecastBalanceTablePr
         <div
           className="grid h-10 items-center bg-muted font-medium text-sm border-b"
           style={{
-            gridTemplateColumns: "40px 100px 160px 160px 100px 80px 100px 120px",
+            gridTemplateColumns: "40px minmax(80px, 1fr) minmax(140px, 1.5fr) minmax(140px, 1.5fr) minmax(80px, 1fr) 80px 100px 120px",
           }}
         >
           <div />
