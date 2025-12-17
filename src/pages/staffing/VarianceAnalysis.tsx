@@ -4,6 +4,13 @@ import { Download, Maximize2, ChevronRight } from "lucide-react";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -407,13 +414,42 @@ export function VarianceAnalysis({
 
   const SkillRow = ({ row }: { row: GroupedVarianceData }) => (
     <TableRow className="hover:bg-muted/30 bg-primary/5">
-      <TableCell className="font-medium sticky left-0 bg-primary/5 pl-8 whitespace-nowrap">
-        <div className="flex flex-col">
-          <span>{row.name}</span>
-          {row.subText && (
-            <span className="text-xs text-muted-foreground">{row.subText}</span>
-          )}
-        </div>
+      <TableCell className="font-medium sticky left-0 bg-primary/5 pl-8">
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-2 cursor-default">
+                <span className="truncate max-w-[160px] font-medium">
+                  {row.name}
+                </span>
+                {row.subText && (
+                  <Badge 
+                    variant="secondary" 
+                    className="bg-primary/10 text-primary border-primary/20 text-[10px] px-1.5 py-0 shrink-0 font-mono"
+                  >
+                    {row.subText}
+                  </Badge>
+                )}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="max-w-xs">
+              <div className="flex flex-col gap-1.5">
+                <p className="font-semibold text-foreground">{row.name}</p>
+                {row.subText && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-muted-foreground text-xs">ID:</span>
+                    <Badge 
+                      variant="secondary" 
+                      className="bg-primary/15 text-primary border-primary/25 text-xs font-mono"
+                    >
+                      {row.subText}
+                    </Badge>
+                  </div>
+                )}
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </TableCell>
       <TableCell className="text-center font-semibold border-l-2 border-muted-foreground/30">
         {formatVariance(row.clDay)}
