@@ -1,5 +1,4 @@
 import { Card } from "@/components/ui/card";
-import { TrendingUp, TrendingDown } from "lucide-react";
 
 interface ForecastKPICardsProps {
   totalShortage: number;
@@ -34,12 +33,9 @@ export function ForecastKPICards({
       {/* FTE Shortage Card */}
       <Card className="p-8 border-destructive/30 bg-destructive/5">
         <div className="flex flex-col items-center text-center space-y-4">
-          <div className="flex items-center gap-2 text-destructive">
-            <TrendingUp className="h-6 w-6" />
-            <span className="text-lg font-semibold uppercase tracking-wide">
-              FTE Shortage
-            </span>
-          </div>
+          <span className="text-lg font-semibold uppercase tracking-wide text-destructive">
+            FTE Shortage
+          </span>
           <div className="text-5xl font-bold text-destructive">
             +{totalShortage.toFixed(1)}
           </div>
@@ -52,12 +48,9 @@ export function ForecastKPICards({
       {/* FTE Surplus Card */}
       <Card className="p-8 border-primary/30 bg-primary/5">
         <div className="flex flex-col items-center text-center space-y-4">
-          <div className="flex items-center gap-2 text-primary">
-            <TrendingDown className="h-6 w-6" />
-            <span className="text-lg font-semibold uppercase tracking-wide">
-              FTE Surplus
-            </span>
-          </div>
+          <span className="text-lg font-semibold uppercase tracking-wide text-primary">
+            FTE Surplus
+          </span>
           <div className="text-5xl font-bold text-primary">
             -{totalSurplus.toFixed(1)}
           </div>
