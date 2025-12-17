@@ -110,8 +110,11 @@ export function BalanceTwoPanel({
   recommendation,
   aiSummary,
 }: BalanceTwoPanelProps) {
-  // Get closure recommendations with priority split
-  const { ftClosure, ptClosure, prnClosure } = recommendation;
+  // Get closure recommendations with priority split (with defaults for backward compatibility)
+  const defaultClosure: ClosureRecommendation = { fromReqs: [], fromEmployed: [], totalFromReqs: 0, totalFromEmployed: 0 };
+  const ftClosure = recommendation.ftClosure ?? defaultClosure;
+  const ptClosure = recommendation.ptClosure ?? defaultClosure;
+  const prnClosure = recommendation.prnClosure ?? defaultClosure;
   
   // Check if there are any closures from each source
   const hasReqClosures = ftClosure.totalFromReqs > 0 || ptClosure.totalFromReqs > 0 || prnClosure.totalFromReqs > 0;
