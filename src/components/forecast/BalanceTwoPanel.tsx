@@ -102,35 +102,38 @@ export function BalanceTwoPanel({
       <div className="grid gap-4" style={{ gridTemplateColumns: '35% 65%' }}>
         {/* Current State Panel - 30% */}
         <Card className="pt-1.5 px-4 pb-1.5 border-l-4 border-l-muted-foreground/30">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between pb-2 border-b">
-              <h4 className="font-semibold text-sm">Current State</h4>
-              <span className="text-lg font-bold">{hiredFTE.total.toFixed(1)} FTE</span>
+          <div className="flex flex-col h-full">
+            {/* TOP: Title + FTE bars */}
+            <div>
+              <div className="flex items-center justify-between pb-2 border-b">
+                <h4 className="font-semibold text-sm">Current State</h4>
+                <span className="text-lg font-bold">{hiredFTE.total.toFixed(1)} FTE</span>
+              </div>
+              
+              <div className="space-y-2 mt-2">
+                <PercentageBar 
+                  actual={hiredFTE.ftPercent} 
+                  target={70} 
+                  label="Full-Time" 
+                  value={hiredFTE.ft}
+                />
+                <PercentageBar 
+                  actual={hiredFTE.ptPercent} 
+                  target={20} 
+                  label="Part-Time" 
+                  value={hiredFTE.pt}
+                />
+                <PercentageBar 
+                  actual={hiredFTE.prnPercent} 
+                  target={10} 
+                  label="PRN" 
+                  value={hiredFTE.prn}
+                />
+              </div>
             </div>
             
-            <div className="space-y-2">
-              <PercentageBar 
-                actual={hiredFTE.ftPercent} 
-                target={70} 
-                label="Full-Time" 
-                value={hiredFTE.ft}
-              />
-              <PercentageBar 
-                actual={hiredFTE.ptPercent} 
-                target={20} 
-                label="Part-Time" 
-                value={hiredFTE.pt}
-              />
-              <PercentageBar 
-                actual={hiredFTE.prnPercent} 
-                target={10} 
-                label="PRN" 
-                value={hiredFTE.prn}
-              />
-            </div>
-            
-            {/* AI Recommendation */}
-            <div className="bg-muted/60 rounded-md p-2 mt-2 space-y-1">
+            {/* BOTTOM: AI Recommendation - pinned with mt-auto */}
+            <div className="bg-muted/60 rounded-md p-2 mt-auto space-y-1">
               <p className="text-xs font-medium text-muted-foreground">AI Recommendation</p>
               <p className="text-xs leading-relaxed">{aiSummary}</p>
             </div>
