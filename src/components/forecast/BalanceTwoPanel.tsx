@@ -141,11 +141,11 @@ export function BalanceTwoPanel({
         </Card>
         
         {/* Recommended Panel - 70% with dual columns */}
-        <Card className="pt-4 px-4 pb-1.5 border-l-4 border-l-primary">
+        <Card className="pt-1.5 px-4 pb-1.5 border-l-4 border-l-primary">
           <div className="flex flex-col h-full">
             {/* Main content wrapper */}
             <div className="flex-1 space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b">
+              <div className="flex items-center justify-between pb-2 border-b">
                 <h4 className="font-semibold text-sm">Recommended</h4>
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground text-sm">{hiredFTE.total.toFixed(1)}</span>
