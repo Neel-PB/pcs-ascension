@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { ForecastBalanceRow } from "@/hooks/useForecastBalance";
 import { BalanceTwoPanel } from "./BalanceTwoPanel";
@@ -6,11 +5,11 @@ import { cn } from "@/lib/utils";
 
 interface ForecastBalanceRowProps {
   row: ForecastBalanceRow;
+  isExpanded: boolean;
+  onToggle: (rowId: string) => void;
 }
 
-export function ForecastBalanceTableRow({ row }: ForecastBalanceRowProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  
+export function ForecastBalanceTableRow({ row, isExpanded, onToggle }: ForecastBalanceRowProps) {
   // Both shortage and surplus are red
   const gapColor = row.gapType === 'shortage' || row.gapType === 'surplus'
     ? 'text-destructive' 
@@ -43,7 +42,7 @@ export function ForecastBalanceTableRow({ row }: ForecastBalanceRowProps) {
         style={{
           gridTemplateColumns: "40px minmax(80px, 1fr) minmax(140px, 1.5fr) minmax(140px, 1.5fr) minmax(80px, 1fr) 80px 100px 120px",
         }}
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={() => onToggle(row.id)}
       >
         <div className="flex justify-center">
           {isExpanded ? (
