@@ -1,6 +1,6 @@
 import { FTEBreakdown, RecommendedChanges, PositionChange, ClosureRecommendation } from "@/hooks/useForecastBalance";
 import { Card } from "@/components/ui/card";
-import { Check, ArrowRight, FileX, Users } from "lucide-react";
+import { Check, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BalanceTwoPanelProps {
@@ -69,7 +69,7 @@ function PositionChangeList({ changes, type }: { changes: PositionChange[]; type
   );
 }
 
-// New component for closure lists with source distinction
+// Closure list with inline source badge
 function ClosureChangeList({ 
   changes, 
   type, 
@@ -83,11 +83,18 @@ function ClosureChangeList({
   
   const totalChange = changes.reduce((sum, c) => sum + (c.fteValue * c.count), 0);
   const bgColor = source === 'reqs' ? 'bg-emerald-500/10' : 'bg-amber-500/10';
+  const badgeBg = source === 'reqs' ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400' : 'bg-amber-500/20 text-amber-700 dark:text-amber-400';
+  const badgeText = source === 'reqs' ? 'Open Reqs' : 'Employed';
   
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-foreground">{type}</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-medium text-foreground">{type}</span>
+          <span className={cn("text-[10px] px-1.5 py-0.5 rounded font-medium", badgeBg)}>
+            {badgeText}
+          </span>
+        </div>
         <span className="text-xs font-semibold text-foreground">
           -{totalChange.toFixed(1)} FTE
         </span>
@@ -117,13 +124,15 @@ export function BalanceTwoPanel({
   const prnClosure = recommendation.prnClosure ?? defaultClosure;
   
   // Check if there are any closures from each source
-  const hasReqClosures = ftClosure.totalFromReqs > 0 || ptClosure.totalFromReqs > 0 || prnClosure.totalFromReqs > 0;
-  const hasEmployedClosures = ftClosure.totalFromEmployed > 0 || ptClosure.totalFromEmployed > 0 || prnClosure.totalFromEmployed > 0;
-  const hasAnyClosures = hasReqClosures || hasEmployedClosures;
+  const hasAnyClosures = 
+    ftClosure.fromReqs.length > 0 || ftClosure.fromEmployed.length > 0 ||
+    ptClosure.fromReqs.length > 0 || ptClosure.fromEmployed.length > 0 ||
+    prnClosure.fromReqs.length > 0 || prnClosure.fromEmployed.length > 0;
 
-  const totalReqClosures = ftClosure.totalFromReqs + ptClosure.totalFromReqs + prnClosure.totalFromReqs;
-  const totalEmployedClosures = ftClosure.totalFromEmployed + ptClosure.totalFromEmployed + prnClosure.totalFromEmployed;
-  const totalClosures = totalReqClosures + totalEmployedClosures;
+  const totalClosures = 
+    ftClosure.totalFromReqs + ftClosure.totalFromEmployed +
+    ptClosure.totalFromReqs + ptClosure.totalFromEmployed +
+    prnClosure.totalFromReqs + prnClosure.totalFromEmployed;
 
   // Positions to Open (unchanged)
   const positionsToOpen = {
@@ -207,51 +216,25 @@ export function BalanceTwoPanel({
                   </div>
                   
                   {hasAnyClosures ? (
-                    <div className="space-y-3">
-                      {/* Open Requisitions to Cancel - Primary (Green) */}
-                      {hasReqClosures && (
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-1.5">
-                            <FileX className="h-3.5 w-3.5 text-emerald-600" />
-                            <span className="text-xs font-medium text-emerald-700">Open Requisitions to Cancel</span>
-                            <span className="text-xs text-emerald-600 ml-auto">-{totalReqClosures.toFixed(1)}</span>
-                          </div>
-                          <div className="pl-1 space-y-2">
-                            {ftClosure.fromReqs.length > 0 && (
-                              <ClosureChangeList changes={ftClosure.fromReqs} type="Full-Time" source="reqs" />
-                            )}
-                            {ptClosure.fromReqs.length > 0 && (
-                              <ClosureChangeList changes={ptClosure.fromReqs} type="Part-Time" source="reqs" />
-                            )}
-                            {prnClosure.fromReqs.length > 0 && (
-                              <ClosureChangeList changes={prnClosure.fromReqs} type="PRN" source="reqs" />
-                            )}
-                          </div>
-                        </div>
+                    <div className="space-y-2">
+                      {/* Flat list with inline source badges */}
+                      {ftClosure.fromReqs.length > 0 && (
+                        <ClosureChangeList changes={ftClosure.fromReqs} type="Full-Time" source="reqs" />
                       )}
-
-                      {/* Additional from Employed - Secondary (Amber) */}
-                      {hasEmployedClosures && (
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-1.5">
-                            <Users className="h-3.5 w-3.5 text-amber-600" />
-                            <span className="text-xs font-medium text-amber-700">
-                              {hasReqClosures ? 'Additional from Employed' : 'From Employed Positions'}
-                            </span>
-                            <span className="text-xs text-amber-600 ml-auto">-{totalEmployedClosures.toFixed(1)}</span>
-                          </div>
-                          <div className="pl-1 space-y-2">
-                            {ftClosure.fromEmployed.length > 0 && (
-                              <ClosureChangeList changes={ftClosure.fromEmployed} type="Full-Time" source="employed" />
-                            )}
-                            {ptClosure.fromEmployed.length > 0 && (
-                              <ClosureChangeList changes={ptClosure.fromEmployed} type="Part-Time" source="employed" />
-                            )}
-                            {prnClosure.fromEmployed.length > 0 && (
-                              <ClosureChangeList changes={prnClosure.fromEmployed} type="PRN" source="employed" />
-                            )}
-                          </div>
-                        </div>
+                      {ptClosure.fromReqs.length > 0 && (
+                        <ClosureChangeList changes={ptClosure.fromReqs} type="Part-Time" source="reqs" />
+                      )}
+                      {prnClosure.fromReqs.length > 0 && (
+                        <ClosureChangeList changes={prnClosure.fromReqs} type="PRN" source="reqs" />
+                      )}
+                      {ftClosure.fromEmployed.length > 0 && (
+                        <ClosureChangeList changes={ftClosure.fromEmployed} type="Full-Time" source="employed" />
+                      )}
+                      {ptClosure.fromEmployed.length > 0 && (
+                        <ClosureChangeList changes={ptClosure.fromEmployed} type="Part-Time" source="employed" />
+                      )}
+                      {prnClosure.fromEmployed.length > 0 && (
+                        <ClosureChangeList changes={prnClosure.fromEmployed} type="PRN" source="employed" />
                       )}
                     </div>
                   ) : (
