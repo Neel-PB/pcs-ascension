@@ -1,6 +1,6 @@
 import { FTEBreakdown, RecommendedChanges, PositionChange } from "@/hooks/useForecastBalance";
 import { Card } from "@/components/ui/card";
-import { Check, ArrowRight, Lightbulb } from "lucide-react";
+import { Check, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BalanceTwoPanelProps {
@@ -105,7 +105,7 @@ export function BalanceTwoPanel({
   return (
     <div className="space-y-4">
       {/* Two Panel Layout - 30/70 split */}
-      <div className="grid gap-4" style={{ gridTemplateColumns: '30% 70%' }}>
+      <div className="grid gap-4" style={{ gridTemplateColumns: '35% 65%' }}>
         {/* Current State Panel - 30% */}
         <Card className="p-4 border-l-4 border-l-muted-foreground/30">
           <div className="space-y-4">
@@ -136,18 +136,9 @@ export function BalanceTwoPanel({
             </div>
             
             {/* AI Recommendation */}
-            <div className="border-t pt-3 mt-3">
-              <div className="flex gap-2">
-                <div className="shrink-0">
-                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Lightbulb className="h-3.5 w-3.5 text-primary" />
-                  </div>
-                </div>
-                <div className="space-y-0.5">
-                  <p className="text-xs font-medium text-muted-foreground">AI Recommendation</p>
-                  <p className="text-xs leading-relaxed">{aiSummary}</p>
-                </div>
-              </div>
+            <div className="border-t pt-3 mt-3 space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">AI Recommendation</p>
+              <p className="text-xs leading-relaxed">{aiSummary}</p>
             </div>
           </div>
         </Card>
