@@ -185,7 +185,7 @@ export function BalanceTwoPanel({
             {/* BOTTOM: AI Summary - pinned with mt-auto */}
             <div className="border-t mt-auto">
               <div className="bg-muted/60 rounded-md mt-1.5 mb-1.5 space-y-1">
-                <p className="text-xs font-medium text-muted-foreground mt-1.5">AI Summary</p>
+                <p className="text-xs font-medium text-muted-foreground mt-1.5">Summary</p>
                 <p className="text-xs leading-relaxed mb-1.5">{aiSummary}</p>
               </div>
             </div>
