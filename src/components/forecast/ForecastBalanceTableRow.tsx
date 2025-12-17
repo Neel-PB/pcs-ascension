@@ -37,7 +37,7 @@ export function ForecastBalanceTableRow({ row }: ForecastBalanceRowProps) {
       <div
         className="grid items-center h-12 cursor-pointer hover:bg-muted/50 transition-colors"
         style={{
-          gridTemplateColumns: "40px 100px 160px 160px 100px 80px 100px 120px",
+          gridTemplateColumns: "40px minmax(80px, 1fr) minmax(140px, 1.5fr) minmax(140px, 1.5fr) minmax(80px, 1fr) 80px 100px 120px",
         }}
         onClick={() => setIsExpanded(!isExpanded)}
       >
