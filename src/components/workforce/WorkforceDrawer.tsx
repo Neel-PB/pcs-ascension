@@ -3,6 +3,7 @@ import { useWorkforceDrawerStore } from '@/stores/useWorkforceDrawerStore';
 import { useWorkforceResizable } from '@/hooks/useWorkforceResizable';
 import { Button } from '@/components/ui/button';
 import { WorkforceKPISection } from './WorkforceKPISection';
+import { Building2 } from 'lucide-react';
 
 const MIN_WIDTH = 490;
 const MAX_WIDTH_VW = 0.7;
@@ -84,18 +85,31 @@ export const WorkforceDrawer = ({
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto px-4 lg:px-6 py-4 flex flex-col min-h-0">
-          {/* KPI Section */}
-          <WorkforceKPISection
-            activeTab={activeTab}
-            selectedDepartment={selectedDepartment}
-            volumeType={volumeType}
-            volumeValue={volumeValue}
-          />
-          
-          {/* Future content area below KPIs */}
-          <div className="mt-4">
-            {/* Content to be discussed next */}
-          </div>
+          {!selectedDepartment ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
+              <div className="rounded-full bg-muted p-4 mb-4">
+                <Building2 className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-medium text-foreground mb-2">
+                Select a Department
+              </h3>
+              <p className="text-sm text-muted-foreground max-w-[280px]">
+                Choose a department from the filters to view the positions checklist and KPIs.
+              </p>
+            </div>
+          ) : (
+            <>
+              <WorkforceKPISection
+                activeTab={activeTab}
+                selectedDepartment={selectedDepartment}
+                volumeType={volumeType}
+                volumeValue={volumeValue}
+              />
+              <div className="mt-4">
+                {/* Future content area */}
+              </div>
+            </>
+          )}
         </div>
 
         {/* Footer with Close Button */}
