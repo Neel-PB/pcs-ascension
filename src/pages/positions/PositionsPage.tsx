@@ -58,7 +58,10 @@ export default function PositionsPage() {
   return (
     <>
       <WorkforceDrawerTrigger />
-      <WorkforceDrawer activeTab={activeTab} />
+      <WorkforceDrawer 
+        activeTab={activeTab} 
+        selectedDepartment={selectedDepartment === "all-departments" ? null : selectedDepartment}
+      />
       
       <div className="flex flex-col h-full space-y-6">
         <div className="flex-shrink-0 py-2">
