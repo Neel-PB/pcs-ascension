@@ -10,9 +10,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 
 interface CompactPositionBreakdownRowProps {
   position: ForecastPositionToOpenWithChildren;
+  readOnly?: boolean;
 }
 
-export function CompactPositionBreakdownRow({ position }: CompactPositionBreakdownRowProps) {
+export function CompactPositionBreakdownRow({ position, readOnly = false }: CompactPositionBreakdownRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const addChild = useAddChildPosition();
   const updateFte = useUpdateChildFte();
@@ -121,45 +122,55 @@ export function CompactPositionBreakdownRow({ position }: CompactPositionBreakdo
                 <div className="flex-1 text-xs truncate text-muted-foreground">
                   {child.facility_name} • {child.department_name}
                 </div>
-                <Select
-                  value={child.fte.toString()}
-                  onValueChange={(val) => handleUpdateFte(child.id, parseFloat(val))}
-                  disabled={updateFte.isPending}
-                >
-                  <SelectTrigger className="w-16 h-7 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {VALID_FTE_VALUES.map((val) => (
-                      <SelectItem key={val} value={val.toString()}>
-                        {val.toFixed(2)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-7 w-7"
-                  onClick={(e) => handleDeleteChild(child.id, e)}
-                  disabled={deleteChild.isPending}
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </Button>
+                {readOnly ? (
+                  <span className="text-xs font-medium tabular-nums">
+                    {child.fte.toFixed(2)}
+                  </span>
+                ) : (
+                  <>
+                    <Select
+                      value={child.fte.toString()}
+                      onValueChange={(val) => handleUpdateFte(child.id, parseFloat(val))}
+                      disabled={updateFte.isPending}
+                    >
+                      <SelectTrigger className="w-16 h-7 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {VALID_FTE_VALUES.map((val) => (
+                          <SelectItem key={val} value={val.toString()}>
+                            {val.toFixed(2)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7"
+                      onClick={(e) => handleDeleteChild(child.id, e)}
+                      disabled={deleteChild.isPending}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </>
+                )}
               </div>
             ))}
 
             {/* Add Position Button */}
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleAddPosition}
-              disabled={addChild.isPending}
-              className="w-full h-7 text-xs"
-            >
-              <Plus className="w-3.5 h-3.5 mr-1" />
-              Add Position
-            </Button>
+            {!readOnly && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleAddPosition}
+                disabled={addChild.isPending}
+                className="w-full h-7 text-xs"
+              >
+                <Plus className="w-3.5 h-3.5 mr-1" />
+                Add Position
+              </Button>
+            )}
 
             {/* Running Total */}
             {position.children.length > 0 && (
