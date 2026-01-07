@@ -38,11 +38,11 @@ export function ForecastChecklistTable({ type, departmentId }: ForecastChecklist
           <div className="overflow-y-auto max-h-full">
             {type === 'shortage' ? (
               groupedOpenings.map((group) => (
-                <ForecastChecklistOpeningGroup key={group.skillType} group={group} />
+                <ForecastChecklistOpeningGroup key={group.facilityName} group={group} />
               ))
             ) : (
               groupedClosures.map((group) => (
-                <ForecastChecklistClosureGroup key={group.groupKey} group={group} />
+                <ForecastChecklistClosureGroup key={group.facilityName} group={group} />
               ))
             )}
           </div>
