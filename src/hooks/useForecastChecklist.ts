@@ -24,10 +24,25 @@ export interface ChecklistPositionToClose {
   source: 'open-reqs' | 'employed';
 }
 
-function getEmploymentTypeLabel(fteValue: number): 'Full-Time' | 'Part-Time' | 'PRN' {
-  if (fteValue >= 0.75) return 'Full-Time';
-  if (fteValue >= 0.3) return 'Part-Time';
-  return 'PRN';
+export interface OpeningSkillGroup {
+  skillType: string;
+  totalFTE: number;
+  totalCount: number;
+  byEmploymentType: {
+    'Full-Time': ChecklistPositionToOpen[];
+    'Part-Time': ChecklistPositionToOpen[];
+    'PRN': ChecklistPositionToOpen[];
+  };
+}
+
+export interface ClosureSkillGroup {
+  skillType: string;
+  totalFTE: number;
+  totalCount: number;
+  bySource: {
+    'open-reqs': ChecklistPositionToClose[];
+    'employed': ChecklistPositionToClose[];
+  };
 }
 
 function extractOpenings(
@@ -93,12 +108,70 @@ function extractClosures(
   return items;
 }
 
+function groupOpeningsBySkillType(openings: ChecklistPositionToOpen[]): OpeningSkillGroup[] {
+  const skillTypeMap = new Map<string, OpeningSkillGroup>();
+
+  for (const item of openings) {
+    if (!skillTypeMap.has(item.skillType)) {
+      skillTypeMap.set(item.skillType, {
+        skillType: item.skillType,
+        totalFTE: 0,
+        totalCount: 0,
+        byEmploymentType: {
+          'Full-Time': [],
+          'Part-Time': [],
+          'PRN': [],
+        },
+      });
+    }
+
+    const group = skillTypeMap.get(item.skillType)!;
+    group.byEmploymentType[item.employmentType].push(item);
+    group.totalFTE += item.fte * item.count;
+    group.totalCount += item.count;
+  }
+
+  return Array.from(skillTypeMap.values());
+}
+
+function groupClosuresBySkillType(closures: ChecklistPositionToClose[]): ClosureSkillGroup[] {
+  const skillTypeMap = new Map<string, ClosureSkillGroup>();
+
+  for (const item of closures) {
+    if (!skillTypeMap.has(item.skillType)) {
+      skillTypeMap.set(item.skillType, {
+        skillType: item.skillType,
+        totalFTE: 0,
+        totalCount: 0,
+        bySource: {
+          'open-reqs': [],
+          'employed': [],
+        },
+      });
+    }
+
+    const group = skillTypeMap.get(item.skillType)!;
+    group.bySource[item.source].push(item);
+    group.totalFTE += item.fte * item.count;
+    group.totalCount += item.count;
+  }
+
+  return Array.from(skillTypeMap.values());
+}
+
 export function useForecastChecklist() {
   const { data: forecastData, isLoading, error } = useForecastBalance();
 
-  const { openings, closures, totalOpeningsFTE, totalClosuresFTE } = useMemo(() => {
+  const { openings, closures, groupedOpenings, groupedClosures, totalOpeningsFTE, totalClosuresFTE } = useMemo(() => {
     if (!forecastData?.rows) {
-      return { openings: [], closures: [], totalOpeningsFTE: 0, totalClosuresFTE: 0 };
+      return { 
+        openings: [], 
+        closures: [], 
+        groupedOpenings: [],
+        groupedClosures: [],
+        totalOpeningsFTE: 0, 
+        totalClosuresFTE: 0 
+      };
     }
 
     const allOpenings: ChecklistPositionToOpen[] = [];
@@ -126,6 +199,8 @@ export function useForecastChecklist() {
     return {
       openings: allOpenings,
       closures: allClosures,
+      groupedOpenings: groupOpeningsBySkillType(allOpenings),
+      groupedClosures: groupClosuresBySkillType(allClosures),
       totalOpeningsFTE,
       totalClosuresFTE,
     };
@@ -134,6 +209,8 @@ export function useForecastChecklist() {
   return {
     openings,
     closures,
+    groupedOpenings,
+    groupedClosures,
     totalOpeningsFTE,
     totalClosuresFTE,
     isLoading,

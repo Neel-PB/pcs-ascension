@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronRight, ChevronDown, Minus } from 'lucide-react';
+import { ChevronRight, ChevronDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChecklistPositionToClose } from '@/hooks/useForecastChecklist';
@@ -52,7 +52,6 @@ export function ForecastChecklistClosureRow({ item }: ForecastChecklistClosureRo
           ) : (
             <ChevronRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
           )}
-          <Minus className="h-3 w-3 text-red-500 flex-shrink-0" />
           <span className="text-xs font-medium truncate">{item.skillType}</span>
           <Badge variant={getEmploymentBadgeVariant()} className="text-[10px] px-1.5 py-0 h-4">
             {item.employmentType}
