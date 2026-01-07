@@ -50,7 +50,7 @@ export function WorkforceForecastTable({ type }: WorkforceForecastTableProps) {
           <div className="overflow-y-auto max-h-full">
             {type === 'shortage' ? (
               shortageData?.map((position) => (
-                <CompactPositionBreakdownRow key={position.id} position={position} />
+                <CompactPositionBreakdownRow key={position.id} position={position} readOnly />
               ))
             ) : (
               surplusData?.map((position) => (
