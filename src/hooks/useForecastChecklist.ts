@@ -161,8 +161,8 @@ function groupClosuresByCombinedKey(closures: ChecklistPositionToClose[]): Closu
   return Array.from(groupMap.values());
 }
 
-export function useForecastChecklist() {
-  const { data: forecastData, isLoading, error } = useForecastBalance();
+export function useForecastChecklist(departmentId?: string | null) {
+  const { data: forecastData, isLoading, error } = useForecastBalance({ departmentId });
 
   const { openings, closures, groupedOpenings, groupedClosures, totalOpeningsFTE, totalClosuresFTE } = useMemo(() => {
     if (!forecastData?.rows) {

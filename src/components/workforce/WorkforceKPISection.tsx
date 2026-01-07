@@ -156,14 +156,14 @@ export const WorkforceKPISection = ({
 
       {/* Forecast Table with Title */}
       {forecastTableType && forecastTableType !== 'both' && (
-        <ForecastTableWithTitle type={forecastTableType} />
+        <ForecastTableWithTitle type={forecastTableType} departmentId={selectedDepartment} />
       )}
       
       {/* Both tables for Staffing module */}
       {forecastTableType === 'both' && (
         <>
-          <ForecastTableWithTitle type="shortage" />
-          <ForecastTableWithTitle type="surplus" />
+          <ForecastTableWithTitle type="shortage" departmentId={selectedDepartment} />
+          <ForecastTableWithTitle type="surplus" departmentId={selectedDepartment} />
         </>
       )}
     </div>
@@ -171,8 +171,8 @@ export const WorkforceKPISection = ({
 };
 
 // Sub-component to handle forecast table with title
-function ForecastTableWithTitle({ type }: { type: 'shortage' | 'surplus' }) {
-  const { openings, closures } = useForecastChecklist();
+function ForecastTableWithTitle({ type, departmentId }: { type: 'shortage' | 'surplus'; departmentId?: string | null }) {
+  const { openings, closures } = useForecastChecklist(departmentId);
   
   const count = type === 'shortage' ? openings.length : closures.length;
   const title = type === 'shortage' ? 'FTE Shortage' : 'FTE Surplus';
@@ -185,7 +185,7 @@ function ForecastTableWithTitle({ type }: { type: 'shortage' | 'surplus' }) {
           {title} <span className="text-muted-foreground">({count})</span>
         </h3>
         <div className="flex-1 min-h-0 overflow-y-auto">
-          <ForecastChecklistTable type={type} />
+          <ForecastChecklistTable type={type} departmentId={departmentId} />
         </div>
       </div>
     </div>

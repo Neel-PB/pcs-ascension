@@ -4,12 +4,13 @@ import { useForecastChecklist } from '@/hooks/useForecastChecklist';
 import { ForecastChecklistOpeningGroup } from './ForecastChecklistOpeningGroup';
 import { ForecastChecklistClosureGroup } from './ForecastChecklistClosureGroup';
 
-interface ForecastChecklistTableProps {
+export interface ForecastChecklistTableProps {
   type: 'shortage' | 'surplus';
+  departmentId?: string | null;
 }
 
-export function ForecastChecklistTable({ type }: ForecastChecklistTableProps) {
-  const { groupedOpenings, groupedClosures, isLoading } = useForecastChecklist();
+export function ForecastChecklistTable({ type, departmentId }: ForecastChecklistTableProps) {
+  const { groupedOpenings, groupedClosures, isLoading } = useForecastChecklist(departmentId);
 
   const groups = type === 'shortage' ? groupedOpenings : groupedClosures;
   const count = groups.length;
