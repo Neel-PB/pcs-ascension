@@ -1,18 +1,18 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useForecastChecklist } from '@/hooks/useForecastChecklist';
-import { ForecastChecklistOpeningRow } from './ForecastChecklistOpeningRow';
-import { ForecastChecklistClosureRow } from './ForecastChecklistClosureRow';
+import { ForecastChecklistOpeningGroup } from './ForecastChecklistOpeningGroup';
+import { ForecastChecklistClosureGroup } from './ForecastChecklistClosureGroup';
 
 interface ForecastChecklistTableProps {
   type: 'shortage' | 'surplus';
 }
 
 export function ForecastChecklistTable({ type }: ForecastChecklistTableProps) {
-  const { openings, closures, isLoading } = useForecastChecklist();
+  const { groupedOpenings, groupedClosures, isLoading } = useForecastChecklist();
 
-  const items = type === 'shortage' ? openings : closures;
-  const count = items.length;
+  const groups = type === 'shortage' ? groupedOpenings : groupedClosures;
+  const count = groups.length;
 
   if (isLoading) {
     return (
@@ -36,12 +36,12 @@ export function ForecastChecklistTable({ type }: ForecastChecklistTableProps) {
         ) : (
           <div className="overflow-y-auto max-h-full">
             {type === 'shortage' ? (
-              openings.map((item) => (
-                <ForecastChecklistOpeningRow key={item.id} item={item} />
+              groupedOpenings.map((group) => (
+                <ForecastChecklistOpeningGroup key={group.skillType} group={group} />
               ))
             ) : (
-              closures.map((item) => (
-                <ForecastChecklistClosureRow key={item.id} item={item} />
+              groupedClosures.map((group) => (
+                <ForecastChecklistClosureGroup key={group.skillType} group={group} />
               ))
             )}
           </div>
