@@ -24,6 +24,36 @@ export interface ChecklistPositionToClose {
   source: 'open-reqs' | 'employed';
 }
 
+// New hierarchy: Facility → Skill Type → Details
+export interface OpeningSkillSubGroup {
+  skillType: string;
+  totalFTE: number;
+  totalCount: number;
+  items: ChecklistPositionToOpen[];
+}
+
+export interface OpeningFacilityGroup {
+  facilityName: string;
+  totalFTE: number;
+  totalCount: number;
+  skillGroups: OpeningSkillSubGroup[];
+}
+
+export interface ClosureSkillSubGroup {
+  skillType: string;
+  totalFTE: number;
+  totalCount: number;
+  items: ChecklistPositionToClose[];
+}
+
+export interface ClosureFacilityGroup {
+  facilityName: string;
+  totalFTE: number;
+  totalCount: number;
+  skillGroups: ClosureSkillSubGroup[];
+}
+
+// Legacy interfaces for backward compatibility (can be removed later)
 export interface OpeningSkillGroup {
   skillType: string;
   totalFTE: number;
@@ -108,63 +138,88 @@ function extractClosures(
   return items;
 }
 
-function groupOpeningsBySkillType(openings: ChecklistPositionToOpen[]): OpeningSkillGroup[] {
-  const skillTypeMap = new Map<string, OpeningSkillGroup>();
+// New grouping: Facility → Skill Type for Openings
+function groupOpeningsByFacility(openings: ChecklistPositionToOpen[]): OpeningFacilityGroup[] {
+  const facilityMap = new Map<string, OpeningFacilityGroup>();
 
   for (const item of openings) {
-    if (!skillTypeMap.has(item.skillType)) {
-      skillTypeMap.set(item.skillType, {
-        skillType: item.skillType,
+    if (!facilityMap.has(item.facilityName)) {
+      facilityMap.set(item.facilityName, {
+        facilityName: item.facilityName,
         totalFTE: 0,
         totalCount: 0,
-        byEmploymentType: {
-          'Full-Time': [],
-          'Part-Time': [],
-          'PRN': [],
-        },
+        skillGroups: [],
       });
     }
 
-    const group = skillTypeMap.get(item.skillType)!;
-    group.byEmploymentType[item.employmentType].push(item);
-    group.totalFTE += item.fte * item.count;
-    group.totalCount += item.count;
-  }
-
-  return Array.from(skillTypeMap.values());
-}
-
-function groupClosuresByCombinedKey(closures: ChecklistPositionToClose[]): ClosureCombinedGroup[] {
-  const groupMap = new Map<string, ClosureCombinedGroup>();
-
-  for (const item of closures) {
-    const groupKey = `${item.skillType}-${item.employmentType}-${item.source}`;
+    const facilityGroup = facilityMap.get(item.facilityName)!;
     
-    if (!groupMap.has(groupKey)) {
-      groupMap.set(groupKey, {
-        groupKey,
+    // Find or create skill subgroup
+    let skillSubGroup = facilityGroup.skillGroups.find(sg => sg.skillType === item.skillType);
+    if (!skillSubGroup) {
+      skillSubGroup = {
         skillType: item.skillType,
-        employmentType: item.employmentType,
-        source: item.source,
         totalFTE: 0,
         totalCount: 0,
         items: [],
+      };
+      facilityGroup.skillGroups.push(skillSubGroup);
+    }
+
+    skillSubGroup.items.push(item);
+    skillSubGroup.totalFTE += item.fte * item.count;
+    skillSubGroup.totalCount += item.count;
+    
+    facilityGroup.totalFTE += item.fte * item.count;
+    facilityGroup.totalCount += item.count;
+  }
+
+  return Array.from(facilityMap.values());
+}
+
+// New grouping: Facility → Skill Type for Closures
+function groupClosuresByFacility(closures: ChecklistPositionToClose[]): ClosureFacilityGroup[] {
+  const facilityMap = new Map<string, ClosureFacilityGroup>();
+
+  for (const item of closures) {
+    if (!facilityMap.has(item.facilityName)) {
+      facilityMap.set(item.facilityName, {
+        facilityName: item.facilityName,
+        totalFTE: 0,
+        totalCount: 0,
+        skillGroups: [],
       });
     }
 
-    const group = groupMap.get(groupKey)!;
-    group.items.push(item);
-    group.totalFTE += item.fte * item.count;
-    group.totalCount += item.count;
+    const facilityGroup = facilityMap.get(item.facilityName)!;
+    
+    // Find or create skill subgroup
+    let skillSubGroup = facilityGroup.skillGroups.find(sg => sg.skillType === item.skillType);
+    if (!skillSubGroup) {
+      skillSubGroup = {
+        skillType: item.skillType,
+        totalFTE: 0,
+        totalCount: 0,
+        items: [],
+      };
+      facilityGroup.skillGroups.push(skillSubGroup);
+    }
+
+    skillSubGroup.items.push(item);
+    skillSubGroup.totalFTE += item.fte * item.count;
+    skillSubGroup.totalCount += item.count;
+    
+    facilityGroup.totalFTE += item.fte * item.count;
+    facilityGroup.totalCount += item.count;
   }
 
-  return Array.from(groupMap.values());
+  return Array.from(facilityMap.values());
 }
 
 export function useForecastChecklist(departmentId?: string | null) {
   const { data: forecastData, isLoading, error } = useForecastBalance({ departmentId });
 
-  const { openings, closures, groupedOpenings, groupedClosures, totalOpeningsFTE, totalClosuresFTE } = useMemo(() => {
+  const result = useMemo(() => {
     if (!forecastData?.rows) {
       return { 
         openings: [], 
@@ -201,20 +256,15 @@ export function useForecastChecklist(departmentId?: string | null) {
     return {
       openings: allOpenings,
       closures: allClosures,
-      groupedOpenings: groupOpeningsBySkillType(allOpenings),
-      groupedClosures: groupClosuresByCombinedKey(allClosures),
+      groupedOpenings: groupOpeningsByFacility(allOpenings),
+      groupedClosures: groupClosuresByFacility(allClosures),
       totalOpeningsFTE,
       totalClosuresFTE,
     };
   }, [forecastData]);
 
   return {
-    openings,
-    closures,
-    groupedOpenings,
-    groupedClosures,
-    totalOpeningsFTE,
-    totalClosuresFTE,
+    ...result,
     isLoading,
     error,
     shortageCount: forecastData?.shortageCount ?? 0,

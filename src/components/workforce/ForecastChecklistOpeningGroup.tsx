@@ -2,24 +2,19 @@ import { useState } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
-import { OpeningSkillGroup, ChecklistPositionToOpen } from '@/hooks/useForecastChecklist';
+import { OpeningFacilityGroup, OpeningSkillSubGroup } from '@/hooks/useForecastChecklist';
 import { ForecastChecklistOpeningRow } from './ForecastChecklistOpeningRow';
 
 interface ForecastChecklistOpeningGroupProps {
-  group: OpeningSkillGroup;
+  group: OpeningFacilityGroup;
 }
 
-interface EmploymentTypeSubGroupProps {
-  employmentType: 'Full-Time' | 'Part-Time' | 'PRN';
-  items: ChecklistPositionToOpen[];
+interface SkillTypeSubGroupProps {
+  skillGroup: OpeningSkillSubGroup;
 }
 
-function EmploymentTypeSubGroup({ employmentType, items }: EmploymentTypeSubGroupProps) {
+function SkillTypeSubGroup({ skillGroup }: SkillTypeSubGroupProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const totalFTE = items.reduce((sum, item) => sum + item.fte * item.count, 0);
-  const totalCount = items.reduce((sum, item) => sum + item.count, 0);
-
-  if (items.length === 0) return null;
 
   return (
     <div className="border-b border-border/50 last:border-b-0">
@@ -33,13 +28,13 @@ function EmploymentTypeSubGroup({ employmentType, items }: EmploymentTypeSubGrou
           ) : (
             <ChevronRight className="h-3 w-3 text-muted-foreground" />
           )}
-          <span className="text-xs font-medium text-muted-foreground">{employmentType}</span>
+          <span className="text-xs font-medium">{skillGroup.skillType}</span>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-            {totalCount}
+            {skillGroup.totalCount}
           </Badge>
-          <span className="text-xs font-medium tabular-nums text-emerald-600">{totalFTE.toFixed(1)} FTE</span>
+          <span className="text-xs font-medium tabular-nums text-emerald-600">{skillGroup.totalFTE.toFixed(1)} FTE</span>
         </div>
       </button>
 
@@ -52,8 +47,8 @@ function EmploymentTypeSubGroup({ employmentType, items }: EmploymentTypeSubGrou
             transition={{ duration: 0.15 }}
             className="overflow-hidden"
           >
-            <div className="pl-4">
-              {items.map((item) => (
+            <div className="pl-6">
+              {skillGroup.items.map((item) => (
                 <ForecastChecklistOpeningRow key={item.id} item={item} />
               ))}
             </div>
@@ -79,7 +74,7 @@ export function ForecastChecklistOpeningGroup({ group }: ForecastChecklistOpenin
           ) : (
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           )}
-          <span className="font-medium text-sm">{group.skillType}</span>
+          <span className="font-medium text-sm">{group.facilityName}</span>
         </div>
         <div className="flex items-center gap-3">
           <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
@@ -98,9 +93,9 @@ export function ForecastChecklistOpeningGroup({ group }: ForecastChecklistOpenin
             transition={{ duration: 0.2 }}
             className="overflow-hidden bg-muted/20"
           >
-            <EmploymentTypeSubGroup employmentType="Full-Time" items={group.byEmploymentType['Full-Time']} />
-            <EmploymentTypeSubGroup employmentType="Part-Time" items={group.byEmploymentType['Part-Time']} />
-            <EmploymentTypeSubGroup employmentType="PRN" items={group.byEmploymentType['PRN']} />
+            {group.skillGroups.map((skillGroup) => (
+              <SkillTypeSubGroup key={skillGroup.skillType} skillGroup={skillGroup} />
+            ))}
           </motion.div>
         )}
       </AnimatePresence>
