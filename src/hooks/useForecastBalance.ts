@@ -331,24 +331,40 @@ function categorizeEmploymentType(employmentType: string | null, employmentFlag:
   return null;
 }
 
-export function useForecastBalance() {
+export interface ForecastBalanceFilters {
+  departmentId?: string | null;
+}
+
+export function useForecastBalance(filters?: ForecastBalanceFilters) {
+  const departmentId = filters?.departmentId;
+  
   return useQuery({
-    queryKey: ['forecast-balance'],
+    queryKey: ['forecast-balance', { departmentId }],
     queryFn: async (): Promise<ForecastBalanceSummary> => {
-      // Fetch all filled positions (employees)
-      const { data: employedPositions, error: empError } = await supabase
+      // Build query for filled positions (employees)
+      let employedQuery = supabase
         .from('positions')
         .select('*')
         .not('employeeName', 'is', null);
       
+      if (departmentId) {
+        employedQuery = employedQuery.eq('departmentId', departmentId);
+      }
+      
+      const { data: employedPositions, error: empError } = await employedQuery;
       if (empError) throw empError;
 
-      // Fetch all open requisitions (unfilled positions)
-      const { data: openReqs, error: reqError } = await supabase
+      // Build query for open requisitions (unfilled positions)
+      let openReqsQuery = supabase
         .from('positions')
         .select('*')
         .is('employeeName', null);
       
+      if (departmentId) {
+        openReqsQuery = openReqsQuery.eq('departmentId', departmentId);
+      }
+      
+      const { data: openReqs, error: reqError } = await openReqsQuery;
       if (reqError) throw reqError;
       
       // Group employed positions by market/facility/department/skillType/shift
