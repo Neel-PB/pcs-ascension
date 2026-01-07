@@ -9,6 +9,8 @@ import { DraggableSectionsContainer } from "@/components/staffing/DraggableSecti
 import { useKPIOrderStore } from "@/stores/useKPIOrderStore";
 import { generateLast12MonthLabels } from "@/lib/utils";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
+import { WorkforceDrawer } from "@/components/workforce/WorkforceDrawer";
+import { WorkforceDrawerTrigger } from "@/components/workforce/WorkforceDrawerTrigger";
 
 export default function StaffingSummary() {
   const [activeTab, setActiveTab] = useState("summary");
@@ -431,9 +433,16 @@ This metric helps:
   }, [productivityOrder]);
 
   return (
-    <div className="space-y-6">
-      {/* Filters */}
-      <div className="py-2">
+    <>
+      <WorkforceDrawerTrigger />
+      <WorkforceDrawer 
+        activeTab={activeTab} 
+        selectedDepartment={selectedDepartment === "all-departments" ? null : selectedDepartment}
+      />
+      
+      <div className="space-y-6">
+        {/* Filters */}
+        <div className="py-2">
         <FilterBar 
           onRegionChange={handleRegionChange}
           onMarketChange={handleMarketChange}
@@ -555,6 +564,7 @@ This metric helps:
           )}
         </motion.div>
       </AnimatePresence>
-    </div>
+      </div>
+    </>
   );
 }
