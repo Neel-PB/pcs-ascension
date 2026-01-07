@@ -173,7 +173,7 @@ export function CompactPositionBreakdownRow({ position, readOnly = false }: Comp
             )}
 
             {/* Running Total */}
-            {position.children.length > 0 && (
+            {!readOnly && position.children.length > 0 && (
               <div className={cn(
                 "text-xs pt-2 border-t border-border",
                 validation.isValid && "text-green-600",
