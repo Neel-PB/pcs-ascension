@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { WorkforceKPICard } from './WorkforceKPICard';
-import { WorkforceForecastTable } from './WorkforceForecastTable';
+import { ForecastChecklistTable } from './ForecastChecklistTable';
 import { Separator } from '@/components/ui/separator';
 import { 
   getFTEKPIs, 
@@ -8,10 +8,7 @@ import {
   getVolumeKPIForWorkforce,
   KPIConfig 
 } from '@/config/kpiConfigs';
-import { 
-  useForecastPositionsToOpenWithChildren,
-  useForecastPositionsToClose,
-} from '@/hooks/useForecastPositions';
+import { useForecastChecklist } from '@/hooks/useForecastChecklist';
 
 interface WorkforceKPISectionProps {
   activeTab?: string;
@@ -93,13 +90,20 @@ export const WorkforceKPISection = ({
   const tabSpecificKPIs = getTabSpecificKPIs();
 
   // Determine which forecast table to show
-  const getForecastTableType = (): 'shortage' | 'surplus' | null => {
+  const getForecastTableType = (): 'shortage' | 'surplus' | 'both' | null => {
     switch (activeTab) {
+      // Positions module tabs
       case 'employees':
       case 'contractors':
         return 'shortage';
       case 'requisitions':
         return 'surplus';
+      // Staffing module tabs - show both
+      case 'summary':
+      case 'planning':
+      case 'variance':
+      case 'forecasts':
+        return 'both';
       default:
         return null;
     }
@@ -151,8 +155,16 @@ export const WorkforceKPISection = ({
       )}
 
       {/* Forecast Table with Title */}
-      {forecastTableType && (
+      {forecastTableType && forecastTableType !== 'both' && (
         <ForecastTableWithTitle type={forecastTableType} />
+      )}
+      
+      {/* Both tables for Staffing module */}
+      {forecastTableType === 'both' && (
+        <>
+          <ForecastTableWithTitle type="shortage" />
+          <ForecastTableWithTitle type="surplus" />
+        </>
       )}
     </div>
   );
@@ -160,10 +172,9 @@ export const WorkforceKPISection = ({
 
 // Sub-component to handle forecast table with title
 function ForecastTableWithTitle({ type }: { type: 'shortage' | 'surplus' }) {
-  const { data: shortageData } = useForecastPositionsToOpenWithChildren();
-  const { data: surplusData } = useForecastPositionsToClose();
+  const { openings, closures } = useForecastChecklist();
   
-  const count = type === 'shortage' ? (shortageData?.length || 0) : (surplusData?.length || 0);
+  const count = type === 'shortage' ? openings.length : closures.length;
   const title = type === 'shortage' ? 'FTE Shortage' : 'FTE Surplus';
 
   return (
@@ -174,7 +185,7 @@ function ForecastTableWithTitle({ type }: { type: 'shortage' | 'surplus' }) {
           {title} <span className="text-muted-foreground">({count})</span>
         </h3>
         <div className="flex-1 min-h-0 overflow-y-auto">
-          <WorkforceForecastTable type={type} />
+          <ForecastChecklistTable type={type} />
         </div>
       </div>
     </div>
