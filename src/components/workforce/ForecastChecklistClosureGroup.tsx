@@ -2,53 +2,20 @@ import { useState } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
-import { ClosureSkillGroup, ChecklistPositionToClose } from '@/hooks/useForecastChecklist';
+import { ClosureSkillGroup } from '@/hooks/useForecastChecklist';
+import { ForecastChecklistClosureRow } from './ForecastChecklistClosureRow';
 
 interface ForecastChecklistClosureGroupProps {
   group: ClosureSkillGroup;
 }
 
-function PositionItem({ item }: { item: ChecklistPositionToClose }) {
-  return (
-    <div className="flex items-center justify-between py-1.5 px-3 text-xs">
-      <span className="text-muted-foreground">
-        {item.employmentType} • {item.facilityName} • {item.departmentName} • {item.shift}
-      </span>
-      <span className="font-medium tabular-nums">{item.fte.toFixed(1)} FTE</span>
-    </div>
-  );
-}
-
-function SourceSection({ 
-  source, 
-  items 
-}: { 
-  source: 'open-reqs' | 'employed'; 
-  items: ChecklistPositionToClose[];
-}) {
-  if (items.length === 0) return null;
-
-  const isOpenReqs = source === 'open-reqs';
-  const label = isOpenReqs ? 'Open Reqs' : 'Employed';
-  const bgClass = isOpenReqs ? 'bg-emerald-500/10' : 'bg-amber-500/10';
-  const textClass = isOpenReqs ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400';
-
-  return (
-    <div className="border-t border-border/50">
-      <div className={`px-3 py-1.5 ${bgClass}`}>
-        <span className={`text-[10px] font-medium uppercase tracking-wide ${textClass}`}>
-          {label}
-        </span>
-      </div>
-      {items.map((item) => (
-        <PositionItem key={item.id} item={item} />
-      ))}
-    </div>
-  );
-}
-
 export function ForecastChecklistClosureGroup({ group }: ForecastChecklistClosureGroupProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+
+  const allItems = [
+    ...group.bySource['open-reqs'],
+    ...group.bySource['employed'],
+  ];
 
   return (
     <div className="border-b border-border last:border-b-0">
@@ -68,7 +35,7 @@ export function ForecastChecklistClosureGroup({ group }: ForecastChecklistClosur
           <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
             {group.totalCount} {group.totalCount === 1 ? 'position' : 'positions'}
           </Badge>
-          <span className="text-sm font-medium tabular-nums">{group.totalFTE.toFixed(1)} FTE</span>
+          <span className="text-sm font-medium tabular-nums text-red-600">{group.totalFTE.toFixed(1)} FTE</span>
         </div>
       </button>
 
@@ -81,8 +48,11 @@ export function ForecastChecklistClosureGroup({ group }: ForecastChecklistClosur
             transition={{ duration: 0.2 }}
             className="overflow-hidden bg-muted/20"
           >
-            <SourceSection source="open-reqs" items={group.bySource['open-reqs']} />
-            <SourceSection source="employed" items={group.bySource['employed']} />
+            <div className="pl-4">
+              {allItems.map((item) => (
+                <ForecastChecklistClosureRow key={item.id} item={item} />
+              ))}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
