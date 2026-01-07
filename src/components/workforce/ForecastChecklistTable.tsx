@@ -41,7 +41,7 @@ export function ForecastChecklistTable({ type }: ForecastChecklistTableProps) {
               ))
             ) : (
               groupedClosures.map((group) => (
-                <ForecastChecklistClosureGroup key={group.skillType} group={group} />
+                <ForecastChecklistClosureGroup key={group.groupKey} group={group} />
               ))
             )}
           </div>

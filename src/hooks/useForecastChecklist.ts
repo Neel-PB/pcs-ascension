@@ -35,14 +35,14 @@ export interface OpeningSkillGroup {
   };
 }
 
-export interface ClosureSkillGroup {
+export interface ClosureCombinedGroup {
+  groupKey: string;
   skillType: string;
+  employmentType: 'Full-Time' | 'Part-Time' | 'PRN';
+  source: 'open-reqs' | 'employed';
   totalFTE: number;
   totalCount: number;
-  bySource: {
-    'open-reqs': ChecklistPositionToClose[];
-    'employed': ChecklistPositionToClose[];
-  };
+  items: ChecklistPositionToClose[];
 }
 
 function extractOpenings(
@@ -134,29 +134,31 @@ function groupOpeningsBySkillType(openings: ChecklistPositionToOpen[]): OpeningS
   return Array.from(skillTypeMap.values());
 }
 
-function groupClosuresBySkillType(closures: ChecklistPositionToClose[]): ClosureSkillGroup[] {
-  const skillTypeMap = new Map<string, ClosureSkillGroup>();
+function groupClosuresByCombinedKey(closures: ChecklistPositionToClose[]): ClosureCombinedGroup[] {
+  const groupMap = new Map<string, ClosureCombinedGroup>();
 
   for (const item of closures) {
-    if (!skillTypeMap.has(item.skillType)) {
-      skillTypeMap.set(item.skillType, {
+    const groupKey = `${item.skillType}-${item.employmentType}-${item.source}`;
+    
+    if (!groupMap.has(groupKey)) {
+      groupMap.set(groupKey, {
+        groupKey,
         skillType: item.skillType,
+        employmentType: item.employmentType,
+        source: item.source,
         totalFTE: 0,
         totalCount: 0,
-        bySource: {
-          'open-reqs': [],
-          'employed': [],
-        },
+        items: [],
       });
     }
 
-    const group = skillTypeMap.get(item.skillType)!;
-    group.bySource[item.source].push(item);
+    const group = groupMap.get(groupKey)!;
+    group.items.push(item);
     group.totalFTE += item.fte * item.count;
     group.totalCount += item.count;
   }
 
-  return Array.from(skillTypeMap.values());
+  return Array.from(groupMap.values());
 }
 
 export function useForecastChecklist() {
@@ -200,7 +202,7 @@ export function useForecastChecklist() {
       openings: allOpenings,
       closures: allClosures,
       groupedOpenings: groupOpeningsBySkillType(allOpenings),
-      groupedClosures: groupClosuresBySkillType(allClosures),
+      groupedClosures: groupClosuresByCombinedKey(allClosures),
       totalOpeningsFTE,
       totalClosuresFTE,
     };

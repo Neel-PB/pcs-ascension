@@ -2,21 +2,70 @@ import { useState } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
-import { OpeningSkillGroup } from '@/hooks/useForecastChecklist';
+import { OpeningSkillGroup, ChecklistPositionToOpen } from '@/hooks/useForecastChecklist';
 import { ForecastChecklistOpeningRow } from './ForecastChecklistOpeningRow';
 
 interface ForecastChecklistOpeningGroupProps {
   group: OpeningSkillGroup;
 }
 
+interface EmploymentTypeSubGroupProps {
+  employmentType: 'Full-Time' | 'Part-Time' | 'PRN';
+  items: ChecklistPositionToOpen[];
+}
+
+function EmploymentTypeSubGroup({ employmentType, items }: EmploymentTypeSubGroupProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const totalFTE = items.reduce((sum, item) => sum + item.fte * item.count, 0);
+  const totalCount = items.reduce((sum, item) => sum + item.count, 0);
+
+  if (items.length === 0) return null;
+
+  return (
+    <div className="border-b border-border/50 last:border-b-0">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between p-2 pl-4 hover:bg-muted/30 transition-colors text-left"
+      >
+        <div className="flex items-center gap-2">
+          {isExpanded ? (
+            <ChevronDown className="h-3 w-3 text-muted-foreground" />
+          ) : (
+            <ChevronRight className="h-3 w-3 text-muted-foreground" />
+          )}
+          <span className="text-xs font-medium text-muted-foreground">{employmentType}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+            {totalCount}
+          </Badge>
+          <span className="text-xs font-medium tabular-nums text-emerald-600">{totalFTE.toFixed(1)} FTE</span>
+        </div>
+      </button>
+
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="overflow-hidden"
+          >
+            <div className="pl-4">
+              {items.map((item) => (
+                <ForecastChecklistOpeningRow key={item.id} item={item} />
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export function ForecastChecklistOpeningGroup({ group }: ForecastChecklistOpeningGroupProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-
-  const allItems = [
-    ...group.byEmploymentType['Full-Time'],
-    ...group.byEmploymentType['Part-Time'],
-    ...group.byEmploymentType['PRN'],
-  ];
 
   return (
     <div className="border-b border-border last:border-b-0">
@@ -49,11 +98,9 @@ export function ForecastChecklistOpeningGroup({ group }: ForecastChecklistOpenin
             transition={{ duration: 0.2 }}
             className="overflow-hidden bg-muted/20"
           >
-            <div className="pl-4">
-              {allItems.map((item) => (
-                <ForecastChecklistOpeningRow key={item.id} item={item} />
-              ))}
-            </div>
+            <EmploymentTypeSubGroup employmentType="Full-Time" items={group.byEmploymentType['Full-Time']} />
+            <EmploymentTypeSubGroup employmentType="Part-Time" items={group.byEmploymentType['Part-Time']} />
+            <EmploymentTypeSubGroup employmentType="PRN" items={group.byEmploymentType['PRN']} />
           </motion.div>
         )}
       </AnimatePresence>

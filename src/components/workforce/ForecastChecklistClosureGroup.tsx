@@ -2,20 +2,30 @@ import { useState } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
-import { ClosureSkillGroup } from '@/hooks/useForecastChecklist';
+import { ClosureCombinedGroup } from '@/hooks/useForecastChecklist';
 import { ForecastChecklistClosureRow } from './ForecastChecklistClosureRow';
 
 interface ForecastChecklistClosureGroupProps {
-  group: ClosureSkillGroup;
+  group: ClosureCombinedGroup;
 }
 
 export function ForecastChecklistClosureGroup({ group }: ForecastChecklistClosureGroupProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const allItems = [
-    ...group.bySource['open-reqs'],
-    ...group.bySource['employed'],
-  ];
+  const getSourceBadge = () => {
+    if (group.source === 'open-reqs') {
+      return (
+        <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-emerald-50 text-emerald-700 border-emerald-200">
+          Open Reqs
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-amber-50 text-amber-700 border-amber-200">
+        Employed
+      </Badge>
+    );
+  };
 
   return (
     <div className="border-b border-border last:border-b-0">
@@ -30,6 +40,10 @@ export function ForecastChecklistClosureGroup({ group }: ForecastChecklistClosur
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           )}
           <span className="font-medium text-sm">{group.skillType}</span>
+          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+            {group.employmentType}
+          </Badge>
+          {getSourceBadge()}
         </div>
         <div className="flex items-center gap-3">
           <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
@@ -49,7 +63,7 @@ export function ForecastChecklistClosureGroup({ group }: ForecastChecklistClosur
             className="overflow-hidden bg-muted/20"
           >
             <div className="pl-4">
-              {allItems.map((item) => (
+              {group.items.map((item) => (
                 <ForecastChecklistClosureRow key={item.id} item={item} />
               ))}
             </div>
