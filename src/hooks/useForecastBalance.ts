@@ -367,7 +367,7 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
       
       // Note: 'region' is not a direct column on positions table - it comes from facilities
       // Filter by market/facility/department which ARE on positions table
-      if (market) employedQuery = employedQuery.eq('market', market);
+      if (market) employedQuery = employedQuery.ilike('market', market);
       if (facilityId) employedQuery = employedQuery.eq('facilityId', facilityId);
       if (departmentId) employedQuery = employedQuery.eq('departmentId', departmentId);
       
@@ -381,7 +381,7 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         .is('employeeName', null);
       
       // Same filters as employed query
-      if (market) openReqsQuery = openReqsQuery.eq('market', market);
+      if (market) openReqsQuery = openReqsQuery.ilike('market', market);
       if (facilityId) openReqsQuery = openReqsQuery.eq('facilityId', facilityId);
       if (departmentId) openReqsQuery = openReqsQuery.eq('departmentId', departmentId);
       
