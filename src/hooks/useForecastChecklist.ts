@@ -4,6 +4,8 @@ import { useForecastBalance, ForecastBalanceRow, PositionChange, ClosureRecommen
 export interface ChecklistPositionToOpen {
   id: string;
   skillType: string;
+  region: string;
+  market: string;
   facilityName: string;
   departmentName: string;
   shift: 'Day' | 'Night';
@@ -15,6 +17,8 @@ export interface ChecklistPositionToOpen {
 export interface ChecklistPositionToClose {
   id: string;
   skillType: string;
+  region: string;
+  market: string;
   facilityName: string;
   departmentName: string;
   shift: 'Day' | 'Night';
@@ -85,6 +89,8 @@ function extractOpenings(
     .map((p, idx) => ({
       id: `${row.id}-open-${employmentType}-${idx}`,
       skillType: row.skillType,
+      region: row.region,
+      market: row.market,
       facilityName: row.facilityName,
       departmentName: row.departmentName,
       shift: row.shift,
@@ -107,6 +113,8 @@ function extractClosures(
       items.push({
         id: `${row.id}-close-reqs-${employmentType}-${idx}`,
         skillType: row.skillType,
+        region: row.region,
+        market: row.market,
         facilityName: row.facilityName,
         departmentName: row.departmentName,
         shift: row.shift,
@@ -124,6 +132,8 @@ function extractClosures(
       items.push({
         id: `${row.id}-close-emp-${employmentType}-${idx}`,
         skillType: row.skillType,
+        region: row.region,
+        market: row.market,
         facilityName: row.facilityName,
         departmentName: row.departmentName,
         shift: row.shift,

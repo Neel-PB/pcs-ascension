@@ -64,6 +64,7 @@ export interface RecommendedChanges {
 
 export interface ForecastBalanceRow {
   id: string;
+  region: string;
   market: string;
   facilityId: string;
   facilityName: string;
@@ -341,6 +342,18 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
   return useQuery({
     queryKey: ['forecast-balance', { departmentId }],
     queryFn: async (): Promise<ForecastBalanceSummary> => {
+      // Fetch facilities for region lookup
+      const { data: facilities, error: facError } = await supabase
+        .from('facilities')
+        .select('facility_id, region');
+      if (facError) throw facError;
+      
+      // Create region lookup map
+      const regionLookup = new Map<string, string>();
+      for (const fac of facilities || []) {
+        regionLookup.set(fac.facility_id, fac.region || 'Unknown');
+      }
+      
       // Build query for filled positions (employees)
       let employedQuery = supabase
         .from('positions')
@@ -369,6 +382,7 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
       
       // Group employed positions by market/facility/department/skillType/shift
       const groupedData = new Map<string, {
+        region: string;
         market: string;
         facilityId: string;
         facilityName: string;
@@ -401,6 +415,7 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         
         if (!groupedData.has(key)) {
           groupedData.set(key, {
+            region: regionLookup.get(pos.facilityId) || 'Unknown',
             market: pos.market,
             facilityId: pos.facilityId,
             facilityName: pos.facilityName,
@@ -544,6 +559,7 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         
         rows.push({
           id: key,
+          region: group.region,
           market: group.market,
           facilityId: group.facilityId,
           facilityName: group.facilityName,
