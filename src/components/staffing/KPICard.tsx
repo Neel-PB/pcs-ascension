@@ -6,11 +6,11 @@ import { BarChart3, Eye, Info } from "lucide-react";
 import { KPIChartModal } from "./KPIChartModal";
 import { KPIInfoModal } from "./KPIInfoModal";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export interface EmploymentBreakdown {
   ft: number;  // percentage
@@ -57,6 +57,7 @@ export function KPICard({
 }: KPICardProps) {
   const [showChartModal, setShowChartModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const [showBreakdownModal, setShowBreakdownModal] = useState(false);
 
   const getTrendColor = () => {
     if (isNegative) return "text-destructive";
@@ -136,10 +137,12 @@ export function KPICard({
               delay: delay + 0.3,
               ease: "easeOut"
             }}
+            onClick={() => setShowBreakdownModal(true)}
             className={cn(
               "absolute left-0 right-0 top-full z-10 flex items-center gap-2 px-2 py-1 rounded-b-lg text-xs",
-              breakdownVariant === 'green' && "bg-emerald-500/10",
-              breakdownVariant === 'red' && "bg-destructive/10"
+              "cursor-pointer transition-shadow duration-200 hover:shadow-md",
+              breakdownVariant === 'green' && "bg-emerald-500/10 hover:shadow-emerald-300/40",
+              breakdownVariant === 'red' && "bg-destructive/10 hover:shadow-destructive/30"
             )}
           >
             <Info className={cn(
@@ -197,6 +200,65 @@ export function KPICard({
         definition={definition}
         calculation={calculation}
       />
+
+      {/* Employment Breakdown Requirement Modal */}
+      <Dialog open={showBreakdownModal} onOpenChange={setShowBreakdownModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Employment Type Split Requirement</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div>
+              <h4 className="text-sm font-semibold text-foreground mb-1">Target Split</h4>
+              <div className="flex items-center gap-4 text-sm">
+                <span className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-700 font-medium">70% FT</span>
+                <span className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-700 font-medium">20% PT</span>
+                <span className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-700 font-medium">10% PRN</span>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="text-sm font-semibold text-foreground mb-1">Rationale</h4>
+              <p className="text-sm text-muted-foreground">
+                The 70/20/10 staffing mix ensures workforce stability through full-time core staff, 
+                provides scheduling flexibility via part-time coverage, and maintains PRN availability 
+                for peak demand periods and unexpected absences.
+              </p>
+            </div>
+
+            {employmentBreakdown && (
+              <div>
+                <h4 className="text-sm font-semibold text-foreground mb-1">Current Split</h4>
+                <div className="flex items-center gap-4 text-sm">
+                  <span className={cn(
+                    "px-2 py-1 rounded font-medium",
+                    employmentBreakdown.ft >= 70 ? "bg-emerald-500/10 text-emerald-700" : "bg-destructive/10 text-destructive"
+                  )}>
+                    {employmentBreakdown.ft}% FT
+                  </span>
+                  <span className={cn(
+                    "px-2 py-1 rounded font-medium",
+                    employmentBreakdown.pt <= 20 ? "bg-emerald-500/10 text-emerald-700" : "bg-destructive/10 text-destructive"
+                  )}>
+                    {employmentBreakdown.pt}% PT
+                  </span>
+                  <span className={cn(
+                    "px-2 py-1 rounded font-medium",
+                    employmentBreakdown.prn <= 10 ? "bg-emerald-500/10 text-emerald-700" : "bg-destructive/10 text-destructive"
+                  )}>
+                    {employmentBreakdown.prn}% PRN
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Variance: {employmentBreakdown.ft - 70 >= 0 ? '+' : ''}{employmentBreakdown.ft - 70}% FT, 
+                  {' '}{employmentBreakdown.pt - 20 >= 0 ? '+' : ''}{employmentBreakdown.pt - 20}% PT, 
+                  {' '}{employmentBreakdown.prn - 10 >= 0 ? '+' : ''}{employmentBreakdown.prn - 10}% PRN
+                </p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
