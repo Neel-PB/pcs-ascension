@@ -334,13 +334,18 @@ function categorizeEmploymentType(employmentType: string | null, employmentFlag:
 
 export interface ForecastBalanceFilters {
   departmentId?: string | null;
+  region?: string | null;
+  market?: string | null;
+  facilityId?: string | null;
+  level2?: string | null;
+  pstat?: string | null;
 }
 
 export function useForecastBalance(filters?: ForecastBalanceFilters) {
-  const departmentId = filters?.departmentId;
+  const { departmentId, region, market, facilityId, level2, pstat } = filters || {};
   
   return useQuery({
-    queryKey: ['forecast-balance', { departmentId }],
+    queryKey: ['forecast-balance', { departmentId, region, market, facilityId, level2, pstat }],
     queryFn: async (): Promise<ForecastBalanceSummary> => {
       // Fetch facilities for region lookup
       const { data: facilities, error: facError } = await supabase
@@ -360,9 +365,11 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         .select('*')
         .not('employeeName', 'is', null);
       
-      if (departmentId) {
-        employedQuery = employedQuery.eq('departmentId', departmentId);
-      }
+      // Note: 'region' is not a direct column on positions table - it comes from facilities
+      // Filter by market/facility/department which ARE on positions table
+      if (market) employedQuery = employedQuery.eq('market', market);
+      if (facilityId) employedQuery = employedQuery.eq('facilityId', facilityId);
+      if (departmentId) employedQuery = employedQuery.eq('departmentId', departmentId);
       
       const { data: employedPositions, error: empError } = await employedQuery;
       if (empError) throw empError;
@@ -373,9 +380,10 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         .select('*')
         .is('employeeName', null);
       
-      if (departmentId) {
-        openReqsQuery = openReqsQuery.eq('departmentId', departmentId);
-      }
+      // Same filters as employed query
+      if (market) openReqsQuery = openReqsQuery.eq('market', market);
+      if (facilityId) openReqsQuery = openReqsQuery.eq('facilityId', facilityId);
+      if (departmentId) openReqsQuery = openReqsQuery.eq('departmentId', departmentId);
       
       const { data: openReqs, error: reqError } = await openReqsQuery;
       if (reqError) throw reqError;
@@ -401,6 +409,12 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
       
       // Process employed positions
       for (const pos of employedPositions || []) {
+        // Filter by region if specified (region is looked up from facilities)
+        if (region) {
+          const posRegion = regionLookup.get(pos.facilityId);
+          if (posRegion !== region) continue;
+        }
+        
         const shift = normalizeShift(pos.shift_override || pos.shift);
         if (!shift) continue;
         
@@ -445,6 +459,12 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
 
       // Process open requisitions
       for (const req of openReqs || []) {
+        // Filter by region if specified (region is looked up from facilities)
+        if (region) {
+          const reqRegion = regionLookup.get(req.facilityId);
+          if (reqRegion !== region) continue;
+        }
+        
         const shift = normalizeShift(req.shift_override || req.shift);
         if (!shift) continue;
         

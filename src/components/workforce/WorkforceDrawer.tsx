@@ -12,6 +12,11 @@ const SNAP_POINTS = [400, 520, 640, 820];
 interface WorkforceDrawerProps {
   activeTab?: string;
   selectedDepartment?: string | null;
+  selectedRegion?: string | null;
+  selectedMarket?: string | null;
+  selectedFacility?: string | null;
+  selectedLevel2?: string | null;
+  selectedPstat?: string | null;
   volumeType?: 'target' | 'override' | null;
   volumeValue?: number | null;
 }
@@ -19,6 +24,11 @@ interface WorkforceDrawerProps {
 export const WorkforceDrawer = ({ 
   activeTab,
   selectedDepartment,
+  selectedRegion,
+  selectedMarket,
+  selectedFacility,
+  selectedLevel2,
+  selectedPstat,
   volumeType,
   volumeValue 
 }: WorkforceDrawerProps) => {
@@ -99,12 +109,17 @@ export const WorkforceDrawer = ({
             </div>
           ) : (
             <>
-              <WorkforceKPISection
-                activeTab={activeTab}
-                selectedDepartment={selectedDepartment}
-                volumeType={volumeType}
-                volumeValue={volumeValue}
-              />
+            <WorkforceKPISection
+              activeTab={activeTab}
+              selectedDepartment={selectedDepartment}
+              selectedRegion={selectedRegion}
+              selectedMarket={selectedMarket}
+              selectedFacility={selectedFacility}
+              selectedLevel2={selectedLevel2}
+              selectedPstat={selectedPstat}
+              volumeType={volumeType}
+              volumeValue={volumeValue}
+            />
               <div className="mt-4">
                 {/* Future content area */}
               </div>
