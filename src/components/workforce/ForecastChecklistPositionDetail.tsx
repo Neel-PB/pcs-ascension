@@ -19,7 +19,6 @@ function getEmploymentLabel(employmentType: string): string {
 export function ForecastChecklistPositionDetail({ detail, type }: ForecastChecklistPositionDetailProps) {
   const fteColor = type === 'shortage' ? 'text-emerald-600' : 'text-red-600';
   const showCountBadge = detail.count > 1;
-  const totalFTE = detail.fte * detail.count;
 
   return (
     <div className="flex items-center justify-between py-1.5 px-2 border-b border-border/20 last:border-b-0 hover:bg-muted/20 transition-colors">
@@ -47,7 +46,7 @@ export function ForecastChecklistPositionDetail({ detail, type }: ForecastCheckl
           </Badge>
         )}
         <span className={`text-[11px] font-medium tabular-nums ${fteColor}`}>
-          {totalFTE.toFixed(1)}
+          {detail.fte.toFixed(1)}
         </span>
       </div>
     </div>
