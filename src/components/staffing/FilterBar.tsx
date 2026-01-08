@@ -105,7 +105,7 @@ export function FilterBar({
       >
         {/* Region Filter */}
         <Select value={selectedRegion} onValueChange={onRegionChange}>
-          <SelectTrigger className="w-[200px] bg-background border-border">
+          <SelectTrigger className="w-[150px] bg-background border-border">
             <SelectValue placeholder="Select region" />
           </SelectTrigger>
           <SelectContent className="bg-popover border-border z-50">
@@ -118,7 +118,7 @@ export function FilterBar({
 
         {/* Market Filter */}
         <Select value={selectedMarket} onValueChange={onMarketChange}>
-          <SelectTrigger className="w-[200px] bg-background border-border">
+          <SelectTrigger className="w-[150px] bg-background border-border">
             <SelectValue placeholder="Select market" />
           </SelectTrigger>
           <SelectContent className="bg-popover border-border z-50">
@@ -188,7 +188,7 @@ export function FilterBar({
           onValueChange={onSubmarketChange}
           disabled={selectedMarket === "all-markets" || availableSubmarkets.length === 0}
         >
-          <SelectTrigger className="w-[180px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          <SelectTrigger className="w-[150px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             <SelectValue placeholder="Submarket" />
           </SelectTrigger>
           <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
