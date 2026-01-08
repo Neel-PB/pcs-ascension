@@ -19,7 +19,8 @@ interface RequisitionsTabProps {
   selectedRegion: string;
   selectedMarket: string;
   selectedFacility: string;
-  selectedDepartmentFamily: string;
+  selectedPstat: string;
+  selectedLevel2: string;
   selectedDepartment: string;
 }
 
@@ -27,7 +28,8 @@ export function RequisitionsTab({
   selectedRegion,
   selectedMarket,
   selectedFacility,
-  selectedDepartmentFamily,
+  selectedPstat,
+  selectedLevel2,
   selectedDepartment,
 }: RequisitionsTabProps) {
   const { data: requisitions, isFetching } = useRequisitions({

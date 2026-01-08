@@ -10,14 +10,16 @@ interface FilterBarProps {
   onMarketChange?: (value: string) => void;
   onFacilityChange?: (value: string) => void;
   onSubmarketChange?: (value: string) => void;
-  onDepartmentFamilyChange?: (value: string) => void;
+  onPstatChange?: (value: string) => void;
+  onLevel2Change?: (value: string) => void;
   onDepartmentChange?: (value: string) => void;
   onClearFilters?: () => void;
   selectedRegion?: string;
   selectedMarket?: string;
   selectedFacility?: string;
   selectedSubmarket?: string;
-  selectedDepartmentFamily?: string;
+  selectedPstat?: string;
+  selectedLevel2?: string;
   selectedDepartment?: string;
 }
 
@@ -27,14 +29,16 @@ export function FilterBar({
   onMarketChange,
   onFacilityChange,
   onSubmarketChange,
-  onDepartmentFamilyChange,
+  onPstatChange,
+  onLevel2Change,
   onDepartmentChange,
   onClearFilters,
   selectedRegion = "all-regions",
   selectedMarket = "all-markets",
   selectedFacility = "all-facilities",
   selectedSubmarket = "all-submarkets",
-  selectedDepartmentFamily = "all-dept-families",
+  selectedPstat = "all-pstat",
+  selectedLevel2 = "all-level2",
   selectedDepartment = "all-departments",
 }: FilterBarProps) {
   const { 
@@ -45,28 +49,27 @@ export function FilterBar({
     getSubmarketsByMarket,
   } = useFilterData();
 
-  // Department Families (Job Families)
-  const departmentFamilies = [
-    "Clinical Nurse",
-    "Registered Nurse",
-    "Operating Room Nurse",
-    "Labor & Delivery Nurse",
-    "Nursing",
-    "Nursing Support",
-    "Patient Care Technician",
-    "Allied Health",
-    "Respiratory Therapy",
-    "Rehabilitation Services",
-    "Radiology Tech",
-    "Radiology Technician",
-    "Lab Tech",
-    "Pharmacy",
-    "Surgical Services",
-    "Patient Services",
-    "Physicians",
-    "Clinical Support",
-    "Administrative Support",
-    "Health Information Management",
+  // PSTAT Options
+  const pstatOptions = [
+    "P Patient DaysAndObservation",
+    "P Total Adjusted Discharges",
+    "P PatientDaysObservNewbornDays",
+    "P Total Pat Days Obs",
+    "P Procedures",
+    "P Cases",
+    "P Calendar Days",
+    "P BTUs",
+    "P Worked RVUs",
+  ].sort();
+
+  // Level 2 Options
+  const level2Options = [
+    "LngTrmAcuteCareLTACH",
+    "NrsngPsychiatricCare",
+    "Nursing Acute Care",
+    "Nursing Rehab Acute Care",
+    "NursingIntensiveCare",
+    "Skilled Nursing Care",
   ].sort();
 
   // Get available markets based on selected region
@@ -87,7 +90,8 @@ export function FilterBar({
     selectedMarket !== "all-markets" ||
     selectedFacility !== "all-facilities" ||
     selectedSubmarket !== "all-submarkets" ||
-    selectedDepartmentFamily !== "all-dept-families" ||
+    selectedPstat !== "all-pstat" ||
+    selectedLevel2 !== "all-level2" ||
     selectedDepartment !== "all-departments";
 
   return (
@@ -195,18 +199,34 @@ export function FilterBar({
           </SelectContent>
         </Select>
 
-        {/* Department Family Filter */}
+        {/* PSTAT Filter */}
         <Select 
-          value={selectedDepartmentFamily} 
-          onValueChange={onDepartmentFamilyChange}
+          value={selectedPstat} 
+          onValueChange={onPstatChange}
         >
           <SelectTrigger className="w-[200px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
-            <SelectValue placeholder="Dept Family" />
+            <SelectValue placeholder="PSTAT" />
           </SelectTrigger>
           <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
-            <SelectItem value="all-dept-families">All Dept Families</SelectItem>
-            {departmentFamilies.map(family => (
-              <SelectItem key={family} value={family}>{family}</SelectItem>
+            <SelectItem value="all-pstat">All PSTAT</SelectItem>
+            {pstatOptions.map(pstat => (
+              <SelectItem key={pstat} value={pstat}>{pstat}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Level 2 Filter */}
+        <Select 
+          value={selectedLevel2} 
+          onValueChange={onLevel2Change}
+        >
+          <SelectTrigger className="w-[200px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
+            <SelectValue placeholder="Level 2" />
+          </SelectTrigger>
+          <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
+            <SelectItem value="all-level2">All Level 2</SelectItem>
+            {level2Options.map(level => (
+              <SelectItem key={level} value={level}>{level}</SelectItem>
             ))}
           </SelectContent>
         </Select>

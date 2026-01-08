@@ -20,7 +20,8 @@ export default function StaffingSummary() {
   const [selectedMarket, setSelectedMarket] = useState("all-markets");
   const [selectedFacility, setSelectedFacility] = useState("all-facilities");
   const [selectedSubmarket, setSelectedSubmarket] = useState("all-submarkets");
-  const [selectedDepartmentFamily, setSelectedDepartmentFamily] = useState("all-dept-families");
+  const [selectedPstat, setSelectedPstat] = useState("all-pstat");
+  const [selectedLevel2, setSelectedLevel2] = useState("all-level2");
   const [selectedDepartment, setSelectedDepartment] = useState("all-departments");
 
   const tabs = [
@@ -36,7 +37,8 @@ export default function StaffingSummary() {
     setSelectedMarket("all-markets");
     setSelectedFacility("all-facilities");
     setSelectedSubmarket("all-submarkets");
-    setSelectedDepartmentFamily("all-dept-families");
+    setSelectedPstat("all-pstat");
+    setSelectedLevel2("all-level2");
     setSelectedDepartment("all-departments");
   };
 
@@ -44,13 +46,15 @@ export default function StaffingSummary() {
     setSelectedMarket(value);
     setSelectedFacility("all-facilities");
     setSelectedSubmarket("all-submarkets");
-    setSelectedDepartmentFamily("all-dept-families");
+    setSelectedPstat("all-pstat");
+    setSelectedLevel2("all-level2");
     setSelectedDepartment("all-departments");
   };
 
   const handleFacilityChange = (value: string) => {
     setSelectedFacility(value);
-    setSelectedDepartmentFamily("all-dept-families");
+    setSelectedPstat("all-pstat");
+    setSelectedLevel2("all-level2");
     setSelectedDepartment("all-departments");
   };
 
@@ -58,9 +62,12 @@ export default function StaffingSummary() {
     setSelectedSubmarket(value);
   };
 
-  const handleDepartmentFamilyChange = (value: string) => {
-    setSelectedDepartmentFamily(value);
-    setSelectedDepartment("all-departments");
+  const handlePstatChange = (value: string) => {
+    setSelectedPstat(value);
+  };
+
+  const handleLevel2Change = (value: string) => {
+    setSelectedLevel2(value);
   };
 
   const handleClearFilters = () => {
@@ -68,7 +75,8 @@ export default function StaffingSummary() {
     setSelectedMarket("all-markets");
     setSelectedFacility("all-facilities");
     setSelectedSubmarket("all-submarkets");
-    setSelectedDepartmentFamily("all-dept-families");
+    setSelectedPstat("all-pstat");
+    setSelectedLevel2("all-level2");
     setSelectedDepartment("all-departments");
   };
   
@@ -448,13 +456,15 @@ This metric helps:
           onMarketChange={handleMarketChange}
           onFacilityChange={handleFacilityChange}
           onSubmarketChange={handleSubmarketChange}
-          onDepartmentFamilyChange={handleDepartmentFamilyChange}
+          onPstatChange={handlePstatChange}
+          onLevel2Change={handleLevel2Change}
           onDepartmentChange={setSelectedDepartment}
           selectedRegion={selectedRegion}
           selectedMarket={selectedMarket}
           selectedFacility={selectedFacility}
           selectedSubmarket={selectedSubmarket}
-          selectedDepartmentFamily={selectedDepartmentFamily}
+          selectedPstat={selectedPstat}
+          selectedLevel2={selectedLevel2}
           selectedDepartment={selectedDepartment}
           onClearFilters={handleClearFilters}
         />
