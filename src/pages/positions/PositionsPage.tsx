@@ -14,7 +14,8 @@ export default function PositionsPage() {
   const [selectedRegion, setSelectedRegion] = useState("all-regions");
   const [selectedMarket, setSelectedMarket] = useState("all-markets");
   const [selectedFacility, setSelectedFacility] = useState("all-facilities");
-  const [selectedDepartmentFamily, setSelectedDepartmentFamily] = useState("all-dept-families");
+  const [selectedPstat, setSelectedPstat] = useState("all-pstat");
+  const [selectedLevel2, setSelectedLevel2] = useState("all-level2");
   const [selectedDepartment, setSelectedDepartment] = useState("all-departments");
 
   const tabs = [
@@ -27,14 +28,16 @@ export default function PositionsPage() {
     setSelectedRegion(value);
     setSelectedMarket("all-markets");
     setSelectedFacility("all-facilities");
-    setSelectedDepartmentFamily("all-dept-families");
+    setSelectedPstat("all-pstat");
+    setSelectedLevel2("all-level2");
     setSelectedDepartment("all-departments");
   };
 
   const handleMarketChange = (value: string) => {
     setSelectedMarket(value);
     setSelectedFacility("all-facilities");
-    setSelectedDepartmentFamily("all-dept-families");
+    setSelectedPstat("all-pstat");
+    setSelectedLevel2("all-level2");
     setSelectedDepartment("all-departments");
   };
 
@@ -43,15 +46,20 @@ export default function PositionsPage() {
     setSelectedDepartment("all-departments");
   };
 
-  const handleDepartmentFamilyChange = (value: string) => {
-    setSelectedDepartmentFamily(value);
+  const handlePstatChange = (value: string) => {
+    setSelectedPstat(value);
+  };
+
+  const handleLevel2Change = (value: string) => {
+    setSelectedLevel2(value);
   };
 
   const handleClearFilters = () => {
     setSelectedRegion("all-regions");
     setSelectedMarket("all-markets");
     setSelectedFacility("all-facilities");
-    setSelectedDepartmentFamily("all-dept-families");
+    setSelectedPstat("all-pstat");
+    setSelectedLevel2("all-level2");
     setSelectedDepartment("all-departments");
   };
 
@@ -69,12 +77,14 @@ export default function PositionsPage() {
             selectedRegion={selectedRegion}
             selectedMarket={selectedMarket}
             selectedFacility={selectedFacility}
-            selectedDepartmentFamily={selectedDepartmentFamily}
+            selectedPstat={selectedPstat}
+            selectedLevel2={selectedLevel2}
             selectedDepartment={selectedDepartment}
             onRegionChange={handleRegionChange}
             onMarketChange={handleMarketChange}
             onFacilityChange={handleFacilityChange}
-            onDepartmentFamilyChange={handleDepartmentFamilyChange}
+            onPstatChange={handlePstatChange}
+            onLevel2Change={handleLevel2Change}
             onDepartmentChange={setSelectedDepartment}
             onClearFilters={handleClearFilters}
           />
@@ -134,7 +144,8 @@ export default function PositionsPage() {
                 selectedRegion={selectedRegion}
                 selectedMarket={selectedMarket}
                 selectedFacility={selectedFacility}
-                selectedDepartmentFamily={selectedDepartmentFamily}
+                selectedPstat={selectedPstat}
+                selectedLevel2={selectedLevel2}
                 selectedDepartment={selectedDepartment}
               />
             )}
@@ -143,7 +154,8 @@ export default function PositionsPage() {
                 selectedRegion={selectedRegion}
                 selectedMarket={selectedMarket}
                 selectedFacility={selectedFacility}
-                selectedDepartmentFamily={selectedDepartmentFamily}
+                selectedPstat={selectedPstat}
+                selectedLevel2={selectedLevel2}
                 selectedDepartment={selectedDepartment}
               />
             )}
@@ -152,7 +164,8 @@ export default function PositionsPage() {
                 selectedRegion={selectedRegion}
                 selectedMarket={selectedMarket}
                 selectedFacility={selectedFacility}
-                selectedDepartmentFamily={selectedDepartmentFamily}
+                selectedPstat={selectedPstat}
+                selectedLevel2={selectedLevel2}
                 selectedDepartment={selectedDepartment}
               />
             )}

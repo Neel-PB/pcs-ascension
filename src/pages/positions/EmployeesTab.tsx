@@ -21,7 +21,8 @@ interface EmployeesTabProps {
   selectedRegion: string;
   selectedMarket: string;
   selectedFacility: string;
-  selectedDepartmentFamily: string;
+  selectedPstat: string;
+  selectedLevel2: string;
   selectedDepartment: string;
 }
 
@@ -29,7 +30,8 @@ export function EmployeesTab({
   selectedRegion,
   selectedMarket,
   selectedFacility,
-  selectedDepartmentFamily,
+  selectedPstat,
+  selectedLevel2,
   selectedDepartment,
 }: EmployeesTabProps) {
   const { data: employees, isFetching } = useEmployees({

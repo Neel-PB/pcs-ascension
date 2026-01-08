@@ -21,7 +21,8 @@ interface ContractorsTabProps {
   selectedRegion: string;
   selectedMarket: string;
   selectedFacility: string;
-  selectedDepartmentFamily: string;
+  selectedPstat: string;
+  selectedLevel2: string;
   selectedDepartment: string;
 }
 
@@ -29,7 +30,8 @@ export function ContractorsTab({
   selectedRegion,
   selectedMarket,
   selectedFacility,
-  selectedDepartmentFamily,
+  selectedPstat,
+  selectedLevel2,
   selectedDepartment,
 }: ContractorsTabProps) {
   const { data: contractors, isFetching } = useContractors({
