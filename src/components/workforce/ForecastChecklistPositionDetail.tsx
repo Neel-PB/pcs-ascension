@@ -6,11 +6,11 @@ interface ForecastChecklistPositionDetailProps {
   type: 'shortage' | 'surplus';
 }
 
-// Map employment type to abbreviated form
-function getEmploymentAbbrev(employmentType: string): string {
+// Map employment type to display label
+function getEmploymentLabel(employmentType: string): string {
   switch (employmentType) {
-    case 'Full-Time': return 'FT';
-    case 'Part-Time': return 'PT';
+    case 'Full-Time': return 'Full-Time';
+    case 'Part-Time': return 'Part-Time';
     case 'PRN': return 'PRN';
     default: return employmentType;
   }
@@ -25,7 +25,7 @@ export function ForecastChecklistPositionDetail({ detail, type }: ForecastCheckl
     <div className="flex items-center justify-between py-1.5 px-2 border-b border-border/20 last:border-b-0 hover:bg-muted/20 transition-colors">
       <div className="flex items-center gap-1.5 min-w-0 flex-1">
         <span className="text-[11px] text-muted-foreground">
-          {detail.shift} │ {getEmploymentAbbrev(detail.employmentType)} │ {detail.fte.toFixed(1)}
+          {detail.shift} Shift • {getEmploymentLabel(detail.employmentType)}
         </span>
         {type === 'surplus' && detail.source && (
           <Badge 

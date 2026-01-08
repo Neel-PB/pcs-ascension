@@ -26,7 +26,7 @@ export function ForecastChecklistLocationGroup({ group, type }: ForecastChecklis
             <ChevronRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
           )}
           <span className="text-[11px] font-medium truncate">
-            {group.region} › {group.market} › {group.facilityName}
+            {group.region} • {group.market} • {group.facilityName}
           </span>
         </div>
         <span className={`text-[11px] font-medium tabular-nums ${fteColor} ml-2 flex-shrink-0`}>
