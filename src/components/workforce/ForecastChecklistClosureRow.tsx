@@ -25,7 +25,7 @@ export function ForecastChecklistClosureRow({ item }: ForecastChecklistClosureRo
           )}
         </div>
         <div className="text-[10px] text-muted-foreground/70 truncate">
-          {item.region} › {item.market} › {item.departmentName}
+          {item.region} › {item.market} › {item.facilityName} › {item.departmentName}
         </div>
       </div>
       <span className="text-[11px] font-medium tabular-nums text-red-600 ml-2 flex-shrink-0">
