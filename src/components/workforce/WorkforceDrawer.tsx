@@ -95,16 +95,16 @@ export const WorkforceDrawer = ({
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto px-4 lg:px-6 py-4 flex flex-col min-h-0">
-          {!selectedDepartment ? (
+        {!selectedFacility && !selectedDepartment ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
               <div className="rounded-full bg-muted p-4 mb-4">
                 <Building2 className="h-8 w-8 text-muted-foreground" />
               </div>
               <h3 className="text-lg font-medium text-foreground mb-2">
-                Select a Department
+                Select a Facility
               </h3>
               <p className="text-sm text-muted-foreground max-w-[280px]">
-                Choose a department from the filters to view the positions checklist and KPIs.
+                Choose a facility from the filters to view the positions checklist and KPIs.
               </p>
             </div>
           ) : (
