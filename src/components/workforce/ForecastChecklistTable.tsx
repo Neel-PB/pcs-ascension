@@ -3,14 +3,15 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { useForecastChecklist } from '@/hooks/useForecastChecklist';
 import { ForecastChecklistOpeningGroup } from './ForecastChecklistOpeningGroup';
 import { ForecastChecklistClosureGroup } from './ForecastChecklistClosureGroup';
+import { ForecastBalanceFilters } from '@/hooks/useForecastBalance';
 
 export interface ForecastChecklistTableProps {
   type: 'shortage' | 'surplus';
-  departmentId?: string | null;
+  filters?: ForecastBalanceFilters;
 }
 
-export function ForecastChecklistTable({ type, departmentId }: ForecastChecklistTableProps) {
-  const { groupedOpenings, groupedClosures, isLoading } = useForecastChecklist(departmentId);
+export function ForecastChecklistTable({ type, filters }: ForecastChecklistTableProps) {
+  const { groupedOpenings, groupedClosures, isLoading } = useForecastChecklist(filters);
 
   const groups = type === 'shortage' ? groupedOpenings : groupedClosures;
   const count = groups.length;

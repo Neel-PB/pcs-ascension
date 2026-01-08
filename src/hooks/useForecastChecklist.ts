@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useForecastBalance, ForecastBalanceRow, PositionChange, ClosureRecommendation } from './useForecastBalance';
+import { useForecastBalance, ForecastBalanceRow, PositionChange, ClosureRecommendation, ForecastBalanceFilters } from './useForecastBalance';
 
 export interface ChecklistPositionToOpen {
   id: string;
@@ -226,8 +226,8 @@ function groupClosuresByFacility(closures: ChecklistPositionToClose[]): ClosureF
   return Array.from(facilityMap.values());
 }
 
-export function useForecastChecklist(departmentId?: string | null) {
-  const { data: forecastData, isLoading, error } = useForecastBalance({ departmentId });
+export function useForecastChecklist(filters?: ForecastBalanceFilters) {
+  const { data: forecastData, isLoading, error } = useForecastBalance(filters);
 
   const result = useMemo(() => {
     if (!forecastData?.rows) {

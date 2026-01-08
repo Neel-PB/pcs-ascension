@@ -446,6 +446,11 @@ This metric helps:
       <WorkforceDrawer 
         activeTab={activeTab} 
         selectedDepartment={selectedDepartment === "all-departments" ? null : selectedDepartment}
+        selectedRegion={selectedRegion === "all-regions" ? null : selectedRegion}
+        selectedMarket={selectedMarket === "all-markets" ? null : selectedMarket}
+        selectedFacility={selectedFacility === "all-facilities" ? null : selectedFacility}
+        selectedLevel2={selectedLevel2 === "all-level2" ? null : selectedLevel2}
+        selectedPstat={selectedPstat === "all-pstat" ? null : selectedPstat}
       />
       
       <div className="space-y-6">

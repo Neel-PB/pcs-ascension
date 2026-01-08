@@ -9,10 +9,16 @@ import {
   KPIConfig 
 } from '@/config/kpiConfigs';
 import { useForecastChecklist } from '@/hooks/useForecastChecklist';
+import { ForecastBalanceFilters } from '@/hooks/useForecastBalance';
 
 interface WorkforceKPISectionProps {
   activeTab?: string;
   selectedDepartment?: string | null;
+  selectedRegion?: string | null;
+  selectedMarket?: string | null;
+  selectedFacility?: string | null;
+  selectedLevel2?: string | null;
+  selectedPstat?: string | null;
   volumeType?: 'target' | 'override' | null;
   volumeValue?: number | null;
 }
@@ -20,9 +26,24 @@ interface WorkforceKPISectionProps {
 export const WorkforceKPISection = ({ 
   activeTab = 'employees',
   selectedDepartment,
+  selectedRegion,
+  selectedMarket,
+  selectedFacility,
+  selectedLevel2,
+  selectedPstat,
   volumeType,
   volumeValue 
 }: WorkforceKPISectionProps) => {
+  
+  // Create filters object for forecast data
+  const filters: ForecastBalanceFilters = useMemo(() => ({
+    departmentId: selectedDepartment,
+    region: selectedRegion,
+    market: selectedMarket,
+    facilityId: selectedFacility,
+    level2: selectedLevel2,
+    pstat: selectedPstat,
+  }), [selectedDepartment, selectedRegion, selectedMarket, selectedFacility, selectedLevel2, selectedPstat]);
   
   // Get shared KPIs from config
   const fteKPIs = useMemo(() => getFTEKPIs(), []);
@@ -156,14 +177,14 @@ export const WorkforceKPISection = ({
 
       {/* Forecast Table with Title */}
       {forecastTableType && forecastTableType !== 'both' && (
-        <ForecastTableWithTitle type={forecastTableType} departmentId={selectedDepartment} />
+        <ForecastTableWithTitle type={forecastTableType} filters={filters} />
       )}
       
       {/* Both tables for Staffing module */}
       {forecastTableType === 'both' && (
         <>
-          <ForecastTableWithTitle type="shortage" departmentId={selectedDepartment} />
-          <ForecastTableWithTitle type="surplus" departmentId={selectedDepartment} />
+          <ForecastTableWithTitle type="shortage" filters={filters} />
+          <ForecastTableWithTitle type="surplus" filters={filters} />
         </>
       )}
     </div>
@@ -171,8 +192,8 @@ export const WorkforceKPISection = ({
 };
 
 // Sub-component to handle forecast table with title
-function ForecastTableWithTitle({ type, departmentId }: { type: 'shortage' | 'surplus'; departmentId?: string | null }) {
-  const { openings, closures } = useForecastChecklist(departmentId);
+function ForecastTableWithTitle({ type, filters }: { type: 'shortage' | 'surplus'; filters?: ForecastBalanceFilters }) {
+  const { openings, closures } = useForecastChecklist(filters);
   
   const count = type === 'shortage' ? openings.length : closures.length;
   const title = type === 'shortage' ? 'FTE Shortage' : 'FTE Surplus';
@@ -185,7 +206,7 @@ function ForecastTableWithTitle({ type, departmentId }: { type: 'shortage' | 'su
           {title} <span className="text-muted-foreground">({count})</span>
         </h3>
         <div className="flex-1 min-h-0 overflow-y-auto">
-          <ForecastChecklistTable type={type} departmentId={departmentId} />
+          <ForecastChecklistTable type={type} filters={filters} />
         </div>
       </div>
     </div>
