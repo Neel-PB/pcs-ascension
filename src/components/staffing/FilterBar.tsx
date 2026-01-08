@@ -199,22 +199,6 @@ export function FilterBar({
           </SelectContent>
         </Select>
 
-        {/* PSTAT Filter */}
-        <Select 
-          value={selectedPstat} 
-          onValueChange={onPstatChange}
-        >
-          <SelectTrigger className="w-[200px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
-            <SelectValue placeholder="PSTAT" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
-            <SelectItem value="all-pstat">All PSTAT</SelectItem>
-            {pstatOptions.map(pstat => (
-              <SelectItem key={pstat} value={pstat}>{pstat}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
         {/* Level 2 Filter */}
         <Select 
           value={selectedLevel2} 
@@ -227,6 +211,22 @@ export function FilterBar({
             <SelectItem value="all-level2">All Level 2</SelectItem>
             {level2Options.map(level => (
               <SelectItem key={level} value={level}>{level}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* PSTAT Filter */}
+        <Select 
+          value={selectedPstat} 
+          onValueChange={onPstatChange}
+        >
+          <SelectTrigger className="w-[200px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
+            <SelectValue placeholder="PSTAT" />
+          </SelectTrigger>
+          <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
+            <SelectItem value="all-pstat">All PSTAT</SelectItem>
+            {pstatOptions.map(pstat => (
+              <SelectItem key={pstat} value={pstat}>{pstat}</SelectItem>
             ))}
           </SelectContent>
         </Select>
