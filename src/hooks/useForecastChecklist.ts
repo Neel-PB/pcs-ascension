@@ -28,7 +28,38 @@ export interface ChecklistPositionToClose {
   source: 'open-reqs' | 'employed';
 }
 
-// New hierarchy: Facility → Skill Type → Details
+// Level 3: Individual position detail (Shift | FT/PT/PRN | FTE with count badge)
+export interface PositionDetail {
+  id: string;
+  shift: 'Day' | 'Night';
+  employmentType: 'Full-Time' | 'Part-Time' | 'PRN';
+  fte: number;
+  count: number;
+  source?: 'open-reqs' | 'employed'; // Only for closures
+}
+
+// Level 2: Department + Skill Type group
+export interface DepartmentSkillGroup {
+  departmentName: string;
+  skillType: string;
+  groupKey: string;
+  totalFTE: number;
+  totalCount: number;
+  details: PositionDetail[];
+}
+
+// Level 1: Region/Market/Facility group
+export interface FacilityLocationGroup {
+  region: string;
+  market: string;
+  facilityName: string;
+  groupKey: string;
+  totalFTE: number;
+  totalCount: number;
+  departmentGroups: DepartmentSkillGroup[];
+}
+
+// Legacy interfaces for backward compatibility
 export interface OpeningSkillSubGroup {
   skillType: string;
   totalFTE: number;
@@ -55,28 +86,6 @@ export interface ClosureFacilityGroup {
   totalFTE: number;
   totalCount: number;
   skillGroups: ClosureSkillSubGroup[];
-}
-
-// Legacy interfaces for backward compatibility (can be removed later)
-export interface OpeningSkillGroup {
-  skillType: string;
-  totalFTE: number;
-  totalCount: number;
-  byEmploymentType: {
-    'Full-Time': ChecklistPositionToOpen[];
-    'Part-Time': ChecklistPositionToOpen[];
-    'PRN': ChecklistPositionToOpen[];
-  };
-}
-
-export interface ClosureCombinedGroup {
-  groupKey: string;
-  skillType: string;
-  employmentType: 'Full-Time' | 'Part-Time' | 'PRN';
-  source: 'open-reqs' | 'employed';
-  totalFTE: number;
-  totalCount: number;
-  items: ChecklistPositionToClose[];
 }
 
 function extractOpenings(
@@ -148,82 +157,113 @@ function extractClosures(
   return items;
 }
 
-// New grouping: Facility → Skill Type for Openings
-function groupOpeningsByFacility(openings: ChecklistPositionToOpen[]): OpeningFacilityGroup[] {
-  const facilityMap = new Map<string, OpeningFacilityGroup>();
+// New 3-level grouping for openings: Location → Department/Skill → Details
+function groupOpeningsByLocation(openings: ChecklistPositionToOpen[]): FacilityLocationGroup[] {
+  const locationMap = new Map<string, FacilityLocationGroup>();
 
   for (const item of openings) {
-    if (!facilityMap.has(item.facilityName)) {
-      facilityMap.set(item.facilityName, {
+    const locationKey = `${item.region}|${item.market}|${item.facilityName}`;
+    
+    if (!locationMap.has(locationKey)) {
+      locationMap.set(locationKey, {
+        region: item.region,
+        market: item.market,
         facilityName: item.facilityName,
+        groupKey: locationKey,
         totalFTE: 0,
         totalCount: 0,
-        skillGroups: [],
+        departmentGroups: [],
       });
     }
 
-    const facilityGroup = facilityMap.get(item.facilityName)!;
+    const locationGroup = locationMap.get(locationKey)!;
+    const deptSkillKey = `${item.departmentName}|${item.skillType}`;
     
-    // Find or create skill subgroup
-    let skillSubGroup = facilityGroup.skillGroups.find(sg => sg.skillType === item.skillType);
-    if (!skillSubGroup) {
-      skillSubGroup = {
+    let deptGroup = locationGroup.departmentGroups.find(dg => dg.groupKey === deptSkillKey);
+    if (!deptGroup) {
+      deptGroup = {
+        departmentName: item.departmentName,
         skillType: item.skillType,
+        groupKey: deptSkillKey,
         totalFTE: 0,
         totalCount: 0,
-        items: [],
+        details: [],
       };
-      facilityGroup.skillGroups.push(skillSubGroup);
+      locationGroup.departmentGroups.push(deptGroup);
     }
 
-    skillSubGroup.items.push(item);
-    skillSubGroup.totalFTE += item.fte * item.count;
-    skillSubGroup.totalCount += item.count;
+    const itemFTE = item.fte * item.count;
     
-    facilityGroup.totalFTE += item.fte * item.count;
-    facilityGroup.totalCount += item.count;
+    deptGroup.details.push({
+      id: item.id,
+      shift: item.shift,
+      employmentType: item.employmentType,
+      fte: item.fte,
+      count: item.count,
+    });
+    deptGroup.totalFTE += itemFTE;
+    deptGroup.totalCount += item.count;
+    
+    locationGroup.totalFTE += itemFTE;
+    locationGroup.totalCount += item.count;
   }
 
-  return Array.from(facilityMap.values());
+  return Array.from(locationMap.values());
 }
 
-// New grouping: Facility → Skill Type for Closures
-function groupClosuresByFacility(closures: ChecklistPositionToClose[]): ClosureFacilityGroup[] {
-  const facilityMap = new Map<string, ClosureFacilityGroup>();
+// New 3-level grouping for closures: Location → Department/Skill → Details
+function groupClosuresByLocation(closures: ChecklistPositionToClose[]): FacilityLocationGroup[] {
+  const locationMap = new Map<string, FacilityLocationGroup>();
 
   for (const item of closures) {
-    if (!facilityMap.has(item.facilityName)) {
-      facilityMap.set(item.facilityName, {
+    const locationKey = `${item.region}|${item.market}|${item.facilityName}`;
+    
+    if (!locationMap.has(locationKey)) {
+      locationMap.set(locationKey, {
+        region: item.region,
+        market: item.market,
         facilityName: item.facilityName,
+        groupKey: locationKey,
         totalFTE: 0,
         totalCount: 0,
-        skillGroups: [],
+        departmentGroups: [],
       });
     }
 
-    const facilityGroup = facilityMap.get(item.facilityName)!;
+    const locationGroup = locationMap.get(locationKey)!;
+    const deptSkillKey = `${item.departmentName}|${item.skillType}`;
     
-    // Find or create skill subgroup
-    let skillSubGroup = facilityGroup.skillGroups.find(sg => sg.skillType === item.skillType);
-    if (!skillSubGroup) {
-      skillSubGroup = {
+    let deptGroup = locationGroup.departmentGroups.find(dg => dg.groupKey === deptSkillKey);
+    if (!deptGroup) {
+      deptGroup = {
+        departmentName: item.departmentName,
         skillType: item.skillType,
+        groupKey: deptSkillKey,
         totalFTE: 0,
         totalCount: 0,
-        items: [],
+        details: [],
       };
-      facilityGroup.skillGroups.push(skillSubGroup);
+      locationGroup.departmentGroups.push(deptGroup);
     }
 
-    skillSubGroup.items.push(item);
-    skillSubGroup.totalFTE += item.fte * item.count;
-    skillSubGroup.totalCount += item.count;
+    const itemFTE = item.fte * item.count;
     
-    facilityGroup.totalFTE += item.fte * item.count;
-    facilityGroup.totalCount += item.count;
+    deptGroup.details.push({
+      id: item.id,
+      shift: item.shift,
+      employmentType: item.employmentType,
+      fte: item.fte,
+      count: item.count,
+      source: item.source,
+    });
+    deptGroup.totalFTE += itemFTE;
+    deptGroup.totalCount += item.count;
+    
+    locationGroup.totalFTE += itemFTE;
+    locationGroup.totalCount += item.count;
   }
 
-  return Array.from(facilityMap.values());
+  return Array.from(locationMap.values());
 }
 
 export function useForecastChecklist(filters?: ForecastBalanceFilters) {
@@ -236,6 +276,8 @@ export function useForecastChecklist(filters?: ForecastBalanceFilters) {
         closures: [], 
         groupedOpenings: [],
         groupedClosures: [],
+        locationGroupedOpenings: [],
+        locationGroupedClosures: [],
         totalOpeningsFTE: 0, 
         totalClosuresFTE: 0 
       };
@@ -266,8 +308,10 @@ export function useForecastChecklist(filters?: ForecastBalanceFilters) {
     return {
       openings: allOpenings,
       closures: allClosures,
-      groupedOpenings: groupOpeningsByFacility(allOpenings),
-      groupedClosures: groupClosuresByFacility(allClosures),
+      groupedOpenings: [], // Legacy - no longer used
+      groupedClosures: [], // Legacy - no longer used
+      locationGroupedOpenings: groupOpeningsByLocation(allOpenings),
+      locationGroupedClosures: groupClosuresByLocation(allClosures),
       totalOpeningsFTE,
       totalClosuresFTE,
     };

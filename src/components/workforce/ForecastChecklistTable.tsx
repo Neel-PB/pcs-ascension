@@ -1,8 +1,7 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useForecastChecklist } from '@/hooks/useForecastChecklist';
-import { ForecastChecklistOpeningGroup } from './ForecastChecklistOpeningGroup';
-import { ForecastChecklistClosureGroup } from './ForecastChecklistClosureGroup';
+import { ForecastChecklistLocationGroup } from './ForecastChecklistLocationGroup';
 import { ForecastBalanceFilters } from '@/hooks/useForecastBalance';
 
 export interface ForecastChecklistTableProps {
@@ -11,9 +10,9 @@ export interface ForecastChecklistTableProps {
 }
 
 export function ForecastChecklistTable({ type, filters }: ForecastChecklistTableProps) {
-  const { groupedOpenings, groupedClosures, isLoading } = useForecastChecklist(filters);
+  const { locationGroupedOpenings, locationGroupedClosures, isLoading } = useForecastChecklist(filters);
 
-  const groups = type === 'shortage' ? groupedOpenings : groupedClosures;
+  const groups = type === 'shortage' ? locationGroupedOpenings : locationGroupedClosures;
   const count = groups.length;
 
   if (isLoading) {
@@ -32,20 +31,18 @@ export function ForecastChecklistTable({ type, filters }: ForecastChecklistTable
     <TooltipProvider delayDuration={300}>
       <div className="rounded-lg border border-border bg-card overflow-hidden">
         {count === 0 ? (
-          <div className="p-6 text-center text-xs text-muted-foreground">
+          <div className="p-6 text-center text-[11px] text-muted-foreground">
             No {type === 'shortage' ? 'positions to open' : 'positions to close'} recommended
           </div>
         ) : (
           <div className="overflow-y-auto max-h-full">
-            {type === 'shortage' ? (
-              groupedOpenings.map((group) => (
-                <ForecastChecklistOpeningGroup key={group.facilityName} group={group} />
-              ))
-            ) : (
-              groupedClosures.map((group) => (
-                <ForecastChecklistClosureGroup key={group.facilityName} group={group} />
-              ))
-            )}
+            {groups.map((group) => (
+              <ForecastChecklistLocationGroup 
+                key={group.groupKey} 
+                group={group} 
+                type={type}
+              />
+            ))}
           </div>
         )}
       </div>
