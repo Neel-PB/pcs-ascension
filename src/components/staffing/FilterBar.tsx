@@ -95,10 +95,10 @@ export function FilterBar({
     selectedDepartment !== "all-departments";
 
   return (
-    <div className="flex items-center justify-center gap-3">
+    <div className="flex items-center justify-center">
       {/* LEFT GROUP: Main Hierarchy Filters + Clear Button */}
       <motion.div
-        className={`flex flex-wrap gap-3 justify-center items-center ${className}`}
+        className={`flex flex-nowrap gap-3 items-center ${className}`}
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
@@ -181,7 +181,7 @@ export function FilterBar({
       <div className="h-10 w-[2px] bg-border/60 mx-6" />
 
       {/* RIGHT GROUP: Optional Filters - Submarket and Department Family */}
-      <div className="flex gap-3">
+      <div className="flex flex-nowrap gap-3 items-center">
         {/* Submarket Filter */}
         <Select 
           value={selectedSubmarket} 
