@@ -83,7 +83,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
         })}
       </div>
 
-      {/* Bracket Connector + Shared Breakdown Bar */}
+      {/* Horizontal Connector + Shared Breakdown Bar */}
       {hasConnectedKpis && sharedBreakdown && (
         <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6" style={{ marginTop: '-8px', marginBottom: '-4px' }}>
           {/* Empty spacers for columns before hired-ftes */}
@@ -91,51 +91,22 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
             <div key={`spacer-${i}`} className="hidden xl:block" />
           ))}
           
-          {/* Bracket connector + Breakdown bar container spanning 3 columns */}
+          {/* Breakdown bar with horizontal connectors spanning 3 columns */}
           <div 
-            className="col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-3"
+            className="col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-3 flex items-center"
             style={{ gridColumn: `span 3 / span 3` }}
           >
-            {/* Bracket connector - only visible on xl */}
-            <div className="hidden xl:block relative h-3" style={{ marginTop: '-1px' }}>
-              {/* Left vertical line (under Hired FTEs center) */}
-              <div className={cn(
-                "absolute left-[16.67%] top-0 w-0.5 h-1 -translate-x-1/2",
-                breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
-              )} />
-              
-              {/* Right vertical line (under Open Reqs center) */}
-              <div className={cn(
-                "absolute right-[16.67%] top-0 w-0.5 h-1 translate-x-1/2",
-                breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
-              )} />
-              
-              {/* Horizontal connecting line */}
-              <div className={cn(
-                "absolute left-[16.67%] right-[16.67%] top-1 h-0.5 -translate-x-[1px]",
-                breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
-              )} style={{ width: 'calc(66.66% + 2px)' }} />
-              
-              {/* Center vertical line dropping down */}
-              <div className={cn(
-                "absolute left-1/2 -translate-x-1/2 top-1 w-0.5 h-1.5",
-                breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
-              )} />
-              
-              {/* Arrow tip pointing down */}
-              <div className={cn(
-                "absolute left-1/2 -translate-x-1/2 bottom-0",
-                "w-0 h-0 border-l-[3px] border-r-[3px] border-t-[4px]",
-                "border-l-transparent border-r-transparent",
-                breakdownVariant === 'green' ? "border-t-emerald-500/60" : "border-t-destructive/60"
-              )} />
-            </div>
-
-            {/* Breakdown bar */}
+            {/* Left connector line - extends to Hired FTEs */}
+            <div className={cn(
+              "flex-1 h-0.5",
+              breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
+            )} />
+            
+            {/* Breakdown bar - content width only */}
             <div
               onClick={() => setShowBreakdownModal(true)}
               className={cn(
-                "flex items-center justify-center gap-2 px-2 py-1 rounded-b-lg text-xs font-medium cursor-pointer transition-all",
+                "flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all whitespace-nowrap",
                 breakdownVariant === 'green' 
                   ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:shadow-md hover:shadow-emerald-200/50 dark:hover:shadow-emerald-900/30"
                   : "bg-destructive/10 text-destructive hover:shadow-md hover:shadow-destructive/30"
@@ -144,6 +115,12 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
               <Info className="h-3 w-3" />
               <span>Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN</span>
             </div>
+            
+            {/* Right connector line - extends to Open Reqs */}
+            <div className={cn(
+              "flex-1 h-0.5",
+              breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
+            )} />
           </div>
         </div>
       )}
