@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const COMPACT_BREAKPOINT = 1280; // xl breakpoint in Tailwind
+const COMPACT_BREAKPOINT = 1440; // larger breakpoint to fit all filters
 
 export function useIsCompactScreen() {
   const [isCompact, setIsCompact] = useState(false);
