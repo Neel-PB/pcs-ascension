@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { KPICard, EmploymentBreakdown } from './KPICard';
-import { KPICardGroup } from './KPICardGroup';
-import { Fragment } from 'react';
+import { Info } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
 
 interface KPIData {
   id: string;
@@ -30,34 +32,24 @@ interface DraggableKPISectionProps {
   dragHandleProps?: DragHandleProps;
 }
 
+// IDs that should have the shared breakdown bar
+const BREAKDOWN_CONNECTED_IDS = ['hired-ftes', 'fte-variance', 'open-reqs'];
+
 export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableKPISectionProps) {
-  // Find grouped KPIs (hired-ftes and open-reqs)
+  const [showBreakdownModal, setShowBreakdownModal] = useState(false);
+
+  // Get the shared breakdown from hired-ftes
   const hiredFtesKpi = kpis.find(k => k.id === 'hired-ftes');
-  const openReqsKpi = kpis.find(k => k.id === 'open-reqs');
-  const shouldGroupHiredAndReqs = hiredFtesKpi && openReqsKpi;
-
-  // Get the shared breakdown from hired-ftes (which has the combined data)
   const sharedBreakdown = hiredFtesKpi?.employmentBreakdown;
+  const breakdownVariant = hiredFtesKpi?.breakdownVariant || 'red';
 
-  // Build render items maintaining original order but grouping hired-ftes + open-reqs
-  const renderItems: { type: 'single' | 'group'; kpi?: KPIData; groupKpis?: KPIData[] }[] = [];
-  let groupInserted = false;
+  // Find indices of connected KPIs for grid positioning
+  const hiredIndex = kpis.findIndex(k => k.id === 'hired-ftes');
+  const openReqsIndex = kpis.findIndex(k => k.id === 'open-reqs');
+  const hasConnectedKpis = hiredIndex !== -1 && openReqsIndex !== -1 && sharedBreakdown;
 
-  kpis.forEach((kpi) => {
-    if (shouldGroupHiredAndReqs && (kpi.id === 'hired-ftes' || kpi.id === 'open-reqs')) {
-      // Insert the group once when we encounter hired-ftes
-      if (kpi.id === 'hired-ftes' && !groupInserted) {
-        renderItems.push({ 
-          type: 'group', 
-          groupKpis: [hiredFtesKpi, openReqsKpi] 
-        });
-        groupInserted = true;
-      }
-      // Skip open-reqs since it's part of the group
-      return;
-    }
-    renderItems.push({ type: 'single', kpi });
-  });
+  // Calculate how many columns the breakdown spans (from hired-ftes to open-reqs inclusive)
+  const breakdownSpan = hasConnectedKpis ? openReqsIndex - hiredIndex + 1 : 0;
 
   return (
     <div className="space-y-4">
@@ -75,34 +67,119 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
         )}
         <h2 className="text-lg font-semibold text-foreground">{title}</h2>
       </div>
+      
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-        {renderItems.map((item, idx) => {
-          if (item.type === 'group' && item.groupKpis && sharedBreakdown) {
-            return (
-              <KPICardGroup
-                key="hired-openreqs-group"
-                cards={item.groupKpis.map(kpi => ({
-                  id: kpi.id,
-                  title: kpi.title,
-                  value: kpi.value,
-                  chartData: kpi.chartData,
-                  chartType: kpi.chartType,
-                  delay: kpi.delay,
-                  definition: kpi.definition,
-                  calculation: kpi.calculation,
-                }))}
-                sharedBreakdown={sharedBreakdown}
-                breakdownVariant={hiredFtesKpi?.breakdownVariant || 'red'}
-                groupDelay={hiredFtesKpi?.delay || 0}
-              />
-            );
-          }
-          if (item.type === 'single' && item.kpi) {
-            return <KPICard key={item.kpi.id} {...item.kpi} />;
-          }
-          return null;
+        {kpis.map((kpi) => {
+          // Check if this KPI should have rounded-b-none for breakdown connection
+          const isConnectedKpi = BREAKDOWN_CONNECTED_IDS.includes(kpi.id) && hasConnectedKpis;
+          
+          return (
+            <KPICard 
+              key={kpi.id} 
+              {...kpi}
+              // Remove individual breakdown - will be shown as shared bar
+              employmentBreakdown={undefined}
+              className={isConnectedKpi ? 'rounded-b-none' : undefined}
+            />
+          );
         })}
       </div>
+
+      {/* Shared Breakdown Bar - spans from hired-ftes to open-reqs */}
+      {hasConnectedKpis && sharedBreakdown && (
+        <div 
+          className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 -mt-4"
+        >
+          {/* Empty spacers for columns before hired-ftes */}
+          {Array.from({ length: hiredIndex }).map((_, i) => (
+            <div key={`spacer-${i}`} className="hidden xl:block" />
+          ))}
+          
+          {/* Breakdown bar spanning from hired-ftes to open-reqs */}
+          <div 
+            className={cn(
+              "col-span-1 xl:col-span-3",
+              "md:col-span-1 lg:col-span-1",
+              // Position correctly on different breakpoints
+              hiredIndex === 2 && "md:col-start-3 lg:col-start-3"
+            )}
+            style={{
+              // Dynamic column span for xl screens
+              gridColumn: `span ${breakdownSpan} / span ${breakdownSpan}`
+            }}
+          >
+            <div
+              onClick={() => setShowBreakdownModal(true)}
+              className={cn(
+                "flex items-center justify-center gap-2 px-3 py-2 rounded-b-lg text-xs font-medium cursor-pointer transition-all",
+                breakdownVariant === 'green' 
+                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:shadow-md hover:shadow-emerald-200/50 dark:hover:shadow-emerald-900/30"
+                  : "bg-destructive/10 text-destructive hover:shadow-md hover:shadow-destructive/30"
+              )}
+            >
+              <Info className="h-3 w-3" />
+              <span>Hired + Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Employment Type Split Modal */}
+      <Dialog open={showBreakdownModal} onOpenChange={setShowBreakdownModal}>
+        <DialogContent className="sm:max-w-md border-border/20 focus:outline-none focus-visible:outline-none focus-visible:ring-0 z-[100]">
+          <DialogHeader>
+            <DialogTitle>Employment Type Split Requirement</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              The organization targets a <strong>70/20/10</strong> employment type split to balance workforce stability with flexibility:
+            </p>
+            <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+              <li><strong>70% Full-Time (FT)</strong> – Core workforce stability</li>
+              <li><strong>20% Part-Time (PT)</strong> – Scheduling flexibility</li>
+              <li><strong>10% PRN</strong> – Peak demand coverage</li>
+            </ul>
+            
+            {sharedBreakdown && (
+              <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+                <h4 className="text-sm font-medium mb-3">Current vs Target (Hired + Open Reqs)</h4>
+                <div className="space-y-2">
+                  {[
+                    { label: 'Full-Time', current: sharedBreakdown.ft, target: 70 },
+                    { label: 'Part-Time', current: sharedBreakdown.pt, target: 20 },
+                    { label: 'PRN', current: sharedBreakdown.prn, target: 10 },
+                  ].map(({ label, current, target }) => {
+                    const variance = current - target;
+                    const isOnTarget = Math.abs(variance) < 1;
+                    return (
+                      <div key={label} className="flex items-center justify-between text-sm">
+                        <span>{label}</span>
+                        <div className="flex items-center gap-3">
+                          <span className={cn(
+                            "font-medium",
+                            isOnTarget ? "text-emerald-500" : "text-red-500"
+                          )}>
+                            {current}%
+                          </span>
+                          <span className="text-muted-foreground">vs {target}%</span>
+                          {!isOnTarget && (
+                            <span className={cn(
+                              "text-xs",
+                              variance > 0 ? "text-red-500" : "text-red-500"
+                            )}>
+                              ({variance > 0 ? '+' : ''}{variance.toFixed(0)}%)
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

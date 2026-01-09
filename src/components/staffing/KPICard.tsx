@@ -18,7 +18,7 @@ export interface EmploymentBreakdown {
   prn: number; // percentage
 }
 
-interface KPICardProps {
+export interface KPICardProps {
   title: string;
   value: string | number;
   trend?: "up" | "down";
@@ -35,6 +35,7 @@ interface KPICardProps {
   xAxisLabels?: string[];
   employmentBreakdown?: EmploymentBreakdown;
   breakdownVariant?: 'green' | 'red';
+  className?: string;
 }
 
 export function KPICard({
@@ -54,6 +55,7 @@ export function KPICard({
   xAxisLabels,
   employmentBreakdown,
   breakdownVariant,
+  className,
 }: KPICardProps) {
   const [showChartModal, setShowChartModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
@@ -79,7 +81,8 @@ export function KPICard({
             "hover:shadow-lg transition-all duration-300",
             isHighlighted && "border-emerald-500/50 bg-emerald-500/5",
             isNegative && "border-destructive/50 bg-destructive/5",
-            employmentBreakdown && "rounded-b-none"
+            employmentBreakdown && "rounded-b-none",
+            className
           )}
         >
           <CardContent className="p-4 pr-10 relative">
