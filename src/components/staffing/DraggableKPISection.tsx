@@ -114,6 +114,14 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
               )} />
             </div>
             
+            {/* Horizontal connector line attaching to breakdown bar */}
+            <div className="flex w-full" style={{ width: '80%' }}>
+              <div className={cn(
+                "h-0.5 w-full",
+                breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
+              )} />
+            </div>
+            
             {/* Breakdown bar - styled exactly like Target FTEs */}
             <div
               onClick={() => setShowBreakdownModal(true)}
