@@ -99,7 +99,7 @@ export function FilterBar({
     selectedDepartment !== "all-departments";
 
   return (
-    <div className="flex items-center justify-start overflow-x-auto flex-nowrap gap-2 xl:gap-0 scrollbar-thin">
+    <div className="flex items-center justify-center overflow-x-auto flex-nowrap gap-2 xl:gap-0 scrollbar-thin">
       {/* LEFT GROUP: Main Hierarchy Filters + Clear Button */}
       <motion.div
         className={`flex flex-wrap xl:flex-nowrap gap-2 xl:gap-3 items-center ${className}`}
