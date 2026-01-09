@@ -96,45 +96,54 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
             className="col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-3 flex flex-col items-center"
             style={{ gridColumn: `span 3 / span 3` }}
           >
-            {/* Breakdown bar with connectors that attach to the left/right edges */}
-            <div className="relative inline-flex flex-col items-center">
-              {/* Connectors */}
+            {/* Vertical connector lines rising UP to cards */}
+            <div className="flex w-full" style={{ width: '80%' }}>
+              {/* Left vertical line - rises to Hired FTEs */}
               <div className={cn(
-                "absolute left-0 right-0 -top-0.5 h-0.5",
+                "w-0.5 h-4",
                 breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
               )} />
+              
+              {/* Spacer between vertical lines */}
+              <div className="flex-1" />
+              
+              {/* Right vertical line - rises to Open Reqs */}
               <div className={cn(
-                "absolute left-0 -top-4 w-0.5 h-4",
+                "w-0.5 h-4",
                 breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
               )} />
+            </div>
+            
+            {/* Horizontal connector line attaching to breakdown bar */}
+            <div className="flex w-full" style={{ width: '80%' }}>
               <div className={cn(
-                "absolute right-0 -top-4 w-0.5 h-4",
+                "h-0.5 w-full",
                 breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
               )} />
-
-              {/* Breakdown bar - styled exactly like Target FTEs */}
-              <div
-                onClick={() => setShowBreakdownModal(true)}
-                className={cn(
-                  "relative flex items-center gap-2 px-2 py-1 rounded-b-lg text-xs",
-                  "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
-                  breakdownVariant === 'green' && "bg-emerald-500/10 hover:shadow-emerald-300/40",
-                  breakdownVariant === 'red' && "bg-destructive/10 hover:shadow-destructive/30"
-                )}
-              >
-                <Info className={cn(
-                  "h-3 w-3 shrink-0",
-                  breakdownVariant === 'green' && "text-emerald-600",
-                  breakdownVariant === 'red' && "text-destructive"
-                )} />
-                <span className={cn(
-                  "font-medium",
-                  breakdownVariant === 'green' && "text-emerald-700",
-                  breakdownVariant === 'red' && "text-destructive"
-                )}>
-                  Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN
-                </span>
-              </div>
+            </div>
+            
+            {/* Breakdown bar - styled exactly like Target FTEs */}
+            <div
+              onClick={() => setShowBreakdownModal(true)}
+              className={cn(
+                "flex items-center gap-2 px-2 py-1 rounded-b-lg text-xs",
+                "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
+                breakdownVariant === 'green' && "bg-emerald-500/10 hover:shadow-emerald-300/40",
+                breakdownVariant === 'red' && "bg-destructive/10 hover:shadow-destructive/30"
+              )}
+            >
+              <Info className={cn(
+                "h-3 w-3 shrink-0",
+                breakdownVariant === 'green' && "text-emerald-600",
+                breakdownVariant === 'red' && "text-destructive"
+              )} />
+              <span className={cn(
+                "font-medium",
+                breakdownVariant === 'green' && "text-emerald-700",
+                breakdownVariant === 'red' && "text-destructive"
+              )}>
+                Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN
+              </span>
             </div>
           </div>
         </div>
