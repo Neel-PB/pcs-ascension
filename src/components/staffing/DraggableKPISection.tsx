@@ -77,8 +77,9 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
             <KPICard 
               key={kpi.id} 
               {...kpi}
-              // Remove individual breakdown - will be shown as shared bar
-              employmentBreakdown={undefined}
+              // Only remove breakdown for hired-ftes (it uses the shared bar)
+              // Keep breakdown for target-ftes and all other KPIs
+              employmentBreakdown={kpi.id === 'hired-ftes' ? undefined : kpi.employmentBreakdown}
               className={isConnectedKpi ? 'rounded-b-none' : undefined}
             />
           );
