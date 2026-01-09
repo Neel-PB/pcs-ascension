@@ -32,8 +32,8 @@ interface DraggableKPISectionProps {
   dragHandleProps?: DragHandleProps;
 }
 
-// IDs that should have the shared breakdown bar
-const BREAKDOWN_CONNECTED_IDS = ['hired-ftes', 'fte-variance', 'open-reqs'];
+// Only Hired FTEs and Open Reqs get rounded-b-none (not FTE Variance)
+const BREAKDOWN_CONNECTED_IDS = ['hired-ftes', 'open-reqs'];
 
 export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableKPISectionProps) {
   const [showBreakdownModal, setShowBreakdownModal] = useState(false);
@@ -47,9 +47,6 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
   const hiredIndex = kpis.findIndex(k => k.id === 'hired-ftes');
   const openReqsIndex = kpis.findIndex(k => k.id === 'open-reqs');
   const hasConnectedKpis = hiredIndex !== -1 && openReqsIndex !== -1 && sharedBreakdown;
-
-  // Calculate how many columns the breakdown spans (from hired-ftes to open-reqs inclusive)
-  const breakdownSpan = hasConnectedKpis ? openReqsIndex - hiredIndex + 1 : 0;
 
   return (
     <div className="space-y-4">
@@ -86,33 +83,61 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
         })}
       </div>
 
-      {/* Shared Breakdown Bar - spans from hired-ftes to open-reqs */}
+      {/* Shared Breakdown Bar with Visual Connectors */}
       {hasConnectedKpis && sharedBreakdown && (
-        <div 
-          className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 -mt-4"
-        >
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6" style={{ marginTop: '-1px' }}>
           {/* Empty spacers for columns before hired-ftes */}
           {Array.from({ length: hiredIndex }).map((_, i) => (
-            <div key={`spacer-${i}`} className="hidden xl:block" />
+            <div key={`spacer-before-${i}`} className="hidden xl:block" />
           ))}
           
-          {/* Breakdown bar spanning from hired-ftes to open-reqs */}
+          {/* Hired FTEs connector */}
+          <div className="hidden xl:flex flex-col items-center">
+            <div className={cn(
+              "w-3 h-3 border-l-2 border-b-2 rotate-[-45deg] -mb-1.5",
+              breakdownVariant === 'green' 
+                ? "border-emerald-500/60" 
+                : "border-destructive/60"
+            )} />
+          </div>
+          
+          {/* FTE Variance spacer - no connector */}
+          <div className="hidden xl:block" />
+          
+          {/* Open Reqs connector */}
+          <div className="hidden xl:flex flex-col items-center">
+            <div className={cn(
+              "w-3 h-3 border-r-2 border-b-2 rotate-[45deg] -mb-1.5",
+              breakdownVariant === 'green' 
+                ? "border-emerald-500/60" 
+                : "border-destructive/60"
+            )} />
+          </div>
+          
+          {/* Remaining spacers */}
+          {Array.from({ length: Math.max(0, 6 - openReqsIndex - 1) }).map((_, i) => (
+            <div key={`spacer-after-${i}`} className="hidden xl:block" />
+          ))}
+        </div>
+      )}
+
+      {/* Shared Breakdown Bar Content */}
+      {hasConnectedKpis && sharedBreakdown && (
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6" style={{ marginTop: '-8px' }}>
+          {/* Empty spacers for columns before hired-ftes */}
+          {Array.from({ length: hiredIndex }).map((_, i) => (
+            <div key={`bar-spacer-${i}`} className="hidden xl:block" />
+          ))}
+          
+          {/* Breakdown bar spanning from hired-ftes to open-reqs (skipping variance visually) */}
           <div 
-            className={cn(
-              "col-span-1 xl:col-span-3",
-              "md:col-span-1 lg:col-span-1",
-              // Position correctly on different breakpoints
-              hiredIndex === 2 && "md:col-start-3 lg:col-start-3"
-            )}
-            style={{
-              // Dynamic column span for xl screens
-              gridColumn: `span ${breakdownSpan} / span ${breakdownSpan}`
-            }}
+            className="col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-3"
+            style={{ gridColumn: `span 3 / span 3` }}
           >
             <div
               onClick={() => setShowBreakdownModal(true)}
               className={cn(
-                "flex items-center justify-center gap-2 px-3 py-2 rounded-b-lg text-xs font-medium cursor-pointer transition-all",
+                "flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium cursor-pointer transition-all",
                 breakdownVariant === 'green' 
                   ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:shadow-md hover:shadow-emerald-200/50 dark:hover:shadow-emerald-900/30"
                   : "bg-destructive/10 text-destructive hover:shadow-md hover:shadow-destructive/30"
