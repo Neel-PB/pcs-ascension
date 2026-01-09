@@ -142,7 +142,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
               )}
             >
               <Info className="h-3 w-3" />
-              <span>Hired + Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN</span>
+              <span>Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN</span>
             </div>
           </div>
         </div>
