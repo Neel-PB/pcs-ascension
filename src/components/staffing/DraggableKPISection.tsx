@@ -85,7 +85,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
 
       {/* Bracket Connector + Shared Breakdown Bar */}
       {hasConnectedKpis && sharedBreakdown && (
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6" style={{ marginTop: '-1px' }}>
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6" style={{ marginTop: '-2px' }}>
           {/* Empty spacers for columns before hired-ftes */}
           {Array.from({ length: hiredIndex }).map((_, i) => (
             <div key={`spacer-${i}`} className="hidden xl:block" />
@@ -97,34 +97,34 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
             style={{ gridColumn: `span 3 / span 3` }}
           >
             {/* Bracket connector - only visible on xl */}
-            <div className="hidden xl:block relative h-5 mb-1">
+            <div className="hidden xl:block relative h-4 -mt-px">
               {/* Left vertical line (under Hired FTEs center) */}
               <div className={cn(
-                "absolute left-[16.67%] top-0 w-0.5 h-2 -translate-x-1/2",
+                "absolute left-[16.67%] top-0 w-0.5 h-1.5 -translate-x-1/2",
                 breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
               )} />
               
               {/* Right vertical line (under Open Reqs center) */}
               <div className={cn(
-                "absolute right-[16.67%] top-0 w-0.5 h-2 translate-x-1/2",
+                "absolute right-[16.67%] top-0 w-0.5 h-1.5 translate-x-1/2",
                 breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
               )} />
               
               {/* Horizontal connecting line */}
               <div className={cn(
-                "absolute left-[16.67%] right-[16.67%] top-2 h-0.5 -translate-x-[1px]",
+                "absolute left-[16.67%] right-[16.67%] top-1.5 h-0.5 -translate-x-[1px]",
                 breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
               )} style={{ width: 'calc(66.66% + 2px)' }} />
               
               {/* Center vertical line dropping down */}
               <div className={cn(
-                "absolute left-1/2 -translate-x-1/2 top-2 w-0.5 h-2.5",
+                "absolute left-1/2 -translate-x-1/2 top-1.5 w-0.5 h-2",
                 breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
               )} />
               
               {/* Arrow tip pointing down */}
               <div className={cn(
-                "absolute left-1/2 -translate-x-1/2 bottom-0",
+                "absolute left-1/2 -translate-x-1/2 bottom-0.5",
                 "w-0 h-0 border-l-[4px] border-r-[4px] border-t-[5px]",
                 "border-l-transparent border-r-transparent",
                 breakdownVariant === 'green' ? "border-t-emerald-500/60" : "border-t-destructive/60"
@@ -135,7 +135,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
             <div
               onClick={() => setShowBreakdownModal(true)}
               className={cn(
-                "flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium cursor-pointer transition-all",
+                "flex items-center justify-center gap-2 px-2 py-1 rounded-b-lg text-xs font-medium cursor-pointer transition-all",
                 breakdownVariant === 'green' 
                   ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:shadow-md hover:shadow-emerald-200/50 dark:hover:shadow-emerald-900/30"
                   : "bg-destructive/10 text-destructive hover:shadow-md hover:shadow-destructive/30"
