@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { useFilterData } from "@/hooks/useFilterData";
+import { useIsCompactScreen } from "@/hooks/use-compact-screen";
+import { CombinedOptionalFilters } from "./CombinedOptionalFilters";
 
 interface FilterBarProps {
   className?: string;
@@ -48,6 +50,8 @@ export function FilterBar({
     getDepartmentsByFacility,
     getSubmarketsByMarket,
   } = useFilterData();
+
+  const isCompact = useIsCompactScreen();
 
   // PSTAT Options
   const pstatOptions = [
@@ -95,17 +99,17 @@ export function FilterBar({
     selectedDepartment !== "all-departments";
 
   return (
-    <div className="flex items-center justify-center">
+    <div className="flex items-center justify-center flex-wrap xl:flex-nowrap gap-2 xl:gap-0">
       {/* LEFT GROUP: Main Hierarchy Filters + Clear Button */}
       <motion.div
-        className={`flex flex-nowrap gap-3 items-center ${className}`}
+        className={`flex flex-wrap xl:flex-nowrap gap-2 xl:gap-3 items-center ${className}`}
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
         {/* Region Filter */}
         <Select value={selectedRegion} onValueChange={onRegionChange}>
-          <SelectTrigger className="w-[150px] bg-background border-border">
+          <SelectTrigger className={`${isCompact ? 'min-w-[120px] flex-shrink' : 'w-[150px]'} bg-background border-border`}>
             <SelectValue placeholder="Select region" />
           </SelectTrigger>
           <SelectContent className="bg-popover border-border z-50">
@@ -118,7 +122,7 @@ export function FilterBar({
 
         {/* Market Filter */}
         <Select value={selectedMarket} onValueChange={onMarketChange}>
-          <SelectTrigger className="w-[150px] bg-background border-border">
+          <SelectTrigger className={`${isCompact ? 'min-w-[120px] flex-shrink' : 'w-[150px]'} bg-background border-border`}>
             <SelectValue placeholder="Select market" />
           </SelectTrigger>
           <SelectContent className="bg-popover border-border z-50">
@@ -135,7 +139,7 @@ export function FilterBar({
           onValueChange={onFacilityChange}
           disabled={selectedMarket === "all-markets"}
         >
-          <SelectTrigger className="w-[250px] bg-background border-border">
+          <SelectTrigger className={`${isCompact ? 'min-w-[160px] flex-shrink' : 'w-[250px]'} bg-background border-border`}>
             <SelectValue placeholder="Select facility" />
           </SelectTrigger>
           <SelectContent className="bg-popover border-border z-50">
@@ -152,7 +156,7 @@ export function FilterBar({
           onValueChange={onDepartmentChange}
           disabled={selectedFacility === "all-facilities"}
         >
-          <SelectTrigger className="w-[180px] bg-background border-border">
+          <SelectTrigger className={`${isCompact ? 'min-w-[140px] flex-shrink' : 'w-[180px]'} bg-background border-border`}>
             <SelectValue placeholder="Select department" />
           </SelectTrigger>
           <SelectContent className="bg-popover border-border z-50">
@@ -169,7 +173,7 @@ export function FilterBar({
           size="icon"
           onClick={onClearFilters}
           disabled={!hasActiveFilters}
-          className="disabled:opacity-50 disabled:cursor-not-allowed"
+          className="disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
           title="Clear all filters"
           aria-label="Clear all filters"
         >
@@ -177,60 +181,75 @@ export function FilterBar({
         </Button>
       </motion.div>
 
-      {/* SEPARATOR - thicker visual break */}
-      <div className="h-10 w-[2px] bg-border/60 mx-6" />
+      {/* SEPARATOR - hidden on compact screens */}
+      <div className="hidden xl:block h-10 w-[2px] bg-border/60 mx-6" />
 
-      {/* RIGHT GROUP: Optional Filters - Submarket and Department Family */}
-      <div className="flex flex-nowrap gap-3 items-center">
-        {/* Submarket Filter */}
-        <Select 
-          value={selectedSubmarket} 
-          onValueChange={onSubmarketChange}
-          disabled={selectedMarket === "all-markets" || availableSubmarkets.length === 0}
-        >
-          <SelectTrigger className="w-[150px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-            <SelectValue placeholder="Submarket" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
-            <SelectItem value="all-submarkets">All Submarkets</SelectItem>
-            {availableSubmarkets.map(submarket => (
-              <SelectItem key={submarket} value={submarket}>{submarket}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* RIGHT GROUP: Optional Filters */}
+      {isCompact ? (
+        <CombinedOptionalFilters
+          selectedSubmarket={selectedSubmarket}
+          selectedLevel2={selectedLevel2}
+          selectedPstat={selectedPstat}
+          onSubmarketChange={onSubmarketChange}
+          onLevel2Change={onLevel2Change}
+          onPstatChange={onPstatChange}
+          submarketOptions={availableSubmarkets}
+          level2Options={level2Options}
+          pstatOptions={pstatOptions}
+          submarketDisabled={selectedMarket === "all-markets" || availableSubmarkets.length === 0}
+        />
+      ) : (
+        <div className="flex flex-nowrap gap-3 items-center">
+          {/* Submarket Filter */}
+          <Select 
+            value={selectedSubmarket} 
+            onValueChange={onSubmarketChange}
+            disabled={selectedMarket === "all-markets" || availableSubmarkets.length === 0}
+          >
+            <SelectTrigger className="w-[150px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              <SelectValue placeholder="Submarket" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
+              <SelectItem value="all-submarkets">All Submarkets</SelectItem>
+              {availableSubmarkets.map(submarket => (
+                <SelectItem key={submarket} value={submarket}>{submarket}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        {/* Level 2 Filter */}
-        <Select 
-          value={selectedLevel2} 
-          onValueChange={onLevel2Change}
-        >
-          <SelectTrigger className="w-[200px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
-            <SelectValue placeholder="Level 2" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
-            <SelectItem value="all-level2">All Level 2</SelectItem>
-            {level2Options.map(level => (
-              <SelectItem key={level} value={level}>{level}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          {/* Level 2 Filter */}
+          <Select 
+            value={selectedLevel2} 
+            onValueChange={onLevel2Change}
+          >
+            <SelectTrigger className="w-[200px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
+              <SelectValue placeholder="Level 2" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
+              <SelectItem value="all-level2">All Level 2</SelectItem>
+              {level2Options.map(level => (
+                <SelectItem key={level} value={level}>{level}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        {/* PSTAT Filter */}
-        <Select 
-          value={selectedPstat} 
-          onValueChange={onPstatChange}
-        >
-          <SelectTrigger className="w-[200px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
-            <SelectValue placeholder="PSTAT" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
-            <SelectItem value="all-pstat">All PSTAT</SelectItem>
-            {pstatOptions.map(pstat => (
-              <SelectItem key={pstat} value={pstat}>{pstat}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+          {/* PSTAT Filter */}
+          <Select 
+            value={selectedPstat} 
+            onValueChange={onPstatChange}
+          >
+            <SelectTrigger className="w-[200px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
+              <SelectValue placeholder="PSTAT" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
+              <SelectItem value="all-pstat">All PSTAT</SelectItem>
+              {pstatOptions.map(pstat => (
+                <SelectItem key={pstat} value={pstat}>{pstat}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
     </div>
   );
 }
