@@ -93,34 +93,48 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
           
           {/* Breakdown bar with horizontal connectors spanning 3 columns */}
           <div 
-            className="col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-3 flex items-center"
+            className="col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-3 flex items-center justify-center"
             style={{ gridColumn: `span 3 / span 3` }}
           >
-            {/* Left connector line - extends to Hired FTEs */}
-            <div className={cn(
-              "flex-1 h-0.5",
-              breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
-            )} />
+            {/* Left connector - from center of Hired FTEs to breakdown bar */}
+            <div className="flex-1 flex justify-end">
+              <div className={cn(
+                "h-0.5 w-1/2",
+                breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
+              )} />
+            </div>
             
-            {/* Breakdown bar - content width only */}
+            {/* Breakdown bar - matching Target FTEs style exactly */}
             <div
               onClick={() => setShowBreakdownModal(true)}
               className={cn(
-                "flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all whitespace-nowrap",
-                breakdownVariant === 'green' 
-                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:shadow-md hover:shadow-emerald-200/50 dark:hover:shadow-emerald-900/30"
-                  : "bg-destructive/10 text-destructive hover:shadow-md hover:shadow-destructive/30"
+                "flex items-center gap-2 px-2 py-1 rounded-b-lg text-xs",
+                "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
+                breakdownVariant === 'green' && "bg-emerald-500/10 hover:shadow-emerald-300/40",
+                breakdownVariant === 'red' && "bg-destructive/10 hover:shadow-destructive/30"
               )}
             >
-              <Info className="h-3 w-3" />
-              <span>Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN</span>
+              <Info className={cn(
+                "h-3 w-3 shrink-0",
+                breakdownVariant === 'green' && "text-emerald-600",
+                breakdownVariant === 'red' && "text-destructive"
+              )} />
+              <span className={cn(
+                "font-medium",
+                breakdownVariant === 'green' && "text-emerald-700",
+                breakdownVariant === 'red' && "text-destructive"
+              )}>
+                Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN
+              </span>
             </div>
             
-            {/* Right connector line - extends to Open Reqs */}
-            <div className={cn(
-              "flex-1 h-0.5",
-              breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
-            )} />
+            {/* Right connector - from breakdown bar to center of Open Reqs */}
+            <div className="flex-1 flex justify-start">
+              <div className={cn(
+                "h-0.5 w-1/2",
+                breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
+              )} />
+            </div>
           </div>
         </div>
       )}
