@@ -83,57 +83,55 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
         })}
       </div>
 
-      {/* Shared Breakdown Bar with Visual Connectors */}
+      {/* Bracket Connector + Shared Breakdown Bar */}
       {hasConnectedKpis && sharedBreakdown && (
         <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6" style={{ marginTop: '-1px' }}>
           {/* Empty spacers for columns before hired-ftes */}
           {Array.from({ length: hiredIndex }).map((_, i) => (
-            <div key={`spacer-before-${i}`} className="hidden xl:block" />
+            <div key={`spacer-${i}`} className="hidden xl:block" />
           ))}
           
-          {/* Hired FTEs connector */}
-          <div className="hidden xl:flex flex-col items-center">
-            <div className={cn(
-              "w-3 h-3 border-l-2 border-b-2 rotate-[-45deg] -mb-1.5",
-              breakdownVariant === 'green' 
-                ? "border-emerald-500/60" 
-                : "border-destructive/60"
-            )} />
-          </div>
-          
-          {/* FTE Variance spacer - no connector */}
-          <div className="hidden xl:block" />
-          
-          {/* Open Reqs connector */}
-          <div className="hidden xl:flex flex-col items-center">
-            <div className={cn(
-              "w-3 h-3 border-r-2 border-b-2 rotate-[45deg] -mb-1.5",
-              breakdownVariant === 'green' 
-                ? "border-emerald-500/60" 
-                : "border-destructive/60"
-            )} />
-          </div>
-          
-          {/* Remaining spacers */}
-          {Array.from({ length: Math.max(0, 6 - openReqsIndex - 1) }).map((_, i) => (
-            <div key={`spacer-after-${i}`} className="hidden xl:block" />
-          ))}
-        </div>
-      )}
-
-      {/* Shared Breakdown Bar Content */}
-      {hasConnectedKpis && sharedBreakdown && (
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6" style={{ marginTop: '-8px' }}>
-          {/* Empty spacers for columns before hired-ftes */}
-          {Array.from({ length: hiredIndex }).map((_, i) => (
-            <div key={`bar-spacer-${i}`} className="hidden xl:block" />
-          ))}
-          
-          {/* Breakdown bar spanning from hired-ftes to open-reqs (skipping variance visually) */}
+          {/* Bracket connector + Breakdown bar container spanning 3 columns */}
           <div 
             className="col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-3"
             style={{ gridColumn: `span 3 / span 3` }}
           >
+            {/* Bracket connector - only visible on xl */}
+            <div className="hidden xl:block relative h-5 mb-1">
+              {/* Left vertical line (under Hired FTEs center) */}
+              <div className={cn(
+                "absolute left-[16.67%] top-0 w-0.5 h-2 -translate-x-1/2",
+                breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
+              )} />
+              
+              {/* Right vertical line (under Open Reqs center) */}
+              <div className={cn(
+                "absolute right-[16.67%] top-0 w-0.5 h-2 translate-x-1/2",
+                breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
+              )} />
+              
+              {/* Horizontal connecting line */}
+              <div className={cn(
+                "absolute left-[16.67%] right-[16.67%] top-2 h-0.5 -translate-x-[1px]",
+                breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
+              )} style={{ width: 'calc(66.66% + 2px)' }} />
+              
+              {/* Center vertical line dropping down */}
+              <div className={cn(
+                "absolute left-1/2 -translate-x-1/2 top-2 w-0.5 h-2.5",
+                breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
+              )} />
+              
+              {/* Arrow tip pointing down */}
+              <div className={cn(
+                "absolute left-1/2 -translate-x-1/2 bottom-0",
+                "w-0 h-0 border-l-[4px] border-r-[4px] border-t-[5px]",
+                "border-l-transparent border-r-transparent",
+                breakdownVariant === 'green' ? "border-t-emerald-500/60" : "border-t-destructive/60"
+              )} />
+            </div>
+
+            {/* Breakdown bar */}
             <div
               onClick={() => setShowBreakdownModal(true)}
               className={cn(
