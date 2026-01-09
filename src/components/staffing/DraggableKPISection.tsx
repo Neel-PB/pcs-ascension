@@ -83,7 +83,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
         })}
       </div>
 
-      {/* Horizontal Connector + Shared Breakdown Bar */}
+      {/* Shared Breakdown Bar with upward connector lines */}
       {hasConnectedKpis && sharedBreakdown && (
         <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6" style={{ marginTop: '-8px', marginBottom: '-4px' }}>
           {/* Empty spacers for columns before hired-ftes */}
@@ -91,20 +91,30 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
             <div key={`spacer-${i}`} className="hidden xl:block" />
           ))}
           
-          {/* Breakdown bar with horizontal connectors spanning 3 columns */}
+          {/* Container spanning 3 columns - with vertical lines rising up and breakdown bar below */}
           <div 
-            className="col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-3 flex items-center justify-center"
+            className="col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-3 flex flex-col items-center"
             style={{ gridColumn: `span 3 / span 3` }}
           >
-            {/* Left connector - from center of Hired FTEs to breakdown bar */}
-            <div className="flex-1 flex justify-end">
+            {/* Vertical connector lines rising UP to cards */}
+            <div className="flex w-full" style={{ width: '80%' }}>
+              {/* Left vertical line - rises to Hired FTEs */}
               <div className={cn(
-                "h-0.5 w-1/2",
+                "w-0.5 h-4",
+                breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
+              )} />
+              
+              {/* Spacer between vertical lines */}
+              <div className="flex-1" />
+              
+              {/* Right vertical line - rises to Open Reqs */}
+              <div className={cn(
+                "w-0.5 h-4",
                 breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
               )} />
             </div>
             
-            {/* Breakdown bar - matching Target FTEs style exactly */}
+            {/* Breakdown bar - styled exactly like Target FTEs */}
             <div
               onClick={() => setShowBreakdownModal(true)}
               className={cn(
@@ -126,14 +136,6 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
               )}>
                 Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN
               </span>
-            </div>
-            
-            {/* Right connector - from breakdown bar to center of Open Reqs */}
-            <div className="flex-1 flex justify-start">
-              <div className={cn(
-                "h-0.5 w-1/2",
-                breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
-              )} />
             </div>
           </div>
         </div>
