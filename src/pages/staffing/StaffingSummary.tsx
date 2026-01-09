@@ -141,6 +141,7 @@ Includes:
 • Full-time staff (1.0 FTE each)
 • Part-time staff (0.5, 0.8, etc.)
 • Active employees only (excludes open positions)`,
+        // Breakdown now represents combined Hired FTEs + Open Reqs split
         employmentBreakdown: { ft: 62, pt: 23, prn: 15 },
         breakdownVariant: 'red' as const,
       },
