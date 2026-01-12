@@ -83,9 +83,9 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
         })}
       </div>
 
-      {/* Shared Breakdown Bar positioned under FTE Variance with left/right connectors */}
+      {/* Shared Breakdown Bar positioned under FTE Variance with rising connectors to Hired and Open Reqs */}
       {hasConnectedKpis && sharedBreakdown && (
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6" style={{ marginTop: '-12px', marginBottom: '-4px' }}>
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6" style={{ marginTop: '-8px', marginBottom: '-4px' }}>
           {/* Empty spacers for columns before hired-ftes */}
           {Array.from({ length: hiredIndex }).map((_, i) => (
             <div key={`spacer-${i}`} className="hidden xl:block" />
@@ -96,25 +96,26 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
             className="col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-3"
             style={{ gridColumn: `span 3 / span 3` }}
           >
-            <div className="flex items-start">
-              {/* LEFT: Horizontal line extending to Hired FTEs with vertical connector */}
-              <div className="flex-1 flex items-start justify-end">
-                <div className={cn(
-                  "h-0.5 flex-1",
-                  breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
-                )} style={{ marginTop: '12px' }} />
-                {/* Vertical line going up to Hired card */}
+            <div className="flex items-end justify-center">
+              {/* LEFT connector: Vertical line rising up, horizontal line to badge */}
+              <div className="flex-1 flex flex-col items-center">
+                {/* Vertical line rising UP to Hired FTEs */}
                 <div className={cn(
                   "w-0.5 h-3",
                   breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
                 )} />
+                {/* Horizontal line extending right to badge */}
+                <div className={cn(
+                  "h-0.5 w-full",
+                  breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
+                )} />
               </div>
               
-              {/* CENTER: The breakdown badge (positioned under FTE Variance) */}
+              {/* CENTER: The breakdown badge */}
               <div
                 onClick={() => setShowBreakdownModal(true)}
                 className={cn(
-                  "flex items-center justify-center gap-2 px-3 py-1 rounded-lg text-xs shrink-0",
+                  "flex items-center justify-center gap-2 px-2 py-1 rounded-b-lg text-xs shrink-0",
                   "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
                   breakdownVariant === 'green' && "bg-emerald-500/10 hover:shadow-emerald-300/40",
                   breakdownVariant === 'red' && "bg-destructive/10 hover:shadow-destructive/30"
@@ -134,17 +135,18 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
                 </span>
               </div>
               
-              {/* RIGHT: Horizontal line extending to Open Reqs with vertical connector */}
-              <div className="flex-1 flex items-start">
-                {/* Vertical line going up to Open Reqs card */}
+              {/* RIGHT connector: Horizontal line from badge, vertical line rising up */}
+              <div className="flex-1 flex flex-col items-center">
+                {/* Vertical line rising UP to Open Reqs */}
                 <div className={cn(
                   "w-0.5 h-3",
                   breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
                 )} />
+                {/* Horizontal line extending left to badge */}
                 <div className={cn(
-                  "h-0.5 flex-1",
+                  "h-0.5 w-full",
                   breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
-                )} style={{ marginTop: '12px' }} />
+                )} />
               </div>
             </div>
           </div>
