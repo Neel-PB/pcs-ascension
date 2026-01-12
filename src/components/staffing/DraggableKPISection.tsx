@@ -37,11 +37,16 @@ const BREAKDOWN_CONNECTED_IDS = ['hired-ftes', 'open-reqs'];
 
 export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableKPISectionProps) {
   const [showBreakdownModal, setShowBreakdownModal] = useState(false);
+  const [showTargetBreakdownModal, setShowTargetBreakdownModal] = useState(false);
 
   // Get the shared breakdown from hired-ftes
   const hiredFtesKpi = kpis.find(k => k.id === 'hired-ftes');
   const sharedBreakdown = hiredFtesKpi?.employmentBreakdown;
   const breakdownVariant = hiredFtesKpi?.breakdownVariant || 'red';
+
+  // Get target-ftes breakdown
+  const targetFtesKpi = kpis.find(k => k.id === 'target-ftes');
+  const targetBreakdown = targetFtesKpi?.employmentBreakdown;
 
   // Find indices of connected KPIs for grid positioning
   const hiredIndex = kpis.findIndex(k => k.id === 'hired-ftes');
@@ -71,52 +76,48 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
           <KPICard 
             key={kpi.id} 
             {...kpi}
-            // Only remove breakdown for hired-ftes (it uses the shared bar)
-            // Keep breakdown for target-ftes and all other KPIs
-            employmentBreakdown={kpi.id === 'hired-ftes' ? undefined : kpi.employmentBreakdown}
+            // Remove breakdown for hired-ftes and target-ftes (they use the shared badge row below)
+            employmentBreakdown={kpi.id === 'hired-ftes' || kpi.id === 'target-ftes' ? undefined : kpi.employmentBreakdown}
           />
         ))}
       </div>
 
-      {/* Shared Breakdown Bar - normal flow below KPI grid */}
-      {hasConnectedKpis && sharedBreakdown && (
-        <div 
-          className="hidden xl:grid gap-4 grid-cols-6"
-          style={{ marginTop: '-1px' }}
-        >
-          {/* Empty spacers for columns before hired-ftes */}
-          {Array.from({ length: hiredIndex }).map((_, i) => (
-            <div key={`spacer-${i}`} />
-          ))}
-          
-          {/* Container spanning 3 columns - badge centered with no connector lines */}
-          <div className="col-span-3 flex justify-center mt-3">
-            {/* Badge - centered */}
-            <div className="flex-shrink-0">
-              <div
-                onClick={() => setShowBreakdownModal(true)}
-                className={cn(
-                  "flex items-center justify-center gap-2 px-3 py-1.5 rounded-full text-xs",
-                  "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
-                  breakdownVariant === 'green' && "bg-emerald-500/10 hover:shadow-emerald-300/40",
-                  breakdownVariant === 'red' && "bg-destructive/10 hover:shadow-destructive/30"
-                )}
-              >
-                <Info className={cn(
-                  "h-3 w-3 shrink-0",
-                  breakdownVariant === 'green' && "text-emerald-600",
-                  breakdownVariant === 'red' && "text-destructive"
-                )} />
-                <span className={cn(
-                  "font-medium",
-                  breakdownVariant === 'green' && "text-emerald-700",
-                  breakdownVariant === 'red' && "text-destructive"
-                )}>
-                  Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN
-                </span>
-              </div>
+      {/* Badges Row - both badges on the same line */}
+      {(targetBreakdown || (hasConnectedKpis && sharedBreakdown)) && (
+        <div className="hidden xl:flex items-center justify-center gap-4 mt-2">
+          {/* Target FTEs Badge (Green) */}
+          {targetBreakdown && (
+            <div
+              onClick={() => setShowTargetBreakdownModal(true)}
+              className={cn(
+                "flex items-center justify-center gap-2 px-3 py-1.5 rounded-full text-xs",
+                "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
+                "bg-emerald-500/10 hover:shadow-emerald-300/40"
+              )}
+            >
+              <Info className="h-3 w-3 shrink-0 text-emerald-600" />
+              <span className="font-medium text-emerald-700">
+                {targetBreakdown.ft}% FT · {targetBreakdown.pt}% PT · {targetBreakdown.prn}% PRN
+              </span>
             </div>
-          </div>
+          )}
+          
+          {/* Hired and Open Reqs Badge (Red) */}
+          {hasConnectedKpis && sharedBreakdown && (
+            <div
+              onClick={() => setShowBreakdownModal(true)}
+              className={cn(
+                "flex items-center justify-center gap-2 px-3 py-1.5 rounded-full text-xs",
+                "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
+                "bg-destructive/10 hover:shadow-destructive/30"
+              )}
+            >
+              <Info className="h-3 w-3 shrink-0 text-destructive" />
+              <span className="font-medium text-destructive">
+                Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN
+              </span>
+            </div>
+          )}
         </div>
       )}
 
@@ -170,6 +171,43 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
                       </div>
                     );
                   })}
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Target FTEs Employment Type Split Modal */}
+      <Dialog open={showTargetBreakdownModal} onOpenChange={setShowTargetBreakdownModal}>
+        <DialogContent className="sm:max-w-md border-border/20 focus:outline-none focus-visible:outline-none focus-visible:ring-0 z-[100]">
+          <DialogHeader>
+            <DialogTitle>Target Employment Type Split</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              The organization targets a <strong>70/20/10</strong> employment type split to balance workforce stability with flexibility:
+            </p>
+            <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+              <li><strong>70% Full-Time (FT)</strong> – Core workforce stability</li>
+              <li><strong>20% Part-Time (PT)</strong> – Scheduling flexibility</li>
+              <li><strong>10% PRN</strong> – Peak demand coverage</li>
+            </ul>
+            
+            {targetBreakdown && (
+              <div className="mt-4 p-4 bg-emerald-500/10 rounded-lg">
+                <h4 className="text-sm font-medium mb-3 text-emerald-700">Target Split</h4>
+                <div className="space-y-2">
+                  {[
+                    { label: 'Full-Time', value: targetBreakdown.ft },
+                    { label: 'Part-Time', value: targetBreakdown.pt },
+                    { label: 'PRN', value: targetBreakdown.prn },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="flex items-center justify-between text-sm">
+                      <span>{label}</span>
+                      <span className="font-medium text-emerald-700">{value}%</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
