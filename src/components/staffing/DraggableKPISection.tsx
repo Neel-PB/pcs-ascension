@@ -94,8 +94,8 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
           {/* Target FTEs Badge (Green) with vertical connector - height matches Hired/Open connector total */}
           {targetBreakdown && targetIndex !== -1 && (
             <div className="flex flex-col items-center">
-              {/* Vertical connector line - 22px to match: h-3 (12px) + h-0.5 (2px) + h-2 (8px) = 22px */}
-              <div className="w-0.5 bg-emerald-500/40" style={{ height: '22px' }} />
+              {/* Vertical connector line - 32px to match: h-5 (20px) + h-0.5 (2px) + h-2.5 (10px) = 32px */}
+              <div className="w-0.5 bg-emerald-500/40" style={{ height: '32px' }} />
               {/* Badge */}
               <div
                 onClick={() => setShowTargetBreakdownModal(true)}
@@ -121,17 +121,17 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
           {/* Hired and Open Reqs Badge (Red) with vertical connectors */}
           {hasConnectedKpis && sharedBreakdown && (
             <div className="col-span-3">
-              {/* Grid for vertical connectors from Hired FTEs and Open Reqs - h-3 (12px) */}
+              {/* Grid for vertical connectors from Hired FTEs and Open Reqs - h-5 (20px) */}
               <div className="grid grid-cols-3">
                 {/* Connector from Hired FTEs (first column) */}
                 <div className="flex justify-center">
-                  <div className="w-0.5 h-3 bg-destructive/40" />
+                  <div className="w-0.5 h-5 bg-destructive/40" />
                 </div>
                 {/* Empty middle column (FTE Variance) */}
                 <div />
                 {/* Connector from Open Reqs (third column) */}
                 <div className="flex justify-center">
-                  <div className="w-0.5 h-3 bg-destructive/40" />
+                  <div className="w-0.5 h-5 bg-destructive/40" />
                 </div>
               </div>
               {/* Horizontal line connecting the two vertical lines - h-0.5 (2px) */}
@@ -146,9 +146,9 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
                   <div className="w-1/2" />
                 </div>
               </div>
-              {/* Vertical line down to badge - h-2 (8px) */}
+              {/* Vertical line down to badge - h-2.5 (10px) */}
               <div className="flex justify-center">
-                <div className="w-0.5 h-2 bg-destructive/40" />
+                <div className="w-0.5 h-2.5 bg-destructive/40" />
               </div>
               {/* Badge */}
               <div className="flex justify-center">
