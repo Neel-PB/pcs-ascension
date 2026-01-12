@@ -67,13 +67,13 @@ export function ShiftCell({ value, selectedDayNight, onSave, onClick }: ShiftCel
           type="button"
         >
           {isModified ? (
-            <span className="flex items-center gap-1 pr-6">
-              <span className="text-muted-foreground line-through text-xs">{value}</span>
-              <span className="text-muted-foreground">→</span>
-              <span className="font-medium capitalize">{selectedDayNight}</span>
+            <span className="inline-flex items-center gap-1 pr-6 whitespace-nowrap">
+              <span className="text-muted-foreground line-through text-xs truncate max-w-[60px]">{value}</span>
+              <span className="text-muted-foreground shrink-0">→</span>
+              <span className="font-medium capitalize shrink-0">{selectedDayNight}</span>
             </span>
           ) : (
-            <span className="truncate pr-6">{value || "—"}</span>
+            <span className="truncate pr-6 whitespace-nowrap">{value || "—"}</span>
           )}
           {isModified ? (
             <RotateCcw

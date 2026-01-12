@@ -3,6 +3,7 @@ import { Position } from '@/types/position';
 import { BadgeCell } from '@/components/editable-table/cells/BadgeCell';
 import { CommentIndicatorCell } from '@/components/editable-table/cells/CommentIndicatorCell';
 import { ShiftCell } from '@/components/editable-table/cells/ShiftCell';
+import { TruncatedTextCell } from '@/components/editable-table/cells/TruncatedTextCell';
 import { MessageSquare } from 'lucide-react';
 
 // Type for the shift override handler
@@ -12,48 +13,55 @@ export const employeeColumns: ColumnDef<Position>[] = [
   {
     id: 'employeeName',
     label: 'Employee Name',
-    type: 'text',
-    width: 200,
-    minWidth: 200, // Ensure full header text is always visible
+    type: 'custom',
+    width: 180,
+    minWidth: 180,
     sortable: true,
-    resizable: true,
+    resizable: false,
     draggable: true,
-    locked: true, // Cannot hide
+    locked: true,
+    renderCell: (row) => (
+      <TruncatedTextCell value={row.employeeName} maxLength={30} />
+    ),
   },
   {
     id: 'positionNum',
     label: 'Position #',
     type: 'text',
-    width: 140,
-    minWidth: 140, // Ensure full header text is always visible
+    width: 120,
+    minWidth: 120,
     sortable: true,
-    resizable: true,
+    resizable: false,
     draggable: true,
   },
   {
     id: 'jobTitle',
     label: 'Job Title',
-    type: 'text',
-    width: 220,
-    minWidth: 150,
+    type: 'custom',
+    width: 180,
+    minWidth: 180,
     sortable: true,
-    resizable: true,
+    resizable: false,
     draggable: true,
+    renderCell: (row) => (
+      <TruncatedTextCell value={row.jobTitle} maxLength={30} />
+    ),
   },
   {
     id: 'jobFamily',
     label: 'Job Family',
-    type: 'badge',
-    width: 180,
-    minWidth: 140, // Increased for header text
+    type: 'custom',
+    width: 150,
+    minWidth: 150,
     sortable: true,
-    resizable: true,
+    resizable: false,
     draggable: true,
     renderCell: (row) => (
       <BadgeCell
         value={row.jobFamily}
         variant="outline"
         className="bg-primary/10"
+        maxLength={30}
       />
     ),
   },
@@ -61,10 +69,10 @@ export const employeeColumns: ColumnDef<Position>[] = [
     id: 'FTE',
     label: 'Hired FTE',
     type: 'number',
-    width: 120,
-    minWidth: 110,
+    width: 100,
+    minWidth: 100,
     sortable: true,
-    resizable: true,
+    resizable: false,
     draggable: true,
     tooltip: 'The FTE at which the employee is hired for the position.',
   },
@@ -72,10 +80,10 @@ export const employeeColumns: ColumnDef<Position>[] = [
     id: 'actual_fte',
     label: 'Active FTE',
     type: 'custom',
-    width: 120,
-    minWidth: 110,
+    width: 100,
+    minWidth: 100,
     sortable: true,
-    resizable: true,
+    resizable: false,
     draggable: true,
     tooltip: 'Represents the actual FTE effort the employee is currently working.',
   },
@@ -83,10 +91,10 @@ export const employeeColumns: ColumnDef<Position>[] = [
     id: 'shift',
     label: 'Shift',
     type: 'custom',
-    width: 140,
-    minWidth: 120,
+    width: 160,
+    minWidth: 160,
     sortable: true,
-    resizable: true,
+    resizable: false,
     draggable: true,
     renderCell: (row) => <ShiftCell value={row.shift} />,
   },
@@ -94,36 +102,40 @@ export const employeeColumns: ColumnDef<Position>[] = [
     id: 'payrollStatus',
     label: 'Status',
     type: 'badge',
-    width: 130,
-    minWidth: 110, // Increased for proper display
+    width: 100,
+    minWidth: 100,
     sortable: true,
-    resizable: true,
+    resizable: false,
     draggable: true,
     renderCell: (row) => (
       <BadgeCell
         value={row.payrollStatus}
         variant={row.payrollStatus === 'Active' ? 'default' : 'secondary'}
+        maxLength={30}
       />
     ),
   },
   {
     id: 'employmentFlag',
     label: 'Staff Type',
-    type: 'text',
-    width: 150,
-    minWidth: 130, // Increased for header text
+    type: 'custom',
+    width: 130,
+    minWidth: 130,
     sortable: true,
-    resizable: true,
+    resizable: false,
     draggable: true,
+    renderCell: (row) => (
+      <TruncatedTextCell value={row.employmentFlag} maxLength={30} />
+    ),
   },
   {
     id: 'employmentType',
     label: 'Full/Part Time',
     type: 'text',
-    width: 140,
-    minWidth: 140, // Increased to fit full header
+    width: 120,
+    minWidth: 120,
     sortable: true,
-    resizable: true,
+    resizable: false,
     draggable: true,
   },
 ];
@@ -157,10 +169,10 @@ export const createEmployeeColumnsWithComments = (
       id: 'comments',
       label: 'Comments',
       type: 'custom',
-      width: 100,
-      minWidth: 90,
+      width: 80,
+      minWidth: 80,
       sortable: false,
-      resizable: true,
+      resizable: false,
       draggable: true,
       renderHeader: () => <MessageSquare className="h-4 w-4" />,
       renderCell: (row) => (

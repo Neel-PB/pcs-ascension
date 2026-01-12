@@ -3,6 +3,7 @@ import { Position } from '@/types/position';
 import { BadgeCell } from '@/components/editable-table/cells/BadgeCell';
 import { CommentIndicatorCell } from '@/components/editable-table/cells/CommentIndicatorCell';
 import { ShiftCell } from '@/components/editable-table/cells/ShiftCell';
+import { TruncatedTextCell } from '@/components/editable-table/cells/TruncatedTextCell';
 import { differenceInDays } from 'date-fns';
 import { MessageSquare } from 'lucide-react';
 
@@ -27,37 +28,40 @@ export const requisitionColumns: ColumnDef<Position>[] = [
     id: 'positionNum',
     label: 'Position #',
     type: 'text',
-    width: 140,
-    minWidth: 140, // Ensure full header text is always visible
+    width: 120,
+    minWidth: 120,
     sortable: true,
-    resizable: true,
+    resizable: false,
     draggable: true,
     locked: true,
   },
   {
     id: 'positionLifecycle',
     label: 'Position Lifecycle',
-    type: 'text',
-    width: 200,
-    minWidth: 200, // Ensure full header text is always visible
+    type: 'custom',
+    width: 160,
+    minWidth: 160,
     sortable: true,
-    resizable: true,
+    resizable: false,
     draggable: true,
+    renderCell: (row) => (
+      <TruncatedTextCell value={row.positionLifecycle} maxLength={30} />
+    ),
   },
   {
     id: 'vacancyAge',
     label: 'Vacancy Age',
     type: 'custom',
-    width: 180,
-    minWidth: 140, // Increased for header text
+    width: 140,
+    minWidth: 140,
     sortable: true,
-    resizable: true,
+    resizable: false,
     draggable: true,
     getValue: (row) => getVacancyAge(row.positionStatusDate),
     renderCell: (row) => {
       const days = getVacancyAge(row.positionStatusDate);
       const badge = getVacancyBadge(days);
-      return <BadgeCell value={badge.label} variant={badge.variant} />;
+      return <BadgeCell value={badge.label} variant={badge.variant} maxLength={30} />;
     },
     sortFn: (a, b) => {
       const aDays = getVacancyAge(a.positionStatusDate) ?? 0;
@@ -68,27 +72,31 @@ export const requisitionColumns: ColumnDef<Position>[] = [
   {
     id: 'jobTitle',
     label: 'Job Title',
-    type: 'text',
-    width: 220,
-    minWidth: 150,
+    type: 'custom',
+    width: 180,
+    minWidth: 180,
     sortable: true,
-    resizable: true,
+    resizable: false,
     draggable: true,
+    renderCell: (row) => (
+      <TruncatedTextCell value={row.jobTitle} maxLength={30} />
+    ),
   },
   {
     id: 'jobFamily',
     label: 'Job Family',
-    type: 'badge',
-    width: 180,
-    minWidth: 140, // Increased for header text
-    sortable: true,
-    resizable: true,
+    type: 'custom',
+    width: 150,
+    minWidth: 150,
+    sortable: false,
+    resizable: false,
     draggable: true,
     renderCell: (row) => (
       <BadgeCell
         value={row.jobFamily}
         variant="outline"
         className="bg-primary/10"
+        maxLength={30}
       />
     ),
   },
@@ -96,22 +104,25 @@ export const requisitionColumns: ColumnDef<Position>[] = [
     id: 'shift',
     label: 'Shift',
     type: 'custom',
-    width: 140,
-    minWidth: 120,
+    width: 160,
+    minWidth: 160,
     sortable: true,
-    resizable: true,
+    resizable: false,
     draggable: true,
     renderCell: (row) => <ShiftCell value={row.shift} />,
   },
   {
     id: 'employmentType',
     label: 'Employment Type',
-    type: 'text',
-    width: 160,
-    minWidth: 160, // Increased to fit full header
+    type: 'custom',
+    width: 140,
+    minWidth: 140,
     sortable: true,
-    resizable: true,
+    resizable: false,
     draggable: true,
+    renderCell: (row) => (
+      <TruncatedTextCell value={row.employmentType} maxLength={30} />
+    ),
   },
 ];
 
@@ -125,10 +136,10 @@ export const createRequisitionColumnsWithComments = (
     id: 'comments',
     label: 'Comments',
     type: 'custom',
-    width: 100,
-    minWidth: 90,
+    width: 80,
+    minWidth: 80,
     sortable: false,
-    resizable: true,
+    resizable: false,
     draggable: true,
     renderHeader: () => <MessageSquare className="h-4 w-4" />,
     renderCell: (row) => (
