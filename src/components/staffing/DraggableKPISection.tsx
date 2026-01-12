@@ -96,7 +96,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
               <div
                 onClick={() => setShowBreakdownModal(true)}
                 className={cn(
-                  "flex items-center justify-center gap-2 px-2 py-1 rounded-b-lg text-xs",
+                  "flex items-center justify-center gap-2 px-3 py-1.5 rounded-full text-xs",
                   "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
                   breakdownVariant === 'green' && "bg-emerald-500/10 hover:shadow-emerald-300/40",
                   breakdownVariant === 'red' && "bg-destructive/10 hover:shadow-destructive/30"
