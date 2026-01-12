@@ -77,7 +77,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
               // Only remove breakdown for hired-ftes (it uses the shared bar)
               // Keep breakdown for target-ftes and all other KPIs
               employmentBreakdown={kpi.id === 'hired-ftes' ? undefined : kpi.employmentBreakdown}
-              className={isConnectedKpi ? 'rounded-b-none' : undefined}
+              className={undefined}
             />
           );
         })}
@@ -96,16 +96,13 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
             className="col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-3 flex flex-col items-center"
             style={{ gridColumn: `span 3 / span 3` }}
           >
-            {/* Vertical connector lines rising UP to cards */}
-            <div className="flex w-full" style={{ width: '80%' }}>
+            {/* Vertical connector lines rising UP to cards - aligned with badge */}
+            <div className="flex justify-between" style={{ width: 'auto', minWidth: '240px' }}>
               {/* Left vertical line - rises to Hired FTEs */}
               <div className={cn(
                 "w-0.5 h-4",
                 breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
               )} />
-              
-              {/* Spacer between vertical lines */}
-              <div className="flex-1" />
               
               {/* Right vertical line - rises to Open Reqs */}
               <div className={cn(
@@ -114,8 +111,8 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
               )} />
             </div>
             
-            {/* Horizontal connector line attaching to breakdown bar */}
-            <div className="flex w-full" style={{ width: '80%' }}>
+            {/* Horizontal connector line - matches badge width */}
+            <div className="flex" style={{ width: 'auto', minWidth: '240px' }}>
               <div className={cn(
                 "h-0.5 w-full",
                 breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
