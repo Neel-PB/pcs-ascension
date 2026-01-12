@@ -90,14 +90,23 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
           ))}
           
           {/* Container spanning 3 columns (Hired | Variance | Open) - badge with connector lines */}
-          <div className="col-span-3 grid grid-cols-3 items-center">
-            {/* Left line - from Hired FTEs center to badge */}
-            <div className="flex justify-end">
+          <div className="col-span-3 grid grid-cols-3 items-end">
+            {/* Left connector - vertical riser + horizontal line to badge */}
+            <div className="flex flex-col items-center">
+              {/* Vertical riser pointing up toward Hired FTEs */}
               <div className={cn(
-                "h-0.5 w-1/2",
+                "w-0.5 h-3",
                 breakdownVariant === 'green' && "bg-emerald-500/40",
                 breakdownVariant === 'red' && "bg-destructive/40"
               )} />
+              {/* Horizontal line connecting to badge */}
+              <div className="flex w-full justify-end">
+                <div className={cn(
+                  "h-0.5 w-1/2",
+                  breakdownVariant === 'green' && "bg-emerald-500/40",
+                  breakdownVariant === 'red' && "bg-destructive/40"
+                )} />
+              </div>
             </div>
             
             {/* Badge - centered */}
@@ -126,13 +135,22 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
               </div>
             </div>
             
-            {/* Right line - from badge to Open Reqs center */}
-            <div className="flex justify-start">
+            {/* Right connector - horizontal line + vertical riser to badge */}
+            <div className="flex flex-col items-center">
+              {/* Vertical riser pointing up toward Open Reqs */}
               <div className={cn(
-                "h-0.5 w-1/2",
+                "w-0.5 h-3",
                 breakdownVariant === 'green' && "bg-emerald-500/40",
                 breakdownVariant === 'red' && "bg-destructive/40"
               )} />
+              {/* Horizontal line connecting to badge */}
+              <div className="flex w-full justify-start">
+                <div className={cn(
+                  "h-0.5 w-1/2",
+                  breakdownVariant === 'green' && "bg-emerald-500/40",
+                  breakdownVariant === 'red' && "bg-destructive/40"
+                )} />
+              </div>
             </div>
           </div>
         </div>
