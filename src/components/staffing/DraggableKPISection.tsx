@@ -48,7 +48,8 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
   const targetFtesKpi = kpis.find(k => k.id === 'target-ftes');
   const targetBreakdown = targetFtesKpi?.employmentBreakdown;
 
-  // Find indices of connected KPIs for grid positioning
+  // Find indices of KPIs for grid positioning
+  const targetIndex = kpis.findIndex(k => k.id === 'target-ftes');
   const hiredIndex = kpis.findIndex(k => k.id === 'hired-ftes');
   const openReqsIndex = kpis.findIndex(k => k.id === 'open-reqs');
   const hasConnectedKpis = hiredIndex !== -1 && openReqsIndex !== -1 && sharedBreakdown;
@@ -82,40 +83,54 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
         ))}
       </div>
 
-      {/* Badges Row - both badges on the same line */}
+      {/* Badges Row - positioned under respective KPI columns */}
       {(targetBreakdown || (hasConnectedKpis && sharedBreakdown)) && (
-        <div className="hidden xl:flex items-center justify-center gap-4 mt-2">
-          {/* Target FTEs Badge (Green) */}
-          {targetBreakdown && (
-            <div
-              onClick={() => setShowTargetBreakdownModal(true)}
-              className={cn(
-                "flex items-center justify-center gap-2 px-3 py-1.5 rounded-full text-xs",
-                "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
-                "bg-emerald-500/10 hover:shadow-emerald-300/40"
-              )}
-            >
-              <Info className="h-3 w-3 shrink-0 text-emerald-600" />
-              <span className="font-medium text-emerald-700">
-                {targetBreakdown.ft}% FT · {targetBreakdown.pt}% PT · {targetBreakdown.prn}% PRN
-              </span>
+        <div className="hidden xl:grid gap-4 grid-cols-6 mt-2">
+          {/* Spacers before Target FTEs */}
+          {Array.from({ length: targetIndex }).map((_, i) => (
+            <div key={`spacer-before-target-${i}`} />
+          ))}
+          
+          {/* Target FTEs Badge (Green) - under Target FTEs column */}
+          {targetBreakdown && targetIndex !== -1 && (
+            <div className="flex justify-center">
+              <div
+                onClick={() => setShowTargetBreakdownModal(true)}
+                className={cn(
+                  "flex items-center justify-center gap-2 px-3 py-1.5 rounded-full text-xs",
+                  "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
+                  "bg-emerald-500/10 hover:shadow-emerald-300/40"
+                )}
+              >
+                <Info className="h-3 w-3 shrink-0 text-emerald-600" />
+                <span className="font-medium text-emerald-700">
+                  {targetBreakdown.ft}% FT · {targetBreakdown.pt}% PT · {targetBreakdown.prn}% PRN
+                </span>
+              </div>
             </div>
           )}
           
-          {/* Hired and Open Reqs Badge (Red) */}
+          {/* Spacers between Target and Hired */}
+          {Array.from({ length: Math.max(0, hiredIndex - targetIndex - 1) }).map((_, i) => (
+            <div key={`spacer-between-${i}`} />
+          ))}
+          
+          {/* Hired and Open Reqs Badge (Red) - spans from Hired FTEs to Open Reqs */}
           {hasConnectedKpis && sharedBreakdown && (
-            <div
-              onClick={() => setShowBreakdownModal(true)}
-              className={cn(
-                "flex items-center justify-center gap-2 px-3 py-1.5 rounded-full text-xs",
-                "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
-                "bg-destructive/10 hover:shadow-destructive/30"
-              )}
-            >
-              <Info className="h-3 w-3 shrink-0 text-destructive" />
-              <span className="font-medium text-destructive">
-                Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN
-              </span>
+            <div className="col-span-3 flex justify-center">
+              <div
+                onClick={() => setShowBreakdownModal(true)}
+                className={cn(
+                  "flex items-center justify-center gap-2 px-3 py-1.5 rounded-full text-xs",
+                  "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
+                  "bg-destructive/10 hover:shadow-destructive/30"
+                )}
+              >
+                <Info className="h-3 w-3 shrink-0 text-destructive" />
+                <span className="font-medium text-destructive">
+                  Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN
+                </span>
+              </div>
             </div>
           )}
         </div>
