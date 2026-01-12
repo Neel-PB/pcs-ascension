@@ -85,17 +85,17 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
 
       {/* Badges Row - positioned under respective KPI columns with vertical connectors */}
       {(targetBreakdown || (hasConnectedKpis && sharedBreakdown)) && (
-        <div className="hidden xl:grid gap-4 grid-cols-6 -mt-4">
+        <div className="hidden xl:grid grid-cols-6" style={{ gap: 'inherit', marginTop: '-16px' }}>
           {/* Spacers before Target FTEs */}
           {Array.from({ length: targetIndex }).map((_, i) => (
             <div key={`spacer-before-target-${i}`} />
           ))}
           
-          {/* Target FTEs Badge (Green) with vertical connector */}
+          {/* Target FTEs Badge (Green) with vertical connector - height matches Hired/Open connector total */}
           {targetBreakdown && targetIndex !== -1 && (
             <div className="flex flex-col items-center">
-              {/* Vertical connector line */}
-              <div className="w-0.5 h-4 bg-emerald-500/40" />
+              {/* Vertical connector line - 22px to match: h-3 (12px) + h-0.5 (2px) + h-2 (8px) = 22px */}
+              <div className="w-0.5 bg-emerald-500/40" style={{ height: '22px' }} />
               {/* Badge */}
               <div
                 onClick={() => setShowTargetBreakdownModal(true)}
@@ -121,21 +121,21 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
           {/* Hired and Open Reqs Badge (Red) with vertical connectors */}
           {hasConnectedKpis && sharedBreakdown && (
             <div className="col-span-3">
-              {/* Grid for vertical connectors from Hired FTEs and Open Reqs */}
-              <div className="grid grid-cols-3 mb-0">
+              {/* Grid for vertical connectors from Hired FTEs and Open Reqs - h-3 (12px) */}
+              <div className="grid grid-cols-3">
                 {/* Connector from Hired FTEs (first column) */}
                 <div className="flex justify-center">
-                  <div className="w-0.5 h-4 bg-destructive/40" />
+                  <div className="w-0.5 h-3 bg-destructive/40" />
                 </div>
                 {/* Empty middle column (FTE Variance) */}
                 <div />
                 {/* Connector from Open Reqs (third column) */}
                 <div className="flex justify-center">
-                  <div className="w-0.5 h-4 bg-destructive/40" />
+                  <div className="w-0.5 h-3 bg-destructive/40" />
                 </div>
               </div>
-              {/* Horizontal line connecting the two vertical lines */}
-              <div className="grid grid-cols-3 mb-0">
+              {/* Horizontal line connecting the two vertical lines - h-0.5 (2px) */}
+              <div className="grid grid-cols-3">
                 <div className="flex items-start">
                   <div className="w-1/2" />
                   <div className="w-1/2 h-0.5 bg-destructive/40" />
@@ -146,7 +146,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
                   <div className="w-1/2" />
                 </div>
               </div>
-              {/* Vertical line down to badge */}
+              {/* Vertical line down to badge - h-2 (8px) */}
               <div className="flex justify-center">
                 <div className="w-0.5 h-2 bg-destructive/40" />
               </div>
