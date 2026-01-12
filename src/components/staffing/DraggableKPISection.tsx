@@ -83,17 +83,20 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
         ))}
       </div>
 
-      {/* Badges Row - positioned under respective KPI columns */}
+      {/* Badges Row - positioned under respective KPI columns with vertical connectors */}
       {(targetBreakdown || (hasConnectedKpis && sharedBreakdown)) && (
-        <div className="hidden xl:grid gap-4 grid-cols-6 mt-2">
+        <div className="hidden xl:grid gap-4 grid-cols-6">
           {/* Spacers before Target FTEs */}
           {Array.from({ length: targetIndex }).map((_, i) => (
             <div key={`spacer-before-target-${i}`} />
           ))}
           
-          {/* Target FTEs Badge (Green) - under Target FTEs column */}
+          {/* Target FTEs Badge (Green) with vertical connector */}
           {targetBreakdown && targetIndex !== -1 && (
-            <div className="flex justify-center">
+            <div className="flex flex-col items-center">
+              {/* Vertical connector line */}
+              <div className="w-0.5 h-4 bg-emerald-500/40" />
+              {/* Badge */}
               <div
                 onClick={() => setShowTargetBreakdownModal(true)}
                 className={cn(
@@ -115,21 +118,53 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
             <div key={`spacer-between-${i}`} />
           ))}
           
-          {/* Hired and Open Reqs Badge (Red) - spans from Hired FTEs to Open Reqs */}
+          {/* Hired and Open Reqs Badge (Red) with vertical connectors */}
           {hasConnectedKpis && sharedBreakdown && (
-            <div className="col-span-3 flex justify-center">
-              <div
-                onClick={() => setShowBreakdownModal(true)}
-                className={cn(
-                  "flex items-center justify-center gap-2 px-3 py-1.5 rounded-full text-xs",
-                  "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
-                  "bg-destructive/10 hover:shadow-destructive/30"
-                )}
-              >
-                <Info className="h-3 w-3 shrink-0 text-destructive" />
-                <span className="font-medium text-destructive">
-                  Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN
-                </span>
+            <div className="col-span-3">
+              {/* Grid for vertical connectors from Hired FTEs and Open Reqs */}
+              <div className="grid grid-cols-3 mb-0">
+                {/* Connector from Hired FTEs (first column) */}
+                <div className="flex justify-center">
+                  <div className="w-0.5 h-4 bg-destructive/40" />
+                </div>
+                {/* Empty middle column (FTE Variance) */}
+                <div />
+                {/* Connector from Open Reqs (third column) */}
+                <div className="flex justify-center">
+                  <div className="w-0.5 h-4 bg-destructive/40" />
+                </div>
+              </div>
+              {/* Horizontal line connecting the two vertical lines */}
+              <div className="grid grid-cols-3 mb-0">
+                <div className="flex items-start">
+                  <div className="w-1/2" />
+                  <div className="w-1/2 h-0.5 bg-destructive/40" />
+                </div>
+                <div className="h-0.5 bg-destructive/40" />
+                <div className="flex items-start">
+                  <div className="w-1/2 h-0.5 bg-destructive/40" />
+                  <div className="w-1/2" />
+                </div>
+              </div>
+              {/* Vertical line down to badge */}
+              <div className="flex justify-center">
+                <div className="w-0.5 h-2 bg-destructive/40" />
+              </div>
+              {/* Badge */}
+              <div className="flex justify-center">
+                <div
+                  onClick={() => setShowBreakdownModal(true)}
+                  className={cn(
+                    "flex items-center justify-center gap-2 px-3 py-1.5 rounded-full text-xs",
+                    "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
+                    "bg-destructive/10 hover:shadow-destructive/30"
+                  )}
+                >
+                  <Info className="h-3 w-3 shrink-0 text-destructive" />
+                  <span className="font-medium text-destructive">
+                    Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN
+                  </span>
+                </div>
               </div>
             </div>
           )}
