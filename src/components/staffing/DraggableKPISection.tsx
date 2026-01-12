@@ -65,65 +65,57 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
         <h2 className="text-lg font-semibold text-foreground">{title}</h2>
       </div>
       
-      {/* KPI Grid with relative wrapper for absolute breakdown overlay */}
-      <div className="relative">
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-          {kpis.map((kpi) => {
-            // Check if this KPI should have rounded-b-none for breakdown connection
-            const isConnectedKpi = BREAKDOWN_CONNECTED_IDS.includes(kpi.id) && hasConnectedKpis;
-            
-            return (
-              <KPICard 
-                key={kpi.id} 
-                {...kpi}
-                // Only remove breakdown for hired-ftes (it uses the shared bar)
-                // Keep breakdown for target-ftes and all other KPIs
-                employmentBreakdown={kpi.id === 'hired-ftes' ? undefined : kpi.employmentBreakdown}
-                className={undefined}
-              />
-            );
-          })}
-        </div>
+      {/* KPI Grid */}
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+        {kpis.map((kpi) => (
+          <KPICard 
+            key={kpi.id} 
+            {...kpi}
+            // Only remove breakdown for hired-ftes (it uses the shared bar)
+            // Keep breakdown for target-ftes and all other KPIs
+            employmentBreakdown={kpi.id === 'hired-ftes' ? undefined : kpi.employmentBreakdown}
+          />
+        ))}
+      </div>
 
-        {/* Shared Breakdown Bar - absolute overlay positioned under FTE Variance (no layout space) */}
-        {hasConnectedKpis && sharedBreakdown && (
-          <div 
-            className="absolute left-0 right-0 pointer-events-none hidden xl:grid gap-4 grid-cols-6"
-            style={{ top: '100%', marginTop: '-4px' }}
-          >
-            {/* Empty spacers for columns before hired-ftes */}
-            {Array.from({ length: hiredIndex }).map((_, i) => (
-              <div key={`spacer-${i}`} />
-            ))}
-            
-            {/* Container spanning 3 columns (Hired | Variance | Open) - badge only */}
-            <div className="col-span-3 flex justify-center">
-              <div
-                onClick={() => setShowBreakdownModal(true)}
-                className={cn(
-                  "flex items-center justify-center gap-2 px-2 py-1 rounded-b-lg text-xs shrink-0 z-10 pointer-events-auto",
-                  "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
-                  breakdownVariant === 'green' && "bg-emerald-500/10 hover:shadow-emerald-300/40",
-                  breakdownVariant === 'red' && "bg-destructive/10 hover:shadow-destructive/30"
-                )}
-              >
-                <Info className={cn(
-                  "h-3 w-3 shrink-0",
-                  breakdownVariant === 'green' && "text-emerald-600",
-                  breakdownVariant === 'red' && "text-destructive"
-                )} />
-                <span className={cn(
-                  "font-medium",
-                  breakdownVariant === 'green' && "text-emerald-700",
-                  breakdownVariant === 'red' && "text-destructive"
-                )}>
-                  Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN
-                </span>
-              </div>
+      {/* Shared Breakdown Bar - normal flow below KPI grid */}
+      {hasConnectedKpis && sharedBreakdown && (
+        <div 
+          className="hidden xl:grid gap-4 grid-cols-6"
+          style={{ marginTop: '-1px' }}
+        >
+          {/* Empty spacers for columns before hired-ftes */}
+          {Array.from({ length: hiredIndex }).map((_, i) => (
+            <div key={`spacer-${i}`} />
+          ))}
+          
+          {/* Container spanning 3 columns (Hired | Variance | Open) - badge only */}
+          <div className="col-span-3 flex justify-center">
+            <div
+              onClick={() => setShowBreakdownModal(true)}
+              className={cn(
+                "flex items-center justify-center gap-2 px-2 py-1 rounded-b-lg text-xs",
+                "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
+                breakdownVariant === 'green' && "bg-emerald-500/10 hover:shadow-emerald-300/40",
+                breakdownVariant === 'red' && "bg-destructive/10 hover:shadow-destructive/30"
+              )}
+            >
+              <Info className={cn(
+                "h-3 w-3 shrink-0",
+                breakdownVariant === 'green' && "text-emerald-600",
+                breakdownVariant === 'red' && "text-destructive"
+              )} />
+              <span className={cn(
+                "font-medium",
+                breakdownVariant === 'green' && "text-emerald-700",
+                breakdownVariant === 'red' && "text-destructive"
+              )}>
+                Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN
+              </span>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Employment Type Split Modal */}
       <Dialog open={showBreakdownModal} onOpenChange={setShowBreakdownModal}>
