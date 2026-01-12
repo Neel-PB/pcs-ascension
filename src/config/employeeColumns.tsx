@@ -124,9 +124,9 @@ export const employeeColumns: ColumnDef<Position>[] = [
     sortable: true,
     resizable: false,
     draggable: true,
-    renderCell: (row) => (
-      <TruncatedTextCell value={row.employmentFlag} maxLength={30} />
-    ),
+      renderCell: (row) => (
+        <TruncatedTextCell value={row.employmentFlag ?? row.employeeType} maxLength={30} />
+      ),
   },
   {
     id: 'employmentType',
