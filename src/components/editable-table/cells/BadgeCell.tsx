@@ -15,7 +15,6 @@ export function BadgeCell({
   value, 
   variant = 'outline', 
   className, 
-  maxLength = 30,
   onClick 
 }: BadgeCellProps) {
   if (!value) {
@@ -26,26 +25,16 @@ export function BadgeCell({
     );
   }
 
-  const isTruncated = value.length > maxLength;
-  const displayValue = isTruncated ? `${value.slice(0, maxLength)}...` : value;
-  
-  const badgeContent = (
-    <CellButton onClick={onClick} className={className}>
-      <Badge variant={variant} className="truncate max-w-full">
-        {displayValue}
-      </Badge>
-    </CellButton>
-  );
-
-  if (!isTruncated) {
-    return badgeContent;
-  }
-
+  // Always show tooltip for badge values (CSS truncate handles visual cut-off)
   return (
     <TooltipProvider delayDuration={200}>
       <Tooltip>
         <TooltipTrigger asChild>
-          {badgeContent}
+          <CellButton onClick={onClick} className={className}>
+            <Badge variant={variant} className="truncate max-w-full">
+              {value}
+            </Badge>
+          </CellButton>
         </TooltipTrigger>
         <TooltipContent 
           side="top" 

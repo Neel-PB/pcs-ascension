@@ -12,29 +12,26 @@ interface TruncatedTextCellProps {
 
 export function TruncatedTextCell({ 
   value, 
-  maxLength = 30, 
   placeholder = "—", 
   className, 
   onClick 
 }: TruncatedTextCellProps) {
-  const displayValue = value || placeholder;
-  const isTruncated = value && value.length > maxLength;
-  const truncatedText = isTruncated ? `${value.slice(0, maxLength)}...` : displayValue;
-
-  if (!isTruncated) {
+  // If no value, just show placeholder without tooltip
+  if (!value) {
     return (
       <CellButton onClick={onClick} className={className}>
-        <span className="truncate">{displayValue}</span>
+        <span className="truncate">{placeholder}</span>
       </CellButton>
     );
   }
 
+  // Always show tooltip for values (CSS truncate handles visual cut-off)
   return (
     <TooltipProvider delayDuration={200}>
       <Tooltip>
         <TooltipTrigger asChild>
           <CellButton onClick={onClick} className={className}>
-            <span className="truncate">{truncatedText}</span>
+            <span className="truncate">{value}</span>
           </CellButton>
         </TooltipTrigger>
         <TooltipContent 

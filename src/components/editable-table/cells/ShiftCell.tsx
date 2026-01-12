@@ -1,5 +1,6 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, TooltipArrow } from "@/components/ui/tooltip";
 import { useState } from "react";
 import { Pencil, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -35,21 +36,49 @@ export function ShiftCell({ value, selectedDayNight, onSave, onClick }: ShiftCel
   };
 
   if (!isSpecialShift) {
-    // Normal text cell
+    // Normal text cell with tooltip
+    if (!value) {
+      return (
+        <button
+          onClick={onClick}
+          className={cn(
+            "w-full h-full text-left px-4 py-2",
+            "text-sm font-normal text-foreground",
+            "truncate",
+            "hover:bg-muted/50 transition-colors",
+            "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          )}
+          type="button"
+        >
+          <span className="truncate">—</span>
+        </button>
+      );
+    }
+
     return (
-      <button
-        onClick={onClick}
-        className={cn(
-          "w-full h-full text-left px-4 py-2",
-          "text-sm font-normal text-foreground",
-          "truncate",
-          "hover:bg-muted/50 transition-colors",
-          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-        )}
-        type="button"
-      >
-        <span className="truncate">{value || "—"}</span>
-      </button>
+      <TooltipProvider delayDuration={200}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={onClick}
+              className={cn(
+                "w-full h-full text-left px-4 py-2",
+                "text-sm font-normal text-foreground",
+                "truncate",
+                "hover:bg-muted/50 transition-colors",
+                "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              )}
+              type="button"
+            >
+              <span className="truncate">{value}</span>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top" sideOffset={8}>
+            {value}
+            <TooltipArrow />
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     );
   }
 
