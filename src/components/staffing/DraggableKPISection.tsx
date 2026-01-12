@@ -91,15 +91,9 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
           
           {/* Container spanning 3 columns (Hired | Variance | Open) - badge with connector lines */}
           <div className="col-span-3 grid grid-cols-3 items-end">
-            {/* Left connector - vertical riser at left edge (center of Hired FTEs) + horizontal line to badge */}
-            <div className="flex flex-col items-start">
-              {/* Vertical riser pointing up toward Hired FTEs */}
-              <div className={cn(
-                "w-0.5 h-3",
-                breakdownVariant === 'green' && "bg-emerald-500/40",
-                breakdownVariant === 'red' && "bg-destructive/40"
-              )} />
-              {/* Horizontal line connecting to badge */}
+            {/* Left connector - horizontal from badge center, then vertical riser UP at card center */}
+            <div className="flex flex-col-reverse items-start">
+              {/* Horizontal line at badge level - from badge to card center */}
               <div className="flex w-full">
                 <div className={cn(
                   "h-0.5 w-full",
@@ -107,6 +101,12 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
                   breakdownVariant === 'red' && "bg-destructive/40"
                 )} />
               </div>
+              {/* Vertical riser going UP to Hired FTEs card */}
+              <div className={cn(
+                "w-0.5 h-3",
+                breakdownVariant === 'green' && "bg-emerald-500/40",
+                breakdownVariant === 'red' && "bg-destructive/40"
+              )} />
             </div>
             
             {/* Badge - centered */}
@@ -135,15 +135,9 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
               </div>
             </div>
             
-            {/* Right connector - horizontal line + vertical riser at right edge (center of Open Reqs) */}
-            <div className="flex flex-col items-end">
-              {/* Vertical riser pointing up toward Open Reqs */}
-              <div className={cn(
-                "w-0.5 h-3",
-                breakdownVariant === 'green' && "bg-emerald-500/40",
-                breakdownVariant === 'red' && "bg-destructive/40"
-              )} />
-              {/* Horizontal line connecting to badge */}
+            {/* Right connector - horizontal from badge center, then vertical riser UP at card center */}
+            <div className="flex flex-col-reverse items-end">
+              {/* Horizontal line at badge level - from badge to card center */}
               <div className="flex w-full">
                 <div className={cn(
                   "h-0.5 w-full",
@@ -151,6 +145,12 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
                   breakdownVariant === 'red' && "bg-destructive/40"
                 )} />
               </div>
+              {/* Vertical riser going UP to Open Reqs card */}
+              <div className={cn(
+                "w-0.5 h-3",
+                breakdownVariant === 'green' && "bg-emerald-500/40",
+                breakdownVariant === 'red' && "bg-destructive/40"
+              )} />
             </div>
           </div>
         </div>
