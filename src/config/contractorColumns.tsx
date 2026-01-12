@@ -119,7 +119,7 @@ export const contractorColumns: ColumnDef<Position>[] = [
     resizable: false,
     draggable: true,
     renderCell: (row) => (
-      <TruncatedTextCell value={row.employmentFlag ?? row.employeeType} maxLength={30} />
+      <TruncatedTextCell value={row.employmentFlag || row.employeeType} maxLength={30} />
     ),
   },
   {
