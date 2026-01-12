@@ -94,23 +94,12 @@ export function EditableTable<T = any>({
       });
   }, [columnDefinitions, columnStates]);
 
-  // Calculate grid template with proportional distribution
+  // Calculate grid template with fixed widths (no proportional scaling)
   const gridTemplate = useMemo(() => {
-    const totalDefinedWidth = visibleColumns.reduce((sum, col) => sum + (col.width || 160), 0);
-    
-    // If container is wider than total column width, distribute extra space proportionally
-    if (containerWidth > totalDefinedWidth && containerWidth > 0) {
-      const scaleFactor = containerWidth / totalDefinedWidth;
-      return visibleColumns
-        .map(col => `${Math.floor((col.width || 160) * scaleFactor)}px`)
-        .join(' ');
-    }
-    
-    // Default to defined widths if container is smaller or not measured yet
     return visibleColumns
       .map(col => `${col.width}px`)
       .join(' ');
-  }, [visibleColumns, containerWidth]);
+  }, [visibleColumns]);
 
   // Handlers
   const handleColumnResize = (columnId: string, width: number) => {

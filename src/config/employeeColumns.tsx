@@ -69,8 +69,8 @@ export const employeeColumns: ColumnDef<Position>[] = [
     id: 'FTE',
     label: 'Hired FTE',
     type: 'number',
-    width: 100,
-    minWidth: 100,
+    width: 80,
+    minWidth: 80,
     sortable: true,
     resizable: false,
     draggable: true,
@@ -80,8 +80,8 @@ export const employeeColumns: ColumnDef<Position>[] = [
     id: 'actual_fte',
     label: 'Active FTE',
     type: 'custom',
-    width: 100,
-    minWidth: 100,
+    width: 80,
+    minWidth: 80,
     sortable: true,
     resizable: false,
     draggable: true,
@@ -131,12 +131,15 @@ export const employeeColumns: ColumnDef<Position>[] = [
   {
     id: 'employmentType',
     label: 'Full/Part Time',
-    type: 'text',
+    type: 'custom',
     width: 120,
     minWidth: 120,
     sortable: true,
     resizable: false,
     draggable: true,
+    renderCell: (row) => (
+      <TruncatedTextCell value={row.employmentType} maxLength={30} />
+    ),
   },
 ];
 
