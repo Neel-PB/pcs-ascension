@@ -89,25 +89,9 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
             <div key={`spacer-${i}`} />
           ))}
           
-          {/* Container spanning 3 columns - flex row with badge in center, horizontal lines to sides, vertical risers up */}
-          <div className="col-span-3 flex items-center justify-center">
-            {/* Left side: vertical riser + horizontal line extending to badge */}
-            <div className="flex items-end flex-1">
-              {/* Vertical riser at left (aligned to Hired FTEs center) going UP */}
-              <div className={cn(
-                "w-0.5 h-6",
-                breakdownVariant === 'green' && "bg-emerald-500/40",
-                breakdownVariant === 'red' && "bg-destructive/40"
-              )} />
-              {/* Horizontal line connecting to badge side */}
-              <div className={cn(
-                "h-0.5 flex-1",
-                breakdownVariant === 'green' && "bg-emerald-500/40",
-                breakdownVariant === 'red' && "bg-destructive/40"
-              )} />
-            </div>
-            
-            {/* Badge - centered, flex-shrink-0 to maintain size */}
+          {/* Container spanning 3 columns - badge centered with no connector lines */}
+          <div className="col-span-3 flex justify-center mt-3">
+            {/* Badge - centered */}
             <div className="flex-shrink-0">
               <div
                 onClick={() => setShowBreakdownModal(true)}
@@ -131,22 +115,6 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
                   Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN
                 </span>
               </div>
-            </div>
-            
-            {/* Right side: horizontal line extending from badge + vertical riser */}
-            <div className="flex items-end flex-1">
-              {/* Horizontal line connecting from badge side */}
-              <div className={cn(
-                "h-0.5 flex-1",
-                breakdownVariant === 'green' && "bg-emerald-500/40",
-                breakdownVariant === 'red' && "bg-destructive/40"
-              )} />
-              {/* Vertical riser at right (aligned to Open Reqs center) going UP */}
-              <div className={cn(
-                "w-0.5 h-6",
-                breakdownVariant === 'green' && "bg-emerald-500/40",
-                breakdownVariant === 'red' && "bg-destructive/40"
-              )} />
             </div>
           </div>
         </div>
