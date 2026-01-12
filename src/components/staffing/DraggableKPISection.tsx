@@ -89,29 +89,50 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
             <div key={`spacer-${i}`} />
           ))}
           
-          {/* Container spanning 3 columns (Hired | Variance | Open) - badge only */}
-          <div className="col-span-3 flex justify-center">
-            <div
-              onClick={() => setShowBreakdownModal(true)}
-              className={cn(
-                "flex items-center justify-center gap-2 px-2 py-1 rounded-b-lg text-xs",
-                "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
-                breakdownVariant === 'green' && "bg-emerald-500/10 hover:shadow-emerald-300/40",
-                breakdownVariant === 'red' && "bg-destructive/10 hover:shadow-destructive/30"
-              )}
-            >
-              <Info className={cn(
-                "h-3 w-3 shrink-0",
-                breakdownVariant === 'green' && "text-emerald-600",
-                breakdownVariant === 'red' && "text-destructive"
+          {/* Container spanning 3 columns (Hired | Variance | Open) - badge with connector lines */}
+          <div className="col-span-3 grid grid-cols-3 items-center">
+            {/* Left line - from Hired FTEs center to badge */}
+            <div className="flex justify-end">
+              <div className={cn(
+                "h-0.5 w-1/2",
+                breakdownVariant === 'green' && "bg-emerald-500/40",
+                breakdownVariant === 'red' && "bg-destructive/40"
               )} />
-              <span className={cn(
-                "font-medium",
-                breakdownVariant === 'green' && "text-emerald-700",
-                breakdownVariant === 'red' && "text-destructive"
-              )}>
-                Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN
-              </span>
+            </div>
+            
+            {/* Badge - centered */}
+            <div className="flex justify-center">
+              <div
+                onClick={() => setShowBreakdownModal(true)}
+                className={cn(
+                  "flex items-center justify-center gap-2 px-2 py-1 rounded-b-lg text-xs",
+                  "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
+                  breakdownVariant === 'green' && "bg-emerald-500/10 hover:shadow-emerald-300/40",
+                  breakdownVariant === 'red' && "bg-destructive/10 hover:shadow-destructive/30"
+                )}
+              >
+                <Info className={cn(
+                  "h-3 w-3 shrink-0",
+                  breakdownVariant === 'green' && "text-emerald-600",
+                  breakdownVariant === 'red' && "text-destructive"
+                )} />
+                <span className={cn(
+                  "font-medium",
+                  breakdownVariant === 'green' && "text-emerald-700",
+                  breakdownVariant === 'red' && "text-destructive"
+                )}>
+                  Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN
+                </span>
+              </div>
+            </div>
+            
+            {/* Right line - from badge to Open Reqs center */}
+            <div className="flex justify-start">
+              <div className={cn(
+                "h-0.5 w-1/2",
+                breakdownVariant === 'green' && "bg-emerald-500/40",
+                breakdownVariant === 'red' && "bg-destructive/40"
+              )} />
             </div>
           </div>
         </div>
