@@ -81,7 +81,6 @@ export function KPICard({
             "hover:shadow-lg transition-all duration-300",
             isHighlighted && "border-emerald-500/50 bg-emerald-500/5",
             isNegative && "border-destructive/50 bg-destructive/5",
-            employmentBreakdown && "rounded-b-none",
             className
           )}
         >
@@ -142,7 +141,7 @@ export function KPICard({
             }}
             onClick={() => setShowBreakdownModal(true)}
             className={cn(
-              "absolute left-0 right-0 top-full z-10 flex items-center gap-2 px-2 py-1 rounded-b-lg text-xs",
+              "flex items-center justify-center gap-2 px-3 py-1.5 rounded-full text-xs mt-2 mx-auto w-fit",
               "cursor-pointer transition-shadow duration-200 hover:shadow-md",
               breakdownVariant === 'green' && "bg-emerald-500/10 hover:shadow-emerald-300/40",
               breakdownVariant === 'red' && "bg-destructive/10 hover:shadow-destructive/30"
