@@ -85,7 +85,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
 
       {/* Badges Row - positioned under respective KPI columns with vertical connectors */}
       {(targetBreakdown || (hasConnectedKpis && sharedBreakdown)) && (
-        <div className="hidden xl:grid grid-cols-6 relative z-10" style={{ gap: 'inherit', marginTop: '-16px' }}>
+        <div className="hidden xl:grid grid-cols-6 relative z-10" style={{ gap: 'inherit', marginTop: '0' }}>
           {/* Spacers before Target FTEs */}
           {Array.from({ length: targetIndex }).map((_, i) => (
             <div key={`spacer-before-target-${i}`} />
