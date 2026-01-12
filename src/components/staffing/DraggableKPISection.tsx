@@ -91,56 +91,66 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
             <div key={`spacer-${i}`} className="hidden xl:block" />
           ))}
           
-          {/* Container spanning 3 columns - with vertical lines rising up and breakdown bar below */}
+          {/* Container spanning 3 columns - with vertical lines at edges connecting to Hired FTEs and Open Reqs */}
           <div 
-            className="col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-3 flex flex-col items-center"
+            className="col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-3 relative"
             style={{ gridColumn: `span 3 / span 3` }}
           >
-            {/* Vertical connector lines rising UP to cards - aligned with badge */}
-            <div className="flex justify-between" style={{ width: 'auto', minWidth: '240px' }}>
-              {/* Left vertical line - rises to Hired FTEs */}
+            {/* Vertical connector lines at edges - positioned under Hired FTEs (left) and Open Reqs (right) */}
+            <div className="w-full flex justify-between px-4">
+              {/* Left vertical line - directly under Hired FTEs card */}
               <div className={cn(
                 "w-0.5 h-4",
                 breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
               )} />
               
-              {/* Right vertical line - rises to Open Reqs */}
+              {/* Right vertical line - directly under Open Reqs card */}
               <div className={cn(
                 "w-0.5 h-4",
                 breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
               )} />
             </div>
             
-            {/* Horizontal connector line - matches badge width */}
-            <div className="flex" style={{ width: 'auto', minWidth: '240px' }}>
+            {/* Horizontal connector line spanning full width */}
+            <div className="w-full px-4">
               <div className={cn(
                 "h-0.5 w-full",
                 breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
               )} />
             </div>
             
-            {/* Breakdown bar - styled exactly like Target FTEs */}
-            <div
-              onClick={() => setShowBreakdownModal(true)}
-              className={cn(
-                "flex items-center gap-2 px-2 py-1 rounded-b-lg text-xs",
-                "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
-                breakdownVariant === 'green' && "bg-emerald-500/10 hover:shadow-emerald-300/40",
-                breakdownVariant === 'red' && "bg-destructive/10 hover:shadow-destructive/30"
-              )}
-            >
-              <Info className={cn(
-                "h-3 w-3 shrink-0",
-                breakdownVariant === 'green' && "text-emerald-600",
-                breakdownVariant === 'red' && "text-destructive"
+            {/* Central vertical line down to badge */}
+            <div className="flex justify-center">
+              <div className={cn(
+                "w-0.5 h-2",
+                breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
               )} />
-              <span className={cn(
-                "font-medium",
-                breakdownVariant === 'green' && "text-emerald-700",
-                breakdownVariant === 'red' && "text-destructive"
-              )}>
-                Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN
-              </span>
+            </div>
+            
+            {/* Breakdown bar - centered */}
+            <div className="flex justify-center">
+              <div
+                onClick={() => setShowBreakdownModal(true)}
+                className={cn(
+                  "flex items-center gap-2 px-2 py-1 rounded-b-lg text-xs",
+                  "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
+                  breakdownVariant === 'green' && "bg-emerald-500/10 hover:shadow-emerald-300/40",
+                  breakdownVariant === 'red' && "bg-destructive/10 hover:shadow-destructive/30"
+                )}
+              >
+                <Info className={cn(
+                  "h-3 w-3 shrink-0",
+                  breakdownVariant === 'green' && "text-emerald-600",
+                  breakdownVariant === 'red' && "text-destructive"
+                )} />
+                <span className={cn(
+                  "font-medium",
+                  breakdownVariant === 'green' && "text-emerald-700",
+                  breakdownVariant === 'red' && "text-destructive"
+                )}>
+                  Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN
+                </span>
+              </div>
             </div>
           </div>
         </div>
