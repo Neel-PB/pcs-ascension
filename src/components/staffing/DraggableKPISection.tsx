@@ -89,28 +89,26 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
             <div key={`spacer-${i}`} />
           ))}
           
-          {/* Container spanning 3 columns (Hired | Variance | Open) - badge with connector lines */}
-          <div className="col-span-3 grid grid-cols-3 items-end">
-            {/* Left connector - horizontal from badge center, then vertical riser UP at card center */}
-            <div className="flex flex-col-reverse items-start">
-              {/* Horizontal line at badge level - from badge to card center */}
-              <div className="flex w-full">
-                <div className={cn(
-                  "h-0.5 w-full",
-                  breakdownVariant === 'green' && "bg-emerald-500/40",
-                  breakdownVariant === 'red' && "bg-destructive/40"
-                )} />
-              </div>
-              {/* Vertical riser going UP to Hired FTEs card */}
+          {/* Container spanning 3 columns - flex row with badge in center, horizontal lines to sides, vertical risers up */}
+          <div className="col-span-3 flex items-center justify-center">
+            {/* Left side: vertical riser + horizontal line extending to badge */}
+            <div className="flex items-end flex-1">
+              {/* Vertical riser at left (aligned to Hired FTEs center) going UP */}
               <div className={cn(
-                "w-0.5 h-3",
+                "w-0.5 h-6",
+                breakdownVariant === 'green' && "bg-emerald-500/40",
+                breakdownVariant === 'red' && "bg-destructive/40"
+              )} />
+              {/* Horizontal line connecting to badge side */}
+              <div className={cn(
+                "h-0.5 flex-1",
                 breakdownVariant === 'green' && "bg-emerald-500/40",
                 breakdownVariant === 'red' && "bg-destructive/40"
               )} />
             </div>
             
-            {/* Badge - centered */}
-            <div className="flex justify-center">
+            {/* Badge - centered, flex-shrink-0 to maintain size */}
+            <div className="flex-shrink-0">
               <div
                 onClick={() => setShowBreakdownModal(true)}
                 className={cn(
@@ -135,19 +133,17 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
               </div>
             </div>
             
-            {/* Right connector - horizontal from badge center, then vertical riser UP at card center */}
-            <div className="flex flex-col-reverse items-end">
-              {/* Horizontal line at badge level - from badge to card center */}
-              <div className="flex w-full">
-                <div className={cn(
-                  "h-0.5 w-full",
-                  breakdownVariant === 'green' && "bg-emerald-500/40",
-                  breakdownVariant === 'red' && "bg-destructive/40"
-                )} />
-              </div>
-              {/* Vertical riser going UP to Open Reqs card */}
+            {/* Right side: horizontal line extending from badge + vertical riser */}
+            <div className="flex items-end flex-1">
+              {/* Horizontal line connecting from badge side */}
               <div className={cn(
-                "w-0.5 h-3",
+                "h-0.5 flex-1",
+                breakdownVariant === 'green' && "bg-emerald-500/40",
+                breakdownVariant === 'red' && "bg-destructive/40"
+              )} />
+              {/* Vertical riser at right (aligned to Open Reqs center) going UP */}
+              <div className={cn(
+                "w-0.5 h-6",
                 breakdownVariant === 'green' && "bg-emerald-500/40",
                 breakdownVariant === 'red' && "bg-destructive/40"
               )} />
