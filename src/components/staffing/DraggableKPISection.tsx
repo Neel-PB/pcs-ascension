@@ -96,57 +96,29 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
               <div key={`spacer-${i}`} />
             ))}
             
-            {/* Container spanning 3 columns (Hired | Variance | Open) */}
-            <div className="col-span-3 relative">
-              {/* Horizontal line across all 3 columns */}
-              <div className={cn(
-                "absolute left-0 right-0 h-0.5",
-                breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
-              )} style={{ top: '12px' }} />
-              
-              {/* 3-column grid for vertical risers and centered badge */}
-              <div className="grid grid-cols-3">
-                {/* LEFT: Vertical riser under Hired FTEs */}
-                <div className="flex justify-center">
-                  <div className={cn(
-                    "w-0.5 h-3",
-                    breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
-                  )} />
-                </div>
-                
-                {/* CENTER: The breakdown badge (under FTE Variance) */}
-                <div className="flex justify-center">
-                  <div
-                    onClick={() => setShowBreakdownModal(true)}
-                    className={cn(
-                      "flex items-center justify-center gap-2 px-2 py-1 rounded-b-lg text-xs shrink-0 z-10 pointer-events-auto",
-                      "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
-                      breakdownVariant === 'green' && "bg-emerald-500/10 hover:shadow-emerald-300/40",
-                      breakdownVariant === 'red' && "bg-destructive/10 hover:shadow-destructive/30"
-                    )}
-                  >
-                    <Info className={cn(
-                      "h-3 w-3 shrink-0",
-                      breakdownVariant === 'green' && "text-emerald-600",
-                      breakdownVariant === 'red' && "text-destructive"
-                    )} />
-                    <span className={cn(
-                      "font-medium",
-                      breakdownVariant === 'green' && "text-emerald-700",
-                      breakdownVariant === 'red' && "text-destructive"
-                    )}>
-                      Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN
-                    </span>
-                  </div>
-                </div>
-                
-                {/* RIGHT: Vertical riser under Open Reqs */}
-                <div className="flex justify-center">
-                  <div className={cn(
-                    "w-0.5 h-3",
-                    breakdownVariant === 'green' ? "bg-emerald-500/60" : "bg-destructive/60"
-                  )} />
-                </div>
+            {/* Container spanning 3 columns (Hired | Variance | Open) - badge only */}
+            <div className="col-span-3 flex justify-center">
+              <div
+                onClick={() => setShowBreakdownModal(true)}
+                className={cn(
+                  "flex items-center justify-center gap-2 px-2 py-1 rounded-b-lg text-xs shrink-0 z-10 pointer-events-auto",
+                  "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
+                  breakdownVariant === 'green' && "bg-emerald-500/10 hover:shadow-emerald-300/40",
+                  breakdownVariant === 'red' && "bg-destructive/10 hover:shadow-destructive/30"
+                )}
+              >
+                <Info className={cn(
+                  "h-3 w-3 shrink-0",
+                  breakdownVariant === 'green' && "text-emerald-600",
+                  breakdownVariant === 'red' && "text-destructive"
+                )} />
+                <span className={cn(
+                  "font-medium",
+                  breakdownVariant === 'green' && "text-emerald-700",
+                  breakdownVariant === 'red' && "text-destructive"
+                )}>
+                  Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN
+                </span>
               </div>
             </div>
           </div>
