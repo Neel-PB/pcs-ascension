@@ -52,6 +52,7 @@ export const FeedbackPanel: React.FC = () => {
       {/* Panel */}
       <div
         ref={panelRef}
+        data-feedback-ui="panel"
         className="fixed right-0 top-0 h-screen bg-background border-l border-border shadow-2xl z-[80] flex flex-col max-lg:w-full transition-transform duration-300"
         style={{ width: currentWidth }}
       >

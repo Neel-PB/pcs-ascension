@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Camera, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { ScreenshotSelectionOverlay } from './ScreenshotSelectionOverlay';
+import { capturePageScreenshot, CaptureArea } from '@/lib/capturePageScreenshot';
 
 interface ScreenshotCaptureProps {
   onCapture: (blob: Blob) => void;
@@ -15,61 +17,30 @@ export const ScreenshotCapture: React.FC<ScreenshotCaptureProps> = ({
   onClear,
 }) => {
   const [isCapturing, setIsCapturing] = useState(false);
+  const [showSelector, setShowSelector] = useState(false);
 
-  const captureScreen = async () => {
-    try {
-      setIsCapturing(true);
-      
-      // Request screen capture permission
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: {
-          displaySurface: 'browser',
-        },
-        audio: false,
-      });
+  const handleRetake = () => {
+    setShowSelector(true);
+  };
 
-      // Create video element to capture frame
-      const video = document.createElement('video');
-      video.srcObject = stream;
-      await video.play();
+  const handleAreaSelected = async (area: CaptureArea) => {
+    setShowSelector(false);
+    setIsCapturing(true);
 
-      // Wait a moment for the video to load
-      await new Promise(resolve => setTimeout(resolve, 100));
+    const blob = await capturePageScreenshot(area);
 
-      // Create canvas and capture frame
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx?.drawImage(video, 0, 0);
-
-      // Stop all tracks
-      stream.getTracks().forEach(track => track.stop());
-
-      // Convert to blob
-      const blob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob(
-          (blob) => {
-            if (blob) resolve(blob);
-            else reject(new Error('Failed to create blob'));
-          },
-          'image/png',
-          1.0
-        );
-      });
-
+    if (blob) {
       onCapture(blob);
-      toast.success('Screenshot captured');
-    } catch (error) {
-      if ((error as Error).name === 'NotAllowedError') {
-        toast.error('Screen capture permission denied');
-      } else {
-        toast.error('Failed to capture screenshot');
-        console.error('Screenshot capture error:', error);
-      }
-    } finally {
-      setIsCapturing(false);
+      toast.success('Screenshot updated');
+    } else {
+      toast.error('Failed to capture screenshot');
     }
+
+    setIsCapturing(false);
+  };
+
+  const handleCancelSelection = () => {
+    setShowSelector(false);
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,76 +58,94 @@ export const ScreenshotCapture: React.FC<ScreenshotCaptureProps> = ({
 
   if (previewUrl) {
     return (
-      <div className="relative group">
-        <img
-          src={previewUrl}
-          alt="Screenshot preview"
-          className="w-full h-40 object-cover rounded-lg border border-border"
-        />
-        <Button
-          type="button"
-          size="icon"
-          variant="destructive"
-          className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={onClear}
-        >
-          <X className="h-4 w-4" />
-        </Button>
-        <div className="absolute bottom-2 left-2 right-2 flex gap-2">
+      <>
+        <div className="relative group">
+          <img
+            src={previewUrl}
+            alt="Screenshot preview"
+            className="w-full h-40 object-cover rounded-lg border border-border"
+          />
           <Button
             type="button"
-            size="sm"
-            variant="secondary"
-            className="flex-1"
-            onClick={captureScreen}
-            disabled={isCapturing}
+            size="icon"
+            variant="destructive"
+            className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={onClear}
           >
-            <Camera className="h-4 w-4 mr-1" />
-            Retake
+            <X className="h-4 w-4" />
           </Button>
+          <div className="absolute bottom-2 left-2 right-2 flex gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="flex-1"
+              onClick={handleRetake}
+              disabled={isCapturing}
+            >
+              <Camera className="h-4 w-4 mr-1" />
+              {isCapturing ? 'Capturing...' : 'Retake'}
+            </Button>
+          </div>
         </div>
-      </div>
+
+        {showSelector && (
+          <ScreenshotSelectionOverlay
+            onSelect={handleAreaSelected}
+            onCancel={handleCancelSelection}
+          />
+        )}
+      </>
     );
   }
 
   return (
-    <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="flex gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={captureScreen}
-            disabled={isCapturing}
-            className="flex items-center gap-2"
-          >
-            <Camera className="h-4 w-4" />
-            {isCapturing ? 'Capturing...' : 'Capture Screen'}
-          </Button>
-          <label>
+    <>
+      <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex gap-3">
             <Button
               type="button"
               variant="outline"
-              className="flex items-center gap-2 cursor-pointer"
-              asChild
+              onClick={handleRetake}
+              disabled={isCapturing}
+              className="flex items-center gap-2"
             >
-              <span>
-                <Upload className="h-4 w-4" />
-                Upload Image
-              </span>
+              <Camera className="h-4 w-4" />
+              {isCapturing ? 'Capturing...' : 'Capture Screen'}
             </Button>
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileUpload}
-            />
-          </label>
+            <label>
+              <Button
+                type="button"
+                variant="outline"
+                className="flex items-center gap-2 cursor-pointer"
+                asChild
+              >
+                <span>
+                  <Upload className="h-4 w-4" />
+                  Upload Image
+                </span>
+              </Button>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+            </label>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Capture your screen or upload an existing screenshot
+          </p>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Capture your screen or upload an existing screenshot
-        </p>
       </div>
-    </div>
+
+      {showSelector && (
+        <ScreenshotSelectionOverlay
+          onSelect={handleAreaSelected}
+          onCancel={handleCancelSelection}
+        />
+      )}
+    </>
   );
 };
