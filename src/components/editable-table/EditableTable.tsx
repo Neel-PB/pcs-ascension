@@ -94,12 +94,27 @@ export function EditableTable<T = any>({
       });
   }, [columnDefinitions, columnStates]);
 
-  // Calculate grid template with fixed widths (no proportional scaling)
+  // Calculate grid template with proportional scaling when there's extra space
   const gridTemplate = useMemo(() => {
+    const totalMinWidth = visibleColumns.reduce((sum, col) => sum + (col.width ?? 160), 0);
+    
+    // If container is wider than total column widths, scale proportionally
+    if (containerWidth > 0 && containerWidth > totalMinWidth) {
+      const scaleFactor = containerWidth / totalMinWidth;
+      return visibleColumns
+        .map(col => {
+          const baseWidth = col.width ?? 160;
+          const scaledWidth = Math.floor(baseWidth * scaleFactor);
+          return `${scaledWidth}px`;
+        })
+        .join(' ');
+    }
+    
+    // Otherwise use fixed widths (allows horizontal scrolling if needed)
     return visibleColumns
       .map(col => `${col.width}px`)
       .join(' ');
-  }, [visibleColumns]);
+  }, [visibleColumns, containerWidth]);
 
   // Handlers
   const handleColumnResize = (columnId: string, width: number) => {
