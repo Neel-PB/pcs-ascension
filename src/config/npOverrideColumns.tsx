@@ -2,7 +2,7 @@ import { ColumnDef } from '@/types/table';
 import { Badge } from '@/components/ui/badge';
 import { EditableNumberCell } from '@/components/editable-table/cells/EditableNumberCell';
 import { EditableDateCell } from '@/components/editable-table/cells/EditableDateCell';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { TruncatedTextCell } from '@/components/editable-table/cells/TruncatedTextCell';
 import { differenceInDays, format } from 'date-fns';
 
 export interface NPOverrideRow {
@@ -30,23 +30,12 @@ export const createNPOverrideColumns = (
     minWidth: 150,
     locked: true,
     sortable: true,
-    renderCell: (row) => {
-      const shouldTruncate = row.department_name.length > 30;
-      return (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="px-3 py-2 font-medium truncate max-w-[200px] cursor-default">
-              {row.department_name}
-            </div>
-          </TooltipTrigger>
-          {shouldTruncate && (
-            <TooltipContent side="top" sideOffset={8} showArrow>
-              <p>{row.department_name}</p>
-            </TooltipContent>
-          )}
-        </Tooltip>
-      );
-    },
+    renderCell: (row) => (
+      <TruncatedTextCell 
+        value={row.department_name} 
+        className="font-medium"
+      />
+    ),
   },
   {
     id: 'np_target_volume',
