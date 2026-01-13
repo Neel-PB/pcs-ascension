@@ -41,8 +41,8 @@ export const createNPOverrideColumns = (
     id: 'np_target_volume',
     label: 'NP Target Volume',
     type: 'number',
-    width: 180,
-    minWidth: 150,
+    width: 200,
+    minWidth: 180,
     sortable: true,
     renderCell: (row) => (
       <div className="px-3 py-2 text-center">
@@ -56,8 +56,8 @@ export const createNPOverrideColumns = (
     id: 'np_override_volume',
     label: 'NP Override Volume',
     type: 'custom',
-    width: 200,
-    minWidth: 170,
+    width: 220,
+    minWidth: 200,
     sortable: true,
     renderCell: (row) => (
       <EditableNumberCell
