@@ -582,7 +582,10 @@ This metric helps:
           )}
           
           {activeTab === "np-settings" && (
-            <NPSettingsTab />
+            <NPSettingsTab 
+              selectedMarket={selectedMarket}
+              selectedFacility={selectedFacility}
+            />
           )}
         </motion.div>
       </AnimatePresence>

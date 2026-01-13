@@ -89,6 +89,7 @@ const TABLE_SCHEMAS: Record<TableName, { name: string; type: string }[]> = {
   volume_overrides: [],
   volume_override_config: [],
   messages: [],
+  np_overrides: [],
 };
 
 export default function DataImportPage() {
