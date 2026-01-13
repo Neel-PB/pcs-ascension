@@ -39,7 +39,7 @@ export const createNPOverrideColumns = (
   },
   {
     id: 'np_target_volume',
-    label: 'NP Target Volume',
+    label: 'Target NP %',
     type: 'number',
     width: 240,
     minWidth: 220,
@@ -54,7 +54,7 @@ export const createNPOverrideColumns = (
   },
   {
     id: 'np_override_volume',
-    label: 'NP Override Volume',
+    label: 'Override NP %',
     type: 'custom',
     width: 260,
     minWidth: 240,
