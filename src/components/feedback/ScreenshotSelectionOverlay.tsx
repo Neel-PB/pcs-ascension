@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { CaptureArea } from '@/lib/capturePageScreenshot';
+import type { CaptureArea } from '@/types/screenshot';
 
 interface ScreenshotSelectionOverlayProps {
   onSelect: (area: CaptureArea) => void;

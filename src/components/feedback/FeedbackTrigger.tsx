@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import { useFeedbackStore } from '@/stores/useFeedbackStore';
 import { MessageSquarePlus, Loader2 } from 'lucide-react';
 import { ScreenshotSelectionOverlay } from './ScreenshotSelectionOverlay';
-import { capturePageScreenshot, CaptureArea } from '@/lib/capturePageScreenshot';
+import { capturePageScreenshot } from '@/lib/capturePageScreenshot';
+import type { CaptureArea } from '@/types/screenshot';
 import { toast } from 'sonner';
 
 export const FeedbackTrigger: React.FC = () => {

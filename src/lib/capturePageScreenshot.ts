@@ -1,11 +1,7 @@
 import html2canvas from 'html2canvas';
+import { CaptureArea } from '@/types/screenshot';
 
-export interface CaptureArea {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
+export type { CaptureArea } from '@/types/screenshot';
 
 export const capturePageScreenshot = async (
   area?: CaptureArea
