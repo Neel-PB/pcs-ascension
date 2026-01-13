@@ -122,7 +122,7 @@ export const createVolumeOverrideColumns = (
   },
   {
     id: 'max_allowed_expiry',
-    label: 'Max Expiry',
+    label: 'Max Expiration',
     type: 'custom',
     width: 150,
     minWidth: 120,
@@ -139,7 +139,7 @@ export const createVolumeOverrideColumns = (
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            Maximum allowed expiry date based on historical data availability
+            Maximum allowed expiration date based on historical data availability
           </TooltipContent>
         </Tooltip>
       </div>
@@ -147,7 +147,7 @@ export const createVolumeOverrideColumns = (
   },
   {
     id: 'expiry_date',
-    label: 'Expiry Date',
+    label: 'Expiration Date',
     type: 'custom',
     width: 200,
     minWidth: 150,
@@ -172,7 +172,7 @@ export const createVolumeOverrideColumns = (
                 <AlertCircle className="absolute right-5 top-1/2 -translate-y-1/2 h-4 w-4 text-destructive" />
               </TooltipTrigger>
               <TooltipContent>
-                Expiry date exceeds maximum allowed date of {format(maxDate, 'MMM dd, yyyy')}
+                Expiration date exceeds maximum allowed date of {format(maxDate, 'MMM dd, yyyy')}
               </TooltipContent>
             </Tooltip>
           )}

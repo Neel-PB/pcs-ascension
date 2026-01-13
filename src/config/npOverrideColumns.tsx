@@ -68,7 +68,7 @@ export const createNPOverrideColumns = (
   },
   {
     id: 'max_expiry',
-    label: 'Max Expiry',
+    label: 'Max Expiration',
     type: 'custom',
     width: 180,
     minWidth: 150,
@@ -83,7 +83,7 @@ export const createNPOverrideColumns = (
   },
   {
     id: 'expiry_date',
-    label: 'Expiry Date',
+    label: 'Expiration Date',
     type: 'custom',
     width: 220,
     minWidth: 180,
