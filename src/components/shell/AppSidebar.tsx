@@ -6,6 +6,7 @@ import {
   FileBarChart,
   LifeBuoy,
   ShieldCheck,
+  MessageSquare,
 } from "lucide-react";
 import { motion, LayoutGroup } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,7 @@ const sidebarItems: SidebarItem[] = [
   { id: "analytics", title: "Analytics", url: "/analytics", icon: TrendingUp },
   { id: "reports", title: "Reports", url: "/reports", icon: FileBarChart },
   { id: "support", title: "Support", url: "/support", icon: LifeBuoy },
+  { id: "feedback", title: "Feedback", url: "/feedback", icon: MessageSquare },
 ];
 
 export function AppSidebar() {

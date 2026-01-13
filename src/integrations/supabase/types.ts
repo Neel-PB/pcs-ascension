@@ -143,6 +143,86 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback: {
+        Row: {
+          browser_info: Json | null
+          created_at: string
+          description: string
+          id: string
+          page_url: string | null
+          priority: string
+          screenshot_url: string | null
+          status: string
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          browser_info?: Json | null
+          created_at?: string
+          description: string
+          id?: string
+          page_url?: string | null
+          priority?: string
+          screenshot_url?: string | null
+          status?: string
+          title: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          browser_info?: Json | null
+          created_at?: string
+          description?: string
+          id?: string
+          page_url?: string | null
+          priority?: string
+          screenshot_url?: string | null
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      feedback_comments: {
+        Row: {
+          content: string
+          created_at: string
+          feedback_id: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          feedback_id: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          feedback_id?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_comments_feedback_id_fkey"
+            columns: ["feedback_id"]
+            isOneToOne: false
+            referencedRelation: "feedback"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forecast_positions_to_close: {
         Row: {
           approved_at: string | null
