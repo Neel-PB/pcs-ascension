@@ -4,8 +4,15 @@ import { useFeedbackStore } from '@/stores/useFeedbackStore';
 import { MessageSquarePlus, Loader2 } from 'lucide-react';
 import { ScreenshotSelectionOverlay } from './ScreenshotSelectionOverlay';
 import { capturePageScreenshot } from '@/lib/capturePageScreenshot';
-import type { CaptureArea } from '@/types/screenshot';
 import { toast } from 'sonner';
+
+type CaptureArea = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
 
 export const FeedbackTrigger: React.FC = () => {
   const { setOpen, setScreenshot } = useFeedbackStore();

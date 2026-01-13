@@ -1,5 +1,11 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import type { CaptureArea } from '@/types/screenshot';
+
+type CaptureArea = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
 
 interface ScreenshotSelectionOverlayProps {
   onSelect: (area: CaptureArea) => void;
