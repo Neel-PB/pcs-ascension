@@ -13,9 +13,12 @@ import AnalyticsRegion from "./pages/analytics/AnalyticsRegion";
 import ReportsRegion from "./pages/reports/ReportsRegion";
 import SupportPage from "./pages/support/SupportPage";
 import AdminPage from "./pages/admin/AdminPage";
+import FeedbackPage from "./pages/feedback/FeedbackPage";
 import NotFound from "./pages/NotFound";
 import { AIHubTrigger } from "./components/ai/AIHubTrigger";
 import { AIHubPanel } from "./components/ai/AIHubPanel";
+import { FeedbackTrigger } from "./components/feedback/FeedbackTrigger";
+import { FeedbackPanel } from "./components/feedback/FeedbackPanel";
 import { useAuth } from "./hooks/useAuth";
 
 const queryClient = new QueryClient();
@@ -34,12 +37,15 @@ const AppContent = () => {
         <Route path="/analytics" element={<ShellLayout><AnalyticsRegion /></ShellLayout>} />
         <Route path="/reports" element={<ShellLayout><ReportsRegion /></ShellLayout>} />
         <Route path="/support" element={<ShellLayout><SupportPage /></ShellLayout>} />
+        <Route path="/feedback" element={<ShellLayout><FeedbackPage /></ShellLayout>} />
         <Route path="/admin" element={<ShellLayout><AdminPage /></ShellLayout>} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<ShellLayout><NotFound /></ShellLayout>} />
       </Routes>
       {!loading && user && (
         <>
+          <FeedbackTrigger />
+          <FeedbackPanel />
           <AIHubTrigger />
           <AIHubPanel />
         </>

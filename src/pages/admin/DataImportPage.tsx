@@ -77,6 +77,8 @@ const TABLE_SCHEMAS: Record<TableName, { name: string; type: string }[]> = {
   regions: [{ name: "region", type: "text" }],
   comments: [],
   data_refresh_log: [],
+  feedback: [],
+  feedback_comments: [],
   notifications: [],
   position_comments: [],
   post_likes: [],
