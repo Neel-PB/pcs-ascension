@@ -26,8 +26,8 @@ export const createNPOverrideColumns = (
     id: 'department_name',
     label: 'Department',
     type: 'text',
-    width: 200,
-    minWidth: 150,
+    width: 280,
+    minWidth: 220,
     locked: true,
     sortable: true,
     renderCell: (row) => (
@@ -41,8 +41,8 @@ export const createNPOverrideColumns = (
     id: 'np_target_volume',
     label: 'NP Target Volume',
     type: 'number',
-    width: 150,
-    minWidth: 120,
+    width: 180,
+    minWidth: 150,
     sortable: true,
     renderCell: (row) => (
       <div className="px-3 py-2 text-center">
@@ -56,8 +56,8 @@ export const createNPOverrideColumns = (
     id: 'np_override_volume',
     label: 'NP Override Volume',
     type: 'custom',
-    width: 180,
-    minWidth: 150,
+    width: 200,
+    minWidth: 170,
     sortable: true,
     renderCell: (row) => (
       <EditableNumberCell
@@ -70,8 +70,8 @@ export const createNPOverrideColumns = (
     id: 'max_expiry',
     label: 'Max Expiry',
     type: 'custom',
-    width: 150,
-    minWidth: 120,
+    width: 180,
+    minWidth: 150,
     sortable: true,
     renderCell: (row) => (
       <div className="px-3 py-2">
@@ -85,8 +85,8 @@ export const createNPOverrideColumns = (
     id: 'expiry_date',
     label: 'Expiry Date',
     type: 'custom',
-    width: 200,
-    minWidth: 150,
+    width: 220,
+    minWidth: 180,
     sortable: true,
     renderCell: (row) => (
       <div className="px-3 py-2">
