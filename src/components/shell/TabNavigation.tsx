@@ -89,7 +89,8 @@ export const moduleTabConfigs = {
     { id: "planning", label: "Position Planning", path: "/staffing/planning" },
     { id: "variance", label: "Variance Analysis", path: "/staffing/variance" },
     { id: "forecasts", label: "Forecasts", path: "/staffing/forecasts" },
-    { id: "settings", label: "Settings", path: "/staffing/settings" },
+    { id: "volume-settings", label: "Volume Settings", path: "/staffing/volume-settings" },
+    { id: "np-settings", label: "NP Settings", path: "/staffing/np-settings" },
   ],
   positions: [
     { id: "employees", label: "Employees", path: "/positions" },
