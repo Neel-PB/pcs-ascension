@@ -5,6 +5,7 @@ import PositionPlanning from "./PositionPlanning";
 import { VarianceAnalysis } from "./VarianceAnalysis";
 import { ForecastTab } from "./ForecastTab";
 import { SettingsTab } from "./SettingsTab";
+import { NPSettingsTab } from "./NPSettingsTab";
 import { DraggableSectionsContainer } from "@/components/staffing/DraggableSectionsContainer";
 import { useKPIOrderStore } from "@/stores/useKPIOrderStore";
 import { generateLast12MonthLabels } from "@/lib/utils";
@@ -29,7 +30,8 @@ export default function StaffingSummary() {
     { id: "planning", label: "Planned/Active Resources" },
     { id: "variance", label: "Variance Analysis" },
     { id: "forecasts", label: "Forecasts" },
-    { id: "settings", label: "Settings" },
+    { id: "volume-settings", label: "Volume Settings" },
+    { id: "np-settings", label: "NP Settings" },
   ];
 
   const handleRegionChange = (value: string) => {
@@ -572,11 +574,15 @@ This metric helps:
             <ForecastTab />
           )}
           
-          {activeTab === "settings" && (
+          {activeTab === "volume-settings" && (
             <SettingsTab 
               selectedMarket={selectedMarket}
               selectedFacility={selectedFacility}
             />
+          )}
+          
+          {activeTab === "np-settings" && (
+            <NPSettingsTab />
           )}
         </motion.div>
       </AnimatePresence>
