@@ -424,6 +424,48 @@ export type Database = {
           },
         ]
       }
+      np_overrides: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          department_id: string
+          department_name: string
+          expiry_date: string
+          facility_id: string
+          facility_name: string
+          id: string
+          market: string
+          np_override_volume: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          department_id: string
+          department_name: string
+          expiry_date: string
+          facility_id: string
+          facility_name: string
+          id?: string
+          market: string
+          np_override_volume: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          department_id?: string
+          department_name?: string
+          expiry_date?: string
+          facility_id?: string
+          facility_name?: string
+          id?: string
+          market?: string
+          np_override_volume?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       position_comments: {
         Row: {
           comment_type: string
