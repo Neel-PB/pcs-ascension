@@ -4,7 +4,14 @@ import { Camera, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ScreenshotSelectionOverlay } from './ScreenshotSelectionOverlay';
 import { capturePageScreenshot } from '@/lib/capturePageScreenshot';
-import type { CaptureArea } from '@/types/screenshot';
+
+type CaptureArea = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
 
 interface ScreenshotCaptureProps {
   onCapture: (blob: Blob) => void;
