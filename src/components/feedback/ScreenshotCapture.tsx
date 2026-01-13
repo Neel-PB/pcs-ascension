@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Camera, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ScreenshotSelectionOverlay } from './ScreenshotSelectionOverlay';
-import { capturePageScreenshot, CaptureArea } from '@/lib/capturePageScreenshot';
+import { capturePageScreenshot } from '@/lib/capturePageScreenshot';
+import type { CaptureArea } from '@/types/screenshot';
 
 interface ScreenshotCaptureProps {
   onCapture: (blob: Blob) => void;
