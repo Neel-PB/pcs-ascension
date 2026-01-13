@@ -1,39 +1,38 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useFeedbackStore } from '@/stores/useFeedbackStore';
-import { useWorkforceResizable } from '@/hooks/useWorkforceResizable';
+import { useFeedbackResizable } from '@/hooks/useFeedbackResizable';
 import { FeedbackForm } from './FeedbackForm';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { X, GripVertical } from 'lucide-react';
 
-const MIN_WIDTH = 400;
-const MAX_WIDTH_VW = 0.5;
-const SNAP_POINTS = [400, 480, 560];
+const MIN_WIDTH = 490;
+const MAX_WIDTH_VW = 0.7;
+const SNAP_POINTS = [400, 520, 640, 820];
 
 export const FeedbackPanel: React.FC = () => {
   const { isOpen, setOpen, clearScreenshot } = useFeedbackStore();
+  const panelRef = useRef<HTMLDivElement>(null);
   
-  const { isDragging, currentWidth, handlePointerDown } = useWorkforceResizable({
+  const { isDragging, currentWidth, handlePointerDown } = useFeedbackResizable({
     minWidth: MIN_WIDTH,
     maxWidthVw: MAX_WIDTH_VW,
     snapPoints: SNAP_POINTS,
   });
 
-  // Keyboard shortcut
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'f') {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'f') {
         e.preventDefault();
         useFeedbackStore.getState().toggle();
       }
-      if (e.key === 'Escape' && isOpen) {
-        setOpen(false);
+      if (e.key === 'Escape' && isOpen && panelRef.current?.contains(document.activeElement)) {
+        handleClose();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, setOpen]);
+  }, [isOpen]);
 
   const handleClose = useCallback(() => {
     setOpen(false);
@@ -44,51 +43,51 @@ export const FeedbackPanel: React.FC = () => {
 
   return (
     <>
-      {/* Backdrop for mobile */}
+      {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/20 z-[79] md:hidden"
+        className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[70] lg:hidden"
         onClick={handleClose}
       />
 
       {/* Panel */}
       <div
-        className="fixed right-0 top-0 h-full bg-background border-l border-border shadow-2xl z-80 flex flex-col"
+        ref={panelRef}
+        className="fixed right-0 top-0 h-screen bg-background border-l border-border shadow-2xl z-[80] flex flex-col max-lg:w-full transition-transform duration-300"
         style={{ width: currentWidth }}
       >
-        {/* Resize handle */}
+        {/* Resize Handle (Desktop Only) */}
         <div
-          className="absolute left-0 top-0 bottom-0 w-1.5 cursor-ew-resize group hover:bg-primary/20 transition-colors flex items-center justify-center"
+          className="hidden lg:block absolute left-0 top-0 bottom-0 w-1 hover:w-1.5 bg-border hover:bg-primary cursor-col-resize transition-all z-10"
           onPointerDown={handlePointerDown}
         >
           {isDragging && (
-            <div className="absolute inset-0 bg-primary/30" />
+            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-primary-foreground px-4 py-2 rounded-lg shadow-lg font-medium">
+              {Math.round(currentWidth)}px
+            </div>
           )}
-          <GripVertical className="h-8 w-8 text-muted-foreground/30 group-hover:text-muted-foreground/50 -ml-3" />
         </div>
 
-        {/* Header */}
-        <div
-          className="shrink-0 flex items-center justify-between px-6 border-b border-border"
+        {/* Fixed Header Row - matching global header */}
+        <div 
+          className="flex items-center px-6 border-b border-border flex-shrink-0" 
           style={{ height: 'var(--header-height)' }}
         >
-          <h2 className="text-lg font-semibold">Submit Feedback</h2>
-          <Button variant="ghost" size="icon" onClick={handleClose}>
-            <X className="h-5 w-5" />
-          </Button>
+          <h1 className="text-lg font-semibold text-foreground">Submit Feedback</h1>
         </div>
 
-        {/* Content */}
-        <ScrollArea className="flex-1">
-          <div className="p-6">
-            <FeedbackForm onSuccess={handleClose} />
-          </div>
-        </ScrollArea>
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto px-4 lg:px-6 py-4 flex flex-col min-h-0">
+          <FeedbackForm onSuccess={handleClose} />
+        </div>
 
-        {/* Footer hint */}
-        <div className="shrink-0 px-6 py-3 border-t border-border bg-muted/30">
-          <p className="text-xs text-muted-foreground text-center">
+        {/* Footer with Close Button */}
+        <div className="flex-shrink-0 px-6 py-3 border-t flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">
             Press <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono">⌘+Shift+F</kbd> to toggle
           </p>
+          <Button variant="default" onClick={handleClose}>
+            Close
+          </Button>
         </div>
       </div>
     </>
