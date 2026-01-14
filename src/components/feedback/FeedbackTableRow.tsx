@@ -184,21 +184,23 @@ export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) 
       {/* Type */}
       <TableCell className="py-3 w-[100px]">
         <Select value={feedback.type} onValueChange={handleTypeChange}>
-          <SelectTrigger className="h-7 w-[95px] text-xs border-none bg-transparent hover:bg-muted/50 px-1">
-            <Badge variant="secondary" className={cn("text-xs", typeInfo.color)}>
-              <TypeIcon className="h-3 w-3 mr-1" />
-              {typeInfo.label}
-            </Badge>
+          <SelectTrigger className="h-7 w-[95px] text-xs border-none bg-transparent hover:bg-muted/50 px-1 [&>span]:flex [&>span]:items-center">
+            <SelectValue>
+              <Badge variant="secondary" className={cn("text-xs", typeInfo.color)}>
+                <TypeIcon className="h-3 w-3 mr-1" />
+                {typeInfo.label}
+              </Badge>
+            </SelectValue>
           </SelectTrigger>
-          <SelectContent className="bg-popover">
+          <SelectContent className="bg-popover z-50">
             {Object.entries(typeConfig).map(([value, config]) => {
               const Icon = config.icon;
               return (
                 <SelectItem key={value} value={value} className="text-xs">
-                  <Badge variant="secondary" className={cn("text-xs", config.color)}>
-                    <Icon className="h-3 w-3 mr-1" />
+                  <div className="flex items-center gap-1">
+                    <Icon className="h-3 w-3" />
                     {config.label}
-                  </Badge>
+                  </div>
                 </SelectItem>
               );
             })}
@@ -291,11 +293,13 @@ export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) 
       <TableCell className="py-3 w-[80px]">
         <Select value={feedback.priority} onValueChange={handlePriorityChange}>
           <SelectTrigger className="h-7 w-[75px] text-xs border-none bg-transparent hover:bg-muted/50 px-1">
-            <span className={cn("text-xs font-medium", priorityInfo.color)}>
-              {priorityInfo.label}
-            </span>
+            <SelectValue>
+              <span className={cn("text-xs font-medium", priorityInfo.color)}>
+                {priorityInfo.label}
+              </span>
+            </SelectValue>
           </SelectTrigger>
-          <SelectContent className="bg-popover">
+          <SelectContent className="bg-popover z-50">
             {Object.entries(priorityConfig).map(([value, config]) => (
               <SelectItem key={value} value={value} className="text-xs">
                 <span className={cn("text-xs font-medium", config.color)}>
