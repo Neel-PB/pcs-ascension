@@ -19,23 +19,12 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { LogoLoader } from '@/components/ui/LogoLoader';
 import { Search, MessageSquare } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 
 export default function FeedbackPage() {
   const { feedback, isLoading, deleteFeedback } = useFeedback();
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const filteredFeedback = feedback.filter((item) => {
     const matchesSearch = 
@@ -46,11 +35,8 @@ export default function FeedbackPage() {
     return matchesSearch && matchesType && matchesStatus;
   });
 
-  const handleDelete = async () => {
-    if (deleteId) {
-      await deleteFeedback.mutateAsync(deleteId);
-      setDeleteId(null);
-    }
+  const handleDelete = async (id: string) => {
+    await deleteFeedback.mutateAsync(id);
   };
 
   if (isLoading) {
@@ -125,14 +111,15 @@ export default function FeedbackPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/50">
-                    <TableHead className="w-10 px-2"></TableHead>
-                    <TableHead className="w-[150px]">Author</TableHead>
-                    <TableHead className="w-[120px]">Type</TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead className="w-[80px] text-center">Screenshot</TableHead>
+                    <TableHead className="w-[140px]">Author</TableHead>
+                    <TableHead className="w-[100px]">Type</TableHead>
+                    <TableHead className="min-w-[200px]">Title & Description</TableHead>
+                    <TableHead className="w-[80px]">Screenshot</TableHead>
                     <TableHead className="w-[140px]">Status</TableHead>
-                    <TableHead className="w-[100px]">Priority</TableHead>
+                    <TableHead className="w-[80px]">Priority</TableHead>
                     <TableHead className="w-[100px]">Date</TableHead>
+                    <TableHead className="min-w-[250px]">Comments</TableHead>
+                    <TableHead className="w-[60px]"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -140,7 +127,7 @@ export default function FeedbackPage() {
                     <FeedbackTableRow
                       key={item.id}
                       feedback={item}
-                      onDelete={setDeleteId}
+                      onDelete={handleDelete}
                     />
                   ))}
                 </TableBody>
@@ -149,24 +136,6 @@ export default function FeedbackPage() {
           )}
         </div>
       </ScrollArea>
-
-      {/* Delete Confirmation */}
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Feedback</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this feedback? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
