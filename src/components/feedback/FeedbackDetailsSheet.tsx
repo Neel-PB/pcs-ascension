@@ -34,8 +34,14 @@ const typeConfig = {
   question: { label: 'Question', color: 'bg-purple-500/10 text-purple-600 border-purple-200' },
 };
 
-const statusConfig = {
-  new: { label: 'New', color: 'bg-blue-500/10 text-blue-600' },
+const pcsStatusConfig = {
+  pending: { label: 'Pending', color: 'bg-blue-500/10 text-blue-600' },
+  approved: { label: 'Approved', color: 'bg-emerald-500/10 text-emerald-600' },
+  disregard: { label: 'Disregard', color: 'bg-muted text-muted-foreground' },
+  backlog: { label: 'Backlog', color: 'bg-amber-500/10 text-amber-600' },
+};
+
+const pbStatusConfig = {
   in_progress: { label: 'In Progress', color: 'bg-amber-500/10 text-amber-600' },
   resolved: { label: 'Resolved', color: 'bg-green-500/10 text-green-600' },
   closed: { label: 'Closed', color: 'bg-muted text-muted-foreground' },
@@ -53,7 +59,7 @@ export const FeedbackDetailsSheet: React.FC<FeedbackDetailsSheetProps> = ({
   open,
   onOpenChange,
 }) => {
-  const { updateFeedbackStatus } = useFeedback();
+  const { updatePcsStatus, updatePbStatus } = useFeedback();
   const { comments, isLoading: commentsLoading, addComment, deleteComment } = useFeedbackComments(feedback?.id ?? null);
   const [newComment, setNewComment] = useState('');
   const [showScreenshot, setShowScreenshot] = useState(false);
@@ -85,8 +91,11 @@ export const FeedbackDetailsSheet: React.FC<FeedbackDetailsSheetProps> = ({
               <Badge variant="outline" className={typeConfig[feedback.type].color}>
                 {typeConfig[feedback.type].label}
               </Badge>
-              <Badge className={statusConfig[feedback.status].color}>
-                {statusConfig[feedback.status].label}
+              <Badge className={pcsStatusConfig[feedback.pcs_status]?.color}>
+                {pcsStatusConfig[feedback.pcs_status]?.label}
+              </Badge>
+              <Badge className={pbStatusConfig[feedback.pb_status]?.color}>
+                {pbStatusConfig[feedback.pb_status]?.label}
               </Badge>
             </div>
           </div>
@@ -187,15 +196,15 @@ export const FeedbackDetailsSheet: React.FC<FeedbackDetailsSheetProps> = ({
                     </div>
                   )}
 
-                  {/* Status Update */}
+                  {/* PCS Status Update */}
                   <div className="space-y-2">
-                    <span className="text-sm font-medium">Update Status</span>
+                    <span className="text-sm font-medium">PCS Status</span>
                     <Select
-                      value={feedback.status}
+                      value={feedback.pcs_status}
                       onValueChange={(value) => 
-                        updateFeedbackStatus.mutate({ 
+                        updatePcsStatus.mutate({ 
                           id: feedback.id, 
-                          status: value as Feedback['status'] 
+                          pcs_status: value as Feedback['pcs_status'] 
                         })
                       }
                     >
@@ -203,12 +212,41 @@ export const FeedbackDetailsSheet: React.FC<FeedbackDetailsSheetProps> = ({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="new">New</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="approved">Approved</SelectItem>
+                        <SelectItem value="disregard">Disregard</SelectItem>
+                        <SelectItem value="backlog">Backlog</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* PB Status Update */}
+                  <div className="space-y-2">
+                    <span className="text-sm font-medium">PB Status</span>
+                    <Select
+                      value={feedback.pcs_status === 'disregard' || feedback.pcs_status === 'backlog' ? 'closed' : feedback.pb_status}
+                      onValueChange={(value) => 
+                        updatePbStatus.mutate({ 
+                          id: feedback.id, 
+                          pb_status: value as Feedback['pb_status'] 
+                        })
+                      }
+                      disabled={feedback.pcs_status === 'disregard' || feedback.pcs_status === 'backlog'}
+                    >
+                      <SelectTrigger className={feedback.pcs_status === 'disregard' || feedback.pcs_status === 'backlog' ? 'opacity-60' : ''}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
                         <SelectItem value="in_progress">In Progress</SelectItem>
                         <SelectItem value="resolved">Resolved</SelectItem>
                         <SelectItem value="closed">Closed</SelectItem>
                       </SelectContent>
                     </Select>
+                    {(feedback.pcs_status === 'disregard' || feedback.pcs_status === 'backlog') && (
+                      <p className="text-xs text-muted-foreground">
+                        PB Status is locked to "Closed" when PCS Status is Disregard or Backlog
+                      </p>
+                    )}
                   </div>
                 </div>
               </ScrollArea>

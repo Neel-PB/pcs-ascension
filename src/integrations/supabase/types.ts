@@ -150,9 +150,10 @@ export type Database = {
           description: string
           id: string
           page_url: string | null
+          pb_status: string
+          pcs_status: string
           priority: string
           screenshot_url: string | null
-          status: string
           title: string
           type: string
           updated_at: string
@@ -164,9 +165,10 @@ export type Database = {
           description: string
           id?: string
           page_url?: string | null
+          pb_status?: string
+          pcs_status?: string
           priority?: string
           screenshot_url?: string | null
-          status?: string
           title: string
           type: string
           updated_at?: string
@@ -178,9 +180,10 @@ export type Database = {
           description?: string
           id?: string
           page_url?: string | null
+          pb_status?: string
+          pcs_status?: string
           priority?: string
           screenshot_url?: string | null
-          status?: string
           title?: string
           type?: string
           updated_at?: string
