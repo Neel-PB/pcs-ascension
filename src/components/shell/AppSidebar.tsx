@@ -25,7 +25,6 @@ const sidebarItems: SidebarItem[] = [
   { id: "analytics", title: "Analytics", url: "/analytics", icon: TrendingUp },
   { id: "reports", title: "Reports", url: "/reports", icon: FileBarChart },
   { id: "support", title: "Support", url: "/support", icon: LifeBuoy },
-  { id: "feedback", title: "Feedback", url: "/feedback", icon: MessageSquare },
 ];
 
 export function AppSidebar() {
@@ -125,6 +124,41 @@ export function AppSidebar() {
                   <ShieldCheck className="relative z-10 h-5 w-5 stroke-[1.5]" />
                   <span className="relative z-10 text-[10px] font-medium leading-tight text-center">
                     Admin
+                  </span>
+                </motion.div>
+              </NavLink>
+
+              {/* Feedback Item - at very bottom */}
+              <NavLink
+                to="/feedback"
+                className="relative block"
+              >
+                <motion.div
+                  className={cn(
+                    "relative flex flex-col items-center gap-1.5 py-3 px-2 rounded-lg transition-colors w-full",
+                    location.pathname.startsWith("/feedback")
+                      ? "text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {location.pathname.startsWith("/feedback") && (
+                    <motion.div
+                      layoutId="sidebarIndicator"
+                      className="absolute inset-0 bg-primary rounded-lg"
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                  <MessageSquare className="relative z-10 h-5 w-5 stroke-[1.5]" />
+                  <span className="relative z-10 text-[10px] font-medium leading-tight text-center">
+                    Feedback
                   </span>
                 </motion.div>
               </NavLink>
