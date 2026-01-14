@@ -117,6 +117,48 @@ export const useFeedback = () => {
     },
   });
 
+  const updateFeedbackType = useMutation({
+    mutationFn: async ({ id, type }: { id: string; type: Feedback['type'] }) => {
+      const { data, error } = await supabase
+        .from('feedback')
+        .update({ type })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feedback'] });
+      toast.success('Type updated');
+    },
+    onError: (error) => {
+      toast.error('Failed to update type: ' + error.message);
+    },
+  });
+
+  const updateFeedbackPriority = useMutation({
+    mutationFn: async ({ id, priority }: { id: string; priority: Feedback['priority'] }) => {
+      const { data, error } = await supabase
+        .from('feedback')
+        .update({ priority })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feedback'] });
+      toast.success('Priority updated');
+    },
+    onError: (error) => {
+      toast.error('Failed to update priority: ' + error.message);
+    },
+  });
+
   const deleteFeedback = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -141,6 +183,8 @@ export const useFeedback = () => {
     isFetching: feedbackQuery.isFetching,
     createFeedback,
     updateFeedbackStatus,
+    updateFeedbackType,
+    updateFeedbackPriority,
     deleteFeedback,
   };
 };
