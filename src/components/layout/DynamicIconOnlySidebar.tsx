@@ -76,13 +76,14 @@ const ModuleItem = forwardRef<HTMLDivElement, ModuleItemProps>(
 ModuleItem.displayName = "ModuleItem";
 
 export function DynamicIconOnlySidebar() {
-  const { sidebarModules, isLoading } = useDynamicSidebar();
+  const { sidebarModules, bottomModules, isLoading } = useDynamicSidebar();
   const { roles, loading: rbacLoading, hasPermission } = useRBAC();
   const location = useLocation();
 
   // Determine which module is active based on current location
   const getActiveModule = useCallback(() => {
-    return sidebarModules.find(module =>
+    const allModules = [...sidebarModules, ...bottomModules];
+    return allModules.find(module =>
       module.items.some(item => {
         if (!item.url) return false;
         // Special handling for root path - must match exactly
@@ -93,7 +94,7 @@ export function DynamicIconOnlySidebar() {
         return matchPath({ path: item.url, end: false }, location.pathname) !== null;
       })
     );
-  }, [sidebarModules, location.pathname]);
+  }, [sidebarModules, bottomModules, location.pathname]);
 
   const activeModule = getActiveModule();
 
@@ -106,6 +107,13 @@ export function DynamicIconOnlySidebar() {
   }
 
   const accessibleModules = sidebarModules.filter(module => {
+    return module.items.some(item => {
+      if (!item.permissions || item.permissions.length === 0) return true;
+      return item.permissions.some(permission => hasPermission(permission));
+    });
+  });
+
+  const accessibleBottomModules = bottomModules.filter(module => {
     return module.items.some(item => {
       if (!item.permissions || item.permissions.length === 0) return true;
       return item.permissions.some(permission => hasPermission(permission));
@@ -142,6 +150,31 @@ export function DynamicIconOnlySidebar() {
             </div>
           </LayoutGroup>
         </div>
+
+        {/* Bottom-pinned navigation */}
+        {accessibleBottomModules.length > 0 && (
+          <div className="pb-4 px-1">
+            <LayoutGroup>
+              <div className="relative bg-secondary/30 rounded-xl p-1 space-y-1">
+                {accessibleBottomModules.map((module, index) => {
+                  const isActive = activeModule?.label === module.label;
+                  return (
+                    <div
+                      key={module.label}
+                      className="relative"
+                    >
+                      <ModuleItem
+                        module={module}
+                        isActive={isActive}
+                        index={accessibleModules.length + index}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </LayoutGroup>
+          </div>
+        )}
       </div>
     </div>
   );

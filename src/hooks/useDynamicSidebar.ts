@@ -72,6 +72,10 @@ export function useDynamicSidebar() {
         { title: "Admin Panel", url: "/admin", icon: ShieldCheck },
       ],
     },
+  ];
+
+  // Bottom-pinned modules (separate from main nav)
+  const bottomModules: DynamicMenuGroup[] = [
     {
       label: "Feedback",
       icon: MessageSquare,
@@ -83,6 +87,7 @@ export function useDynamicSidebar() {
 
   return {
     sidebarModules,
+    bottomModules,
     isLoading,
   };
 }
