@@ -25,6 +25,11 @@ export const FeedbackTrigger: React.FC = () => {
 
   const handleAreaSelected = async (area: CaptureArea) => {
     setShowSelector(false);
+
+    // Wait for the selector overlay to unmount before capturing (prevents dim/washed captures)
+    await new Promise<void>((r) => requestAnimationFrame(() => r()));
+    await new Promise<void>((r) => requestAnimationFrame(() => r()));
+
     setIsCapturing(true);
 
     const blob = await capturePageScreenshot(area);

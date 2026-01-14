@@ -13,7 +13,16 @@ export const capturePageScreenshot = async (
   try {
     // Detect if dark mode is active
     const isDarkMode = document.documentElement.classList.contains('dark');
-    const backgroundColor = isDarkMode ? '#0a0a0b' : '#ffffff';
+
+    // Prefer the app's actual computed background (avoids "washed out" captures)
+    const fallbackBg = isDarkMode ? '#0a0a0b' : '#ffffff';
+    const bodyBg = getComputedStyle(document.body).backgroundColor;
+    const htmlBg = getComputedStyle(document.documentElement).backgroundColor;
+
+    const isUsableBg = (c?: string | null) =>
+      !!c && c !== 'transparent' && c !== 'rgba(0, 0, 0, 0)';
+
+    const backgroundColor = isUsableBg(bodyBg) ? bodyBg : isUsableBg(htmlBg) ? htmlBg : fallbackBg;
 
     // Capture full page with html2canvas
     const canvas = await html2canvas(document.body, {
