@@ -160,15 +160,11 @@ export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) 
 
   return (
     <TableRow className="align-top border-b">
-      {/* Author */}
-      <TableCell className="py-3 w-[140px]">
-        <div className="flex items-center gap-2">
-          <Avatar className="h-7 w-7">
-            <AvatarImage src={feedback.author?.avatar_url || undefined} />
-            <AvatarFallback className="text-xs">{authorInitials}</AvatarFallback>
-          </Avatar>
-          <span className="text-sm font-medium truncate max-w-[80px]">{authorName}</span>
-        </div>
+      {/* Title */}
+      <TableCell className="py-3 min-w-[200px]">
+        <p className="text-sm font-medium line-clamp-1" title={feedback.title}>
+          {feedback.title}
+        </p>
       </TableCell>
 
       {/* Type */}
@@ -179,10 +175,9 @@ export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) 
         </Badge>
       </TableCell>
 
-      {/* Title & Description */}
-      <TableCell className="py-3 min-w-[200px]">
+      {/* Description */}
+      <TableCell className="py-3 min-w-[250px]">
         <div className="space-y-1">
-          <p className="text-sm font-medium line-clamp-1">{feedback.title}</p>
           <p className="text-xs text-muted-foreground line-clamp-2">{feedback.description}</p>
           {feedback.page_url && (
             <a
@@ -232,10 +227,21 @@ export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) 
         )}
       </TableCell>
 
-      {/* Status (inline dropdown) */}
+      {/* Author */}
       <TableCell className="py-3 w-[140px]">
+        <div className="flex items-center gap-2">
+          <Avatar className="h-7 w-7">
+            <AvatarImage src={feedback.author?.avatar_url || undefined} />
+            <AvatarFallback className="text-xs">{authorInitials}</AvatarFallback>
+          </Avatar>
+          <span className="text-sm font-medium truncate max-w-[80px]">{authorName}</span>
+        </div>
+      </TableCell>
+
+      {/* Status (inline dropdown) */}
+      <TableCell className="py-3 w-[130px]">
         <Select value={feedback.status} onValueChange={handleStatusChange}>
-          <SelectTrigger className="h-7 w-[120px] text-xs">
+          <SelectTrigger className="h-7 w-[110px] text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -263,7 +269,7 @@ export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) 
       </TableCell>
 
       {/* Comments */}
-      <TableCell className="py-3 w-[100px]">
+      <TableCell className="py-3 w-[90px]">
         <FeedbackCommentsDialog 
           feedbackId={feedback.id} 
           commentCount={comments?.length || 0} 
@@ -271,7 +277,7 @@ export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) 
       </TableCell>
 
       {/* Actions */}
-      <TableCell className="py-3 w-[60px]">
+      <TableCell className="py-3 w-[50px]">
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive">
