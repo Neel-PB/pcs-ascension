@@ -1,38 +1,46 @@
-import { useState } from 'react';
-import { format, formatDistanceToNow, differenceInHours } from 'date-fns';
-import { TableRow, TableCell } from '@/components/ui/table';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { useState } from "react";
+import { format, formatDistanceToNow, differenceInHours } from "date-fns";
+import { 
+  Bug, 
+  Lightbulb, 
+  Wrench, 
+  HelpCircle, 
+  Camera,
+  Trash2,
+  Send,
+  ExternalLink
+} from "lucide-react";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useFeedbackComments } from '@/hooks/useFeedbackComments';
-import { useFeedback } from '@/hooks/useFeedback';
+} from "@/components/ui/dialog";
 import {
-  ChevronDown,
-  ChevronRight,
-  Camera,
-  Send,
-  Trash2,
-  Bug,
-  Lightbulb,
-  Sparkles,
-  HelpCircle,
-  MessageSquare,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useFeedbackComments } from "@/hooks/useFeedbackComments";
+import { useFeedback } from "@/hooks/useFeedback";
+import { cn } from "@/lib/utils";
 
 interface Feedback {
   id: string;
@@ -43,7 +51,7 @@ interface Feedback {
   description: string;
   screenshot_url: string | null;
   page_url: string | null;
-  browser_info: any;
+  browser_info: Record<string, unknown> | null;
   status: string;
   created_at: string;
   updated_at: string;
@@ -59,38 +67,44 @@ interface FeedbackTableRowProps {
   onDelete: (id: string) => void;
 }
 
-const typeConfig: Record<string, { icon: React.ElementType; color: string }> = {
-  bug: { icon: Bug, color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
-  feature: { icon: Lightbulb, color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
-  improvement: { icon: Sparkles, color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-  question: { icon: HelpCircle, color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
+const typeConfig: Record<string, { icon: React.ElementType; label: string; color: string }> = {
+  bug: { icon: Bug, label: "Bug", color: "bg-destructive/10 text-destructive" },
+  feature: { icon: Lightbulb, label: "Feature", color: "bg-amber-500/10 text-amber-600" },
+  improvement: { icon: Wrench, label: "Improve", color: "bg-blue-500/10 text-blue-600" },
+  question: { icon: HelpCircle, label: "Question", color: "bg-purple-500/10 text-purple-600" },
 };
 
-const statusConfig: Record<string, string> = {
-  new: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
-  in_progress: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  resolved: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  closed: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400',
+const statusConfig: Record<string, { label: string; color: string }> = {
+  new: { label: "New", color: "bg-blue-500/10 text-blue-600" },
+  in_progress: { label: "In Progress", color: "bg-amber-500/10 text-amber-600" },
+  resolved: { label: "Resolved", color: "bg-emerald-500/10 text-emerald-600" },
+  closed: { label: "Closed", color: "bg-muted text-muted-foreground" },
 };
 
-const priorityConfig: Record<string, string> = {
-  low: 'text-muted-foreground',
-  medium: 'text-amber-600 dark:text-amber-400',
-  high: 'text-red-600 dark:text-red-400',
+const priorityConfig: Record<string, { label: string; color: string }> = {
+  low: { label: "Low", color: "text-muted-foreground" },
+  medium: { label: "Medium", color: "text-amber-600" },
+  high: { label: "High", color: "text-destructive" },
 };
 
 export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [newComment, setNewComment] = useState('');
+  const [newComment, setNewComment] = useState("");
   const { comments, addComment, deleteComment } = useFeedbackComments(feedback.id);
   const { updateFeedbackStatus } = useFeedback();
 
-  const authorName = feedback.author
-    ? `${feedback.author.first_name || ''} ${feedback.author.last_name || ''}`.trim() || 'Unknown'
-    : 'Unknown';
-  const authorInitials = authorName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  const typeInfo = typeConfig[feedback.type] || typeConfig.question;
+  const TypeIcon = typeInfo.icon;
+  const priorityInfo = priorityConfig[feedback.priority] || priorityConfig.medium;
 
-  const TypeIcon = typeConfig[feedback.type]?.icon || HelpCircle;
+  const authorName = feedback.author
+    ? `${feedback.author.first_name || ""} ${feedback.author.last_name || ""}`.trim() || "Unknown"
+    : "Unknown";
+  const authorInitials = authorName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -98,223 +112,215 @@ export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) 
     if (hoursAgo < 24) {
       return formatDistanceToNow(date, { addSuffix: true });
     }
-    return format(date, 'MMM d, yyyy');
+    return format(date, "MMM d, yyyy");
   };
 
-  const handleStatusChange = (newStatus: 'new' | 'in_progress' | 'resolved' | 'closed') => {
-    updateFeedbackStatus.mutate({ id: feedback.id, status: newStatus });
-  };
-
-  const handleAddComment = () => {
-    if (!newComment.trim()) return;
-    addComment.mutate(newComment.trim(), {
-      onSuccess: () => setNewComment(''),
+  const handleStatusChange = (newStatus: string) => {
+    updateFeedbackStatus.mutate({
+      id: feedback.id,
+      status: newStatus as "new" | "in_progress" | "resolved" | "closed",
     });
   };
 
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return;
+    await addComment.mutateAsync(newComment.trim());
+    setNewComment("");
+  };
+
   return (
-    <>
-      {/* Main Row */}
-      <TableRow
-        className={cn(
-          'cursor-pointer transition-colors',
-          isExpanded && 'bg-muted/50'
+    <TableRow className="align-top border-b">
+      {/* Author */}
+      <TableCell className="py-3 w-[140px]">
+        <div className="flex items-center gap-2">
+          <Avatar className="h-7 w-7">
+            <AvatarImage src={feedback.author?.avatar_url || undefined} />
+            <AvatarFallback className="text-xs">{authorInitials}</AvatarFallback>
+          </Avatar>
+          <span className="text-sm font-medium truncate max-w-[80px]">{authorName}</span>
+        </div>
+      </TableCell>
+
+      {/* Type */}
+      <TableCell className="py-3 w-[100px]">
+        <Badge variant="secondary" className={cn("text-xs", typeInfo.color)}>
+          <TypeIcon className="h-3 w-3 mr-1" />
+          {typeInfo.label}
+        </Badge>
+      </TableCell>
+
+      {/* Title & Description */}
+      <TableCell className="py-3 min-w-[200px]">
+        <div className="space-y-1">
+          <p className="text-sm font-medium line-clamp-1">{feedback.title}</p>
+          <p className="text-xs text-muted-foreground line-clamp-2">{feedback.description}</p>
+          {feedback.page_url && (
+            <a
+              href={feedback.page_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+            >
+              <ExternalLink className="h-3 w-3" />
+              View page
+            </a>
+          )}
+        </div>
+      </TableCell>
+
+      {/* Screenshot */}
+      <TableCell className="py-3 w-[80px]">
+        {feedback.screenshot_url ? (
+          <Dialog>
+            <DialogTrigger asChild>
+              <button className="group relative w-14 h-10 rounded border border-border overflow-hidden hover:ring-2 hover:ring-primary/50 transition-all">
+                <img
+                  src={feedback.screenshot_url}
+                  alt="Screenshot"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <Camera className="h-4 w-4 text-white" />
+                </div>
+              </button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl p-2">
+              <img
+                src={feedback.screenshot_url}
+                alt="Screenshot"
+                className="w-full h-auto rounded"
+              />
+            </DialogContent>
+          </Dialog>
+        ) : (
+          <span className="text-muted-foreground text-xs">—</span>
         )}
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
-        {/* Expand Icon */}
-        <TableCell className="w-10 px-2">
-          {isExpanded ? (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          ) : (
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          )}
-        </TableCell>
+      </TableCell>
 
-        {/* Author */}
-        <TableCell className="w-[150px]">
-          <div className="flex items-center gap-2">
-            <Avatar className="h-6 w-6">
-              <AvatarImage src={feedback.author?.avatar_url || undefined} />
-              <AvatarFallback className="text-xs">{authorInitials}</AvatarFallback>
-            </Avatar>
-            <span className="text-sm truncate max-w-[100px]">{authorName}</span>
-          </div>
-        </TableCell>
+      {/* Status (inline dropdown) */}
+      <TableCell className="py-3 w-[140px]">
+        <Select value={feedback.status} onValueChange={handleStatusChange}>
+          <SelectTrigger className="h-7 w-[120px] text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(statusConfig).map(([value, config]) => (
+              <SelectItem key={value} value={value} className="text-xs">
+                <Badge variant="secondary" className={cn("text-xs", config.color)}>
+                  {config.label}
+                </Badge>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </TableCell>
 
-        {/* Type */}
-        <TableCell className="w-[120px]">
-          <Badge variant="secondary" className={cn('gap-1', typeConfig[feedback.type]?.color)}>
-            <TypeIcon className="h-3 w-3" />
-            <span className="capitalize">{feedback.type}</span>
-          </Badge>
-        </TableCell>
+      {/* Priority */}
+      <TableCell className="py-3 w-[80px]">
+        <span className={cn("text-xs font-medium", priorityInfo.color)}>
+          {priorityInfo.label}
+        </span>
+      </TableCell>
 
-        {/* Title */}
-        <TableCell>
-          <span className="font-medium truncate block max-w-[300px]">{feedback.title}</span>
-        </TableCell>
+      {/* Date */}
+      <TableCell className="py-3 w-[100px]">
+        <span className="text-xs text-muted-foreground">{formatDate(feedback.created_at)}</span>
+      </TableCell>
 
-        {/* Screenshot */}
-        <TableCell className="w-[80px] text-center">
-          {feedback.screenshot_url ? (
-            <Camera className="h-4 w-4 text-muted-foreground mx-auto" />
-          ) : (
-            <span className="text-muted-foreground">—</span>
-          )}
-        </TableCell>
-
-        {/* Status - Inline Dropdown */}
-        <TableCell className="w-[140px]" onClick={(e) => e.stopPropagation()}>
-          <Select value={feedback.status} onValueChange={(value) => handleStatusChange(value as 'new' | 'in_progress' | 'resolved' | 'closed')}>
-            <SelectTrigger className="h-8 w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="new">New</SelectItem>
-              <SelectItem value="in_progress">In Progress</SelectItem>
-              <SelectItem value="resolved">Resolved</SelectItem>
-              <SelectItem value="closed">Closed</SelectItem>
-            </SelectContent>
-          </Select>
-        </TableCell>
-
-        {/* Priority */}
-        <TableCell className="w-[100px]">
-          <span className={cn('capitalize font-medium', priorityConfig[feedback.priority])}>
-            {feedback.priority}
-          </span>
-        </TableCell>
-
-        {/* Date */}
-        <TableCell className="w-[100px] text-muted-foreground text-sm">
-          {formatDate(feedback.created_at)}
-        </TableCell>
-      </TableRow>
-
-      {/* Expanded Content Row */}
-      {isExpanded && (
-        <TableRow className="bg-muted/30 hover:bg-muted/30">
-          <TableCell colSpan={8} className="p-0">
-            <div className="p-4 space-y-4">
-              {/* Screenshot & Description */}
-              <div className="flex gap-4">
-                {feedback.screenshot_url && (
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <div className="shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
-                        <img
-                          src={feedback.screenshot_url}
-                          alt="Screenshot"
-                          className="w-48 h-32 object-cover rounded-lg border border-border"
-                        />
-                      </div>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl p-2">
-                      <img
-                        src={feedback.screenshot_url}
-                        alt="Screenshot"
-                        className="w-full h-auto rounded-lg"
-                      />
-                    </DialogContent>
-                  </Dialog>
-                )}
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-medium mb-1">Description</h4>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                    {feedback.description}
-                  </p>
-                  {feedback.page_url && (
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Page: <span className="font-mono">{feedback.page_url}</span>
+      {/* Comments */}
+      <TableCell className="py-3 min-w-[250px]">
+        <div className="space-y-2">
+          {/* Comment list */}
+          {comments && comments.length > 0 ? (
+            <div className="space-y-1 max-h-[80px] overflow-y-auto">
+              {comments.slice(0, 3).map((comment) => (
+                <div key={comment.id} className="flex items-start gap-2 group">
+                  <Avatar className="h-5 w-5 shrink-0">
+                    <AvatarImage src={comment.author?.avatar_url || undefined} />
+                    <AvatarFallback className="text-[10px]">
+                      {(comment.author?.first_name?.[0] || "U").toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-muted-foreground line-clamp-1">
+                      <span className="font-medium text-foreground">
+                        {comment.author?.first_name || "User"}:
+                      </span>{" "}
+                      {comment.content}
                     </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Comments Section */}
-              <div className="border-t border-border pt-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                  <h4 className="text-sm font-medium">Comments ({comments.length})</h4>
-                </div>
-
-                {comments.length > 0 && (
-                  <ScrollArea className="max-h-[200px] mb-3">
-                    <div className="space-y-3 pr-4">
-                      {comments.map((comment) => (
-                        <div key={comment.id} className="flex gap-2 group">
-                          <Avatar className="h-6 w-6 shrink-0">
-                            <AvatarImage src={comment.author?.avatar_url || undefined} />
-                            <AvatarFallback className="text-xs">
-                              {(comment.author?.first_name?.[0] || '') + (comment.author?.last_name?.[0] || '')}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium">
-                                {comment.author?.first_name} {comment.author?.last_name}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                {formatDate(comment.created_at)}
-                              </span>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={() => deleteComment.mutate(comment.id)}
-                              >
-                                <Trash2 className="h-3 w-3 text-muted-foreground" />
-                              </Button>
-                            </div>
-                            <p className="text-sm text-muted-foreground">{comment.content}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                )}
-
-                {/* Add Comment */}
-                <div className="flex gap-2">
-                  <Textarea
-                    placeholder="Add a comment..."
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    className="min-h-[60px] resize-none"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                        handleAddComment();
-                      }
-                    }}
-                  />
+                  </div>
                   <Button
+                    variant="ghost"
                     size="icon"
-                    onClick={handleAddComment}
-                    disabled={!newComment.trim() || addComment.isPending}
-                    className="shrink-0"
+                    className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                    onClick={() => deleteComment.mutate(comment.id)}
                   >
-                    <Send className="h-4 w-4" />
+                    <Trash2 className="h-3 w-3 text-destructive" />
                   </Button>
                 </div>
-              </div>
-
-              {/* Delete Action */}
-              <div className="flex justify-end pt-2 border-t border-border">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => onDelete(feedback.id)}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Feedback
-                </Button>
-              </div>
+              ))}
+              {comments.length > 3 && (
+                <p className="text-xs text-muted-foreground">+{comments.length - 3} more</p>
+              )}
             </div>
-          </TableCell>
-        </TableRow>
-      )}
-    </>
+          ) : (
+            <p className="text-xs text-muted-foreground italic">No comments</p>
+          )}
+          
+          {/* Add comment input */}
+          <div className="flex items-center gap-1">
+            <Textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Add comment..."
+              className="h-7 min-h-[28px] text-xs resize-none py-1.5 px-2"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleAddComment();
+                }
+              }}
+            />
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7 shrink-0"
+              onClick={handleAddComment}
+              disabled={!newComment.trim() || addComment.isPending}
+            >
+              <Send className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      </TableCell>
+
+      {/* Actions */}
+      <TableCell className="py-3 w-[60px]">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive">
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Feedback</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this feedback? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => onDelete(feedback.id)}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </TableCell>
+    </TableRow>
   );
 }

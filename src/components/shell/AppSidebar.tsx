@@ -128,11 +128,12 @@ export function AppSidebar() {
                   </span>
                 </motion.div>
               </NavLink>
+            </div>
+          </nav>
 
-              {/* Separator */}
-              <div className="my-2 border-t border-border/50" />
-
-              {/* Feedback Item */}
+          {/* Feedback pinned at bottom */}
+          <div className="py-4 px-2">
+            <div className="relative bg-secondary/30 rounded-xl p-1.5">
               <NavLink
                 to="/feedback"
                 className="relative block"
@@ -167,7 +168,7 @@ export function AppSidebar() {
                 </motion.div>
               </NavLink>
             </div>
-          </nav>
+          </div>
         </LayoutGroup>
       </div>
     </>
