@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format, formatDistanceToNow, differenceInHours } from "date-fns";
 import { 
   Bug, 
@@ -7,14 +7,13 @@ import {
   HelpCircle, 
   Camera,
   Trash2,
-  Send,
-  ExternalLink
+  ExternalLink,
+  ImageOff
 } from "lucide-react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -38,8 +37,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useFeedbackComments } from "@/hooks/useFeedbackComments";
 import { useFeedback } from "@/hooks/useFeedback";
+import { useFeedbackComments } from "@/hooks/useFeedbackComments";
+import { FeedbackCommentsDialog } from "./FeedbackCommentsDialog";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 interface Feedback {
@@ -88,8 +89,9 @@ const priorityConfig: Record<string, { label: string; color: string }> = {
 };
 
 export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) {
-  const [newComment, setNewComment] = useState("");
-  const { comments, addComment, deleteComment } = useFeedbackComments(feedback.id);
+  const [resolvedImageUrl, setResolvedImageUrl] = useState<string | null>(feedback.screenshot_url);
+  const [imageError, setImageError] = useState(false);
+  const { comments } = useFeedbackComments(feedback.id);
   const { updateFeedbackStatus } = useFeedback();
 
   const typeInfo = typeConfig[feedback.type] || typeConfig.question;
@@ -122,11 +124,39 @@ export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) 
     });
   };
 
-  const handleAddComment = async () => {
-    if (!newComment.trim()) return;
-    await addComment.mutateAsync(newComment.trim());
-    setNewComment("");
+  // Handle image load error - try signed URL as fallback
+  const handleImageError = async () => {
+    if (!feedback.screenshot_url || imageError) return;
+    
+    try {
+      // Extract path from the URL (after /feedback-screenshots/)
+      const match = feedback.screenshot_url.match(/feedback-screenshots\/(.+)$/);
+      if (!match) {
+        setImageError(true);
+        return;
+      }
+      
+      const objectPath = match[1];
+      const { data, error } = await supabase.storage
+        .from('feedback-screenshots')
+        .createSignedUrl(objectPath, 60 * 10); // 10 minutes
+      
+      if (error || !data?.signedUrl) {
+        setImageError(true);
+        return;
+      }
+      
+      setResolvedImageUrl(data.signedUrl);
+    } catch {
+      setImageError(true);
+    }
   };
+
+  // Reset state when screenshot_url changes
+  useEffect(() => {
+    setResolvedImageUrl(feedback.screenshot_url);
+    setImageError(false);
+  }, [feedback.screenshot_url]);
 
   return (
     <TableRow className="align-top border-b">
@@ -170,28 +200,33 @@ export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) 
 
       {/* Screenshot */}
       <TableCell className="py-3 w-[80px]">
-        {feedback.screenshot_url ? (
+        {feedback.screenshot_url && !imageError ? (
           <Dialog>
             <DialogTrigger asChild>
               <button className="group relative w-14 h-10 rounded border border-border overflow-hidden hover:ring-2 hover:ring-primary/50 transition-all">
                 <img
-                  src={feedback.screenshot_url}
+                  src={resolvedImageUrl || feedback.screenshot_url}
                   alt="Screenshot"
                   className="w-full h-full object-cover"
+                  onError={handleImageError}
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <Camera className="h-4 w-4 text-white" />
                 </div>
               </button>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl p-2">
+            <DialogContent className="max-w-4xl p-2 border-border/20">
               <img
-                src={feedback.screenshot_url}
+                src={resolvedImageUrl || feedback.screenshot_url}
                 alt="Screenshot"
                 className="w-full h-auto rounded"
               />
             </DialogContent>
           </Dialog>
+        ) : feedback.screenshot_url && imageError ? (
+          <div className="w-14 h-10 rounded border border-border bg-muted flex items-center justify-center">
+            <ImageOff className="h-4 w-4 text-muted-foreground" />
+          </div>
         ) : (
           <span className="text-muted-foreground text-xs">—</span>
         )}
@@ -228,70 +263,11 @@ export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) 
       </TableCell>
 
       {/* Comments */}
-      <TableCell className="py-3 min-w-[250px]">
-        <div className="space-y-2">
-          {/* Comment list */}
-          {comments && comments.length > 0 ? (
-            <div className="space-y-1 max-h-[80px] overflow-y-auto">
-              {comments.slice(0, 3).map((comment) => (
-                <div key={comment.id} className="flex items-start gap-2 group">
-                  <Avatar className="h-5 w-5 shrink-0">
-                    <AvatarImage src={comment.author?.avatar_url || undefined} />
-                    <AvatarFallback className="text-[10px]">
-                      {(comment.author?.first_name?.[0] || "U").toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-muted-foreground line-clamp-1">
-                      <span className="font-medium text-foreground">
-                        {comment.author?.first_name || "User"}:
-                      </span>{" "}
-                      {comment.content}
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                    onClick={() => deleteComment.mutate(comment.id)}
-                  >
-                    <Trash2 className="h-3 w-3 text-destructive" />
-                  </Button>
-                </div>
-              ))}
-              {comments.length > 3 && (
-                <p className="text-xs text-muted-foreground">+{comments.length - 3} more</p>
-              )}
-            </div>
-          ) : (
-            <p className="text-xs text-muted-foreground italic">No comments</p>
-          )}
-          
-          {/* Add comment input */}
-          <div className="flex items-center gap-1">
-            <Textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Add comment..."
-              className="h-7 min-h-[28px] text-xs resize-none py-1.5 px-2"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleAddComment();
-                }
-              }}
-            />
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-7 w-7 shrink-0"
-              onClick={handleAddComment}
-              disabled={!newComment.trim() || addComment.isPending}
-            >
-              <Send className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        </div>
+      <TableCell className="py-3 w-[100px]">
+        <FeedbackCommentsDialog 
+          feedbackId={feedback.id} 
+          commentCount={comments?.length || 0} 
+        />
       </TableCell>
 
       {/* Actions */}

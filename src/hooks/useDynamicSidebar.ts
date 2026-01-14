@@ -6,6 +6,7 @@ import {
   FileBarChart,
   LifeBuoy,
   ShieldCheck,
+  MessageSquare,
   type LucideIcon,
 } from "lucide-react";
 
@@ -69,6 +70,13 @@ export function useDynamicSidebar() {
       icon: ShieldCheck,
       items: [
         { title: "Admin Panel", url: "/admin", icon: ShieldCheck },
+      ],
+    },
+    {
+      label: "Feedback",
+      icon: MessageSquare,
+      items: [
+        { title: "Feedback", url: "/feedback", icon: MessageSquare },
       ],
     },
   ];

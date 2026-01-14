@@ -118,7 +118,7 @@ export default function FeedbackPage() {
                     <TableHead className="w-[140px]">Status</TableHead>
                     <TableHead className="w-[80px]">Priority</TableHead>
                     <TableHead className="w-[100px]">Date</TableHead>
-                    <TableHead className="min-w-[250px]">Comments</TableHead>
+                    <TableHead className="w-[100px]">Comments</TableHead>
                     <TableHead className="w-[60px]"></TableHead>
                   </TableRow>
                 </TableHeader>
