@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useFeedback } from '@/hooks/useFeedback';
-import { FeedbackCard } from '@/components/feedback/FeedbackCard';
+import { FeedbackTableRow } from '@/components/feedback/FeedbackTableRow';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -9,6 +9,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { LogoLoader } from '@/components/ui/LogoLoader';
 import { Search, MessageSquare } from 'lucide-react';
@@ -105,7 +112,7 @@ export default function FeedbackPage() {
         </div>
       </div>
 
-      {/* Feedback Cards */}
+      {/* Feedback Table */}
       <ScrollArea className="flex-1">
         <div className="p-6">
           {filteredFeedback.length === 0 ? (
@@ -114,14 +121,30 @@ export default function FeedbackPage() {
               <p>No feedback found</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {filteredFeedback.map((item) => (
-                <FeedbackCard
-                  key={item.id}
-                  feedback={item}
-                  onDelete={setDeleteId}
-                />
-              ))}
+            <div className="border border-border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead className="w-10 px-2"></TableHead>
+                    <TableHead className="w-[150px]">Author</TableHead>
+                    <TableHead className="w-[120px]">Type</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead className="w-[80px] text-center">Screenshot</TableHead>
+                    <TableHead className="w-[140px]">Status</TableHead>
+                    <TableHead className="w-[100px]">Priority</TableHead>
+                    <TableHead className="w-[100px]">Date</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredFeedback.map((item) => (
+                    <FeedbackTableRow
+                      key={item.id}
+                      feedback={item}
+                      onDelete={setDeleteId}
+                    />
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           )}
         </div>
