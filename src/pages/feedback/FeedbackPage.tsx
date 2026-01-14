@@ -107,19 +107,20 @@ export default function FeedbackPage() {
               <p>No feedback found</p>
             </div>
           ) : (
-            <div className="border border-border rounded-lg overflow-hidden">
-              <Table>
+            <div className="border border-border rounded-lg overflow-x-auto">
+              <Table className="w-full">
                 <TableHeader>
                   <TableRow className="bg-muted/50">
-                    <TableHead className="w-[140px]">Author</TableHead>
+                    <TableHead className="min-w-[200px]">Title</TableHead>
                     <TableHead className="w-[100px]">Type</TableHead>
-                    <TableHead className="min-w-[200px]">Title & Description</TableHead>
+                    <TableHead className="min-w-[250px]">Description</TableHead>
                     <TableHead className="w-[80px]">Screenshot</TableHead>
-                    <TableHead className="w-[140px]">Status</TableHead>
+                    <TableHead className="w-[140px]">Author</TableHead>
+                    <TableHead className="w-[130px]">Status</TableHead>
                     <TableHead className="w-[80px]">Priority</TableHead>
                     <TableHead className="w-[100px]">Date</TableHead>
-                    <TableHead className="w-[100px]">Comments</TableHead>
-                    <TableHead className="w-[60px]"></TableHead>
+                    <TableHead className="w-[90px]">Comments</TableHead>
+                    <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
