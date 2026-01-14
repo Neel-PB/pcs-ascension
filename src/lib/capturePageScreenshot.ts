@@ -11,13 +11,19 @@ export const capturePageScreenshot = async (
   area?: CaptureArea
 ): Promise<Blob | null> => {
   try {
+    // Detect if dark mode is active
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    const backgroundColor = isDarkMode ? '#0a0a0b' : '#ffffff';
+
     // Capture full page with html2canvas
     const canvas = await html2canvas(document.body, {
       useCORS: true,
       allowTaint: false,
-      backgroundColor: null,
-      scale: window.devicePixelRatio,
+      backgroundColor: backgroundColor,
+      scale: window.devicePixelRatio * 1.5, // Higher resolution for better quality
       logging: false,
+      imageTimeout: 0, // Wait for all images to load
+      removeContainer: true, // Clean up after capture
       ignoreElements: (el) => {
         return el.closest('[data-feedback-ui]') !== null;
       },
