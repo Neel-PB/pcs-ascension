@@ -73,12 +73,12 @@ Modern enterprise shell with clean aesthetics and accessibility
   }
 
   .dark {
-    /* Core Shell Colors - Dark Mode */
+    /* Core Shell Colors - Dark Mode (IMPROVED CONTRAST) */
     --bg: 222 47% 11%;
-    --bg-elev: 223 39% 15%;
-    --line: 217 33% 17%;
-    --text-muted: 215 20% 65%;
-    --text-subtle: 217 33% 45%;
+    --bg-elev: 223 39% 18%;
+    --line: 217 33% 28%;
+    --text-muted: 215 20% 70%;
+    --text-subtle: 217 33% 55%;
     
     /* Brand & Status Colors - Dark Mode */
     --primary: 217 91% 60%;
@@ -88,34 +88,34 @@ Modern enterprise shell with clean aesthetics and accessibility
     --warning: 45 93% 47%;
     --danger: 0 72% 51%;
     
-    /* Legacy shadcn compatibility - Dark Mode */
+    /* Legacy shadcn compatibility - Dark Mode (IMPROVED) */
     --background: 222 47% 11%;
     --foreground: 210 40% 98%;
-    --card: 223 39% 15%;
+    --card: 223 39% 16%;
     --card-foreground: 210 40% 98%;
-    --popover: 222 47% 11%;
+    --popover: 223 39% 16%;
     --popover-foreground: 210 40% 98%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 217 33% 17%;
+    --secondary: 217 33% 22%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 217 33% 17%;
+    --muted: 217 33% 22%;
+    --muted-foreground: 215 20% 70%;
+    --accent: 217 33% 24%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
+    --border: 217 33% 28%;
+    --input: 217 33% 20%;
     --ring: 217 91% 60%;
     
-    /* Sidebar System - Dark Mode */
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 215 20% 65%;
+    /* Sidebar System - Dark Mode (IMPROVED) */
+    --sidebar-background: 222 47% 9%;
+    --sidebar-foreground: 215 20% 70%;
     --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent: 217 33% 20%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 17%;
+    --sidebar-border: 217 33% 25%;
     --sidebar-ring: 217 91% 60%;
     
     /* Custom Gradients - Dark Mode */
