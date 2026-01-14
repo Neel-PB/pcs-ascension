@@ -55,7 +55,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
   const hasConnectedKpis = hiredIndex !== -1 && openReqsIndex !== -1 && sharedBreakdown;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-4 border-b border-border/50 last:border-b-0">
       <div className="relative group">
         {dragHandleProps && (
           <div

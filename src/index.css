@@ -75,8 +75,8 @@ Modern enterprise shell with clean aesthetics and accessibility
   .dark {
     /* Core Shell Colors - Dark Mode (IMPROVED CONTRAST) */
     --bg: 222 47% 11%;
-    --bg-elev: 223 39% 18%;
-    --line: 217 33% 28%;
+    --bg-elev: 223 39% 20%;
+    --line: 217 33% 32%;
     --text-muted: 215 20% 70%;
     --text-subtle: 217 33% 55%;
     
@@ -91,9 +91,9 @@ Modern enterprise shell with clean aesthetics and accessibility
     /* Legacy shadcn compatibility - Dark Mode (IMPROVED) */
     --background: 222 47% 11%;
     --foreground: 210 40% 98%;
-    --card: 223 39% 16%;
+    --card: 223 39% 20%;
     --card-foreground: 210 40% 98%;
-    --popover: 223 39% 16%;
+    --popover: 223 39% 20%;
     --popover-foreground: 210 40% 98%;
     --primary-foreground: 0 0% 100%;
     --secondary: 217 33% 22%;
@@ -104,7 +104,7 @@ Modern enterprise shell with clean aesthetics and accessibility
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 28%;
+    --border: 217 33% 32%;
     --input: 217 33% 20%;
     --ring: 217 91% 60%;
     
