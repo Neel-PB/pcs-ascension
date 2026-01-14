@@ -12,7 +12,8 @@ export interface Feedback {
   screenshot_url: string | null;
   page_url: string | null;
   browser_info: Record<string, unknown> | null;
-  status: 'new' | 'in_progress' | 'resolved' | 'closed';
+  pcs_status: 'pending' | 'approved' | 'disregard' | 'backlog';
+  pb_status: 'in_progress' | 'resolved' | 'closed';
   created_at: string;
   updated_at: string;
   author?: {
@@ -58,7 +59,8 @@ export const useFeedback = () => {
         ...f,
         type: f.type as Feedback['type'],
         priority: f.priority as Feedback['priority'],
-        status: f.status as Feedback['status'],
+        pcs_status: f.pcs_status as Feedback['pcs_status'],
+        pb_status: f.pb_status as Feedback['pb_status'],
         author: profileMap.get(f.user_id) ?? undefined,
       })) as Feedback[];
     },
@@ -96,11 +98,11 @@ export const useFeedback = () => {
     },
   });
 
-  const updateFeedbackStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: Feedback['status'] }) => {
+  const updatePcsStatus = useMutation({
+    mutationFn: async ({ id, pcs_status }: { id: string; pcs_status: Feedback['pcs_status'] }) => {
       const { data, error } = await supabase
         .from('feedback')
-        .update({ status })
+        .update({ pcs_status })
         .eq('id', id)
         .select()
         .single();
@@ -110,10 +112,31 @@ export const useFeedback = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['feedback'] });
-      toast.success('Status updated');
+      toast.success('PCS Status updated');
     },
     onError: (error) => {
-      toast.error('Failed to update status: ' + error.message);
+      toast.error('Failed to update PCS status: ' + error.message);
+    },
+  });
+
+  const updatePbStatus = useMutation({
+    mutationFn: async ({ id, pb_status }: { id: string; pb_status: Feedback['pb_status'] }) => {
+      const { data, error } = await supabase
+        .from('feedback')
+        .update({ pb_status })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feedback'] });
+      toast.success('PB Status updated');
+    },
+    onError: (error) => {
+      toast.error('Failed to update PB status: ' + error.message);
     },
   });
 
@@ -182,7 +205,8 @@ export const useFeedback = () => {
     isLoading: feedbackQuery.isLoading,
     isFetching: feedbackQuery.isFetching,
     createFeedback,
-    updateFeedbackStatus,
+    updatePcsStatus,
+    updatePbStatus,
     updateFeedbackType,
     updateFeedbackPriority,
     deleteFeedback,

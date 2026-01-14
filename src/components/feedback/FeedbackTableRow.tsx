@@ -53,7 +53,8 @@ interface Feedback {
   screenshot_url: string | null;
   page_url: string | null;
   browser_info: Record<string, unknown> | null;
-  status: string;
+  pcs_status: string;
+  pb_status: string;
   created_at: string;
   updated_at: string;
   author?: {
@@ -75,8 +76,14 @@ const typeConfig: Record<string, { icon: React.ElementType; label: string; color
   question: { icon: HelpCircle, label: "Question", color: "bg-purple-500/10 text-purple-600" },
 };
 
-const statusConfig: Record<string, { label: string; color: string }> = {
-  new: { label: "New", color: "bg-blue-500/10 text-blue-600" },
+const pcsStatusConfig: Record<string, { label: string; color: string }> = {
+  pending: { label: "Pending", color: "bg-blue-500/10 text-blue-600" },
+  approved: { label: "Approved", color: "bg-emerald-500/10 text-emerald-600" },
+  disregard: { label: "Disregard", color: "bg-muted text-muted-foreground" },
+  backlog: { label: "Backlog", color: "bg-amber-500/10 text-amber-600" },
+};
+
+const pbStatusConfig: Record<string, { label: string; color: string }> = {
   in_progress: { label: "In Progress", color: "bg-amber-500/10 text-amber-600" },
   resolved: { label: "Resolved", color: "bg-emerald-500/10 text-emerald-600" },
   closed: { label: "Closed", color: "bg-muted text-muted-foreground" },
@@ -92,7 +99,11 @@ export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) 
   const [resolvedImageUrl, setResolvedImageUrl] = useState<string | null>(feedback.screenshot_url);
   const [imageError, setImageError] = useState(false);
   const { comments } = useFeedbackComments(feedback.id);
-  const { updateFeedbackStatus, updateFeedbackType, updateFeedbackPriority } = useFeedback();
+  const { updatePcsStatus, updatePbStatus, updateFeedbackType, updateFeedbackPriority } = useFeedback();
+  
+  // Business rule: PB Status is locked to 'closed' when PCS Status is 'disregard' or 'backlog'
+  const isPbStatusLocked = feedback.pcs_status === 'disregard' || feedback.pcs_status === 'backlog';
+  const effectivePbStatus = isPbStatusLocked ? 'closed' : feedback.pb_status;
 
   const typeInfo = typeConfig[feedback.type] || typeConfig.question;
   const TypeIcon = typeInfo.icon;
@@ -131,10 +142,18 @@ export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) 
     return format(date, "MMM d, yyyy");
   };
 
-  const handleStatusChange = (newStatus: string) => {
-    updateFeedbackStatus.mutate({
+  const handlePcsStatusChange = (newStatus: string) => {
+    updatePcsStatus.mutate({
       id: feedback.id,
-      status: newStatus as "new" | "in_progress" | "resolved" | "closed",
+      pcs_status: newStatus as "pending" | "approved" | "disregard" | "backlog",
+    });
+  };
+
+  const handlePbStatusChange = (newStatus: string) => {
+    if (isPbStatusLocked) return;
+    updatePbStatus.mutate({
+      id: feedback.id,
+      pb_status: newStatus as "in_progress" | "resolved" | "closed",
     });
   };
 
@@ -271,14 +290,47 @@ export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) 
         </div>
       </TableCell>
 
-      {/* Status (inline dropdown) */}
-      <TableCell className="py-3 w-[130px]">
-        <Select value={feedback.status} onValueChange={handleStatusChange}>
-          <SelectTrigger className="h-7 w-[110px] text-xs">
-            <SelectValue />
+      {/* PCS Status */}
+      <TableCell className="py-3 w-[120px]">
+        <Select value={feedback.pcs_status} onValueChange={handlePcsStatusChange}>
+          <SelectTrigger className="h-7 w-[105px] text-xs border-none bg-transparent hover:bg-muted/50 px-1">
+            <SelectValue>
+              <Badge variant="secondary" className={cn("text-xs", pcsStatusConfig[feedback.pcs_status]?.color)}>
+                {pcsStatusConfig[feedback.pcs_status]?.label}
+              </Badge>
+            </SelectValue>
           </SelectTrigger>
-          <SelectContent>
-            {Object.entries(statusConfig).map(([value, config]) => (
+          <SelectContent className="bg-popover z-50">
+            {Object.entries(pcsStatusConfig).map(([value, config]) => (
+              <SelectItem key={value} value={value} className="text-xs">
+                <Badge variant="secondary" className={cn("text-xs", config.color)}>
+                  {config.label}
+                </Badge>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </TableCell>
+
+      {/* PB Status */}
+      <TableCell className="py-3 w-[110px]">
+        <Select 
+          value={effectivePbStatus} 
+          onValueChange={handlePbStatusChange}
+          disabled={isPbStatusLocked}
+        >
+          <SelectTrigger className={cn(
+            "h-7 w-[100px] text-xs border-none bg-transparent hover:bg-muted/50 px-1",
+            isPbStatusLocked && "opacity-60 cursor-not-allowed"
+          )}>
+            <SelectValue>
+              <Badge variant="secondary" className={cn("text-xs", pbStatusConfig[effectivePbStatus]?.color)}>
+                {pbStatusConfig[effectivePbStatus]?.label}
+              </Badge>
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent className="bg-popover z-50">
+            {Object.entries(pbStatusConfig).map(([value, config]) => (
               <SelectItem key={value} value={value} className="text-xs">
                 <Badge variant="secondary" className={cn("text-xs", config.color)}>
                   {config.label}

@@ -24,15 +24,17 @@ export default function FeedbackPage() {
   const { feedback, isLoading, deleteFeedback } = useFeedback();
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [pcsStatusFilter, setPcsStatusFilter] = useState<string>('all');
+  const [pbStatusFilter, setPbStatusFilter] = useState<string>('all');
 
   const filteredFeedback = feedback.filter((item) => {
     const matchesSearch = 
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = typeFilter === 'all' || item.type === typeFilter;
-    const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
-    return matchesSearch && matchesType && matchesStatus;
+    const matchesPcsStatus = pcsStatusFilter === 'all' || item.pcs_status === pcsStatusFilter;
+    const matchesPbStatus = pbStatusFilter === 'all' || item.pb_status === pbStatusFilter;
+    return matchesSearch && matchesType && matchesPcsStatus && matchesPbStatus;
   });
 
   const handleDelete = async (id: string) => {
@@ -83,13 +85,24 @@ export default function FeedbackPage() {
               <SelectItem value="question">Question</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={pcsStatusFilter} onValueChange={setPcsStatusFilter}>
             <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder="PCS Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="new">New</SelectItem>
+              <SelectItem value="all">All PCS Status</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="disregard">Disregard</SelectItem>
+              <SelectItem value="backlog">Backlog</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={pbStatusFilter} onValueChange={setPbStatusFilter}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="PB Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All PB Status</SelectItem>
               <SelectItem value="in_progress">In Progress</SelectItem>
               <SelectItem value="resolved">Resolved</SelectItem>
               <SelectItem value="closed">Closed</SelectItem>
@@ -116,7 +129,8 @@ export default function FeedbackPage() {
                     <TableHead className="min-w-[250px]">Description</TableHead>
                     <TableHead className="w-[80px]">Screenshot</TableHead>
                     <TableHead className="w-[140px]">Author</TableHead>
-                    <TableHead className="w-[130px]">Status</TableHead>
+                    <TableHead className="w-[120px]">PCS Status</TableHead>
+                    <TableHead className="w-[110px]">PB Status</TableHead>
                     <TableHead className="w-[80px]">Priority</TableHead>
                     <TableHead className="w-[100px]">Date</TableHead>
                     <TableHead className="w-[90px]">Comments</TableHead>
