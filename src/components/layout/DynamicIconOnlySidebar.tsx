@@ -153,7 +153,7 @@ export function DynamicIconOnlySidebar() {
 
         {/* Bottom-pinned navigation */}
         {accessibleBottomModules.length > 0 && (
-          <div className="pb-4 px-1">
+          <div className="px-1">
             <LayoutGroup>
               <div className="relative bg-secondary/30 rounded-xl p-1 space-y-1">
                 {accessibleBottomModules.map((module, index) => {

@@ -32,10 +32,11 @@ export const capturePageScreenshot = async (
     // If area specified, crop the canvas
     if (area) {
       const croppedCanvas = document.createElement('canvas');
-      const scale = window.devicePixelRatio;
+      // Use the same scale factor as the capture for proper alignment
+      const scaleFactor = window.devicePixelRatio * 1.5;
       
-      croppedCanvas.width = area.width * scale;
-      croppedCanvas.height = area.height * scale;
+      croppedCanvas.width = area.width * scaleFactor;
+      croppedCanvas.height = area.height * scaleFactor;
 
       const ctx = croppedCanvas.getContext('2d');
       if (!ctx) {
@@ -44,10 +45,10 @@ export const capturePageScreenshot = async (
 
       ctx.drawImage(
         canvas,
-        area.x * scale,
-        area.y * scale,
-        area.width * scale,
-        area.height * scale,
+        area.x * scaleFactor,
+        area.y * scaleFactor,
+        area.width * scaleFactor,
+        area.height * scaleFactor,
         0,
         0,
         croppedCanvas.width,
