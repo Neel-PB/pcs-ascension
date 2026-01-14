@@ -44,10 +44,11 @@ export const FeedbackPanel: React.FC = () => {
   return (
     <>
       {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[70] lg:hidden"
-        onClick={handleClose}
-      />
+        <div
+          data-feedback-ui="backdrop"
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[70] lg:hidden"
+          onClick={handleClose}
+        />
 
       {/* Panel */}
       <div
