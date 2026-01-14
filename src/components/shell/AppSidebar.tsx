@@ -45,7 +45,7 @@ export function AppSidebar() {
       <div className="fixed left-0 top-16 z-40 flex h-[calc(100vh-4rem)] w-20 flex-col bg-background border-r border-border">
         <LayoutGroup>
           {/* Navigation Items */}
-          <nav className="flex-1 py-4 flex flex-col">
+          <nav className="flex-1 py-4 overflow-y-auto">
             {/* Main navigation items */}
             <div className="relative bg-secondary/30 rounded-xl p-1.5 space-y-1 mx-2">
               {sidebarItems.map((item, index) => {
@@ -128,13 +128,11 @@ export function AppSidebar() {
                   </span>
                 </motion.div>
               </NavLink>
-            </div>
 
-            {/* Spacer */}
-            <div className="flex-1" />
+              {/* Separator */}
+              <div className="my-2 border-t border-border/50" />
 
-            {/* Feedback Item - pinned to bottom */}
-            <div className="relative bg-secondary/30 rounded-xl p-1.5 mx-2 mb-2">
+              {/* Feedback Item */}
               <NavLink
                 to="/feedback"
                 className="relative block"

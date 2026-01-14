@@ -1,8 +1,6 @@
 import { useState } from 'react';
-import { useFeedback, Feedback } from '@/hooks/useFeedback';
-import { FeedbackDetailsSheet } from '@/components/feedback/FeedbackDetailsSheet';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { useFeedback } from '@/hooks/useFeedback';
+import { FeedbackCard } from '@/components/feedback/FeedbackCard';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -11,18 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { LogoLoader } from '@/components/ui/LogoLoader';
-import { format } from 'date-fns';
-import { Search, Image, MessageSquare, Trash2 } from 'lucide-react';
+import { Search, MessageSquare } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,33 +23,11 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-const typeConfig = {
-  bug: { label: '🐛 Bug', color: 'bg-red-500/10 text-red-600 border-red-200' },
-  feature: { label: '✨ Feature', color: 'bg-blue-500/10 text-blue-600 border-blue-200' },
-  improvement: { label: '🔧 Improvement', color: 'bg-amber-500/10 text-amber-600 border-amber-200' },
-  question: { label: '❓ Question', color: 'bg-purple-500/10 text-purple-600 border-purple-200' },
-};
-
-const statusConfig = {
-  new: { label: 'New', color: 'bg-blue-500/10 text-blue-600' },
-  in_progress: { label: 'In Progress', color: 'bg-amber-500/10 text-amber-600' },
-  resolved: { label: 'Resolved', color: 'bg-green-500/10 text-green-600' },
-  closed: { label: 'Closed', color: 'bg-muted text-muted-foreground' },
-};
-
-const priorityConfig = {
-  low: { label: 'Low', color: 'text-muted-foreground' },
-  medium: { label: 'Medium', color: 'text-amber-600' },
-  high: { label: 'High', color: 'text-orange-600' },
-  critical: { label: 'Critical', color: 'text-red-600 font-semibold' },
-};
-
 export default function FeedbackPage() {
   const { feedback, isLoading, deleteFeedback } = useFeedback();
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const filteredFeedback = feedback.filter((item) => {
@@ -138,7 +105,7 @@ export default function FeedbackPage() {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Feedback Cards */}
       <ScrollArea className="flex-1">
         <div className="p-6">
           {filteredFeedback.length === 0 ? (
@@ -147,77 +114,18 @@ export default function FeedbackPage() {
               <p>No feedback found</p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[40%]">Title</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="w-[80px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredFeedback.map((item) => (
-                  <TableRow
-                    key={item.id}
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => setSelectedFeedback(item)}
-                  >
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium line-clamp-1">{item.title}</span>
-                        {item.screenshot_url && (
-                          <Image className="h-4 w-4 text-muted-foreground shrink-0" />
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={typeConfig[item.type].color}>
-                        {typeConfig[item.type].label}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={statusConfig[item.status].color}>
-                        {statusConfig[item.status].label}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <span className={priorityConfig[item.priority].color}>
-                        {priorityConfig[item.priority].label}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {format(new Date(item.created_at), 'MMM d, yyyy')}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeleteId(item.id);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="space-y-4">
+              {filteredFeedback.map((item) => (
+                <FeedbackCard
+                  key={item.id}
+                  feedback={item}
+                  onDelete={setDeleteId}
+                />
+              ))}
+            </div>
           )}
         </div>
       </ScrollArea>
-
-      {/* Details Sheet */}
-      <FeedbackDetailsSheet
-        feedback={selectedFeedback}
-        open={!!selectedFeedback}
-        onOpenChange={(open) => !open && setSelectedFeedback(null)}
-      />
 
       {/* Delete Confirmation */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
