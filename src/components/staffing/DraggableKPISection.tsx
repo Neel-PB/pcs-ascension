@@ -95,7 +95,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
           {targetBreakdown && targetIndex !== -1 && (
             <div className="flex flex-col items-center">
               {/* Vertical connector line - 16px to stay below KPI cards */}
-              <div className="w-1 bg-emerald-500/60 dark:bg-emerald-400/70 rounded-full" style={{ height: '16px' }} />
+              <div className="w-0.5 bg-emerald-500/60 dark:bg-emerald-400/70" style={{ height: '16px' }} />
               {/* Badge */}
               <div
                 onClick={() => setShowTargetBreakdownModal(true)}
@@ -125,30 +125,30 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
               <div className="grid grid-cols-3">
                 {/* Connector from Hired FTEs (first column) */}
                 <div className="flex justify-center">
-                  <div className="w-1 h-2 bg-destructive/60 dark:bg-red-400/70 rounded-full" />
+                  <div className="w-0.5 h-2 bg-destructive/60 dark:bg-red-400/70" />
                 </div>
                 {/* Empty middle column (FTE Variance) */}
                 <div />
                 {/* Connector from Open Reqs (third column) */}
                 <div className="flex justify-center">
-                  <div className="w-1 h-2 bg-destructive/60 dark:bg-red-400/70 rounded-full" />
+                  <div className="w-0.5 h-2 bg-destructive/60 dark:bg-red-400/70" />
                 </div>
               </div>
-              {/* Horizontal line connecting the two vertical lines - h-1 (4px) */}
+              {/* Horizontal line connecting the two vertical lines - h-0.5 (2px) */}
               <div className="grid grid-cols-3">
                 <div className="flex items-start">
                   <div className="w-1/2" />
-                  <div className="w-1/2 h-1 bg-destructive/60 dark:bg-red-400/70" />
+                  <div className="w-1/2 h-0.5 bg-destructive/60 dark:bg-red-400/70" />
                 </div>
-                <div className="h-1 bg-destructive/60 dark:bg-red-400/70" />
+                <div className="h-0.5 bg-destructive/60 dark:bg-red-400/70" />
                 <div className="flex items-start">
-                  <div className="w-1/2 h-1 bg-destructive/60 dark:bg-red-400/70" />
+                  <div className="w-1/2 h-0.5 bg-destructive/60 dark:bg-red-400/70" />
                   <div className="w-1/2" />
                 </div>
               </div>
               {/* Vertical line down to badge - h-1.5 (6px) */}
               <div className="flex justify-center">
-                <div className="w-1 h-1.5 bg-destructive/60 dark:bg-red-400/70 rounded-full" />
+                <div className="w-0.5 h-1.5 bg-destructive/60 dark:bg-red-400/70" />
               </div>
               {/* Badge */}
               <div className="flex justify-center">
