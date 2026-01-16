@@ -10,6 +10,8 @@ import { FeedComposer } from "@/components/messaging/FeedComposer";
 import { FeedHistory } from "@/components/feed/FeedHistory";
 import { Button } from "@/components/ui/button";
 import { VolumeOverrideSettings } from "@/components/admin/VolumeOverrideSettings";
+import { UISettings } from "@/components/admin/UISettings";
+import { Separator } from "@/components/ui/separator";
 
 export default function AdminPage() {
   const { hasPermission, loading } = useRBAC();
@@ -143,7 +145,13 @@ export default function AdminPage() {
             </div>
           )}
           
-          {activeTab === "settings" && <VolumeOverrideSettings />}
+          {activeTab === "settings" && (
+            <div className="space-y-8">
+              <UISettings />
+              <Separator />
+              <VolumeOverrideSettings />
+            </div>
+          )}
         </motion.div>
       </AnimatePresence>
     </div>

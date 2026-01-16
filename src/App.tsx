@@ -20,11 +20,13 @@ import { AIHubPanel } from "./components/ai/AIHubPanel";
 import { FeedbackTrigger } from "./components/feedback/FeedbackTrigger";
 import { FeedbackPanel } from "./components/feedback/FeedbackPanel";
 import { useAuth } from "./hooks/useAuth";
+import { useUISettings } from "./hooks/useAppSettings";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const { user, loading } = useAuth();
+  const { data: uiSettings } = useUISettings();
 
   return (
     <>
@@ -44,8 +46,8 @@ const AppContent = () => {
       </Routes>
       {!loading && user && (
         <>
-          <FeedbackTrigger />
-          <FeedbackPanel />
+          {uiSettings?.showFeedbackTrigger !== false && <FeedbackTrigger enableScreenshotCapture={uiSettings?.enableScreenshotCapture !== false} />}
+          {uiSettings?.showFeedbackTrigger !== false && <FeedbackPanel />}
           <AIHubTrigger />
           <AIHubPanel />
         </>

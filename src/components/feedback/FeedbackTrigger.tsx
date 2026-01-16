@@ -13,14 +13,24 @@ type CaptureArea = {
   height: number;
 };
 
+interface FeedbackTriggerProps {
+  enableScreenshotCapture?: boolean;
+}
 
-export const FeedbackTrigger: React.FC = () => {
+export const FeedbackTrigger: React.FC<FeedbackTriggerProps> = ({ 
+  enableScreenshotCapture = true 
+}) => {
   const { setOpen, setScreenshot } = useFeedbackStore();
   const [showSelector, setShowSelector] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
 
   const handleClick = () => {
-    setShowSelector(true);
+    if (enableScreenshotCapture) {
+      setShowSelector(true);
+    } else {
+      // Open panel directly without screenshot capture
+      setOpen(true);
+    }
   };
 
   const handleAreaSelected = async (area: CaptureArea) => {
