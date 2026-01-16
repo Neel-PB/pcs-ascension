@@ -44,22 +44,40 @@ export function useUpdateUISettings() {
   return useMutation({
     mutationFn: async (settings: UISettings) => {
       // Cast to Json for Supabase compatibility
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('app_settings')
         .update({ setting_value: settings as unknown as Json })
-        .eq('setting_key', 'ui_settings');
+        .eq('setting_key', 'ui_settings')
+        .select('setting_value')
+        .single();
       
       if (error) throw error;
-      return settings;
+      // Return the actual updated value from database
+      const settingValue = data?.setting_value as unknown as UISettings;
+      return settingValue ?? settings;
     },
-    onSuccess: (data) => {
-      queryClient.setQueryData(['app-settings', 'ui_settings'], data);
+    onMutate: async (newSettings) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['app-settings', 'ui_settings'] });
+      
+      // Snapshot previous value
+      const previousSettings = queryClient.getQueryData(['app-settings', 'ui_settings']);
+      
+      // Optimistically update to new value
+      queryClient.setQueryData(['app-settings', 'ui_settings'], newSettings);
+      
+      return { previousSettings };
+    },
+    onError: (err, _newSettings, context) => {
+      // Rollback on error
+      queryClient.setQueryData(['app-settings', 'ui_settings'], context?.previousSettings);
+      console.error('Error updating UI settings:', err);
+      toast.error('Failed to save UI settings');
+    },
+    onSuccess: () => {
+      // Invalidate to ensure fresh data from server
       queryClient.invalidateQueries({ queryKey: ['app-settings', 'ui_settings'] });
       toast.success('UI settings saved successfully');
-    },
-    onError: (error) => {
-      console.error('Error updating UI settings:', error);
-      toast.error('Failed to save UI settings');
     },
   });
 }
