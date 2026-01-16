@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
+import { useEffect } from 'react';
 
 export interface UISettings {
   showFeedbackTrigger: boolean;
@@ -16,6 +17,34 @@ const DEFAULT_UI_SETTINGS: UISettings = {
 };
 
 export function useUISettings() {
+  const queryClient = useQueryClient();
+
+  // Subscribe to realtime changes for immediate cross-tab/component updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('ui-settings-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'app_settings',
+          filter: 'setting_key=eq.ui_settings',
+        },
+        (payload) => {
+          const newSettings = payload.new?.setting_value as unknown as UISettings;
+          if (newSettings) {
+            queryClient.setQueryData(['app-settings', 'ui_settings'], newSettings);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   return useQuery({
     queryKey: ['app-settings', 'ui_settings'],
     queryFn: async (): Promise<UISettings> => {
@@ -34,6 +63,7 @@ export function useUISettings() {
       const settingValue = data?.setting_value as unknown as UISettings | null;
       return settingValue ?? DEFAULT_UI_SETTINGS;
     },
+    initialData: DEFAULT_UI_SETTINGS,
     staleTime: 1000 * 60 * 1, // 1 minute
   });
 }
