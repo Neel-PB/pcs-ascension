@@ -20,12 +20,16 @@ import { AIHubPanel } from "./components/ai/AIHubPanel";
 import { FeedbackTrigger } from "./components/feedback/FeedbackTrigger";
 import { FeedbackPanel } from "./components/feedback/FeedbackPanel";
 import { useAuth } from "./hooks/useAuth";
-import { useUISettings } from "./hooks/useAppSettings";
+import { useUISettings, useUISettingsRealtime } from "./hooks/useAppSettings";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const { user, loading } = useAuth();
+  
+  // Set up realtime subscription for UI settings (once at app level)
+  useUISettingsRealtime();
+  
   const { data: uiSettings } = useUISettings();
 
   return (
