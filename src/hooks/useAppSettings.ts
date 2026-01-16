@@ -16,10 +16,10 @@ const DEFAULT_UI_SETTINGS: UISettings = {
   showFeedbackNavigation: true,
 };
 
-export function useUISettings() {
+// Separate hook for realtime subscription - call once at App level
+export function useUISettingsRealtime() {
   const queryClient = useQueryClient();
 
-  // Subscribe to realtime changes for immediate cross-tab/component updates
   useEffect(() => {
     const channel = supabase
       .channel('ui-settings-changes')
@@ -44,7 +44,9 @@ export function useUISettings() {
       supabase.removeChannel(channel);
     };
   }, [queryClient]);
+}
 
+export function useUISettings() {
   return useQuery({
     queryKey: ['app-settings', 'ui_settings'],
     queryFn: async (): Promise<UISettings> => {
@@ -63,7 +65,6 @@ export function useUISettings() {
       const settingValue = data?.setting_value as unknown as UISettings | null;
       return settingValue ?? DEFAULT_UI_SETTINGS;
     },
-    initialData: DEFAULT_UI_SETTINGS,
     staleTime: 1000 * 60 * 1, // 1 minute
   });
 }
