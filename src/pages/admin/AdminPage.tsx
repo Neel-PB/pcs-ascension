@@ -11,7 +11,7 @@ import { FeedHistory } from "@/components/feed/FeedHistory";
 import { Button } from "@/components/ui/button";
 import { VolumeOverrideSettings } from "@/components/admin/VolumeOverrideSettings";
 import { UISettings } from "@/components/admin/UISettings";
-import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function AdminPage() {
   const { hasPermission, loading } = useRBAC();
@@ -145,12 +145,23 @@ export default function AdminPage() {
             </div>
           )}
           
-          {activeTab === "settings" && (
-            <div className="space-y-8">
-              <UISettings />
-              <Separator />
-              <VolumeOverrideSettings />
-            </div>
+{activeTab === "settings" && (
+            <Tabs defaultValue="ui-settings" className="space-y-6">
+              <div className="bg-muted p-1.5 rounded-lg inline-flex">
+                <TabsList className="bg-transparent p-0">
+                  <TabsTrigger value="ui-settings">UI Settings</TabsTrigger>
+                  <TabsTrigger value="volume-config">Volume Config</TabsTrigger>
+                </TabsList>
+              </div>
+              
+              <TabsContent value="ui-settings" className="mt-0">
+                <UISettings />
+              </TabsContent>
+              
+              <TabsContent value="volume-config" className="mt-0">
+                <VolumeOverrideSettings />
+              </TabsContent>
+            </Tabs>
           )}
         </motion.div>
       </AnimatePresence>
