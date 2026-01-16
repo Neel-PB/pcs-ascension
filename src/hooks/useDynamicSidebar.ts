@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import {
   Users,
   UserCog,
@@ -9,6 +9,7 @@ import {
   MessageSquare,
   type LucideIcon,
 } from "lucide-react";
+import { useUISettings } from "./useAppSettings";
 
 export interface DynamicMenuItem {
   title: string;
@@ -27,6 +28,7 @@ export interface DynamicMenuGroup {
 
 export function useDynamicSidebar() {
   const [isLoading, setIsLoading] = useState(false);
+  const { data: uiSettings } = useUISettings();
 
   // Define the sidebar menu structure based on your current app
   const sidebarModules: DynamicMenuGroup[] = [
@@ -74,16 +76,22 @@ export function useDynamicSidebar() {
     },
   ];
 
-  // Bottom-pinned modules (separate from main nav)
-  const bottomModules: DynamicMenuGroup[] = [
-    {
-      label: "Feedback",
-      icon: MessageSquare,
-      items: [
-        { title: "Feedback", url: "/feedback", icon: MessageSquare },
-      ],
-    },
-  ];
+  // Bottom-pinned modules (separate from main nav) - conditionally include Feedback
+  const bottomModules: DynamicMenuGroup[] = useMemo(() => {
+    // Default to showing feedback if setting is undefined (not loaded yet)
+    if (uiSettings?.showFeedbackNavigation === false) {
+      return [];
+    }
+    return [
+      {
+        label: "Feedback",
+        icon: MessageSquare,
+        items: [
+          { title: "Feedback", url: "/feedback", icon: MessageSquare },
+        ],
+      },
+    ];
+  }, [uiSettings?.showFeedbackNavigation]);
 
   return {
     sidebarModules,
