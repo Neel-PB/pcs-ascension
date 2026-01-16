@@ -95,18 +95,18 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
           {targetBreakdown && targetIndex !== -1 && (
             <div className="flex flex-col items-center">
               {/* Vertical connector line - 16px to stay below KPI cards */}
-              <div className="w-0.5 bg-emerald-500/40" style={{ height: '16px' }} />
+              <div className="w-1 bg-emerald-500/60 dark:bg-emerald-400/70 rounded-full" style={{ height: '16px' }} />
               {/* Badge */}
               <div
                 onClick={() => setShowTargetBreakdownModal(true)}
                 className={cn(
                   "flex items-center justify-center gap-2 px-3 py-1.5 rounded-full text-xs",
                   "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
-                  "bg-emerald-500/10 hover:shadow-emerald-300/40"
+                  "bg-emerald-500/10 dark:bg-emerald-500/20 hover:shadow-emerald-300/40"
                 )}
               >
-                <Info className="h-3 w-3 shrink-0 text-emerald-600" />
-                <span className="font-medium text-emerald-700">
+                <Info className="h-3 w-3 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                <span className="font-medium text-emerald-700 dark:text-emerald-300">
                   {targetBreakdown.ft}% FT · {targetBreakdown.pt}% PT · {targetBreakdown.prn}% PRN
                 </span>
               </div>
@@ -125,30 +125,30 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
               <div className="grid grid-cols-3">
                 {/* Connector from Hired FTEs (first column) */}
                 <div className="flex justify-center">
-                  <div className="w-0.5 h-2 bg-destructive/40" />
+                  <div className="w-1 h-2 bg-destructive/60 dark:bg-red-400/70 rounded-full" />
                 </div>
                 {/* Empty middle column (FTE Variance) */}
                 <div />
                 {/* Connector from Open Reqs (third column) */}
                 <div className="flex justify-center">
-                  <div className="w-0.5 h-2 bg-destructive/40" />
+                  <div className="w-1 h-2 bg-destructive/60 dark:bg-red-400/70 rounded-full" />
                 </div>
               </div>
-              {/* Horizontal line connecting the two vertical lines - h-0.5 (2px) */}
+              {/* Horizontal line connecting the two vertical lines - h-1 (4px) */}
               <div className="grid grid-cols-3">
                 <div className="flex items-start">
                   <div className="w-1/2" />
-                  <div className="w-1/2 h-0.5 bg-destructive/40" />
+                  <div className="w-1/2 h-1 bg-destructive/60 dark:bg-red-400/70" />
                 </div>
-                <div className="h-0.5 bg-destructive/40" />
+                <div className="h-1 bg-destructive/60 dark:bg-red-400/70" />
                 <div className="flex items-start">
-                  <div className="w-1/2 h-0.5 bg-destructive/40" />
+                  <div className="w-1/2 h-1 bg-destructive/60 dark:bg-red-400/70" />
                   <div className="w-1/2" />
                 </div>
               </div>
               {/* Vertical line down to badge - h-1.5 (6px) */}
               <div className="flex justify-center">
-                <div className="w-0.5 h-1.5 bg-destructive/40" />
+                <div className="w-1 h-1.5 bg-destructive/60 dark:bg-red-400/70 rounded-full" />
               </div>
               {/* Badge */}
               <div className="flex justify-center">
@@ -157,11 +157,11 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
                   className={cn(
                     "flex items-center justify-center gap-2 px-3 py-1.5 rounded-full text-xs",
                     "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
-                    "bg-destructive/10 hover:shadow-destructive/30"
+                    "bg-destructive/10 dark:bg-destructive/20 hover:shadow-destructive/30"
                   )}
                 >
-                  <Info className="h-3 w-3 shrink-0 text-destructive" />
-                  <span className="font-medium text-destructive">
+                  <Info className="h-3 w-3 shrink-0 text-destructive dark:text-red-400" />
+                  <span className="font-medium text-destructive dark:text-red-300">
                     Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN
                   </span>
                 </div>
