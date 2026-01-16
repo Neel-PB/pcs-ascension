@@ -34,7 +34,7 @@ export function useUISettings() {
       const settingValue = data?.setting_value as unknown as UISettings | null;
       return settingValue ?? DEFAULT_UI_SETTINGS;
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 1, // 1 minute
   });
 }
 
@@ -54,6 +54,7 @@ export function useUpdateUISettings() {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['app-settings', 'ui_settings'], data);
+      queryClient.invalidateQueries({ queryKey: ['app-settings', 'ui_settings'] });
       toast.success('UI settings saved successfully');
     },
     onError: (error) => {
