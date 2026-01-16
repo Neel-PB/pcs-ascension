@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ScrollArea } from '@/components/ui/scroll-area';
+
 import { LogoLoader } from '@/components/ui/LogoLoader';
 import { Search, MessageSquare } from 'lucide-react';
 
@@ -112,45 +112,43 @@ export default function FeedbackPage() {
       </div>
 
       {/* Feedback Table */}
-      <ScrollArea className="flex-1">
-        <div className="p-6">
-          {filteredFeedback.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No feedback found</p>
-            </div>
-          ) : (
-            <div className="border border-border rounded-lg overflow-x-auto">
-              <Table className="w-full">
-                <TableHeader>
-                  <TableRow className="bg-muted/50">
-                    <TableHead className="min-w-[200px]">Title</TableHead>
-                    <TableHead className="w-[100px]">Type</TableHead>
-                    <TableHead className="min-w-[250px]">Description</TableHead>
-                    <TableHead className="w-[80px]">Screenshot</TableHead>
-                    <TableHead className="w-[140px]">Author</TableHead>
-                    <TableHead className="w-[120px]">PCS Status</TableHead>
-                    <TableHead className="w-[110px]">PB Status</TableHead>
-                    <TableHead className="w-[80px]">Priority</TableHead>
-                    <TableHead className="w-[100px]">Date</TableHead>
-                    <TableHead className="w-[90px]">Comments</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredFeedback.map((item) => (
-                    <FeedbackTableRow
-                      key={item.id}
-                      feedback={item}
-                      onDelete={handleDelete}
-                    />
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </div>
-      </ScrollArea>
+      <div className="flex-1 min-h-0 overflow-auto px-6 py-4">
+        {filteredFeedback.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground">
+            <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>No feedback found</p>
+          </div>
+        ) : (
+          <div className="border border-border/50 rounded-xl overflow-hidden">
+            <Table className="w-full table-fixed">
+              <TableHeader>
+                <TableRow className="bg-muted/50 sticky top-0 z-10">
+                  <TableHead className="min-w-[200px]">Title</TableHead>
+                  <TableHead className="w-[100px]">Type</TableHead>
+                  <TableHead className="min-w-[250px]">Description</TableHead>
+                  <TableHead className="w-[80px]">Screenshot</TableHead>
+                  <TableHead className="w-[140px]">Author</TableHead>
+                  <TableHead className="w-[120px]">PCS Status</TableHead>
+                  <TableHead className="w-[110px]">PB Status</TableHead>
+                  <TableHead className="w-[80px]">Priority</TableHead>
+                  <TableHead className="w-[100px]">Date</TableHead>
+                  <TableHead className="w-[90px]">Comments</TableHead>
+                  <TableHead className="w-[50px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredFeedback.map((item) => (
+                  <FeedbackTableRow
+                    key={item.id}
+                    feedback={item}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
