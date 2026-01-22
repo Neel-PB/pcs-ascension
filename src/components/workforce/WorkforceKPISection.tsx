@@ -1,7 +1,12 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { WorkforceKPICard } from './WorkforceKPICard';
 import { ForecastChecklistTable } from './ForecastChecklistTable';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Badge } from '@/components/ui/badge';
+import { ChevronDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { 
   getFTEKPIs, 
   getProductivityKPIs, 
@@ -34,6 +39,7 @@ export const WorkforceKPISection = ({
   volumeType,
   volumeValue 
 }: WorkforceKPISectionProps) => {
+  const [kpisExpanded, setKpisExpanded] = useState(false);
   
   // Create filters object for forecast data
   const filters: ForecastBalanceFilters = useMemo(() => ({
@@ -44,6 +50,11 @@ export const WorkforceKPISection = ({
     level2: selectedLevel2,
     pstat: selectedPstat,
   }), [selectedDepartment, selectedRegion, selectedMarket, selectedFacility, selectedLevel2, selectedPstat]);
+  
+  // Get checklist data for counts
+  const { openings, closures } = useForecastChecklist(filters);
+  const shortageCount = openings.length;
+  const surplusCount = closures.length;
   
   // Get shared KPIs from config
   const fteKPIs = useMemo(() => getFTEKPIs(), []);
@@ -110,54 +121,34 @@ export const WorkforceKPISection = ({
 
   const tabSpecificKPIs = getTabSpecificKPIs();
 
-  // Determine which forecast table to show
-  const getForecastTableType = (): 'shortage' | 'surplus' | 'both' | null => {
-    switch (activeTab) {
-      // Positions module tabs
-      case 'employees':
-      case 'contractors':
-        return 'shortage';
-      case 'requisitions':
-        return 'surplus';
-      // Staffing module tabs - show both
-      case 'summary':
-      case 'planning':
-      case 'variance':
-      case 'forecasts':
-        return 'both';
-      default:
-        return null;
-    }
-  };
+  // Determine if we should show forecast tables (for Positions module tabs)
+  const showForecastTables = ['employees', 'contractors', 'requisitions'].includes(activeTab);
+  
+  // For Staffing module tabs, show both tables without tabs
+  const showBothTables = ['summary', 'planning', 'variance', 'forecasts'].includes(activeTab);
 
-  const forecastTableType = getForecastTableType();
+  // Get compact summary values for collapsed state
+  const hiredValue = commonKPIs.find(k => k.id === 'hired-ftes')?.value ?? '—';
+  const targetValue = commonKPIs.find(k => k.id === 'target-ftes')?.value ?? '—';
+  const varianceValue = commonKPIs.find(k => k.id === 'fte-variance')?.value ?? '—';
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 space-y-3">
-      {/* Common KPIs Section */}
-      <div className="grid grid-cols-3 gap-2">
-        {commonKPIs.map((kpi) => (
-          <WorkforceKPICard
-            key={kpi.id}
-            label={kpi.title}
-            value={kpi.value}
-            chartData={kpi.chartData}
-            chartType={kpi.chartType}
-            definition={kpi.definition}
-            calculation={kpi.calculation}
-            breakdownData={kpi.breakdownData}
-            xAxisLabels={kpi.xAxisLabels}
-            decimalPlaces={kpi.decimalPlaces}
-          />
-        ))}
-      </div>
-
-      {/* Separator and Tab-specific KPIs */}
-      {tabSpecificKPIs.length > 0 && (
-        <>
-          <Separator className="my-2" />
-          <div className="grid grid-cols-3 gap-2">
-            {tabSpecificKPIs.map((kpi) => (
+    <div className="flex-1 flex flex-col min-h-0 space-y-2">
+      {/* Collapsible KPI Section */}
+      <Collapsible open={kpisExpanded} onOpenChange={setKpisExpanded}>
+        <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-1 hover:bg-muted/50 rounded-md transition-colors">
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">KPIs</span>
+          {!kpisExpanded && (
+            <span className="text-xs text-muted-foreground flex-1 text-right mr-2">
+              Hired: {hiredValue} | Target: {targetValue} | Var: {varianceValue}
+            </span>
+          )}
+          <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", kpisExpanded && "rotate-180")} />
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          {/* Common KPIs Section */}
+          <div className="grid grid-cols-3 gap-2 mt-2">
+            {commonKPIs.map((kpi) => (
               <WorkforceKPICard
                 key={kpi.id}
                 label={kpi.title}
@@ -172,16 +163,66 @@ export const WorkforceKPISection = ({
               />
             ))}
           </div>
-        </>
-      )}
 
-      {/* Forecast Table with Title */}
-      {forecastTableType && forecastTableType !== 'both' && (
-        <ForecastTableWithTitle type={forecastTableType} filters={filters} />
+          {/* Separator and Tab-specific KPIs */}
+          {tabSpecificKPIs.length > 0 && (
+            <>
+              <Separator className="my-2" />
+              <div className="grid grid-cols-3 gap-2">
+                {tabSpecificKPIs.map((kpi) => (
+                  <WorkforceKPICard
+                    key={kpi.id}
+                    label={kpi.title}
+                    value={kpi.value}
+                    chartData={kpi.chartData}
+                    chartType={kpi.chartType}
+                    definition={kpi.definition}
+                    calculation={kpi.calculation}
+                    breakdownData={kpi.breakdownData}
+                    xAxisLabels={kpi.xAxisLabels}
+                    decimalPlaces={kpi.decimalPlaces}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </CollapsibleContent>
+      </Collapsible>
+
+      <Separator />
+
+      {/* Tabbed Shortage/Surplus for Positions module */}
+      {showForecastTables && (
+        <Tabs defaultValue="shortage" className="flex-1 flex flex-col min-h-0">
+          <TabsList className="shrink-0 w-full justify-start bg-transparent p-0 h-auto gap-1">
+            <TabsTrigger value="shortage" className="text-xs px-3 py-1.5 data-[state=active]:shadow-none">
+              Shortage
+              <Badge variant="secondary" className="ml-1.5 h-5 px-1.5 text-[10px]">
+                {shortageCount}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger value="surplus" className="text-xs px-3 py-1.5 data-[state=active]:shadow-none">
+              Surplus
+              <Badge variant="secondary" className="ml-1.5 h-5 px-1.5 text-[10px]">
+                {surplusCount}
+              </Badge>
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="shortage" className="flex-1 min-h-0 overflow-hidden mt-2">
+            <div className="h-full overflow-y-auto">
+              <ForecastChecklistTable type="shortage" filters={filters} />
+            </div>
+          </TabsContent>
+          <TabsContent value="surplus" className="flex-1 min-h-0 overflow-hidden mt-2">
+            <div className="h-full overflow-y-auto">
+              <ForecastChecklistTable type="surplus" filters={filters} />
+            </div>
+          </TabsContent>
+        </Tabs>
       )}
       
-      {/* Both tables for Staffing module */}
-      {forecastTableType === 'both' && (
+      {/* Both tables for Staffing module (legacy behavior) */}
+      {showBothTables && (
         <>
           <ForecastTableWithTitle type="shortage" filters={filters} />
           <ForecastTableWithTitle type="surplus" filters={filters} />
@@ -191,7 +232,7 @@ export const WorkforceKPISection = ({
   );
 };
 
-// Sub-component to handle forecast table with title
+// Sub-component for Staffing module (shows both tables vertically)
 function ForecastTableWithTitle({ type, filters }: { type: 'shortage' | 'surplus'; filters?: ForecastBalanceFilters }) {
   const { openings, closures } = useForecastChecklist(filters);
   
