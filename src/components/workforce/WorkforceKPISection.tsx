@@ -209,15 +209,11 @@ export const WorkforceKPISection = ({
               </Badge>
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="shortage" className="flex-1 min-h-0 overflow-hidden mt-2">
-            <div className="h-full overflow-y-auto">
-              <ForecastChecklistTable type="shortage" filters={filters} />
-            </div>
+          <TabsContent value="shortage" className="flex-1 min-h-0 mt-2 flex flex-col">
+            <ForecastChecklistTable type="shortage" filters={filters} />
           </TabsContent>
-          <TabsContent value="surplus" className="flex-1 min-h-0 overflow-hidden mt-2">
-            <div className="h-full overflow-y-auto">
-              <ForecastChecklistTable type="surplus" filters={filters} />
-            </div>
+          <TabsContent value="surplus" className="flex-1 min-h-0 mt-2 flex flex-col">
+            <ForecastChecklistTable type="surplus" filters={filters} />
           </TabsContent>
         </Tabs>
       )}
@@ -243,11 +239,11 @@ function ForecastTableWithTitle({ type, filters }: { type: 'shortage' | 'surplus
   return (
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
       {type === 'shortage' && <Separator className="my-2" />}
-      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-0">
         <h3 className="text-sm font-medium text-foreground mb-2 flex-shrink-0">
           {title} <span className="text-muted-foreground">({count})</span>
         </h3>
-        <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="flex-1 min-h-0 flex flex-col">
           <ForecastChecklistTable type={type} filters={filters} />
         </div>
       </div>

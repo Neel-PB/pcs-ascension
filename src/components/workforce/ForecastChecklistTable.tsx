@@ -96,13 +96,13 @@ export function ForecastChecklistTable({ type, filters }: ForecastChecklistTable
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="rounded-lg border border-border bg-card overflow-hidden">
+      <div className="rounded-lg border border-border bg-card overflow-hidden h-full flex flex-col">
         {count === 0 ? (
           <div className="p-6 text-center text-[11px] text-muted-foreground">
             No {type === 'shortage' ? 'positions to open' : 'positions to close'} recommended
           </div>
         ) : (
-          <div className="overflow-y-auto max-h-full">
+          <div className="flex-1 overflow-y-auto min-h-0">
             {groups.map((group) => (
               <ForecastChecklistLocationGroup 
                 key={group.groupKey} 
