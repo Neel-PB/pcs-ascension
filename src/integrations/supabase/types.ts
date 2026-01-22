@@ -41,6 +41,48 @@ export type Database = {
         }
         Relationships: []
       }
+      closure_selections: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          department_id: string
+          employment_type: string
+          facility_id: string
+          id: string
+          selected_closure_ids: string[] | null
+          selected_fte_sum: number | null
+          shift: string
+          skill_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          department_id: string
+          employment_type: string
+          facility_id: string
+          id?: string
+          selected_closure_ids?: string[] | null
+          selected_fte_sum?: number | null
+          shift: string
+          skill_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          department_id?: string
+          employment_type?: string
+          facility_id?: string
+          id?: string
+          selected_closure_ids?: string[] | null
+          selected_fte_sum?: number | null
+          shift?: string
+          skill_type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           content: string

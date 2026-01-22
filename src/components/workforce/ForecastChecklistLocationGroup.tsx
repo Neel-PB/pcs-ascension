@@ -1,17 +1,41 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FacilityLocationGroup } from '@/hooks/useForecastChecklist';
 import { ForecastChecklistDeptSkillGroup } from './ForecastChecklistDeptSkillGroup';
+import { ClosureSelectionKey } from '@/hooks/useClosureSelections';
 
 interface ForecastChecklistLocationGroupProps {
   group: FacilityLocationGroup;
   type: 'shortage' | 'surplus';
+  selectedIds?: Map<string, Set<string>>; // key: deptGroupKey, value: selected detail IDs
+  onToggleSelection?: (deptGroupKey: string, detailId: string) => void;
+  onReconfigure?: (deptGroupKey: string) => void;
+  showSelection?: boolean;
 }
 
-export function ForecastChecklistLocationGroup({ group, type }: ForecastChecklistLocationGroupProps) {
+export function ForecastChecklistLocationGroup({ 
+  group, 
+  type,
+  selectedIds = new Map(),
+  onToggleSelection,
+  onReconfigure,
+  showSelection = false,
+}: ForecastChecklistLocationGroupProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const fteColor = type === 'shortage' ? 'text-emerald-600' : 'text-red-600';
+
+  const handleToggleSelection = useCallback((deptGroupKey: string, detailId: string) => {
+    if (onToggleSelection) {
+      onToggleSelection(deptGroupKey, detailId);
+    }
+  }, [onToggleSelection]);
+
+  const handleReconfigure = useCallback((deptGroupKey: string) => {
+    if (onReconfigure) {
+      onReconfigure(deptGroupKey);
+    }
+  }, [onReconfigure]);
 
   return (
     <div className="border-b border-border last:border-b-0">
@@ -48,6 +72,10 @@ export function ForecastChecklistLocationGroup({ group, type }: ForecastChecklis
                 key={deptGroup.groupKey} 
                 group={deptGroup} 
                 type={type}
+                selectedIds={selectedIds.get(deptGroup.groupKey) || new Set()}
+                onToggleSelection={(detailId) => handleToggleSelection(deptGroup.groupKey, detailId)}
+                onReconfigure={() => handleReconfigure(deptGroup.groupKey)}
+                showSelection={showSelection}
               />
             ))}
           </motion.div>
