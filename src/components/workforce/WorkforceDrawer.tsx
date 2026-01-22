@@ -87,14 +87,17 @@ export const WorkforceDrawer = ({
 
         {/* Fixed Header Row - matching global header */}
         <div 
-          className="flex items-center px-6 border-b border-border flex-shrink-0" 
+          className="flex items-center justify-between px-6 border-b border-border flex-shrink-0" 
           style={{ height: 'var(--header-height)' }}
         >
           <h1 className="text-lg font-semibold text-foreground">Positions Checklist</h1>
+          <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
+            Close
+          </Button>
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto px-4 lg:px-6 py-4 flex flex-col min-h-0">
+        <div className="flex-1 overflow-y-auto px-4 lg:px-6 pt-2 pb-4 flex flex-col min-h-0">
         {!selectedFacility && !selectedDepartment ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
               <div className="rounded-full bg-muted p-4 mb-4">
@@ -127,12 +130,6 @@ export const WorkforceDrawer = ({
           )}
         </div>
 
-        {/* Footer with Close Button */}
-        <div className="flex-shrink-0 px-6 py-3 border-t flex justify-end">
-          <Button variant="default" onClick={() => setOpen(false)}>
-            Close
-          </Button>
-        </div>
       </div>
     </>
   );

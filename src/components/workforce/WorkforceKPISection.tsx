@@ -136,7 +136,7 @@ export const WorkforceKPISection = ({
     <div className="flex-1 flex flex-col min-h-0 space-y-2">
       {/* Collapsible KPI Section */}
       <Collapsible open={kpisExpanded} onOpenChange={setKpisExpanded}>
-        <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-1 hover:bg-muted/50 rounded-md transition-colors">
+        <CollapsibleTrigger className="flex items-center justify-between w-full py-1 px-1 hover:bg-muted/50 rounded-md transition-colors">
           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">KPIs</span>
           {!kpisExpanded && (
             <span className="text-xs text-muted-foreground flex-1 text-right mr-2">
@@ -189,8 +189,6 @@ export const WorkforceKPISection = ({
         </CollapsibleContent>
       </Collapsible>
 
-      <Separator />
-
       {/* Tabbed Shortage/Surplus for Positions module */}
       {showForecastTables && (
         <Tabs defaultValue="shortage" className="flex-1 flex flex-col min-h-0">
@@ -241,8 +239,8 @@ function ForecastTableWithTitle({ type, filters }: { type: 'shortage' | 'surplus
 
   return (
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-      <Separator className="my-2" />
-      <div className="flex-1 flex flex-col min-h-0 mt-3 overflow-hidden">
+      {type === 'shortage' && <Separator className="my-2" />}
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         <h3 className="text-sm font-medium text-foreground mb-2 flex-shrink-0">
           {title} <span className="text-muted-foreground">({count})</span>
         </h3>
@@ -250,6 +248,7 @@ function ForecastTableWithTitle({ type, filters }: { type: 'shortage' | 'surplus
           <ForecastChecklistTable type={type} filters={filters} />
         </div>
       </div>
+      {type === 'shortage' && <Separator className="mt-3 mb-2" />}
     </div>
   );
 }
