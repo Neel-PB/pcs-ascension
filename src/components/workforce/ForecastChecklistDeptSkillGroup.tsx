@@ -51,7 +51,7 @@ export function ForecastChecklistDeptSkillGroup({
             <ChevronRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
           )}
           <span className="text-[11px] truncate">
-            {group.departmentName} • {group.skillType}
+            {group.departmentName} • {group.skillType} • {group.shift}
           </span>
         </div>
         <div className="flex items-center gap-2 ml-2 flex-shrink-0">

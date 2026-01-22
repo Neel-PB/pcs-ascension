@@ -54,7 +54,7 @@ export function ForecastChecklistPositionDetail({
           </div>
         )}
         <span className="text-[11px] text-muted-foreground">
-          {detail.shift} Shift • {getEmploymentLabel(detail.employmentType)}
+          {getEmploymentLabel(detail.employmentType)}
         </span>
         {isSurplus && detail.source && (
           <Badge 

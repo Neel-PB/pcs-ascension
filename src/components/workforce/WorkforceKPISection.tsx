@@ -189,6 +189,9 @@ export const WorkforceKPISection = ({
         </CollapsibleContent>
       </Collapsible>
 
+      {/* Separator before tabs */}
+      {showForecastTables && <Separator className="my-1" />}
+
       {/* Tabbed Shortage/Surplus for Positions module */}
       {showForecastTables && (
         <Tabs defaultValue="shortage" className="flex-1 flex flex-col min-h-0">
