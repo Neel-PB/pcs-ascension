@@ -38,10 +38,11 @@ export interface PositionDetail {
   source?: 'open-reqs' | 'employed'; // Only for closures
 }
 
-// Level 2: Department + Skill Type group
+// Level 2: Department + Skill Type + Shift group
 export interface DepartmentSkillGroup {
   departmentName: string;
   skillType: string;
+  shift: 'Day' | 'Night';
   groupKey: string;
   totalFTE: number;
   totalCount: number;
@@ -177,14 +178,15 @@ function groupOpeningsByLocation(openings: ChecklistPositionToOpen[]): FacilityL
     }
 
     const locationGroup = locationMap.get(locationKey)!;
-    const deptSkillKey = `${item.departmentName}|${item.skillType}`;
+    const deptSkillShiftKey = `${item.departmentName}|${item.skillType}|${item.shift}`;
     
-    let deptGroup = locationGroup.departmentGroups.find(dg => dg.groupKey === deptSkillKey);
+    let deptGroup = locationGroup.departmentGroups.find(dg => dg.groupKey === deptSkillShiftKey);
     if (!deptGroup) {
       deptGroup = {
         departmentName: item.departmentName,
         skillType: item.skillType,
-        groupKey: deptSkillKey,
+        shift: item.shift,
+        groupKey: deptSkillShiftKey,
         totalFTE: 0,
         totalCount: 0,
         details: [],
@@ -231,14 +233,15 @@ function groupClosuresByLocation(closures: ChecklistPositionToClose[]): Facility
     }
 
     const locationGroup = locationMap.get(locationKey)!;
-    const deptSkillKey = `${item.departmentName}|${item.skillType}`;
+    const deptSkillShiftKey = `${item.departmentName}|${item.skillType}|${item.shift}`;
     
-    let deptGroup = locationGroup.departmentGroups.find(dg => dg.groupKey === deptSkillKey);
+    let deptGroup = locationGroup.departmentGroups.find(dg => dg.groupKey === deptSkillShiftKey);
     if (!deptGroup) {
       deptGroup = {
         departmentName: item.departmentName,
         skillType: item.skillType,
-        groupKey: deptSkillKey,
+        shift: item.shift,
+        groupKey: deptSkillShiftKey,
         totalFTE: 0,
         totalCount: 0,
         details: [],
