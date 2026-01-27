@@ -558,7 +558,7 @@ This metric helps:
           )}
           
           {activeTab === "planning" && (
-            <PositionPlanning />
+            <PositionPlanning selectedDepartment={selectedDepartment} />
           )}
           
           {activeTab === "variance" && (

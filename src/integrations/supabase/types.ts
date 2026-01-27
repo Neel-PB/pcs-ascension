@@ -165,6 +165,7 @@ export type Database = {
           department_name: string
           facility_id: string
           id: string
+          is_nursing: boolean | null
         }
         Insert: {
           created_at?: string
@@ -172,6 +173,7 @@ export type Database = {
           department_name: string
           facility_id: string
           id?: string
+          is_nursing?: boolean | null
         }
         Update: {
           created_at?: string
@@ -179,6 +181,7 @@ export type Database = {
           department_name?: string
           facility_id?: string
           id?: string
+          is_nursing?: boolean | null
         }
         Relationships: []
       }
