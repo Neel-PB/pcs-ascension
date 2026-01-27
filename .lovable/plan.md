@@ -1,130 +1,193 @@
 
-# Make Permission Matrix Table Fill Available Width
+
+# Improve Permission List View Readability
 
 ## Overview
 
-Update the Permission Matrix table to fill the full container width instead of using fixed column widths that leave empty space after the last role column.
+Redesign the Permission List view to be more understandable and user-friendly with:
+- Clear category section headers with visual separation
+- Better labels that explain what each permission actually does
+- Improved visual hierarchy and spacing
+- Card-based layout within categories for better scanning
 
 ---
 
-## Current Issue
+## Current Issues
 
-The table uses fixed widths:
-- Permission column: `w-56` (224px)
-- Each role column: `w-28` (112px)
-- Container has `min-w-max` preventing any expansion
-
-With 6 roles: 224 + (112 × 6) = 896px total, leaving ~40% empty space on wider screens.
+| Problem | Location |
+|---------|----------|
+| Category badge only shows on first row in each group | Makes grouping unclear |
+| Flat table layout | Hard to scan and understand relationships |
+| "approvals.feedback" labeled as "Manage Feedback Status" | Doesn't clearly indicate it's for approval workflow |
+| Description gets truncated | Users can't see full context |
 
 ---
 
 ## Solution
 
-Change role columns from fixed `w-28` to flexible `flex-1` so they expand evenly to fill available space. Keep a minimum width to ensure readability.
+### 1. Add Category Section Headers
+
+Replace flat table with grouped sections. Each category gets:
+- A sticky header row with category name
+- Clear visual separator
+- Permission count badge
+
+### 2. Card-Style Rows Within Categories
+
+Each permission row shows:
+- Permission label prominently
+- Key in smaller monospace font
+- Full description (not truncated)
+- Assigned roles with expandable view
+
+### 3. Improved Labels and Descriptions
+
+Update the approval permissions to be clearer:
+
+| Current Label | Proposed Label |
+|---------------|----------------|
+| Manage Feedback Status | Approve/Reject Feedback |
+| Approve NP Overrides | Approve NP Override Requests |
+| Approve Volume Overrides | Approve Volume Override Requests |
 
 ---
 
-## Changes Required
+## Implementation
 
-### File: `src/components/admin/PermissionMatrix.tsx`
+### File: `src/components/admin/PermissionListView.tsx`
 
-**1. Update container structure (line 217):**
+**1. Add category section headers:**
 ```tsx
-// FROM:
-<div className="min-w-max">
-
-// TO:
-<div className="w-full">
+// Instead of flat table, render grouped sections
+{sortedCategories.map((category) => {
+  const categoryPermissions = groupedPermissions[category] || [];
+  if (categoryPermissions.length === 0) return null;
+  
+  return (
+    <div key={category} className="space-y-2">
+      {/* Category Header */}
+      <div className="flex items-center gap-2 py-3 border-b bg-muted/30 px-4 sticky top-0 z-10">
+        <h3 className="text-sm font-semibold">
+          {CATEGORY_LABELS[category] || category}
+        </h3>
+        <Badge variant="secondary" className="text-xs">
+          {categoryPermissions.length}
+        </Badge>
+      </div>
+      
+      {/* Permission Cards */}
+      <div className="divide-y">
+        {categoryPermissions.map((permission) => (
+          <PermissionCard key={permission.id} permission={permission} />
+        ))}
+      </div>
+    </div>
+  );
+})}
 ```
 
-**2. Update header row (line 219):**
+**2. Create a PermissionCard component for better layout:**
 ```tsx
-// FROM:
-<div className="flex border-b bg-muted/30">
-
-// TO:
-<div className="flex border-b bg-muted/30 w-full">
+function PermissionCard({ permission, roles, onEdit, onDelete }) {
+  return (
+    <div className="p-4 hover:bg-muted/30 transition-colors">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 space-y-1">
+          {/* Label + System badge */}
+          <div className="flex items-center gap-2">
+            <span className="font-medium">{permission.label}</span>
+            {permission.is_system && (
+              <Lock className="h-3 w-3 text-muted-foreground" />
+            )}
+          </div>
+          
+          {/* Key (monospace, smaller) */}
+          <code className="text-xs text-muted-foreground font-mono">
+            {permission.key}
+          </code>
+          
+          {/* Full description */}
+          <p className="text-sm text-muted-foreground">
+            {permission.description || "No description"}
+          </p>
+        </div>
+        
+        {/* Assigned Roles */}
+        <div className="flex flex-wrap gap-1 max-w-[250px]">
+          {assignedRoles.map((role) => (
+            <Badge key={role.id} variant="outline" className="text-xs">
+              {role.label}
+            </Badge>
+          ))}
+        </div>
+        
+        {/* Actions */}
+        <DropdownMenu>...</DropdownMenu>
+      </div>
+    </div>
+  );
+}
 ```
 
-**3. Update role column headers (lines 230-232):**
+**3. Sort categories in logical order:**
 ```tsx
-// FROM:
-<div
-  key={role.id}
-  className="w-28 shrink-0 px-2 py-2 text-center border-r last:border-r-0"
->
+const CATEGORY_ORDER = ["modules", "settings", "filters", "subfilters", "approvals"];
 
-// TO:
-<div
-  key={role.id}
-  className="flex-1 min-w-[100px] px-2 py-2 text-center border-r last:border-r-0"
->
-```
-
-**4. Update category header empty cells (lines 327-329):**
-```tsx
-// FROM:
-{roles.map((role) => (
-  <div key={role.id} className="w-28 shrink-0 border-r last:border-r-0" />
-))}
-
-// TO:
-{roles.map((role) => (
-  <div key={role.id} className="flex-1 min-w-[100px] border-r last:border-r-0" />
-))}
-```
-
-**5. Update permission rows structure (line 440):**
-```tsx
-// FROM:
-<div className="flex border-b last:border-b-0 hover:bg-muted/30 transition-colors">
-
-// TO:
-<div className="flex border-b last:border-b-0 hover:bg-muted/30 transition-colors w-full">
-```
-
-**6. Update role checkbox cells (lines 469-474):**
-```tsx
-// FROM:
-<div
-  key={role.id}
-  className={cn(
-    "w-28 shrink-0 flex items-center justify-center border-r last:border-r-0",
-    isPending && "bg-primary/5"
-  )}
->
-
-// TO:
-<div
-  key={role.id}
-  className={cn(
-    "flex-1 min-w-[100px] flex items-center justify-center border-r last:border-r-0",
-    isPending && "bg-primary/5"
-  )}
->
+const sortedCategories = useMemo(() => {
+  return Object.keys(groupedPermissions).sort((a, b) => {
+    const aIndex = CATEGORY_ORDER.indexOf(a);
+    const bIndex = CATEGORY_ORDER.indexOf(b);
+    return aIndex - bIndex;
+  });
+}, [groupedPermissions]);
 ```
 
 ---
 
-## Visual Result
-
-| Before | After |
-|--------|-------|
-| Fixed 896px width | Fills container width |
-| Empty space after Manager | All columns expand evenly |
-| Role columns: 112px each | Role columns: flexible (min 100px) |
+## Visual Design
 
 ```text
-Before:
-┌─────────┬───────┬───────┬───────┬───────┬───────┬───────┐░░░░░░
-│Permission│Admin │L.Mgr  │Lead   │CNO    │Dir    │Mgr    │ empty
-└─────────┴───────┴───────┴───────┴───────┴───────┴───────┘░░░░░░
-
-After:
-┌──────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┐
-│Permission│  Admin  │  L.Mgr  │  Lead   │   CNO   │   Dir   │   Mgr   │
-└──────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┘
+┌────────────────────────────────────────────────────────────────────┐
+│  🔍 Search permissions...     │  All Categories ▼                  │
+├────────────────────────────────────────────────────────────────────┤
+│                                                                    │
+│  MODULE ACCESS                                           (7)       │
+│  ────────────────────────────────────────────────────────────────  │
+│                                                                    │
+│  Admin Module                                    🔒                │
+│  admin.access                                                      │
+│  Access to the admin panel                                         │
+│                                     Admin  Labor Management        │
+│                                                                    │
+│  ────────────────────────────────────────────────────────────────  │
+│                                                                    │
+│  APPROVAL ACCESS                                         (5)       │
+│  ────────────────────────────────────────────────────────────────  │
+│                                                                    │
+│  Approve/Reject Feedback                         🔒                │
+│  approvals.feedback                                                │
+│  Ability to approve, reject, or move feedback items to backlog     │
+│                                     Admin  Labor Management        │
+│                                                                    │
+│  Approve Positions to Open                       🔒                │
+│  approvals.positions_to_open                                       │
+│  Ability to approve or reject new position requests                │
+│                      Admin  Labor Management  Leadership  +2       │
+│                                                                    │
+└────────────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## Benefits
+
+| Improvement | Impact |
+|-------------|--------|
+| Category headers always visible | Users immediately understand grouping |
+| Full descriptions shown | No truncation, full context available |
+| Label shown prominently, key secondary | Focus on what it does, not technical ID |
+| Card layout with spacing | Easier to scan and find permissions |
+| Permission count per category | Quick overview of category size |
 
 ---
 
@@ -132,4 +195,5 @@ After:
 
 | File | Changes |
 |------|---------|
-| `src/components/admin/PermissionMatrix.tsx` | Change fixed `w-28` to `flex-1 min-w-[100px]` for role columns; change container from `min-w-max` to `w-full` |
+| `src/components/admin/PermissionListView.tsx` | Complete redesign with category sections and card-style permission rows |
+
