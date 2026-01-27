@@ -97,12 +97,16 @@ export default function AccessControlPage() {
               type="single"
               value={viewMode}
               onValueChange={(value) => value && setViewMode(value as ViewMode)}
-              className="bg-muted/50 p-0.5 rounded-md"
+              className="bg-muted/50 p-0.5 rounded-md border border-border"
               variant="primary"
             >
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <ToggleGroupItem value="matrix" aria-label="Matrix view" className="h-8 px-2.5">
+                  <ToggleGroupItem 
+                    value="matrix" 
+                    aria-label="Matrix view" 
+                    className={`h-8 px-2.5 ${viewMode === "matrix" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted/60"}`}
+                  >
                     <Grid3X3 className="h-4 w-4" />
                   </ToggleGroupItem>
                 </TooltipTrigger>
@@ -112,7 +116,11 @@ export default function AccessControlPage() {
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <ToggleGroupItem value="detail" aria-label="Detail view" className="h-8 px-2.5">
+                  <ToggleGroupItem 
+                    value="detail" 
+                    aria-label="Detail view" 
+                    className={`h-8 px-2.5 ${viewMode === "detail" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted/60"}`}
+                  >
                     <LayoutPanelLeft className="h-4 w-4" />
                   </ToggleGroupItem>
                 </TooltipTrigger>
@@ -122,7 +130,11 @@ export default function AccessControlPage() {
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <ToggleGroupItem value="list" aria-label="List view" className="h-8 px-2.5">
+                  <ToggleGroupItem 
+                    value="list" 
+                    aria-label="List view" 
+                    className={`h-8 px-2.5 ${viewMode === "list" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted/60"}`}
+                  >
                     <List className="h-4 w-4" />
                   </ToggleGroupItem>
                 </TooltipTrigger>
