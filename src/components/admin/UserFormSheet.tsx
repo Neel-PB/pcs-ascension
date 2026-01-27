@@ -27,12 +27,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Lock } from "lucide-react";
 import { useDynamicRoles } from "@/hooks/useDynamicRoles";
-import { useRolePermissions } from "@/hooks/useRolePermissions";
 import type { UserWithProfile, UserRole } from "@/hooks/useUsers";
-import { type AppRole } from "@/config/rbacConfig";
 
 const userFormSchema = z.object({
   firstName: z.string().min(1, "First name is required").max(100),
@@ -61,7 +58,6 @@ export function UserFormSheet({
 }: UserFormSheetProps) {
   const isEditMode = !!user;
   const { manageableRoles, isLoading: rolesLoading } = useDynamicRoles();
-  const { getEffectivePermissions } = useRolePermissions();
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
@@ -181,9 +177,6 @@ export function UserFormSheet({
               name="role"
               render={({ field }) => {
                 const selectedRole = manageableRoles.find(r => r.name === field.value);
-                const permissionCount = selectedRole 
-                  ? getEffectivePermissions(selectedRole.name as AppRole).length 
-                  : 0;
 
                 return (
                   <FormItem>
@@ -201,25 +194,19 @@ export function UserFormSheet({
                       <SelectContent>
                         {manageableRoles
                           .filter((role) => role.name && role.name.trim() !== '')
-                          .map((role) => {
-                          const permsCount = getEffectivePermissions(role.name as AppRole).length;
-                          return (
+                          .map((role) => (
                             <SelectItem key={role.id} value={role.name}>
                               <div className="flex items-center gap-2">
                                 {role.is_system && <Lock className="h-3 w-3 text-muted-foreground" />}
                                 <span>{role.label}</span>
-                                <Badge variant="secondary" className="text-xs h-4 px-1 ml-auto">
-                                  {permsCount}
-                                </Badge>
                               </div>
                             </SelectItem>
-                          );
-                        })}
+                          ))}
                       </SelectContent>
                     </Select>
-                    {selectedRole && (
+                    {selectedRole?.description && (
                       <p className="text-xs text-muted-foreground mt-1">
-                        {selectedRole.description || `${permissionCount} permissions enabled`}
+                        {selectedRole.description}
                       </p>
                     )}
                     <FormMessage />
