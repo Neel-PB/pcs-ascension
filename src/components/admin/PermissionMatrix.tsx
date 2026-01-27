@@ -131,7 +131,6 @@ export function PermissionMatrix({ roles, onEditRole }: PermissionMatrixProps) {
             {/* Role column headers */}
             {roles.map((role) => {
               const overrideCount = getOverrideCount(role.name as AppRole);
-              const effectivePerms = getEffectivePermissions(role.name as AppRole);
               
               return (
                 <div
@@ -176,23 +175,18 @@ export function PermissionMatrix({ roles, onEditRole }: PermissionMatrixProps) {
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>
-                    <div className="flex items-center gap-1">
-                      <Badge variant="secondary" className="text-[10px] h-4 px-1">
-                        {effectivePerms.length}
-                      </Badge>
-                      {overrideCount > 0 && (
-                        <TooltipProvider delayDuration={200}>
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <span className="w-2 h-2 rounded-full bg-warning" />
-                            </TooltipTrigger>
-                            <TooltipContent side="bottom">
-                              <p className="text-xs">{overrideCount} overridden</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      )}
-                    </div>
+                    {overrideCount > 0 && (
+                      <TooltipProvider delayDuration={200}>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <span className="w-2 h-2 rounded-full bg-warning" />
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom">
+                            <p className="text-xs">{overrideCount} overridden</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                   </div>
                 </div>
               );
@@ -223,9 +217,6 @@ export function PermissionMatrix({ roles, onEditRole }: PermissionMatrixProps) {
                       <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                         {categoryLabel}
                       </span>
-                      <Badge variant="outline" className="text-[10px] h-4 px-1 ml-auto">
-                        {categoryPermissions.length}
-                      </Badge>
                     </div>
                     {/* Empty cells for alignment */}
                     {roles.map((role) => (
