@@ -1,184 +1,277 @@
 
 
-# Permission Audit Log and Missing Approvals Category Fix
+# Improved Roles & Permissions UI
 
 ## Overview
 
-This plan addresses two issues:
-1. **Missing Approvals permissions in Role Management UI** - The approvals category exists in the config but isn't displayed in the permission grid
-2. **Create a permission audit log** - Track all changes to roles and permissions with who made the change and when
+Redesign the Roles and Permissions management interface to provide a unified, visual experience that makes it easy to understand and manage access control. The new design will combine roles and permissions into a single, cohesive view with a permission matrix pattern.
 
 ---
 
-## Issue 1: Missing Approvals Permissions
+## Current Pain Points
 
-### Problem
-The `RolesManagement.tsx` component hardcodes only 4 permission categories in the grid layout:
-- Modules
-- Settings
-- Filters
-- Sub-filters
+| Issue | Impact |
+|-------|--------|
+| Roles and Permissions are separate tabs | Context switching when understanding what a role can do |
+| Permission grid is cramped (5 categories in 2 columns) | Difficult to scan and compare |
+| User Form shows only 2 hardcoded roles | Doesn't leverage the dynamic roles system |
+| No way to see role-permission relationships at a glance | Admins can't quickly compare roles |
+| No search/filter in roles management | Hard to find specific roles with many entries |
 
-The **Approvals** category (with 5 permissions) exists in `rbacConfig.ts` but is not rendered in the UI.
+---
 
-### Solution
-Update the permission grid in `RolesManagement.tsx` to include the Approvals category. Modify the 2-column grid layout to accommodate all 5 categories.
+## Proposed Design: Unified Permission Matrix
 
-**New Layout:**
+### Layout Structure
+
 ```text
-┌──────────────────┬──────────────────┐
-│ Modules          │ Settings         │
-│ (7 permissions)  │ (2 permissions)  │
-│                  ├──────────────────┤
-│                  │ Filters          │
-│                  │ (4 permissions)  │
-├──────────────────┼──────────────────┤
-│ Sub-filters      │ Approvals        │
-│ (3 permissions)  │ (5 permissions)  │
-└──────────────────┴──────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  Access Control                                           [+ Add Role]       │
+│  Manage roles and their permissions                       [+ Add Permission] │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  [Search roles/permissions...]                    View: [Matrix ▼]           │
+│                                                                              │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │                 │ Admin │ Labor │ Leader │ CNO │ Director │ Manager    │ │
+│  ├─────────────────┼───────┼───────┼────────┼─────┼──────────┼────────────┤ │
+│  │ MODULES                                                                 │ │
+│  ├─────────────────┼───────┼───────┼────────┼─────┼──────────┼────────────┤ │
+│  │ Admin Access    │  ✓    │  ✓    │        │     │          │            │ │
+│  │ Feedback Access │  ✓    │  ✓    │        │     │          │            │ │
+│  │ Staffing        │  ✓    │  ✓    │   ✓    │  ✓  │    ✓     │     ✓      │ │
+│  │ Positions       │  ✓    │  ✓    │   ✓    │  ✓  │    ✓     │     ✓      │ │
+│  │ ...             │       │       │        │     │          │            │ │
+│  ├─────────────────┼───────┼───────┼────────┼─────┼──────────┼────────────┤ │
+│  │ APPROVALS                                                               │ │
+│  ├─────────────────┼───────┼───────┼────────┼─────┼──────────┼────────────┤ │
+│  │ Approve Open    │  ✓    │  ✓    │   ✓    │  ✓  │    ✓     │            │ │
+│  │ Approve Close   │  ✓    │  ✓    │   ✓    │  ✓  │    ✓     │            │ │
+│  │ Volume Override │  ✓    │  ✓    │        │     │          │            │ │
+│  │ ...             │       │       │        │     │          │            │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+│                                                                              │
+│  Legend: ✓ Enabled  ● Overridden from default  🔒 System role/permission    │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
+### Key Features
+
+1. **Full Permission Matrix View**
+   - Horizontal scrolling for many roles
+   - Sticky first column (permission names)
+   - Sticky header row (role names)
+   - Category groupings with collapsible sections
+
+2. **Inline Editing**
+   - Click any cell to toggle permission
+   - Visual indicator for overridden values (amber dot)
+   - Hover to see permission description
+   - Click role header to edit role details
+
+3. **Quick Actions**
+   - "Add Role" button opens a slide-out sheet
+   - "Add Permission" button opens a dialog
+   - Column header dropdown for role actions (Edit, Delete, Clone, Reset)
+   - Row hover shows permission actions (Edit, Delete)
+
+4. **View Modes**
+   - **Matrix View** (default): Full grid of all roles × permissions
+   - **Role Detail View**: Current left-panel + right-panel design (for deep editing)
+   - **List View**: Simple permission list with role badges
+
 ---
 
-## Issue 2: Permission Audit Log
+## Component Architecture
 
-### Database Schema
+### New Components
 
-Create a new `rbac_audit_log` table to track all changes to roles and permissions.
+| Component | Description |
+|-----------|-------------|
+| `AccessControlPage.tsx` | Combined page replacing separate Roles/Permissions tabs |
+| `PermissionMatrix.tsx` | Main matrix grid component with sticky headers |
+| `PermissionMatrixCell.tsx` | Individual toggle cell with override indicator |
+| `PermissionMatrixRow.tsx` | Permission row with category grouping |
+| `PermissionMatrixHeader.tsx` | Role column header with actions dropdown |
+| `RoleQuickEditSheet.tsx` | Slide-out for editing role details |
+| `BulkPermissionActions.tsx` | Toolbar for bulk operations |
 
-**Table Structure:**
-| Column | Type | Description |
-|--------|------|-------------|
-| id | UUID | Primary key |
-| action_type | TEXT | Type of action (role_created, role_updated, role_deleted, permission_created, permission_updated, permission_deleted, permission_granted, permission_revoked) |
-| target_type | TEXT | What was changed (role, permission, role_permission) |
-| target_id | UUID | ID of the role or permission affected |
-| target_name | TEXT | Name/key of the target for readability |
-| actor_id | UUID | User who made the change |
-| old_value | JSONB | Previous state (for updates) |
-| new_value | JSONB | New state (for creates/updates) |
-| created_at | TIMESTAMPTZ | When the change occurred |
+### Enhanced Components
 
-### Database Triggers
+| Component | Enhancement |
+|-----------|-------------|
+| `UserFormSheet.tsx` | Use dynamic roles instead of hardcoded options |
+| `RoleFormDialog.tsx` | Add "Clone from" dropdown to copy another role's permissions |
+| `PermissionFormDialog.tsx` | Add "Assign to roles" multi-select |
 
-Create triggers on the following tables to automatically log changes:
-1. `roles` - Log role CRUD operations
-2. `permissions` - Log permission CRUD operations
-3. `role_permissions` - Log permission grants/revokes
+---
 
-### UI Component
+## Detailed UI Specifications
 
-Create an "Audit Log" tab in the Admin section to view the history:
-- Filter by action type, target type, or actor
-- Search by role/permission name
-- Paginated list with timestamps and actor names
-- Expandable rows to show old/new value details
+### Permission Matrix Grid
+
+**Headers:**
+- Role names displayed horizontally with permission count badge
+- System roles marked with lock icon
+- Hover shows role description
+- Click opens quick-edit sheet
+- Dropdown menu for Edit, Clone, Reset, Delete
+
+**Rows:**
+- Grouped by category (collapsible)
+- Permission label with hover tooltip for description
+- System permissions marked with lock
+- Row actions appear on hover (edit, delete)
+
+**Cells:**
+- Checkbox for toggle
+- Amber dot overlay when overridden from default
+- Disabled state for system-protected combinations
+- Click to toggle, with optimistic update
+
+**Category Headers:**
+- Full-width row spanning all columns
+- Collapse/expand toggle
+- Category badge with count (e.g., "Modules 4/7")
+
+### Keyboard Navigation
+
+- Arrow keys to move between cells
+- Space/Enter to toggle
+- Tab to move to next row
+- Escape to deselect
+
+### Responsive Behavior
+
+- On smaller screens, switch to "Role Detail View" (current design)
+- Matrix view requires minimum 1024px width
+- Horizontal scroll for many roles on medium screens
+
+---
+
+## User Form Enhancement
+
+Update `UserFormSheet.tsx` to dynamically load roles:
+
+```text
+┌──────────────────────────────────────┐
+│ Role                                 │
+├──────────────────────────────────────┤
+│ [Select role...            ▼]        │
+│ ┌──────────────────────────────────┐ │
+│ │ ● Admin         (System) 🔒     │ │
+│ │ ● Labor Team    (System)        │ │
+│ │   Leadership                    │ │
+│ │   CNO                           │ │
+│ │   Director                      │ │
+│ │   Manager                       │ │
+│ │   Custom Role                   │ │
+│ └──────────────────────────────────┘ │
+│                                      │
+│ Selected: Admin                      │
+│ 21 permissions enabled               │
+└──────────────────────────────────────┘
+```
 
 ---
 
 ## Implementation Steps
 
-### Step 1: Fix Missing Approvals Category
-**File:** `src/pages/admin/RolesManagement.tsx`
-- Add a 5th `CompactPermissionCard` for the Approvals category
-- Adjust the grid layout to fit all 5 categories cleanly
+### Phase 1: Combine Roles & Permissions Tab
+1. Create new `AccessControlPage.tsx` component
+2. Add view mode toggle (Matrix / Detail / List)
+3. Update `AdminPage.tsx` to use single "Access Control" tab instead of Roles + Permissions
 
-### Step 2: Create Audit Log Database Schema
-**Database Migration:**
-- Create `rbac_audit_log` table
-- Set up RLS policies (admins can view all, authenticated users can view their own actions)
-- Enable realtime for live updates
+### Phase 2: Build Permission Matrix
+1. Create `PermissionMatrix.tsx` with virtualized scrolling
+2. Implement sticky headers (role names) and sticky column (permission names)
+3. Add collapsible category groupings
+4. Implement cell toggle with optimistic updates
+5. Add override indicators and tooltips
 
-### Step 3: Create Database Triggers
-**Database Migration:**
-- Create trigger function `log_rbac_change()`
-- Attach triggers to `roles`, `permissions`, and `role_permissions` tables
-- Handle INSERT, UPDATE, DELETE events
+### Phase 3: Enhance Quick Actions
+1. Add role column header dropdowns (Edit, Clone, Reset, Delete)
+2. Add permission row actions on hover
+3. Implement "Clone Role" functionality
+4. Add bulk permission operations toolbar
 
-### Step 4: Create Audit Log Hook
-**New File:** `src/hooks/useRBACauditLog.ts`
-- Fetch paginated audit log entries
-- Filter by action type, target type, date range
-- Real-time subscription for new entries
+### Phase 4: Update User Management
+1. Modify `UserFormSheet.tsx` to fetch dynamic roles
+2. Replace hardcoded RadioGroup with dynamic Select
+3. Show permission count for each role option
+4. Add multi-role support (if needed in future)
 
-### Step 5: Create Audit Log UI
-**New File:** `src/pages/admin/RBACAuditLog.tsx`
-- Table view with columns: Timestamp, Action, Target, Changed By, Details
-- Filter controls for action type and date range
-- Expandable rows showing before/after JSON diff
-
-### Step 6: Add Audit Log Tab to Admin
-**File:** `src/pages/admin/AdminPage.tsx`
-- Add new "Audit Log" tab to the admin navigation
-- Import and render the `RBACAuditLog` component
+### Phase 5: Polish & Accessibility
+1. Add keyboard navigation
+2. Implement responsive breakpoints
+3. Add loading states and skeletons
+4. Test with screen readers
 
 ---
 
 ## Files Summary
 
 ### New Files
+
 | File | Purpose |
 |------|---------|
-| `src/hooks/useRBACAuditLog.ts` | Hook for fetching and subscribing to audit log entries |
-| `src/pages/admin/RBACAuditLog.tsx` | UI component for viewing the audit log |
+| `src/pages/admin/AccessControlPage.tsx` | Combined roles & permissions management |
+| `src/components/admin/PermissionMatrix.tsx` | Main matrix grid component |
+| `src/components/admin/PermissionMatrixCell.tsx` | Individual toggle cell |
+| `src/components/admin/RoleColumnHeader.tsx` | Role column header with actions |
+| `src/components/admin/PermissionCategoryRow.tsx` | Collapsible category header |
+| `src/components/admin/RoleQuickEditSheet.tsx` | Slide-out for role editing |
 
 ### Modified Files
+
 | File | Change |
 |------|--------|
-| `src/pages/admin/RolesManagement.tsx` | Add Approvals category to permission grid |
-| `src/pages/admin/AdminPage.tsx` | Add Audit Log tab |
+| `src/pages/admin/AdminPage.tsx` | Replace Roles + Permissions tabs with single Access Control tab |
+| `src/components/admin/UserFormSheet.tsx` | Load dynamic roles, replace hardcoded options |
+| `src/components/admin/RoleFormDialog.tsx` | Add "Clone from" functionality |
+| `src/hooks/useDynamicRoles.ts` | Add `cloneRole` mutation |
 
-### Database Migrations
-1. Create `rbac_audit_log` table with RLS policies
-2. Create trigger function and attach triggers to RBAC tables
+### Files to Remove (Optional)
+
+| File | Reason |
+|------|--------|
+| `src/pages/admin/RolesManagement.tsx` | Replaced by AccessControlPage |
+| `src/pages/admin/PermissionsManagement.tsx` | Replaced by AccessControlPage |
 
 ---
 
-## Technical Details
+## Visual Design Notes
 
-### Trigger Function Logic
+1. **Matrix cells**: Use subtle grid lines with `border-border/30`
+2. **Override indicator**: Small amber dot in top-right corner of cell
+3. **System badge**: Muted outline badge with lock icon
+4. **Category headers**: Slightly darker background `bg-muted/50`
+5. **Hover state**: Highlight entire row and column on cell hover
+6. **Focus state**: Blue ring around focused cell for keyboard nav
 
-The trigger function will:
-1. Capture the OLD and NEW row values
-2. Determine the action type (INSERT/UPDATE/DELETE)
-3. Get the current user ID from auth context
-4. Insert a record into `rbac_audit_log`
+---
 
-```text
-log_rbac_change() trigger:
-  IF TG_OP = 'INSERT' THEN
-    → action_type = 'created'
-    → old_value = NULL
-    → new_value = row_to_json(NEW)
-  ELSIF TG_OP = 'UPDATE' THEN
-    → action_type = 'updated'
-    → old_value = row_to_json(OLD)
-    → new_value = row_to_json(NEW)
-  ELSIF TG_OP = 'DELETE' THEN
-    → action_type = 'deleted'
-    → old_value = row_to_json(OLD)
-    → new_value = NULL
-  END IF
-```
+## Technical Considerations
 
-### Audit Log Entry Types
+### Performance
 
-| action_type | target_type | Triggered By |
-|-------------|-------------|--------------|
-| role_created | role | INSERT on roles |
-| role_updated | role | UPDATE on roles |
-| role_deleted | role | DELETE on roles |
-| permission_created | permission | INSERT on permissions |
-| permission_updated | permission | UPDATE on permissions |
-| permission_deleted | permission | DELETE on permissions |
-| permission_granted | role_permission | INSERT on role_permissions |
-| permission_revoked | role_permission | DELETE on role_permissions |
-| permission_changed | role_permission | UPDATE on role_permissions |
+- Use virtualization for large permission/role sets
+- Implement optimistic updates for cell toggles
+- Batch permission changes for bulk operations
+- Memoize cell components to prevent re-renders
 
-### Security Considerations
+### Data Structure
 
-1. **RLS Policy:** Only admins can read the full audit log
-2. **No DELETE:** Audit logs should never be deleted (no DELETE policy)
-3. **System Context:** Triggers run in system context to ensure logging even if user lacks permissions
-4. **Actor Tracking:** Always capture the user who made the change via `auth.uid()`
+Permission categories are already defined in `rbacConfig.ts`. The matrix will:
+1. Fetch all permissions from database (dynamic)
+2. Fetch all roles from database (dynamic)  
+3. Fetch all role_permissions mappings
+4. Compute effective permissions (defaults + overrides)
+
+### Backwards Compatibility
+
+- Keep existing hooks (`useRolePermissions`, `useDynamicRoles`, `usePermissions`)
+- The matrix is a UI-only change; backend logic remains the same
+- Existing `RolesManagement.tsx` can be kept as "Detail View" mode
 
