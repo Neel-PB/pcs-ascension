@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, LayoutGroup } from "framer-motion";
+import { useDepartmentCategory } from "@/hooks/useDepartmentCategory";
 import { Download, Maximize2, ChevronRight } from "lucide-react";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import {
@@ -349,10 +350,12 @@ const organizeDataIntoGroups = (
 
 const GroupRow = ({ 
   group, 
-  onToggle 
+  onToggle,
+  staffCategory = 'nursing'
 }: { 
   group: GroupedVarianceData; 
   onToggle?: (id: string) => void;
+  staffCategory?: 'nursing' | 'non-nursing';
 }) => {
   const { isExpanded, data, id, name, children } = group;
   
@@ -373,34 +376,48 @@ const GroupRow = ({
           <span className="text-foreground">{name}</span>
         </div>
       </TableCell>
-      <TableCell className="text-center font-semibold border-l-2 border-muted-foreground/30 w-16 min-w-16">{data.targetDay?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold w-16 min-w-16">{data.targetNight?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold w-16 min-w-16">{data.targetTotal?.toFixed(1) || "0.0"}</TableCell>
+      {/* Target FTEs - only for Nursing */}
+      {staffCategory === 'nursing' && (
+        <>
+          <TableCell className="text-center font-semibold border-l-2 border-muted-foreground/30 w-16 min-w-16">{data.targetDay?.toFixed(1) || "0.0"}</TableCell>
+          <TableCell className="text-center font-semibold w-16 min-w-16">{data.targetNight?.toFixed(1) || "0.0"}</TableCell>
+          <TableCell className="text-center font-semibold w-16 min-w-16">{data.targetTotal?.toFixed(1) || "0.0"}</TableCell>
+        </>
+      )}
+      {/* Hired FTEs - always shown */}
       <TableCell className="text-center font-semibold border-l-2 border-muted-foreground/30 w-16 min-w-16">{data.hiredDay?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold w-16 min-w-16">{data.hiredNight?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold w-16 min-w-16">{data.hiredTotal?.toFixed(1) || "0.0"}</TableCell>
+      {/* Open Reqs - always shown */}
       <TableCell className="text-center font-semibold border-l-2 border-muted-foreground/30 w-16 min-w-16">{data.reqsDay?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold w-16 min-w-16">{data.reqsNight?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold w-16 min-w-16">{data.reqsTotal?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className={cn("text-center font-semibold border-l-2 border-muted-foreground/30 w-16 min-w-16", getVarianceColor(data.varianceDay))}>
-        {data.varianceDay?.toFixed(1) || "0.0"}
-      </TableCell>
-      <TableCell className={cn("text-center font-semibold w-16 min-w-16", getVarianceColor(data.varianceNight))}>
-        {data.varianceNight?.toFixed(1) || "0.0"}
-      </TableCell>
-      <TableCell className={cn("text-center font-semibold w-16 min-w-16", getVarianceColor(data.varianceTotal))}>
-        {data.varianceTotal?.toFixed(1) || "0.0"}
-      </TableCell>
+      {/* Variance - only for Nursing */}
+      {staffCategory === 'nursing' && (
+        <>
+          <TableCell className={cn("text-center font-semibold border-l-2 border-muted-foreground/30 w-16 min-w-16", getVarianceColor(data.varianceDay))}>
+            {data.varianceDay?.toFixed(1) || "0.0"}
+          </TableCell>
+          <TableCell className={cn("text-center font-semibold w-16 min-w-16", getVarianceColor(data.varianceNight))}>
+            {data.varianceNight?.toFixed(1) || "0.0"}
+          </TableCell>
+          <TableCell className={cn("text-center font-semibold w-16 min-w-16", getVarianceColor(data.varianceTotal))}>
+            {data.varianceTotal?.toFixed(1) || "0.0"}
+          </TableCell>
+        </>
+      )}
     </TableRow>
   );
 };
 
 const SkillRow = ({
   skill, 
-  isChildRow 
+  isChildRow,
+  staffCategory = 'nursing'
 }: { 
   skill: VarianceData; 
   isChildRow?: boolean;
+  staffCategory?: 'nursing' | 'non-nursing';
 }) => {
   return (
     <TableRow 
@@ -415,53 +432,84 @@ const SkillRow = ({
       )}>
         {skill.skill}
       </TableCell>
-      <TableCell className="text-center border-l-2 border-muted-foreground/30 w-16 min-w-16">{skill.targetDay?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center w-16 min-w-16">{skill.targetNight?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center w-16 min-w-16">{skill.targetTotal?.toFixed(1) || "0.0"}</TableCell>
+      {/* Target FTEs - only for Nursing */}
+      {staffCategory === 'nursing' && (
+        <>
+          <TableCell className="text-center border-l-2 border-muted-foreground/30 w-16 min-w-16">{skill.targetDay?.toFixed(1) || "0.0"}</TableCell>
+          <TableCell className="text-center w-16 min-w-16">{skill.targetNight?.toFixed(1) || "0.0"}</TableCell>
+          <TableCell className="text-center w-16 min-w-16">{skill.targetTotal?.toFixed(1) || "0.0"}</TableCell>
+        </>
+      )}
+      {/* Hired FTEs - always shown */}
       <TableCell className="text-center border-l-2 border-muted-foreground/30 w-16 min-w-16">{skill.hiredDay?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center w-16 min-w-16">{skill.hiredNight?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center w-16 min-w-16">{skill.hiredTotal?.toFixed(1) || "0.0"}</TableCell>
+      {/* Open Reqs - always shown */}
       <TableCell className="text-center border-l-2 border-muted-foreground/30 w-16 min-w-16">{skill.reqsDay?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center w-16 min-w-16">{skill.reqsNight?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center w-16 min-w-16">{skill.reqsTotal?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className={cn("text-center border-l-2 border-muted-foreground/30 w-16 min-w-16", getVarianceColor(skill.varianceDay))}>
-        {skill.varianceDay?.toFixed(1) || "0.0"}
-      </TableCell>
-      <TableCell className={cn("text-center w-16 min-w-16", getVarianceColor(skill.varianceNight))}>
-        {skill.varianceNight?.toFixed(1) || "0.0"}
-      </TableCell>
-      <TableCell className={cn("text-center w-16 min-w-16", getVarianceColor(skill.varianceTotal))}>
-        {skill.varianceTotal?.toFixed(1) || "0.0"}
-      </TableCell>
+      {/* Variance - only for Nursing */}
+      {staffCategory === 'nursing' && (
+        <>
+          <TableCell className={cn("text-center border-l-2 border-muted-foreground/30 w-16 min-w-16", getVarianceColor(skill.varianceDay))}>
+            {skill.varianceDay?.toFixed(1) || "0.0"}
+          </TableCell>
+          <TableCell className={cn("text-center w-16 min-w-16", getVarianceColor(skill.varianceNight))}>
+            {skill.varianceNight?.toFixed(1) || "0.0"}
+          </TableCell>
+          <TableCell className={cn("text-center w-16 min-w-16", getVarianceColor(skill.varianceTotal))}>
+            {skill.varianceTotal?.toFixed(1) || "0.0"}
+          </TableCell>
+        </>
+      )}
     </TableRow>
   );
 };
 
-const TotalRow = ({ data }: { data: VarianceData }) => {
+const TotalRow = ({ 
+  data,
+  staffCategory = 'nursing'
+}: { 
+  data: VarianceData;
+  staffCategory?: 'nursing' | 'non-nursing';
+}) => {
   return (
     <TableRow className="font-semibold bg-muted/20 border-t-2">
       <TableCell className="font-semibold whitespace-nowrap">{data.skill}</TableCell>
-      <TableCell className="text-center font-semibold border-l-2 border-muted-foreground/30 w-16 min-w-16">{data.targetDay?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold w-16 min-w-16">{data.targetNight?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className="text-center font-semibold w-16 min-w-16">{data.targetTotal?.toFixed(1) || "0.0"}</TableCell>
+      {/* Target FTEs - only for Nursing */}
+      {staffCategory === 'nursing' && (
+        <>
+          <TableCell className="text-center font-semibold border-l-2 border-muted-foreground/30 w-16 min-w-16">{data.targetDay?.toFixed(1) || "0.0"}</TableCell>
+          <TableCell className="text-center font-semibold w-16 min-w-16">{data.targetNight?.toFixed(1) || "0.0"}</TableCell>
+          <TableCell className="text-center font-semibold w-16 min-w-16">{data.targetTotal?.toFixed(1) || "0.0"}</TableCell>
+        </>
+      )}
+      {/* Hired FTEs - always shown */}
       <TableCell className="text-center font-semibold border-l-2 border-muted-foreground/30 w-16 min-w-16">{data.hiredDay?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold w-16 min-w-16">{data.hiredNight?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold w-16 min-w-16">{data.hiredTotal?.toFixed(1) || "0.0"}</TableCell>
+      {/* Open Reqs - always shown */}
       <TableCell className="text-center font-semibold border-l-2 border-muted-foreground/30 w-16 min-w-16">{data.reqsDay?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold w-16 min-w-16">{data.reqsNight?.toFixed(1) || "0.0"}</TableCell>
       <TableCell className="text-center font-semibold w-16 min-w-16">{data.reqsTotal?.toFixed(1) || "0.0"}</TableCell>
-      <TableCell className={cn("text-center font-semibold border-l-2 border-muted-foreground/30 w-16 min-w-16", getVarianceColor(data.varianceDay))}>
-        {data.varianceDay?.toFixed(1) || "0.0"}
-      </TableCell>
-      <TableCell className={cn("text-center font-semibold w-16 min-w-16", getVarianceColor(data.varianceNight))}>
-        {data.varianceNight?.toFixed(1) || "0.0"}
-      </TableCell>
-      <TableCell className={cn("text-center font-semibold w-16 min-w-16", getVarianceColor(data.varianceTotal))}>
-        {data.varianceTotal?.toFixed(1) || "0.0"}
-      </TableCell>
+      {/* Variance - only for Nursing */}
+      {staffCategory === 'nursing' && (
+        <>
+          <TableCell className={cn("text-center font-semibold border-l-2 border-muted-foreground/30 w-16 min-w-16", getVarianceColor(data.varianceDay))}>
+            {data.varianceDay?.toFixed(1) || "0.0"}
+          </TableCell>
+          <TableCell className={cn("text-center font-semibold w-16 min-w-16", getVarianceColor(data.varianceNight))}>
+            {data.varianceNight?.toFixed(1) || "0.0"}
+          </TableCell>
+          <TableCell className={cn("text-center font-semibold w-16 min-w-16", getVarianceColor(data.varianceTotal))}>
+            {data.varianceTotal?.toFixed(1) || "0.0"}
+          </TableCell>
+        </>
+      )}
     </TableRow>
   );
 };
+
 
 interface FTESkillShiftTableProps {
   data: VarianceData[];
@@ -469,6 +517,7 @@ interface FTESkillShiftTableProps {
   onToggleGroup?: (groupId: string) => void;
   skillGroups?: SkillGroup[];
   viewMode?: 'planned' | 'active';
+  staffCategory?: 'nursing' | 'non-nursing';
 }
 
 const FTESkillShiftTable = ({ 
@@ -476,7 +525,8 @@ const FTESkillShiftTable = ({
   expandedGroups, 
   onToggleGroup,
   skillGroups: groups,
-  viewMode = 'planned'
+  viewMode = 'planned',
+  staffCategory = 'nursing'
 }: FTESkillShiftTableProps) => {
   const displayData = groups && expandedGroups
     ? organizeDataIntoGroups(data, groups, expandedGroups)
@@ -488,25 +538,35 @@ const FTESkillShiftTable = ({
         <TableHeader>
           <TableRow>
             <TableHead className="font-semibold text-foreground w-32">Skills</TableHead>
-            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30 border-l-2 border-muted-foreground/30">
-              Target FTEs
-            </TableHead>
+            {/* Target FTEs - only for Nursing */}
+            {staffCategory === 'nursing' && (
+              <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30 border-l-2 border-muted-foreground/30">
+                Target FTEs
+              </TableHead>
+            )}
             <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30 border-l-2 border-muted-foreground/30">
               {viewMode === 'active' ? 'Active FTEs' : 'Hired FTEs'}
             </TableHead>
             <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30 border-l-2 border-muted-foreground/30">
               Open Req FTEs
             </TableHead>
-            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30 border-l-2 border-muted-foreground/30">
-              Variance
-            </TableHead>
+            {/* Variance - only for Nursing */}
+            {staffCategory === 'nursing' && (
+              <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30 border-l-2 border-muted-foreground/30">
+                Variance
+              </TableHead>
+            )}
           </TableRow>
           <TableRow>
             <TableHead></TableHead>
-            {/* Target FTEs */}
-            <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30 w-16 min-w-16">Day</TableHead>
-            <TableHead className="text-center text-xs w-16 min-w-16">Night</TableHead>
-            <TableHead className="text-center text-xs w-16 min-w-16">Total</TableHead>
+            {/* Target FTEs sub-headers - only for Nursing */}
+            {staffCategory === 'nursing' && (
+              <>
+                <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30 w-16 min-w-16">Day</TableHead>
+                <TableHead className="text-center text-xs w-16 min-w-16">Night</TableHead>
+                <TableHead className="text-center text-xs w-16 min-w-16">Total</TableHead>
+              </>
+            )}
             {/* Hired FTEs */}
             <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30 w-16 min-w-16">Day</TableHead>
             <TableHead className="text-center text-xs w-16 min-w-16">Night</TableHead>
@@ -515,10 +575,14 @@ const FTESkillShiftTable = ({
             <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30 w-16 min-w-16">Day</TableHead>
             <TableHead className="text-center text-xs w-16 min-w-16">Night</TableHead>
             <TableHead className="text-center text-xs w-16 min-w-16">Total</TableHead>
-            {/* Variance */}
-            <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30 w-16 min-w-16">Day</TableHead>
-            <TableHead className="text-center text-xs w-16 min-w-16">Night</TableHead>
-            <TableHead className="text-center text-xs w-16 min-w-16">Total</TableHead>
+            {/* Variance sub-headers - only for Nursing */}
+            {staffCategory === 'nursing' && (
+              <>
+                <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30 w-16 min-w-16">Day</TableHead>
+                <TableHead className="text-center text-xs w-16 min-w-16">Night</TableHead>
+                <TableHead className="text-center text-xs w-16 min-w-16">Total</TableHead>
+              </>
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -529,6 +593,7 @@ const FTESkillShiftTable = ({
                   key={row.id}
                   group={row}
                   onToggle={onToggleGroup}
+                  staffCategory={staffCategory}
                 />
               );
             }
@@ -539,6 +604,7 @@ const FTESkillShiftTable = ({
                   key={row.id}
                   skill={row.data}
                   isChildRow={groups && expandedGroups ? true : false}
+                  staffCategory={staffCategory}
                 />
               );
             }
@@ -548,6 +614,7 @@ const FTESkillShiftTable = ({
                 <TotalRow
                   key={row.id}
                   data={row.data}
+                  staffCategory={staffCategory}
                 />
               );
             }
@@ -560,10 +627,28 @@ const FTESkillShiftTable = ({
   );
 };
 
-export default function PositionPlanning() {
+interface PositionPlanningProps {
+  selectedDepartment?: string;
+}
+
+export default function PositionPlanning({ selectedDepartment }: PositionPlanningProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<'planned' | 'active'>('planned');
+  const [staffCategory, setStaffCategory] = useState<'nursing' | 'non-nursing'>('nursing');
+  
+  // Get department's nursing status
+  const { isNursing: departmentIsNursing } = useDepartmentCategory(selectedDepartment ?? null);
+  
+  // Determine if a specific department is selected (not "all-departments")
+  const isDepartmentSelected = selectedDepartment && selectedDepartment !== 'all-departments';
+  
+  // Auto-set category when department changes
+  useEffect(() => {
+    if (isDepartmentSelected && departmentIsNursing !== null) {
+      setStaffCategory(departmentIsNursing ? 'nursing' : 'non-nursing');
+    }
+  }, [isDepartmentSelected, departmentIsNursing]);
 
   // Apply data variation when in "Active" mode
   const displayVarianceData = useMemo(() => {
@@ -753,6 +838,95 @@ export default function PositionPlanning() {
               </LayoutGroup>
             </div>
           </motion.div>
+
+          {/* Nursing/Non-Nursing Toggle */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
+            <div className="inline-flex items-center justify-center rounded-xl bg-background p-1 shadow-soft text-muted-foreground">
+              <LayoutGroup>
+                <div className="flex gap-0.5">
+                  {/* Nursing button */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <motion.button
+                        onClick={() => !isDepartmentSelected && setStaffCategory('nursing')}
+                        disabled={!!isDepartmentSelected}
+                        className={cn(
+                          "relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none",
+                          isDepartmentSelected && "opacity-50 cursor-not-allowed"
+                        )}
+                        whileHover={!isDepartmentSelected ? { scale: 1.02 } : undefined}
+                        whileTap={!isDepartmentSelected ? { scale: 0.98 } : undefined}
+                      >
+                        {staffCategory === 'nursing' && (
+                          <motion.div
+                            layoutId="categoryIndicator"
+                            className="absolute inset-0 bg-gradient-primary rounded-md"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                          />
+                        )}
+                        <span className={cn(
+                          "relative z-10 transition-colors",
+                          staffCategory === 'nursing' ? "text-primary-foreground" : "text-muted-foreground"
+                        )}>
+                          Nursing
+                        </span>
+                      </motion.button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-sm">
+                        <span className="font-semibold">Nursing:</span> Clinical departments with Target FTEs, Hired, Open Reqs, and Variance analysis
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  {/* Non-Nursing button */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <motion.button
+                        onClick={() => !isDepartmentSelected && setStaffCategory('non-nursing')}
+                        disabled={!!isDepartmentSelected}
+                        className={cn(
+                          "relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none",
+                          isDepartmentSelected && "opacity-50 cursor-not-allowed"
+                        )}
+                        whileHover={!isDepartmentSelected ? { scale: 1.02 } : undefined}
+                        whileTap={!isDepartmentSelected ? { scale: 0.98 } : undefined}
+                      >
+                        {staffCategory === 'non-nursing' && (
+                          <motion.div
+                            layoutId="categoryIndicator"
+                            className="absolute inset-0 bg-gradient-primary rounded-md"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                          />
+                        )}
+                        <span className={cn(
+                          "relative z-10 transition-colors",
+                          staffCategory === 'non-nursing' ? "text-primary-foreground" : "text-muted-foreground"
+                        )}>
+                          Non-Nursing
+                        </span>
+                      </motion.button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-sm">
+                        <span className="font-semibold">Non-Nursing:</span> Administrative/support departments showing Hired and Open Reqs only
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </LayoutGroup>
+            </div>
+          </motion.div>
         </div>
 
         <div className="flex items-center gap-4">
@@ -816,6 +990,7 @@ export default function PositionPlanning() {
             onToggleGroup={toggleGroup}
             skillGroups={skillGroups}
             viewMode={viewMode}
+            staffCategory={staffCategory}
           />
       </motion.div>
 
@@ -919,6 +1094,7 @@ export default function PositionPlanning() {
               onToggleGroup={toggleGroup}
               skillGroups={skillGroups}
               viewMode={viewMode}
+              staffCategory={staffCategory}
             />
           </div>
         </DialogContent>
