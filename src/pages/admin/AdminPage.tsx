@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { motion, LayoutGroup, AnimatePresence } from "framer-motion";
-import { Shield, Upload, Users, Lock, Settings, MessageSquare, History } from "lucide-react";
+import { Shield, Upload, Users, Settings, MessageSquare, History } from "lucide-react";
 import { useRBAC } from "@/hooks/useRBAC";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import DataImportPage from "./DataImportPage";
 import UsersManagement from "./UsersManagement";
-import RolesManagement from "./RolesManagement";
-import PermissionsManagement from "./PermissionsManagement";
+import AccessControlPage from "./AccessControlPage";
 import RBACAuditLog from "./RBACAuditLog";
 import { FeedComposer } from "@/components/messaging/FeedComposer";
 import { FeedHistory } from "@/components/feed/FeedHistory";
@@ -25,8 +24,7 @@ export default function AdminPage() {
     { id: "data-import", label: "Data Import", icon: Upload },
     { id: "users", label: "Users", icon: Users },
     { id: "feed", label: "Feed", icon: MessageSquare },
-    { id: "roles", label: "Roles", icon: Shield },
-    { id: "permissions", label: "Permissions", icon: Lock },
+    { id: "access-control", label: "Access Control", icon: Shield },
     { id: "audit-log", label: "Audit Log", icon: History },
     { id: "settings", label: "Settings", icon: Settings },
   ];
@@ -137,9 +135,7 @@ export default function AdminPage() {
               </div>
             )}
           
-          {activeTab === "roles" && <RolesManagement />}
-          
-          {activeTab === "permissions" && <PermissionsManagement />}
+          {activeTab === "access-control" && <AccessControlPage />}
 
           {activeTab === "audit-log" && <RBACAuditLog />}
           
