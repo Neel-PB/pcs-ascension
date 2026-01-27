@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, LayoutGroup, AnimatePresence } from "framer-motion";
-import { Shield, Upload, Users, Lock, Settings, MessageSquare } from "lucide-react";
+import { Shield, Upload, Users, Lock, Settings, MessageSquare, History } from "lucide-react";
 import { useRBAC } from "@/hooks/useRBAC";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ import DataImportPage from "./DataImportPage";
 import UsersManagement from "./UsersManagement";
 import RolesManagement from "./RolesManagement";
 import PermissionsManagement from "./PermissionsManagement";
+import RBACAuditLog from "./RBACAuditLog";
 import { FeedComposer } from "@/components/messaging/FeedComposer";
 import { FeedHistory } from "@/components/feed/FeedHistory";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ export default function AdminPage() {
     { id: "feed", label: "Feed", icon: MessageSquare },
     { id: "roles", label: "Roles", icon: Shield },
     { id: "permissions", label: "Permissions", icon: Lock },
+    { id: "audit-log", label: "Audit Log", icon: History },
     { id: "settings", label: "Settings", icon: Settings },
   ];
 
@@ -138,8 +140,10 @@ export default function AdminPage() {
           {activeTab === "roles" && <RolesManagement />}
           
           {activeTab === "permissions" && <PermissionsManagement />}
+
+          {activeTab === "audit-log" && <RBACAuditLog />}
           
-{activeTab === "settings" && (
+          {activeTab === "settings" && (
             <Tabs defaultValue="ui-settings" className="space-y-6">
               <div className="w-full max-w-md">
                 <TabsList className="grid w-full grid-cols-2">
