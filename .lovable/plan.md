@@ -1,63 +1,113 @@
 
-
-# Rename Access Control to RBAC and Set Default View
+# Unify Roles and Permissions into Single Container
 
 ## Overview
 
-Rename the "Access Control" tab and page header to "RBAC" (Role-Based Access Control) and make the Detail view the default layout instead of Matrix view.
+Wrap the role list sidebar and permission details panel into a single bordered container with a cohesive layout, matching the app's unified card-based design pattern.
+
+---
+
+## Current State
+
+```text
+┌─────────────┐     ┌───────────────────────────┐
+│   ROLES     │ gap │  Permission Details       │
+│   (no border)    │  (has border)             │
+└─────────────┘     └───────────────────────────┘
+```
+
+The roles list has no visual container, while the permission details panel has its own border. This creates a disconnected appearance.
+
+---
+
+## Proposed Design
+
+```text
+┌───────────────────────────────────────────────┐
+│  ┌───────────┐ │  Permission Details Header  │
+│  │  ROLES    │ │  ─────────────────────────  │
+│  │  Admin    │ │  Modules    Settings        │
+│  │  Manager  │ │  ...        ...             │
+│  │  Director │ │  Sub-filters Filters        │
+│  └───────────┘ │  ...        ...             │
+└───────────────────────────────────────────────┘
+```
+
+A single outer container with:
+- Vertical divider separating roles list from permissions
+- Consistent background and border styling
+- Both sections feel like one unified component
 
 ---
 
 ## Changes Required
 
-### File 1: `src/pages/admin/AdminPage.tsx`
+### File: `src/components/admin/RoleDetailView.tsx`
 
-**Change tab label (line 27):**
+**Update the main container (lines 307-308):**
 ```tsx
 // FROM:
-{ id: "access-control", label: "Access Control", icon: Shield },
+<div className="flex gap-4">
 
 // TO:
-{ id: "access-control", label: "RBAC", icon: Shield },
+<div className="flex border rounded-lg bg-card overflow-hidden">
 ```
+
+**Update the roles sidebar (lines 309-327):**
+```tsx
+// FROM:
+<div className="w-48 shrink-0 space-y-1">
+  <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-2 mb-2">
+    Roles
+  </h4>
+  <div className="space-y-1">
+    ...
+  </div>
+</div>
+
+// TO:
+<div className="w-52 shrink-0 border-r bg-muted/20">
+  <div className="p-3 border-b bg-muted/30">
+    <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      Roles
+    </h4>
+  </div>
+  <div className="p-2 space-y-1">
+    ...
+  </div>
+</div>
+```
+
+**Update the permission details panel (line 331):**
+```tsx
+// FROM:
+<div className="flex-1 border rounded-lg">
+
+// TO:
+<div className="flex-1">
+```
+Remove the individual border since the parent container now has it.
+
+**Update "no role selected" state (lines 422+):**
+Add a fallback state that also fits inside the unified container when no role is selected.
 
 ---
 
-### File 2: `src/pages/admin/AccessControlPage.tsx`
+## Visual Changes
 
-**Change default view mode (line 25):**
-```tsx
-// FROM:
-const [viewMode, setViewMode] = useState<ViewMode>("matrix");
-
-// TO:
-const [viewMode, setViewMode] = useState<ViewMode>("detail");
-```
-
-**Update page header title (line 88):**
-```tsx
-// FROM:
-<h3 className="text-lg font-semibold">Access Control</h3>
-
-// TO:
-<h3 className="text-lg font-semibold">RBAC</h3>
-```
-
----
-
-## Files Summary
-
-| File | Change |
-|------|--------|
-| `src/pages/admin/AdminPage.tsx` | Change tab label from "Access Control" to "RBAC" |
-| `src/pages/admin/AccessControlPage.tsx` | Change default view to "detail", update header to "RBAC" |
+| Element | Before | After |
+|---------|--------|-------|
+| Outer container | No border, gap-4 | Single rounded border, no gap |
+| Roles sidebar | No border, padding varies | Border-right, consistent header with bg-muted/30 |
+| Permission panel | Own border, rounded-lg | No border (inherits from parent) |
+| Roles header | Inline text | Header bar matching permission panel header style |
 
 ---
 
 ## Result
 
-- The admin navigation tab will display "RBAC" instead of "Access Control"
-- The page header will show "RBAC"
-- The Detail view (role list sidebar with permission cards) will be the default layout when opening the page
-- Users can still switch between Matrix, Detail, and List views using the toggle buttons
-
+The RBAC detail view will have a unified card appearance:
+- Single bordered container wrapping both sections
+- Vertical divider between roles and permissions
+- Matching header styles for "Roles" and the selected role name
+- Consistent with the app's card-based design pattern
