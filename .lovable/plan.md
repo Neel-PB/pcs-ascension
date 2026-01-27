@@ -1,186 +1,69 @@
 
 
-# Improve Selection Highlighting in RBAC Interface
+# Fix View Mode Toggle Highlighting
 
-## Overview
+## Problem
 
-Apply the same visual selection pattern used in the sidebar navigation to:
-1. The role list in the Detail View (left panel)
-2. The view mode toggle buttons (Matrix, Detail, List)
-
-The sidebar uses `bg-primary` with `text-primary-foreground` for selected items, creating a prominent, consistent selection indicator.
-
----
-
-## Current State
-
-### Role Selection (RoleDetailView)
-Current styling for selected role:
-```tsx
-isSelected 
-  ? "border-primary bg-primary/5 ring-1 ring-primary" 
-  : "border-transparent hover:border-border"
-```
-This uses a very subtle 5% opacity primary background, which doesn't stand out enough.
-
-### View Mode Toggle (AccessControlPage)
-Current styling uses default toggle variants:
-```tsx
-data-[state=on]:bg-accent data-[state=on]:text-accent-foreground
-```
-This uses accent color (typically gray) rather than primary, making it less prominent.
+The toggle buttons show no visible highlight because the base toggle styles (`data-[state=on]:bg-accent`) compete with our custom styles (`data-[state=on]:bg-primary`). Both have equal CSS specificity, and the base styles are winning.
 
 ---
 
 ## Solution
 
-### 1. Update Role Card Selection
-
-Match the sidebar pattern with solid primary background:
-
-| Element | Before | After |
-|---------|--------|-------|
-| Selected bg | `bg-primary/5` | `bg-primary` |
-| Selected text | Default | `text-primary-foreground` |
-| Selected border | `border-primary ring-1` | `border-transparent` (cleaner) |
-
-### 2. Update View Mode Toggle
-
-Apply custom data-state styling to use primary colors:
-
-| Element | Before | After |
-|---------|--------|-------|
-| Selected bg | `bg-accent` | `bg-primary` |
-| Selected text | `text-accent-foreground` | `text-primary-foreground` |
+Override the base toggle variant styles directly in the toggle component by adding a new `primary` variant that uses primary colors for the selected state.
 
 ---
 
 ## Implementation
 
-### File: `src/components/admin/RoleDetailView.tsx`
+### File: `src/components/ui/toggle.tsx`
 
-**Update CompactRoleCard (lines 57-64):**
+Add a new `primary` variant that overrides the `data-[state=on]` styles:
+
 ```tsx
-// FROM:
-<div
-  className={cn(
-    "w-full text-left px-3 py-2 rounded-md border transition-all flex items-center justify-between gap-2 group",
-    "hover:bg-muted/50",
-    isSelected 
-      ? "border-primary bg-primary/5 ring-1 ring-primary" 
-      : "border-transparent hover:border-border"
-  )}
->
-
-// TO:
-<div
-  className={cn(
-    "w-full text-left px-3 py-2 rounded-md transition-all flex items-center justify-between gap-2 group relative",
-    isSelected 
-      ? "bg-primary text-primary-foreground" 
-      : "hover:bg-muted/50"
-  )}
->
+const toggleVariants = cva(
+  "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-muted hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        default: "bg-transparent data-[state=on]:bg-accent data-[state=on]:text-accent-foreground",
+        outline: "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground data-[state=on]:bg-accent data-[state=on]:text-accent-foreground",
+        primary: "bg-transparent data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
+      },
+      size: {
+        default: "h-10 px-3",
+        sm: "h-9 px-2.5",
+        lg: "h-11 px-5",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  },
+);
 ```
-
-**Update role label text (line 75):**
-```tsx
-// FROM:
-<span className="font-medium text-sm truncate">{role.label}</span>
-
-// TO:
-<span className={cn(
-  "font-medium text-sm truncate",
-  isSelected ? "text-primary-foreground" : ""
-)}>{role.label}</span>
-```
-
-**Update indicator dots (lines 70-74) for visibility on primary background:**
-```tsx
-// FROM:
-{hasPendingChanges ? (
-  <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-) : overrideCount > 0 ? (
-  <span className="w-1.5 h-1.5 rounded-full bg-warning shrink-0" />
-) : null}
-
-// TO:
-{hasPendingChanges ? (
-  <span className={cn(
-    "w-1.5 h-1.5 rounded-full shrink-0",
-    isSelected ? "bg-primary-foreground" : "bg-primary"
-  )} />
-) : overrideCount > 0 ? (
-  <span className={cn(
-    "w-1.5 h-1.5 rounded-full shrink-0",
-    isSelected ? "bg-warning-foreground" : "bg-warning"
-  )} />
-) : null}
-```
-
-**Update dropdown trigger for selected state (line 82):**
-```tsx
-// FROM:
-className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-
-// TO:
-className={cn(
-  "h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity",
-  isSelected && "text-primary-foreground hover:text-primary-foreground hover:bg-primary-foreground/20"
-)}
-```
-
----
 
 ### File: `src/pages/admin/AccessControlPage.tsx`
 
-**Update ToggleGroupItem styling (lines 104, 114, 124):**
-
-Add custom class to override the default accent styling with primary:
+Update the ToggleGroup to use the new `primary` variant:
 
 ```tsx
-// FROM:
-<ToggleGroupItem value="matrix" aria-label="Matrix view" className="h-8 px-2.5">
-
-// TO:
-<ToggleGroupItem 
-  value="matrix" 
-  aria-label="Matrix view" 
-  className="h-8 px-2.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+<ToggleGroup
+  type="single"
+  value={viewMode}
+  onValueChange={(value) => value && setViewMode(value as ViewMode)}
+  className="bg-muted/50 p-0.5 rounded-md"
+  variant="primary"  // Add this prop
 >
 ```
 
-Apply the same pattern to all three ToggleGroupItems (matrix, detail, list).
+Remove the custom `data-[state=on]` classes from individual items since the variant handles it:
 
----
-
-## Visual Result
-
-### Role List (Before vs After)
-```text
-Before:                          After:
-┌──────────────────┐             ┌──────────────────┐
-│ ○ Admin          │ (subtle)    │ ████████████████ │ (prominent)
-│   Labor Mgr      │             │   Labor Mgr      │
-│   Leadership     │             │   Leadership     │
-└──────────────────┘             └──────────────────┘
-
-The selected role will have:
-- Solid primary background (matches sidebar)
-- White/light text for contrast
-- No border artifacts
-```
-
-### View Toggle (Before vs After)
-```text
-Before:                          After:
-┌────┬────┬────┐                 ┌────┬────┬────┐
-│ □  │[▦] │ ≡  │ (gray accent)   │ □  │[▦] │ ≡  │ (primary color)
-└────┴────┴────┘                 └────┴────┴────┘
-
-The selected toggle will have:
-- Primary background (not gray accent)
-- Primary-foreground text/icon color
+```tsx
+<ToggleGroupItem value="matrix" aria-label="Matrix view" className="h-8 px-2.5">
+<ToggleGroupItem value="detail" aria-label="Detail view" className="h-8 px-2.5">
+<ToggleGroupItem value="list" aria-label="List view" className="h-8 px-2.5">
 ```
 
 ---
@@ -189,6 +72,23 @@ The selected toggle will have:
 
 | File | Changes |
 |------|---------|
-| `src/components/admin/RoleDetailView.tsx` | Update CompactRoleCard with `bg-primary text-primary-foreground` when selected; adjust indicator dots and dropdown for contrast |
-| `src/pages/admin/AccessControlPage.tsx` | Add `data-[state=on]:bg-primary data-[state=on]:text-primary-foreground` to all ToggleGroupItems |
+| `src/components/ui/toggle.tsx` | Move `data-[state=on]` styles from base into variants; add new `primary` variant |
+| `src/components/ui/toggle-group.tsx` | Ensure variant prop passes through to items |
+| `src/pages/admin/AccessControlPage.tsx` | Add `variant="primary"` to ToggleGroup; remove custom data-state classes from items |
+
+---
+
+## Visual Result
+
+```text
+Before (no highlight visible):
+┌────┬────┬────┐
+│ □  │ ⊞  │ ≡  │  ← all appear same gray
+└────┴────┴────┘
+
+After (selected view highlighted):
+┌────┬────┬─────┐
+│ □  │ ⊞  │[≡] │  ← selected has primary blue background
+└────┴────┴─────┘
+```
 
