@@ -5,9 +5,10 @@ import { EditableTable } from '@/components/editable-table/EditableTable';
 import { createVolumeOverrideColumns, VolumeOverrideRow } from '@/config/volumeOverrideColumns';
 import { useVolumeOverrides, useUpsertVolumeOverride, useDeleteVolumeOverride } from '@/hooks/useVolumeOverrides';
 import { useHistoricalVolumeAnalysis, useVolumeOverrideConfig } from '@/hooks/useHistoricalVolumeAnalysis';
-import { Database } from 'lucide-react';
+import { Database, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LogoLoader } from '@/components/ui/LogoLoader';
+import { useRBAC } from '@/hooks/useRBAC';
 
 interface SettingsTabProps {
   selectedMarket: string;
@@ -20,6 +21,8 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
   const { data: config } = useVolumeOverrideConfig();
   const upsertMutation = useUpsertVolumeOverride();
   const deleteMutation = useDeleteVolumeOverride();
+  const { hasPermission } = useRBAC();
+  const canManageOverrides = hasPermission('approvals.volume_override');
 
   // Fetch departments for the selected facility
   const { data: departments = [], isLoading: isLoadingDepartments } = useQuery({
@@ -107,6 +110,8 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
   }, [tableData]);
 
   const handleSaveVolume = async (departmentId: string, volume: number | null) => {
+    if (!canManageOverrides) return;
+    
     const row = tableData.find((r) => r.department_id === departmentId);
     if (!row) return;
 
@@ -130,6 +135,8 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
   };
 
   const handleSaveDate = async (departmentId: string, date: string | null) => {
+    if (!canManageOverrides) return;
+    
     const row = tableData.find((r) => r.department_id === departmentId);
     if (!row) return;
 
@@ -153,6 +160,7 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
   };
 
   const handleDelete = async (id: string) => {
+    if (!canManageOverrides) return;
     if (id.startsWith('dept-')) return; // No override to delete
     
     await deleteMutation.mutateAsync({ 

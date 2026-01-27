@@ -43,6 +43,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   settings: "Settings Access",
   filters: "Filter Access",
   subfilters: "Sub-filter Access",
+  approvals: "Approval Access",
 };
 
 export default function PermissionsManagement() {

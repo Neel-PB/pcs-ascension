@@ -41,6 +41,16 @@ export const PERMISSION_CATEGORIES = {
       "filters.pstat": { label: "PSTAT Filter", description: "Access to PSTAT filter" },
     },
   },
+  approvals: {
+    label: "Approval Access",
+    permissions: {
+      "approvals.positions_to_open": { label: "Approve Positions to Open", description: "Ability to approve or reject new position requests" },
+      "approvals.positions_to_close": { label: "Approve Positions to Close", description: "Ability to approve or reject position closure requests" },
+      "approvals.volume_override": { label: "Approve Volume Overrides", description: "Ability to create and modify volume overrides" },
+      "approvals.np_override": { label: "Approve NP Overrides", description: "Ability to create and modify NP overrides" },
+      "approvals.feedback": { label: "Manage Feedback Status", description: "Ability to approve, disregard, or backlog feedback items" },
+    },
+  },
 } as const;
 
 // All permission keys
@@ -48,7 +58,8 @@ export type PermissionKey =
   | keyof typeof PERMISSION_CATEGORIES.modules.permissions
   | keyof typeof PERMISSION_CATEGORIES.settings.permissions
   | keyof typeof PERMISSION_CATEGORIES.filters.permissions
-  | keyof typeof PERMISSION_CATEGORIES.subfilters.permissions;
+  | keyof typeof PERMISSION_CATEGORIES.subfilters.permissions
+  | keyof typeof PERMISSION_CATEGORIES.approvals.permissions;
 
 // Get all permission keys as array
 export const ALL_PERMISSION_KEYS: PermissionKey[] = [
@@ -56,6 +67,7 @@ export const ALL_PERMISSION_KEYS: PermissionKey[] = [
   ...Object.keys(PERMISSION_CATEGORIES.settings.permissions),
   ...Object.keys(PERMISSION_CATEGORIES.filters.permissions),
   ...Object.keys(PERMISSION_CATEGORIES.subfilters.permissions),
+  ...Object.keys(PERMISSION_CATEGORIES.approvals.permissions),
 ] as PermissionKey[];
 
 // Default role permissions

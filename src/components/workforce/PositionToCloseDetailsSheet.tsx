@@ -8,7 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PositionCommentSection } from "@/components/positions/PositionCommentSection";
-import { useEmployeesForClosureGap } from "@/hooks/useForecastPositions";
+import { useEmployeesForClosureGap, useApprovePositionToClose, useRejectPositionToClose, useRevertPositionToClose } from "@/hooks/useForecastPositions";
+import { ApprovalButtons } from "@/components/staffing/ApprovalButtons";
+import { useRBAC } from "@/hooks/useRBAC";
 
 interface PositionToCloseDetailsSheetProps {
   open: boolean;
@@ -23,8 +25,32 @@ export function PositionToCloseDetailsSheet({
 }: PositionToCloseDetailsSheetProps) {
   const [activeTab, setActiveTab] = useState("details");
   const { data: employees = [] } = useEmployeesForClosureGap(position);
+  const { hasPermission } = useRBAC();
+  const canApprove = hasPermission('approvals.positions_to_close');
+  
+  const approvePosition = useApprovePositionToClose();
+  const rejectPosition = useRejectPositionToClose();
+  const revertPosition = useRevertPositionToClose();
   
   if (!position) return null;
+
+  const handleApprove = () => {
+    if (position.status === 'approved') {
+      revertPosition.mutate(position.id);
+    } else {
+      approvePosition.mutate(position.id);
+    }
+  };
+
+  const handleReject = () => {
+    if (position.status === 'rejected') {
+      revertPosition.mutate(position.id);
+    } else {
+      rejectPosition.mutate(position.id);
+    }
+  };
+
+  const isLoading = approvePosition.isPending || rejectPosition.isPending || revertPosition.isPending;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -127,10 +153,17 @@ export function PositionToCloseDetailsSheet({
           </TabsContent>
         </Tabs>
 
-        {/* Fixed Footer with Close Button - Only on Details Tab */}
+        {/* Fixed Footer with Approval Buttons - Only on Details Tab */}
         {activeTab === "details" && (
           <div className="px-6 py-4 border-t bg-background shrink-0">
-            <div className="flex justify-end">
+            <div className="flex items-center justify-between">
+              <ApprovalButtons
+                status={position.status}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                isLoading={isLoading}
+                disabled={!canApprove}
+              />
               <Button 
                 variant="ascension" 
                 className="rounded-full"
