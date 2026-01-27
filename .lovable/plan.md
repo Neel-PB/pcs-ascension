@@ -1,59 +1,123 @@
 
-## Goal
-Make it immediately obvious which RBAC view is selected (Matrix / Detail / List) by applying the same “selected route” visual pattern (solid primary background + primary-foreground icon/text). Right now the state is changing, but the selected styling is not visually obvious for you.
+# Fix View Mode Toggle Highlighting
 
-## What’s most likely happening
-Even though we added `variant="primary"` and a `primary` toggle variant, the selected styling can still appear “not selected” if:
-- the “off” state looks too similar to the “on” state (icons remain dark; background looks unchanged), or
-- the active styling is being overridden/merged away in a way that makes it visually subtle.
+## Root Cause
 
-Instead of relying only on Radix’s `data-state` styling, we’ll make the highlight explicitly driven by the React `viewMode` state (the same source of truth that controls the content). This guarantees the highlight always matches what you’re seeing.
+The `cn()` utility uses `tailwind-merge` which can cause class conflicts. When we pass both:
+- Variant classes: `data-[state=on]:bg-primary` (from `toggleVariants`)
+- Explicit classes: `bg-primary text-primary-foreground` (from our conditional)
 
-## Implementation approach (robust + consistent)
-### A) Force highlight based on `viewMode` (guaranteed)
-**File:** `src/pages/admin/AccessControlPage.tsx`
+They can conflict because `tailwind-merge` deduplicates `bg-*` classes.
 
-1. Create a small helper to compute classes for each view button:
-   - Selected: `bg-primary text-primary-foreground shadow-sm`
-   - Not selected: `text-muted-foreground hover:text-foreground hover:bg-muted/60`
-2. Apply that helper to each `ToggleGroupItem`:
-   - `matrix` button uses `viewMode === "matrix"`
-   - `detail` button uses `viewMode === "detail"`
-   - `list` button uses `viewMode === "list"`
-3. Keep the `ToggleGroup` wrapper styling (rounded background), but add a thin border so the segmented control is visible even on very light backgrounds:
-   - `className="bg-muted/50 p-0.5 rounded-md border border-border"`
+Additionally, wrapping `ToggleGroupItem` in `TooltipTrigger asChild` may interfere with the `data-state` attribute propagation.
 
-This ensures: even if Radix `data-state` styling fails for any reason, the selected button is still clearly highlighted.
+## Solution
 
-### B) Improve the `primary` Toggle styling so “off vs on” is more readable everywhere
-**File:** `src/components/ui/toggle.tsx`
+Use a **pure CSS approach without relying on `data-state`** by creating styled wrapper components that handle their own highlighting based on the `viewMode` prop.
 
-Update the `primary` variant to make “off” state muted by default and “on” state bold/primary:
-- Base for primary: `text-muted-foreground`
-- On: `data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm`
-- Off hover: `data-[state=off]:hover:bg-muted/60 data-[state=off]:hover:text-foreground`
-- On hover: `data-[state=on]:hover:bg-primary/90`
+### Implementation
 
-This makes the control feel like the selected route style and improves clarity.
+**File: `src/pages/admin/AccessControlPage.tsx`**
 
-### C) Quick verification checklist (what you should see)
-After the change:
-- When the page loads (default `detail`), the middle icon has a solid primary background and white icon.
-- Clicking any icon changes both:
-  1) the content area view, and
-  2) the highlighted icon (blue background + white icon).
+Replace the current ToggleGroup implementation with simple buttons styled directly:
 
-## Files to change
-- `src/pages/admin/AccessControlPage.tsx`
-  - Add state-driven classes to each `ToggleGroupItem`
-  - Slightly enhance ToggleGroup container styling (border)
-- `src/components/ui/toggle.tsx`
-  - Strengthen `primary` variant: clearer off-state + unmistakable on-state
+1. Remove the ToggleGroup component entirely
+2. Use a simple `div` container with the same styling
+3. Create individual button elements that:
+   - Call `setViewMode()` on click
+   - Have explicit classes based on `viewMode === "value"` check
+   - Include the icons directly
 
-## Edge cases
-- If you’re viewing the published site while changes were only applied in preview, the highlight won’t appear until you publish. As part of testing, we’ll confirm you’re checking the updated build (preview first, then publish when confirmed).
+This bypasses all Radix state management and CSS specificity issues.
 
-## Acceptance criteria
-- You can tell which RBAC view is active without clicking anything.
-- The highlight always matches the actual view being displayed.
-- Styling matches the “selected route” look (primary background + primary-foreground icon/text).
+```tsx
+// Replace ToggleGroup with:
+<div className="flex items-center bg-muted/50 p-0.5 rounded-md border border-border">
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <button
+        type="button"
+        onClick={() => setViewMode("matrix")}
+        className={cn(
+          "inline-flex items-center justify-center h-8 px-2.5 rounded-md text-sm font-medium transition-colors",
+          viewMode === "matrix"
+            ? "bg-primary text-primary-foreground shadow-sm"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+        )}
+        aria-label="Matrix view"
+      >
+        <Grid3X3 className="h-4 w-4" />
+      </button>
+    </TooltipTrigger>
+    <TooltipContent side="bottom">Matrix View</TooltipContent>
+  </Tooltip>
+  
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <button
+        type="button"
+        onClick={() => setViewMode("detail")}
+        className={cn(
+          "inline-flex items-center justify-center h-8 px-2.5 rounded-md text-sm font-medium transition-colors",
+          viewMode === "detail"
+            ? "bg-primary text-primary-foreground shadow-sm"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+        )}
+        aria-label="Detail view"
+      >
+        <LayoutPanelLeft className="h-4 w-4" />
+      </button>
+    </TooltipTrigger>
+    <TooltipContent side="bottom">Role Detail View</TooltipContent>
+  </Tooltip>
+  
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <button
+        type="button"
+        onClick={() => setViewMode("list")}
+        className={cn(
+          "inline-flex items-center justify-center h-8 px-2.5 rounded-md text-sm font-medium transition-colors",
+          viewMode === "list"
+            ? "bg-primary text-primary-foreground shadow-sm"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+        )}
+        aria-label="List view"
+      >
+        <List className="h-4 w-4" />
+      </button>
+    </TooltipTrigger>
+    <TooltipContent side="bottom">Permission List</TooltipContent>
+  </Tooltip>
+</div>
+```
+
+### Why This Works
+
+1. **No Radix state management** - No `data-state` attribute needed
+2. **No class merging conflicts** - Classes are applied directly, not merged with variant classes
+3. **Direct state binding** - `viewMode === "matrix"` is evaluated at render time
+4. **Simple and debuggable** - Easy to inspect and verify
+
+### Cleanup
+
+Remove these imports that are no longer needed:
+- `ToggleGroup` and `ToggleGroupItem` from toggle-group
+
+## Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/pages/admin/AccessControlPage.tsx` | Replace ToggleGroup with native buttons; remove ToggleGroup imports |
+
+## Visual Result
+
+The selected view mode will have:
+- Solid primary (blue) background
+- White icon
+- Subtle shadow
+
+Unselected modes will have:
+- Transparent background
+- Muted gray icon
+- Hover effect for interactivity
