@@ -38,14 +38,13 @@ interface RoleDetailViewProps {
 interface CompactRoleCardProps {
   role: Role;
   isSelected: boolean;
-  permissionCount: number;
   overrideCount: number;
   onClick: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-function CompactRoleCard({ role, isSelected, permissionCount, overrideCount, onClick, onEdit, onDelete }: CompactRoleCardProps) {
+function CompactRoleCard({ role, isSelected, overrideCount, onClick, onEdit, onDelete }: CompactRoleCardProps) {
   return (
     <TooltipProvider delayDuration={300}>
       <Tooltip>
@@ -68,11 +67,7 @@ function CompactRoleCard({ role, isSelected, permissionCount, overrideCount, onC
               )}
               <span className="font-medium text-sm truncate">{role.label}</span>
             </button>
-            <div className="flex items-center gap-1">
-              <Badge variant="secondary" className="text-xs shrink-0 h-5 px-1.5">
-                {permissionCount}
-              </Badge>
-              <DropdownMenu>
+            <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="ghost" 
@@ -97,9 +92,8 @@ function CompactRoleCard({ role, isSelected, permissionCount, overrideCount, onC
                       Delete
                     </DropdownMenuItem>
                   )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </TooltipTrigger>
         <TooltipContent side="right" className="max-w-[200px]">
@@ -198,17 +192,11 @@ function CompactPermissionCard({
   isUpdating,
 }: CompactPermissionCardProps) {
   const entries = Object.entries(permissions);
-  const enabledCount = entries.filter(([key]) => 
-    effectivePermissions.includes(key as PermissionKey)
-  ).length;
 
   return (
     <div className="border rounded-md bg-card">
-      <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/30">
+      <div className="px-3 py-2 border-b bg-muted/30">
         <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</h4>
-        <Badge variant="secondary" className="text-xs h-4 px-1">
-          {enabledCount}/{entries.length}
-        </Badge>
       </div>
       <div className="p-1">
         {entries.map(([key, config]) => {
@@ -329,7 +317,6 @@ export function RoleDetailView({ roles, onEditRole }: RoleDetailViewProps) {
               key={role.id}
               role={role}
               isSelected={role.name === selectedRoleName}
-              permissionCount={getEffectivePermissions(role.name as AppRole).length}
               overrideCount={getOverrideCount(role.name as AppRole)}
               onClick={() => setSelectedRoleName(role.name as AppRole)}
               onEdit={() => onEditRole(role)}
@@ -345,9 +332,6 @@ export function RoleDetailView({ roles, onEditRole }: RoleDetailViewProps) {
           <div className="flex items-center justify-between p-3 border-b bg-muted/30">
             <div className="flex items-center gap-2">
               <h4 className="font-semibold">{selectedRole.label}</h4>
-              <Badge variant="secondary" className="text-xs">
-                {effectivePermissions.length} enabled
-              </Badge>
               {selectedRole.is_system && (
                 <Badge variant="outline" className="text-xs gap-1">
                   <Lock className="h-3 w-3" />
