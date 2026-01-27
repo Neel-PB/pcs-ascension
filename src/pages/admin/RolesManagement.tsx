@@ -1,22 +1,10 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, RotateCcw, Check, X, Info } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
 import {
   PERMISSION_CATEGORIES,
@@ -27,92 +15,107 @@ import {
 } from "@/config/rbacConfig";
 import { cn } from "@/lib/utils";
 
-interface PermissionToggleProps {
+interface RoleCardProps {
   role: AppRole;
+  isSelected: boolean;
+  permissionCount: number;
+  overrideCount: number;
+  onClick: () => void;
+}
+
+function RoleCard({ role, isSelected, permissionCount, overrideCount, onClick }: RoleCardProps) {
+  const metadata = ROLE_METADATA[role];
+  
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "w-full text-left p-3 rounded-lg border transition-all",
+        "hover:bg-muted/50",
+        isSelected 
+          ? "border-primary bg-primary/5 ring-1 ring-primary" 
+          : "border-border"
+      )}
+    >
+      <div className="flex items-center justify-between mb-1">
+        <span className="font-medium text-sm">{metadata.label}</span>
+        <Badge variant="secondary" className="text-xs">
+          {permissionCount}
+        </Badge>
+      </div>
+      <p className="text-xs text-muted-foreground line-clamp-2">
+        {metadata.description}
+      </p>
+      {overrideCount > 0 && (
+        <Badge variant="outline" className="text-xs mt-2">
+          {overrideCount} override{overrideCount !== 1 ? 's' : ''}
+        </Badge>
+      )}
+    </button>
+  );
+}
+
+interface PermissionRowProps {
   permissionKey: PermissionKey;
   label: string;
   description: string;
   isEnabled: boolean;
-  isDefault: boolean;
   isOverridden: boolean;
   isUpdating: boolean;
-  onToggle: (value: boolean) => void;
+  onToggle: (checked: boolean) => void;
   onReset: () => void;
 }
 
-function PermissionToggle({
-  role,
-  permissionKey,
+function PermissionRow({
   label,
   description,
   isEnabled,
-  isDefault,
   isOverridden,
   isUpdating,
   onToggle,
   onReset,
-}: PermissionToggleProps) {
+}: PermissionRowProps) {
   return (
-    <div className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-muted/50 transition-colors group">
-      <div className="flex items-center gap-3 flex-1">
-        <div className="flex flex-col">
+    <div className="flex items-center justify-between py-2.5 px-3 rounded-md hover:bg-muted/50 transition-colors group">
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        <Checkbox
+          checked={isEnabled}
+          onCheckedChange={onToggle}
+          disabled={isUpdating}
+        />
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">{label}</span>
+            <span className="text-sm font-medium truncate">{label}</span>
             {isOverridden && (
-              <Badge variant="outline" className="text-xs px-1.5 py-0">
+              <Badge variant="outline" className="text-xs px-1.5 py-0 shrink-0">
                 Override
               </Badge>
             )}
           </div>
-          <span className="text-xs text-muted-foreground">{description}</span>
+          <p className="text-xs text-muted-foreground truncate">{description}</p>
         </div>
       </div>
-      <div className="flex items-center gap-2">
-        {isOverridden && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onReset();
-                  }}
-                  disabled={isUpdating}
-                >
-                  <RotateCcw className="h-3 w-3" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Reset to default</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        )}
-        <div className={cn("flex items-center gap-1.5", isEnabled ? "text-primary" : "text-muted-foreground")}>
-          {isEnabled ? (
-            <Check className="h-4 w-4" />
-          ) : (
-            <X className="h-4 w-4" />
-          )}
-        </div>
-        <Switch
-          checked={isEnabled}
-          onCheckedChange={onToggle}
+      {isOverridden && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+          onClick={(e) => {
+            e.stopPropagation();
+            onReset();
+          }}
           disabled={isUpdating}
-          className="data-[state=checked]:bg-primary"
-        />
-      </div>
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+        </Button>
+      )}
     </div>
   );
 }
 
-interface PermissionCategoryProps {
-  categoryKey: string;
-  category: {
-    label: string;
-    permissions: Record<string, { label: string; description: string }>;
-  };
+interface PermissionCategorySectionProps {
+  title: string;
+  permissions: Record<string, { label: string; description: string }>;
   role: AppRole;
   effectivePermissions: PermissionKey[];
   isPermissionOverridden: (role: AppRole, permission: PermissionKey) => boolean;
@@ -121,48 +124,45 @@ interface PermissionCategoryProps {
   isUpdating: boolean;
 }
 
-function PermissionCategory({
-  categoryKey,
-  category,
+function PermissionCategorySection({
+  title,
+  permissions,
   role,
   effectivePermissions,
   isPermissionOverridden,
   onToggle,
   onReset,
   isUpdating,
-}: PermissionCategoryProps) {
-  const permissionEntries = Object.entries(category.permissions);
-  const enabledCount = permissionEntries.filter(([key]) => 
+}: PermissionCategorySectionProps) {
+  const entries = Object.entries(permissions);
+  const enabledCount = entries.filter(([key]) => 
     effectivePermissions.includes(key as PermissionKey)
   ).length;
 
   return (
     <div className="space-y-1">
-      <div className="flex items-center justify-between px-3 py-1.5">
-        <h4 className="text-sm font-semibold text-foreground">{category.label}</h4>
+      <div className="flex items-center justify-between px-3 py-2">
+        <h4 className="text-sm font-semibold">{title}</h4>
         <Badge variant="secondary" className="text-xs">
-          {enabledCount}/{permissionEntries.length}
+          {enabledCount}/{entries.length}
         </Badge>
       </div>
       <div className="border rounded-lg divide-y">
-        {permissionEntries.map(([key, config]) => {
+        {entries.map(([key, config]) => {
           const permissionKey = key as PermissionKey;
           const isEnabled = effectivePermissions.includes(permissionKey);
-          const isDefault = DEFAULT_ROLE_PERMISSIONS[role]?.includes(permissionKey) ?? false;
           const isOverridden = isPermissionOverridden(role, permissionKey);
 
           return (
-            <PermissionToggle
+            <PermissionRow
               key={key}
-              role={role}
               permissionKey={permissionKey}
               label={config.label}
               description={config.description}
               isEnabled={isEnabled}
-              isDefault={isDefault}
               isOverridden={isOverridden}
               isUpdating={isUpdating}
-              onToggle={(value) => onToggle(permissionKey, value)}
+              onToggle={(checked) => onToggle(permissionKey, checked)}
               onReset={() => onReset(permissionKey)}
             />
           );
@@ -172,28 +172,35 @@ function PermissionCategory({
   );
 }
 
-function RoleAccordionItem({ role }: { role: AppRole }) {
+export default function RolesManagement() {
   const {
+    manageableRoles,
+    isLoading,
     getEffectivePermissions,
     isPermissionOverridden,
     setPermission,
     resetToDefaults,
   } = useRolePermissions();
 
+  const [selectedRole, setSelectedRole] = useState<AppRole>(manageableRoles[0]);
   const [isUpdating, setIsUpdating] = useState(false);
-  const effectivePermissions = getEffectivePermissions(role);
-  const metadata = ROLE_METADATA[role];
-  
-  // Count overrides for this role
-  const overrideCount = Object.values(PERMISSION_CATEGORIES)
-    .flatMap(cat => Object.keys(cat.permissions))
-    .filter(key => isPermissionOverridden(role, key as PermissionKey))
-    .length;
+
+  const effectivePermissions = getEffectivePermissions(selectedRole);
+
+  // Count overrides for each role
+  const getOverrideCount = (role: AppRole) => {
+    return Object.values(PERMISSION_CATEGORIES)
+      .flatMap(cat => Object.keys(cat.permissions))
+      .filter(key => isPermissionOverridden(role, key as PermissionKey))
+      .length;
+  };
+
+  const selectedOverrideCount = getOverrideCount(selectedRole);
 
   const handleToggle = async (permission: PermissionKey, value: boolean) => {
     setIsUpdating(true);
     try {
-      await setPermission.mutateAsync({ role, permission, value });
+      await setPermission.mutateAsync({ role: selectedRole, permission, value });
     } finally {
       setIsUpdating(false);
     }
@@ -202,7 +209,7 @@ function RoleAccordionItem({ role }: { role: AppRole }) {
   const handleReset = async (permission: PermissionKey) => {
     setIsUpdating(true);
     try {
-      await setPermission.mutateAsync({ role, permission, value: null });
+      await setPermission.mutateAsync({ role: selectedRole, permission, value: null });
     } finally {
       setIsUpdating(false);
     }
@@ -211,145 +218,130 @@ function RoleAccordionItem({ role }: { role: AppRole }) {
   const handleResetAll = async () => {
     setIsUpdating(true);
     try {
-      await resetToDefaults.mutateAsync(role);
+      await resetToDefaults.mutateAsync(selectedRole);
     } finally {
       setIsUpdating(false);
     }
   };
 
-  return (
-    <AccordionItem value={role} className="border rounded-lg px-1 mb-3 data-[state=open]:bg-muted/30">
-      <AccordionTrigger className="hover:no-underline px-3 py-4">
-        <div className="flex items-center justify-between w-full pr-4">
-          <div className="flex flex-col items-start">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-base">{metadata.label}</span>
-              {overrideCount > 0 && (
-                <Badge variant="outline" className="text-xs">
-                  {overrideCount} override{overrideCount !== 1 ? 's' : ''}
-                </Badge>
-              )}
-            </div>
-            <span className="text-xs text-muted-foreground text-left">
-              {metadata.description}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="text-xs">
-              {effectivePermissions.length} permissions
-            </Badge>
-          </div>
-        </div>
-      </AccordionTrigger>
-      <AccordionContent className="px-3 pb-4 pt-2">
-        <div className="space-y-6">
-          {/* Reset all button */}
-          {overrideCount > 0 && (
-            <div className="flex justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleResetAll}
-                disabled={isUpdating}
-                className="text-xs"
-              >
-                <RotateCcw className="h-3 w-3 mr-1.5" />
-                Reset All to Defaults
-              </Button>
-            </div>
-          )}
-
-          {/* Module Access */}
-          <PermissionCategory
-            categoryKey="modules"
-            category={PERMISSION_CATEGORIES.modules}
-            role={role}
-            effectivePermissions={effectivePermissions}
-            isPermissionOverridden={isPermissionOverridden}
-            onToggle={handleToggle}
-            onReset={handleReset}
-            isUpdating={isUpdating}
-          />
-
-          {/* Settings Access */}
-          <PermissionCategory
-            categoryKey="settings"
-            category={PERMISSION_CATEGORIES.settings}
-            role={role}
-            effectivePermissions={effectivePermissions}
-            isPermissionOverridden={isPermissionOverridden}
-            onToggle={handleToggle}
-            onReset={handleReset}
-            isUpdating={isUpdating}
-          />
-
-          {/* Filter Access */}
-          <PermissionCategory
-            categoryKey="filters"
-            category={PERMISSION_CATEGORIES.filters}
-            role={role}
-            effectivePermissions={effectivePermissions}
-            isPermissionOverridden={isPermissionOverridden}
-            onToggle={handleToggle}
-            onReset={handleReset}
-            isUpdating={isUpdating}
-          />
-
-          {/* Sub-filter Access */}
-          <PermissionCategory
-            categoryKey="subfilters"
-            category={PERMISSION_CATEGORIES.subfilters}
-            role={role}
-            effectivePermissions={effectivePermissions}
-            isPermissionOverridden={isPermissionOverridden}
-            onToggle={handleToggle}
-            onReset={handleReset}
-            isUpdating={isUpdating}
-          />
-        </div>
-      </AccordionContent>
-    </AccordionItem>
-  );
-}
-
-export default function RolesManagement() {
-  const { manageableRoles, isLoading } = useRolePermissions();
-
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-4 w-96" />
+      <div className="flex gap-6 h-[600px]">
+        <div className="w-64 space-y-3">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <Skeleton key={i} className="h-20 w-full" />
+          ))}
         </div>
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-20 w-full" />
-        ))}
+        <div className="flex-1 space-y-4">
+          <Skeleton className="h-8 w-48" />
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-32 w-full" />
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
+    <div className="space-y-4">
+      <div className="space-y-1">
         <h3 className="text-lg font-semibold">Role Permissions</h3>
         <p className="text-sm text-muted-foreground">
-          Configure permissions for each role. Changes are applied immediately and affect all users with that role.
+          Select a role to configure its permissions. Changes are applied immediately.
         </p>
-        <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg text-sm">
-          <Info className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-          <span className="text-muted-foreground">
-            Permissions marked with <Badge variant="outline" className="text-xs mx-1">Override</Badge> 
-            differ from the default settings for that role.
-          </span>
-        </div>
       </div>
 
-      <Accordion type="single" collapsible className="space-y-3">
-        {manageableRoles.map((role) => (
-          <RoleAccordionItem key={role} role={role} />
-        ))}
-      </Accordion>
+      <div className="flex gap-6 min-h-[500px]">
+        {/* Left Panel - Role List */}
+        <div className="w-64 shrink-0 space-y-2">
+          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-1">
+            Roles
+          </h4>
+          <div className="space-y-2">
+            {manageableRoles.map((role) => (
+              <RoleCard
+                key={role}
+                role={role}
+                isSelected={role === selectedRole}
+                permissionCount={getEffectivePermissions(role).length}
+                overrideCount={getOverrideCount(role)}
+                onClick={() => setSelectedRole(role)}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Right Panel - Permission Editor */}
+        <div className="flex-1 border rounded-lg">
+          <div className="flex items-center justify-between p-4 border-b bg-muted/30">
+            <div>
+              <h4 className="font-semibold">{ROLE_METADATA[selectedRole].label}</h4>
+              <p className="text-sm text-muted-foreground">
+                {effectivePermissions.length} permissions enabled
+              </p>
+            </div>
+            {selectedOverrideCount > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleResetAll}
+                disabled={isUpdating}
+              >
+                <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+                Reset All ({selectedOverrideCount})
+              </Button>
+            )}
+          </div>
+          
+          <ScrollArea className="h-[450px]">
+            <div className="p-4 space-y-6">
+              <PermissionCategorySection
+                title="Module Access"
+                permissions={PERMISSION_CATEGORIES.modules.permissions}
+                role={selectedRole}
+                effectivePermissions={effectivePermissions}
+                isPermissionOverridden={isPermissionOverridden}
+                onToggle={handleToggle}
+                onReset={handleReset}
+                isUpdating={isUpdating}
+              />
+
+              <PermissionCategorySection
+                title="Settings Access"
+                permissions={PERMISSION_CATEGORIES.settings.permissions}
+                role={selectedRole}
+                effectivePermissions={effectivePermissions}
+                isPermissionOverridden={isPermissionOverridden}
+                onToggle={handleToggle}
+                onReset={handleReset}
+                isUpdating={isUpdating}
+              />
+
+              <PermissionCategorySection
+                title="Filter Access"
+                permissions={PERMISSION_CATEGORIES.filters.permissions}
+                role={selectedRole}
+                effectivePermissions={effectivePermissions}
+                isPermissionOverridden={isPermissionOverridden}
+                onToggle={handleToggle}
+                onReset={handleReset}
+                isUpdating={isUpdating}
+              />
+
+              <PermissionCategorySection
+                title="Sub-filter Access"
+                permissions={PERMISSION_CATEGORIES.subfilters.permissions}
+                role={selectedRole}
+                effectivePermissions={effectivePermissions}
+                isPermissionOverridden={isPermissionOverridden}
+                onToggle={handleToggle}
+                onReset={handleReset}
+                isUpdating={isUpdating}
+              />
+            </div>
+          </ScrollArea>
+        </div>
+      </div>
     </div>
   );
 }
