@@ -305,13 +305,15 @@ export function RoleDetailView({ roles, onEditRole }: RoleDetailViewProps) {
   };
 
   return (
-    <div className="flex gap-4">
+    <div className="flex border rounded-lg bg-card overflow-hidden">
       {/* Left Panel - Role List */}
-      <div className="w-48 shrink-0 space-y-1">
-        <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-2 mb-2">
-          Roles
-        </h4>
-        <div className="space-y-1">
+      <div className="w-52 shrink-0 border-r bg-muted/20">
+        <div className="p-3 border-b bg-muted/30">
+          <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Roles
+          </h4>
+        </div>
+        <div className="p-2 space-y-1">
           {roles.map((role) => (
             <CompactRoleCard
               key={role.id}
@@ -328,7 +330,7 @@ export function RoleDetailView({ roles, onEditRole }: RoleDetailViewProps) {
 
       {/* Right Panel - Permission Grid */}
       {selectedRole && selectedRoleName && (
-        <div className="flex-1 border rounded-lg">
+        <div className="flex-1">
           <div className="flex items-center justify-between p-3 border-b bg-muted/30">
             <div className="flex items-center gap-2">
               <h4 className="font-semibold">{selectedRole.label}</h4>
