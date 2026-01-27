@@ -93,15 +93,16 @@ export default function AccessControlPage() {
         <div className="flex items-center gap-3">
           {/* View Mode Toggle */}
           <TooltipProvider delayDuration={200}>
-            <ToggleGroup
+          <ToggleGroup
               type="single"
               value={viewMode}
               onValueChange={(value) => value && setViewMode(value as ViewMode)}
               className="bg-muted/50 p-0.5 rounded-md"
+              variant="primary"
             >
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <ToggleGroupItem value="matrix" aria-label="Matrix view" className="h-8 px-2.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                  <ToggleGroupItem value="matrix" aria-label="Matrix view" className="h-8 px-2.5">
                     <Grid3X3 className="h-4 w-4" />
                   </ToggleGroupItem>
                 </TooltipTrigger>
@@ -111,7 +112,7 @@ export default function AccessControlPage() {
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <ToggleGroupItem value="detail" aria-label="Detail view" className="h-8 px-2.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                  <ToggleGroupItem value="detail" aria-label="Detail view" className="h-8 px-2.5">
                     <LayoutPanelLeft className="h-4 w-4" />
                   </ToggleGroupItem>
                 </TooltipTrigger>
@@ -121,7 +122,7 @@ export default function AccessControlPage() {
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <ToggleGroupItem value="list" aria-label="List view" className="h-8 px-2.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                  <ToggleGroupItem value="list" aria-label="List view" className="h-8 px-2.5">
                     <List className="h-4 w-4" />
                   </ToggleGroupItem>
                 </TooltipTrigger>
