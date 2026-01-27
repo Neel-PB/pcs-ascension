@@ -95,6 +95,8 @@ const TABLE_SCHEMAS: Record<TableName, { name: string; type: string }[]> = {
   app_settings: [],
   closure_selections: [],
   role_permissions: [],
+  permissions: [],
+  roles: [],
 };
 
 export default function DataImportPage() {

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import DataImportPage from "./DataImportPage";
 import UsersManagement from "./UsersManagement";
 import RolesManagement from "./RolesManagement";
+import PermissionsManagement from "./PermissionsManagement";
 import { FeedComposer } from "@/components/messaging/FeedComposer";
 import { FeedHistory } from "@/components/feed/FeedHistory";
 import { Button } from "@/components/ui/button";
@@ -136,11 +137,7 @@ export default function AdminPage() {
           
           {activeTab === "roles" && <RolesManagement />}
           
-          {activeTab === "permissions" && (
-            <div className="py-8 text-center text-muted-foreground">
-              Permission management coming soon...
-            </div>
-          )}
+          {activeTab === "permissions" && <PermissionsManagement />}
           
 {activeTab === "settings" && (
             <Tabs defaultValue="ui-settings" className="space-y-6">
