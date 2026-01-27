@@ -14,9 +14,10 @@ interface ShiftCellProps {
 }
 
 const SPECIAL_SHIFTS = ['rotating', 'weekend option', 'evening'];
+const UNSET = "unset" as const;
 
 export function ShiftCell({ value, selectedDayNight, onSave, onClick }: ShiftCellProps) {
-  const [localSelection, setLocalSelection] = useState<string>(selectedDayNight || "");
+  const [localSelection, setLocalSelection] = useState<string>(selectedDayNight || UNSET);
   const [open, setOpen] = useState(false);
   
   const normalizedShift = value?.toLowerCase() || '';
@@ -25,11 +26,12 @@ export function ShiftCell({ value, selectedDayNight, onSave, onClick }: ShiftCel
 
   const handleReset = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setLocalSelection("");
+    setLocalSelection(UNSET);
     onSave?.(null);
   };
 
   const handleSelect = (val: string) => {
+    if (val === UNSET) return; // Ignore placeholder selection
     setLocalSelection(val);
     onSave?.(val);
     setOpen(false);
@@ -130,6 +132,9 @@ export function ShiftCell({ value, selectedDayNight, onSave, onClick }: ShiftCel
                 <SelectValue placeholder="Select shift..." />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value={UNSET} disabled className="text-muted-foreground">
+                  Select shift...
+                </SelectItem>
                 <SelectItem value="day">Day</SelectItem>
                 <SelectItem value="night">Night</SelectItem>
               </SelectContent>
