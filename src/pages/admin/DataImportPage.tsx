@@ -94,6 +94,7 @@ const TABLE_SCHEMAS: Record<TableName, { name: string; type: string }[]> = {
   np_overrides: [],
   app_settings: [],
   closure_selections: [],
+  role_permissions: [],
 };
 
 export default function DataImportPage() {
