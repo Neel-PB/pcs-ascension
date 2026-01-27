@@ -1,193 +1,187 @@
 
 
-# Improve Permission List View Readability
+# Improve Selection Highlighting in RBAC Interface
 
 ## Overview
 
-Redesign the Permission List view to be more understandable and user-friendly with:
-- Clear category section headers with visual separation
-- Better labels that explain what each permission actually does
-- Improved visual hierarchy and spacing
-- Card-based layout within categories for better scanning
+Apply the same visual selection pattern used in the sidebar navigation to:
+1. The role list in the Detail View (left panel)
+2. The view mode toggle buttons (Matrix, Detail, List)
+
+The sidebar uses `bg-primary` with `text-primary-foreground` for selected items, creating a prominent, consistent selection indicator.
 
 ---
 
-## Current Issues
+## Current State
 
-| Problem | Location |
-|---------|----------|
-| Category badge only shows on first row in each group | Makes grouping unclear |
-| Flat table layout | Hard to scan and understand relationships |
-| "approvals.feedback" labeled as "Manage Feedback Status" | Doesn't clearly indicate it's for approval workflow |
-| Description gets truncated | Users can't see full context |
+### Role Selection (RoleDetailView)
+Current styling for selected role:
+```tsx
+isSelected 
+  ? "border-primary bg-primary/5 ring-1 ring-primary" 
+  : "border-transparent hover:border-border"
+```
+This uses a very subtle 5% opacity primary background, which doesn't stand out enough.
+
+### View Mode Toggle (AccessControlPage)
+Current styling uses default toggle variants:
+```tsx
+data-[state=on]:bg-accent data-[state=on]:text-accent-foreground
+```
+This uses accent color (typically gray) rather than primary, making it less prominent.
 
 ---
 
 ## Solution
 
-### 1. Add Category Section Headers
+### 1. Update Role Card Selection
 
-Replace flat table with grouped sections. Each category gets:
-- A sticky header row with category name
-- Clear visual separator
-- Permission count badge
+Match the sidebar pattern with solid primary background:
 
-### 2. Card-Style Rows Within Categories
+| Element | Before | After |
+|---------|--------|-------|
+| Selected bg | `bg-primary/5` | `bg-primary` |
+| Selected text | Default | `text-primary-foreground` |
+| Selected border | `border-primary ring-1` | `border-transparent` (cleaner) |
 
-Each permission row shows:
-- Permission label prominently
-- Key in smaller monospace font
-- Full description (not truncated)
-- Assigned roles with expandable view
+### 2. Update View Mode Toggle
 
-### 3. Improved Labels and Descriptions
+Apply custom data-state styling to use primary colors:
 
-Update the approval permissions to be clearer:
-
-| Current Label | Proposed Label |
-|---------------|----------------|
-| Manage Feedback Status | Approve/Reject Feedback |
-| Approve NP Overrides | Approve NP Override Requests |
-| Approve Volume Overrides | Approve Volume Override Requests |
+| Element | Before | After |
+|---------|--------|-------|
+| Selected bg | `bg-accent` | `bg-primary` |
+| Selected text | `text-accent-foreground` | `text-primary-foreground` |
 
 ---
 
 ## Implementation
 
-### File: `src/components/admin/PermissionListView.tsx`
+### File: `src/components/admin/RoleDetailView.tsx`
 
-**1. Add category section headers:**
+**Update CompactRoleCard (lines 57-64):**
 ```tsx
-// Instead of flat table, render grouped sections
-{sortedCategories.map((category) => {
-  const categoryPermissions = groupedPermissions[category] || [];
-  if (categoryPermissions.length === 0) return null;
-  
-  return (
-    <div key={category} className="space-y-2">
-      {/* Category Header */}
-      <div className="flex items-center gap-2 py-3 border-b bg-muted/30 px-4 sticky top-0 z-10">
-        <h3 className="text-sm font-semibold">
-          {CATEGORY_LABELS[category] || category}
-        </h3>
-        <Badge variant="secondary" className="text-xs">
-          {categoryPermissions.length}
-        </Badge>
-      </div>
-      
-      {/* Permission Cards */}
-      <div className="divide-y">
-        {categoryPermissions.map((permission) => (
-          <PermissionCard key={permission.id} permission={permission} />
-        ))}
-      </div>
-    </div>
-  );
-})}
+// FROM:
+<div
+  className={cn(
+    "w-full text-left px-3 py-2 rounded-md border transition-all flex items-center justify-between gap-2 group",
+    "hover:bg-muted/50",
+    isSelected 
+      ? "border-primary bg-primary/5 ring-1 ring-primary" 
+      : "border-transparent hover:border-border"
+  )}
+>
+
+// TO:
+<div
+  className={cn(
+    "w-full text-left px-3 py-2 rounded-md transition-all flex items-center justify-between gap-2 group relative",
+    isSelected 
+      ? "bg-primary text-primary-foreground" 
+      : "hover:bg-muted/50"
+  )}
+>
 ```
 
-**2. Create a PermissionCard component for better layout:**
+**Update role label text (line 75):**
 ```tsx
-function PermissionCard({ permission, roles, onEdit, onDelete }) {
-  return (
-    <div className="p-4 hover:bg-muted/30 transition-colors">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 space-y-1">
-          {/* Label + System badge */}
-          <div className="flex items-center gap-2">
-            <span className="font-medium">{permission.label}</span>
-            {permission.is_system && (
-              <Lock className="h-3 w-3 text-muted-foreground" />
-            )}
-          </div>
-          
-          {/* Key (monospace, smaller) */}
-          <code className="text-xs text-muted-foreground font-mono">
-            {permission.key}
-          </code>
-          
-          {/* Full description */}
-          <p className="text-sm text-muted-foreground">
-            {permission.description || "No description"}
-          </p>
-        </div>
-        
-        {/* Assigned Roles */}
-        <div className="flex flex-wrap gap-1 max-w-[250px]">
-          {assignedRoles.map((role) => (
-            <Badge key={role.id} variant="outline" className="text-xs">
-              {role.label}
-            </Badge>
-          ))}
-        </div>
-        
-        {/* Actions */}
-        <DropdownMenu>...</DropdownMenu>
-      </div>
-    </div>
-  );
-}
+// FROM:
+<span className="font-medium text-sm truncate">{role.label}</span>
+
+// TO:
+<span className={cn(
+  "font-medium text-sm truncate",
+  isSelected ? "text-primary-foreground" : ""
+)}>{role.label}</span>
 ```
 
-**3. Sort categories in logical order:**
+**Update indicator dots (lines 70-74) for visibility on primary background:**
 ```tsx
-const CATEGORY_ORDER = ["modules", "settings", "filters", "subfilters", "approvals"];
+// FROM:
+{hasPendingChanges ? (
+  <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+) : overrideCount > 0 ? (
+  <span className="w-1.5 h-1.5 rounded-full bg-warning shrink-0" />
+) : null}
 
-const sortedCategories = useMemo(() => {
-  return Object.keys(groupedPermissions).sort((a, b) => {
-    const aIndex = CATEGORY_ORDER.indexOf(a);
-    const bIndex = CATEGORY_ORDER.indexOf(b);
-    return aIndex - bIndex;
-  });
-}, [groupedPermissions]);
+// TO:
+{hasPendingChanges ? (
+  <span className={cn(
+    "w-1.5 h-1.5 rounded-full shrink-0",
+    isSelected ? "bg-primary-foreground" : "bg-primary"
+  )} />
+) : overrideCount > 0 ? (
+  <span className={cn(
+    "w-1.5 h-1.5 rounded-full shrink-0",
+    isSelected ? "bg-warning-foreground" : "bg-warning"
+  )} />
+) : null}
+```
+
+**Update dropdown trigger for selected state (line 82):**
+```tsx
+// FROM:
+className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+
+// TO:
+className={cn(
+  "h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity",
+  isSelected && "text-primary-foreground hover:text-primary-foreground hover:bg-primary-foreground/20"
+)}
 ```
 
 ---
 
-## Visual Design
+### File: `src/pages/admin/AccessControlPage.tsx`
 
+**Update ToggleGroupItem styling (lines 104, 114, 124):**
+
+Add custom class to override the default accent styling with primary:
+
+```tsx
+// FROM:
+<ToggleGroupItem value="matrix" aria-label="Matrix view" className="h-8 px-2.5">
+
+// TO:
+<ToggleGroupItem 
+  value="matrix" 
+  aria-label="Matrix view" 
+  className="h-8 px-2.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+>
+```
+
+Apply the same pattern to all three ToggleGroupItems (matrix, detail, list).
+
+---
+
+## Visual Result
+
+### Role List (Before vs After)
 ```text
-┌────────────────────────────────────────────────────────────────────┐
-│  🔍 Search permissions...     │  All Categories ▼                  │
-├────────────────────────────────────────────────────────────────────┤
-│                                                                    │
-│  MODULE ACCESS                                           (7)       │
-│  ────────────────────────────────────────────────────────────────  │
-│                                                                    │
-│  Admin Module                                    🔒                │
-│  admin.access                                                      │
-│  Access to the admin panel                                         │
-│                                     Admin  Labor Management        │
-│                                                                    │
-│  ────────────────────────────────────────────────────────────────  │
-│                                                                    │
-│  APPROVAL ACCESS                                         (5)       │
-│  ────────────────────────────────────────────────────────────────  │
-│                                                                    │
-│  Approve/Reject Feedback                         🔒                │
-│  approvals.feedback                                                │
-│  Ability to approve, reject, or move feedback items to backlog     │
-│                                     Admin  Labor Management        │
-│                                                                    │
-│  Approve Positions to Open                       🔒                │
-│  approvals.positions_to_open                                       │
-│  Ability to approve or reject new position requests                │
-│                      Admin  Labor Management  Leadership  +2       │
-│                                                                    │
-└────────────────────────────────────────────────────────────────────┘
+Before:                          After:
+┌──────────────────┐             ┌──────────────────┐
+│ ○ Admin          │ (subtle)    │ ████████████████ │ (prominent)
+│   Labor Mgr      │             │   Labor Mgr      │
+│   Leadership     │             │   Leadership     │
+└──────────────────┘             └──────────────────┘
+
+The selected role will have:
+- Solid primary background (matches sidebar)
+- White/light text for contrast
+- No border artifacts
 ```
 
----
+### View Toggle (Before vs After)
+```text
+Before:                          After:
+┌────┬────┬────┐                 ┌────┬────┬────┐
+│ □  │[▦] │ ≡  │ (gray accent)   │ □  │[▦] │ ≡  │ (primary color)
+└────┴────┴────┘                 └────┴────┴────┘
 
-## Benefits
-
-| Improvement | Impact |
-|-------------|--------|
-| Category headers always visible | Users immediately understand grouping |
-| Full descriptions shown | No truncation, full context available |
-| Label shown prominently, key secondary | Focus on what it does, not technical ID |
-| Card layout with spacing | Easier to scan and find permissions |
-| Permission count per category | Quick overview of category size |
+The selected toggle will have:
+- Primary background (not gray accent)
+- Primary-foreground text/icon color
+```
 
 ---
 
@@ -195,5 +189,6 @@ const sortedCategories = useMemo(() => {
 
 | File | Changes |
 |------|---------|
-| `src/components/admin/PermissionListView.tsx` | Complete redesign with category sections and card-style permission rows |
+| `src/components/admin/RoleDetailView.tsx` | Update CompactRoleCard with `bg-primary text-primary-foreground` when selected; adjust indicator dots and dropdown for contrast |
+| `src/pages/admin/AccessControlPage.tsx` | Add `data-[state=on]:bg-primary data-[state=on]:text-primary-foreground` to all ToggleGroupItems |
 
