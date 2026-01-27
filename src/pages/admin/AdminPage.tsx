@@ -24,7 +24,7 @@ export default function AdminPage() {
     { id: "data-import", label: "Data Import", icon: Upload },
     { id: "users", label: "Users", icon: Users },
     { id: "feed", label: "Feed", icon: MessageSquare },
-    { id: "access-control", label: "Access Control", icon: Shield },
+    { id: "access-control", label: "RBAC", icon: Shield },
     { id: "audit-log", label: "Audit Log", icon: History },
     { id: "settings", label: "Settings", icon: Settings },
   ];

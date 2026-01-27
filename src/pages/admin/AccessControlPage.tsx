@@ -22,7 +22,7 @@ import {
 type ViewMode = "matrix" | "detail" | "list";
 
 export default function AccessControlPage() {
-  const [viewMode, setViewMode] = useState<ViewMode>("matrix");
+  const [viewMode, setViewMode] = useState<ViewMode>("detail");
   const [isRoleFormOpen, setIsRoleFormOpen] = useState(false);
   const [isPermissionFormOpen, setIsPermissionFormOpen] = useState(false);
   const [selectedRoleForEdit, setSelectedRoleForEdit] = useState<Role | null>(null);
@@ -85,7 +85,7 @@ export default function AccessControlPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h3 className="text-lg font-semibold">Access Control</h3>
+          <h3 className="text-lg font-semibold">RBAC</h3>
           <p className="text-sm text-muted-foreground">
             Manage roles and permissions in a unified view. Toggle permissions for each role.
           </p>
