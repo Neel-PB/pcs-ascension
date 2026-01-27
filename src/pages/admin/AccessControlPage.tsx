@@ -101,7 +101,7 @@ export default function AccessControlPage() {
             >
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <ToggleGroupItem value="matrix" aria-label="Matrix view" className="h-8 px-2.5">
+                  <ToggleGroupItem value="matrix" aria-label="Matrix view" className="h-8 px-2.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                     <Grid3X3 className="h-4 w-4" />
                   </ToggleGroupItem>
                 </TooltipTrigger>
@@ -111,7 +111,7 @@ export default function AccessControlPage() {
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <ToggleGroupItem value="detail" aria-label="Detail view" className="h-8 px-2.5">
+                  <ToggleGroupItem value="detail" aria-label="Detail view" className="h-8 px-2.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                     <LayoutPanelLeft className="h-4 w-4" />
                   </ToggleGroupItem>
                 </TooltipTrigger>
@@ -121,7 +121,7 @@ export default function AccessControlPage() {
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <ToggleGroupItem value="list" aria-label="List view" className="h-8 px-2.5">
+                  <ToggleGroupItem value="list" aria-label="List view" className="h-8 px-2.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                     <List className="h-4 w-4" />
                   </ToggleGroupItem>
                 </TooltipTrigger>
