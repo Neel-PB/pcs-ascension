@@ -439,19 +439,34 @@ export default function RolesManagement() {
               )}
             </div>
             
-            {/* 2x2 Permission Grid */}
+            {/* Permission Grid - 2 columns with 5 categories */}
             <div className="p-3 grid grid-cols-2 gap-3">
-              <CompactPermissionCard
-                title="Modules"
-                permissions={PERMISSION_CATEGORIES.modules.permissions}
-                role={selectedRoleName}
-                effectivePermissions={effectivePermissions}
-                isPermissionOverridden={isPermissionOverridden}
-                onToggle={handleToggle}
-                onReset={handleReset}
-                isUpdating={isUpdating}
-              />
+              {/* Left column: Modules + Sub-filters */}
+              <div className="space-y-3">
+                <CompactPermissionCard
+                  title="Modules"
+                  permissions={PERMISSION_CATEGORIES.modules.permissions}
+                  role={selectedRoleName}
+                  effectivePermissions={effectivePermissions}
+                  isPermissionOverridden={isPermissionOverridden}
+                  onToggle={handleToggle}
+                  onReset={handleReset}
+                  isUpdating={isUpdating}
+                />
 
+                <CompactPermissionCard
+                  title="Sub-filters"
+                  permissions={PERMISSION_CATEGORIES.subfilters.permissions}
+                  role={selectedRoleName}
+                  effectivePermissions={effectivePermissions}
+                  isPermissionOverridden={isPermissionOverridden}
+                  onToggle={handleToggle}
+                  onReset={handleReset}
+                  isUpdating={isUpdating}
+                />
+              </div>
+
+              {/* Right column: Settings + Filters + Approvals */}
               <div className="space-y-3">
                 <CompactPermissionCard
                   title="Settings"
@@ -474,18 +489,18 @@ export default function RolesManagement() {
                   onReset={handleReset}
                   isUpdating={isUpdating}
                 />
-              </div>
 
-              <CompactPermissionCard
-                title="Sub-filters"
-                permissions={PERMISSION_CATEGORIES.subfilters.permissions}
-                role={selectedRoleName}
-                effectivePermissions={effectivePermissions}
-                isPermissionOverridden={isPermissionOverridden}
-                onToggle={handleToggle}
-                onReset={handleReset}
-                isUpdating={isUpdating}
-              />
+                <CompactPermissionCard
+                  title="Approvals"
+                  permissions={PERMISSION_CATEGORIES.approvals.permissions}
+                  role={selectedRoleName}
+                  effectivePermissions={effectivePermissions}
+                  isPermissionOverridden={isPermissionOverridden}
+                  onToggle={handleToggle}
+                  onReset={handleReset}
+                  isUpdating={isUpdating}
+                />
+              </div>
             </div>
           </div>
         )}

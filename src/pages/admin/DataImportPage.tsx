@@ -97,6 +97,7 @@ const TABLE_SCHEMAS: Record<TableName, { name: string; type: string }[]> = {
   role_permissions: [],
   permissions: [],
   roles: [],
+  rbac_audit_log: [],
 };
 
 export default function DataImportPage() {
