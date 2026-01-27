@@ -26,14 +26,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { type Permission, usePermissions } from "@/hooks/usePermissions";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
 import { useDynamicRoles } from "@/hooks/useDynamicRoles";
@@ -48,8 +40,87 @@ const CATEGORY_LABELS: Record<string, string> = {
   approvals: "Approval Access",
 };
 
+const CATEGORY_ORDER = ["modules", "settings", "filters", "subfilters", "approvals"];
+
 interface PermissionListViewProps {
   permissions: Permission[];
+}
+
+interface PermissionCardProps {
+  permission: Permission;
+  assignedRoles: { id: string; label: string }[];
+  onEdit: (permission: Permission) => void;
+  onDelete: (permission: Permission) => void;
+}
+
+function PermissionCard({ permission, assignedRoles, onEdit, onDelete }: PermissionCardProps) {
+  return (
+    <div className="px-4 py-3 hover:bg-muted/30 transition-colors">
+      <div className="flex items-start justify-between gap-4">
+        {/* Main content */}
+        <div className="flex-1 min-w-0 space-y-1">
+          {/* Label + System badge */}
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-foreground">{permission.label}</span>
+            {permission.is_system && (
+              <Lock className="h-3 w-3 text-muted-foreground shrink-0" />
+            )}
+          </div>
+          
+          {/* Key (monospace, smaller) */}
+          <code className="text-xs text-muted-foreground font-mono block">
+            {permission.key}
+          </code>
+          
+          {/* Full description */}
+          <p className="text-sm text-muted-foreground">
+            {permission.description || "No description provided"}
+          </p>
+        </div>
+        
+        {/* Assigned Roles */}
+        <div className="flex flex-wrap gap-1 max-w-[280px] justify-end shrink-0">
+          {assignedRoles.slice(0, 4).map((role) => (
+            <Badge key={role.id} variant="outline" className="text-xs">
+              {role.label}
+            </Badge>
+          ))}
+          {assignedRoles.length > 4 && (
+            <Badge variant="outline" className="text-xs">
+              +{assignedRoles.length - 4}
+            </Badge>
+          )}
+          {assignedRoles.length === 0 && (
+            <span className="text-xs text-muted-foreground italic">No roles assigned</span>
+          )}
+        </div>
+        
+        {/* Actions */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onEdit(permission)}>
+              <Pencil className="h-4 w-4 mr-2" />
+              Edit
+            </DropdownMenuItem>
+            {!permission.is_system && (
+              <DropdownMenuItem
+                onClick={() => onDelete(permission)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  );
 }
 
 export function PermissionListView({ permissions }: PermissionListViewProps) {
@@ -91,6 +162,18 @@ export function PermissionListView({ permissions }: PermissionListViewProps) {
       {} as Record<string, Permission[]>
     );
   }, [filteredPermissions]);
+
+  // Sort categories in logical order
+  const sortedCategories = useMemo(() => {
+    return Object.keys(groupedPermissions).sort((a, b) => {
+      const aIndex = CATEGORY_ORDER.indexOf(a);
+      const bIndex = CATEGORY_ORDER.indexOf(b);
+      if (aIndex === -1 && bIndex === -1) return a.localeCompare(b);
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+      return aIndex - bIndex;
+    });
+  }, [groupedPermissions]);
 
   // Get roles that have a permission
   const getRolesWithPermission = (permissionKey: string) => {
@@ -155,94 +238,48 @@ export function PermissionListView({ permissions }: PermissionListViewProps) {
         </Select>
       </div>
 
-      {/* Permissions Table */}
-      <div className="border rounded-lg">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[200px]">Key</TableHead>
-              <TableHead className="w-[180px]">Label</TableHead>
-              <TableHead className="w-[120px]">Category</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead className="w-[200px]">Assigned Roles</TableHead>
-              <TableHead className="w-[60px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {Object.entries(groupedPermissions).map(([category, perms]) => (
-              perms.map((permission, index) => {
-                const assignedRoles = getRolesWithPermission(permission.key);
-                
-                return (
-                  <TableRow key={permission.id}>
-                    <TableCell className="font-mono text-sm">
-                      {permission.key}
-                    </TableCell>
-                    <TableCell>{permission.label}</TableCell>
-                    <TableCell>
-                      {index === 0 && (
-                        <Badge variant="secondary" className="text-xs">
-                          {CATEGORY_LABELS[category] || category}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground max-w-[300px] truncate">
-                      {permission.description || "—"}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {assignedRoles.slice(0, 3).map((role) => (
-                          <Badge key={role.id} variant="outline" className="text-xs">
-                            {role.label}
-                          </Badge>
-                        ))}
-                        {assignedRoles.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{assignedRoles.length - 3}
-                          </Badge>
-                        )}
-                        {assignedRoles.length === 0 && (
-                          <span className="text-xs text-muted-foreground">None</span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEdit(permission)}>
-                            <Pencil className="h-4 w-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                          {!permission.is_system && (
-                            <DropdownMenuItem
-                              onClick={() => handleDelete(permission)}
-                              className="text-destructive focus:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            ))}
-            {filteredPermissions.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                  No permissions found matching your criteria.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+      {/* Permissions by Category */}
+      <div className="border rounded-lg overflow-hidden">
+        {sortedCategories.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground">
+            No permissions found matching your criteria.
+          </div>
+        ) : (
+          sortedCategories.map((category) => {
+            const categoryPermissions = groupedPermissions[category] || [];
+            if (categoryPermissions.length === 0) return null;
+
+            return (
+              <div key={category}>
+                {/* Category Header */}
+                <div className="flex items-center justify-between gap-2 py-2.5 px-4 bg-muted/50 border-b sticky top-0 z-10">
+                  <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">
+                    {CATEGORY_LABELS[category] || category}
+                  </h3>
+                  <Badge variant="secondary" className="text-xs">
+                    {categoryPermissions.length}
+                  </Badge>
+                </div>
+
+                {/* Permission Cards */}
+                <div className="divide-y divide-border/50">
+                  {categoryPermissions.map((permission) => {
+                    const assignedRoles = getRolesWithPermission(permission.key);
+                    return (
+                      <PermissionCard
+                        key={permission.id}
+                        permission={permission}
+                        assignedRoles={assignedRoles}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
 
       {/* Form Dialog */}
