@@ -214,9 +214,9 @@ export function PermissionMatrix({ roles, onEditRole }: PermissionMatrixProps) {
   return (
     <div className="border rounded-lg overflow-hidden flex flex-col">
       <ScrollArea className="w-full flex-1">
-        <div className="min-w-max">
+        <div className="w-full">
           {/* Header Row */}
-          <div className="flex border-b bg-muted/30">
+          <div className="flex border-b bg-muted/30 w-full">
             {/* Permission column header */}
             <div className="w-56 shrink-0 px-4 py-3 font-medium text-sm border-r sticky left-0 bg-muted/30 z-10">
               Permission
@@ -229,7 +229,7 @@ export function PermissionMatrix({ roles, onEditRole }: PermissionMatrixProps) {
               return (
                 <div
                   key={role.id}
-                  className="w-28 shrink-0 px-2 py-2 text-center border-r last:border-r-0"
+                  className="flex-1 min-w-[100px] px-2 py-2 text-center border-r last:border-r-0"
                 >
                   <div className="flex flex-col items-center gap-1">
                     <DropdownMenu>
@@ -325,7 +325,7 @@ export function PermissionMatrix({ roles, onEditRole }: PermissionMatrixProps) {
                     </div>
                     {/* Empty cells for alignment */}
                     {roles.map((role) => (
-                      <div key={role.id} className="w-28 shrink-0 border-r last:border-r-0" />
+                      <div key={role.id} className="flex-1 min-w-[100px] border-r last:border-r-0" />
                     ))}
                   </div>
                 </CollapsibleTrigger>
@@ -437,7 +437,7 @@ function PermissionRow({
   isUpdating,
 }: PermissionRowProps) {
   return (
-    <div className="flex border-b last:border-b-0 hover:bg-muted/30 transition-colors">
+    <div className="flex border-b last:border-b-0 hover:bg-muted/30 transition-colors w-full">
       {/* Permission name */}
       <div className="w-56 shrink-0 px-4 py-2 border-r sticky left-0 bg-background z-10">
         <TooltipProvider delayDuration={200}>
@@ -469,7 +469,7 @@ function PermissionRow({
           <div
             key={role.id}
             className={cn(
-              "w-28 shrink-0 flex items-center justify-center border-r last:border-r-0",
+              "flex-1 min-w-[100px] flex items-center justify-center border-r last:border-r-0",
               isPending && "bg-primary/5"
             )}
           >
