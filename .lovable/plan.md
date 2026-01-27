@@ -1,164 +1,222 @@
 
+# Dynamic Roles & Permissions Management
 
-# Compact Roles Management UI Redesign
+## Overview
 
-## Problem
-
-The current UI has excessive vertical scrolling with each permission taking a full row (including description), making it hard to quickly see and compare permissions across the interface.
-
-## Solution: Permission Matrix Layout
-
-Transform the UI into a **compact matrix/grid view** that displays all permissions at a glance without scrolling, while keeping the role selection on the left.
+Transform the current hybrid (code + database) RBAC system into a fully database-driven system where administrators can create, update, and delete both roles and permissions through the UI.
 
 ---
 
-## New Compact Layout
+## Current State vs Target State
+
+| Component | Current | Target |
+|-----------|---------|--------|
+| **Roles** | PostgreSQL ENUM (fixed) | Database table (dynamic) |
+| **Permissions** | TypeScript config (fixed) | Database table (dynamic) |
+| **Role-Permission mapping** | Database overrides only | Full database control |
+
+---
+
+## Database Changes
+
+### 1. New `permissions` Table
+Stores all available permissions that can be assigned to roles.
 
 ```text
-┌────────────────────────────────────────────────────────────────────────┐
-│ Role Permissions                                                       │
-│ Select a role and toggle permissions. Changes apply immediately.       │
-├────────────────────────────────────────────────────────────────────────┤
-│                                                                        │
-│ ┌─────────────┐  ┌──────────────────────────────────────────────────┐  │
-│ │  ROLES      │  │  PERMISSIONS                           [Reset]   │  │
-│ ├─────────────┤  ├──────────────────────────────────────────────────┤  │
-│ │             │  │                                                  │  │
-│ │ ● Admin     │  │  MODULES              SETTINGS                   │  │
-│ │   Labor Mgmt│  │  ┌─────────────────┐  ┌─────────────────┐        │  │
-│ │   Leadership│  │  │ [✓] Admin       │  │ [✓] Volume Ovrd │        │  │
-│ │   CNO       │  │  │ [✓] Feedback    │  │ [✓] NP Override │        │  │
-│ │   Director  │  │  │ [✓] Staffing    │  └─────────────────┘        │  │
-│ │   Manager   │  │  │ [✓] Positions   │                             │  │
-│ │             │  │  │ [✓] Analytics   │  FILTERS                    │  │
-│ │             │  │  │ [✓] Reports     │  ┌─────────────────┐        │  │
-│ │             │  │  │ [✓] Support     │  │ [✓] Region      │        │  │
-│ │             │  │  └─────────────────┘  │ [✓] Market      │        │  │
-│ │             │  │                       │ [✓] Facility    │        │  │
-│ │             │  │  SUB-FILTERS          │ [✓] Department  │        │  │
-│ │             │  │  ┌─────────────────┐  └─────────────────┘        │  │
-│ │             │  │  │ [✓] Submarket   │                             │  │
-│ │             │  │  │ [✓] Level 2     │                             │  │
-│ │             │  │  │ [✓] PSTAT       │                             │  │
-│ │             │  │  └─────────────────┘                             │  │
-│ │             │  │                                                  │  │
-│ └─────────────┘  └──────────────────────────────────────────────────┘  │
-│                                                                        │
-└────────────────────────────────────────────────────────────────────────┘
+permissions
+├── id (UUID, primary key)
+├── key (TEXT, unique) - e.g., "admin.access"
+├── label (TEXT) - e.g., "Admin Module"
+├── description (TEXT) - e.g., "Access to admin panel"
+├── category (TEXT) - e.g., "modules", "settings", "filters"
+├── is_system (BOOLEAN) - Prevents deletion of core permissions
+├── created_at (TIMESTAMPTZ)
+└── updated_at (TIMESTAMPTZ)
+```
+
+### 2. New `roles` Table
+Stores role definitions (metadata layer on top of the enum).
+
+```text
+roles
+├── id (UUID, primary key)
+├── name (TEXT, unique) - Must match app_role enum value
+├── label (TEXT) - Display name, e.g., "Labor Management"
+├── description (TEXT)
+├── is_system (BOOLEAN) - Prevents deletion of core roles
+├── sort_order (INTEGER) - For display ordering
+├── created_at (TIMESTAMPTZ)
+└── updated_at (TIMESTAMPTZ)
+```
+
+### 3. Seed Data Migration
+Insert existing roles and permissions from `rbacConfig.ts` into the new tables.
+
+---
+
+## Technical Considerations
+
+### Adding New Roles (Enum Limitation)
+PostgreSQL enums cannot have values removed easily. For new roles:
+1. User creates role in UI → saves to `roles` table
+2. A background process or admin action triggers a database migration to add the enum value
+3. Until the enum is updated, the new role won't work in `user_roles`
+
+**Recommended Approach**: 
+- Replace the `app_role` enum with a TEXT column that references the `roles` table via foreign key
+- This allows full dynamic CRUD without migrations
+- Requires updating `user_roles.role` column type
+
+### Updating Existing Roles
+- Can update `label`, `description`, `sort_order` freely
+- Cannot update `name` (key) as it's referenced elsewhere
+- System roles cannot be deleted
+
+### Adding/Updating Permissions
+- Add new permission → insert into `permissions` table
+- Update label/description → update the row
+- System permissions (core app functionality) cannot be deleted
+
+---
+
+## UI Components
+
+### Permissions Tab (Currently "Coming Soon")
+Replace placeholder with a full management interface:
+
+```text
+┌────────────────────────────────────────────────────────────────┐
+│ Permission Management                           [+ Add Permission]
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│ Filter: [All Categories ▼]  Search: [________________]         │
+│                                                                │
+│ ┌────────────────────────────────────────────────────────────┐ │
+│ │ MODULES                                                    │ │
+│ ├────────────────────────────────────────────────────────────┤ │
+│ │ admin.access      │ Admin Module    │ Access to admin... │⋮ │
+│ │ feedback.access   │ Feedback Module │ Access to feedba...│⋮ │
+│ │ staffing.access   │ Staffing        │ Access to staffi...│⋮ │
+│ │ ...                                                        │ │
+│ └────────────────────────────────────────────────────────────┘ │
+│                                                                │
+│ ┌────────────────────────────────────────────────────────────┐ │
+│ │ SETTINGS                                                   │ │
+│ ├────────────────────────────────────────────────────────────┤ │
+│ │ settings.volume_override │ Volume Override │ Access to...│⋮ │
+│ │ settings.np_override     │ NP Override     │ Access to...│⋮ │
+│ └────────────────────────────────────────────────────────────┘ │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+```
+
+Features:
+- View all permissions grouped by category
+- Add new permission with key, label, description, category
+- Edit existing permissions (label, description, category)
+- Delete custom permissions (system permissions protected)
+
+### Enhanced Roles Tab
+Add CRUD controls to existing role management:
+
+```text
+┌────────────────────────────────────────────────────────────────┐
+│ Role Management                                    [+ Add Role] │
+├────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ ┌─────────────┐  ┌─────────────────────────────────────────┐   │
+│ │  ROLES      │  │  SELECTED ROLE                          │   │
+│ ├─────────────┤  ├─────────────────────────────────────────┤   │
+│ │ ● Admin   ⋮ │  │  Label: [Admin____________]             │   │
+│ │   Labor   ⋮ │  │  Description: [Full system access...]   │   │
+│ │   Leader  ⋮ │  │  ─────────────────────────────────────  │   │
+│ │   CNO     ⋮ │  │  PERMISSIONS                 [Reset]    │   │
+│ │   Director⋮ │  │  (existing 2x2 grid of permissions)     │   │
+│ │   Manager ⋮ │  │                                         │   │
+│ └─────────────┘  └─────────────────────────────────────────┘   │
+│                                                                 │
+└────────────────────────────────────────────────────────────────┘
+```
+
+Features:
+- View all roles with edit/delete menu (⋮)
+- Create new role with name, label, description
+- Edit role metadata (label, description)
+- Delete custom roles (system roles protected)
+- Reorder roles via drag-and-drop or sort_order
+
+---
+
+## New Hooks
+
+### `usePermissions.ts`
+```text
+- fetchPermissions(): Get all permissions from database
+- createPermission(data): Add new permission
+- updatePermission(id, data): Update permission details
+- deletePermission(id): Remove custom permission
+- Real-time subscription for updates
+```
+
+### `useRoles.ts`
+```text
+- fetchRoles(): Get all roles from database
+- createRole(data): Add new role
+- updateRole(id, data): Update role details  
+- deleteRole(id): Remove custom role
+- Real-time subscription for updates
 ```
 
 ---
 
-## Key Design Changes
+## Implementation Phases
 
-### 1. Two-Column Grid for Permission Categories
-Instead of stacking all 4 categories vertically, arrange them in a **2x2 grid**:
-- Top Left: **Modules** (7 items)
-- Top Right: **Settings** (2 items)
-- Bottom Left: **Sub-filters** (3 items)
-- Bottom Right: **Filters** (4 items)
+### Phase 1: Database Schema
+1. Create `permissions` table with RLS policies
+2. Create `roles` table with RLS policies
+3. Seed existing permissions and roles from config
+4. Update `role_permissions` to reference new tables
 
-This eliminates vertical scrolling entirely.
+### Phase 2: Permissions Management
+1. Create `usePermissions` hook
+2. Build Permissions tab UI with CRUD
+3. Add permission dialog for create/edit
+4. Connect to role management (dynamic permission list)
 
-### 2. Compact Permission Rows
-Remove descriptions from the default view to reduce row height:
-- Show only: `[Checkbox] Label [Override badge if any]`
-- Add tooltips for descriptions on hover
-- Smaller padding: `py-1.5 px-2` instead of `py-2.5 px-3`
+### Phase 3: Roles Management
+1. Create `useRoles` hook
+2. Update RolesManagement to fetch roles from DB
+3. Add role CRUD dialog for create/edit
+4. Add delete confirmation with dependency check
 
-### 3. Simplified Role Cards
-Make role cards more compact:
-- Single line with role name + permission count badge
-- Remove description from card (show on hover as tooltip)
-- Tighter spacing between cards
-
-### 4. Visual Grouping with Cards
-Each permission category becomes a compact card:
-- Small category header with count badge
-- Dense checkbox list inside
-- Subtle border to group related items
-
-### 5. Quick Actions
-- Single "Reset All" button in the header when overrides exist
-- Override indicator as a small colored dot instead of badge text
+### Phase 4: Migration Path
+1. Update `rbacConfig.ts` to load from database
+2. Keep code defaults as fallback
+3. Test all permission checks work with new system
 
 ---
 
-## Component Structure
+## Files to Create/Modify
 
-```text
-RolesManagement
-├── Header (title + description)
-└── Main Content (flex row)
-    ├── RoleList (left, ~180px)
-    │   └── CompactRoleCard × 6
-    └── PermissionGrid (right, flex-1)
-        ├── Header (role name + reset button)
-        └── Grid (2 columns)
-            ├── ModulesCard
-            ├── SettingsCard
-            ├── SubfiltersCard
-            └── FiltersCard
-```
+**New Files:**
+- `src/hooks/usePermissions.ts` - Permission CRUD operations
+- `src/hooks/useDynamicRoles.ts` - Role CRUD operations
+- `src/components/admin/PermissionFormDialog.tsx` - Create/edit permission
+- `src/components/admin/RoleFormDialog.tsx` - Create/edit role
+- `src/pages/admin/PermissionsManagement.tsx` - Full permissions tab
+
+**Modified Files:**
+- `src/pages/admin/AdminPage.tsx` - Replace placeholder with PermissionsManagement
+- `src/pages/admin/RolesManagement.tsx` - Add role CRUD controls
+- `src/hooks/useRolePermissions.ts` - Fetch permissions from DB instead of config
+- `src/config/rbacConfig.ts` - Make it load from DB with code fallback
 
 ---
 
-## Technical Implementation
+## Security Considerations
 
-### File to Modify
-- `src/pages/admin/RolesManagement.tsx`
-
-### New Component: `CompactPermissionCard`
-```text
-Props:
-- title: string
-- permissions: array
-- effectivePermissions: array
-- onToggle, onReset, isUpdating
-
-Layout:
-- Header: title + enabled count badge
-- Body: compact checkbox list with tooltips
-```
-
-### New Component: `CompactRoleCard`
-```text
-Props:
-- role, isSelected, permissionCount, overrideCount, onClick
-
-Layout:
-- Single row: role label + count badge
-- Selected state: primary border/bg
-- Tooltip shows full description
-```
-
-### Styling Changes
-- Role list: `w-44` (narrower from `w-64`)
-- Permission grid: `grid grid-cols-2 gap-3`
-- Permission rows: `py-1.5 text-sm` (compact)
-- Cards: `rounded-md border bg-card`
-- Override indicator: small dot (not text badge)
-
----
-
-## Visual Improvements
-
-1. **No Scrolling**: Everything fits in viewport
-2. **Quick Scanning**: Compact checkboxes are faster to scan
-3. **Clear Grouping**: Cards visually separate permission types
-4. **Hover Details**: Descriptions in tooltips, not inline
-5. **Override Dots**: Colored dots (amber) instead of text badges
-6. **Consistent Spacing**: Uniform gaps throughout
-
----
-
-## Summary
-
-This redesign transforms the roles management from a scrolling list to a compact dashboard where:
-1. All 16 permissions visible at once (no scrolling)
-2. Role selection is streamlined (6 compact cards)
-3. Permission categories are grouped in a 2x2 grid
-4. Descriptions moved to tooltips for cleaner look
-5. Override indicators are subtle dots
-6. Everything fits in a single view
-
+1. **RLS Policies**: Only admins can modify roles/permissions tables
+2. **System Flag**: Core permissions and roles marked `is_system = true` cannot be deleted
+3. **Validation**: Permission keys must follow naming convention (category.action)
+4. **Audit**: Track who created/modified roles and permissions
+5. **Cascade Protection**: Cannot delete permission if assigned to any role
