@@ -20,16 +20,8 @@ const ModuleItem = forwardRef<HTMLDivElement, ModuleItemProps>(
     const { hasPermission } = useRBAC();
     const navigate = useNavigate();
 
-    // Check if user has access to any sub-items
-    const hasAccessibleItems = module.items.some(item => {
-      if (!item.permissions || item.permissions.length === 0) return true;
-      return item.permissions.some(permission => hasPermission(permission));
-    });
-
-    // Don't render if user has no access to any items
-    if (!hasAccessibleItems) return null;
-
     // Handle module click - navigate to first accessible sub-item
+    // IMPORTANT: useCallback must be called before any early returns
     const handleModuleClick = useCallback(() => {
       const firstAccessibleItem = module.items.find(item => {
         if (!item.permissions || item.permissions.length === 0) return true;
@@ -40,6 +32,15 @@ const ModuleItem = forwardRef<HTMLDivElement, ModuleItemProps>(
         navigate(firstAccessibleItem.url);
       }
     }, [module.items, hasPermission, navigate]);
+
+    // Check if user has access to any sub-items
+    const hasAccessibleItems = module.items.some(item => {
+      if (!item.permissions || item.permissions.length === 0) return true;
+      return item.permissions.some(permission => hasPermission(permission));
+    });
+
+    // Don't render if user has no access to any items
+    if (!hasAccessibleItems) return null;
 
     return (
       <motion.div
