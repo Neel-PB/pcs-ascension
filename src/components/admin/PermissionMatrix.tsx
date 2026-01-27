@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { ChevronDown, ChevronRight, Lock, MoreVertical, Pencil, Trash2, Copy, RotateCcw } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
+import { ChevronDown, ChevronRight, Lock, MoreVertical, Pencil, Trash2, RotateCcw, Save, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -33,6 +33,10 @@ import { useDynamicRoles, type Role } from "@/hooks/useDynamicRoles";
 import { type AppRole, type PermissionKey } from "@/config/rbacConfig";
 import { cn } from "@/lib/utils";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
+
+// Type for pending permission changes (role -> permission -> new value)
+type PendingChanges = Map<AppRole, Map<PermissionKey, boolean>>;
 
 interface PermissionMatrixProps {
   roles: Role[];
@@ -56,7 +60,46 @@ export function PermissionMatrix({ roles, onEditRole }: PermissionMatrixProps) {
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [roleToDelete, setRoleToDelete] = useState<Role | null>(null);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  
+  // Track pending changes locally - not saved until user clicks Save
+  const [pendingChanges, setPendingChanges] = useState<PendingChanges>(new Map());
+
+  // Total pending changes across all roles
+  const totalPendingCount = useMemo(() => {
+    let count = 0;
+    pendingChanges.forEach(roleChanges => {
+      count += roleChanges.size;
+    });
+    return count;
+  }, [pendingChanges]);
+
+  // Get pending changes count for a specific role
+  const getRolePendingCount = useCallback((roleName: AppRole) => {
+    return pendingChanges.get(roleName)?.size || 0;
+  }, [pendingChanges]);
+
+  // Get display permissions (effective + pending changes applied)
+  const getDisplayPermissions = useCallback((roleName: AppRole): PermissionKey[] => {
+    const effective = getEffectivePermissions(roleName);
+    const pending = pendingChanges.get(roleName);
+    if (!pending || pending.size === 0) return effective;
+
+    const result = new Set(effective);
+    pending.forEach((value, key) => {
+      if (value === true) {
+        result.add(key);
+      } else {
+        result.delete(key);
+      }
+    });
+    return Array.from(result);
+  }, [getEffectivePermissions, pendingChanges]);
+
+  // Check if a permission has pending changes for a role
+  const isPendingPermission = useCallback((roleName: AppRole, permission: PermissionKey): boolean => {
+    return pendingChanges.get(roleName)?.has(permission) || false;
+  }, [pendingChanges]);
 
   // Sort categories in defined order
   const sortedCategories = useMemo(() => {
@@ -83,23 +126,73 @@ export function PermissionMatrix({ roles, onEditRole }: PermissionMatrixProps) {
     });
   };
 
-  const handleTogglePermission = async (role: AppRole, permission: PermissionKey, currentValue: boolean) => {
-    setIsUpdating(true);
+  // Handle toggle - updates local state only
+  const handleTogglePermission = useCallback((role: AppRole, permission: PermissionKey, currentValue: boolean) => {
+    const newValue = !currentValue;
+    
+    setPendingChanges(prev => {
+      const next = new Map(prev);
+      const roleChanges = new Map(next.get(role) || new Map());
+      
+      // Check if this change would revert to the current effective state
+      const currentEffective = getEffectivePermissions(role);
+      const isCurrentlyEnabled = currentEffective.includes(permission);
+      
+      if (newValue === isCurrentlyEnabled) {
+        // Reverts to current state, remove from pending
+        roleChanges.delete(permission);
+      } else {
+        roleChanges.set(permission, newValue);
+      }
+      
+      if (roleChanges.size === 0) {
+        next.delete(role);
+      } else {
+        next.set(role, roleChanges);
+      }
+      return next;
+    });
+  }, [getEffectivePermissions]);
+
+  const handleResetRole = async (role: AppRole) => {
+    setIsSaving(true);
     try {
-      await setPermission.mutateAsync({ role, permission, value: !currentValue });
+      await resetToDefaults.mutateAsync(role);
+      // Also clear any pending changes for this role
+      setPendingChanges(prev => {
+        const next = new Map(prev);
+        next.delete(role);
+        return next;
+      });
     } finally {
-      setIsUpdating(false);
+      setIsSaving(false);
     }
   };
 
-  const handleResetRole = async (role: AppRole) => {
-    setIsUpdating(true);
+  // Save all pending changes
+  const handleSave = async () => {
+    if (pendingChanges.size === 0) return;
+    
+    setIsSaving(true);
     try {
-      await resetToDefaults.mutateAsync(role);
+      for (const [role, changes] of pendingChanges) {
+        for (const [permission, value] of changes) {
+          await setPermission.mutateAsync({ role, permission, value });
+        }
+      }
+      setPendingChanges(new Map());
+      toast.success("Changes saved successfully");
+    } catch (error) {
+      toast.error("Failed to save changes");
     } finally {
-      setIsUpdating(false);
+      setIsSaving(false);
     }
   };
+
+  // Discard all pending changes
+  const handleDiscard = useCallback(() => {
+    setPendingChanges(new Map());
+  }, []);
 
   const handleDeleteRole = (role: Role) => {
     setRoleToDelete(role);
@@ -119,8 +212,8 @@ export function PermissionMatrix({ roles, onEditRole }: PermissionMatrixProps) {
   };
 
   return (
-    <div className="border rounded-lg overflow-hidden">
-      <ScrollArea className="w-full">
+    <div className="border rounded-lg overflow-hidden flex flex-col">
+      <ScrollArea className="w-full flex-1">
         <div className="min-w-max">
           {/* Header Row */}
           <div className="flex border-b bg-muted/30">
@@ -131,6 +224,7 @@ export function PermissionMatrix({ roles, onEditRole }: PermissionMatrixProps) {
             {/* Role column headers */}
             {roles.map((role) => {
               const overrideCount = getOverrideCount(role.name as AppRole);
+              const pendingCount = getRolePendingCount(role.name as AppRole);
               
               return (
                 <div
@@ -175,7 +269,18 @@ export function PermissionMatrix({ roles, onEditRole }: PermissionMatrixProps) {
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>
-                    {overrideCount > 0 && (
+                    {pendingCount > 0 ? (
+                      <TooltipProvider delayDuration={200}>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <span className="w-2 h-2 rounded-full bg-primary" />
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom">
+                            <p className="text-xs">{pendingCount} unsaved</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ) : overrideCount > 0 ? (
                       <TooltipProvider delayDuration={200}>
                         <Tooltip>
                           <TooltipTrigger>
@@ -186,7 +291,7 @@ export function PermissionMatrix({ roles, onEditRole }: PermissionMatrixProps) {
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               );
@@ -232,10 +337,11 @@ export function PermissionMatrix({ roles, onEditRole }: PermissionMatrixProps) {
                       key={permission.id}
                       permission={permission}
                       roles={roles}
-                      getEffectivePermissions={getEffectivePermissions}
+                      getDisplayPermissions={getDisplayPermissions}
                       isPermissionOverridden={isPermissionOverridden}
+                      isPendingPermission={isPendingPermission}
                       onToggle={handleTogglePermission}
-                      isUpdating={isUpdating}
+                      isUpdating={isSaving}
                     />
                   ))}
                 </CollapsibleContent>
@@ -246,20 +352,44 @@ export function PermissionMatrix({ roles, onEditRole }: PermissionMatrixProps) {
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
 
-      {/* Legend */}
-      <div className="flex items-center gap-4 px-4 py-2 border-t bg-muted/20 text-xs text-muted-foreground">
-        <div className="flex items-center gap-1.5">
-          <Checkbox checked className="h-3 w-3" disabled />
-          <span>Enabled</span>
+      {/* Legend & Save Bar */}
+      <div className="flex items-center justify-between px-4 py-2 border-t bg-muted/20">
+        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <Checkbox checked className="h-3 w-3" disabled />
+            <span>Enabled</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-primary" />
+            <span>Unsaved</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-warning" />
+            <span>Overridden</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Lock className="h-3 w-3" />
+            <span>System</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-warning" />
-          <span>Overridden</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <Lock className="h-3 w-3" />
-          <span>System</span>
-        </div>
+        
+        {totalPendingCount > 0 && (
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-muted-foreground">
+              {totalPendingCount} unsaved change{totalPendingCount !== 1 ? 's' : ''}
+            </span>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleDiscard} disabled={isSaving}>
+                <X className="h-4 w-4 mr-1" />
+                Discard
+              </Button>
+              <Button size="sm" onClick={handleSave} disabled={isSaving}>
+                <Save className="h-4 w-4 mr-1" />
+                {isSaving ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Delete Confirmation Dialog */}
@@ -290,8 +420,9 @@ export function PermissionMatrix({ roles, onEditRole }: PermissionMatrixProps) {
 interface PermissionRowProps {
   permission: Permission;
   roles: Role[];
-  getEffectivePermissions: (role: AppRole) => PermissionKey[];
+  getDisplayPermissions: (role: AppRole) => PermissionKey[];
   isPermissionOverridden: (role: AppRole, permission: PermissionKey) => boolean;
+  isPendingPermission: (role: AppRole, permission: PermissionKey) => boolean;
   onToggle: (role: AppRole, permission: PermissionKey, currentValue: boolean) => void;
   isUpdating: boolean;
 }
@@ -299,8 +430,9 @@ interface PermissionRowProps {
 function PermissionRow({
   permission,
   roles,
-  getEffectivePermissions,
+  getDisplayPermissions,
   isPermissionOverridden,
+  isPendingPermission,
   onToggle,
   isUpdating,
 }: PermissionRowProps) {
@@ -328,14 +460,18 @@ function PermissionRow({
       {roles.map((role) => {
         const roleName = role.name as AppRole;
         const permissionKey = permission.key as PermissionKey;
-        const effectivePerms = getEffectivePermissions(roleName);
-        const isEnabled = effectivePerms.includes(permissionKey);
+        const displayPerms = getDisplayPermissions(roleName);
+        const isEnabled = displayPerms.includes(permissionKey);
         const isOverridden = isPermissionOverridden(roleName, permissionKey);
+        const isPending = isPendingPermission(roleName, permissionKey);
 
         return (
           <div
             key={role.id}
-            className="w-28 shrink-0 flex items-center justify-center border-r last:border-r-0"
+            className={cn(
+              "w-28 shrink-0 flex items-center justify-center border-r last:border-r-0",
+              isPending && "bg-primary/5"
+            )}
           >
             <div className="relative">
               <Checkbox
@@ -344,9 +480,11 @@ function PermissionRow({
                 disabled={isUpdating}
                 className="h-4 w-4"
               />
-              {isOverridden && (
+              {isPending ? (
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary" />
+              ) : isOverridden ? (
                 <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-warning" />
-              )}
+              ) : null}
             </div>
           </div>
         );
