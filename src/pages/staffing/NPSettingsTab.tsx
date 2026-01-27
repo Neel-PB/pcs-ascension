@@ -5,8 +5,9 @@ import { EditableTable } from '@/components/editable-table/EditableTable';
 import { createNPOverrideColumns, NPOverrideRow } from '@/config/npOverrideColumns';
 import { useNPOverrides, useUpsertNPOverride, useDeleteNPOverride } from '@/hooks/useNPOverrides';
 import { useHistoricalVolumeAnalysis } from '@/hooks/useHistoricalVolumeAnalysis';
-import { Database } from 'lucide-react';
+import { Database, Lock } from 'lucide-react';
 import { LogoLoader } from '@/components/ui/LogoLoader';
+import { useRBAC } from '@/hooks/useRBAC';
 
 interface NPSettingsTabProps {
   selectedMarket: string;
@@ -33,6 +34,8 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
   const { data: volumeAnalysis = [], isLoading: isLoadingAnalysis } = useHistoricalVolumeAnalysis();
   const upsertMutation = useUpsertNPOverride();
   const deleteMutation = useDeleteNPOverride();
+  const { hasPermission } = useRBAC();
+  const canManageOverrides = hasPermission('approvals.np_override');
 
   // Fetch departments for the selected facility
   const { data: departments = [], isLoading: isLoadingDepartments } = useQuery({
@@ -117,6 +120,8 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
   }, [tableData]);
 
   const handleSaveVolume = async (departmentId: string, volume: number | null) => {
+    if (!canManageOverrides) return;
+    
     const row = tableData.find((r) => r.department_id === departmentId);
     if (!row) return;
 
@@ -139,6 +144,8 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
   };
 
   const handleSaveDate = async (departmentId: string, date: string | null) => {
+    if (!canManageOverrides) return;
+    
     const row = tableData.find((r) => r.department_id === departmentId);
     if (!row) return;
 

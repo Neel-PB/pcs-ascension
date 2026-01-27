@@ -20,6 +20,7 @@ import { Feedback, useFeedback } from '@/hooks/useFeedback';
 import { useFeedbackComments } from '@/hooks/useFeedbackComments';
 import { format } from 'date-fns';
 import { ExternalLink, Send, Trash2, Image, Calendar, Globe, Monitor } from 'lucide-react';
+import { useRBAC } from '@/hooks/useRBAC';
 
 interface FeedbackDetailsSheetProps {
   feedback: Feedback | null;
@@ -63,6 +64,8 @@ export const FeedbackDetailsSheet: React.FC<FeedbackDetailsSheetProps> = ({
   const { comments, isLoading: commentsLoading, addComment, deleteComment } = useFeedbackComments(feedback?.id ?? null);
   const [newComment, setNewComment] = useState('');
   const [showScreenshot, setShowScreenshot] = useState(false);
+  const { hasPermission } = useRBAC();
+  const canManageFeedback = hasPermission('approvals.feedback');
 
   if (!feedback) return null;
 
@@ -207,8 +210,9 @@ export const FeedbackDetailsSheet: React.FC<FeedbackDetailsSheetProps> = ({
                           pcs_status: value as Feedback['pcs_status'] 
                         })
                       }
+                      disabled={!canManageFeedback}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className={!canManageFeedback ? 'opacity-60' : ''}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -218,6 +222,11 @@ export const FeedbackDetailsSheet: React.FC<FeedbackDetailsSheetProps> = ({
                         <SelectItem value="backlog">Backlog</SelectItem>
                       </SelectContent>
                     </Select>
+                    {!canManageFeedback && (
+                      <p className="text-xs text-muted-foreground">
+                        You don't have permission to change feedback status
+                      </p>
+                    )}
                   </div>
 
                   {/* PB Status Update */}
@@ -231,9 +240,9 @@ export const FeedbackDetailsSheet: React.FC<FeedbackDetailsSheetProps> = ({
                           pb_status: value as Feedback['pb_status'] 
                         })
                       }
-                      disabled={feedback.pcs_status === 'disregard' || feedback.pcs_status === 'backlog'}
+                      disabled={feedback.pcs_status === 'disregard' || feedback.pcs_status === 'backlog' || !canManageFeedback}
                     >
-                      <SelectTrigger className={feedback.pcs_status === 'disregard' || feedback.pcs_status === 'backlog' ? 'opacity-60' : ''}>
+                      <SelectTrigger className={(feedback.pcs_status === 'disregard' || feedback.pcs_status === 'backlog' || !canManageFeedback) ? 'opacity-60' : ''}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

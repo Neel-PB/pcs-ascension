@@ -42,6 +42,7 @@ import { useFeedbackComments } from "@/hooks/useFeedbackComments";
 import { FeedbackCommentsDialog } from "./FeedbackCommentsDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { useRBAC } from "@/hooks/useRBAC";
 
 interface Feedback {
   id: string;
@@ -100,6 +101,8 @@ export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) 
   const [imageError, setImageError] = useState(false);
   const { comments } = useFeedbackComments(feedback.id);
   const { updatePcsStatus, updatePbStatus, updateFeedbackType, updateFeedbackPriority } = useFeedback();
+  const { hasPermission } = useRBAC();
+  const canManageFeedback = hasPermission('approvals.feedback');
   
   // Business rule: PB Status is locked to 'closed' when PCS Status is 'disregard' or 'backlog'
   const isPbStatusLocked = feedback.pcs_status === 'disregard' || feedback.pcs_status === 'backlog';
@@ -292,8 +295,15 @@ export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) 
 
       {/* PCS Status */}
       <TableCell className="py-3 w-[120px]">
-        <Select value={feedback.pcs_status} onValueChange={handlePcsStatusChange}>
-          <SelectTrigger className="h-7 w-[105px] text-xs border-none bg-transparent hover:bg-muted/50 px-1">
+        <Select 
+          value={feedback.pcs_status} 
+          onValueChange={handlePcsStatusChange}
+          disabled={!canManageFeedback}
+        >
+          <SelectTrigger className={cn(
+            "h-7 w-[105px] text-xs border-none bg-transparent hover:bg-muted/50 px-1",
+            !canManageFeedback && "opacity-60 cursor-not-allowed"
+          )}>
             <SelectValue>
               <Badge variant="secondary" className={cn("text-xs", pcsStatusConfig[feedback.pcs_status]?.color)}>
                 {pcsStatusConfig[feedback.pcs_status]?.label}
@@ -317,11 +327,11 @@ export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) 
         <Select 
           value={effectivePbStatus} 
           onValueChange={handlePbStatusChange}
-          disabled={isPbStatusLocked}
+          disabled={isPbStatusLocked || !canManageFeedback}
         >
           <SelectTrigger className={cn(
             "h-7 w-[100px] text-xs border-none bg-transparent hover:bg-muted/50 px-1",
-            isPbStatusLocked && "opacity-60 cursor-not-allowed"
+            (isPbStatusLocked || !canManageFeedback) && "opacity-60 cursor-not-allowed"
           )}>
             <SelectValue>
               <Badge variant="secondary" className={cn("text-xs", pbStatusConfig[effectivePbStatus]?.color)}>

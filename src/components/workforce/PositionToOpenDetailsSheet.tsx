@@ -8,6 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PositionCommentSection } from "@/components/positions/PositionCommentSection";
+import { ApprovalButtons } from "@/components/staffing/ApprovalButtons";
+import { useApprovePositionToOpen, useRejectPositionToOpen, useRevertPositionToOpen } from "@/hooks/useForecastPositions";
+import { useRBAC } from "@/hooks/useRBAC";
 
 interface PositionToOpenDetailsSheetProps {
   open: boolean;
@@ -21,8 +24,32 @@ export function PositionToOpenDetailsSheet({
   position,
 }: PositionToOpenDetailsSheetProps) {
   const [activeTab, setActiveTab] = useState("details");
+  const { hasPermission } = useRBAC();
+  const canApprove = hasPermission('approvals.positions_to_open');
+  
+  const approvePosition = useApprovePositionToOpen();
+  const rejectPosition = useRejectPositionToOpen();
+  const revertPosition = useRevertPositionToOpen();
 
   if (!position) return null;
+
+  const handleApprove = () => {
+    if (position.status === 'approved') {
+      revertPosition.mutate(position.id);
+    } else {
+      approvePosition.mutate(position.id);
+    }
+  };
+
+  const handleReject = () => {
+    if (position.status === 'rejected') {
+      revertPosition.mutate(position.id);
+    } else {
+      rejectPosition.mutate(position.id);
+    }
+  };
+
+  const isLoading = approvePosition.isPending || rejectPosition.isPending || revertPosition.isPending;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -103,10 +130,17 @@ export function PositionToOpenDetailsSheet({
           </TabsContent>
         </Tabs>
 
-        {/* Fixed Footer with Close Button - Only on Details Tab */}
+        {/* Fixed Footer with Approval Buttons - Only on Details Tab */}
         {activeTab === "details" && (
           <div className="px-6 py-4 border-t bg-background shrink-0">
-            <div className="flex justify-end">
+            <div className="flex items-center justify-between">
+              <ApprovalButtons
+                status={position.status}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                isLoading={isLoading}
+                disabled={!canApprove}
+              />
               <Button 
                 variant="ascension" 
                 className="rounded-full"
