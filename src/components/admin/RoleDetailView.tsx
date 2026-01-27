@@ -56,11 +56,10 @@ function CompactRoleCard({ role, isSelected, overrideCount, hasPendingChanges, o
         <TooltipTrigger asChild>
           <div
             className={cn(
-              "w-full text-left px-3 py-2 rounded-md border transition-all flex items-center justify-between gap-2 group",
-              "hover:bg-muted/50",
+              "w-full text-left px-3 py-2 rounded-md transition-all flex items-center justify-between gap-2 group",
               isSelected 
-                ? "border-primary bg-primary/5 ring-1 ring-primary" 
-                : "border-transparent hover:border-border"
+                ? "bg-primary text-primary-foreground" 
+                : "hover:bg-muted/50"
             )}
           >
             <button
@@ -68,18 +67,30 @@ function CompactRoleCard({ role, isSelected, overrideCount, hasPendingChanges, o
               className="flex items-center gap-2 min-w-0 flex-1"
             >
               {hasPendingChanges ? (
-                <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                <span className={cn(
+                  "w-1.5 h-1.5 rounded-full shrink-0",
+                  isSelected ? "bg-primary-foreground" : "bg-primary"
+                )} />
               ) : overrideCount > 0 ? (
-                <span className="w-1.5 h-1.5 rounded-full bg-warning shrink-0" />
+                <span className={cn(
+                  "w-1.5 h-1.5 rounded-full shrink-0",
+                  isSelected ? "bg-primary-foreground/70" : "bg-warning"
+                )} />
               ) : null}
-              <span className="font-medium text-sm truncate">{role.label}</span>
+              <span className={cn(
+                "font-medium text-sm truncate",
+                isSelected && "text-primary-foreground"
+              )}>{role.label}</span>
             </button>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className={cn(
+                      "h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity",
+                      isSelected && "text-primary-foreground hover:text-primary-foreground hover:bg-primary-foreground/20"
+                    )}
                     onClick={(e) => e.stopPropagation()}
                   >
                     <MoreVertical className="h-3.5 w-3.5" />
