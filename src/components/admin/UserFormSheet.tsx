@@ -199,7 +199,9 @@ export function UserFormSheet({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {manageableRoles.map((role) => {
+                        {manageableRoles
+                          .filter((role) => role.name && role.name.trim() !== '')
+                          .map((role) => {
                           const permsCount = getEffectivePermissions(role.name as AppRole).length;
                           return (
                             <SelectItem key={role.id} value={role.name}>
