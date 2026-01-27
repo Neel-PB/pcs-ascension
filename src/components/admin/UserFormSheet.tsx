@@ -20,14 +20,25 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Lock } from "lucide-react";
+import { useDynamicRoles } from "@/hooks/useDynamicRoles";
+import { useRolePermissions } from "@/hooks/useRolePermissions";
 import type { UserWithProfile, UserRole } from "@/hooks/useUsers";
+import { type AppRole } from "@/config/rbacConfig";
 
 const userFormSchema = z.object({
   firstName: z.string().min(1, "First name is required").max(100),
   lastName: z.string().min(1, "Last name is required").max(100),
   email: z.string().email("Invalid email address").max(255),
-  role: z.enum(['admin', 'labor_team'], { required_error: "Role is required" }),
+  role: z.string().min(1, "Role is required"),
   bio: z.string().max(500).optional(),
 });
 
@@ -49,6 +60,8 @@ export function UserFormSheet({
   isSubmitting,
 }: UserFormSheetProps) {
   const isEditMode = !!user;
+  const { manageableRoles, isLoading: rolesLoading } = useDynamicRoles();
+  const { getEffectivePermissions } = useRolePermissions();
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
@@ -166,36 +179,51 @@ export function UserFormSheet({
             <FormField
               control={form.control}
               name="role"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>Role</FormLabel>
-                  <FormControl>
-                    <RadioGroup
+              render={({ field }) => {
+                const selectedRole = manageableRoles.find(r => r.name === field.value);
+                const permissionCount = selectedRole 
+                  ? getEffectivePermissions(selectedRole.name as AppRole).length 
+                  : 0;
+
+                return (
+                  <FormItem>
+                    <FormLabel>Role</FormLabel>
+                    <Select
                       onValueChange={field.onChange}
                       value={field.value}
-                      className="flex flex-col space-y-1"
+                      disabled={rolesLoading}
                     >
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="admin" />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          Administrator
-                        </FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="labor_team" />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          Labor Team
-                        </FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a role" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {manageableRoles.map((role) => {
+                          const permsCount = getEffectivePermissions(role.name as AppRole).length;
+                          return (
+                            <SelectItem key={role.id} value={role.name}>
+                              <div className="flex items-center gap-2">
+                                {role.is_system && <Lock className="h-3 w-3 text-muted-foreground" />}
+                                <span>{role.label}</span>
+                                <Badge variant="secondary" className="text-xs h-4 px-1 ml-auto">
+                                  {permsCount}
+                                </Badge>
+                              </div>
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                    {selectedRole && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {selectedRole.description || `${permissionCount} permissions enabled`}
+                      </p>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             <FormField
