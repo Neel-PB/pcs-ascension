@@ -20,11 +20,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
   useRBACAuditLog,
   formatActionType,
   formatTargetType,
@@ -83,22 +78,31 @@ function AuditLogRow({ entry }: { entry: AuditLogEntry }) {
   const hasDetails = entry.old_value || entry.new_value;
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <TableRow className={cn(hasDetails && "cursor-pointer hover:bg-muted/50")}>
+    <>
+      <TableRow 
+        className={cn(hasDetails && "cursor-pointer hover:bg-muted/50")}
+        onClick={() => hasDetails && setIsOpen(!isOpen)}
+      >
         <TableCell className="w-10">
           {hasDetails && (
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-6 w-6">
-                {isOpen ? (
-                  <ChevronDown className="h-4 w-4" />
-                ) : (
-                  <ChevronRight className="h-4 w-4" />
-                )}
-              </Button>
-            </CollapsibleTrigger>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-6 w-6"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsOpen(!isOpen);
+              }}
+            >
+              {isOpen ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </Button>
           )}
         </TableCell>
-        <TableCell className="text-sm text-muted-foreground">
+        <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
           {format(new Date(entry.created_at), "MMM d, yyyy HH:mm:ss")}
         </TableCell>
         <TableCell>
@@ -106,29 +110,27 @@ function AuditLogRow({ entry }: { entry: AuditLogEntry }) {
         </TableCell>
         <TableCell>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="text-xs shrink-0">
               {formatTargetType(entry.target_type)}
             </Badge>
-            <span className="text-sm font-mono">{entry.target_name}</span>
+            <span className="text-sm font-mono truncate">{entry.target_name}</span>
           </div>
         </TableCell>
         <TableCell>
           <ActorDisplay entry={entry} />
         </TableCell>
       </TableRow>
-      {hasDetails && (
-        <CollapsibleContent asChild>
-          <TableRow className="bg-muted/20 hover:bg-muted/20">
-            <TableCell colSpan={5} className="py-3">
-              <div className="grid grid-cols-2 gap-4 px-4">
-                <JsonDiff label="Previous Value" data={entry.old_value} />
-                <JsonDiff label="New Value" data={entry.new_value} />
-              </div>
-            </TableCell>
-          </TableRow>
-        </CollapsibleContent>
+      {hasDetails && isOpen && (
+        <TableRow className="bg-muted/20 hover:bg-muted/20">
+          <TableCell colSpan={5} className="py-3">
+            <div className="grid grid-cols-2 gap-4 pl-10">
+              <JsonDiff label="Previous Value" data={entry.old_value} />
+              <JsonDiff label="New Value" data={entry.new_value} />
+            </div>
+          </TableCell>
+        </TableRow>
       )}
-    </Collapsible>
+    </>
   );
 }
 
