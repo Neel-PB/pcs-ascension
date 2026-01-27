@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { RotateCcw, MoreVertical, Pencil, Trash2, Lock } from "lucide-react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { RotateCcw, MoreVertical, Pencil, Trash2, Lock, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +29,10 @@ import { useRolePermissions } from "@/hooks/useRolePermissions";
 import { useDynamicRoles, type Role } from "@/hooks/useDynamicRoles";
 import { PERMISSION_CATEGORIES, type AppRole, type PermissionKey } from "@/config/rbacConfig";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+
+// Type for pending permission changes (role -> permission -> new value)
+type PendingChanges = Map<AppRole, Map<PermissionKey, boolean>>;
 
 interface RoleDetailViewProps {
   roles: Role[];
@@ -39,12 +43,13 @@ interface CompactRoleCardProps {
   role: Role;
   isSelected: boolean;
   overrideCount: number;
+  hasPendingChanges: boolean;
   onClick: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-function CompactRoleCard({ role, isSelected, overrideCount, onClick, onEdit, onDelete }: CompactRoleCardProps) {
+function CompactRoleCard({ role, isSelected, overrideCount, hasPendingChanges, onClick, onEdit, onDelete }: CompactRoleCardProps) {
   return (
     <TooltipProvider delayDuration={300}>
       <Tooltip>
@@ -62,9 +67,11 @@ function CompactRoleCard({ role, isSelected, overrideCount, onClick, onEdit, onD
               onClick={onClick}
               className="flex items-center gap-2 min-w-0 flex-1"
             >
-              {overrideCount > 0 && (
+              {hasPendingChanges ? (
+                <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+              ) : overrideCount > 0 ? (
                 <span className="w-1.5 h-1.5 rounded-full bg-warning shrink-0" />
-              )}
+              ) : null}
               <span className="font-medium text-sm truncate">{role.label}</span>
             </button>
             <DropdownMenu>
@@ -115,6 +122,7 @@ interface CompactPermissionRowProps {
   description: string;
   isEnabled: boolean;
   isOverridden: boolean;
+  isPending: boolean;
   isUpdating: boolean;
   onToggle: (checked: boolean) => void;
   onReset: () => void;
@@ -125,6 +133,7 @@ function CompactPermissionRow({
   description,
   isEnabled,
   isOverridden,
+  isPending,
   isUpdating,
   onToggle,
   onReset,
@@ -133,7 +142,10 @@ function CompactPermissionRow({
     <TooltipProvider delayDuration={300}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 transition-colors group">
+          <div className={cn(
+            "flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 transition-colors group",
+            isPending && "bg-primary/5"
+          )}>
             <div className="flex items-center gap-2 min-w-0">
               <Checkbox
                 checked={isEnabled}
@@ -142,11 +154,13 @@ function CompactPermissionRow({
                 className="h-3.5 w-3.5"
               />
               <span className="text-sm truncate">{label}</span>
-              {isOverridden && (
+              {isPending ? (
+                <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+              ) : isOverridden ? (
                 <span className="w-1.5 h-1.5 rounded-full bg-warning shrink-0" />
-              )}
+              ) : null}
             </div>
-            {isOverridden && (
+            {isOverridden && !isPending && (
               <Button
                 variant="ghost"
                 size="icon"
@@ -174,8 +188,9 @@ interface CompactPermissionCardProps {
   title: string;
   permissions: Record<string, { label: string; description: string }>;
   role: AppRole;
-  effectivePermissions: PermissionKey[];
+  displayPermissions: PermissionKey[];
   isPermissionOverridden: (role: AppRole, permission: PermissionKey) => boolean;
+  isPending: (permission: PermissionKey) => boolean;
   onToggle: (permission: PermissionKey, value: boolean) => void;
   onReset: (permission: PermissionKey) => void;
   isUpdating: boolean;
@@ -185,8 +200,9 @@ function CompactPermissionCard({
   title,
   permissions,
   role,
-  effectivePermissions,
+  displayPermissions,
   isPermissionOverridden,
+  isPending,
   onToggle,
   onReset,
   isUpdating,
@@ -201,8 +217,9 @@ function CompactPermissionCard({
       <div className="p-1">
         {entries.map(([key, config]) => {
           const permissionKey = key as PermissionKey;
-          const isEnabled = effectivePermissions.includes(permissionKey);
+          const isEnabled = displayPermissions.includes(permissionKey);
           const isOverridden = isPermissionOverridden(role, permissionKey);
+          const hasPending = isPending(permissionKey);
 
           return (
             <CompactPermissionRow
@@ -211,6 +228,7 @@ function CompactPermissionCard({
               description={config.description}
               isEnabled={isEnabled}
               isOverridden={isOverridden}
+              isPending={hasPending}
               isUpdating={isUpdating}
               onToggle={(checked) => onToggle(permissionKey, checked)}
               onReset={() => onReset(permissionKey)}
@@ -233,9 +251,14 @@ export function RoleDetailView({ roles, onEditRole }: RoleDetailViewProps) {
   const { deleteRole } = useDynamicRoles();
 
   const [selectedRoleName, setSelectedRoleName] = useState<AppRole | null>(null);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [roleToDelete, setRoleToDelete] = useState<Role | null>(null);
+  const [unsavedWarningOpen, setUnsavedWarningOpen] = useState(false);
+  const [pendingSwitchRole, setPendingSwitchRole] = useState<AppRole | null>(null);
+  
+  // Track pending changes locally - not saved until user clicks Save
+  const [pendingChanges, setPendingChanges] = useState<PendingChanges>(new Map());
 
   // Set initial selected role when roles load
   useEffect(() => {
@@ -247,6 +270,39 @@ export function RoleDetailView({ roles, onEditRole }: RoleDetailViewProps) {
   const selectedRole = roles.find(r => r.name === selectedRoleName);
   const effectivePermissions = selectedRoleName ? getEffectivePermissions(selectedRoleName) : [];
 
+  // Get pending changes count for a specific role
+  const getRolePendingCount = useCallback((roleName: AppRole) => {
+    return pendingChanges.get(roleName)?.size || 0;
+  }, [pendingChanges]);
+
+  // Total pending changes across all roles
+  const totalPendingCount = useMemo(() => {
+    let count = 0;
+    pendingChanges.forEach(roleChanges => {
+      count += roleChanges.size;
+    });
+    return count;
+  }, [pendingChanges]);
+
+  // Get display permissions (effective + pending changes applied)
+  const getDisplayPermissions = useCallback((roleName: AppRole): PermissionKey[] => {
+    const effective = getEffectivePermissions(roleName);
+    const pending = pendingChanges.get(roleName);
+    if (!pending || pending.size === 0) return effective;
+
+    const result = new Set(effective);
+    pending.forEach((value, key) => {
+      if (value === true) {
+        result.add(key);
+      } else {
+        result.delete(key);
+      }
+    });
+    return Array.from(result);
+  }, [getEffectivePermissions, pendingChanges]);
+
+  const displayPermissions = selectedRoleName ? getDisplayPermissions(selectedRoleName) : [];
+
   const getOverrideCount = (roleName: AppRole) => {
     return Object.values(PERMISSION_CATEGORIES)
       .flatMap(cat => Object.keys(cat.permissions))
@@ -256,34 +312,143 @@ export function RoleDetailView({ roles, onEditRole }: RoleDetailViewProps) {
 
   const selectedOverrideCount = selectedRoleName ? getOverrideCount(selectedRoleName) : 0;
 
-  const handleToggle = async (permission: PermissionKey, value: boolean) => {
+  // Check if a permission has pending changes
+  const isPendingPermission = useCallback((permission: PermissionKey): boolean => {
+    if (!selectedRoleName) return false;
+    return pendingChanges.get(selectedRoleName)?.has(permission) || false;
+  }, [selectedRoleName, pendingChanges]);
+
+  // Handle toggle - updates local state only
+  const handleToggle = useCallback((permission: PermissionKey, value: boolean) => {
     if (!selectedRoleName) return;
-    setIsUpdating(true);
-    try {
-      await setPermission.mutateAsync({ role: selectedRoleName, permission, value });
-    } finally {
-      setIsUpdating(false);
-    }
-  };
+    
+    setPendingChanges(prev => {
+      const next = new Map(prev);
+      const roleChanges = new Map(next.get(selectedRoleName) || new Map());
+      
+      // Check if this change would revert to the current effective state
+      const currentEffective = getEffectivePermissions(selectedRoleName);
+      const isCurrentlyEnabled = currentEffective.includes(permission);
+      
+      if (value === isCurrentlyEnabled) {
+        // Reverts to current state, remove from pending
+        roleChanges.delete(permission);
+      } else {
+        roleChanges.set(permission, value);
+      }
+      
+      if (roleChanges.size === 0) {
+        next.delete(selectedRoleName);
+      } else {
+        next.set(selectedRoleName, roleChanges);
+      }
+      return next;
+    });
+  }, [selectedRoleName, getEffectivePermissions]);
 
   const handleReset = async (permission: PermissionKey) => {
     if (!selectedRoleName) return;
-    setIsUpdating(true);
+    setIsSaving(true);
     try {
       await setPermission.mutateAsync({ role: selectedRoleName, permission, value: null });
     } finally {
-      setIsUpdating(false);
+      setIsSaving(false);
     }
   };
 
   const handleResetAll = async () => {
     if (!selectedRoleName) return;
-    setIsUpdating(true);
+    setIsSaving(true);
     try {
       await resetToDefaults.mutateAsync(selectedRoleName);
     } finally {
-      setIsUpdating(false);
+      setIsSaving(false);
     }
+  };
+
+  // Save all pending changes
+  const handleSave = async () => {
+    if (pendingChanges.size === 0) return;
+    
+    setIsSaving(true);
+    try {
+      for (const [role, changes] of pendingChanges) {
+        for (const [permission, value] of changes) {
+          await setPermission.mutateAsync({ role, permission, value });
+        }
+      }
+      setPendingChanges(new Map());
+      toast.success("Changes saved successfully");
+    } catch (error) {
+      toast.error("Failed to save changes");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Discard all pending changes
+  const handleDiscard = useCallback(() => {
+    setPendingChanges(new Map());
+  }, []);
+
+  // Handle role selection with unsaved warning
+  const handleRoleSelect = useCallback((roleName: AppRole) => {
+    if (roleName === selectedRoleName) return;
+    
+    // Check if current role has pending changes
+    const currentRolePending = selectedRoleName ? getRolePendingCount(selectedRoleName) : 0;
+    
+    if (currentRolePending > 0) {
+      setPendingSwitchRole(roleName);
+      setUnsavedWarningOpen(true);
+    } else {
+      setSelectedRoleName(roleName);
+    }
+  }, [selectedRoleName, getRolePendingCount]);
+
+  // Handle unsaved warning dialog actions
+  const handleDiscardAndSwitch = useCallback(() => {
+    if (selectedRoleName) {
+      setPendingChanges(prev => {
+        const next = new Map(prev);
+        next.delete(selectedRoleName);
+        return next;
+      });
+    }
+    if (pendingSwitchRole) {
+      setSelectedRoleName(pendingSwitchRole);
+    }
+    setPendingSwitchRole(null);
+    setUnsavedWarningOpen(false);
+  }, [selectedRoleName, pendingSwitchRole]);
+
+  const handleSaveAndSwitch = async () => {
+    if (selectedRoleName) {
+      const roleChanges = pendingChanges.get(selectedRoleName);
+      if (roleChanges) {
+        setIsSaving(true);
+        try {
+          for (const [permission, value] of roleChanges) {
+            await setPermission.mutateAsync({ role: selectedRoleName, permission, value });
+          }
+          setPendingChanges(prev => {
+            const next = new Map(prev);
+            next.delete(selectedRoleName);
+            return next;
+          });
+          if (pendingSwitchRole) {
+            setSelectedRoleName(pendingSwitchRole);
+          }
+          toast.success("Changes saved");
+        } catch (error) {
+          toast.error("Failed to save changes");
+        } finally {
+          setIsSaving(false);
+        }
+      }
+    }
+    setPendingSwitchRole(null);
+    setUnsavedWarningOpen(false);
   };
 
   const handleDeleteRole = (role: Role) => {
@@ -305,118 +470,145 @@ export function RoleDetailView({ roles, onEditRole }: RoleDetailViewProps) {
   };
 
   return (
-    <div className="flex border rounded-lg bg-card overflow-hidden">
-      {/* Left Panel - Role List */}
-      <div className="w-52 shrink-0 border-r bg-muted/20">
-        <div className="p-3 border-b bg-muted/30">
-          <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Roles
-          </h4>
+    <div className="flex flex-col border rounded-lg bg-card overflow-hidden">
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Panel - Role List */}
+        <div className="w-52 shrink-0 border-r bg-muted/20">
+          <div className="p-3 border-b bg-muted/30">
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Roles
+            </h4>
+          </div>
+          <div className="p-2 space-y-1">
+            {roles.map((role) => (
+              <CompactRoleCard
+                key={role.id}
+                role={role}
+                isSelected={role.name === selectedRoleName}
+                overrideCount={getOverrideCount(role.name as AppRole)}
+                hasPendingChanges={getRolePendingCount(role.name as AppRole) > 0}
+                onClick={() => handleRoleSelect(role.name as AppRole)}
+                onEdit={() => onEditRole(role)}
+                onDelete={() => handleDeleteRole(role)}
+              />
+            ))}
+          </div>
         </div>
-        <div className="p-2 space-y-1">
-          {roles.map((role) => (
-            <CompactRoleCard
-              key={role.id}
-              role={role}
-              isSelected={role.name === selectedRoleName}
-              overrideCount={getOverrideCount(role.name as AppRole)}
-              onClick={() => setSelectedRoleName(role.name as AppRole)}
-              onEdit={() => onEditRole(role)}
-              onDelete={() => handleDeleteRole(role)}
-            />
-          ))}
-        </div>
-      </div>
 
-      {/* Right Panel - Permission Grid */}
-      {selectedRole && selectedRoleName && (
-        <div className="flex-1">
-          <div className="flex items-center justify-between p-3 border-b bg-muted/30">
-            <div className="flex items-center gap-2">
-              <h4 className="font-semibold">{selectedRole.label}</h4>
-              {selectedRole.is_system && (
-                <Badge variant="outline" className="text-xs gap-1">
-                  <Lock className="h-3 w-3" />
-                  System
-                </Badge>
+        {/* Right Panel - Permission Grid */}
+        {selectedRole && selectedRoleName && (
+          <div className="flex-1">
+            <div className="flex items-center justify-between p-3 border-b bg-muted/30">
+              <div className="flex items-center gap-2">
+                <h4 className="font-semibold">{selectedRole.label}</h4>
+                {selectedRole.is_system && (
+                  <Badge variant="outline" className="text-xs gap-1">
+                    <Lock className="h-3 w-3" />
+                    System
+                  </Badge>
+                )}
+              </div>
+              {selectedOverrideCount > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={handleResetAll}
+                  disabled={isSaving}
+                >
+                  <RotateCcw className="h-3 w-3 mr-1" />
+                  Reset ({selectedOverrideCount})
+                </Button>
               )}
-            </div>
-            {selectedOverrideCount > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs"
-                onClick={handleResetAll}
-                disabled={isUpdating}
-              >
-                <RotateCcw className="h-3 w-3 mr-1" />
-                Reset ({selectedOverrideCount})
-              </Button>
-            )}
           </div>
           
-          {/* Permission Grid - 2 columns with 5 categories */}
-          <div className="p-3 grid grid-cols-2 gap-3">
-            {/* Left column: Modules + Sub-filters */}
-            <div className="space-y-3">
-              <CompactPermissionCard
-                title="Modules"
-                permissions={PERMISSION_CATEGORIES.modules.permissions}
-                role={selectedRoleName}
-                effectivePermissions={effectivePermissions}
-                isPermissionOverridden={isPermissionOverridden}
-                onToggle={handleToggle}
-                onReset={handleReset}
-                isUpdating={isUpdating}
-              />
+            {/* Permission Grid - 2 columns with 5 categories */}
+            <div className="p-3 grid grid-cols-2 gap-3">
+              {/* Left column: Modules + Sub-filters */}
+              <div className="space-y-3">
+                <CompactPermissionCard
+                  title="Modules"
+                  permissions={PERMISSION_CATEGORIES.modules.permissions}
+                  role={selectedRoleName}
+                  displayPermissions={displayPermissions}
+                  isPermissionOverridden={isPermissionOverridden}
+                  isPending={isPendingPermission}
+                  onToggle={handleToggle}
+                  onReset={handleReset}
+                  isUpdating={isSaving}
+                />
 
-              <CompactPermissionCard
-                title="Sub-filters"
-                permissions={PERMISSION_CATEGORIES.subfilters.permissions}
-                role={selectedRoleName}
-                effectivePermissions={effectivePermissions}
-                isPermissionOverridden={isPermissionOverridden}
-                onToggle={handleToggle}
-                onReset={handleReset}
-                isUpdating={isUpdating}
-              />
+                <CompactPermissionCard
+                  title="Sub-filters"
+                  permissions={PERMISSION_CATEGORIES.subfilters.permissions}
+                  role={selectedRoleName}
+                  displayPermissions={displayPermissions}
+                  isPermissionOverridden={isPermissionOverridden}
+                  isPending={isPendingPermission}
+                  onToggle={handleToggle}
+                  onReset={handleReset}
+                  isUpdating={isSaving}
+                />
+              </div>
+
+              {/* Right column: Settings + Filters + Approvals */}
+              <div className="space-y-3">
+                <CompactPermissionCard
+                  title="Settings"
+                  permissions={PERMISSION_CATEGORIES.settings.permissions}
+                  role={selectedRoleName}
+                  displayPermissions={displayPermissions}
+                  isPermissionOverridden={isPermissionOverridden}
+                  isPending={isPendingPermission}
+                  onToggle={handleToggle}
+                  onReset={handleReset}
+                  isUpdating={isSaving}
+                />
+
+                <CompactPermissionCard
+                  title="Filters"
+                  permissions={PERMISSION_CATEGORIES.filters.permissions}
+                  role={selectedRoleName}
+                  displayPermissions={displayPermissions}
+                  isPermissionOverridden={isPermissionOverridden}
+                  isPending={isPendingPermission}
+                  onToggle={handleToggle}
+                  onReset={handleReset}
+                  isUpdating={isSaving}
+                />
+
+                <CompactPermissionCard
+                  title="Approvals"
+                  permissions={PERMISSION_CATEGORIES.approvals.permissions}
+                  role={selectedRoleName}
+                  displayPermissions={displayPermissions}
+                  isPermissionOverridden={isPermissionOverridden}
+                  isPending={isPendingPermission}
+                  onToggle={handleToggle}
+                  onReset={handleReset}
+                  isUpdating={isSaving}
+                />
+              </div>
             </div>
+          </div>
+        )}
+      </div>
 
-            {/* Right column: Settings + Filters + Approvals */}
-            <div className="space-y-3">
-              <CompactPermissionCard
-                title="Settings"
-                permissions={PERMISSION_CATEGORIES.settings.permissions}
-                role={selectedRoleName}
-                effectivePermissions={effectivePermissions}
-                isPermissionOverridden={isPermissionOverridden}
-                onToggle={handleToggle}
-                onReset={handleReset}
-                isUpdating={isUpdating}
-              />
-
-              <CompactPermissionCard
-                title="Filters"
-                permissions={PERMISSION_CATEGORIES.filters.permissions}
-                role={selectedRoleName}
-                effectivePermissions={effectivePermissions}
-                isPermissionOverridden={isPermissionOverridden}
-                onToggle={handleToggle}
-                onReset={handleReset}
-                isUpdating={isUpdating}
-              />
-
-              <CompactPermissionCard
-                title="Approvals"
-                permissions={PERMISSION_CATEGORIES.approvals.permissions}
-                role={selectedRoleName}
-                effectivePermissions={effectivePermissions}
-                isPermissionOverridden={isPermissionOverridden}
-                onToggle={handleToggle}
-                onReset={handleReset}
-                isUpdating={isUpdating}
-              />
-            </div>
+      {/* Sticky Footer for Save/Discard when there are pending changes */}
+      {totalPendingCount > 0 && (
+        <div className="flex items-center justify-between p-3 border-t bg-muted/30">
+          <span className="text-sm text-muted-foreground">
+            {totalPendingCount} unsaved change{totalPendingCount !== 1 ? 's' : ''}
+          </span>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={handleDiscard} disabled={isSaving}>
+              <X className="h-4 w-4 mr-1" />
+              Discard
+            </Button>
+            <Button size="sm" onClick={handleSave} disabled={isSaving}>
+              <Save className="h-4 w-4 mr-1" />
+              {isSaving ? "Saving..." : "Save Changes"}
+            </Button>
           </div>
         </div>
       )}
@@ -439,6 +631,27 @@ export function RoleDetailView({ roles, onEditRole }: RoleDetailViewProps) {
             >
               Delete
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Unsaved Changes Warning Dialog */}
+      <AlertDialog open={unsavedWarningOpen} onOpenChange={setUnsavedWarningOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have unsaved changes for {selectedRole?.label}. What would you like to do?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingSwitchRole(null)}>Cancel</AlertDialogCancel>
+            <Button variant="outline" onClick={handleDiscardAndSwitch}>
+              Discard
+            </Button>
+            <Button onClick={handleSaveAndSwitch} disabled={isSaving}>
+              {isSaving ? "Saving..." : "Save & Switch"}
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
