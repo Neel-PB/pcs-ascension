@@ -1,262 +1,239 @@
 
-
-# Plan: Add Nursing/Non-Nursing Toggle to Planned/Active Resources
+# Complete RBAC Implementation Plan
 
 ## Overview
 
-Add a second toggle next to the existing Hired/Active toggle that allows users to filter between Nursing and Non-Nursing views. The toggle visibility and behavior depend on filter context.
+This plan implements a comprehensive Role-Based Access Control (RBAC) system with:
+1. A new "Roles" admin panel with accordion-based UI for managing role permissions
+2. Hybrid permission storage (hardcoded defaults + database overrides)
+3. Filter-level access control for each role
+4. Module access restrictions
 
 ---
 
-## Database Changes
+## Role-Permission Matrix Summary
 
-### Add `is_nursing` Column to `departments` Table
+| Role | Filters | Sub-filters | Excluded Features |
+|------|---------|-------------|-------------------|
+| **Admin** | All | All | None |
+| **Labor Management** | All | All | None |
+| **Leadership** | All | All | Admin, Feedback, Volume/NP Settings |
+| **CNO** | All or Market onwards (configurable) | All | Admin, Feedback, Volume/NP Settings |
+| **Director** | Facility → Department | None | Admin, Feedback, Volume/NP Settings |
+| **Manager** | Department only | None | Admin, Feedback, Volume/NP Settings |
 
-```sql
-ALTER TABLE departments 
-ADD COLUMN is_nursing BOOLEAN DEFAULT true;
+---
 
--- Update existing departments based on known classification
--- (Will need a data migration or manual classification)
+## Implementation Tasks
+
+### Phase 1: Database Changes
+
+**1.1 Rename 'nurse_manager' to 'manager' in app_role enum**
+- Add new 'manager' value to enum
+- Update existing records from 'nurse_manager' to 'manager'
+- Update code references
+
+**1.2 Create role_permissions table for database overrides**
+```text
+┌─────────────────────────────────────────┐
+│ role_permissions                        │
+├─────────────────────────────────────────┤
+│ id (uuid, PK)                          │
+│ role (app_role)                        │
+│ permission_key (text)                  │
+│ permission_value (jsonb)               │
+│ created_at (timestamptz)               │
+│ updated_at (timestamptz)               │
+└─────────────────────────────────────────┘
 ```
 
-**Rationale:** Nursing/Non-Nursing is a property of the department, not individual positions. This allows filtering at the department level.
+RLS Policies:
+- Admins can manage (INSERT, UPDATE, DELETE)
+- Authenticated users can SELECT
 
 ---
 
-## UI Behavior Matrix
+### Phase 2: Permission Configuration
 
-| Filter State | Toggle Behavior |
-|--------------|-----------------|
-| Region/Market/Facility selected (no department) | Show toggle, both options selectable |
-| Specific Department selected + is_nursing = true | Toggle shows "Nursing" selected, disabled OR hidden |
-| Specific Department selected + is_nursing = false | Toggle shows "Non-Nursing" selected, disabled OR hidden |
+**2.1 Create permission configuration file** (`src/config/rbacConfig.ts`)
 
----
-
-## Visual Design
-
-### Toggle Placement
+Define all permissions organized by category:
 
 ```text
-┌──────────────────────────────────────────────────────────────────────┐
-│  FTE Skill Shift Analysis   [Hired│Active]  [Nursing│Non-Nursing]   │
-└──────────────────────────────────────────────────────────────────────┘
+PERMISSION CATEGORIES:
+
+1. Module Access
+   - admin.access
+   - feedback.access
+   - staffing.access
+   - positions.access
+   - analytics.access
+   - reports.access
+   - support.access
+
+2. Settings Access
+   - settings.volume_override
+   - settings.np_override
+
+3. Filter Access Levels
+   - filters.region
+   - filters.market
+   - filters.facility
+   - filters.department
+
+4. Sub-filter Access
+   - filters.submarket
+   - filters.level2
+   - filters.pstat
 ```
 
-The new toggle uses the same styling as the existing Hired/Active toggle:
-- Rounded container with `bg-background shadow-soft`
-- Animated indicator using Framer Motion `layoutId`
-- Tooltips explaining each mode
+**2.2 Define default role permissions**
+
+Hardcoded defaults that serve as the base:
+
+- **admin**: All permissions
+- **labor_team**: All permissions (including admin/feedback/settings)
+- **leadership**: All except admin, feedback, settings.volume_override, settings.np_override
+- **cno**: Same as leadership (filter level configurable per user via org access)
+- **director**: Only facility + department filters, no sub-filters, no admin/feedback/settings
+- **manager**: Only department filter, no sub-filters, no admin/feedback/settings
 
 ---
 
-## Table Column Changes
+### Phase 3: Enhanced RBAC Hook
 
-### Nursing View (Default)
-Shows all 4 column groups:
+**3.1 Update `useRBAC.ts` hook**
 
-| Skills | Target FTEs | Hired FTEs | Open Req FTEs | Variance |
-|--------|-------------|------------|---------------|----------|
+Extend the hook to:
+- Fetch role_permissions overrides from database
+- Merge defaults with overrides
+- Provide `hasPermission(permission)` that checks both role defaults and overrides
+- Add `getFilterPermissions()` to return allowed filter levels
+- Add `getSubfilterPermissions()` to return allowed sub-filters
 
-### Non-Nursing View
-Shows only 2 column groups:
+**3.2 Create `useRolePermissions.ts` hook**
 
-| Skills | Hired FTEs | Open Req FTEs |
-|--------|------------|---------------|
-
-**Implementation:** Conditionally render column groups based on `staffCategory` state.
-
----
-
-## Files to Modify
-
-### 1. Database Migration
-**Action:** Add `is_nursing` column to `departments` table
-
-```sql
-ALTER TABLE departments 
-ADD COLUMN is_nursing BOOLEAN DEFAULT true;
-```
-
-### 2. `src/pages/staffing/PositionPlanning.tsx`
-
-**Changes:**
-- Add `staffCategory` state: `'nursing' | 'non-nursing'`
-- Add new toggle component next to existing Hired/Active toggle
-- Conditionally render Target FTEs and Variance columns based on `staffCategory`
-- Receive `selectedDepartment` and department's `is_nursing` value as props
-- Auto-set and disable toggle when specific department is selected
-
-### 3. `src/pages/staffing/StaffingSummary.tsx`
-
-**Changes:**
-- Pass `selectedDepartment` value to `PositionPlanning` component
-- Optionally fetch department's `is_nursing` status to pass down
-
-### 4. `src/hooks/useDepartmentCategory.ts` (New File)
-
-**Purpose:** Hook to determine if selected department is nursing or non-nursing
-
-```typescript
-export function useDepartmentCategory(departmentId: string | null) {
-  // Query departments table for is_nursing field
-  // Return: { isNursing: boolean | null, isLoading: boolean }
-}
-```
+New hook for admin panel to:
+- List all roles with their permissions
+- Update permission overrides in database
+- Real-time sync for permission changes
 
 ---
 
-## Implementation Details
+### Phase 4: Admin UI - Roles Panel
 
-### Toggle Component Addition (PositionPlanning.tsx)
+**4.1 Create RolesManagement component** (`src/pages/admin/RolesManagement.tsx`)
 
-Add after the existing Hired/Active toggle (~line 755):
+Features:
+- Accordion list with one section per role
+- Each accordion shows:
+  - Role name and description
+  - Permission groups (Modules, Settings, Filters, Sub-filters)
+  - Radio buttons/switches for each permission
+  - Visual indicators showing defaults vs overrides
 
-```tsx
-{/* Nursing/Non-Nursing Toggle */}
-<motion.div
-  initial={{ opacity: 0, y: -10 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.3, delay: 0.1 }}
->
-  <div className="inline-flex items-center justify-center rounded-xl bg-background p-1 shadow-soft text-muted-foreground">
-    <LayoutGroup>
-      <div className="flex gap-0.5">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <motion.button
-              onClick={() => !isDepartmentSelected && setStaffCategory('nursing')}
-              disabled={isDepartmentSelected}
-              className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none disabled:opacity-50"
-            >
-              {staffCategory === 'nursing' && (
-                <motion.div
-                  layoutId="categoryIndicator"
-                  className="absolute inset-0 bg-gradient-primary rounded-md"
-                />
-              )}
-              <span className={cn(
-                "relative z-10 transition-colors",
-                staffCategory === 'nursing' ? "text-white" : "text-muted-foreground"
-              )}>
-                Nursing
-              </span>
-            </motion.button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="text-sm">
-              <span className="font-semibold">Nursing:</span> Clinical departments with 
-              Target FTEs, Hired, Open Reqs, and Variance analysis
-            </p>
-          </TooltipContent>
-        </Tooltip>
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <motion.button
-              onClick={() => !isDepartmentSelected && setStaffCategory('non-nursing')}
-              disabled={isDepartmentSelected}
-              className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none disabled:opacity-50"
-            >
-              {staffCategory === 'non-nursing' && (
-                <motion.div
-                  layoutId="categoryIndicator"
-                  className="absolute inset-0 bg-gradient-primary rounded-md"
-                />
-              )}
-              <span className={cn(
-                "relative z-10 transition-colors",
-                staffCategory === 'non-nursing' ? "text-white" : "text-muted-foreground"
-              )}>
-                Non-Nursing
-              </span>
-            </motion.button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="text-sm">
-              <span className="font-semibold">Non-Nursing:</span> Administrative/support 
-              departments showing Hired and Open Reqs only
-            </p>
-          </TooltipContent>
-        </Tooltip>
-      </div>
-    </LayoutGroup>
-  </div>
-</motion.div>
-```
-
-### Conditional Column Rendering
-
-```tsx
-// In FTESkillShiftTable header
-<TableHeader>
-  <TableRow>
-    <TableHead className="font-semibold">Skills</TableHead>
-    
-    {/* Target FTEs - only for Nursing */}
-    {staffCategory === 'nursing' && (
-      <TableHead colSpan={3} className="text-center font-semibold bg-muted/30 border-l-2">
-        Target FTEs
-      </TableHead>
-    )}
-    
-    {/* Hired FTEs - always shown */}
-    <TableHead colSpan={3} className="text-center font-semibold bg-muted/30 border-l-2">
-      {viewMode === 'active' ? 'Active FTEs' : 'Hired FTEs'}
-    </TableHead>
-    
-    {/* Open Req FTEs - always shown */}
-    <TableHead colSpan={3} className="text-center font-semibold bg-muted/30 border-l-2">
-      Open Req FTEs
-    </TableHead>
-    
-    {/* Variance - only for Nursing */}
-    {staffCategory === 'nursing' && (
-      <TableHead colSpan={3} className="text-center font-semibold bg-muted/30 border-l-2">
-        Variance
-      </TableHead>
-    )}
-  </TableRow>
-</TableHeader>
-```
-
-### Auto-Detection Logic
-
-```tsx
-// When department changes, auto-set category
-useEffect(() => {
-  if (selectedDepartment && selectedDepartment !== 'all-departments') {
-    // departmentIsNursing comes from useDepartmentCategory hook
-    setStaffCategory(departmentIsNursing ? 'nursing' : 'non-nursing');
-  }
-}, [selectedDepartment, departmentIsNursing]);
-
-const isDepartmentSelected = selectedDepartment && selectedDepartment !== 'all-departments';
-```
-
----
-
-## Props Flow
+**4.2 UI Structure per Role Accordion**
 
 ```text
-StaffingSummary
-  ├── selectedDepartment state
-  └── PositionPlanning
-        ├── receives selectedDepartment prop
-        ├── uses useDepartmentCategory(selectedDepartment)
-        ├── manages staffCategory state
-        └── conditionally renders columns
+┌─────────────────────────────────────────────────┐
+│ ▶ Leadership                                    │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│ Module Access                                   │
+│ ┌─────────────────────────────────────────────┐ │
+│ │ ○ Admin Module           [✗ Denied]         │ │
+│ │ ○ Feedback Module        [✗ Denied]         │ │
+│ │ ● Staffing               [✓ Allowed]        │ │
+│ │ ● Positions              [✓ Allowed]        │ │
+│ │ ● Analytics              [✓ Allowed]        │ │
+│ │ ● Reports                [✓ Allowed]        │ │
+│ │ ● Support                [✓ Allowed]        │ │
+│ └─────────────────────────────────────────────┘ │
+│                                                 │
+│ Settings Access                                 │
+│ ┌─────────────────────────────────────────────┐ │
+│ │ ○ Volume Override Settings [✗ Denied]       │ │
+│ │ ○ NP Override Settings     [✗ Denied]       │ │
+│ └─────────────────────────────────────────────┘ │
+│                                                 │
+│ Filter Access                                   │
+│ ┌─────────────────────────────────────────────┐ │
+│ │ ● Region Filter          [✓ Allowed]        │ │
+│ │ ● Market Filter          [✓ Allowed]        │ │
+│ │ ● Facility Filter        [✓ Allowed]        │ │
+│ │ ● Department Filter      [✓ Allowed]        │ │
+│ └─────────────────────────────────────────────┘ │
+│                                                 │
+│ Sub-filter Access                               │
+│ ┌─────────────────────────────────────────────┐ │
+│ │ ● Submarket Filter       [✓ Allowed]        │ │
+│ │ ● Level 2 Filter         [✓ Allowed]        │ │
+│ │ ● PSTAT Filter           [✓ Allowed]        │ │
+│ └─────────────────────────────────────────────┘ │
+│                                                 │
+└─────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Technical Summary
+### Phase 5: Apply Permissions Throughout App
 
-| Change | File | Description |
-|--------|------|-------------|
-| Database | Migration | Add `is_nursing` boolean to `departments` table |
-| Hook | `useDepartmentCategory.ts` | Query department's nursing status |
-| UI | `PositionPlanning.tsx` | Add toggle, conditional columns, auto-detection |
-| Props | `StaffingSummary.tsx` | Pass `selectedDepartment` to `PositionPlanning` |
+**5.1 Update DynamicIconOnlySidebar.tsx**
 
+Modify `useDynamicSidebar.ts` to:
+- Add permission requirements to each menu item
+- Filter sidebar items based on `hasPermission()`
+
+**5.2 Update FilterBar.tsx**
+
+Modify to respect filter permissions:
+- Hide/disable filters the user's role cannot access
+- For Director: Only show Facility and Department
+- For Manager: Only show Department
+- Hide sub-filters (Submarket, Level2, PSTAT) for roles without access
+
+**5.3 Update Settings tabs**
+
+In `PositionPlanning.tsx` (or wherever settings tabs appear):
+- Hide "Volume Settings" tab if `!hasPermission('settings.volume_override')`
+- Hide "NP Settings" tab if `!hasPermission('settings.np_override')`
+
+**5.4 Update AdminPage.tsx**
+
+Replace placeholder "Roles" tab content with the new RolesManagement component.
+
+---
+
+## Technical Details
+
+### New Files to Create:
+- `src/config/rbacConfig.ts` - Permission definitions and defaults
+- `src/pages/admin/RolesManagement.tsx` - Admin UI for role permissions
+- `src/hooks/useRolePermissions.ts` - Hook for managing role permissions
+
+### Files to Modify:
+- `src/hooks/useRBAC.ts` - Enhanced permission checking
+- `src/hooks/useUserRoles.ts` - Update role type definition
+- `src/hooks/useDynamicSidebar.ts` - Add permission checks to menu items
+- `src/components/staffing/FilterBar.tsx` - Respect filter permissions
+- `src/pages/admin/AdminPage.tsx` - Integrate RolesManagement component
+- `src/pages/staffing/PositionPlanning.tsx` - Hide settings tabs based on permissions
+
+### Database Migration:
+- Add 'manager' to app_role enum
+- Update existing 'nurse_manager' records to 'manager'
+- Create role_permissions table with RLS policies
+- Enable realtime for role_permissions table
+
+---
+
+## Summary
+
+This implementation provides:
+1. Accordion-based UI in Admin for managing role permissions
+2. Hybrid storage allowing defaults + database overrides
+3. Filter-level restrictions (Region/Market/Facility/Department)
+4. Sub-filter visibility control
+5. Module access restrictions
+6. Settings tab visibility control
+7. Real-time permission updates across all sessions
