@@ -133,12 +133,15 @@ function AuditLogRow({ entry }: { entry: AuditLogEntry }) {
 }
 
 export default function RBACAuditLog() {
-  const [actionFilter, setActionFilter] = useState<string>("");
-  const [targetFilter, setTargetFilter] = useState<string>("");
+  // Radix Select forbids SelectItem values of "" (empty string).
+  // Use a non-empty sentinel for the "All" option.
+  const ALL = "all" as const;
+  const [actionFilter, setActionFilter] = useState<string>(ALL);
+  const [targetFilter, setTargetFilter] = useState<string>(ALL);
 
   const { data: auditLogs, isLoading, refetch, isRefetching } = useRBACAuditLog({
-    actionType: actionFilter || undefined,
-    targetType: targetFilter || undefined,
+    actionType: actionFilter === ALL ? undefined : actionFilter,
+    targetType: targetFilter === ALL ? undefined : targetFilter,
     limit: 100,
   });
 
@@ -170,7 +173,7 @@ export default function RBACAuditLog() {
             <SelectValue placeholder="All Actions" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Actions</SelectItem>
+            <SelectItem value={ALL}>All Actions</SelectItem>
             <SelectItem value="role_created">Role Created</SelectItem>
             <SelectItem value="role_updated">Role Updated</SelectItem>
             <SelectItem value="role_deleted">Role Deleted</SelectItem>
@@ -188,20 +191,20 @@ export default function RBACAuditLog() {
             <SelectValue placeholder="All Targets" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Targets</SelectItem>
+            <SelectItem value={ALL}>All Targets</SelectItem>
             <SelectItem value="roles">Roles</SelectItem>
             <SelectItem value="permissions">Permissions</SelectItem>
             <SelectItem value="role_permissions">Role Permissions</SelectItem>
           </SelectContent>
         </Select>
 
-        {(actionFilter || targetFilter) && (
+        {(actionFilter !== ALL || targetFilter !== ALL) && (
           <Button
             variant="ghost"
             size="sm"
             onClick={() => {
-              setActionFilter("");
-              setTargetFilter("");
+              setActionFilter(ALL);
+              setTargetFilter(ALL);
             }}
           >
             Clear filters
