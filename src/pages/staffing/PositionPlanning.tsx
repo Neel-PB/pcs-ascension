@@ -839,94 +839,88 @@ export default function PositionPlanning({ selectedDepartment }: PositionPlannin
             </div>
           </motion.div>
 
-          {/* Nursing/Non-Nursing Toggle */}
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-          >
-            <div className="inline-flex items-center justify-center rounded-xl bg-background p-1 shadow-soft text-muted-foreground">
-              <LayoutGroup>
-                <div className="flex gap-0.5">
-                  {/* Nursing button */}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <motion.button
-                        onClick={() => !isDepartmentSelected && setStaffCategory('nursing')}
-                        disabled={!!isDepartmentSelected}
-                        className={cn(
-                          "relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none",
-                          isDepartmentSelected && "opacity-50 cursor-not-allowed"
-                        )}
-                        whileHover={!isDepartmentSelected ? { scale: 1.02 } : undefined}
-                        whileTap={!isDepartmentSelected ? { scale: 0.98 } : undefined}
-                      >
-                        {staffCategory === 'nursing' && (
-                          <motion.div
-                            layoutId="categoryIndicator"
-                            className="absolute inset-0 bg-gradient-primary rounded-md"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                          />
-                        )}
-                        <span className={cn(
-                          "relative z-10 transition-colors",
-                          staffCategory === 'nursing' ? "text-primary-foreground" : "text-muted-foreground"
-                        )}>
-                          Nursing
-                        </span>
-                      </motion.button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="text-sm">
-                        <span className="font-semibold">Nursing:</span> Clinical departments with Target FTEs, Hired, Open Reqs, and Variance analysis
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
+          {/* Nursing/Non-Nursing Toggle - Hidden when specific department is selected */}
+          {!isDepartmentSelected && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+            >
+              <div className="inline-flex items-center justify-center rounded-xl bg-background p-1 shadow-soft text-muted-foreground">
+                <LayoutGroup>
+                  <div className="flex gap-0.5">
+                    {/* Nursing button */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <motion.button
+                          onClick={() => setStaffCategory('nursing')}
+                          className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          {staffCategory === 'nursing' && (
+                            <motion.div
+                              layoutId="categoryIndicator"
+                              className="absolute inset-0 bg-gradient-primary rounded-md"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                            />
+                          )}
+                          <span className={cn(
+                            "relative z-10 transition-colors",
+                            staffCategory === 'nursing' ? "text-primary-foreground" : "text-muted-foreground"
+                          )}>
+                            Nursing
+                          </span>
+                        </motion.button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-sm">
+                          <span className="font-semibold">Nursing:</span> Clinical departments with Target FTEs, Hired, Open Reqs, and Variance analysis
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
 
-                  {/* Non-Nursing button */}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <motion.button
-                        onClick={() => !isDepartmentSelected && setStaffCategory('non-nursing')}
-                        disabled={!!isDepartmentSelected}
-                        className={cn(
-                          "relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none",
-                          isDepartmentSelected && "opacity-50 cursor-not-allowed"
-                        )}
-                        whileHover={!isDepartmentSelected ? { scale: 1.02 } : undefined}
-                        whileTap={!isDepartmentSelected ? { scale: 0.98 } : undefined}
-                      >
-                        {staffCategory === 'non-nursing' && (
-                          <motion.div
-                            layoutId="categoryIndicator"
-                            className="absolute inset-0 bg-gradient-primary rounded-md"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                          />
-                        )}
-                        <span className={cn(
-                          "relative z-10 transition-colors",
-                          staffCategory === 'non-nursing' ? "text-primary-foreground" : "text-muted-foreground"
-                        )}>
-                          Non-Nursing
-                        </span>
-                      </motion.button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="text-sm">
-                        <span className="font-semibold">Non-Nursing:</span> Administrative/support departments showing Hired and Open Reqs only
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-              </LayoutGroup>
-            </div>
-          </motion.div>
+                    {/* Non-Nursing button */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <motion.button
+                          onClick={() => setStaffCategory('non-nursing')}
+                          className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          {staffCategory === 'non-nursing' && (
+                            <motion.div
+                              layoutId="categoryIndicator"
+                              className="absolute inset-0 bg-gradient-primary rounded-md"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                            />
+                          )}
+                          <span className={cn(
+                            "relative z-10 transition-colors",
+                            staffCategory === 'non-nursing' ? "text-primary-foreground" : "text-muted-foreground"
+                          )}>
+                            Non-Nursing
+                          </span>
+                        </motion.button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-sm">
+                          <span className="font-semibold">Non-Nursing:</span> Administrative/support departments showing Hired and Open Reqs only
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </LayoutGroup>
+              </div>
+            </motion.div>
+          )}
         </div>
 
         <div className="flex items-center gap-4">
