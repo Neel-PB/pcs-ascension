@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import DataImportPage from "./DataImportPage";
 import UsersManagement from "./UsersManagement";
+import RolesManagement from "./RolesManagement";
 import { FeedComposer } from "@/components/messaging/FeedComposer";
 import { FeedHistory } from "@/components/feed/FeedHistory";
 import { Button } from "@/components/ui/button";
@@ -133,11 +134,7 @@ export default function AdminPage() {
               </div>
             )}
           
-          {activeTab === "roles" && (
-            <div className="py-8 text-center text-muted-foreground">
-              Role management coming soon...
-            </div>
-          )}
+          {activeTab === "roles" && <RolesManagement />}
           
           {activeTab === "permissions" && (
             <div className="py-8 text-center text-muted-foreground">

@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { useFilterData } from "@/hooks/useFilterData";
 import { useIsCompactScreen } from "@/hooks/use-compact-screen";
 import { CombinedOptionalFilters } from "./CombinedOptionalFilters";
+import { useRBAC } from "@/hooks/useRBAC";
 
 interface FilterBarProps {
   className?: string;
@@ -52,6 +53,10 @@ export function FilterBar({
   } = useFilterData();
 
   const isCompact = useIsCompactScreen();
+  const { getFilterPermissions, getSubfilterPermissions } = useRBAC();
+  
+  const filterPermissions = getFilterPermissions();
+  const subfilterPermissions = getSubfilterPermissions();
 
   // PSTAT Options
   const pstatOptions = [
@@ -107,65 +112,73 @@ export function FilterBar({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        {/* Region Filter */}
-        <Select value={selectedRegion} onValueChange={onRegionChange}>
-          <SelectTrigger className={`${isCompact ? 'min-w-[120px] flex-shrink' : 'w-[150px]'} bg-background border-border`}>
-            <SelectValue placeholder="Select region" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover border-border z-50">
-            <SelectItem value="all-regions">All Regions</SelectItem>
-            {regions.map(region => (
-              <SelectItem key={region.id} value={region.region}>{region.region}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Region Filter - only show if user has permission */}
+        {filterPermissions.region && (
+          <Select value={selectedRegion} onValueChange={onRegionChange}>
+            <SelectTrigger className={`${isCompact ? 'min-w-[120px] flex-shrink' : 'w-[150px]'} bg-background border-border`}>
+              <SelectValue placeholder="Select region" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border z-50">
+              <SelectItem value="all-regions">All Regions</SelectItem>
+              {regions.map(region => (
+                <SelectItem key={region.id} value={region.region}>{region.region}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
 
-        {/* Market Filter */}
-        <Select value={selectedMarket} onValueChange={onMarketChange}>
-          <SelectTrigger className={`${isCompact ? 'min-w-[120px] flex-shrink' : 'w-[150px]'} bg-background border-border`}>
-            <SelectValue placeholder="Select market" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover border-border z-50">
-            <SelectItem value="all-markets">All Markets</SelectItem>
-            {availableMarkets.map(market => (
-              <SelectItem key={market.id} value={market.market}>{market.market}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Market Filter - only show if user has permission */}
+        {filterPermissions.market && (
+          <Select value={selectedMarket} onValueChange={onMarketChange}>
+            <SelectTrigger className={`${isCompact ? 'min-w-[120px] flex-shrink' : 'w-[150px]'} bg-background border-border`}>
+              <SelectValue placeholder="Select market" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border z-50">
+              <SelectItem value="all-markets">All Markets</SelectItem>
+              {availableMarkets.map(market => (
+                <SelectItem key={market.id} value={market.market}>{market.market}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
 
-        {/* Facility Filter */}
-        <Select 
-          value={selectedFacility} 
-          onValueChange={onFacilityChange}
-          disabled={selectedMarket === "all-markets"}
-        >
-          <SelectTrigger className={`${isCompact ? 'min-w-[160px] flex-shrink' : 'w-[250px]'} bg-background border-border`}>
-            <SelectValue placeholder="Select facility" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover border-border z-50">
-            <SelectItem value="all-facilities">All Facilities</SelectItem>
-            {availableFacilities.map(facility => (
-              <SelectItem key={facility.id} value={facility.facility_id}>{facility.facility_name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Facility Filter - only show if user has permission */}
+        {filterPermissions.facility && (
+          <Select 
+            value={selectedFacility} 
+            onValueChange={onFacilityChange}
+            disabled={selectedMarket === "all-markets"}
+          >
+            <SelectTrigger className={`${isCompact ? 'min-w-[160px] flex-shrink' : 'w-[250px]'} bg-background border-border`}>
+              <SelectValue placeholder="Select facility" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border z-50">
+              <SelectItem value="all-facilities">All Facilities</SelectItem>
+              {availableFacilities.map(facility => (
+                <SelectItem key={facility.id} value={facility.facility_id}>{facility.facility_name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
 
-        {/* Department Filter - Depends on Facility */}
-        <Select 
-          value={selectedDepartment} 
-          onValueChange={onDepartmentChange}
-          disabled={selectedFacility === "all-facilities"}
-        >
-          <SelectTrigger className={`${isCompact ? 'min-w-[140px] flex-shrink' : 'w-[180px]'} bg-background border-border`}>
-            <SelectValue placeholder="Select department" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover border-border z-50">
-            <SelectItem value="all-departments">All Departments</SelectItem>
-            {availableDepartments.map(dept => (
-              <SelectItem key={dept.id} value={dept.department_id}>{dept.department_name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Department Filter - only show if user has permission */}
+        {filterPermissions.department && (
+          <Select 
+            value={selectedDepartment} 
+            onValueChange={onDepartmentChange}
+            disabled={selectedFacility === "all-facilities"}
+          >
+            <SelectTrigger className={`${isCompact ? 'min-w-[140px] flex-shrink' : 'w-[180px]'} bg-background border-border`}>
+              <SelectValue placeholder="Select department" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border z-50">
+              <SelectItem value="all-departments">All Departments</SelectItem>
+              {availableDepartments.map(dept => (
+                <SelectItem key={dept.id} value={dept.department_id}>{dept.department_name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
 
         {/* Clear Filters Button - always visible, disabled when no filters active */}
         <Button
@@ -181,74 +194,84 @@ export function FilterBar({
         </Button>
       </motion.div>
 
-      {/* SEPARATOR - hidden on compact screens */}
-      <div className="hidden xl:block h-10 w-[2px] bg-border/60 mx-6" />
+      {/* SEPARATOR - hidden on compact screens, only show if any sub-filter is accessible */}
+      {(subfilterPermissions.submarket || subfilterPermissions.level2 || subfilterPermissions.pstat) && (
+        <div className="hidden xl:block h-10 w-[2px] bg-border/60 mx-6" />
+      )}
 
-      {/* RIGHT GROUP: Optional Filters */}
-      {isCompact ? (
-        <CombinedOptionalFilters
-          selectedSubmarket={selectedSubmarket}
-          selectedLevel2={selectedLevel2}
-          selectedPstat={selectedPstat}
-          onSubmarketChange={onSubmarketChange}
-          onLevel2Change={onLevel2Change}
-          onPstatChange={onPstatChange}
-          submarketOptions={availableSubmarkets}
-          level2Options={level2Options}
-          pstatOptions={pstatOptions}
-          submarketDisabled={selectedMarket === "all-markets" || availableSubmarkets.length === 0}
-        />
-      ) : (
-        <div className="flex flex-nowrap gap-3 items-center">
-          {/* Submarket Filter */}
-          <Select 
-            value={selectedSubmarket} 
-            onValueChange={onSubmarketChange}
-            disabled={selectedMarket === "all-markets" || availableSubmarkets.length === 0}
-          >
-            <SelectTrigger className="w-[150px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-              <SelectValue placeholder="Submarket" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
-              <SelectItem value="all-submarkets">All Submarkets</SelectItem>
-              {availableSubmarkets.map(submarket => (
-                <SelectItem key={submarket} value={submarket}>{submarket}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* RIGHT GROUP: Optional Filters - only show filters user has permission for */}
+      {(subfilterPermissions.submarket || subfilterPermissions.level2 || subfilterPermissions.pstat) && (
+        isCompact ? (
+          <CombinedOptionalFilters
+            selectedSubmarket={selectedSubmarket}
+            selectedLevel2={selectedLevel2}
+            selectedPstat={selectedPstat}
+            onSubmarketChange={onSubmarketChange}
+            onLevel2Change={onLevel2Change}
+            onPstatChange={onPstatChange}
+            submarketOptions={availableSubmarkets}
+            level2Options={level2Options}
+            pstatOptions={pstatOptions}
+            submarketDisabled={selectedMarket === "all-markets" || availableSubmarkets.length === 0}
+          />
+        ) : (
+          <div className="flex flex-nowrap gap-3 items-center">
+            {/* Submarket Filter */}
+            {subfilterPermissions.submarket && (
+              <Select 
+                value={selectedSubmarket} 
+                onValueChange={onSubmarketChange}
+                disabled={selectedMarket === "all-markets" || availableSubmarkets.length === 0}
+              >
+                <SelectTrigger className="w-[150px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                  <SelectValue placeholder="Submarket" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
+                  <SelectItem value="all-submarkets">All Submarkets</SelectItem>
+                  {availableSubmarkets.map(submarket => (
+                    <SelectItem key={submarket} value={submarket}>{submarket}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
 
-          {/* Level 2 Filter */}
-          <Select 
-            value={selectedLevel2} 
-            onValueChange={onLevel2Change}
-          >
-            <SelectTrigger className="w-[200px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
-              <SelectValue placeholder="Level 2" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
-              <SelectItem value="all-level2">All Level 2</SelectItem>
-              {level2Options.map(level => (
-                <SelectItem key={level} value={level}>{level}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            {/* Level 2 Filter */}
+            {subfilterPermissions.level2 && (
+              <Select 
+                value={selectedLevel2} 
+                onValueChange={onLevel2Change}
+              >
+                <SelectTrigger className="w-[200px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
+                  <SelectValue placeholder="Level 2" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
+                  <SelectItem value="all-level2">All Level 2</SelectItem>
+                  {level2Options.map(level => (
+                    <SelectItem key={level} value={level}>{level}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
 
-          {/* PSTAT Filter */}
-          <Select 
-            value={selectedPstat} 
-            onValueChange={onPstatChange}
-          >
-            <SelectTrigger className="w-[200px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
-              <SelectValue placeholder="PSTAT" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
-              <SelectItem value="all-pstat">All PSTAT</SelectItem>
-              {pstatOptions.map(pstat => (
-                <SelectItem key={pstat} value={pstat}>{pstat}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            {/* PSTAT Filter */}
+            {subfilterPermissions.pstat && (
+              <Select 
+                value={selectedPstat} 
+                onValueChange={onPstatChange}
+              >
+                <SelectTrigger className="w-[200px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
+                  <SelectValue placeholder="PSTAT" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
+                  <SelectItem value="all-pstat">All PSTAT</SelectItem>
+                  {pstatOptions.map(pstat => (
+                    <SelectItem key={pstat} value={pstat}>{pstat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+        )
       )}
     </div>
   );

@@ -36,42 +36,42 @@ export function useDynamicSidebar() {
       label: "Staffing",
       icon: Users,
       items: [
-        { title: "Staffing Summary", url: "/staffing", icon: Users },
+        { title: "Staffing Summary", url: "/staffing", icon: Users, permissions: ["staffing.access"] },
       ],
     },
     {
       label: "Positions",
       icon: UserCog,
       items: [
-        { title: "Positions", url: "/positions", icon: UserCog },
+        { title: "Positions", url: "/positions", icon: UserCog, permissions: ["positions.access"] },
       ],
     },
     {
       label: "Analytics",
       icon: TrendingUp,
       items: [
-        { title: "Analytics Region", url: "/analytics", icon: TrendingUp },
+        { title: "Analytics Region", url: "/analytics", icon: TrendingUp, permissions: ["analytics.access"] },
       ],
     },
     {
       label: "Reports",
       icon: FileBarChart,
       items: [
-        { title: "Reports", url: "/reports", icon: FileBarChart },
+        { title: "Reports", url: "/reports", icon: FileBarChart, permissions: ["reports.access"] },
       ],
     },
     {
       label: "Support",
       icon: LifeBuoy,
       items: [
-        { title: "Support", url: "/support", icon: LifeBuoy },
+        { title: "Support", url: "/support", icon: LifeBuoy, permissions: ["support.access"] },
       ],
     },
     {
       label: "Admin",
       icon: ShieldCheck,
       items: [
-        { title: "Admin Panel", url: "/admin", icon: ShieldCheck },
+        { title: "Admin Panel", url: "/admin", icon: ShieldCheck, permissions: ["admin.access"] },
       ],
     },
   ];
@@ -87,7 +87,7 @@ export function useDynamicSidebar() {
         label: "Feedback",
         icon: MessageSquare,
         items: [
-          { title: "Feedback", url: "/feedback", icon: MessageSquare },
+          { title: "Feedback", url: "/feedback", icon: MessageSquare, permissions: ["feedback.access"] },
         ],
       },
     ];

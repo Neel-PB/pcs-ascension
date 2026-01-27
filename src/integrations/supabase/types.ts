@@ -884,6 +884,33 @@ export type Database = {
         }
         Relationships: []
       }
+      role_permissions: {
+        Row: {
+          created_at: string
+          id: string
+          permission_key: string
+          permission_value: Json
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          permission_key: string
+          permission_value?: Json
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          permission_key?: string
+          permission_value?: Json
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       staffing_standards: {
         Row: {
           "% Census": number | null
@@ -1230,6 +1257,7 @@ export type Database = {
         | "cno"
         | "director"
         | "nurse_manager"
+        | "manager"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1366,6 +1394,7 @@ export const Constants = {
         "cno",
         "director",
         "nurse_manager",
+        "manager",
       ],
     },
   },

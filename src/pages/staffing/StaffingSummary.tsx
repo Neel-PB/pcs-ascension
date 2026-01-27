@@ -12,9 +12,11 @@ import { generateLast12MonthLabels } from "@/lib/utils";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import { WorkforceDrawer } from "@/components/workforce/WorkforceDrawer";
 import { WorkforceDrawerTrigger } from "@/components/workforce/WorkforceDrawerTrigger";
+import { useRBAC } from "@/hooks/useRBAC";
 
 export default function StaffingSummary() {
   const [activeTab, setActiveTab] = useState("summary");
+  const { hasPermission } = useRBAC();
   
   // State management for filters
   const [selectedRegion, setSelectedRegion] = useState("all-regions");
@@ -25,14 +27,25 @@ export default function StaffingSummary() {
   const [selectedLevel2, setSelectedLevel2] = useState("all-level2");
   const [selectedDepartment, setSelectedDepartment] = useState("all-departments");
 
-  const tabs = [
-    { id: "summary", label: "Summary" },
-    { id: "planning", label: "Planned/Active Resources" },
-    { id: "variance", label: "Variance Analysis" },
-    { id: "forecasts", label: "Forecasts" },
-    { id: "volume-settings", label: "Volume Settings" },
-    { id: "np-settings", label: "NP Settings" },
-  ];
+  // Build tabs based on permissions
+  const tabs = useMemo(() => {
+    const baseTabs = [
+      { id: "summary", label: "Summary" },
+      { id: "planning", label: "Planned/Active Resources" },
+      { id: "variance", label: "Variance Analysis" },
+      { id: "forecasts", label: "Forecasts" },
+    ];
+    
+    if (hasPermission("settings.volume_override")) {
+      baseTabs.push({ id: "volume-settings", label: "Volume Settings" });
+    }
+    
+    if (hasPermission("settings.np_override")) {
+      baseTabs.push({ id: "np-settings", label: "NP Settings" });
+    }
+    
+    return baseTabs;
+  }, [hasPermission]);
 
   const handleRegionChange = (value: string) => {
     setSelectedRegion(value);
