@@ -1,277 +1,184 @@
 
-
-# Improved Roles & Permissions UI
+# Standardize Select 'All/None' Options Across the App
 
 ## Overview
 
-Redesign the Roles and Permissions management interface to provide a unified, visual experience that makes it easy to understand and manage access control. The new design will combine roles and permissions into a single, cohesive view with a permission matrix pattern.
+Radix UI's `<Select.Item />` throws a runtime error if given an empty string (`""`) as a value. This plan standardizes all Select components in the application to use non-empty sentinel values (like `"all"`, `"none"`, `"unset"`) instead of empty strings, preventing crashes across the app.
 
 ---
 
-## Current Pain Points
+## Current State Analysis
 
-| Issue | Impact |
-|-------|--------|
-| Roles and Permissions are separate tabs | Context switching when understanding what a role can do |
-| Permission grid is cramped (5 categories in 2 columns) | Difficult to scan and compare |
-| User Form shows only 2 hardcoded roles | Doesn't leverage the dynamic roles system |
-| No way to see role-permission relationships at a glance | Admins can't quickly compare roles |
-| No search/filter in roles management | Hard to find specific roles with many entries |
+### Components Already Using Correct Pattern
+These components already follow best practices and need no changes:
+
+| File | Sentinel Used |
+|------|---------------|
+| `RBACAuditLog.tsx` | `"all"` |
+| `FilterBar.tsx` | `"all-regions"`, `"all-markets"`, `"all-facilities"`, `"all-departments"`, `"all-submarkets"`, `"all-level2"`, `"all-pstat"` |
+| `CombinedOptionalFilters.tsx` | Same as FilterBar |
+| `EmployeesFilterSheet.tsx` | `"all"` |
+| `ContractorsFilterSheet.tsx` | `"all"` |
+| `RequisitionsFilterSheet.tsx` | `"all"` |
+| `FeedbackPage.tsx` | `"all"` |
+| `UserFormSheet.tsx` | Filters out empty role names (defensive) |
+
+### Components Needing Updates
+
+| File | Current Issue | Fix Required |
+|------|---------------|--------------|
+| `MessageComposer.tsx` | Uses `selectedRoles[0] \|\| ""` fallback | Change fallback to `"none"` sentinel |
+| `ShiftCell.tsx` | Uses `""` for unset state, passes to Select | Change to `"unset"` sentinel with "No selection" option |
 
 ---
 
-## Proposed Design: Unified Permission Matrix
+## Implementation Plan
 
-### Layout Structure
+### Step 1: Create a Shared Sentinel Constants File
 
-```text
-┌──────────────────────────────────────────────────────────────────────────────┐
-│  Access Control                                           [+ Add Role]       │
-│  Manage roles and their permissions                       [+ Add Permission] │
-├──────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  [Search roles/permissions...]                    View: [Matrix ▼]           │
-│                                                                              │
-│  ┌─────────────────────────────────────────────────────────────────────────┐ │
-│  │                 │ Admin │ Labor │ Leader │ CNO │ Director │ Manager    │ │
-│  ├─────────────────┼───────┼───────┼────────┼─────┼──────────┼────────────┤ │
-│  │ MODULES                                                                 │ │
-│  ├─────────────────┼───────┼───────┼────────┼─────┼──────────┼────────────┤ │
-│  │ Admin Access    │  ✓    │  ✓    │        │     │          │            │ │
-│  │ Feedback Access │  ✓    │  ✓    │        │     │          │            │ │
-│  │ Staffing        │  ✓    │  ✓    │   ✓    │  ✓  │    ✓     │     ✓      │ │
-│  │ Positions       │  ✓    │  ✓    │   ✓    │  ✓  │    ✓     │     ✓      │ │
-│  │ ...             │       │       │        │     │          │            │ │
-│  ├─────────────────┼───────┼───────┼────────┼─────┼──────────┼────────────┤ │
-│  │ APPROVALS                                                               │ │
-│  ├─────────────────┼───────┼───────┼────────┼─────┼──────────┼────────────┤ │
-│  │ Approve Open    │  ✓    │  ✓    │   ✓    │  ✓  │    ✓     │            │ │
-│  │ Approve Close   │  ✓    │  ✓    │   ✓    │  ✓  │    ✓     │            │ │
-│  │ Volume Override │  ✓    │  ✓    │        │     │          │            │ │
-│  │ ...             │       │       │        │     │          │            │ │
-│  └─────────────────────────────────────────────────────────────────────────┘ │
-│                                                                              │
-│  Legend: ✓ Enabled  ● Overridden from default  🔒 System role/permission    │
-│                                                                              │
-└──────────────────────────────────────────────────────────────────────────────┘
+Create a centralized constants file for commonly used Select sentinel values. This ensures consistency across the app and makes future updates easier.
+
+**New file: `src/lib/selectConstants.ts`**
+
+```typescript
+/**
+ * Standard sentinel values for Select components.
+ * Radix UI throws if SelectItem value is "".
+ * Always use these constants instead of empty strings.
+ */
+export const SELECT_ALL = "all" as const;
+export const SELECT_NONE = "none" as const;
+export const SELECT_UNSET = "unset" as const;
+
+// Filter-specific sentinels (maintain existing patterns)
+export const FILTER_SENTINELS = {
+  ALL_REGIONS: "all-regions",
+  ALL_MARKETS: "all-markets",
+  ALL_FACILITIES: "all-facilities",
+  ALL_DEPARTMENTS: "all-departments",
+  ALL_SUBMARKETS: "all-submarkets",
+  ALL_LEVEL2: "all-level2",
+  ALL_PSTAT: "all-pstat",
+} as const;
 ```
 
-### Key Features
+### Step 2: Fix MessageComposer.tsx
 
-1. **Full Permission Matrix View**
-   - Horizontal scrolling for many roles
-   - Sticky first column (permission names)
-   - Sticky header row (role names)
-   - Category groupings with collapsible sections
+The Select value currently falls back to `""` when no roles are selected.
 
-2. **Inline Editing**
-   - Click any cell to toggle permission
-   - Visual indicator for overridden values (amber dot)
-   - Hover to see permission description
-   - Click role header to edit role details
-
-3. **Quick Actions**
-   - "Add Role" button opens a slide-out sheet
-   - "Add Permission" button opens a dialog
-   - Column header dropdown for role actions (Edit, Delete, Clone, Reset)
-   - Row hover shows permission actions (Edit, Delete)
-
-4. **View Modes**
-   - **Matrix View** (default): Full grid of all roles × permissions
-   - **Role Detail View**: Current left-panel + right-panel design (for deep editing)
-   - **List View**: Simple permission list with role badges
-
----
-
-## Component Architecture
-
-### New Components
-
-| Component | Description |
-|-----------|-------------|
-| `AccessControlPage.tsx` | Combined page replacing separate Roles/Permissions tabs |
-| `PermissionMatrix.tsx` | Main matrix grid component with sticky headers |
-| `PermissionMatrixCell.tsx` | Individual toggle cell with override indicator |
-| `PermissionMatrixRow.tsx` | Permission row with category grouping |
-| `PermissionMatrixHeader.tsx` | Role column header with actions dropdown |
-| `RoleQuickEditSheet.tsx` | Slide-out for editing role details |
-| `BulkPermissionActions.tsx` | Toolbar for bulk operations |
-
-### Enhanced Components
-
-| Component | Enhancement |
-|-----------|-------------|
-| `UserFormSheet.tsx` | Use dynamic roles instead of hardcoded options |
-| `RoleFormDialog.tsx` | Add "Clone from" dropdown to copy another role's permissions |
-| `PermissionFormDialog.tsx` | Add "Assign to roles" multi-select |
-
----
-
-## Detailed UI Specifications
-
-### Permission Matrix Grid
-
-**Headers:**
-- Role names displayed horizontally with permission count badge
-- System roles marked with lock icon
-- Hover shows role description
-- Click opens quick-edit sheet
-- Dropdown menu for Edit, Clone, Reset, Delete
-
-**Rows:**
-- Grouped by category (collapsible)
-- Permission label with hover tooltip for description
-- System permissions marked with lock
-- Row actions appear on hover (edit, delete)
-
-**Cells:**
-- Checkbox for toggle
-- Amber dot overlay when overridden from default
-- Disabled state for system-protected combinations
-- Click to toggle, with optimistic update
-
-**Category Headers:**
-- Full-width row spanning all columns
-- Collapse/expand toggle
-- Category badge with count (e.g., "Modules 4/7")
-
-### Keyboard Navigation
-
-- Arrow keys to move between cells
-- Space/Enter to toggle
-- Tab to move to next row
-- Escape to deselect
-
-### Responsive Behavior
-
-- On smaller screens, switch to "Role Detail View" (current design)
-- Matrix view requires minimum 1024px width
-- Horizontal scroll for many roles on medium screens
-
----
-
-## User Form Enhancement
-
-Update `UserFormSheet.tsx` to dynamically load roles:
-
-```text
-┌──────────────────────────────────────┐
-│ Role                                 │
-├──────────────────────────────────────┤
-│ [Select role...            ▼]        │
-│ ┌──────────────────────────────────┐ │
-│ │ ● Admin         (System) 🔒     │ │
-│ │ ● Labor Team    (System)        │ │
-│ │   Leadership                    │ │
-│ │   CNO                           │ │
-│ │   Director                      │ │
-│ │   Manager                       │ │
-│ │   Custom Role                   │ │
-│ └──────────────────────────────────┘ │
-│                                      │
-│ Selected: Admin                      │
-│ 21 permissions enabled               │
-└──────────────────────────────────────┘
+**Current code (line 123):**
+```tsx
+value={selectedRoles.includes("all") ? "all" : selectedRoles[0] || ""}
 ```
 
----
+**Fixed code:**
+```tsx
+value={selectedRoles.includes("all") ? "all" : selectedRoles[0] || "none"}
+```
 
-## Implementation Steps
+Also add a "No selection" placeholder item to handle the `"none"` case:
+```tsx
+<SelectContent>
+  <SelectItem value="none" disabled className="text-muted-foreground">
+    Select recipients...
+  </SelectItem>
+  {roleGroups.map((role) => (
+    <SelectItem key={role.value} value={role.value}>
+      {role.label}
+    </SelectItem>
+  ))}
+</SelectContent>
+```
 
-### Phase 1: Combine Roles & Permissions Tab
-1. Create new `AccessControlPage.tsx` component
-2. Add view mode toggle (Matrix / Detail / List)
-3. Update `AdminPage.tsx` to use single "Access Control" tab instead of Roles + Permissions
+### Step 3: Fix ShiftCell.tsx
 
-### Phase 2: Build Permission Matrix
-1. Create `PermissionMatrix.tsx` with virtualized scrolling
-2. Implement sticky headers (role names) and sticky column (permission names)
-3. Add collapsible category groupings
-4. Implement cell toggle with optimistic updates
-5. Add override indicators and tooltips
+The component uses `""` to represent "no selection" and passes it directly to the Select.
 
-### Phase 3: Enhance Quick Actions
-1. Add role column header dropdowns (Edit, Clone, Reset, Delete)
-2. Add permission row actions on hover
-3. Implement "Clone Role" functionality
-4. Add bulk permission operations toolbar
+**Current code:**
+```tsx
+const [localSelection, setLocalSelection] = useState<string>(selectedDayNight || "");
+// ...
+const handleReset = (e: React.MouseEvent) => {
+  setLocalSelection("");
+  onSave?.(null);
+};
+// ...
+<Select value={localSelection} onValueChange={handleSelect}>
+```
 
-### Phase 4: Update User Management
-1. Modify `UserFormSheet.tsx` to fetch dynamic roles
-2. Replace hardcoded RadioGroup with dynamic Select
-3. Show permission count for each role option
-4. Add multi-role support (if needed in future)
+**Fixed code:**
+```tsx
+const UNSET = "unset" as const;
+const [localSelection, setLocalSelection] = useState<string>(selectedDayNight || UNSET);
+// ...
+const handleReset = (e: React.MouseEvent) => {
+  setLocalSelection(UNSET);
+  onSave?.(null);
+};
 
-### Phase 5: Polish & Accessibility
-1. Add keyboard navigation
-2. Implement responsive breakpoints
-3. Add loading states and skeletons
-4. Test with screen readers
+const handleSelect = (val: string) => {
+  if (val === UNSET) return; // Ignore placeholder selection
+  setLocalSelection(val);
+  onSave?.(val);
+};
+// ...
+<Select value={localSelection} onValueChange={handleSelect}>
+  <SelectTrigger className="h-8 text-sm">
+    <SelectValue placeholder="Select shift..." />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value={UNSET} disabled className="text-muted-foreground">
+      Select shift...
+    </SelectItem>
+    <SelectItem value="day">Day</SelectItem>
+    <SelectItem value="night">Night</SelectItem>
+  </SelectContent>
+</Select>
+```
+
+### Step 4: Defensive Validation in UserFormSheet.tsx (Already Done)
+
+The current implementation already filters out empty role names:
+```tsx
+.filter((role) => role.name && role.name.trim() !== '')
+```
+
+No changes needed here.
 
 ---
 
 ## Files Summary
 
 ### New Files
-
 | File | Purpose |
 |------|---------|
-| `src/pages/admin/AccessControlPage.tsx` | Combined roles & permissions management |
-| `src/components/admin/PermissionMatrix.tsx` | Main matrix grid component |
-| `src/components/admin/PermissionMatrixCell.tsx` | Individual toggle cell |
-| `src/components/admin/RoleColumnHeader.tsx` | Role column header with actions |
-| `src/components/admin/PermissionCategoryRow.tsx` | Collapsible category header |
-| `src/components/admin/RoleQuickEditSheet.tsx` | Slide-out for role editing |
+| `src/lib/selectConstants.ts` | Shared sentinel constants for Select components |
 
 ### Modified Files
-
 | File | Change |
 |------|--------|
-| `src/pages/admin/AdminPage.tsx` | Replace Roles + Permissions tabs with single Access Control tab |
-| `src/components/admin/UserFormSheet.tsx` | Load dynamic roles, replace hardcoded options |
-| `src/components/admin/RoleFormDialog.tsx` | Add "Clone from" functionality |
-| `src/hooks/useDynamicRoles.ts` | Add `cloneRole` mutation |
-
-### Files to Remove (Optional)
-
-| File | Reason |
-|------|--------|
-| `src/pages/admin/RolesManagement.tsx` | Replaced by AccessControlPage |
-| `src/pages/admin/PermissionsManagement.tsx` | Replaced by AccessControlPage |
+| `src/components/messaging/MessageComposer.tsx` | Replace `""` fallback with `"none"` sentinel |
+| `src/components/editable-table/cells/ShiftCell.tsx` | Replace `""` state with `"unset"` sentinel |
 
 ---
 
-## Visual Design Notes
+## Testing Checklist
 
-1. **Matrix cells**: Use subtle grid lines with `border-border/30`
-2. **Override indicator**: Small amber dot in top-right corner of cell
-3. **System badge**: Muted outline badge with lock icon
-4. **Category headers**: Slightly darker background `bg-muted/50`
-5. **Hover state**: Highlight entire row and column on cell hover
-6. **Focus state**: Blue ring around focused cell for keyboard nav
+After implementation, verify:
+
+1. **MessageComposer**: Open the message composer, confirm no crash when no recipients selected
+2. **ShiftCell**: Open a special shift popover, confirm no crash when shift is unselected
+3. **RBAC Audit Log**: Confirm filters work with "All" option
+4. **All Filter Sheets**: Open Employees, Contractors, Requisitions filter sheets and use all dropdowns
+5. **FilterBar**: Use all primary and optional filters in Staffing module
 
 ---
 
-## Technical Considerations
+## Future Prevention
 
-### Performance
+To prevent this issue from occurring in future development:
 
-- Use virtualization for large permission/role sets
-- Implement optimistic updates for cell toggles
-- Batch permission changes for bulk operations
-- Memoize cell components to prevent re-renders
-
-### Data Structure
-
-Permission categories are already defined in `rbacConfig.ts`. The matrix will:
-1. Fetch all permissions from database (dynamic)
-2. Fetch all roles from database (dynamic)  
-3. Fetch all role_permissions mappings
-4. Compute effective permissions (defaults + overrides)
-
-### Backwards Compatibility
-
-- Keep existing hooks (`useRolePermissions`, `useDynamicRoles`, `usePermissions`)
-- The matrix is a UI-only change; backend logic remains the same
-- Existing `RolesManagement.tsx` can be kept as "Detail View" mode
+1. **Code Review Guideline**: Any new Select component must use a non-empty sentinel for "All/None/Unset" options
+2. **Import Pattern**: Encourage importing from `@/lib/selectConstants` for standard sentinel values
+3. **ESLint Rule (Optional)**: Consider adding a custom lint rule to flag `<SelectItem value="">` patterns
 
