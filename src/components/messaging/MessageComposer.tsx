@@ -120,7 +120,7 @@ export function MessageComposer() {
 
                 {/* Recipient Selector */}
                 <Select
-                  value={selectedRoles.includes("all") ? "all" : selectedRoles[0] || ""}
+                  value={selectedRoles.includes("all") ? "all" : selectedRoles[0] || "none"}
                   onValueChange={handleRoleSelect}
                 >
                   <SelectTrigger className="h-7 w-auto gap-2 border-0 bg-accent/50 hover:bg-accent text-xs">
@@ -130,6 +130,9 @@ export function MessageComposer() {
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="none" disabled className="text-muted-foreground">
+                      Select recipients...
+                    </SelectItem>
                     {roleGroups.map((role) => (
                       <SelectItem key={role.value} value={role.value}>
                         {role.label}
