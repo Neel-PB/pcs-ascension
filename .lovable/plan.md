@@ -1,86 +1,135 @@
 
-
-# Align RBAC Detail View Headers
+# Make Permission Matrix Table Fill Available Width
 
 ## Overview
 
-Make the "Roles" header on the left and the selected role header on the right visually consistent in height and styling.
+Update the Permission Matrix table to fill the full container width instead of using fixed column widths that leave empty space after the last role column.
 
 ---
 
 ## Current Issue
 
-| Element | Left Panel (Roles) | Right Panel (Admin) |
-|---------|-------------------|---------------------|
-| Padding | `p-3` | `p-3` |
-| Font | `text-xs uppercase` | Regular size `font-semibold` |
-| Height | ~36px (smaller text) | ~44px (larger text + badge) |
+The table uses fixed widths:
+- Permission column: `w-56` (224px)
+- Each role column: `w-28` (112px)
+- Container has `min-w-max` preventing any expansion
 
-The left header appears shorter and less prominent than the right header.
+With 6 roles: 224 + (112 × 6) = 896px total, leaving ~40% empty space on wider screens.
 
 ---
 
 ## Solution
 
-Standardize both headers with matching height and consistent typography:
-
-1. Keep the same padding on both sides
-2. Adjust the left header to match the visual weight of the right
-3. Add explicit minimum height to ensure alignment
+Change role columns from fixed `w-28` to flexible `flex-1` so they expand evenly to fill available space. Keep a minimum width to ensure readability.
 
 ---
 
 ## Changes Required
 
-### File: `src/components/admin/RoleDetailView.tsx`
+### File: `src/components/admin/PermissionMatrix.tsx`
 
-**Update Left Panel Header (lines 477-481):**
+**1. Update container structure (line 217):**
 ```tsx
 // FROM:
-<div className="p-3 border-b bg-muted/30">
-  <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-    Roles
-  </h4>
-</div>
+<div className="min-w-max">
 
 // TO:
-<div className="flex items-center h-[49px] px-3 border-b bg-muted/30">
-  <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-    Roles
-  </h4>
-</div>
+<div className="w-full">
 ```
 
-**Update Right Panel Header (lines 501-523):**
+**2. Update header row (line 219):**
 ```tsx
 // FROM:
-<div className="flex items-center justify-between p-3 border-b bg-muted/30">
+<div className="flex border-b bg-muted/30">
 
 // TO:
-<div className="flex items-center justify-between h-[49px] px-3 border-b bg-muted/30">
+<div className="flex border-b bg-muted/30 w-full">
+```
+
+**3. Update role column headers (lines 230-232):**
+```tsx
+// FROM:
+<div
+  key={role.id}
+  className="w-28 shrink-0 px-2 py-2 text-center border-r last:border-r-0"
+>
+
+// TO:
+<div
+  key={role.id}
+  className="flex-1 min-w-[100px] px-2 py-2 text-center border-r last:border-r-0"
+>
+```
+
+**4. Update category header empty cells (lines 327-329):**
+```tsx
+// FROM:
+{roles.map((role) => (
+  <div key={role.id} className="w-28 shrink-0 border-r last:border-r-0" />
+))}
+
+// TO:
+{roles.map((role) => (
+  <div key={role.id} className="flex-1 min-w-[100px] border-r last:border-r-0" />
+))}
+```
+
+**5. Update permission rows structure (line 440):**
+```tsx
+// FROM:
+<div className="flex border-b last:border-b-0 hover:bg-muted/30 transition-colors">
+
+// TO:
+<div className="flex border-b last:border-b-0 hover:bg-muted/30 transition-colors w-full">
+```
+
+**6. Update role checkbox cells (lines 469-474):**
+```tsx
+// FROM:
+<div
+  key={role.id}
+  className={cn(
+    "w-28 shrink-0 flex items-center justify-center border-r last:border-r-0",
+    isPending && "bg-primary/5"
+  )}
+>
+
+// TO:
+<div
+  key={role.id}
+  className={cn(
+    "flex-1 min-w-[100px] flex items-center justify-center border-r last:border-r-0",
+    isPending && "bg-primary/5"
+  )}
+>
 ```
 
 ---
 
 ## Visual Result
 
-```text
-┌─────────────────────────────────────────────────────────┐
-│  ROLES           │  Admin  [🔒 System]     [Reset (2)]  │
-│  (same height)   │  (same height)                       │
-├──────────────────┼──────────────────────────────────────┤
-│  Admin           │  [Permission cards...]               │
-│  Manager         │                                      │
-└──────────────────┴──────────────────────────────────────┘
-```
+| Before | After |
+|--------|-------|
+| Fixed 896px width | Fills container width |
+| Empty space after Manager | All columns expand evenly |
+| Role columns: 112px each | Role columns: flexible (min 100px) |
 
-Both headers will now be exactly 49px tall with vertically centered content, creating a unified visual appearance.
+```text
+Before:
+┌─────────┬───────┬───────┬───────┬───────┬───────┬───────┐░░░░░░
+│Permission│Admin │L.Mgr  │Lead   │CNO    │Dir    │Mgr    │ empty
+└─────────┴───────┴───────┴───────┴───────┴───────┴───────┘░░░░░░
+
+After:
+┌──────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┐
+│Permission│  Admin  │  L.Mgr  │  Lead   │   CNO   │   Dir   │   Mgr   │
+└──────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┘
+```
 
 ---
 
-## Files Summary
+## Files to Modify
 
-| File | Change |
-|------|--------|
-| `src/components/admin/RoleDetailView.tsx` | Add fixed height `h-[49px]` to both header divs for consistent alignment |
-
+| File | Changes |
+|------|---------|
+| `src/components/admin/PermissionMatrix.tsx` | Change fixed `w-28` to `flex-1 min-w-[100px]` for role columns; change container from `min-w-max` to `w-full` |
