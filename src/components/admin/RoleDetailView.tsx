@@ -474,7 +474,7 @@ export function RoleDetailView({ roles, onEditRole }: RoleDetailViewProps) {
       <div className="flex flex-1 overflow-hidden">
         {/* Left Panel - Role List */}
         <div className="w-52 shrink-0 border-r bg-muted/20">
-          <div className="p-3 border-b bg-muted/30">
+          <div className="flex items-center h-[49px] px-3 border-b bg-muted/30">
             <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Roles
             </h4>
@@ -498,7 +498,7 @@ export function RoleDetailView({ roles, onEditRole }: RoleDetailViewProps) {
         {/* Right Panel - Permission Grid */}
         {selectedRole && selectedRoleName && (
           <div className="flex-1">
-            <div className="flex items-center justify-between p-3 border-b bg-muted/30">
+            <div className="flex items-center justify-between h-[49px] px-3 border-b bg-muted/30">
               <div className="flex items-center gap-2">
                 <h4 className="font-semibold">{selectedRole.label}</h4>
                 {selectedRole.is_system && (
