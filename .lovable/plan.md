@@ -1,155 +1,164 @@
 
-# Roles Management UI Redesign
 
-## Overview
+# Compact Roles Management UI Redesign
 
-Redesign the current accordion-based roles management UI to a split-panel table layout with:
-- **Left panel**: Clickable list of roles
-- **Right panel**: Permission list with checkboxes/switches to add/remove permissions for the selected role
+## Problem
+
+The current UI has excessive vertical scrolling with each permission taking a full row (including description), making it hard to quickly see and compare permissions across the interface.
+
+## Solution: Permission Matrix Layout
+
+Transform the UI into a **compact matrix/grid view** that displays all permissions at a glance without scrolling, while keeping the role selection on the left.
 
 ---
 
-## New UI Layout
+## New Compact Layout
 
 ```text
-+--------------------------------------------------+
-| Role Permissions                                 |
-| Configure permissions for each role...           |
-+--------------------------------------------------+
-|                                                  |
-| +----------------+  +---------------------------+|
-| |  ROLES         |  |  PERMISSIONS              ||
-| +----------------+  +---------------------------+|
-| |                |  |                           ||
-| | > Admin        |  | Module Access             ||
-| |   Labor Mgmt   |  | +-----------------------+ ||
-| |   Leadership   |  | | [x] Admin Module      | ||
-| |   CNO          |  | | [x] Feedback Module   | ||
-| |   Director     |  | | [x] Staffing          | ||
-| |   Manager      |  | | [x] Positions         | ||
-| |                |  | | [x] Analytics         | ||
-| |                |  | | [x] Reports           | ||
-| |                |  | | [x] Support           | ||
-| |                |  | +-----------------------+ ||
-| |                |  |                           ||
-| |                |  | Settings Access           ||
-| |                |  | +-----------------------+ ||
-| |                |  | | [x] Volume Override   | ||
-| |                |  | | [x] NP Override       | ||
-| |                |  | +-----------------------+ ||
-| |                |  |                           ||
-| |                |  | Filter Access             ||
-| |                |  | +-----------------------+ ||
-| |                |  | | [x] Region Filter     | ||
-| |                |  | | [x] Market Filter     | ||
-| |                |  | | [x] Facility Filter   | ||
-| |                |  | | [x] Department Filter | ||
-| |                |  | +-----------------------+ ||
-| |                |  |                           ||
-| |                |  | Sub-filter Access         ||
-| |                |  | +-----------------------+ ||
-| |                |  | | [x] Submarket Filter  | ||
-| |                |  | | [x] Level 2 Filter    | ||
-| |                |  | | [x] PSTAT Filter      | ||
-| +----------------+  +---------------------------+|
-+--------------------------------------------------+
+┌────────────────────────────────────────────────────────────────────────┐
+│ Role Permissions                                                       │
+│ Select a role and toggle permissions. Changes apply immediately.       │
+├────────────────────────────────────────────────────────────────────────┤
+│                                                                        │
+│ ┌─────────────┐  ┌──────────────────────────────────────────────────┐  │
+│ │  ROLES      │  │  PERMISSIONS                           [Reset]   │  │
+│ ├─────────────┤  ├──────────────────────────────────────────────────┤  │
+│ │             │  │                                                  │  │
+│ │ ● Admin     │  │  MODULES              SETTINGS                   │  │
+│ │   Labor Mgmt│  │  ┌─────────────────┐  ┌─────────────────┐        │  │
+│ │   Leadership│  │  │ [✓] Admin       │  │ [✓] Volume Ovrd │        │  │
+│ │   CNO       │  │  │ [✓] Feedback    │  │ [✓] NP Override │        │  │
+│ │   Director  │  │  │ [✓] Staffing    │  └─────────────────┘        │  │
+│ │   Manager   │  │  │ [✓] Positions   │                             │  │
+│ │             │  │  │ [✓] Analytics   │  FILTERS                    │  │
+│ │             │  │  │ [✓] Reports     │  ┌─────────────────┐        │  │
+│ │             │  │  │ [✓] Support     │  │ [✓] Region      │        │  │
+│ │             │  │  └─────────────────┘  │ [✓] Market      │        │  │
+│ │             │  │                       │ [✓] Facility    │        │  │
+│ │             │  │  SUB-FILTERS          │ [✓] Department  │        │  │
+│ │             │  │  ┌─────────────────┐  └─────────────────┘        │  │
+│ │             │  │  │ [✓] Submarket   │                             │  │
+│ │             │  │  │ [✓] Level 2     │                             │  │
+│ │             │  │  │ [✓] PSTAT       │                             │  │
+│ │             │  │  └─────────────────┘                             │  │
+│ │             │  │                                                  │  │
+│ └─────────────┘  └──────────────────────────────────────────────────┘  │
+│                                                                        │
+└────────────────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## Key Design Changes
+
+### 1. Two-Column Grid for Permission Categories
+Instead of stacking all 4 categories vertically, arrange them in a **2x2 grid**:
+- Top Left: **Modules** (7 items)
+- Top Right: **Settings** (2 items)
+- Bottom Left: **Sub-filters** (3 items)
+- Bottom Right: **Filters** (4 items)
+
+This eliminates vertical scrolling entirely.
+
+### 2. Compact Permission Rows
+Remove descriptions from the default view to reduce row height:
+- Show only: `[Checkbox] Label [Override badge if any]`
+- Add tooltips for descriptions on hover
+- Smaller padding: `py-1.5 px-2` instead of `py-2.5 px-3`
+
+### 3. Simplified Role Cards
+Make role cards more compact:
+- Single line with role name + permission count badge
+- Remove description from card (show on hover as tooltip)
+- Tighter spacing between cards
+
+### 4. Visual Grouping with Cards
+Each permission category becomes a compact card:
+- Small category header with count badge
+- Dense checkbox list inside
+- Subtle border to group related items
+
+### 5. Quick Actions
+- Single "Reset All" button in the header when overrides exist
+- Override indicator as a small colored dot instead of badge text
 
 ---
 
 ## Component Structure
 
-### Left Panel - Role List
-- Vertical list of role cards
-- Each card shows:
-  - Role name (bold)
-  - Role description (muted, smaller)
-  - Badge showing permission count
-  - Override indicator if any overrides exist
-- Selected role highlighted with primary color border/background
-- Click to select and show permissions on right
-
-### Right Panel - Permission Editor
-- Header with selected role name + "Reset All" button (if overrides exist)
-- Grouped permission sections:
-  - Module Access
-  - Settings Access
-  - Filter Access
-  - Sub-filter Access
-- Each permission row shows:
-  - Checkbox (checked = enabled)
-  - Permission label
-  - "Override" badge if different from default
-  - Hover: Reset button to revert to default
+```text
+RolesManagement
+├── Header (title + description)
+└── Main Content (flex row)
+    ├── RoleList (left, ~180px)
+    │   └── CompactRoleCard × 6
+    └── PermissionGrid (right, flex-1)
+        ├── Header (role name + reset button)
+        └── Grid (2 columns)
+            ├── ModulesCard
+            ├── SettingsCard
+            ├── SubfiltersCard
+            └── FiltersCard
+```
 
 ---
 
-## Implementation Details
+## Technical Implementation
 
 ### File to Modify
 - `src/pages/admin/RolesManagement.tsx`
 
-### Component Breakdown
+### New Component: `CompactPermissionCard`
+```text
+Props:
+- title: string
+- permissions: array
+- effectivePermissions: array
+- onToggle, onReset, isUpdating
 
-1. **RolesManagement** (main container)
-   - Uses flex layout with two columns
-   - Manages `selectedRole` state
-   - Renders RoleList and PermissionEditor
+Layout:
+- Header: title + enabled count badge
+- Body: compact checkbox list with tooltips
+```
 
-2. **RoleList** (left panel)
-   - Maps through `MANAGEABLE_ROLES`
-   - Each role as a clickable card
-   - Shows role metadata, permission count, override count
+### New Component: `CompactRoleCard`
+```text
+Props:
+- role, isSelected, permissionCount, overrideCount, onClick
 
-3. **PermissionEditor** (right panel)
-   - Receives selected role as prop
-   - Groups permissions by category
-   - Each permission as a checkbox row
-   - Shows override indicators
-   - Reset buttons on hover
+Layout:
+- Single row: role label + count badge
+- Selected state: primary border/bg
+- Tooltip shows full description
+```
 
-4. **PermissionRow** (individual permission)
-   - Checkbox for enable/disable
-   - Label + description
-   - Override badge if applicable
-   - Reset button on hover
-
-### Visual Enhancements
-- Smooth transitions when selecting roles
-- Loading states while permissions update
-- Visual feedback (checkmark animations)
-- Alternating row backgrounds for readability
+### Styling Changes
+- Role list: `w-44` (narrower from `w-64`)
+- Permission grid: `grid grid-cols-2 gap-3`
+- Permission rows: `py-1.5 text-sm` (compact)
+- Cards: `rounded-md border bg-card`
+- Override indicator: small dot (not text badge)
 
 ---
 
-## Technical Approach
+## Visual Improvements
 
-### State Management
-```text
-- selectedRole: AppRole (defaults to first manageable role)
-- Uses existing useRolePermissions hook for all data/mutations
-```
-
-### Event Handlers
-- `onRoleSelect(role)`: Updates selectedRole state
-- `onPermissionToggle(permission, value)`: Calls setPermission mutation
-- `onResetPermission(permission)`: Calls setPermission with null
-- `onResetAll()`: Calls resetToDefaults mutation
-
-### Styling
-- Left panel: ~250px fixed width, border-r
-- Right panel: flex-1, scrollable
-- Use existing Checkbox component from ui/checkbox
-- Cards with rounded borders and hover states
-- Consistent with app design system
+1. **No Scrolling**: Everything fits in viewport
+2. **Quick Scanning**: Compact checkboxes are faster to scan
+3. **Clear Grouping**: Cards visually separate permission types
+4. **Hover Details**: Descriptions in tooltips, not inline
+5. **Override Dots**: Colored dots (amber) instead of text badges
+6. **Consistent Spacing**: Uniform gaps throughout
 
 ---
 
 ## Summary
 
-This redesign transforms the accordion layout into a more intuitive master-detail pattern where:
-1. Users quickly scan all roles on the left
-2. Select a role to see/edit its permissions on the right
-3. Checkboxes provide clear visual feedback
-4. Override indicators show what differs from defaults
-5. Reset buttons allow quick reversion to defaults
+This redesign transforms the roles management from a scrolling list to a compact dashboard where:
+1. All 16 permissions visible at once (no scrolling)
+2. Role selection is streamlined (6 compact cards)
+3. Permission categories are grouped in a 2x2 grid
+4. Descriptions moved to tooltips for cleaner look
+5. Override indicators are subtle dots
+6. Everything fits in a single view
+
