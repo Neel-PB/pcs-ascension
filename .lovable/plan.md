@@ -1,39 +1,21 @@
 
-# Fix Skills Column Width Consistency Between Nursing/Non-Nursing Views
+# Fix Skills Column Width to Be Truly Fixed (Both Views)
 
 ## Problem
 
-In the "FTE Skill Shift Analysis" table on the Planned/Active Resources tab, the Skills column changes width when switching between Nursing and Non-Nursing views. This happens because:
+In the Non-Nursing view, the Skills column is **expanding** to fill the extra horizontal space when the Target FTEs and Variance columns are hidden. While we added `min-w-48` to prevent shrinking, the column is still growing.
 
-- **Nursing view**: 13 columns (Skills + Target FTEs×3 + Hired FTEs×3 + Open Req FTEs×3 + Variance×3)
-- **Non-Nursing view**: 7 columns (Skills + Hired FTEs×3 + Open Req FTEs×3)
-
-When 6 columns are hidden, the table redistributes space, causing the Skills column to expand or shift.
-
-## Root Cause
-
-The Skills column header (line 540) uses `w-32` but lacks a `min-w-32` constraint, and the table cells for skills don't have matching fixed widths:
-
-```tsx
-// Header
-<TableHead className="font-semibold text-foreground w-32">Skills</TableHead>
-
-// Cells (no width set)
-<TableCell className="font-semibold whitespace-nowrap">...</TableCell>
-```
+The table uses `w-full` CSS which causes it to fill available space, and remaining columns stretch proportionally.
 
 ## Solution
 
-Apply consistent fixed width (`w-48` = 192px) with matching `min-w-48` to the Skills column header and all corresponding cells across all row types:
+Add `max-w-48` to all Skills column elements to create a truly fixed-width column that cannot shrink OR grow:
 
-| Element | Current | New |
-|---------|---------|-----|
-| TableHead (Skills) | `w-32` | `w-48 min-w-48` |
-| GroupRow TableCell | `whitespace-nowrap` | `w-48 min-w-48 whitespace-nowrap` |
-| SkillRow TableCell | (none) | `w-48 min-w-48` |
-| TotalRow TableCell | `whitespace-nowrap` | `w-48 min-w-48 whitespace-nowrap` |
-
-This ensures the Skills column maintains exactly 192px regardless of how many other columns are visible.
+| Width Class | Purpose |
+|-------------|---------|
+| `w-48` | Sets default width to 192px |
+| `min-w-48` | Prevents shrinking below 192px |
+| `max-w-48` | Prevents growing above 192px |
 
 ## Files to Modify
 
@@ -42,41 +24,41 @@ This ensures the Skills column maintains exactly 192px regardless of how many ot
 ### Change 1: Skills Header (line 540)
 ```tsx
 // Before
-<TableHead className="font-semibold text-foreground w-32">Skills</TableHead>
+<TableHead className="font-semibold text-foreground w-48 min-w-48">Skills</TableHead>
 
 // After
-<TableHead className="font-semibold text-foreground w-48 min-w-48">Skills</TableHead>
+<TableHead className="font-semibold text-foreground w-48 min-w-48 max-w-48">Skills</TableHead>
 ```
 
 ### Change 2: Second Header Row Empty Cell (line 561)
 ```tsx
 // Before
-<TableHead></TableHead>
+<TableHead className="w-48 min-w-48"></TableHead>
 
 // After
-<TableHead className="w-48 min-w-48"></TableHead>
+<TableHead className="w-48 min-w-48 max-w-48"></TableHead>
 ```
 
 ### Change 3: GroupRow TableCell (line 367)
 ```tsx
 // Before
-<TableCell className="font-semibold whitespace-nowrap">
+<TableCell className="font-semibold whitespace-nowrap w-48 min-w-48">
 
 // After
-<TableCell className="font-semibold whitespace-nowrap w-48 min-w-48">
+<TableCell className="font-semibold whitespace-nowrap w-48 min-w-48 max-w-48">
 ```
 
-### Change 4: SkillRow TableCell (lines 429-432)
+### Change 4: SkillRow TableCell (line 429)
 ```tsx
 // Before
 <TableCell className={cn(
-  "font-medium whitespace-nowrap",
+  "font-medium whitespace-nowrap w-48 min-w-48",
   isChildRow && "pl-8"
 )}>
 
 // After
 <TableCell className={cn(
-  "font-medium whitespace-nowrap w-48 min-w-48",
+  "font-medium whitespace-nowrap w-48 min-w-48 max-w-48",
   isChildRow && "pl-8"
 )}>
 ```
@@ -84,10 +66,10 @@ This ensures the Skills column maintains exactly 192px regardless of how many ot
 ### Change 5: TotalRow TableCell (line 478)
 ```tsx
 // Before
-<TableCell className="font-semibold whitespace-nowrap">{data.skill}</TableCell>
+<TableCell className="font-semibold whitespace-nowrap w-48 min-w-48">{data.skill}</TableCell>
 
 // After
-<TableCell className="font-semibold whitespace-nowrap w-48 min-w-48">{data.skill}</TableCell>
+<TableCell className="font-semibold whitespace-nowrap w-48 min-w-48 max-w-48">{data.skill}</TableCell>
 ```
 
 ## Expected Result
@@ -97,10 +79,4 @@ This ensures the Skills column maintains exactly 192px regardless of how many ot
 | Nursing | 192px (fixed) |
 | Non-Nursing | 192px (fixed) |
 
-The Skills column will remain exactly the same width when toggling between Nursing and Non-Nursing, providing a stable visual experience.
-
-## Technical Notes
-
-- `w-48` = 192px provides enough space for skill names like "Patient Care Technician"
-- `min-w-48` prevents the column from shrinking when fewer columns are present
-- The fixed width approach ensures consistency without relying on table auto-layout
+The Skills column will now maintain exactly 192px in BOTH directions - it cannot shrink OR grow, ensuring identical appearance in both Nursing and Non-Nursing views.
