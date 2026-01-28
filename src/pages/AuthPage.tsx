@@ -80,7 +80,7 @@ export default function AuthPage() {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
+    <div className="min-h-screen h-screen overflow-auto flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
