@@ -1,75 +1,45 @@
 
-# Fix Access Scope Selection Not Saving
+# Fix Auth Page Content Overflow
 
 ## Problem
 
-The Access Scope selection UI works correctly (users can select regions, markets, facilities, and departments), but the selections are **never saved to the database**. 
-
-### Root Cause
-
-The `AccessScopeManager` component exposes a save function via `window.__accessScopeSave`, but the parent `UserFormSheet` component never calls this function when the form is submitted.
-
-**Current flow:**
-1. User opens Edit User sheet
-2. User expands Access Scope section
-3. User selects regions/markets/facilities/departments (works correctly)
-4. User clicks "Update" button
-5. `handleSubmit` is called, which only saves profile + roles
-6. Access Scope selections are **lost** (never saved)
+The auth page content is overflowing because:
+1. The body/html have `overflow-hidden` set in `index.css`
+2. The auth page uses `min-h-screen` inside a constrained container
+3. On smaller viewports, the two-column layout causes content to overflow without ability to scroll
 
 ## Solution
 
-Modify `UserFormSheet` to call the `__accessScopeSave` function when the form is submitted in edit mode.
+Make the auth page container scrollable while keeping the centered layout.
 
-### Code Change
+## Changes
 
-**File: `src/components/admin/UserFormSheet.tsx`**
+**File: `src/pages/AuthPage.tsx`**
 
-Update the `handleSubmit` function to also trigger the Access Scope save:
+Update the outer container to allow scrolling:
 
 ```tsx
-const handleSubmit = async (data: UserFormValues) => {
-  if (isEditMode) {
-    // Trigger access scope save if available
-    if ((window as any).__accessScopeSave) {
-      await (window as any).__accessScopeSave();
-    }
-    
-    onSubmit({
-      userId: user.id,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      bio: data.bio,
-      roles: data.roles,
-    });
-  } else {
-    onSubmit({
-      email: data.email,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      bio: data.bio,
-      roles: data.roles,
-    });
-  }
-};
+// Line 83: Change from
+<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
+
+// To
+<div className="min-h-screen h-screen overflow-auto flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
 ```
 
-### Alternative (Better Architecture)
-
-Instead of using `window` global, pass a ref or callback pattern. However, the window approach is already in place and works, so the minimal fix is to simply call the exposed function.
+This adds:
+- `h-screen` - Sets explicit height to match viewport
+- `overflow-auto` - Enables scrolling when content exceeds viewport
 
 ## Technical Details
 
-| File | Change |
-|------|--------|
-| `src/components/admin/UserFormSheet.tsx` | Call `window.__accessScopeSave()` in `handleSubmit` when in edit mode |
+| Property | Purpose |
+|----------|---------|
+| `h-screen` | Explicit height matching viewport |
+| `overflow-auto` | Scroll only when needed |
+| `min-h-screen` | Keeps minimum height for centering |
 
-## Testing Steps
+## Testing
 
-1. Navigate to Admin → Users
-2. Click Edit on any user
-3. Expand "Access Scope Restrictions"
-4. Select a Region, Market, Facility, or Department
-5. Click "Update"
-6. Re-open the same user's edit form
-7. Verify the selections persist
+1. View auth page on desktop - content should be centered
+2. Resize browser to smaller height - page should scroll
+3. View on mobile breakpoint - both cards should be visible with scroll
