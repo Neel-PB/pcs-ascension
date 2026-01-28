@@ -364,7 +364,7 @@ const GroupRow = ({
       className="font-semibold bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer border-t-2 border-primary/20"
       onClick={() => onToggle?.(id)}
     >
-      <TableCell className="font-semibold whitespace-nowrap">
+      <TableCell className="font-semibold whitespace-nowrap w-48 min-w-48">
         <div className="flex items-center gap-2">
           <motion.div
             initial={false}
@@ -427,7 +427,7 @@ const SkillRow = ({
       )}
     >
       <TableCell className={cn(
-        "font-medium whitespace-nowrap",
+        "font-medium whitespace-nowrap w-48 min-w-48",
         isChildRow && "pl-8"
       )}>
         {skill.skill}
@@ -475,7 +475,7 @@ const TotalRow = ({
 }) => {
   return (
     <TableRow className="font-semibold bg-muted/20 border-t-2">
-      <TableCell className="font-semibold whitespace-nowrap">{data.skill}</TableCell>
+      <TableCell className="font-semibold whitespace-nowrap w-48 min-w-48">{data.skill}</TableCell>
       {/* Target FTEs - only for Nursing */}
       {staffCategory === 'nursing' && (
         <>
@@ -537,7 +537,7 @@ const FTESkillShiftTable = ({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="font-semibold text-foreground w-32">Skills</TableHead>
+            <TableHead className="font-semibold text-foreground w-48 min-w-48">Skills</TableHead>
             {/* Target FTEs - only for Nursing */}
             {staffCategory === 'nursing' && (
               <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30 border-l-2 border-muted-foreground/30">
@@ -558,7 +558,7 @@ const FTESkillShiftTable = ({
             )}
           </TableRow>
           <TableRow>
-            <TableHead></TableHead>
+            <TableHead className="w-48 min-w-48"></TableHead>
             {/* Target FTEs sub-headers - only for Nursing */}
             {staffCategory === 'nursing' && (
               <>
