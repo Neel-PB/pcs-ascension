@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, LayoutGroup, AnimatePresence } from "framer-motion";
+import { motion, LayoutGroup } from "framer-motion";
 import { BarChart3 } from "lucide-react";
 import { RegionVolumeTrendCharts } from "@/components/analytics/RegionVolumeTrendCharts";
 
@@ -21,33 +21,23 @@ export default function AnalyticsRegion() {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-6"
-    >
+    <div className="space-y-6">
       <LayoutGroup>
         <div className="relative bg-background rounded-lg p-1 mb-6">
           <div className="flex">
-            {tabs.map((tab, index) => (
-              <motion.button
+            {tabs.map((tab) => (
+              <button
                 key={tab.id}
-                className={`relative flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors z-10 ${
+                className={`relative flex items-center justify-center px-4 py-2 text-sm font-medium transition-all z-10 hover:scale-[1.02] active:scale-[0.98] ${
                   activeTab === tab.id
                     ? "text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
                 onClick={() => setActiveTab(tab.id)}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
                 style={{ flex: 1 }}
               >
                 {tab.label}
-              </motion.button>
+              </button>
             ))}
             
             <motion.div
@@ -67,25 +57,17 @@ export default function AnalyticsRegion() {
         </div>
       </LayoutGroup>
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-        >
-          {activeTab === "region" ? (
-            <RegionVolumeTrendCharts />
-          ) : (
-            <div className="h-[400px] bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg flex flex-col items-center justify-center border border-border/50">
-              <BarChart3 className="h-16 w-16 text-muted-foreground/40 mb-4" />
-              <h3 className="text-lg font-medium text-muted-foreground">{tabLabels[activeTab]}</h3>
-              <p className="text-sm text-muted-foreground/60">Dashboard coming soon</p>
-            </div>
-          )}
-        </motion.div>
-      </AnimatePresence>
-    </motion.div>
+      <div>
+        {activeTab === "region" ? (
+          <RegionVolumeTrendCharts />
+        ) : (
+          <div className="h-[400px] bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg flex flex-col items-center justify-center border border-border/50">
+            <BarChart3 className="h-16 w-16 text-muted-foreground/40 mb-4" />
+            <h3 className="text-lg font-medium text-muted-foreground">{tabLabels[activeTab]}</h3>
+            <p className="text-sm text-muted-foreground/60">Dashboard coming soon</p>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

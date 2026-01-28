@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, LayoutGroup, AnimatePresence } from "framer-motion";
+import { motion, LayoutGroup } from "framer-motion";
 import { Shield, Upload, Users, Settings, MessageSquare, History } from "lucide-react";
 import { useRBAC } from "@/hooks/useRBAC";
 import { supabase } from "@/integrations/supabase/client";
@@ -77,25 +77,20 @@ export default function AdminPage() {
       <LayoutGroup>
         <div className="relative bg-background rounded-lg p-1">
           <div className="flex">
-            {tabs.map((tab, index) => (
-              <motion.button
+            {tabs.map((tab) => (
+              <button
                 key={tab.id}
-                className={`relative flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-colors z-10 ${
+                className={`relative flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-all z-10 hover:scale-[1.02] active:scale-[0.98] ${
                   activeTab === tab.id
                     ? "text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
                 onClick={() => setActiveTab(tab.id)}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
                 style={{ flex: 1 }}
               >
                 <tab.icon className="h-4 w-4" />
                 {tab.label}
-              </motion.button>
+              </button>
             ))}
             
             <motion.div
@@ -115,50 +110,41 @@ export default function AdminPage() {
         </div>
       </LayoutGroup>
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="space-y-6 animate-fade-in"
-        >
-          {activeTab === "data-import" && <DataImportPage />}
-          
-          {activeTab === "users" && <UsersManagement />}
-          
-            {activeTab === "feed" && (
-              <div className="space-y-6">
-                <FeedComposer />
-                <FeedHistory />
-              </div>
-            )}
-          
-          {activeTab === "access-control" && <AccessControlPage />}
+      <div className="space-y-6">
+        {activeTab === "data-import" && <DataImportPage />}
+        
+        {activeTab === "users" && <UsersManagement />}
+        
+        {activeTab === "feed" && (
+          <div className="space-y-6">
+            <FeedComposer />
+            <FeedHistory />
+          </div>
+        )}
+        
+        {activeTab === "access-control" && <AccessControlPage />}
 
-          {activeTab === "audit-log" && <RBACAuditLog />}
-          
-          {activeTab === "settings" && (
-            <Tabs defaultValue="ui-settings" className="space-y-6">
-              <div className="w-full max-w-md">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="ui-settings">UI Settings</TabsTrigger>
-                  <TabsTrigger value="volume-config">Volume Config</TabsTrigger>
-                </TabsList>
-              </div>
-              
-              <TabsContent value="ui-settings" className="mt-0">
-                <UISettings />
-              </TabsContent>
-              
-              <TabsContent value="volume-config" className="mt-0">
-                <VolumeOverrideSettings />
-              </TabsContent>
-            </Tabs>
-          )}
-        </motion.div>
-      </AnimatePresence>
+        {activeTab === "audit-log" && <RBACAuditLog />}
+        
+        {activeTab === "settings" && (
+          <Tabs defaultValue="ui-settings" className="space-y-6">
+            <div className="w-full max-w-md">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="ui-settings">UI Settings</TabsTrigger>
+                <TabsTrigger value="volume-config">Volume Config</TabsTrigger>
+              </TabsList>
+            </div>
+            
+            <TabsContent value="ui-settings" className="mt-0">
+              <UISettings />
+            </TabsContent>
+            
+            <TabsContent value="volume-config" className="mt-0">
+              <VolumeOverrideSettings />
+            </TabsContent>
+          </Tabs>
+        )}
+      </div>
     </div>
   );
 }
