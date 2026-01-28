@@ -534,7 +534,7 @@ const FTESkillShiftTable = ({
   
   return (
     <div className="overflow-x-auto">
-      <Table>
+      <Table className="table-fixed">
         <TableHeader>
           <TableRow>
             <TableHead className="font-semibold text-foreground w-48 min-w-48 max-w-48">Skills</TableHead>
