@@ -220,15 +220,15 @@ export function OrgAccessManager({ userId, isEditMode }: OrgAccessManagerProps) 
                   <span>Facility (optional)</span>
                 </div>
                 <Select
-                  value={entry.facilityId}
-                  onValueChange={(value) => updateEntry(index, 'facilityId', value)}
+                  value={entry.facilityId || "__all__"}
+                  onValueChange={(value) => updateEntry(index, 'facilityId', value === "__all__" ? "" : value)}
                   disabled={!entry.market}
                 >
                   <SelectTrigger className="h-8 text-sm">
                     <SelectValue placeholder="All facilities in market" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All facilities</SelectItem>
+                    <SelectItem value="__all__">All facilities</SelectItem>
                     {getFacilitiesByMarket(entry.market).map(f => (
                       <SelectItem key={f.id} value={f.facility_id}>{f.facility_name}</SelectItem>
                     ))}
@@ -243,15 +243,15 @@ export function OrgAccessManager({ userId, isEditMode }: OrgAccessManagerProps) 
                   <span>Department (optional)</span>
                 </div>
                 <Select
-                  value={entry.departmentId}
-                  onValueChange={(value) => updateEntry(index, 'departmentId', value)}
+                  value={entry.departmentId || "__all__"}
+                  onValueChange={(value) => updateEntry(index, 'departmentId', value === "__all__" ? "" : value)}
                   disabled={!entry.facilityId}
                 >
                   <SelectTrigger className="h-8 text-sm">
                     <SelectValue placeholder="All departments in facility" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All departments</SelectItem>
+                    <SelectItem value="__all__">All departments</SelectItem>
                     {getDepartmentsByFacility(entry.facilityId).map(d => (
                       <SelectItem key={d.id} value={d.department_id}>{d.department_name}</SelectItem>
                     ))}
