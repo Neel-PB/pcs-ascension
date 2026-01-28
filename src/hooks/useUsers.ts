@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-export type UserRole = 'admin' | 'labor_team';
+export type UserRole = 'admin' | 'labor_team' | 'leadership' | 'cno' | 'director' | 'manager' | 'nurse_manager' | 'moderator' | 'user';
 
 export interface UserWithProfile {
   id: string;
@@ -12,7 +12,7 @@ export interface UserWithProfile {
   avatar_url: string | null;
   bio: string | null;
   created_at: string;
-  role: UserRole;
+  roles: UserRole[];
 }
 
 export function useUsers() {
@@ -37,10 +37,10 @@ export function useUsers() {
 
       if (rolesError) throw rolesError;
 
-      // Combine the data
+      // Combine the data - fetch ALL roles for each user
       const usersWithRoles: UserWithProfile[] = profiles.map(profile => {
-        const userRole = userRoles.find(ur => ur.user_id === profile.id);
-        const role = userRole?.role as UserRole || 'labor_team';
+        const userRolesList = userRoles.filter(ur => ur.user_id === profile.id);
+        const roles = userRolesList.map(ur => ur.role as UserRole);
 
         return {
           id: profile.id,
@@ -50,7 +50,7 @@ export function useUsers() {
           avatar_url: profile.avatar_url,
           bio: profile.bio,
           created_at: profile.created_at,
-          role: role,
+          roles: roles.length > 0 ? roles : ['labor_team' as UserRole],
         };
       });
 
@@ -104,7 +104,7 @@ export function useUsers() {
       firstName: string;
       lastName: string;
       bio?: string;
-      role: UserRole;
+      roles: UserRole[];
     }) => {
       // Update profile
       const { error: profileError } = await supabase
@@ -118,7 +118,7 @@ export function useUsers() {
 
       if (profileError) throw profileError;
 
-      // Update role (delete old and insert new)
+      // Update roles (delete old and insert new)
       const { error: deleteError } = await supabase
         .from('user_roles')
         .delete()
@@ -126,11 +126,19 @@ export function useUsers() {
 
       if (deleteError) throw deleteError;
 
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({ user_id: userData.userId, role: userData.role });
+      // Insert all new roles
+      if (userData.roles.length > 0) {
+        const roleInserts = userData.roles.map(role => ({
+          user_id: userData.userId,
+          role: role,
+        }));
+        
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert(roleInserts);
 
-      if (roleError) throw roleError;
+        if (roleError) throw roleError;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });

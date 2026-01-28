@@ -106,9 +106,13 @@ export function UserManagementTable({
                   {user.email || 'No email'}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={getRoleBadgeVariant(user.role)}>
-                    {getRoleDisplayName(user.role)}
-                  </Badge>
+                  <div className="flex flex-wrap gap-1">
+                    {user.roles.map((role) => (
+                      <Badge key={role} variant={getRoleBadgeVariant(role)}>
+                        {getRoleDisplayName(role)}
+                      </Badge>
+                    ))}
+                  </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
                   {format(new Date(user.created_at), 'MMM d, yyyy')}
