@@ -7,6 +7,7 @@ import { RequisitionsTab } from "./RequisitionsTab";
 import { WorkforceDrawer } from "@/components/workforce/WorkforceDrawer";
 import { WorkforceDrawerTrigger } from "@/components/workforce/WorkforceDrawerTrigger";
 import { useOrgScopedFilters } from "@/hooks/useOrgScopedFilters";
+import { LogoLoader } from "@/components/ui/LogoLoader";
 
 export default function PositionsPage() {
   const [activeTab, setActiveTab] = useState("employees");
@@ -36,6 +37,17 @@ export default function PositionsPage() {
       setFiltersInitialized(true);
     }
   }, [orgScopedLoading, filtersInitialized, defaultFilters]);
+
+  // Page-level loading guard: don't render animated content until critical data is ready
+  const isInitializing = orgScopedLoading && !filtersInitialized;
+
+  if (isInitializing) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-var(--header-height)-2rem)]">
+        <LogoLoader size="lg" />
+      </div>
+    );
+  }
 
   const tabs = [
     { id: "employees", label: "Employees" },

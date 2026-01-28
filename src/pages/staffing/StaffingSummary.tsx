@@ -14,10 +14,11 @@ import { WorkforceDrawer } from "@/components/workforce/WorkforceDrawer";
 import { WorkforceDrawerTrigger } from "@/components/workforce/WorkforceDrawerTrigger";
 import { useRBAC } from "@/hooks/useRBAC";
 import { useOrgScopedFilters } from "@/hooks/useOrgScopedFilters";
+import { LogoLoader } from "@/components/ui/LogoLoader";
 
 export default function StaffingSummary() {
   const [activeTab, setActiveTab] = useState("summary");
-  const { hasPermission } = useRBAC();
+  const { hasPermission, loading: rbacLoading } = useRBAC();
   const { defaultFilters, isLoading: orgScopedLoading } = useOrgScopedFilters();
   
   // State management for filters - initialized from org-scoped defaults
@@ -474,6 +475,17 @@ This metric helps:
       return aIndex - bIndex;
     });
   }, [productivityOrder]);
+
+  // Page-level loading guard: don't render animated content until critical data is ready
+  const isInitializing = rbacLoading || (orgScopedLoading && !filtersInitialized);
+
+  if (isInitializing) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-var(--header-height)-2rem)]">
+        <LogoLoader size="lg" />
+      </div>
+    );
+  }
 
   return (
     <>
