@@ -67,7 +67,7 @@ export function useUsers() {
       email: string;
       firstName: string;
       lastName: string;
-      role: UserRole;
+      roles: UserRole[];
       bio?: string;
     }) => {
       const { data, error } = await supabase.functions.invoke('invite-user', {
@@ -75,7 +75,7 @@ export function useUsers() {
           email: userData.email,
           firstName: userData.firstName,
           lastName: userData.lastName,
-          role: userData.role,
+          roles: userData.roles,
           bio: userData.bio,
         },
         headers: {

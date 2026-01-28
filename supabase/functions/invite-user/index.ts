@@ -24,9 +24,9 @@ serve(async (req) => {
       }
     );
 
-    const { email, firstName, lastName, role, bio } = await req.json();
+    const { email, firstName, lastName, roles, bio } = await req.json();
 
-    console.log('Inviting user:', { email, firstName, lastName, role });
+    console.log('Inviting user:', { email, firstName, lastName, roles });
 
     // Use the deployed app URL for redirect
     const appUrl = 'https://pcs-ascension.lovable.app';
@@ -68,20 +68,22 @@ serve(async (req) => {
       // Don't throw here, profile might not exist yet until user accepts invitation
     }
 
-    // Assign role
+    // Assign all selected roles
+    const roleInserts = roles.map((role: string) => ({
+      user_id: userData.user.id,
+      role: role,
+    }));
+
     const { error: roleError } = await supabaseAdmin
       .from('user_roles')
-      .insert({ 
-        user_id: userData.user.id, 
-        role: role 
-      });
+      .insert(roleInserts);
 
     if (roleError) {
-      console.error('Error assigning role:', roleError);
+      console.error('Error assigning roles:', roleError);
       throw roleError;
     }
 
-    console.log('Role assigned successfully');
+    console.log('Roles assigned successfully:', roles);
 
     return new Response(
       JSON.stringify({ 
