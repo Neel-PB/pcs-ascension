@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -9,6 +9,13 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
+import { OrgAccessManager } from "./OrgAccessManager";
 import {
   Form,
   FormControl,
@@ -52,6 +59,7 @@ export function UserFormSheet({
 }: UserFormSheetProps) {
   const isEditMode = !!user;
   const { manageableRoles, isLoading: rolesLoading } = useDynamicRoles();
+  const [orgAccessOpen, setOrgAccessOpen] = useState(false);
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
@@ -239,6 +247,19 @@ export function UserFormSheet({
                 </FormItem>
               )}
             />
+
+            {/* Organization Access Section - Only show in edit mode */}
+            {isEditMode && user && (
+              <Collapsible open={orgAccessOpen} onOpenChange={setOrgAccessOpen}>
+                <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:underline">
+                  <span>Organization Access Restrictions</span>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${orgAccessOpen ? 'rotate-180' : ''}`} />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-2">
+                  <OrgAccessManager userId={user.id} isEditMode={isEditMode} />
+                </CollapsibleContent>
+              </Collapsible>
+            )}
 
             <div className="flex gap-3 pt-4">
               <Button

@@ -1,10 +1,12 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { X, Lock } from "lucide-react";
 import { useFilterData } from "@/hooks/useFilterData";
 import { useIsCompactScreen } from "@/hooks/use-compact-screen";
 import { CombinedOptionalFilters } from "./CombinedOptionalFilters";
 import { useRBAC } from "@/hooks/useRBAC";
+import { useOrgScopedFilters } from "@/hooks/useOrgScopedFilters";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface FilterBarProps {
   className?: string;
@@ -51,12 +53,20 @@ export function FilterBar({
     getSubmarketsByMarket,
     isLoading: filterDataLoading,
   } = useFilterData();
+  
+  const { 
+    restrictedOptions, 
+    lockedFilters, 
+    hasRestrictions, 
+    shouldShowAllOption,
+    isLoading: orgScopedLoading 
+  } = useOrgScopedFilters();
 
   const isCompact = useIsCompactScreen();
   const { getFilterPermissions, getSubfilterPermissions, loading: rbacLoading } = useRBAC();
   
   // Combined loading state
-  const isLoading = rbacLoading || filterDataLoading;
+  const isLoading = rbacLoading || filterDataLoading || orgScopedLoading;
   
   // During loading, show all filters to prevent layout shift
   // Once loaded, respect actual permissions
@@ -91,17 +101,37 @@ export function FilterBar({
     "Skilled Nursing Care",
   ].sort();
 
-  // Get available markets based on selected region
-  const availableMarkets = getMarketsByRegion(selectedRegion);
+  // Get available markets based on selected region OR org restrictions
+  const availableMarkets = hasRestrictions 
+    ? restrictedOptions.availableMarkets.map(m => ({ id: m, market: m }))
+    : getMarketsByRegion(selectedRegion);
 
-  // Get available facilities based on selected market
-  const availableFacilities = getFacilitiesByMarket(selectedMarket);
+  // Get available facilities based on selected market OR org restrictions
+  const availableFacilities = hasRestrictions 
+    ? restrictedOptions.availableFacilities
+    : getFacilitiesByMarket(selectedMarket);
 
-  // Get available departments based on selected facility
-  const availableDepartments = getDepartmentsByFacility(selectedFacility);
+  // Get available departments based on selected facility OR org restrictions
+  const availableDepartments = hasRestrictions && restrictedOptions.availableDepartments.length > 0
+    ? restrictedOptions.availableDepartments.filter(d => 
+        selectedFacility === "all-facilities" || d.facility_id === selectedFacility
+      )
+    : getDepartmentsByFacility(selectedFacility);
 
   // Get available submarkets based on selected market
   const availableSubmarkets = getSubmarketsByMarket(selectedMarket);
+  
+  // Determine if facility filter should be disabled
+  // For restricted users, it's only disabled if locked (single option)
+  // For unrestricted users, it's disabled if no market selected
+  const isFacilityDisabled = hasRestrictions 
+    ? lockedFilters.facility 
+    : selectedMarket === "all-markets";
+    
+  // Determine if department filter should be disabled
+  const isDepartmentDisabled = hasRestrictions
+    ? lockedFilters.department
+    : selectedFacility === "all-facilities";
 
   // Check if any filters are active (not in default state)
   const hasActiveFilters = 
@@ -149,40 +179,64 @@ export function FilterBar({
 
         {/* Facility Filter - only show if user has permission */}
         {filterPermissions.facility && (
-          <Select 
-            value={selectedFacility} 
-            onValueChange={onFacilityChange}
-            disabled={isLoading || selectedMarket === "all-markets"}
-          >
-            <SelectTrigger className={`${isCompact ? 'min-w-[160px] flex-shrink' : 'w-[250px]'} bg-background border-border`}>
-              <SelectValue placeholder="Select facility" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover border-border z-50">
-              <SelectItem value="all-facilities">All Facilities</SelectItem>
-              {availableFacilities.map(facility => (
-                <SelectItem key={facility.id} value={facility.facility_id}>{facility.facility_name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="relative">
+            <Select 
+              value={selectedFacility} 
+              onValueChange={onFacilityChange}
+              disabled={isLoading || isFacilityDisabled}
+            >
+              <SelectTrigger className={`${isCompact ? 'min-w-[160px] flex-shrink' : 'w-[250px]'} bg-background border-border ${lockedFilters.facility ? 'pr-8' : ''}`}>
+                <SelectValue placeholder="Select facility" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover border-border z-50">
+                {shouldShowAllOption('facility') && (
+                  <SelectItem value="all-facilities">All Facilities</SelectItem>
+                )}
+                {availableFacilities.map(facility => (
+                  <SelectItem key={facility.facility_id || facility.id} value={facility.facility_id}>{facility.facility_name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {lockedFilters.facility && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Lock className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent>Assigned by administrator</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
         )}
 
         {/* Department Filter - only show if user has permission */}
         {filterPermissions.department && (
-          <Select 
-            value={selectedDepartment} 
-            onValueChange={onDepartmentChange}
-            disabled={isLoading || selectedFacility === "all-facilities"}
-          >
-            <SelectTrigger className={`${isCompact ? 'min-w-[140px] flex-shrink' : 'w-[180px]'} bg-background border-border`}>
-              <SelectValue placeholder="Select department" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover border-border z-50">
-              <SelectItem value="all-departments">All Departments</SelectItem>
-              {availableDepartments.map(dept => (
-                <SelectItem key={dept.id} value={dept.department_id}>{dept.department_name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="relative">
+            <Select 
+              value={selectedDepartment} 
+              onValueChange={onDepartmentChange}
+              disabled={isLoading || isDepartmentDisabled}
+            >
+              <SelectTrigger className={`${isCompact ? 'min-w-[140px] flex-shrink' : 'w-[180px]'} bg-background border-border ${lockedFilters.department ? 'pr-8' : ''}`}>
+                <SelectValue placeholder="Select department" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover border-border z-50">
+                {shouldShowAllOption('department') && (
+                  <SelectItem value="all-departments">All Departments</SelectItem>
+                )}
+                {availableDepartments.map(dept => (
+                  <SelectItem key={dept.department_id || dept.id} value={dept.department_id}>{dept.department_name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {lockedFilters.department && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Lock className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent>Assigned by administrator</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
         )}
 
         {/* Clear Filters Button - always visible, disabled when no filters active */}
