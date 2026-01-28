@@ -58,6 +58,7 @@ export function FilterBar({
     restrictedOptions, 
     lockedFilters, 
     hasRestrictions, 
+    hasRestrictionAt,
     shouldShowAllOption,
     isLoading: orgScopedLoading 
   } = useOrgScopedFilters();
@@ -69,7 +70,6 @@ export function FilterBar({
   const isLoading = rbacLoading || filterDataLoading || orgScopedLoading;
   
   // During loading, show all filters to prevent layout shift
-  // Once loaded, respect actual permissions
   const filterPermissions = rbacLoading 
     ? { region: true, market: true, facility: true, department: true }
     : getFilterPermissions();
@@ -101,37 +101,30 @@ export function FilterBar({
     "Skilled Nursing Care",
   ].sort();
 
-  // Get available markets based on selected region OR org restrictions
-  const availableMarkets = hasRestrictions 
+  // Get available options based on org restrictions OR full data
+  // For markets: use restricted if user has market restrictions, otherwise cascade from region
+  const availableMarkets = hasRestrictionAt('market')
     ? restrictedOptions.availableMarkets.map(m => ({ id: m, market: m }))
     : getMarketsByRegion(selectedRegion);
 
-  // Get available facilities based on selected market OR org restrictions
-  const availableFacilities = hasRestrictions 
+  // For facilities: use restricted if user has facility restrictions, otherwise cascade from market
+  const availableFacilities = hasRestrictionAt('facility')
     ? restrictedOptions.availableFacilities
     : getFacilitiesByMarket(selectedMarket);
 
-  // Get available departments based on selected facility OR org restrictions
-  const availableDepartments = hasRestrictions && restrictedOptions.availableDepartments.length > 0
-    ? restrictedOptions.availableDepartments.filter(d => 
-        selectedFacility === "all-facilities" || d.facility_id === selectedFacility
-      )
+  // For departments: use restricted if user has department restrictions, otherwise cascade from facility
+  const availableDepartments = hasRestrictionAt('department')
+    ? restrictedOptions.availableDepartments
     : getDepartmentsByFacility(selectedFacility);
 
   // Get available submarkets based on selected market
   const availableSubmarkets = getSubmarketsByMarket(selectedMarket);
   
-  // Determine if facility filter should be disabled
-  // For restricted users, it's only disabled if locked (single option)
-  // For unrestricted users, it's disabled if no market selected
-  const isFacilityDisabled = hasRestrictions 
-    ? lockedFilters.facility 
-    : selectedMarket === "all-markets";
-    
-  // Determine if department filter should be disabled
-  const isDepartmentDisabled = hasRestrictions
-    ? lockedFilters.department
-    : selectedFacility === "all-facilities";
+  // ONLY disable if filter is LOCKED (single option) - NEVER disable based on parent selection
+  const isRegionDisabled = lockedFilters.region;
+  const isMarketDisabled = lockedFilters.market;
+  const isFacilityDisabled = lockedFilters.facility;
+  const isDepartmentDisabled = lockedFilters.department;
 
   // Check if any filters are active (not in default state)
   const hasActiveFilters = 
@@ -149,32 +142,56 @@ export function FilterBar({
       <div className={`flex flex-wrap xl:flex-nowrap gap-2 xl:gap-3 items-center ${className}`}>
         {/* Region Filter - only show if user has permission */}
         {filterPermissions.region && (
-          <Select value={selectedRegion} onValueChange={onRegionChange} disabled={isLoading}>
-            <SelectTrigger className={`${isCompact ? 'min-w-[120px] flex-shrink' : 'w-[150px]'} bg-background border-border`}>
-              <SelectValue placeholder="Select region" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover border-border z-50">
-              <SelectItem value="all-regions">All Regions</SelectItem>
-              {regions.map(region => (
-                <SelectItem key={region.id} value={region.region}>{region.region}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="relative">
+            <Select value={selectedRegion} onValueChange={onRegionChange} disabled={isLoading || isRegionDisabled}>
+              <SelectTrigger className={`${isCompact ? 'min-w-[120px] flex-shrink' : 'w-[150px]'} bg-background border-border ${isRegionDisabled ? 'pr-8' : ''}`}>
+                <SelectValue placeholder="Select region" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover border-border z-50">
+                {shouldShowAllOption('region') && (
+                  <SelectItem value="all-regions">All Regions</SelectItem>
+                )}
+                {(hasRestrictionAt('region') ? restrictedOptions.availableRegions : regions.map(r => r.region)).map(region => (
+                  <SelectItem key={region} value={region}>{region}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {isRegionDisabled && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Lock className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent>Assigned by administrator</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
         )}
 
         {/* Market Filter - only show if user has permission */}
         {filterPermissions.market && (
-          <Select value={selectedMarket} onValueChange={onMarketChange} disabled={isLoading}>
-            <SelectTrigger className={`${isCompact ? 'min-w-[120px] flex-shrink' : 'w-[150px]'} bg-background border-border`}>
-              <SelectValue placeholder="Select market" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover border-border z-50">
-              <SelectItem value="all-markets">All Markets</SelectItem>
-              {availableMarkets.map(market => (
-                <SelectItem key={market.id} value={market.market}>{market.market}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="relative">
+            <Select value={selectedMarket} onValueChange={onMarketChange} disabled={isLoading || isMarketDisabled}>
+              <SelectTrigger className={`${isCompact ? 'min-w-[120px] flex-shrink' : 'w-[150px]'} bg-background border-border ${isMarketDisabled ? 'pr-8' : ''}`}>
+                <SelectValue placeholder="Select market" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover border-border z-50">
+                {shouldShowAllOption('market') && (
+                  <SelectItem value="all-markets">All Markets</SelectItem>
+                )}
+                {availableMarkets.map(market => (
+                  <SelectItem key={market.id} value={market.market}>{market.market}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {isMarketDisabled && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Lock className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent>Assigned by administrator</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
         )}
 
         {/* Facility Filter - only show if user has permission */}
@@ -185,7 +202,7 @@ export function FilterBar({
               onValueChange={onFacilityChange}
               disabled={isLoading || isFacilityDisabled}
             >
-              <SelectTrigger className={`${isCompact ? 'min-w-[160px] flex-shrink' : 'w-[250px]'} bg-background border-border ${lockedFilters.facility ? 'pr-8' : ''}`}>
+              <SelectTrigger className={`${isCompact ? 'min-w-[160px] flex-shrink' : 'w-[250px]'} bg-background border-border ${isFacilityDisabled ? 'pr-8' : ''}`}>
                 <SelectValue placeholder="Select facility" />
               </SelectTrigger>
               <SelectContent className="bg-popover border-border z-50">
@@ -197,7 +214,7 @@ export function FilterBar({
                 ))}
               </SelectContent>
             </Select>
-            {lockedFilters.facility && (
+            {isFacilityDisabled && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Lock className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
@@ -216,7 +233,7 @@ export function FilterBar({
               onValueChange={onDepartmentChange}
               disabled={isLoading || isDepartmentDisabled}
             >
-              <SelectTrigger className={`${isCompact ? 'min-w-[140px] flex-shrink' : 'w-[180px]'} bg-background border-border ${lockedFilters.department ? 'pr-8' : ''}`}>
+              <SelectTrigger className={`${isCompact ? 'min-w-[140px] flex-shrink' : 'w-[180px]'} bg-background border-border ${isDepartmentDisabled ? 'pr-8' : ''}`}>
                 <SelectValue placeholder="Select department" />
               </SelectTrigger>
               <SelectContent className="bg-popover border-border z-50">
@@ -228,7 +245,7 @@ export function FilterBar({
                 ))}
               </SelectContent>
             </Select>
-            {lockedFilters.department && (
+            {isDepartmentDisabled && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Lock className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />

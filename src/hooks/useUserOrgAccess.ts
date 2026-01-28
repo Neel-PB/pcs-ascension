@@ -1,18 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Facility, Department } from "./useFilterData";
 
-export interface OrgAccessHierarchy {
-  markets: {
-    market: string;
-    facilities: {
-      facilityId: string;
-      facilityName: string;
-      departments: {
-        departmentId: string;
-        departmentName: string;
-      }[];
-    }[];
-  }[];
+export interface OrgAccessFlat {
+  regions: string[];
+  markets: string[];
+  facilities: { facilityId: string; facilityName: string }[];
+  departments: { departmentId: string; departmentName: string; facilityId?: string }[];
+  
+  // Quick lookup flags - true means there ARE restrictions at this level
+  hasRegionRestriction: boolean;
+  hasMarketRestriction: boolean;
+  hasFacilityRestriction: boolean;
+  hasDepartmentRestriction: boolean;
 }
 
 export function useUserOrgAccess(userId?: string) {
@@ -28,54 +28,56 @@ export function useUserOrgAccess(userId?: string) {
 
       if (error) throw error;
 
-      // If no records, user has access to all
+      // If no records, user has access to all (no restrictions)
       if (!data || data.length === 0) {
         return null;
       }
 
-      // Format into hierarchical structure
-      const hierarchy: OrgAccessHierarchy = { markets: [] };
+      // Extract unique values at each level independently (FLAT structure)
+      const regions = new Set<string>();
+      const markets = new Set<string>();
+      const facilities = new Map<string, string>(); // facilityId -> facilityName
+      const departments = new Map<string, { name: string; facilityId?: string }>(); // departmentId -> {name, facilityId}
       
       data.forEach((access) => {
-        if (!access.market) return;
-
-        // Find or create market
-        let marketEntry = hierarchy.markets.find(m => m.market === access.market);
-        if (!marketEntry) {
-          marketEntry = { market: access.market, facilities: [] };
-          hierarchy.markets.push(marketEntry);
+        // Note: region field doesn't exist in table schema, but keeping for future use
+        if (access.market) {
+          markets.add(access.market);
         }
-
-        // Find or create facility
+        
         if (access.facility_id && access.facility_name) {
-          let facilityEntry = marketEntry.facilities.find(
-            f => f.facilityId === access.facility_id
-          );
-          if (!facilityEntry) {
-            facilityEntry = {
-              facilityId: access.facility_id,
-              facilityName: access.facility_name,
-              departments: []
-            };
-            marketEntry.facilities.push(facilityEntry);
-          }
-
-          // Add department if exists
-          if (access.department_id && access.department_name) {
-            const deptExists = facilityEntry.departments.some(
-              d => d.departmentId === access.department_id
-            );
-            if (!deptExists) {
-              facilityEntry.departments.push({
-                departmentId: access.department_id,
-                departmentName: access.department_name
-              });
-            }
-          }
+          facilities.set(access.facility_id, access.facility_name);
+        }
+        
+        if (access.department_id && access.department_name) {
+          departments.set(access.department_id, {
+            name: access.department_name,
+            facilityId: access.facility_id || undefined,
+          });
         }
       });
 
-      return hierarchy;
+      const flatAccess: OrgAccessFlat = {
+        regions: Array.from(regions),
+        markets: Array.from(markets),
+        facilities: Array.from(facilities.entries()).map(([facilityId, facilityName]) => ({
+          facilityId,
+          facilityName,
+        })),
+        departments: Array.from(departments.entries()).map(([departmentId, { name, facilityId }]) => ({
+          departmentId,
+          departmentName: name,
+          facilityId,
+        })),
+        
+        // Restriction flags: true if there are specific assignments at this level
+        hasRegionRestriction: regions.size > 0,
+        hasMarketRestriction: markets.size > 0,
+        hasFacilityRestriction: facilities.size > 0,
+        hasDepartmentRestriction: departments.size > 0,
+      };
+
+      return flatAccess;
     },
     enabled: !!userId,
   });
@@ -83,6 +85,6 @@ export function useUserOrgAccess(userId?: string) {
   return {
     orgAccess,
     isLoading,
-    hasUnrestrictedAccess: orgAccess === null
+    hasUnrestrictedAccess: orgAccess === null,
   };
 }
