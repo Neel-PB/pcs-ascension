@@ -1154,6 +1154,7 @@ export type Database = {
           facility_name: string | null
           id: string
           market: string | null
+          region: string | null
           updated_at: string | null
           user_id: string
         }
@@ -1165,6 +1166,7 @@ export type Database = {
           facility_name?: string | null
           id?: string
           market?: string | null
+          region?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -1176,6 +1178,7 @@ export type Database = {
           facility_name?: string | null
           id?: string
           market?: string | null
+          region?: string | null
           updated_at?: string | null
           user_id?: string
         }

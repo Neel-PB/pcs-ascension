@@ -82,7 +82,7 @@ export function useOrgScopedFilters(): OrgScopedFiltersResult {
     // Build available options from flat org access
     // Each level is independent - only filter if there ARE restrictions at that level
     
-    // Regions (not currently stored in DB, but handle for future)
+    // Regions - now fully supported in DB
     const availableRegions = orgAccess.hasRegionRestriction 
       ? orgAccess.regions 
       : regions.map(r => r.region);

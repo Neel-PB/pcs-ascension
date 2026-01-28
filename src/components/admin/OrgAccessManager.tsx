@@ -1,19 +1,12 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Building2, MapPin, Layers, Globe } from "lucide-react";
+import { Globe, MapPin, Building2, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useFilterData } from "@/hooks/useFilterData";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { ChevronDown } from "lucide-react";
+import { MultiSelectChips, type MultiSelectOption } from "@/components/ui/multi-select-chips";
 
 interface OrgAccessManagerProps {
   userId: string;
@@ -21,6 +14,7 @@ interface OrgAccessManagerProps {
 }
 
 interface SelectedAccess {
+  regions: Set<string>;
   markets: Set<string>;
   facilities: Set<string>; // facility_id
   departments: Set<string>; // department_id
@@ -28,16 +22,14 @@ interface SelectedAccess {
 
 export function OrgAccessManager({ userId, isEditMode }: OrgAccessManagerProps) {
   const [selectedAccess, setSelectedAccess] = useState<SelectedAccess>({
+    regions: new Set(),
     markets: new Set(),
     facilities: new Set(),
     departments: new Set(),
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [marketsOpen, setMarketsOpen] = useState(false);
-  const [facilitiesOpen, setFacilitiesOpen] = useState(false);
-  const [departmentsOpen, setDepartmentsOpen] = useState(false);
   
-  const { markets, facilities, departments, isLoading: filterLoading } = useFilterData();
+  const { regions, markets, facilities, departments, isLoading: filterLoading } = useFilterData();
   const queryClient = useQueryClient();
   
   // Fetch existing org access entries when editing
@@ -59,23 +51,20 @@ export function OrgAccessManager({ userId, isEditMode }: OrgAccessManagerProps) 
       
       if (data && data.length > 0) {
         const newAccess: SelectedAccess = {
+          regions: new Set(),
           markets: new Set(),
           facilities: new Set(),
           departments: new Set(),
         };
         
         data.forEach(d => {
+          if (d.region) newAccess.regions.add(d.region);
           if (d.market) newAccess.markets.add(d.market);
           if (d.facility_id) newAccess.facilities.add(d.facility_id);
           if (d.department_id) newAccess.departments.add(d.department_id);
         });
         
         setSelectedAccess(newAccess);
-        
-        // Auto-expand sections with selections
-        if (newAccess.markets.size > 0) setMarketsOpen(true);
-        if (newAccess.facilities.size > 0) setFacilitiesOpen(true);
-        if (newAccess.departments.size > 0) setDepartmentsOpen(true);
       }
     } catch (err) {
       console.error('Error fetching org access:', err);
@@ -83,45 +72,26 @@ export function OrgAccessManager({ userId, isEditMode }: OrgAccessManagerProps) 
       setIsLoading(false);
     }
   };
-  
-  const toggleMarket = (market: string) => {
-    setSelectedAccess(prev => {
-      const newMarkets = new Set(prev.markets);
-      if (newMarkets.has(market)) {
-        newMarkets.delete(market);
-      } else {
-        newMarkets.add(market);
-      }
-      return { ...prev, markets: newMarkets };
-    });
+
+  const handleRegionsChange = (values: string[]) => {
+    setSelectedAccess(prev => ({ ...prev, regions: new Set(values) }));
   };
-  
-  const toggleFacility = (facilityId: string) => {
-    setSelectedAccess(prev => {
-      const newFacilities = new Set(prev.facilities);
-      if (newFacilities.has(facilityId)) {
-        newFacilities.delete(facilityId);
-      } else {
-        newFacilities.add(facilityId);
-      }
-      return { ...prev, facilities: newFacilities };
-    });
+
+  const handleMarketsChange = (values: string[]) => {
+    setSelectedAccess(prev => ({ ...prev, markets: new Set(values) }));
   };
-  
-  const toggleDepartment = (departmentId: string) => {
-    setSelectedAccess(prev => {
-      const newDepartments = new Set(prev.departments);
-      if (newDepartments.has(departmentId)) {
-        newDepartments.delete(departmentId);
-      } else {
-        newDepartments.add(departmentId);
-      }
-      return { ...prev, departments: newDepartments };
-    });
+
+  const handleFacilitiesChange = (values: string[]) => {
+    setSelectedAccess(prev => ({ ...prev, facilities: new Set(values) }));
+  };
+
+  const handleDepartmentsChange = (values: string[]) => {
+    setSelectedAccess(prev => ({ ...prev, departments: new Set(values) }));
   };
   
   const clearAll = () => {
     setSelectedAccess({
+      regions: new Set(),
       markets: new Set(),
       facilities: new Set(),
       departments: new Set(),
@@ -142,6 +112,7 @@ export function OrgAccessManager({ userId, isEditMode }: OrgAccessManagerProps) 
       // Build flat entries for each selected item
       const entries: Array<{
         user_id: string;
+        region: string | null;
         market: string | null;
         facility_id: string | null;
         facility_name: string | null;
@@ -149,10 +120,24 @@ export function OrgAccessManager({ userId, isEditMode }: OrgAccessManagerProps) 
         department_name: string | null;
       }> = [];
       
+      // Add region-only entries
+      selectedAccess.regions.forEach(region => {
+        entries.push({
+          user_id: userId,
+          region,
+          market: null,
+          facility_id: null,
+          facility_name: null,
+          department_id: null,
+          department_name: null,
+        });
+      });
+      
       // Add market-only entries
       selectedAccess.markets.forEach(market => {
         entries.push({
           user_id: userId,
+          region: null,
           market,
           facility_id: null,
           facility_name: null,
@@ -166,6 +151,7 @@ export function OrgAccessManager({ userId, isEditMode }: OrgAccessManagerProps) 
         const facility = facilities.find(f => f.facility_id === facilityId);
         entries.push({
           user_id: userId,
+          region: null,
           market: facility?.market || null,
           facility_id: facilityId,
           facility_name: facility?.facility_name || null,
@@ -180,6 +166,7 @@ export function OrgAccessManager({ userId, isEditMode }: OrgAccessManagerProps) 
         const facility = dept ? facilities.find(f => f.facility_id === dept.facility_id) : null;
         entries.push({
           user_id: userId,
+          region: null,
           market: facility?.market || null,
           facility_id: dept?.facility_id || null,
           facility_name: facility?.facility_name || null,
@@ -213,15 +200,43 @@ export function OrgAccessManager({ userId, isEditMode }: OrgAccessManagerProps) 
       delete (window as any).__orgAccessSave;
     };
   }, [selectedAccess, userId]);
+
+  // Build options for each level
+  const regionOptions: MultiSelectOption[] = regions.map(r => ({
+    value: r.region,
+    label: r.region,
+  }));
+
+  const marketOptions: MultiSelectOption[] = markets.map(m => ({
+    value: m.market,
+    label: m.market,
+    description: m.region || undefined,
+  }));
+
+  const facilityOptions: MultiSelectOption[] = facilities.map(f => ({
+    value: f.facility_id,
+    label: f.facility_name,
+    description: f.market,
+  }));
+
+  const departmentOptions: MultiSelectOption[] = departments.map(d => {
+    const facility = facilities.find(f => f.facility_id === d.facility_id);
+    return {
+      value: d.department_id,
+      label: d.department_name,
+      description: facility?.facility_name || d.facility_id,
+    };
+  });
   
-  const totalSelected = selectedAccess.markets.size + selectedAccess.facilities.size + selectedAccess.departments.size;
+  const totalSelected = selectedAccess.regions.size + selectedAccess.markets.size + 
+                        selectedAccess.facilities.size + selectedAccess.departments.size;
   
   if (filterLoading || isLoading) {
     return <div className="text-sm text-muted-foreground py-2">Loading...</div>;
   }
   
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
         <Label className="text-sm font-medium">Organization Access</Label>
         {totalSelected > 0 && (
@@ -249,116 +264,53 @@ export function OrgAccessManager({ userId, isEditMode }: OrgAccessManagerProps) 
         </div>
       )}
       
-      {/* Markets Section */}
-      <Collapsible open={marketsOpen} onOpenChange={setMarketsOpen}>
-        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md hover:bg-muted/50 transition-colors">
-          <div className="flex items-center gap-2">
-            <Globe className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">Markets</span>
-            {selectedAccess.markets.size > 0 && (
-              <span className="text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
-                {selectedAccess.markets.size}
-              </span>
-            )}
-          </div>
-          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${marketsOpen ? 'rotate-180' : ''}`} />
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <ScrollArea className="h-[150px] border rounded-md p-2 mt-2">
-            <div className="space-y-1">
-              {markets.map(market => (
-                <label
-                  key={market.id}
-                  className="flex items-center gap-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer"
-                >
-                  <Checkbox
-                    checked={selectedAccess.markets.has(market.market)}
-                    onCheckedChange={() => toggleMarket(market.market)}
-                  />
-                  <span className="text-sm">{market.market}</span>
-                </label>
-              ))}
-            </div>
-          </ScrollArea>
-        </CollapsibleContent>
-      </Collapsible>
+      {/* Region */}
+      <MultiSelectChips
+        label="Region"
+        icon={<Globe className="h-4 w-4 text-muted-foreground" />}
+        options={regionOptions}
+        selected={Array.from(selectedAccess.regions)}
+        onChange={handleRegionsChange}
+        placeholder="Search regions..."
+        addButtonText="Add"
+        emptyText="No restrictions"
+      />
       
-      {/* Facilities Section */}
-      <Collapsible open={facilitiesOpen} onOpenChange={setFacilitiesOpen}>
-        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md hover:bg-muted/50 transition-colors">
-          <div className="flex items-center gap-2">
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">Facilities</span>
-            {selectedAccess.facilities.size > 0 && (
-              <span className="text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
-                {selectedAccess.facilities.size}
-              </span>
-            )}
-          </div>
-          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${facilitiesOpen ? 'rotate-180' : ''}`} />
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <ScrollArea className="h-[200px] border rounded-md p-2 mt-2">
-            <div className="space-y-1">
-              {facilities.map(facility => (
-                <label
-                  key={facility.id}
-                  className="flex items-center gap-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer"
-                >
-                  <Checkbox
-                    checked={selectedAccess.facilities.has(facility.facility_id)}
-                    onCheckedChange={() => toggleFacility(facility.facility_id)}
-                  />
-                  <div className="flex flex-col">
-                    <span className="text-sm">{facility.facility_name}</span>
-                    <span className="text-xs text-muted-foreground">{facility.market}</span>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </ScrollArea>
-        </CollapsibleContent>
-      </Collapsible>
+      {/* Market */}
+      <MultiSelectChips
+        label="Market"
+        icon={<MapPin className="h-4 w-4 text-muted-foreground" />}
+        options={marketOptions}
+        selected={Array.from(selectedAccess.markets)}
+        onChange={handleMarketsChange}
+        placeholder="Search markets..."
+        addButtonText="Add"
+        emptyText="No restrictions"
+      />
       
-      {/* Departments Section */}
-      <Collapsible open={departmentsOpen} onOpenChange={setDepartmentsOpen}>
-        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md hover:bg-muted/50 transition-colors">
-          <div className="flex items-center gap-2">
-            <Layers className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">Departments</span>
-            {selectedAccess.departments.size > 0 && (
-              <span className="text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
-                {selectedAccess.departments.size}
-              </span>
-            )}
-          </div>
-          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${departmentsOpen ? 'rotate-180' : ''}`} />
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <ScrollArea className="h-[200px] border rounded-md p-2 mt-2">
-            <div className="space-y-1">
-              {departments.map(dept => {
-                const facility = facilities.find(f => f.facility_id === dept.facility_id);
-                return (
-                  <label
-                    key={dept.id}
-                    className="flex items-center gap-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer"
-                  >
-                    <Checkbox
-                      checked={selectedAccess.departments.has(dept.department_id)}
-                      onCheckedChange={() => toggleDepartment(dept.department_id)}
-                    />
-                    <div className="flex flex-col">
-                      <span className="text-sm">{dept.department_name}</span>
-                      <span className="text-xs text-muted-foreground">{facility?.facility_name || dept.facility_id}</span>
-                    </div>
-                  </label>
-                );
-              })}
-            </div>
-          </ScrollArea>
-        </CollapsibleContent>
-      </Collapsible>
+      {/* Facility */}
+      <MultiSelectChips
+        label="Facility"
+        icon={<Building2 className="h-4 w-4 text-muted-foreground" />}
+        options={facilityOptions}
+        selected={Array.from(selectedAccess.facilities)}
+        onChange={handleFacilitiesChange}
+        placeholder="Search facilities..."
+        addButtonText="Add"
+        emptyText="No restrictions"
+      />
+      
+      {/* Department */}
+      <MultiSelectChips
+        label="Department"
+        icon={<Layers className="h-4 w-4 text-muted-foreground" />}
+        options={departmentOptions}
+        selected={Array.from(selectedAccess.departments)}
+        onChange={handleDepartmentsChange}
+        placeholder="Search departments..."
+        addButtonText="Add"
+        emptyText="No restrictions"
+      />
       
       <p className="text-xs text-muted-foreground">
         Select specific items to restrict user access. Leave empty for full access.
