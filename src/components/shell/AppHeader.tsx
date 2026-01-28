@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Search, Bell, Sun, Moon, Monitor } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -32,6 +33,7 @@ export function AppHeader() {
   const { profile } = useUserProfile(user?.id);
   const { data: notifications } = useNotifications();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -62,7 +64,7 @@ export function AppHeader() {
   };
 
   const handleSignOut = async () => {
-    await signOut();
+    await signOut(queryClient);
     navigate("/auth");
   };
 
