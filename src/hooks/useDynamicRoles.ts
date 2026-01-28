@@ -1,50 +1,53 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { CORE_ROLES, ALL_CORE_ROLES } from "@/config/rbacConfig";
+import type { Role, RoleFormData } from "@/types/rbac";
 
-export interface Role {
-  id: string;
-  name: string;
-  label: string;
-  description: string | null;
-  is_system: boolean;
-  sort_order: number;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface RoleFormData {
-  name: string;
-  label: string;
-  description?: string;
-  sort_order?: number;
-}
+// Re-export Role type for backward compatibility
+export type { Role, RoleFormData };
 
 export function useDynamicRoles() {
   const queryClient = useQueryClient();
 
-  // Fetch all roles
+  // Fetch ONLY additional (non-core) roles from database
   const {
-    data: roles = [],
+    data: dbRoles = [],
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["dynamic-roles"],
+    queryKey: ["dynamic-roles-extension"],
     queryFn: async () => {
+      const coreNames = ALL_CORE_ROLES.map(r => r.name);
       const { data, error } = await supabase
         .from("roles")
         .select("*")
         .order("sort_order", { ascending: true });
 
       if (error) throw error;
-      return data as Role[];
+      
+      // Filter out any roles that match core role names (they'll come from hardcoded)
+      return (data as Role[]).filter(r => !coreNames.includes(r.name));
     },
+    staleTime: 10 * 60 * 1000, // 10 minutes - less frequent checks for extensions
   });
 
-  // Realtime subscription is now handled by useRealtimeSubscriptions hook
-  // No need for individual channel here
+  // Merge hardcoded core roles with DB extensions
+  // Use Map for deduplication - DB roles can override hardcoded if needed
+  const roles = useMemo(() => {
+    const roleMap = new Map<string, Role>();
+    
+    // Add all core roles first (including legacy)
+    ALL_CORE_ROLES.forEach(r => roleMap.set(r.name, r));
+    
+    // DB roles extend (add new ones)
+    dbRoles.forEach(r => roleMap.set(r.name, r));
+    
+    return Array.from(roleMap.values()).sort((a, b) => a.sort_order - b.sort_order);
+  }, [dbRoles]);
 
-  // Create role
+  // Create role (only for non-core roles)
   const createRole = useMutation({
     mutationFn: async (data: RoleFormData) => {
       // Get the max sort_order
@@ -68,7 +71,7 @@ export function useDynamicRoles() {
       return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dynamic-roles"] });
+      queryClient.invalidateQueries({ queryKey: ["dynamic-roles-extension"] });
       toast.success("Role created successfully");
     },
     onError: (error: Error) => {
@@ -85,6 +88,12 @@ export function useDynamicRoles() {
       id: string;
       data: Partial<RoleFormData>;
     }) => {
+      // Don't allow updating core roles via DB
+      const isCore = ALL_CORE_ROLES.some(r => r.id === id);
+      if (isCore) {
+        throw new Error("Cannot update core system roles");
+      }
+
       const { data: result, error } = await supabase
         .from("roles")
         .update({
@@ -100,7 +109,7 @@ export function useDynamicRoles() {
       return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dynamic-roles"] });
+      queryClient.invalidateQueries({ queryKey: ["dynamic-roles-extension"] });
       toast.success("Role updated successfully");
     },
     onError: (error: Error) => {
@@ -111,7 +120,13 @@ export function useDynamicRoles() {
   // Delete role
   const deleteRole = useMutation({
     mutationFn: async (id: string) => {
-      // First check if it's a system role
+      // Don't allow deleting core roles
+      const isCore = ALL_CORE_ROLES.some(r => r.id === id);
+      if (isCore) {
+        throw new Error("Cannot delete core system roles");
+      }
+
+      // First check if it's a system role in DB
       const { data: role } = await supabase
         .from("roles")
         .select("is_system, name")
@@ -123,7 +138,6 @@ export function useDynamicRoles() {
       }
 
       // Check if role is assigned to any users
-      // Note: We need to cast the role name to match the enum type in the database
       const { count } = await supabase
         .from("user_roles")
         .select("*", { count: "exact", head: true })
@@ -141,7 +155,7 @@ export function useDynamicRoles() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dynamic-roles"] });
+      queryClient.invalidateQueries({ queryKey: ["dynamic-roles-extension"] });
       toast.success("Role deleted successfully");
     },
     onError: (error: Error) => {
@@ -149,10 +163,11 @@ export function useDynamicRoles() {
     },
   });
 
-  // Get manageable roles (non-legacy)
-  const manageableRoles = roles.filter(
-    (role) => !["moderator", "user", "nurse_manager"].includes(role.name)
-  );
+  // Get manageable roles (non-legacy) - includes core manageable + any custom DB roles
+  const manageableRoles = useMemo(() => {
+    const legacyNames = ["moderator", "user", "nurse_manager"];
+    return roles.filter(role => !legacyNames.includes(role.name));
+  }, [roles]);
 
   return {
     roles,
