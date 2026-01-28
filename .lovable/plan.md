@@ -1,166 +1,109 @@
 
-# Multi-Select with Chips for Roles and Organization Access
+# Fix Global Filters Not Showing Options (Market, Facility, Department)
 
-## Overview
+## Problem Identified
 
-Transform the User Form to use chip-based multi-select UI for both Roles and Organization Access sections. This will provide a cleaner, more intuitive interface.
+After testing, the filters work correctly for Admin users with no restrictions. However, the issue occurs when:
 
-## Changes Required
+1. **User has organization access restrictions** at one level (e.g., facility), which causes:
+   - `hasMarketRestriction` to become `true` (because facility records include market values)
+   - But the user's actual markets are limited to only those from their facility entries
+   
+2. **The fallback logic in FilterBar.tsx** doesn't properly handle the case where the user has NO explicit restrictions at a level but also has NO parent filter selected.
 
-### 1. Create Reusable MultiSelectChips Component
+## Root Cause
 
-**New File:** `src/components/ui/multi-select-chips.tsx`
-
-A reusable component that:
-- Shows selected items as removable chips
-- Provides a dropdown/popover with checkbox list to select items
-- Shows "X" button on each chip to remove
-- Compact display with wrap
+In `FilterBar.tsx` lines 112-124, when computing available options:
 
 ```tsx
-interface MultiSelectChipsProps {
-  label: string;
-  options: Array<{ value: string; label: string; description?: string }>;
-  selected: string[];
-  onChange: (selected: string[]) => void;
-  placeholder?: string;
-  searchable?: boolean;
-}
+// For facilities - when no market selected AND no restrictions:
+const availableFacilities = hasRestrictionAt('facility')
+  ? restrictedOptions.availableFacilities
+  : selectedMarket !== "all-markets" 
+    ? getFacilitiesByMarket(selectedMarket)
+    : restrictedOptions.availableFacilities; // Problem: this might be empty!
 ```
 
-### 2. Update UserFormSheet.tsx - Roles Section
+When `hasRestrictionAt('facility')` is `false` and `selectedMarket === "all-markets"`:
+- It falls back to `restrictedOptions.availableFacilities`
+- But `restrictedOptions.availableFacilities` comes from `useOrgScopedFilters`
+- If there's any issue with the filter data loading, this could be empty
 
-**Current:** Checkbox list with descriptions stacked vertically
-**New:** Multi-select with chips showing selected roles
+## Solution
 
-- Display selected roles as removable Badge chips
-- Click "Add Role" button opens popover with checkbox list
-- Each chip shows role label with X to remove
-- System roles marked with lock icon
+### 1. Fix FilterBar Fallback Logic
 
-### 3. Update OrgAccessManager.tsx - Complete Redesign
+When user has no restrictions at a level AND no parent filter is selected, use the full data from `useFilterData` instead of relying on `restrictedOptions`:
 
-**Current Structure:**
-- Three collapsible sections (Markets, Facilities, Departments)
-- Checkbox lists inside each section
+**Current (lines 106-124):**
+```tsx
+const availableMarkets = hasRestrictionAt('market')
+  ? restrictedOptions.availableMarkets.map(m => ({ id: m, market: m }))
+  : getMarketsByRegion(selectedRegion);
 
-**New Structure:**
-Four sections (adding Region), each with:
-- Label with icon
-- Chips showing selected items (removable)
-- "Add" button that opens a searchable popover
-- Each level is flat/independent (no hierarchy)
+const availableFacilities = hasRestrictionAt('facility')
+  ? restrictedOptions.availableFacilities
+  : selectedMarket !== "all-markets" 
+    ? getFacilitiesByMarket(selectedMarket)
+    : restrictedOptions.availableFacilities;
 
-```
-Region
-[chip: East] [chip: West] [+ Add Region]
-
-Market  
-[chip: Indiana] [chip: Michigan] [+ Add Market]
-
-Facility
-[chip: Hospital A] [chip: Hospital B] [+ Add Facility]
-
-Department
-[chip: ICU] [chip: ER] [+ Add Department]
+const availableDepartments = hasRestrictionAt('department')
+  ? restrictedOptions.availableDepartments
+  : selectedFacility !== "all-facilities"
+    ? getDepartmentsByFacility(selectedFacility)
+    : restrictedOptions.availableDepartments;
 ```
 
-### 4. Database Migration - Add Region Column
+**Fixed:**
+```tsx
+// Import facilities and departments from useFilterData
+const { 
+  regions, 
+  markets: allMarkets,
+  facilities: allFacilities,
+  departments: allDepartments,
+  getMarketsByRegion, 
+  getFacilitiesByMarket, 
+  getDepartmentsByFacility,
+  ...
+} = useFilterData();
 
-Add `region` column to `user_organization_access` table:
+// Markets: if restricted, use restricted list; otherwise use full list
+const availableMarkets = hasRestrictionAt('market')
+  ? restrictedOptions.availableMarkets.map(m => ({ id: m, market: m }))
+  : getMarketsByRegion(selectedRegion);
 
-```sql
-ALTER TABLE user_organization_access 
-ADD COLUMN region text;
+// Facilities: if restricted, use restricted list
+// If not restricted and market selected, filter by market
+// If not restricted and no market selected, show ALL facilities
+const availableFacilities = hasRestrictionAt('facility')
+  ? restrictedOptions.availableFacilities
+  : selectedMarket !== "all-markets" 
+    ? getFacilitiesByMarket(selectedMarket)
+    : allFacilities;  // <-- Use full facility list from useFilterData
+
+// Departments: same logic
+const availableDepartments = hasRestrictionAt('department')
+  ? restrictedOptions.availableDepartments
+  : selectedFacility !== "all-facilities"
+    ? getDepartmentsByFacility(selectedFacility)
+    : allDepartments;  // <-- Use full department list from useFilterData
 ```
 
-### 5. Update useUserOrgAccess Hook
+### 2. Update useFilterData to Export Full Lists
 
-Add region to the flat access structure:
-
-```typescript
-interface OrgAccessFlat {
-  regions: string[];    // NEW
-  markets: string[];
-  facilities: Facility[];
-  departments: Department[];
-}
-```
-
-### 6. Update useOrgScopedFilters Hook
-
-Add region filtering logic for users with region restrictions.
-
----
-
-## Files to Create
-
-| File | Purpose |
-|------|---------|
-| `src/components/ui/multi-select-chips.tsx` | Reusable multi-select with chips component |
+Ensure the hook exports the raw `markets`, `facilities`, and `departments` arrays (already does this).
 
 ## Files to Modify
 
 | File | Change |
 |------|--------|
-| `src/components/admin/UserFormSheet.tsx` | Replace checkbox list with MultiSelectChips for roles |
-| `src/components/admin/OrgAccessManager.tsx` | Redesign with 4 chip sections (Region, Market, Facility, Department) |
-| `src/hooks/useUserOrgAccess.ts` | Add regions to flat structure |
-| `src/hooks/useOrgScopedFilters.ts` | Add region filtering logic |
-
-## Database Changes
-
-- Add `region` column to `user_organization_access` table
-
----
-
-## UI Mockup
-
-### Roles Section (New)
-```
-Roles
-[Admin ×] [Labor Management ×]        [+ Add Role]
-```
-
-### Organization Access (New)
-```
-Organization Access
-
-Region
-[East ×] [West ×]                     [+ Add]
-
-Market
-[Indiana ×]                           [+ Add]
-
-Facility
-[Hospital A ×] [Hospital B ×]         [+ Add]
-
-Department
-(No restrictions)                     [+ Add]
-```
-
----
+| `src/components/staffing/FilterBar.tsx` | Fix fallback logic to use full filter data when no restrictions |
 
 ## Technical Details
 
-### MultiSelectChips Component Features
+The key insight is that `restrictedOptions` from `useOrgScopedFilters` might still be loading or have stale data. By using the raw data from `useFilterData` directly in the fallback case, we ensure the dropdowns always have options when:
+- User has no org access restrictions at that level
+- No parent filter is selected
 
-1. **Chip Display:**
-   - Badge style chips with X button
-   - Truncate long names with tooltip
-   - Wrap to multiple lines if needed
-
-2. **Add Popover:**
-   - Search input for filtering long lists
-   - Checkbox list of available options
-   - Shows which items are already selected
-   - Close on click outside
-
-3. **Props:**
-   - `options`: Available items to select
-   - `selected`: Currently selected values
-   - `onChange`: Callback when selection changes
-   - `label`: Section label
-   - `icon`: Optional icon component
-   - `searchable`: Enable search for long lists (default true)
-   - `placeholder`: Text when nothing selected
+This maintains the restriction logic when it applies, while ensuring unrestricted users always see full options.
