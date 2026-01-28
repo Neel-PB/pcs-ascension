@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 interface Notification {
   id: string;
@@ -15,11 +15,11 @@ interface Notification {
 
 export function useNotifications() {
   const queryClient = useQueryClient();
+  const { user } = useAuthContext();
 
   const query = useQuery({
     queryKey: ["notifications"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
       const { data, error } = await supabase
@@ -33,29 +33,11 @@ export function useNotifications() {
       
       return data as Notification[];
     },
+    enabled: !!user,
   });
 
-  // Set up realtime subscription
-  useEffect(() => {
-    const channel = supabase
-      .channel("notifications-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "notifications",
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["notifications"] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
+  // Realtime subscription is now handled by useRealtimeSubscriptions hook
+  // No need for individual channel here
 
   return query;
 }

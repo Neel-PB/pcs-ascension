@@ -7,7 +7,6 @@ import {
   MANAGEABLE_ROLES 
 } from "@/config/rbacConfig";
 import { toast } from "sonner";
-import { useEffect } from "react";
 
 interface RolePermissionOverride {
   id: string;
@@ -34,27 +33,8 @@ export function useRolePermissions() {
     },
   });
 
-  // Subscribe to realtime changes
-  useEffect(() => {
-    const channel = supabase
-      .channel('role-permissions-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'role_permissions',
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['role-permissions'] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
+  // Realtime subscription is now handled by useRealtimeSubscriptions hook
+  // No need for individual channel here
 
   // Get effective permissions for a role (defaults merged with overrides)
   const getEffectivePermissions = (role: AppRole): PermissionKey[] => {

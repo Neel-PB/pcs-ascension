@@ -1,13 +1,22 @@
-import { NavLink, useLocation, useNavigate, matchPath } from "react-router-dom";
+import { useLocation, useNavigate, matchPath } from "react-router-dom";
 import { useCallback, forwardRef } from "react";
-import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
+import { motion, LayoutGroup } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { useRBAC } from "@/hooks/useRBAC";
 import { OrganizationSwitcher } from "@/components/layout/OrganizationSwitcher";
-import { InboxBadge } from "@/components/inbox/InboxBadge";
 import { useDynamicSidebar, type DynamicMenuGroup } from "@/hooks/useDynamicSidebar";
 import { LogoLoader } from "@/components/ui/LogoLoader";
+
+// Route prefetch map for instant navigation
+const routePrefetch: Record<string, () => Promise<unknown>> = {
+  "/staffing": () => import("@/pages/staffing/StaffingSummary"),
+  "/positions": () => import("@/pages/positions/PositionsPage"),
+  "/analytics": () => import("@/pages/analytics/AnalyticsRegion"),
+  "/reports": () => import("@/pages/reports/ReportsRegion"),
+  "/admin": () => import("@/pages/admin/AdminPage"),
+  "/feedback": () => import("@/pages/feedback/FeedbackPage"),
+  "/support": () => import("@/pages/support/SupportPage"),
+};
 
 interface ModuleItemProps {
   module: DynamicMenuGroup;
@@ -19,6 +28,18 @@ const ModuleItem = forwardRef<HTMLDivElement, ModuleItemProps>(
   ({ module, isActive, index }, ref) => {
     const { hasPermission } = useRBAC();
     const navigate = useNavigate();
+
+    // Prefetch route chunk on hover for instant navigation
+    const handleMouseEnter = useCallback(() => {
+      const firstItem = module.items.find(item => {
+        if (!item.permissions || item.permissions.length === 0) return true;
+        return item.permissions.some(permission => hasPermission(permission));
+      });
+      const url = firstItem?.url;
+      if (url && routePrefetch[url]) {
+        routePrefetch[url]();
+      }
+    }, [module.items, hasPermission]);
 
     // Handle module click - navigate to first accessible sub-item
     // IMPORTANT: useCallback must be called before any early returns
@@ -46,6 +67,7 @@ const ModuleItem = forwardRef<HTMLDivElement, ModuleItemProps>(
       <motion.div
         ref={ref}
         onClick={handleModuleClick}
+        onMouseEnter={handleMouseEnter}
           className={cn(
             "group flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl transition-colors relative w-full cursor-pointer aspect-square",
             isActive

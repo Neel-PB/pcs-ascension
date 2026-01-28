@@ -5,9 +5,11 @@ import { useAuthContext } from "@/contexts/AuthContext";
 
 /**
  * Consolidated realtime subscription hook.
- * Manages all RBAC and app settings subscriptions in a single channel
- * to reduce WebSocket overhead.
+ * Manages ALL Postgres realtime subscriptions in two channels:
+ * 1. rbac-consolidated: Core RBAC & settings (user_roles, role_permissions, app_settings, profiles)
+ * 2. data-consolidated: Notifications, comments, audit logs, permissions, roles
  * 
+ * This reduces WebSocket overhead from 9+ individual channels to just 2.
  * Call this once at the App level when user is authenticated.
  */
 export function useRealtimeSubscriptions() {
@@ -17,7 +19,7 @@ export function useRealtimeSubscriptions() {
   useEffect(() => {
     if (!user?.id) return;
 
-    // Single channel for all RBAC-related changes
+    // Channel 1: Core RBAC-related changes (auth-sensitive)
     const rbacChannel = supabase
       .channel('rbac-consolidated')
       .on(
@@ -31,6 +33,8 @@ export function useRealtimeSubscriptions() {
           if (changedUserId === user.id) {
             queryClient.invalidateQueries({ queryKey: ['user-roles', user.id] });
           }
+          // Also invalidate users list for admin views
+          queryClient.invalidateQueries({ queryKey: ['users'] });
         }
       )
       .on(
@@ -38,6 +42,7 @@ export function useRealtimeSubscriptions() {
         { event: '*', schema: 'public', table: 'role_permissions' },
         () => {
           queryClient.invalidateQueries({ queryKey: ['role-permissions'] });
+          queryClient.invalidateQueries({ queryKey: ['user-roles'] });
         }
       )
       .on(
@@ -57,10 +62,60 @@ export function useRealtimeSubscriptions() {
           queryClient.invalidateQueries({ queryKey: ['user-profile', user.id] });
         }
       )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'profiles' },
+        () => {
+          // Invalidate users list for admin views
+          queryClient.invalidateQueries({ queryKey: ['users'] });
+        }
+      )
+      .subscribe();
+
+    // Channel 2: Data changes (notifications, comments, audit logs, roles, permissions)
+    const dataChannel = supabase
+      .channel('data-consolidated')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['notifications'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'position_comments' },
+        () => {
+          // Invalidate comment counts - components will refetch as needed
+          queryClient.invalidateQueries({ queryKey: ['position-comment-counts'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'rbac_audit_log' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['rbac-audit-log'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'roles' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['dynamic-roles'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'permissions' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['permissions'] });
+        }
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(rbacChannel);
+      supabase.removeChannel(dataChannel);
     };
   }, [user?.id, queryClient]);
 }

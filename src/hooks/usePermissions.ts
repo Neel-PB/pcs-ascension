@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useEffect } from "react";
 
 export interface Permission {
   id: string;
@@ -43,27 +42,8 @@ export function usePermissions() {
     },
   });
 
-  // Real-time subscription
-  useEffect(() => {
-    const channel = supabase
-      .channel("permissions-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "permissions",
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["permissions"] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
+  // Realtime subscription is now handled by useRealtimeSubscriptions hook
+  // No need for individual channel here
 
   // Create permission
   const createPermission = useMutation({
