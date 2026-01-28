@@ -108,7 +108,7 @@ export function UserFormSheet({
         firstName: data.firstName,
         lastName: data.lastName,
         bio: data.bio,
-        role: data.roles[0], // For invite, use first role
+        roles: data.roles, // Send all selected roles
       });
     }
   };
