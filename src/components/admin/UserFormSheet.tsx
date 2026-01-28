@@ -27,8 +27,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Lock } from "lucide-react";
+import { MultiSelectChips, type MultiSelectOption } from "@/components/ui/multi-select-chips";
 import { useDynamicRoles } from "@/hooks/useDynamicRoles";
 import type { UserWithProfile, UserRole } from "@/hooks/useUsers";
 
@@ -108,10 +107,20 @@ export function UserFormSheet({
         firstName: data.firstName,
         lastName: data.lastName,
         bio: data.bio,
-        roles: data.roles, // Send all selected roles
+        roles: data.roles,
       });
     }
   };
+
+  // Build role options for MultiSelectChips
+  const roleOptions: MultiSelectOption[] = manageableRoles
+    .filter((role) => role.name && role.name.trim() !== '')
+    .map((role) => ({
+      value: role.name,
+      label: role.label,
+      description: role.description || undefined,
+      isSystem: role.is_system,
+    }));
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -177,54 +186,19 @@ export function UserFormSheet({
             <FormField
               control={form.control}
               name="roles"
-              render={() => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Roles</FormLabel>
-                  <div className="space-y-2 border rounded-md p-3 max-h-48 overflow-y-auto">
-                    {manageableRoles
-                      .filter((role) => role.name && role.name.trim() !== '')
-                      .map((role) => (
-                        <FormField
-                          key={role.id}
-                          control={form.control}
-                          name="roles"
-                          render={({ field }) => {
-                            return (
-                              <FormItem
-                                key={role.id}
-                                className="flex flex-row items-start space-x-3 space-y-0"
-                              >
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value?.includes(role.name)}
-                                    onCheckedChange={(checked) => {
-                                      const currentRoles = field.value || [];
-                                      if (checked) {
-                                        field.onChange([...currentRoles, role.name]);
-                                      } else {
-                                        field.onChange(
-                                          currentRoles.filter((r: string) => r !== role.name)
-                                        );
-                                      }
-                                    }}
-                                    disabled={rolesLoading}
-                                  />
-                                </FormControl>
-                                <div className="flex items-center gap-2 leading-none">
-                                  {role.is_system && <Lock className="h-3 w-3 text-muted-foreground" />}
-                                  <span className="text-sm font-medium">{role.label}</span>
-                                  {role.description && (
-                                    <span className="text-xs text-muted-foreground">
-                                      - {role.description}
-                                    </span>
-                                  )}
-                                </div>
-                              </FormItem>
-                            );
-                          }}
-                        />
-                      ))}
-                  </div>
+                  <FormControl>
+                    <MultiSelectChips
+                      options={roleOptions}
+                      selected={field.value}
+                      onChange={field.onChange}
+                      placeholder="Search roles..."
+                      addButtonText="Add Role"
+                      emptyText="No roles selected"
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

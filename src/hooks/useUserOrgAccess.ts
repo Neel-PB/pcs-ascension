@@ -40,7 +40,11 @@ export function useUserOrgAccess(userId?: string) {
       const departments = new Map<string, { name: string; facilityId?: string }>(); // departmentId -> {name, facilityId}
       
       data.forEach((access) => {
-        // Note: region field doesn't exist in table schema, but keeping for future use
+        // Handle region field
+        if (access.region) {
+          regions.add(access.region);
+        }
+        
         if (access.market) {
           markets.add(access.market);
         }
