@@ -80,7 +80,7 @@ export default function DemoLogin() {
                   )}
                   <span className="font-medium truncate">{metadata.label}</span>
                 </div>
-                <span className="text-xs text-muted-foreground text-left break-words w-full line-clamp-2">
+                <span className="text-xs text-muted-foreground text-left break-words w-full">
                   {metadata.description}
                 </span>
               </Button>
