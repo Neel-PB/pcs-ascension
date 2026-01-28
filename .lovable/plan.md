@@ -1,114 +1,121 @@
 
 
-# Remove Entrance Animations from Filters and Tabs
+# Fix UI "Scramble" on Positions Page Load
 
 ## Problem
 
-When clicking on the Positions module, the UI "scrambles" because multiple elements are animating in sequence:
-1. Filters fade in with 0.3s animation
-2. Tab buttons fade in with staggered 0.1s delays
-3. Content animates in separately
+When navigating to the Positions module, the UI appears to "scramble" because:
 
-This creates a visual "scramble" effect where elements appear at different times.
+1. **RBAC permissions load asynchronously** - FilterBar conditionally renders filters based on `filterPermissions.region`, `filterPermissions.market`, etc. Until the RBAC hook loads, these may be `false`, causing filters to initially not render, then suddenly appear.
+
+2. **Filter data loads asynchronously** - The `useFilterData()` hook fetches regions, markets, facilities, departments. Until loaded, dropdown options are empty arrays, which may cause visual differences.
+
+3. **Layout shifts** - The conditional rendering `{filterPermissions.region && <Select>...}` causes elements to appear/disappear as permissions load.
 
 ## Solution
 
-Remove entrance animations from filters and tabs so they appear instantly. Keep only the:
-- Tab indicator slide animation (for smooth tab switching)
-- Content area animation (shows loader inside tabs, not the container)
+Make filters render immediately with a consistent layout, regardless of loading state:
+
+1. **Always render filter containers** - Use opacity/disabled states instead of conditional rendering
+2. **Default to showing all filters during loading** - Prevents layout shift
+3. **Show skeleton/disabled state while RBAC loads** - Maintains consistent UI
 
 ## Changes
 
-### File 1: `src/components/staffing/FilterBar.tsx`
+### File: `src/components/staffing/FilterBar.tsx`
 
-**Current (lines 109-114):**
+**Change 1: Destructure loading state from hooks**
+
+```typescript
+const { 
+  regions, 
+  markets,
+  // ...
+  isLoading: filterDataLoading 
+} = useFilterData();
+
+const { getFilterPermissions, getSubfilterPermissions, loading: rbacLoading } = useRBAC();
+```
+
+**Change 2: Determine if still loading**
+
+```typescript
+const isLoading = rbacLoading || filterDataLoading;
+```
+
+**Change 3: Default permissions during loading**
+
+To prevent layout shifts, default to showing all filters during loading:
+
+```typescript
+// During loading, show all filters to prevent layout shift
+// Once loaded, respect actual permissions
+const filterPermissions = rbacLoading 
+  ? { region: true, market: true, facility: true, department: true }
+  : getFilterPermissions();
+
+const subfilterPermissions = rbacLoading
+  ? { submarket: true, level2: true, pstat: true }
+  : getSubfilterPermissions();
+```
+
+**Change 4: Disable filters while loading**
+
+Add disabled state to all Select components when loading:
+
 ```tsx
-<motion.div
-  className={`flex flex-wrap xl:flex-nowrap gap-2 xl:gap-3 items-center ${className}`}
-  initial={{ opacity: 0, y: -10 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.3 }}
+<Select 
+  value={selectedRegion} 
+  onValueChange={onRegionChange}
+  disabled={isLoading}  // Add this
 >
 ```
 
-**After:**
+This ensures:
+- Filters always render in their expected positions (no layout shift)
+- Filters are disabled (grayed out) until data loads
+- Once loaded, filters respect actual RBAC permissions
+- If a user doesn't have permission for a filter, it gracefully hides after load (minimal visual impact since page is already stable)
+
+### Alternative Approach (Simpler)
+
+If we want to completely hide the loading complexity:
+
+**Option B: Don't conditionally render filters at all during load**
+
+Keep filters visible but disabled until fully loaded:
+
 ```tsx
-<div className={`flex flex-wrap xl:flex-nowrap gap-2 xl:gap-3 items-center ${className}`}>
-```
-
-Also remove the unused `motion` import from line 2.
-
-### File 2: `src/pages/positions/PositionsPage.tsx`
-
-**Change 1 - Tab buttons (lines 102-118):**
-
-Replace `motion.button` with regular `button` and remove entrance animation:
-
-```tsx
-// Before
-<motion.button
-  key={tab.id}
-  className={...}
-  onClick={() => setActiveTab(tab.id)}
-  whileHover={{ scale: 1.02 }}
-  whileTap={{ scale: 0.98 }}
-  initial={{ opacity: 0, y: 10 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ delay: index * 0.1 }}
-  style={{ flex: 1 }}
->
-
-// After - regular button, no entrance animation
-<button
-  key={tab.id}
-  className={`relative flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors z-10 hover:scale-[1.02] active:scale-[0.98] ${
-    activeTab === tab.id
-      ? "text-primary-foreground"
-      : "text-muted-foreground hover:text-foreground"
-  }`}
-  onClick={() => setActiveTab(tab.id)}
-  style={{ flex: 1 }}
+// Always render all main filters
+<Select 
+  value={selectedRegion} 
+  onValueChange={onRegionChange}
+  disabled={isLoading || !filterPermissions.region}
 >
 ```
 
-**Change 2 - Content wrapper (lines 138-145):**
+This is simpler but means users without permission briefly see disabled filters before they hide.
 
-Remove `AnimatePresence` and `motion.div` from content wrapper - the individual tabs handle their own loading states internally:
+## Recommended Approach
 
-```tsx
-// Before
-<AnimatePresence mode="wait">
-  <motion.div
-    key={activeTab}
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -10 }}
-    transition={{ duration: 0.2 }}
-    className="flex-1 min-h-0 flex flex-col animate-fade-in"
-  >
+I recommend **Change 3 + Change 4** (default permissions during loading, then respect actual permissions). This:
 
-// After - simple div, tabs have their own loaders
-<div className="flex-1 min-h-0 flex flex-col">
-```
+- Prevents any layout shift on initial load
+- Shows all filters immediately in a disabled state
+- Once RBAC loads, filters that user doesn't have permission for will hide
+- The hide happens after page is stable, so it's less jarring
 
-**Keep the tab indicator animation** (lines 121-133) - this is the sliding highlight effect when switching tabs, which is desirable UX.
+## Files to Modify
 
-## Summary of What Stays vs What Gets Removed
+| File | Change |
+|------|--------|
+| `src/components/staffing/FilterBar.tsx` | Add loading state handling, default permissions during load |
 
-| Element | Animation | Keep/Remove |
-|---------|-----------|-------------|
-| Filters (global) | Fade-in 0.3s | ❌ Remove |
-| Filters (optional) | Fade-in 0.3s | ❌ Remove |
-| Tab buttons | Staggered fade-in | ❌ Remove |
-| Tab indicator | Slide on switch | ✅ Keep |
-| Content wrapper | Fade on tab switch | ❌ Remove |
-| Tab content loaders | Inside tabs | ✅ Keep (existing pattern) |
+## Visual Result
 
-## Result
-
-- Filters appear instantly when navigating to Positions
-- Tabs appear instantly with no stagger
-- Tab indicator still smoothly slides when switching tabs
-- Content area loads with LogoLoader inside each tab (existing behavior)
-- No more UI "scramble" effect
+| Stage | Before | After |
+|-------|--------|-------|
+| Initial render | Filters missing, then pop in | All filters visible (disabled) |
+| RBAC loaded | Filters appear causing shift | Filters enable, unpermitted ones hide |
+| Filter data loaded | Options appear in dropdowns | Options appear in dropdowns |
 
