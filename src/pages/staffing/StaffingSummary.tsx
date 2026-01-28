@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, LayoutGroup } from "framer-motion";
 import { FilterBar } from "@/components/staffing/FilterBar";
 import PositionPlanning from "./PositionPlanning";
@@ -13,12 +13,14 @@ import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import { WorkforceDrawer } from "@/components/workforce/WorkforceDrawer";
 import { WorkforceDrawerTrigger } from "@/components/workforce/WorkforceDrawerTrigger";
 import { useRBAC } from "@/hooks/useRBAC";
+import { useOrgScopedFilters } from "@/hooks/useOrgScopedFilters";
 
 export default function StaffingSummary() {
   const [activeTab, setActiveTab] = useState("summary");
   const { hasPermission } = useRBAC();
+  const { defaultFilters, isLoading: orgScopedLoading } = useOrgScopedFilters();
   
-  // State management for filters
+  // State management for filters - initialized from org-scoped defaults
   const [selectedRegion, setSelectedRegion] = useState("all-regions");
   const [selectedMarket, setSelectedMarket] = useState("all-markets");
   const [selectedFacility, setSelectedFacility] = useState("all-facilities");
@@ -26,6 +28,23 @@ export default function StaffingSummary() {
   const [selectedPstat, setSelectedPstat] = useState("all-pstat");
   const [selectedLevel2, setSelectedLevel2] = useState("all-level2");
   const [selectedDepartment, setSelectedDepartment] = useState("all-departments");
+  const [filtersInitialized, setFiltersInitialized] = useState(false);
+  
+  // Initialize filters from org-scoped defaults once loaded
+  useEffect(() => {
+    if (!orgScopedLoading && !filtersInitialized && defaultFilters) {
+      if (defaultFilters.market !== "all-markets") {
+        setSelectedMarket(defaultFilters.market);
+      }
+      if (defaultFilters.facility !== "all-facilities") {
+        setSelectedFacility(defaultFilters.facility);
+      }
+      if (defaultFilters.department !== "all-departments") {
+        setSelectedDepartment(defaultFilters.department);
+      }
+      setFiltersInitialized(true);
+    }
+  }, [orgScopedLoading, filtersInitialized, defaultFilters]);
 
   // Build tabs based on permissions
   const tabs = useMemo(() => {
