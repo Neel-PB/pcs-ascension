@@ -186,7 +186,7 @@ export function FilterBar({
           size="icon"
           onClick={onClearFilters}
           disabled={!hasActiveFilters}
-          className="disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+          className="h-9 w-9 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
           title="Clear all filters"
           aria-label="Clear all filters"
         >
