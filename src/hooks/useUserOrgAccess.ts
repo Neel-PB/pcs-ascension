@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Facility, Department } from "./useFilterData";
 
-export interface OrgAccessFlat {
+export interface AccessScopeFlat {
   regions: string[];
   markets: string[];
   facilities: { facilityId: string; facilityName: string }[];
@@ -15,9 +15,12 @@ export interface OrgAccessFlat {
   hasDepartmentRestriction: boolean;
 }
 
-export function useUserOrgAccess(userId?: string) {
-  const { data: orgAccess, isLoading } = useQuery({
-    queryKey: ['user-org-access', userId],
+// Backward compatibility alias
+export type OrgAccessFlat = AccessScopeFlat;
+
+export function useUserAccessScope(userId?: string) {
+  const { data: accessScope, isLoading } = useQuery({
+    queryKey: ['user-access-scope', userId],
     queryFn: async () => {
       if (!userId) return null;
 
@@ -61,7 +64,7 @@ export function useUserOrgAccess(userId?: string) {
         }
       });
 
-      const flatAccess: OrgAccessFlat = {
+      const flatAccess: AccessScopeFlat = {
         regions: Array.from(regions),
         markets: Array.from(markets),
         facilities: Array.from(facilities.entries()).map(([facilityId, facilityName]) => ({
@@ -87,8 +90,13 @@ export function useUserOrgAccess(userId?: string) {
   });
 
   return {
-    orgAccess,
+    accessScope,
     isLoading,
-    hasUnrestrictedAccess: orgAccess === null,
+    hasUnrestrictedAccess: accessScope === null,
+    // Backward compatibility aliases
+    orgAccess: accessScope,
   };
 }
+
+// Backward compatibility alias
+export const useUserOrgAccess = useUserAccessScope;

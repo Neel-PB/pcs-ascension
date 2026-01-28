@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserRoles } from "./useUserRoles";
-import { useUserOrgAccess } from "./useUserOrgAccess";
+import { useUserAccessScope } from "./useUserOrgAccess";
 
 export function useUserProfile(userId?: string) {
   const { data: profile, isLoading: profileLoading } = useQuery({
@@ -22,13 +22,15 @@ export function useUserProfile(userId?: string) {
   });
 
   const { roles, isLoading: rolesLoading } = useUserRoles(userId);
-  const { orgAccess, isLoading: orgLoading, hasUnrestrictedAccess } = useUserOrgAccess(userId);
+  const { accessScope, isLoading: scopeLoading, hasUnrestrictedAccess } = useUserAccessScope(userId);
 
   return {
     profile,
     roles,
-    orgAccess,
+    accessScope,
     hasUnrestrictedAccess,
-    isLoading: profileLoading || rolesLoading || orgLoading,
+    isLoading: profileLoading || rolesLoading || scopeLoading,
+    // Backward compatibility
+    orgAccess: accessScope,
   };
 }

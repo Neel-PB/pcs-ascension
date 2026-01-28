@@ -15,7 +15,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
-import { OrgAccessManager } from "./OrgAccessManager";
+import { AccessScopeManager } from "./AccessScopeManager";
 import {
   Form,
   FormControl,
@@ -226,11 +226,11 @@ export function UserFormSheet({
             {isEditMode && user && (
               <Collapsible open={orgAccessOpen} onOpenChange={setOrgAccessOpen}>
                 <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:underline">
-                  <span>Organization Access Restrictions</span>
+                  <span>Access Scope Restrictions</span>
                   <ChevronDown className={`h-4 w-4 transition-transform ${orgAccessOpen ? 'rotate-180' : ''}`} />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pt-2">
-                  <OrgAccessManager userId={user.id} isEditMode={isEditMode} />
+                  <AccessScopeManager userId={user.id} isEditMode={isEditMode} />
                 </CollapsibleContent>
               </Collapsible>
             )}

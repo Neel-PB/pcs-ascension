@@ -8,7 +8,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { MultiSelectChips, type MultiSelectOption } from "@/components/ui/multi-select-chips";
 
-interface OrgAccessManagerProps {
+interface AccessScopeManagerProps {
   userId: string;
   isEditMode: boolean;
 }
@@ -20,7 +20,7 @@ interface SelectedAccess {
   departments: Set<string>; // department_id
 }
 
-export function OrgAccessManager({ userId, isEditMode }: OrgAccessManagerProps) {
+export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerProps) {
   const [selectedAccess, setSelectedAccess] = useState<SelectedAccess>({
     regions: new Set(),
     markets: new Set(),
@@ -32,14 +32,14 @@ export function OrgAccessManager({ userId, isEditMode }: OrgAccessManagerProps) 
   const { regions, markets, facilities, departments, isLoading: filterLoading } = useFilterData();
   const queryClient = useQueryClient();
   
-  // Fetch existing org access entries when editing
+  // Fetch existing access scope entries when editing
   useEffect(() => {
     if (isEditMode && userId) {
-      fetchOrgAccess();
+      fetchAccessScope();
     }
   }, [isEditMode, userId]);
   
-  const fetchOrgAccess = async () => {
+  const fetchAccessScope = async () => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
@@ -67,7 +67,7 @@ export function OrgAccessManager({ userId, isEditMode }: OrgAccessManagerProps) 
         setSelectedAccess(newAccess);
       }
     } catch (err) {
-      console.error('Error fetching org access:', err);
+      console.error('Error fetching access scope:', err);
     } finally {
       setIsLoading(false);
     }
@@ -98,7 +98,7 @@ export function OrgAccessManager({ userId, isEditMode }: OrgAccessManagerProps) 
     });
   };
   
-  const saveOrgAccess = async () => {
+  const saveAccessScope = async () => {
     if (!userId) return;
     
     setIsLoading(true);
@@ -183,11 +183,11 @@ export function OrgAccessManager({ userId, isEditMode }: OrgAccessManagerProps) 
         if (error) throw error;
       }
       
-      toast.success('Organization access updated');
-      queryClient.invalidateQueries({ queryKey: ['user-org-access', userId] });
+      toast.success('Access scope updated');
+      queryClient.invalidateQueries({ queryKey: ['user-access-scope', userId] });
     } catch (err) {
-      console.error('Error saving org access:', err);
-      toast.error('Failed to save organization access');
+      console.error('Error saving access scope:', err);
+      toast.error('Failed to save access scope');
     } finally {
       setIsLoading(false);
     }
@@ -195,9 +195,9 @@ export function OrgAccessManager({ userId, isEditMode }: OrgAccessManagerProps) 
   
   // Expose save function for parent form
   useEffect(() => {
-    (window as any).__orgAccessSave = saveOrgAccess;
+    (window as any).__accessScopeSave = saveAccessScope;
     return () => {
-      delete (window as any).__orgAccessSave;
+      delete (window as any).__accessScopeSave;
     };
   }, [selectedAccess, userId]);
 
@@ -238,7 +238,7 @@ export function OrgAccessManager({ userId, isEditMode }: OrgAccessManagerProps) 
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <Label className="text-sm font-medium">Organization Access</Label>
+        <Label className="text-sm font-medium">Access Scope</Label>
         {totalSelected > 0 && (
           <Button
             type="button"
@@ -318,3 +318,6 @@ export function OrgAccessManager({ userId, isEditMode }: OrgAccessManagerProps) 
     </div>
   );
 }
+
+// Backward compatibility export
+export const OrgAccessManager = AccessScopeManager;
