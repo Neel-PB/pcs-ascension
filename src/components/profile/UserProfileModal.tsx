@@ -131,37 +131,56 @@ export function UserProfileModal({ open, onOpenChange, userId }: UserProfileModa
                   Access to all regions, facilities, and departments
                 </p>
               </div>
-            ) : orgAccess && orgAccess.markets.length > 0 ? (
+            ) : orgAccess ? (
               <div className="space-y-4">
-                {orgAccess.markets.map((market) => (
-                  <div key={market.market} className="space-y-2">
-                    <h4 className="text-sm font-medium">{market.market}</h4>
-                    {market.facilities.length > 0 ? (
-                      <div className="pl-4 space-y-3">
-                        {market.facilities.map((facility) => (
-                          <div key={facility.facilityId} className="space-y-1">
-                            <p className="text-sm text-muted-foreground">
-                              • {facility.facilityName}
-                            </p>
-                            {facility.departments.length > 0 && (
-                              <div className="pl-6 space-y-1">
-                                {facility.departments.map((dept) => (
-                                  <p key={dept.departmentId} className="text-xs text-muted-foreground">
-                                    - {dept.departmentName}
-                                  </p>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="pl-4 text-sm text-muted-foreground italic">
-                        All facilities in this market
-                      </p>
-                    )}
+                {/* Markets */}
+                {orgAccess.markets.length > 0 && (
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Markets</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {orgAccess.markets.map((market) => (
+                        <span key={market} className="text-sm bg-muted px-2 py-0.5 rounded">
+                          {market}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                ))}
+                )}
+                
+                {/* Facilities */}
+                {orgAccess.facilities.length > 0 && (
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Facilities</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {orgAccess.facilities.map((facility) => (
+                        <span key={facility.facilityId} className="text-sm bg-muted px-2 py-0.5 rounded">
+                          {facility.facilityName}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Departments */}
+                {orgAccess.departments.length > 0 && (
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Departments</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {orgAccess.departments.map((dept) => (
+                        <span key={dept.departmentId} className="text-sm bg-muted px-2 py-0.5 rounded">
+                          {dept.departmentName}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* No restrictions found despite having orgAccess object */}
+                {orgAccess.markets.length === 0 && orgAccess.facilities.length === 0 && orgAccess.departments.length === 0 && (
+                  <p className="text-sm text-muted-foreground italic">
+                    No specific access restrictions
+                  </p>
+                )}
               </div>
             ) : (
               <div className="py-2">
