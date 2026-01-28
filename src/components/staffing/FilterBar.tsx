@@ -47,6 +47,9 @@ export function FilterBar({
 }: FilterBarProps) {
   const { 
     regions, 
+    markets: allMarkets,
+    facilities: allFacilities,
+    departments: allDepartments,
     getMarketsByRegion, 
     getFacilitiesByMarket, 
     getDepartmentsByFacility,
@@ -108,20 +111,20 @@ export function FilterBar({
     : getMarketsByRegion(selectedRegion);
 
   // For facilities: use restricted if user has facility restrictions
-  // Otherwise, if market is selected cascade from market, else show all facilities
+  // Otherwise, if market is selected cascade from market, else show ALL facilities
   const availableFacilities = hasRestrictionAt('facility')
     ? restrictedOptions.availableFacilities
     : selectedMarket !== "all-markets" 
       ? getFacilitiesByMarket(selectedMarket)
-      : restrictedOptions.availableFacilities; // No restrictions AND no market = show all
+      : allFacilities;  // No restrictions AND no market = show ALL facilities
 
   // For departments: use restricted if user has department restrictions
-  // Otherwise, if facility is selected cascade from facility, else show all departments  
+  // Otherwise, if facility is selected cascade from facility, else show ALL departments  
   const availableDepartments = hasRestrictionAt('department')
     ? restrictedOptions.availableDepartments
     : selectedFacility !== "all-facilities"
       ? getDepartmentsByFacility(selectedFacility)
-      : restrictedOptions.availableDepartments; // No restrictions AND no facility = show all
+      : allDepartments;  // No restrictions AND no facility = show ALL departments
 
   // Get available submarkets based on selected market
   const availableSubmarkets = getSubmarketsByMarket(selectedMarket);
