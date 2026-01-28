@@ -169,11 +169,13 @@ export function EditableTable<T = any>({
     // - Left/right padding (px-4 = 32px)
     // - Drag handle (if draggable: ~20px)
     // - Sort icon (if sortable: ~20px)
+    // - Tooltip info icon (if tooltip: ~24px)
     // - Menu button (~30px)
     // - Extra breathing room (20px)
     const paddingAndIcons = 32 + 
       (column.draggable ? 20 : 0) + 
       (column.sortable ? 20 : 0) + 
+      (column.tooltip ? 24 : 0) +
       30 + 
       20;
 

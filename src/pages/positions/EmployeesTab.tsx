@@ -260,7 +260,7 @@ export function EmployeesTab({
           <KPISummaryModal />
           <ColumnVisibilityPanel
             columns={employeeColumns}
-            storeNamespace="employees-columns"
+            storeNamespace="employees-columns-v2"
             iconOnly
           />
           
@@ -299,7 +299,7 @@ export function EmployeesTab({
           sortDirection={sortDirection}
           onSort={handleSort}
           onRowClick={handleRowClick}
-          storeNamespace="employees-columns"
+          storeNamespace="employees-columns-v2"
           className="flex-1 min-h-0"
         />
       )}

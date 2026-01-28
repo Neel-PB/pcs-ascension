@@ -254,7 +254,7 @@ export function ContractorsTab({
           <KPISummaryModal />
           <ColumnVisibilityPanel
             columns={contractorColumns}
-            storeNamespace="contractors-columns"
+            storeNamespace="contractors-columns-v2"
             iconOnly
           />
           
@@ -293,7 +293,7 @@ export function ContractorsTab({
           sortDirection={sortDirection}
           onSort={handleSort}
           onRowClick={handleRowClick}
-          storeNamespace="contractors-columns"
+          storeNamespace="contractors-columns-v2"
           className="flex-1 min-h-0"
         />
       )}
