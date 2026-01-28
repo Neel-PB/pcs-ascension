@@ -1,109 +1,127 @@
 
-# Fix Global Filters Not Showing Options (Market, Facility, Department)
+# Optimize FilterBar Loading: Static UI with Inline Loaders
 
-## Problem Identified
+## Problem
 
-After testing, the filters work correctly for Admin users with no restrictions. However, the issue occurs when:
+Currently, the FilterBar:
+1. **Disables ALL dropdowns** while waiting for ANY data to load (RBAC, filter data, org scopes)
+2. **No visual feedback** - dropdowns just appear disabled/frozen, looking like "animations not working"
+3. **Combined loading state** blocks all interaction until everything loads
 
-1. **User has organization access restrictions** at one level (e.g., facility), which causes:
-   - `hasMarketRestriction` to become `true` (because facility records include market values)
-   - But the user's actual markets are limited to only those from their facility entries
-   
-2. **The fallback logic in FilterBar.tsx** doesn't properly handle the case where the user has NO explicit restrictions at a level but also has NO parent filter selected.
-
-## Root Cause
-
-In `FilterBar.tsx` lines 112-124, when computing available options:
-
-```tsx
-// For facilities - when no market selected AND no restrictions:
-const availableFacilities = hasRestrictionAt('facility')
-  ? restrictedOptions.availableFacilities
-  : selectedMarket !== "all-markets" 
-    ? getFacilitiesByMarket(selectedMarket)
-    : restrictedOptions.availableFacilities; // Problem: this might be empty!
-```
-
-When `hasRestrictionAt('facility')` is `false` and `selectedMarket === "all-markets"`:
-- It falls back to `restrictedOptions.availableFacilities`
-- But `restrictedOptions.availableFacilities` comes from `useOrgScopedFilters`
-- If there's any issue with the filter data loading, this could be empty
+This creates a poor UX where static UI elements (labels, dropdowns) wait unnecessarily for API data.
 
 ## Solution
 
-### 1. Fix FilterBar Fallback Logic
+Render the static UI immediately and show inline loading indicators only where data is loading:
 
-When user has no restrictions at a level AND no parent filter is selected, use the full data from `useFilterData` instead of relying on `restrictedOptions`:
+1. **Never disable dropdowns due to loading** - they're always interactive
+2. **Inside dropdown content**: Show skeleton/loading state while options are loading
+3. **Static elements (Level 2, PSTAT)**: Always available immediately (hardcoded options)
+4. **API-dependent dropdowns (Region, Market, Facility, Department)**: Show "Loading..." item when data not ready
 
-**Current (lines 106-124):**
+## Changes Required
+
+### FilterBar.tsx
+
+**Remove blocking `isLoading` from disabled prop:**
+
 ```tsx
-const availableMarkets = hasRestrictionAt('market')
-  ? restrictedOptions.availableMarkets.map(m => ({ id: m, market: m }))
-  : getMarketsByRegion(selectedRegion);
+// BEFORE (blocks interaction)
+<Select disabled={isLoading || isRegionDisabled}>
 
-const availableFacilities = hasRestrictionAt('facility')
-  ? restrictedOptions.availableFacilities
-  : selectedMarket !== "all-markets" 
-    ? getFacilitiesByMarket(selectedMarket)
-    : restrictedOptions.availableFacilities;
-
-const availableDepartments = hasRestrictionAt('department')
-  ? restrictedOptions.availableDepartments
-  : selectedFacility !== "all-facilities"
-    ? getDepartmentsByFacility(selectedFacility)
-    : restrictedOptions.availableDepartments;
+// AFTER (only lock-based disabling)
+<Select disabled={isRegionDisabled}>
 ```
 
-**Fixed:**
+**Add inline loading state inside SelectContent:**
+
 ```tsx
-// Import facilities and departments from useFilterData
-const { 
-  regions, 
-  markets: allMarkets,
-  facilities: allFacilities,
-  departments: allDepartments,
-  getMarketsByRegion, 
-  getFacilitiesByMarket, 
-  getDepartmentsByFacility,
-  ...
-} = useFilterData();
-
-// Markets: if restricted, use restricted list; otherwise use full list
-const availableMarkets = hasRestrictionAt('market')
-  ? restrictedOptions.availableMarkets.map(m => ({ id: m, market: m }))
-  : getMarketsByRegion(selectedRegion);
-
-// Facilities: if restricted, use restricted list
-// If not restricted and market selected, filter by market
-// If not restricted and no market selected, show ALL facilities
-const availableFacilities = hasRestrictionAt('facility')
-  ? restrictedOptions.availableFacilities
-  : selectedMarket !== "all-markets" 
-    ? getFacilitiesByMarket(selectedMarket)
-    : allFacilities;  // <-- Use full facility list from useFilterData
-
-// Departments: same logic
-const availableDepartments = hasRestrictionAt('department')
-  ? restrictedOptions.availableDepartments
-  : selectedFacility !== "all-facilities"
-    ? getDepartmentsByFacility(selectedFacility)
-    : allDepartments;  // <-- Use full department list from useFilterData
+<SelectContent>
+  {filterDataLoading ? (
+    <div className="flex items-center justify-center py-4">
+      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+      <span className="ml-2 text-sm text-muted-foreground">Loading...</span>
+    </div>
+  ) : (
+    <>
+      {shouldShowAllOption('region') && (
+        <SelectItem value="all-regions">All Regions</SelectItem>
+      )}
+      {regions.map(region => (
+        <SelectItem key={region} value={region}>{region}</SelectItem>
+      ))}
+    </>
+  )}
+</SelectContent>
 ```
 
-### 2. Update useFilterData to Export Full Lists
+### Loading State Strategy
 
-Ensure the hook exports the raw `markets`, `facilities`, and `departments` arrays (already does this).
+| Filter | Data Source | Loading Behavior |
+|--------|-------------|------------------|
+| Region | API (regions table) | Show loader inside dropdown |
+| Market | API (markets table) | Show loader inside dropdown |
+| Facility | API (facilities table) | Show loader inside dropdown |
+| Department | API (departments table) | Show loader inside dropdown |
+| Submarket | Derived from facilities | Depends on facility load |
+| Level 2 | Static array | Instant - no loading |
+| PSTAT | Static array | Instant - no loading |
 
 ## Files to Modify
 
 | File | Change |
 |------|--------|
-| `src/components/staffing/FilterBar.tsx` | Fix fallback logic to use full filter data when no restrictions |
+| `src/components/staffing/FilterBar.tsx` | Remove `isLoading` from disabled props, add inline loaders in SelectContent |
+
+## Benefits
+
+1. **Instant UI** - Filter bar renders immediately, no waiting
+2. **Clear feedback** - Users see exactly which data is loading
+3. **Progressive loading** - Static filters work immediately (Level 2, PSTAT)
+4. **Non-blocking** - Can interact with dropdowns even while loading (shows loader inside)
 
 ## Technical Details
 
-The key insight is that `restrictedOptions` from `useOrgScopedFilters` might still be loading or have stale data. By using the raw data from `useFilterData` directly in the fallback case, we ensure the dropdowns always have options when:
-- User has no org access restrictions at that level
-- No parent filter is selected
+### Dropdown Loading States
 
-This maintains the restriction logic when it applies, while ensuring unrestricted users always see full options.
+Each dropdown independently shows its loading state:
+
+```tsx
+// Region dropdown content
+<SelectContent>
+  {regionsLoading ? (
+    <div className="py-3 px-2 flex items-center gap-2 text-muted-foreground">
+      <Loader2 className="h-3 w-3 animate-spin" />
+      <span className="text-sm">Loading regions...</span>
+    </div>
+  ) : (
+    <>
+      <SelectItem value="all-regions">All Regions</SelectItem>
+      {regions.map(r => (
+        <SelectItem key={r.region} value={r.region}>{r.region}</SelectItem>
+      ))}
+    </>
+  )}
+</SelectContent>
+```
+
+### Hook Changes
+
+Expose individual loading states from `useFilterData`:
+
+```tsx
+return {
+  regions,
+  markets,
+  facilities,
+  departments,
+  regionsLoading,
+  marketsLoading,
+  facilitiesLoading,
+  departmentsLoading,
+  isLoading: regionsLoading || marketsLoading || facilitiesLoading || departmentsLoading,
+  // ... helpers
+};
+```
+
+This allows FilterBar to show targeted loaders per dropdown rather than a global blocking state.
