@@ -1,124 +1,116 @@
 
+# Fix Column Headers Truncation in Positions Module
 
-# Full-Width Column Content for Positions Module Tables
+## Problem Identified
 
-## Problem Summary
+From the screenshot, the column headers are being truncated:
+- "NA..." → should be "NAME"
+- "POSITIO..." → should be "POSITION #"
+- "STAT..." → should be "STATUS"
+- "STAFF TY..." → should be "STAFF TYPE"
+- "FULL/PA..." → should be "FULL/PART TIME"
 
-The tables in the Positions module (Employees, Contractors, Requisitions) currently have columns with narrow fixed widths, causing:
-- Text content to be truncated (requiring hover tooltips to see full values)
-- Column headers that may not fully display their titles
+## Root Cause Analysis
 
-The table already has proportional scaling when the container is wider, but the base column widths are too narrow to show full content.
+The `DraggableColumnHeader` component has a `truncate` class on the header label span (line 102):
 
-## Current Column Widths
+```tsx
+<span className="truncate flex-1 min-w-0 text-left">
+```
 
-| Column | Current Width | Current minWidth |
-|--------|--------------|------------------|
-| Employee/Contractor Name | 180px | 180px |
-| Position # | 120px | 120px |
-| Job Title | 180px | 180px |
-| Job Family | 150px | 150px |
-| Hired FTE | 80px | 80px |
-| Active FTE | 80px | 80px |
-| Shift | 160px | 160px |
-| Status | 100px | 100px |
-| Staff Type | 130px | 130px |
-| Full/Part Time | 120px | 120px |
-| Comments | 80px | 80px |
+This forces text truncation when space is limited. The header contains:
+- Left padding: 16px (px-4)
+- Drag handle space: ~20px (absolute positioned, but reserves visual space)
+- Label text: variable
+- Tooltip icon: ~16px (when present)
+- Sort icon: ~16px (when sorted)
+- Dropdown menu trigger: ~20px
+- Right padding: 16px (px-4)
+- Gap between elements: ~8px (gap-2)
+
+**Total fixed overhead: ~100-120px**
+
+For a column like "Staff Type" with width 160px, that leaves only ~40-60px for the label text - not enough!
 
 ## Solution
 
-Increase column widths to accommodate typical full content without truncation:
+### Approach: Increase Column minWidth Values
 
-| Column | New Width | New minWidth | Rationale |
-|--------|-----------|--------------|-----------|
-| Employee/Contractor Name | 220px | 180px | Names can be long (e.g., "Christopher Alexander Johnson") |
-| Position # | 140px | 120px | Position numbers like "POS-12345-ABC" |
-| Job Title | 240px | 180px | Titles like "Senior Clinical Nurse Specialist" |
-| Job Family | 200px | 150px | Families like "Clinical Nursing - Critical Care" |
-| Hired FTE | 100px | 80px | Values are short but need header space |
-| Active FTE | 100px | 80px | Same as Hired FTE |
-| Shift | 180px | 160px | "Day/Evening Rotation" patterns |
-| Status | 120px | 100px | Badge width + padding |
-| Staff Type | 160px | 130px | "Regular Employee" etc. |
-| Full/Part Time | 140px | 120px | "Part Time" with padding |
-| Comments | 100px | 80px | Icon + count badge |
-| Position Lifecycle | 180px | 160px | "Approved - Posted" etc. |
-| Vacancy Age | 160px | 140px | "45d - Attention" badges |
-| Employment Type | 160px | 140px | "Full Time" etc. |
+Rather than remove truncation (which could cause layout issues), we need to ensure the `minWidth` values are large enough to display the full header text WITH all the icons.
 
-## Implementation
+**Header text widths needed (uppercase, 11px font):**
+| Header | Text Width | + Icons/Padding | Minimum Width |
+|--------|-----------|-----------------|---------------|
+| CONTRACTOR NAME | ~120px | +100px | 220px |
+| POSITION # | ~80px | +100px | 180px |
+| JOB TITLE | ~65px | +100px | 165px |
+| JOB FAMILY | ~75px | +100px | 175px |
+| HIRED FTE | ~65px | +100px | 165px |
+| ACTIVE FTE | ~75px | +100px | 175px |
+| SHIFT | ~40px | +100px | 140px |
+| STATUS | ~50px | +100px | 150px |
+| STAFF TYPE | ~75px | +100px | 175px |
+| FULL/PART TIME | ~105px | +100px | 205px |
 
 ### Files to Modify
 
-1. **`src/config/employeeColumns.tsx`** - Update all column width values
-2. **`src/config/contractorColumns.tsx`** - Update all column width values  
-3. **`src/config/requisitionColumns.tsx`** - Update all column width values
+1. **`src/config/employeeColumns.tsx`**
+2. **`src/config/contractorColumns.tsx`**
+3. **`src/config/requisitionColumns.tsx`**
 4. **`src/stores/useColumnStore.ts`** - Increment version to reset persisted widths
 
-### Technical Details
+### Detailed Changes
 
-**Step 1: Update Employee Columns**
+**Employee Columns:**
+| Column | Current Width | Current minWidth | New Width | New minWidth |
+|--------|--------------|------------------|-----------|--------------|
+| Employee Name | 220 | 180 | 240 | 220 |
+| Position # | 140 | 120 | 160 | 150 |
+| Job Title | 240 | 180 | 240 | 200 |
+| Job Family | 200 | 150 | 200 | 180 |
+| Hired FTE | 100 | 80 | 120 | 110 |
+| Active FTE | 100 | 80 | 120 | 110 |
+| Shift | 180 | 160 | 180 | 160 |
+| Status | 120 | 100 | 140 | 130 |
+| Staff Type | 160 | 130 | 180 | 170 |
+| Full/Part Time | 140 | 120 | 180 | 170 |
+
+**Contractor Columns:** Same adjustments
+
+**Requisition Columns:**
+| Column | Current Width | Current minWidth | New Width | New minWidth |
+|--------|--------------|------------------|-----------|--------------|
+| Position # | 140 | 120 | 160 | 150 |
+| Position Lifecycle | 180 | 160 | 200 | 190 |
+| Vacancy Age | 160 | 140 | 180 | 170 |
+| Job Title | 240 | 180 | 240 | 200 |
+| Job Family | 200 | 150 | 200 | 180 |
+| Shift | 180 | 160 | 180 | 160 |
+| Employment Type | 160 | 140 | 180 | 170 |
+
+**Store Version Update:**
 ```tsx
-// src/config/employeeColumns.tsx
-{
-  id: 'employeeName',
-  label: 'Employee Name',
-  width: 220,      // was 180
-  minWidth: 180,
-  // ...
-},
-{
-  id: 'positionNum',
-  label: 'Position #',
-  width: 140,      // was 120
-  minWidth: 120,
-  // ...
-},
-// ... update all columns similarly
+// Increment from 2 to 3 to reset persisted column widths
+version: 3
 ```
 
-**Step 2: Update Contractor Columns**
-Same pattern as employee columns.
-
-**Step 3: Update Requisition Columns**
-Same pattern with requisition-specific columns.
-
-**Step 4: Reset Persisted Column State**
-```tsx
-// src/stores/useColumnStore.ts
-persist(
-  // ...
-  {
-    name: 'editable-table-columns',
-    version: 2,  // was 1 - increment to reset stored widths
-  }
-)
-```
-
-This version increment will cause the persisted localStorage data to be cleared, allowing the new default widths to take effect for all users.
-
-## Visual Impact
+## Visual Result
 
 ```text
 BEFORE:
-┌────────────────┬─────────┬────────────────┬───────────┐
-│ Employee Na... │ Posit...│ Job Titl...    │ Job Fam...│
-├────────────────┼─────────┼────────────────┼───────────┤
-│ Christopher... │ POS-... │ Senior Cli...  │ Clinical..│
-└────────────────┴─────────┴────────────────┴───────────┘
+┌────────┬─────────┬────────┬─────────┬────────┐
+│ NA...  │POSITIO..│STAT... │STAFF TY.│FULL/PA.│
+└────────┴─────────┴────────┴─────────┴────────┘
 
 AFTER:
-┌──────────────────────┬─────────────┬────────────────────────┬─────────────────────┐
-│ Employee Name        │ Position #  │ Job Title              │ Job Family          │
-├──────────────────────┼─────────────┼────────────────────────┼─────────────────────┤
-│ Christopher Johnson  │ POS-12345   │ Senior Clinical Nurse  │ Clinical Nursing    │
-└──────────────────────┴─────────────┴────────────────────────┴─────────────────────┘
+┌──────────────┬────────────┬────────┬────────────┬───────────────┐
+│ NAME         │ POSITION # │ STATUS │ STAFF TYPE │ FULL/PART TIME│
+└──────────────┴────────────┴────────┴────────────┴───────────────┘
 ```
 
-## Notes
+## Technical Notes
 
-- The proportional scaling in `EditableTable` will continue to expand columns when extra space is available
-- Tooltips will still appear on hover for edge cases where content exceeds the new widths
-- Users who have customized column widths via drag-resize will have their settings reset (due to version increment), but can re-customize as needed
-
+- The table uses proportional scaling when container is wider than total column widths
+- Tooltips still work as fallback for any edge-case content that might exceed column width
+- Persisted user preferences will be reset due to version increment
+- Header text is always uppercase (via CSS `uppercase` class)
