@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface FteChangeDetails {
   fte_old: number | null;
@@ -25,11 +26,11 @@ interface ActivityLogParams {
 
 export function useAddActivityLog() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async ({ positionId, changeType, fteDetails, shiftDetails }: ActivityLogParams) => {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('User not authenticated');
+      if (!user) throw new Error('User not authenticated');
 
       const commentType = changeType === 'fte' ? 'activity_fte' : 'activity_shift';
       
@@ -64,7 +65,7 @@ export function useAddActivityLog() {
         .from('position_comments')
         .insert([{
           position_id: positionId,
-          user_id: userData.user.id,
+          user_id: user.id,
           content,
           comment_type: commentType,
           metadata: metadata as unknown as import('@/integrations/supabase/types').Json,

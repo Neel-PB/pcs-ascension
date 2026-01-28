@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 
 export interface FeedbackComment {
   id: string;
@@ -18,6 +19,7 @@ export interface FeedbackComment {
 
 export const useFeedbackComments = (feedbackId: string | null) => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const commentsQuery = useQuery({
     queryKey: ['feedback-comments', feedbackId],
@@ -52,15 +54,13 @@ export const useFeedbackComments = (feedbackId: string | null) => {
   const addComment = useMutation({
     mutationFn: async (content: string) => {
       if (!feedbackId) throw new Error('No feedback selected');
-      
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('Not authenticated');
+      if (!user) throw new Error('Not authenticated');
 
       const { data, error } = await supabase
         .from('feedback_comments')
         .insert({
           feedback_id: feedbackId,
-          user_id: userData.user.id,
+          user_id: user.id,
           content,
         })
         .select()

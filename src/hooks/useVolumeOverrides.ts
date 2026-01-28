@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 
 export interface VolumeOverride {
   id: string;
@@ -37,6 +38,7 @@ export function useVolumeOverrides(facilityId: string | null) {
 
 export function useUpsertVolumeOverride() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async (override: Partial<VolumeOverride> & { 
@@ -48,8 +50,6 @@ export function useUpsertVolumeOverride() {
       override_volume: number;
       expiry_date: string;
     }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
       if (!user) throw new Error('User not authenticated');
 
       // Check if override exists

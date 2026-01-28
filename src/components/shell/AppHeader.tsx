@@ -65,7 +65,10 @@ export function AppHeader() {
 
   const handleSignOut = async () => {
     await signOut(queryClient);
-    navigate("/auth");
+    // Navigate after a brief delay to ensure all auth state changes have propagated
+    setTimeout(() => {
+      navigate("/auth", { replace: true });
+    }, 100);
   };
 
   return (

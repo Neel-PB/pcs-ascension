@@ -13,7 +13,7 @@ import {
   useDeletePositionComment,
   PositionComment,
 } from "@/hooks/usePositionComments";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 // Smart timestamp: relative time within 24h, actual date after
@@ -172,14 +172,8 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
   const updateComment = useUpdatePositionComment();
   const deleteComment = useDeletePositionComment();
 
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-
-  // Get current user
-  useState(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setCurrentUserId(data.user?.id || null);
-    });
-  });
+  const { user } = useAuth();
+  const currentUserId = user?.id || null;
 
   // Scroll to bottom when comments load or new comment added
   useEffect(() => {

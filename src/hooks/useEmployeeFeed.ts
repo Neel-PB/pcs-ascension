@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 interface PostAuthor {
   first_name: string;
@@ -68,6 +69,7 @@ export function useEmployeeFeed() {
 
 export function useCreatePost() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async ({ content, post_type, attachments }: { 
@@ -75,7 +77,6 @@ export function useCreatePost() {
       post_type: string;
       attachments?: string[];
     }) => {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
@@ -104,10 +105,10 @@ export function useCreatePost() {
 
 export function useLikePost() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async ({ postId, isLiked }: { postId: string; isLiked: boolean }) => {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       if (isLiked) {
@@ -134,10 +135,10 @@ export function useLikePost() {
 
 export function useAddComment() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async ({ postId, content }: { postId: string; content: string }) => {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
