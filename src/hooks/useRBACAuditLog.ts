@@ -1,7 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 
 export interface AuditLogEntry {
   id: string;
@@ -28,7 +26,6 @@ interface UseRBACAuditLogOptions {
 
 export function useRBACAuditLog(options: UseRBACAuditLogOptions = {}) {
   const { actionType, targetType, limit = 50 } = options;
-  const queryClient = useQueryClient();
 
   const query = useQuery({
     queryKey: ["rbac-audit-log", actionType, targetType, limit],
@@ -82,27 +79,8 @@ export function useRBACAuditLog(options: UseRBACAuditLogOptions = {}) {
     },
   });
 
-  // Subscribe to realtime updates
-  useEffect(() => {
-    const channel = supabase
-      .channel("rbac-audit-log-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "rbac_audit_log",
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["rbac-audit-log"] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
+  // Realtime subscription is now handled by useRealtimeSubscriptions hook
+  // No need for individual channel here
 
   return query;
 }

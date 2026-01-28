@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useEffect } from "react";
 
 export interface Role {
   id: string;
@@ -42,27 +41,8 @@ export function useDynamicRoles() {
     },
   });
 
-  // Real-time subscription
-  useEffect(() => {
-    const channel = supabase
-      .channel("roles-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "roles",
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["dynamic-roles"] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
+  // Realtime subscription is now handled by useRealtimeSubscriptions hook
+  // No need for individual channel here
 
   // Create role
   const createRole = useMutation({

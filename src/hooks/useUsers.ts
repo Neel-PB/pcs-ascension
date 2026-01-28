@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useEffect } from "react";
 
 export type UserRole = 'admin' | 'labor_team';
 
@@ -59,43 +58,8 @@ export function useUsers() {
     },
   });
 
-  // Set up real-time subscriptions
-  useEffect(() => {
-    const profilesChannel = supabase
-      .channel('profiles-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'profiles'
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['users'] });
-        }
-      )
-      .subscribe();
-
-    const rolesChannel = supabase
-      .channel('user-roles-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'user_roles'
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['users'] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(profilesChannel);
-      supabase.removeChannel(rolesChannel);
-    };
-  }, [queryClient]);
+  // Realtime subscriptions are now handled by useRealtimeSubscriptions hook
+  // No need for individual channels here
 
   // Invite user mutation
   const createUser = useMutation({

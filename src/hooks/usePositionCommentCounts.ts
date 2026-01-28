@@ -1,91 +1,71 @@
-import { useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useMemo } from 'react';
 
 export function usePositionCommentCounts(positionIds: string[]) {
-  const [counts, setCounts] = useState<Map<string, number>>(new Map());
-
-  useEffect(() => {
-    // Early return if no position IDs
+  // Create a stable key from position IDs
+  const positionIdsKey = useMemo(() => {
     if (!positionIds || !Array.isArray(positionIds) || positionIds.length === 0) {
-      setCounts(new Map());
-      return;
+      return '';
     }
-
-    // Filter out any null/undefined/empty position IDs and ensure they're strings
-    const validPositionIds = positionIds.filter(
+    // Filter and sort for stable key
+    const validIds = positionIds.filter(
       id => id != null && id !== '' && typeof id === 'string' && id.length > 0
     );
-    
-    if (validPositionIds.length === 0) {
-      setCounts(new Map());
-      return;
-    }
+    return validIds.sort().join(',');
+  }, [positionIds]);
 
-    // Initial fetch of comment counts
-    const fetchCounts = async () => {
-      try {
-        // Fetch ALL comments (more efficient than passing thousands of IDs)
-        const { data, error } = await supabase
-          .from('position_comments')
-          .select('position_id');
+  const validPositionIds = useMemo(() => {
+    if (!positionIds || !Array.isArray(positionIds)) return [];
+    return positionIds.filter(
+      id => id != null && id !== '' && typeof id === 'string' && id.length > 0
+    );
+  }, [positionIds]);
 
-        if (error) {
-          console.error('Error fetching comment counts:', error);
-          setCounts(new Map());
-          return;
-        }
+  const { data: counts = new Map<string, number>() } = useQuery({
+    queryKey: ['position-comment-counts', positionIdsKey],
+    queryFn: async () => {
+      if (validPositionIds.length === 0) {
+        return new Map<string, number>();
+      }
 
-        // Count comments per position (filter client-side)
-        const countMap = new Map<string, number>();
-        if (data) {
-          data.forEach((comment) => {
-            // Only count if position is in our list
-            if (validPositionIds.includes(comment.position_id)) {
-              const currentCount = countMap.get(comment.position_id) || 0;
-              countMap.set(comment.position_id, currentCount + 1);
-            }
-          });
-        }
+      // Fetch ALL comments (more efficient than passing thousands of IDs)
+      const { data, error } = await supabase
+        .from('position_comments')
+        .select('position_id');
 
-        // Ensure all positions have a count (even if 0)
-        validPositionIds.forEach((id) => {
-          if (!countMap.has(id)) {
-            countMap.set(id, 0);
+      if (error) {
+        console.error('Error fetching comment counts:', error);
+        return new Map<string, number>();
+      }
+
+      // Count comments per position (filter client-side)
+      const countMap = new Map<string, number>();
+      if (data) {
+        data.forEach((comment) => {
+          // Only count if position is in our list
+          if (validPositionIds.includes(comment.position_id)) {
+            const currentCount = countMap.get(comment.position_id) || 0;
+            countMap.set(comment.position_id, currentCount + 1);
           }
         });
-
-        setCounts(countMap);
-      } catch (err) {
-        console.error('Exception fetching comment counts:', err);
-        setCounts(new Map());
       }
-    };
 
-    fetchCounts();
-
-    // Set up real-time subscription for comment changes
-    const channel = supabase
-      .channel('position-comments-count')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'position_comments',
-        },
-        (payload) => {
-          // Refetch counts when comments change
-          if (payload.eventType === 'INSERT' || payload.eventType === 'DELETE') {
-            fetchCounts();
-          }
+      // Ensure all positions have a count (even if 0)
+      validPositionIds.forEach((id) => {
+        if (!countMap.has(id)) {
+          countMap.set(id, 0);
         }
-      )
-      .subscribe();
+      });
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [positionIds.join(',')]);
+      return countMap;
+    },
+    enabled: validPositionIds.length > 0,
+    staleTime: 30000, // Cache for 30 seconds
+  });
+
+  // Realtime subscription is now handled by useRealtimeSubscriptions hook
+  // which invalidates the 'position-comment-counts' query key
 
   return counts;
 }
