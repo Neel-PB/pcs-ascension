@@ -20,13 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Lock } from "lucide-react";
 import { useDynamicRoles } from "@/hooks/useDynamicRoles";
 import type { UserWithProfile, UserRole } from "@/hooks/useUsers";
@@ -35,7 +29,7 @@ const userFormSchema = z.object({
   firstName: z.string().min(1, "First name is required").max(100),
   lastName: z.string().min(1, "Last name is required").max(100),
   email: z.string().email("Invalid email address").max(255),
-  role: z.string().min(1, "Role is required"),
+  roles: z.array(z.string()).min(1, "At least one role is required"),
   bio: z.string().max(500).optional(),
 });
 
@@ -65,7 +59,7 @@ export function UserFormSheet({
       firstName: "",
       lastName: "",
       email: "",
-      role: "labor_team",
+      roles: ["labor_team"],
       bio: "",
     },
   });
@@ -77,7 +71,7 @@ export function UserFormSheet({
         firstName: user.first_name || "",
         lastName: user.last_name || "",
         email: user.email || "",
-        role: user.role || "labor_team",
+        roles: user.roles.length > 0 ? user.roles : ["labor_team"],
         bio: user.bio || "",
       });
     } else {
@@ -85,7 +79,7 @@ export function UserFormSheet({
         firstName: "",
         lastName: "",
         email: "",
-        role: "labor_team",
+        roles: ["labor_team"],
         bio: "",
       });
     }
@@ -98,7 +92,7 @@ export function UserFormSheet({
         firstName: data.firstName,
         lastName: data.lastName,
         bio: data.bio,
-        role: data.role,
+        roles: data.roles,
       });
     } else {
       onSubmit({
@@ -106,7 +100,7 @@ export function UserFormSheet({
         firstName: data.firstName,
         lastName: data.lastName,
         bio: data.bio,
-        role: data.role,
+        role: data.roles[0], // For invite, use first role
       });
     }
   };
@@ -174,45 +168,58 @@ export function UserFormSheet({
 
             <FormField
               control={form.control}
-              name="role"
-              render={({ field }) => {
-                const selectedRole = manageableRoles.find(r => r.name === field.value);
-
-                return (
-                  <FormItem>
-                    <FormLabel>Role</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      disabled={rolesLoading}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a role" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {manageableRoles
-                          .filter((role) => role.name && role.name.trim() !== '')
-                          .map((role) => (
-                            <SelectItem key={role.id} value={role.name}>
-                              <div className="flex items-center gap-2">
-                                {role.is_system && <Lock className="h-3 w-3 text-muted-foreground" />}
-                                <span>{role.label}</span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                    {selectedRole?.description && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {selectedRole.description}
-                      </p>
-                    )}
-                    <FormMessage />
-                  </FormItem>
-                );
-              }}
+              name="roles"
+              render={() => (
+                <FormItem>
+                  <FormLabel>Roles</FormLabel>
+                  <div className="space-y-2 border rounded-md p-3 max-h-48 overflow-y-auto">
+                    {manageableRoles
+                      .filter((role) => role.name && role.name.trim() !== '')
+                      .map((role) => (
+                        <FormField
+                          key={role.id}
+                          control={form.control}
+                          name="roles"
+                          render={({ field }) => {
+                            return (
+                              <FormItem
+                                key={role.id}
+                                className="flex flex-row items-start space-x-3 space-y-0"
+                              >
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value?.includes(role.name)}
+                                    onCheckedChange={(checked) => {
+                                      const currentRoles = field.value || [];
+                                      if (checked) {
+                                        field.onChange([...currentRoles, role.name]);
+                                      } else {
+                                        field.onChange(
+                                          currentRoles.filter((r: string) => r !== role.name)
+                                        );
+                                      }
+                                    }}
+                                    disabled={rolesLoading}
+                                  />
+                                </FormControl>
+                                <div className="flex items-center gap-2 leading-none">
+                                  {role.is_system && <Lock className="h-3 w-3 text-muted-foreground" />}
+                                  <span className="text-sm font-medium">{role.label}</span>
+                                  {role.description && (
+                                    <span className="text-xs text-muted-foreground">
+                                      - {role.description}
+                                    </span>
+                                  )}
+                                </div>
+                              </FormItem>
+                            );
+                          }}
+                        />
+                      ))}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
 
             <FormField
