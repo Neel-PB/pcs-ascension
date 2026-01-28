@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { X, Lock, Loader2 } from "lucide-react";
@@ -117,13 +118,23 @@ export function FilterBar({
       ? getFacilitiesByMarket(selectedMarket)
       : allFacilities;  // No restrictions AND no market = show ALL facilities
 
+  // Get unique department names when no facility is selected (to avoid duplicates like "ICU" x14)
+  const uniqueDepartmentNames = useMemo(() => {
+    const names = new Set<string>();
+    allDepartments.forEach(d => names.add(d.department_name));
+    return Array.from(names).sort();
+  }, [allDepartments]);
+
   // For departments: use restricted if user has department restrictions
-  // Otherwise, if facility is selected cascade from facility, else show ALL departments  
+  // Otherwise, if facility is selected cascade from facility, else show unique names only
   const availableDepartments = hasRestrictionAt('department')
     ? restrictedOptions.availableDepartments
     : selectedFacility !== "all-facilities"
-      ? getDepartmentsByFacility(selectedFacility)
-      : allDepartments;  // No restrictions AND no facility = show ALL departments
+      ? getDepartmentsByFacility(selectedFacility)  // Filtered - show actual records
+      : uniqueDepartmentNames.map(name => ({        // All - show unique names only
+          department_id: name,
+          department_name: name
+        }));
 
   // Get available submarkets based on selected market
   const availableSubmarkets = getSubmarketsByMarket(selectedMarket);
@@ -283,7 +294,7 @@ export function FilterBar({
                       <SelectItem value="all-departments">All Departments</SelectItem>
                     )}
                     {availableDepartments.map(dept => (
-                      <SelectItem key={dept.department_id || dept.id} value={dept.department_id}>{dept.department_name}</SelectItem>
+                      <SelectItem key={dept.department_id} value={dept.department_id}>{dept.department_name}</SelectItem>
                     ))}
                   </>
                 )}
