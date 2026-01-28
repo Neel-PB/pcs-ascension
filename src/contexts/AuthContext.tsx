@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { User, Session } from "@supabase/supabase-js";
+import { QueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -9,7 +10,7 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ data?: any; error?: any }>;
   signIn: (email: string, password: string) => Promise<{ data?: any; error?: any }>;
-  signOut: () => Promise<{ error: any | null }>;
+  signOut: (queryClient?: QueryClient) => Promise<{ error: any | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -78,10 +79,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { data };
   }, []);
 
-  const signOut = useCallback(async () => {
+  const signOut = useCallback(async (queryClient?: QueryClient) => {
+    // Clear all queries first to prevent refetches after logout
+    if (queryClient) {
+      queryClient.clear();
+    }
+    
     const { error } = await supabase.auth.signOut();
     
-    if (error) {
+    // Don't show error toast for expected session-related errors during logout
+    if (error && !error.message?.includes('session')) {
       toast.error(error.message);
       return { error };
     }
