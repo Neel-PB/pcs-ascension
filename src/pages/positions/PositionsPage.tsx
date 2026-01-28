@@ -116,14 +116,15 @@ export default function PositionsPage() {
               <motion.div
                 layoutId="positionsTabIndicator"
                 className="absolute inset-y-1 bg-primary rounded-sm"
-                style={{
+                initial={false}
+                animate={{
                   left: `${(tabs.findIndex((t) => t.id === activeTab) / tabs.length) * 100}%`,
                   width: `${100 / tabs.length}%`,
                 }}
                 transition={{
                   type: "spring",
-                  stiffness: 300,
-                  damping: 30,
+                  stiffness: 500,
+                  damping: 35,
                 }}
               />
             </div>
