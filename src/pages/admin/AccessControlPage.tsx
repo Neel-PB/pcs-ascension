@@ -4,7 +4,7 @@ import { Plus, Grid3X3, List, LayoutPanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useDynamicRoles, type Role } from "@/hooks/useDynamicRoles";
+import { useDynamicRoles } from "@/hooks/useDynamicRoles";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
 import { RoleFormDialog } from "@/components/admin/RoleFormDialog";
@@ -12,6 +12,8 @@ import { PermissionFormDialog } from "@/components/admin/PermissionFormDialog";
 import { PermissionMatrix } from "@/components/admin/PermissionMatrix";
 import { RoleDetailView } from "@/components/admin/RoleDetailView";
 import { PermissionListView } from "@/components/admin/PermissionListView";
+import { CORE_ROLES } from "@/config/rbacConfig";
+import type { Role } from "@/types/rbac";
 import {
   Tooltip,
   TooltipContent,
@@ -39,13 +41,21 @@ export default function AccessControlPage() {
     categories,
     isLoading: permissionsLoading,
     createPermission,
+    corePermissions,
   } = usePermissions();
 
   const {
     isLoading: permissionMappingsLoading,
   } = useRolePermissions();
 
-  const isLoading = rolesLoading || permissionsLoading || permissionMappingsLoading;
+  // Core data (roles/permissions) is always available immediately
+  // Only show loading if we're waiting for permission mappings (small table)
+  const isExtensionsLoading = rolesLoading || permissionsLoading;
+  const isLoading = permissionMappingsLoading;
+
+  // Use core roles immediately while DB extensions load
+  const displayRoles = dynamicRoles.length > 0 ? dynamicRoles : CORE_ROLES;
+  const displayPermissions = permissions.length > 0 ? permissions : corePermissions;
 
   const handleRoleFormSubmit = async (data: { name: string; label: string; description?: string }) => {
     if (selectedRoleForEdit) {
@@ -62,6 +72,7 @@ export default function AccessControlPage() {
     setIsPermissionFormOpen(false);
   };
 
+  // Only show skeleton if critical data (permission mappings) is still loading
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -88,6 +99,9 @@ export default function AccessControlPage() {
           <h3 className="text-lg font-semibold">RBAC</h3>
           <p className="text-sm text-muted-foreground">
             Manage roles and permissions in a unified view. Toggle permissions for each role.
+            {isExtensionsLoading && (
+              <span className="ml-2 text-xs text-muted-foreground/70">(Loading extensions...)</span>
+            )}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -182,7 +196,7 @@ export default function AccessControlPage() {
         >
           {viewMode === "matrix" && (
             <PermissionMatrix
-              roles={dynamicRoles}
+              roles={displayRoles}
               onEditRole={(role) => {
                 setSelectedRoleForEdit(role);
                 setIsRoleFormOpen(true);
@@ -191,7 +205,7 @@ export default function AccessControlPage() {
           )}
           {viewMode === "detail" && (
             <RoleDetailView
-              roles={dynamicRoles}
+              roles={displayRoles}
               onEditRole={(role) => {
                 setSelectedRoleForEdit(role);
                 setIsRoleFormOpen(true);
@@ -199,7 +213,7 @@ export default function AccessControlPage() {
             />
           )}
           {viewMode === "list" && (
-            <PermissionListView permissions={permissions} />
+            <PermissionListView permissions={displayPermissions} />
           )}
         </motion.div>
       </AnimatePresence>

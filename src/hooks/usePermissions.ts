@@ -1,36 +1,25 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { CORE_PERMISSIONS, CORE_PERMISSIONS_BY_CATEGORY } from "@/config/rbacConfig";
+import type { Permission, PermissionFormData } from "@/types/rbac";
 
-export interface Permission {
-  id: string;
-  key: string;
-  label: string;
-  description: string | null;
-  category: string;
-  is_system: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface PermissionFormData {
-  key: string;
-  label: string;
-  description?: string;
-  category: string;
-}
+// Re-export types for backward compatibility
+export type { Permission, PermissionFormData };
 
 export function usePermissions() {
   const queryClient = useQueryClient();
 
-  // Fetch all permissions
+  // Fetch ONLY additional (non-core) permissions from database
   const {
-    data: permissions = [],
+    data: dbPermissions = [],
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["permissions"],
+    queryKey: ["permissions-extension"],
     queryFn: async () => {
+      const coreKeys = CORE_PERMISSIONS.map(p => p.key);
       const { data, error } = await supabase
         .from("permissions")
         .select("*")
@@ -38,14 +27,47 @@ export function usePermissions() {
         .order("key", { ascending: true });
 
       if (error) throw error;
-      return data as Permission[];
+      
+      // Filter out any permissions that match core permission keys
+      return (data as Permission[]).filter(p => !coreKeys.includes(p.key));
     },
+    staleTime: 10 * 60 * 1000, // 10 minutes - less frequent checks for extensions
   });
 
-  // Realtime subscription is now handled by useRealtimeSubscriptions hook
-  // No need for individual channel here
+  // Merge hardcoded core permissions with DB extensions
+  const permissions = useMemo(() => {
+    const permMap = new Map<string, Permission>();
+    
+    // Add core permissions first
+    CORE_PERMISSIONS.forEach(p => permMap.set(p.key, p));
+    
+    // DB permissions extend (add new ones)
+    dbPermissions.forEach(p => permMap.set(p.key, p));
+    
+    return Array.from(permMap.values());
+  }, [dbPermissions]);
 
-  // Create permission
+  // Recompute categories from merged data
+  const permissionsByCategory = useMemo(() => {
+    return permissions.reduce(
+      (acc, permission) => {
+        if (!acc[permission.category]) {
+          acc[permission.category] = [];
+        }
+        acc[permission.category].push(permission);
+        return acc;
+      },
+      {} as Record<string, Permission[]>
+    );
+  }, [permissions]);
+
+  // Get unique categories
+  const categories = useMemo(() => 
+    [...new Set(permissions.map((p) => p.category))],
+    [permissions]
+  );
+
+  // Create permission (only for non-core permissions)
   const createPermission = useMutation({
     mutationFn: async (data: PermissionFormData) => {
       const { data: result, error } = await supabase
@@ -64,7 +86,7 @@ export function usePermissions() {
       return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["permissions"] });
+      queryClient.invalidateQueries({ queryKey: ["permissions-extension"] });
       toast.success("Permission created successfully");
     },
     onError: (error: Error) => {
@@ -81,6 +103,12 @@ export function usePermissions() {
       id: string;
       data: Partial<PermissionFormData>;
     }) => {
+      // Don't allow updating core permissions
+      const isCore = CORE_PERMISSIONS.some(p => p.id === id);
+      if (isCore) {
+        throw new Error("Cannot update core system permissions");
+      }
+
       const { data: result, error } = await supabase
         .from("permissions")
         .update({
@@ -96,7 +124,7 @@ export function usePermissions() {
       return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["permissions"] });
+      queryClient.invalidateQueries({ queryKey: ["permissions-extension"] });
       toast.success("Permission updated successfully");
     },
     onError: (error: Error) => {
@@ -107,7 +135,13 @@ export function usePermissions() {
   // Delete permission
   const deletePermission = useMutation({
     mutationFn: async (id: string) => {
-      // First check if it's a system permission
+      // Don't allow deleting core permissions
+      const isCore = CORE_PERMISSIONS.some(p => p.id === id);
+      if (isCore) {
+        throw new Error("Cannot delete core system permissions");
+      }
+
+      // First check if it's a system permission in DB
       const { data: permission } = await supabase
         .from("permissions")
         .select("is_system")
@@ -126,28 +160,13 @@ export function usePermissions() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["permissions"] });
+      queryClient.invalidateQueries({ queryKey: ["permissions-extension"] });
       toast.success("Permission deleted successfully");
     },
     onError: (error: Error) => {
       toast.error(`Failed to delete permission: ${error.message}`);
     },
   });
-
-  // Get unique categories
-  const categories = [...new Set(permissions.map((p) => p.category))];
-
-  // Group permissions by category
-  const permissionsByCategory = permissions.reduce(
-    (acc, permission) => {
-      if (!acc[permission.category]) {
-        acc[permission.category] = [];
-      }
-      acc[permission.category].push(permission);
-      return acc;
-    },
-    {} as Record<string, Permission[]>
-  );
 
   return {
     permissions,
@@ -158,5 +177,8 @@ export function usePermissions() {
     createPermission,
     updatePermission,
     deletePermission,
+    // Export core data for immediate access without loading
+    corePermissions: CORE_PERMISSIONS,
+    corePermissionsByCategory: CORE_PERMISSIONS_BY_CATEGORY,
   };
 }
