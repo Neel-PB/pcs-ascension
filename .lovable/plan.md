@@ -1,107 +1,166 @@
 
+# Multi-Select with Chips for Roles and Organization Access
 
-# Enable Multi-Select Roles for New User Invitations
+## Overview
 
-## Problem Summary
-
-The user form already has multi-select checkboxes for roles, but when **inviting a new user**, only the first selected role is sent to the backend. The **edit user** flow already supports multiple roles correctly.
-
-## Current Behavior
-
-| Action | Roles Supported |
-|--------|-----------------|
-| Edit User | Multiple roles (works correctly) |
-| Invite New User | Only first role is used |
+Transform the User Form to use chip-based multi-select UI for both Roles and Organization Access sections. This will provide a cleaner, more intuitive interface.
 
 ## Changes Required
 
-### 1. Update UserFormSheet.tsx
+### 1. Create Reusable MultiSelectChips Component
 
-Change the new user submission to send all selected roles instead of just the first one.
+**New File:** `src/components/ui/multi-select-chips.tsx`
 
-**Current (line 106-113):**
-```typescript
-onSubmit({
-  email: data.email,
-  firstName: data.firstName,
-  lastName: data.lastName,
-  bio: data.bio,
-  role: data.roles[0], // Only first role
-});
+A reusable component that:
+- Shows selected items as removable chips
+- Provides a dropdown/popover with checkbox list to select items
+- Shows "X" button on each chip to remove
+- Compact display with wrap
+
+```tsx
+interface MultiSelectChipsProps {
+  label: string;
+  options: Array<{ value: string; label: string; description?: string }>;
+  selected: string[];
+  onChange: (selected: string[]) => void;
+  placeholder?: string;
+  searchable?: boolean;
+}
 ```
 
-**New:**
-```typescript
-onSubmit({
-  email: data.email,
-  firstName: data.firstName,
-  lastName: data.lastName,
-  bio: data.bio,
-  roles: data.roles, // All selected roles
-});
+### 2. Update UserFormSheet.tsx - Roles Section
+
+**Current:** Checkbox list with descriptions stacked vertically
+**New:** Multi-select with chips showing selected roles
+
+- Display selected roles as removable Badge chips
+- Click "Add Role" button opens popover with checkbox list
+- Each chip shows role label with X to remove
+- System roles marked with lock icon
+
+### 3. Update OrgAccessManager.tsx - Complete Redesign
+
+**Current Structure:**
+- Three collapsible sections (Markets, Facilities, Departments)
+- Checkbox lists inside each section
+
+**New Structure:**
+Four sections (adding Region), each with:
+- Label with icon
+- Chips showing selected items (removable)
+- "Add" button that opens a searchable popover
+- Each level is flat/independent (no hierarchy)
+
+```
+Region
+[chip: East] [chip: West] [+ Add Region]
+
+Market  
+[chip: Indiana] [chip: Michigan] [+ Add Market]
+
+Facility
+[chip: Hospital A] [chip: Hospital B] [+ Add Facility]
+
+Department
+[chip: ICU] [chip: ER] [+ Add Department]
 ```
 
-### 2. Update useUsers.ts - createUser Mutation
+### 4. Database Migration - Add Region Column
 
-Change the mutation to accept an array of roles.
+Add `region` column to `user_organization_access` table:
 
-**Current (lines 66-71):**
-```typescript
-mutationFn: async (userData: {
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: UserRole;  // Single role
-  bio?: string;
-})
+```sql
+ALTER TABLE user_organization_access 
+ADD COLUMN region text;
 ```
 
-**New:**
+### 5. Update useUserOrgAccess Hook
+
+Add region to the flat access structure:
+
 ```typescript
-mutationFn: async (userData: {
-  email: string;
-  firstName: string;
-  lastName: string;
-  roles: UserRole[];  // Array of roles
-  bio?: string;
-})
+interface OrgAccessFlat {
+  regions: string[];    // NEW
+  markets: string[];
+  facilities: Facility[];
+  departments: Department[];
+}
 ```
 
-### 3. Update invite-user Edge Function
+### 6. Update useOrgScopedFilters Hook
 
-Modify the edge function to insert multiple roles.
+Add region filtering logic for users with region restrictions.
 
-**Current (lines 71-82):**
-```typescript
-const { role } = await req.json();
-// ... single role insert
-const { error: roleError } = await supabaseAdmin
-  .from('user_roles')
-  .insert({ user_id: userData.user.id, role: role });
-```
+---
 
-**New:**
-```typescript
-const { roles } = await req.json(); // Accept array
-// ... multiple role insert
-const roleInserts = roles.map(role => ({
-  user_id: userData.user.id,
-  role: role,
-}));
-const { error: roleError } = await supabaseAdmin
-  .from('user_roles')
-  .insert(roleInserts);
-```
+## Files to Create
+
+| File | Purpose |
+|------|---------|
+| `src/components/ui/multi-select-chips.tsx` | Reusable multi-select with chips component |
 
 ## Files to Modify
 
 | File | Change |
 |------|--------|
-| `src/components/admin/UserFormSheet.tsx` | Send `roles` array instead of single `role` |
-| `src/hooks/useUsers.ts` | Accept `roles: UserRole[]` in createUser mutation |
-| `supabase/functions/invite-user/index.ts` | Insert multiple roles when inviting |
+| `src/components/admin/UserFormSheet.tsx` | Replace checkbox list with MultiSelectChips for roles |
+| `src/components/admin/OrgAccessManager.tsx` | Redesign with 4 chip sections (Region, Market, Facility, Department) |
+| `src/hooks/useUserOrgAccess.ts` | Add regions to flat structure |
+| `src/hooks/useOrgScopedFilters.ts` | Add region filtering logic |
 
-## Summary
+## Database Changes
 
-After this change, both new user invitations and user edits will support assigning multiple roles via the same multi-select checkbox UI.
+- Add `region` column to `user_organization_access` table
 
+---
+
+## UI Mockup
+
+### Roles Section (New)
+```
+Roles
+[Admin ×] [Labor Management ×]        [+ Add Role]
+```
+
+### Organization Access (New)
+```
+Organization Access
+
+Region
+[East ×] [West ×]                     [+ Add]
+
+Market
+[Indiana ×]                           [+ Add]
+
+Facility
+[Hospital A ×] [Hospital B ×]         [+ Add]
+
+Department
+(No restrictions)                     [+ Add]
+```
+
+---
+
+## Technical Details
+
+### MultiSelectChips Component Features
+
+1. **Chip Display:**
+   - Badge style chips with X button
+   - Truncate long names with tooltip
+   - Wrap to multiple lines if needed
+
+2. **Add Popover:**
+   - Search input for filtering long lists
+   - Checkbox list of available options
+   - Shows which items are already selected
+   - Close on click outside
+
+3. **Props:**
+   - `options`: Available items to select
+   - `selected`: Currently selected values
+   - `onChange`: Callback when selection changes
+   - `label`: Section label
+   - `icon`: Optional icon component
+   - `searchable`: Enable search for long lists (default true)
+   - `placeholder`: Text when nothing selected
