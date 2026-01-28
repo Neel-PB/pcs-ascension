@@ -35,11 +35,8 @@ export default function AuthPage() {
   const [lastName, setLastName] = useState("");
 
   // Redirect if already logged in
-  useEffect(() => {
-    if (user) {
-      navigate("/");
-    }
-  }, [user, navigate]);
+  // Remove auto-redirect useEffect to prevent redirect loops during logout
+  // ShellLayout already handles redirecting authenticated users from protected routes
 
   if (user) {
     return null;

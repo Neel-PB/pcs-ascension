@@ -13,7 +13,7 @@ import {
 import { ScreenshotCapture } from './ScreenshotCapture';
 import { useFeedbackStore } from '@/stores/useFeedbackStore';
 import { useFeedback, uploadScreenshot, CreateFeedbackInput } from '@/hooks/useFeedback';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { Loader2, Send } from 'lucide-react';
 
 interface FeedbackFormProps {
@@ -23,6 +23,7 @@ interface FeedbackFormProps {
 export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onSuccess }) => {
   const { capturedScreenshot, screenshotPreviewUrl, setScreenshot, clearScreenshot } = useFeedbackStore();
   const { createFeedback } = useFeedback();
+  const { user } = useAuth();
   
   const [title, setTitle] = useState('');
   const [type, setType] = useState<CreateFeedbackInput['type']>('bug');
@@ -43,11 +44,8 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onSuccess }) => {
       let screenshotUrl: string | null = null;
 
       // Upload screenshot if exists
-      if (capturedScreenshot) {
-        const { data: userData } = await supabase.auth.getUser();
-        if (userData.user) {
-          screenshotUrl = await uploadScreenshot(capturedScreenshot, userData.user.id);
-        }
+      if (capturedScreenshot && user) {
+        screenshotUrl = await uploadScreenshot(capturedScreenshot, user.id);
       }
 
       // Get browser info
