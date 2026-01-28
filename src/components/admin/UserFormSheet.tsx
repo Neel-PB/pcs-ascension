@@ -92,8 +92,13 @@ export function UserFormSheet({
     }
   }, [user, form]);
 
-  const handleSubmit = (data: UserFormValues) => {
+  const handleSubmit = async (data: UserFormValues) => {
     if (isEditMode) {
+      // Trigger access scope save if available
+      if ((window as any).__accessScopeSave) {
+        await (window as any).__accessScopeSave();
+      }
+      
       onSubmit({
         userId: user.id,
         firstName: data.firstName,
