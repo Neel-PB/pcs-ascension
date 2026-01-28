@@ -72,15 +72,17 @@ export default function DemoLogin() {
                 variant="outline"
                 className="h-auto flex-col items-start p-3 gap-1 w-full overflow-hidden"
               >
-                <div className="flex items-center gap-2 w-full">
+                <div className="flex items-start gap-2 w-full min-w-0">
                   {isLoading ? (
                     <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
                   ) : (
                     <Icon className="h-4 w-4 shrink-0" />
                   )}
-                  <span className="font-medium truncate">{metadata.label}</span>
+                  <span className="font-medium whitespace-normal break-words leading-snug">
+                    {metadata.label}
+                  </span>
                 </div>
-                <span className="text-xs text-muted-foreground text-left break-words w-full">
+                <span className="text-xs text-muted-foreground text-left break-words whitespace-normal w-full">
                   {metadata.description}
                 </span>
               </Button>
