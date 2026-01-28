@@ -107,11 +107,14 @@ export function UserManagementTable({
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
-                    {user.roles.map((role) => (
+                    {(user.roles || []).map((role) => (
                       <Badge key={role} variant={getRoleBadgeVariant(role)}>
                         {getRoleDisplayName(role)}
                       </Badge>
                     ))}
+                    {(!user.roles || user.roles.length === 0) && (
+                      <Badge variant="secondary">No Role</Badge>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
