@@ -49,13 +49,24 @@ export function FilterBar({
     getFacilitiesByMarket, 
     getDepartmentsByFacility,
     getSubmarketsByMarket,
+    isLoading: filterDataLoading,
   } = useFilterData();
 
   const isCompact = useIsCompactScreen();
-  const { getFilterPermissions, getSubfilterPermissions } = useRBAC();
+  const { getFilterPermissions, getSubfilterPermissions, loading: rbacLoading } = useRBAC();
   
-  const filterPermissions = getFilterPermissions();
-  const subfilterPermissions = getSubfilterPermissions();
+  // Combined loading state
+  const isLoading = rbacLoading || filterDataLoading;
+  
+  // During loading, show all filters to prevent layout shift
+  // Once loaded, respect actual permissions
+  const filterPermissions = rbacLoading 
+    ? { region: true, market: true, facility: true, department: true }
+    : getFilterPermissions();
+    
+  const subfilterPermissions = rbacLoading
+    ? { submarket: true, level2: true, pstat: true }
+    : getSubfilterPermissions();
 
   // PSTAT Options
   const pstatOptions = [
@@ -108,7 +119,7 @@ export function FilterBar({
       <div className={`flex flex-wrap xl:flex-nowrap gap-2 xl:gap-3 items-center ${className}`}>
         {/* Region Filter - only show if user has permission */}
         {filterPermissions.region && (
-          <Select value={selectedRegion} onValueChange={onRegionChange}>
+          <Select value={selectedRegion} onValueChange={onRegionChange} disabled={isLoading}>
             <SelectTrigger className={`${isCompact ? 'min-w-[120px] flex-shrink' : 'w-[150px]'} bg-background border-border`}>
               <SelectValue placeholder="Select region" />
             </SelectTrigger>
@@ -123,7 +134,7 @@ export function FilterBar({
 
         {/* Market Filter - only show if user has permission */}
         {filterPermissions.market && (
-          <Select value={selectedMarket} onValueChange={onMarketChange}>
+          <Select value={selectedMarket} onValueChange={onMarketChange} disabled={isLoading}>
             <SelectTrigger className={`${isCompact ? 'min-w-[120px] flex-shrink' : 'w-[150px]'} bg-background border-border`}>
               <SelectValue placeholder="Select market" />
             </SelectTrigger>
@@ -141,7 +152,7 @@ export function FilterBar({
           <Select 
             value={selectedFacility} 
             onValueChange={onFacilityChange}
-            disabled={selectedMarket === "all-markets"}
+            disabled={isLoading || selectedMarket === "all-markets"}
           >
             <SelectTrigger className={`${isCompact ? 'min-w-[160px] flex-shrink' : 'w-[250px]'} bg-background border-border`}>
               <SelectValue placeholder="Select facility" />
@@ -160,7 +171,7 @@ export function FilterBar({
           <Select 
             value={selectedDepartment} 
             onValueChange={onDepartmentChange}
-            disabled={selectedFacility === "all-facilities"}
+            disabled={isLoading || selectedFacility === "all-facilities"}
           >
             <SelectTrigger className={`${isCompact ? 'min-w-[140px] flex-shrink' : 'w-[180px]'} bg-background border-border`}>
               <SelectValue placeholder="Select department" />
@@ -215,7 +226,7 @@ export function FilterBar({
               <Select 
                 value={selectedSubmarket} 
                 onValueChange={onSubmarketChange}
-                disabled={selectedMarket === "all-markets" || availableSubmarkets.length === 0}
+                disabled={isLoading || selectedMarket === "all-markets" || availableSubmarkets.length === 0}
               >
                 <SelectTrigger className="w-[150px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                   <SelectValue placeholder="Submarket" />
@@ -234,6 +245,7 @@ export function FilterBar({
               <Select 
                 value={selectedLevel2} 
                 onValueChange={onLevel2Change}
+                disabled={isLoading}
               >
                 <SelectTrigger className="w-[200px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
                   <SelectValue placeholder="Level 2" />
@@ -252,6 +264,7 @@ export function FilterBar({
               <Select 
                 value={selectedPstat} 
                 onValueChange={onPstatChange}
+                disabled={isLoading}
               >
                 <SelectTrigger className="w-[200px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
                   <SelectValue placeholder="PSTAT" />
