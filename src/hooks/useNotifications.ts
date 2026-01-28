@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuthContext } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Notification {
   id: string;
@@ -15,7 +15,7 @@ interface Notification {
 
 export function useNotifications() {
   const queryClient = useQueryClient();
-  const { user } = useAuthContext();
+  const { user } = useAuth();
 
   const query = useQuery({
     queryKey: ["notifications"],
@@ -62,7 +62,7 @@ export function useMarkNotificationRead() {
 
 export function useMarkAllNotificationsRead() {
   const queryClient = useQueryClient();
-  const { user } = useAuthContext();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async () => {
