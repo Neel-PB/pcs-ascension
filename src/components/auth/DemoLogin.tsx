@@ -70,17 +70,17 @@ export default function DemoLogin() {
                 onClick={() => handleDemoLogin(role)}
                 disabled={loadingRole !== null}
                 variant="outline"
-                className="h-auto flex-col items-start p-3 gap-1"
+                className="h-auto flex-col items-start p-3 gap-1 w-full overflow-hidden"
               >
                 <div className="flex items-center gap-2 w-full">
                   {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
                   ) : (
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-4 w-4 shrink-0" />
                   )}
-                  <span className="font-medium">{metadata.label}</span>
+                  <span className="font-medium truncate">{metadata.label}</span>
                 </div>
-                <span className="text-xs text-muted-foreground text-left line-clamp-2">
+                <span className="text-xs text-muted-foreground text-left break-words w-full line-clamp-2">
                   {metadata.description}
                 </span>
               </Button>
