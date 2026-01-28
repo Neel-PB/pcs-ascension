@@ -1,16 +1,16 @@
 import { useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useUserOrgAccess, type OrgAccessFlat } from "./useUserOrgAccess";
+import { useUserAccessScope, type AccessScopeFlat } from "./useUserOrgAccess";
 import { useFilterData, type Facility, type Department } from "./useFilterData";
 
-export interface OrgScopedFilterDefaults {
+export interface AccessScopeFilterDefaults {
   region: string;
   market: string;
   facility: string;
   department: string;
 }
 
-export interface OrgScopedFilterOptions {
+export interface AccessScopeFilterOptions {
   availableRegions: string[];
   availableMarkets: string[];
   availableFacilities: Facility[];
@@ -24,17 +24,17 @@ export interface LockedFilters {
   department: boolean;
 }
 
-export interface OrgScopedFiltersResult {
-  // Default filter values based on org access
-  defaultFilters: OrgScopedFilterDefaults;
+export interface AccessScopedFiltersResult {
+  // Default filter values based on access scope
+  defaultFilters: AccessScopeFilterDefaults;
   
-  // Available options (filtered by org access if applicable)
-  restrictedOptions: OrgScopedFilterOptions;
+  // Available options (filtered by access scope if applicable)
+  restrictedOptions: AccessScopeFilterOptions;
   
   // Which filters are locked (single assignment means locked)
   lockedFilters: LockedFilters;
   
-  // Whether user has ANY org access restrictions
+  // Whether user has ANY access scope restrictions
   hasRestrictions: boolean;
   
   // Per-level restriction check
@@ -47,14 +47,19 @@ export interface OrgScopedFiltersResult {
   shouldShowAllOption: (filterType: 'region' | 'market' | 'facility' | 'department') => boolean;
 }
 
-export function useOrgScopedFilters(): OrgScopedFiltersResult {
+// Backward compatibility types
+export type OrgScopedFilterDefaults = AccessScopeFilterDefaults;
+export type OrgScopedFilterOptions = AccessScopeFilterOptions;
+export type OrgScopedFiltersResult = AccessScopedFiltersResult;
+
+export function useOrgScopedFilters(): AccessScopedFiltersResult {
   const { user } = useAuth();
-  const { orgAccess, isLoading: orgLoading, hasUnrestrictedAccess } = useUserOrgAccess(user?.id);
+  const { accessScope, isLoading: scopeLoading, hasUnrestrictedAccess } = useUserAccessScope(user?.id);
   const { regions, markets, facilities, departments, isLoading: filterLoading } = useFilterData();
   
   const result = useMemo(() => {
     // Users with full access get no restrictions
-    if (hasUnrestrictedAccess || !orgAccess) {
+    if (hasUnrestrictedAccess || !accessScope) {
       return {
         defaultFilters: {
           region: "all-regions",
@@ -79,30 +84,30 @@ export function useOrgScopedFilters(): OrgScopedFiltersResult {
       };
     }
     
-    // Build available options from flat org access
+    // Build available options from flat access scope
     // Each level is independent - only filter if there ARE restrictions at that level
     
     // Regions - now fully supported in DB
-    const availableRegions = orgAccess.hasRegionRestriction 
-      ? orgAccess.regions 
+    const availableRegions = accessScope.hasRegionRestriction 
+      ? accessScope.regions 
       : regions.map(r => r.region);
     
     // Markets
-    const availableMarkets = orgAccess.hasMarketRestriction
-      ? orgAccess.markets
+    const availableMarkets = accessScope.hasMarketRestriction
+      ? accessScope.markets
       : markets.map(m => m.market);
     
     // Facilities - map to full Facility objects from filter data
-    const availableFacilities = orgAccess.hasFacilityRestriction
+    const availableFacilities = accessScope.hasFacilityRestriction
       ? facilities.filter(f => 
-          orgAccess.facilities.some(of => of.facilityId === f.facility_id)
+          accessScope.facilities.some(of => of.facilityId === f.facility_id)
         )
       : facilities;
     
     // Departments - map to full Department objects from filter data
-    const availableDepartments = orgAccess.hasDepartmentRestriction
+    const availableDepartments = accessScope.hasDepartmentRestriction
       ? departments.filter(d =>
-          orgAccess.departments.some(od => od.departmentId === d.department_id)
+          accessScope.departments.some(od => od.departmentId === d.department_id)
         )
       : departments;
     
@@ -113,23 +118,23 @@ export function useOrgScopedFilters(): OrgScopedFiltersResult {
     const defaultDepartment = availableDepartments.length === 1 ? availableDepartments[0].department_id : "all-departments";
     
     // Lock filters if user has exactly ONE option (no choice to make)
-    const lockedRegion = orgAccess.hasRegionRestriction && availableRegions.length === 1;
-    const lockedMarket = orgAccess.hasMarketRestriction && availableMarkets.length === 1;
-    const lockedFacility = orgAccess.hasFacilityRestriction && availableFacilities.length === 1;
-    const lockedDepartment = orgAccess.hasDepartmentRestriction && availableDepartments.length === 1;
+    const lockedRegion = accessScope.hasRegionRestriction && availableRegions.length === 1;
+    const lockedMarket = accessScope.hasMarketRestriction && availableMarkets.length === 1;
+    const lockedFacility = accessScope.hasFacilityRestriction && availableFacilities.length === 1;
+    const lockedDepartment = accessScope.hasDepartmentRestriction && availableDepartments.length === 1;
     
     // Check if there are any restrictions at all
-    const hasRestrictions = orgAccess.hasRegionRestriction || 
-                           orgAccess.hasMarketRestriction || 
-                           orgAccess.hasFacilityRestriction || 
-                           orgAccess.hasDepartmentRestriction;
+    const hasRestrictions = accessScope.hasRegionRestriction || 
+                           accessScope.hasMarketRestriction || 
+                           accessScope.hasFacilityRestriction || 
+                           accessScope.hasDepartmentRestriction;
     
     const hasRestrictionAt = (level: 'region' | 'market' | 'facility' | 'department'): boolean => {
       switch (level) {
-        case 'region': return orgAccess.hasRegionRestriction;
-        case 'market': return orgAccess.hasMarketRestriction;
-        case 'facility': return orgAccess.hasFacilityRestriction;
-        case 'department': return orgAccess.hasDepartmentRestriction;
+        case 'region': return accessScope.hasRegionRestriction;
+        case 'market': return accessScope.hasMarketRestriction;
+        case 'facility': return accessScope.hasFacilityRestriction;
+        case 'department': return accessScope.hasDepartmentRestriction;
         default: return false;
       }
     };
@@ -156,7 +161,7 @@ export function useOrgScopedFilters(): OrgScopedFiltersResult {
       hasRestrictions,
       hasRestrictionAt,
     };
-  }, [orgAccess, hasUnrestrictedAccess, regions, markets, facilities, departments]);
+  }, [accessScope, hasUnrestrictedAccess, regions, markets, facilities, departments]);
   
   const shouldShowAllOption = (filterType: 'region' | 'market' | 'facility' | 'department'): boolean => {
     // Don't show "All X" if user has restrictions at this level AND only has 1 option
@@ -173,7 +178,7 @@ export function useOrgScopedFilters(): OrgScopedFiltersResult {
   
   return {
     ...result,
-    isLoading: orgLoading || filterLoading,
+    isLoading: scopeLoading || filterLoading,
     shouldShowAllOption,
   };
 }
