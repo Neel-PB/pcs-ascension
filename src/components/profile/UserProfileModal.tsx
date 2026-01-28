@@ -4,6 +4,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useRBAC } from "@/hooks/useRBAC";
 import { Badge } from "@/components/ui/badge";
+import { ROLE_METADATA, type AppRole } from "@/config/rbacConfig";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -110,7 +111,7 @@ export function UserProfileModal({ open, onOpenChange, userId }: UserProfileModa
                     key={role}
                     variant={role === 'admin' ? 'default' : 'secondary'}
                   >
-                    {role === 'admin' ? 'Admin' : 'Labor Team'}
+                    {ROLE_METADATA[role as AppRole]?.label || role}
                   </Badge>
                 ))
               ) : (
