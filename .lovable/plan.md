@@ -1,121 +1,135 @@
 
-
-# Fix UI "Scramble" on Positions Page Load
+# Standardize Loading Patterns Across Application
 
 ## Problem
 
-When navigating to the Positions module, the UI appears to "scramble" because:
+Multiple pages still have staggered entrance animations on static elements (tabs, page wrappers) causing a "scramble" effect when navigating:
 
-1. **RBAC permissions load asynchronously** - FilterBar conditionally renders filters based on `filterPermissions.region`, `filterPermissions.market`, etc. Until the RBAC hook loads, these may be `false`, causing filters to initially not render, then suddenly appear.
-
-2. **Filter data loads asynchronously** - The `useFilterData()` hook fetches regions, markets, facilities, departments. Until loaded, dropdown options are empty arrays, which may cause visual differences.
-
-3. **Layout shifts** - The conditional rendering `{filterPermissions.region && <Select>...}` causes elements to appear/disappear as permissions load.
+1. **AnalyticsRegion.tsx** - motion.div page wrapper + motion.button tabs + AnimatePresence content
+2. **StaffingSummary.tsx** - motion.button tabs with staggered delays + AnimatePresence content
+3. **AdminPage.tsx** - motion.button tabs with staggered delays + AnimatePresence content
+4. **ReportsRegion.tsx** - motion.div page wrapper + motion.button tabs + AnimatePresence content
+5. **SupportPage.tsx** - motion.div page wrapper + motion.button tabs + AnimatePresence content
 
 ## Solution
 
-Make filters render immediately with a consistent layout, regardless of loading state:
+Apply the same pattern already working in PositionsPage.tsx to all pages:
 
-1. **Always render filter containers** - Use opacity/disabled states instead of conditional rendering
-2. **Default to showing all filters during loading** - Prevents layout shift
-3. **Show skeleton/disabled state while RBAC loads** - Maintains consistent UI
+1. **Static elements render instantly** - tabs, filters, page structure
+2. **Keep tab indicator animation** - the sliding highlight when switching tabs
+3. **Remove content wrapper animation** - AnimatePresence/motion.div around content
+4. **Content components handle their own loading** - using LogoLoader internally
 
-## Changes
+## Changes by File
 
-### File: `src/components/staffing/FilterBar.tsx`
+### 1. `src/pages/analytics/AnalyticsRegion.tsx`
 
-**Change 1: Destructure loading state from hooks**
+| Line | Element | Change |
+|------|---------|--------|
+| 24-28 | Page wrapper | Replace `motion.div` with regular `div`, remove entrance animation |
+| 34-50 | Tab buttons | Replace `motion.button` with `button`, remove initial/animate/transition |
+| 70-88 | Content wrapper | Remove `AnimatePresence` and `motion.div`, use plain `div` |
 
-```typescript
-const { 
-  regions, 
-  markets,
-  // ...
-  isLoading: filterDataLoading 
-} = useFilterData();
+### 2. `src/pages/staffing/StaffingSummary.tsx`
 
-const { getFilterPermissions, getSubfilterPermissions, loading: rbacLoading } = useRBAC();
-```
+| Line | Element | Change |
+|------|---------|--------|
+| 498-514 | Tab buttons | Replace `motion.button` with `button`, remove initial/animate/transition |
+| 534-541 | Content wrapper | Remove `AnimatePresence` and `motion.div`, use plain `div` |
 
-**Change 2: Determine if still loading**
+### 3. `src/pages/admin/AdminPage.tsx`
 
-```typescript
-const isLoading = rbacLoading || filterDataLoading;
-```
+| Line | Element | Change |
+|------|---------|--------|
+| 81-98 | Tab buttons | Replace `motion.button` with `button`, remove initial/animate/transition |
+| 118-125 | Content wrapper | Remove `AnimatePresence` and `motion.div`, use plain `div` |
 
-**Change 3: Default permissions during loading**
+### 4. `src/pages/reports/ReportsRegion.tsx`
 
-To prevent layout shifts, default to showing all filters during loading:
+| Line | Element | Change |
+|------|---------|--------|
+| 38-43 | Page wrapper | Replace `motion.div` with regular `div`, remove entrance animation |
+| 48-64 | Tab buttons | Replace `motion.button` with `button`, remove initial/animate/transition |
+| 84-91 | Content wrapper | Remove `AnimatePresence` and `motion.div`, use plain `div` |
 
-```typescript
-// During loading, show all filters to prevent layout shift
-// Once loaded, respect actual permissions
-const filterPermissions = rbacLoading 
-  ? { region: true, market: true, facility: true, department: true }
-  : getFilterPermissions();
+### 5. `src/pages/support/SupportPage.tsx`
 
-const subfilterPermissions = rbacLoading
-  ? { submarket: true, level2: true, pstat: true }
-  : getSubfilterPermissions();
-```
+| Line | Element | Change |
+|------|---------|--------|
+| 130-135 | Page wrapper | Replace `motion.div` with regular `div`, remove entrance animation |
+| 164-180 | Tab buttons | Replace `motion.button` with `button`, remove initial/animate/transition |
+| 200-207 | Content wrapper | Remove `AnimatePresence` and `motion.div`, use plain `div` |
 
-**Change 4: Disable filters while loading**
+## What Stays vs What Gets Removed
 
-Add disabled state to all Select components when loading:
+| Element | Description | Keep/Remove |
+|---------|-------------|-------------|
+| Page wrapper animation | Fade-in on page load | Remove |
+| Tab button entrance | Staggered fade-in | Remove |
+| Tab indicator slide | Sliding highlight on tab switch | Keep |
+| Content wrapper animation | Fade on tab switch | Remove |
+| Content internal loaders | LogoLoader inside components | Keep (existing pattern) |
 
+## Before/After Examples
+
+**Tab Button - Before:**
 ```tsx
-<Select 
-  value={selectedRegion} 
-  onValueChange={onRegionChange}
-  disabled={isLoading}  // Add this
+<motion.button
+  key={tab.id}
+  onClick={() => setActiveTab(tab.id)}
+  whileHover={{ scale: 1.02 }}
+  whileTap={{ scale: 0.98 }}
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: index * 0.1 }}
+  style={{ flex: 1 }}
 >
 ```
 
-This ensures:
-- Filters always render in their expected positions (no layout shift)
-- Filters are disabled (grayed out) until data loads
-- Once loaded, filters respect actual RBAC permissions
-- If a user doesn't have permission for a filter, it gracefully hides after load (minimal visual impact since page is already stable)
-
-### Alternative Approach (Simpler)
-
-If we want to completely hide the loading complexity:
-
-**Option B: Don't conditionally render filters at all during load**
-
-Keep filters visible but disabled until fully loaded:
-
+**Tab Button - After:**
 ```tsx
-// Always render all main filters
-<Select 
-  value={selectedRegion} 
-  onValueChange={onRegionChange}
-  disabled={isLoading || !filterPermissions.region}
+<button
+  key={tab.id}
+  onClick={() => setActiveTab(tab.id)}
+  className="... hover:scale-[1.02] active:scale-[0.98]"
+  style={{ flex: 1 }}
 >
 ```
 
-This is simpler but means users without permission briefly see disabled filters before they hide.
+**Content Wrapper - Before:**
+```tsx
+<AnimatePresence mode="wait">
+  <motion.div
+    key={activeTab}
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -10 }}
+    transition={{ duration: 0.2 }}
+  >
+    {/* content */}
+  </motion.div>
+</AnimatePresence>
+```
 
-## Recommended Approach
+**Content Wrapper - After:**
+```tsx
+<div>
+  {/* content - each tab handles its own loading state */}
+</div>
+```
 
-I recommend **Change 3 + Change 4** (default permissions during loading, then respect actual permissions). This:
+## Expected Result
 
-- Prevents any layout shift on initial load
-- Shows all filters immediately in a disabled state
-- Once RBAC loads, filters that user doesn't have permission for will hide
-- The hide happens after page is stable, so it's less jarring
+- All pages load with tabs and filters instantly visible
+- No staggered animation when navigating to any page
+- Tab switching still has smooth indicator animation
+- Data-dependent content shows LogoLoader while fetching
+- Consistent experience across Staffing, Positions, Analytics, Admin, Reports, and Support pages
 
 ## Files to Modify
 
-| File | Change |
-|------|--------|
-| `src/components/staffing/FilterBar.tsx` | Add loading state handling, default permissions during load |
-
-## Visual Result
-
-| Stage | Before | After |
-|-------|--------|-------|
-| Initial render | Filters missing, then pop in | All filters visible (disabled) |
-| RBAC loaded | Filters appear causing shift | Filters enable, unpermitted ones hide |
-| Filter data loaded | Options appear in dropdowns | Options appear in dropdowns |
-
+1. `src/pages/analytics/AnalyticsRegion.tsx`
+2. `src/pages/staffing/StaffingSummary.tsx`
+3. `src/pages/admin/AdminPage.tsx`
+4. `src/pages/reports/ReportsRegion.tsx`
+5. `src/pages/support/SupportPage.tsx`
