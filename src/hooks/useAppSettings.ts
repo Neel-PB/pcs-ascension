@@ -16,34 +16,14 @@ const DEFAULT_UI_SETTINGS: UISettings = {
   showFeedbackNavigation: true,
 };
 
-// Separate hook for realtime subscription - call once at App level
+// NOTE: Realtime subscription for UI settings is now handled by 
+// useRealtimeSubscriptions hook in a consolidated channel to reduce WebSocket overhead.
+// This deprecated hook is kept for reference but should not be used.
+/**
+ * @deprecated Use useRealtimeSubscriptions() from src/hooks/useRealtimeSubscriptions.ts instead
+ */
 export function useUISettingsRealtime() {
-  const queryClient = useQueryClient();
-
-  useEffect(() => {
-    const channel = supabase
-      .channel('ui-settings-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'app_settings',
-          filter: 'setting_key=eq.ui_settings',
-        },
-        (payload) => {
-          const newSettings = payload.new?.setting_value as unknown as UISettings;
-          if (newSettings) {
-            queryClient.setQueryData(['app-settings', 'ui_settings'], newSettings);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
+  // No-op: Realtime is now managed by consolidated subscription hook
 }
 
 export function useUISettings() {
