@@ -1,208 +1,175 @@
 
-# Fix Role-Based Filter Restrictions
+# Fix Filter Bar Enabling and Organization Access Logic
 
 ## Problem Summary
 
-Directors and Managers have their visible filters disabled because of cascading dependencies:
+Currently, filters are **disabled** when parent filters aren't selected:
+- Facility filter is disabled when Market = "all-markets"
+- Department filter is disabled when Facility = "all-facilities"
 
-| Role | Filter Permissions | Current Issue |
-|------|-------------------|---------------|
-| Director | Facility, Department | Facility disabled (needs Market selected first, but no Market permission) |
-| Manager | Department only | Department disabled (needs Facility selected first, but no Facility permission) |
+This breaks for Directors/Managers who don't have access to parent filters. They see disabled dropdowns that can't be used.
 
-The filter cascade logic requires parent selections, but restricted roles can't access those parent filters.
-
-## Solution Overview
-
-Implement organization-level access scoping that pre-populates filter values for restricted users based on their assigned locations.
-
----
-
-## Part 1: Admin UI for Organization Access Assignment
-
-Add a section in the User Form (Admin > Users > Edit) to assign specific locations to users:
-
-- Market assignment (for CNO-level users)
-- Facility assignment (for Director-level users)  
-- Department assignment (for Manager-level users)
-
-The UI will show a cascading selector where admins can pick:
-1. Market (optional)
-2. Facility (dependent on market)
-3. Department (dependent on facility)
-
-Multiple assignments can be added per user.
-
-### Files to Create/Modify
-
-| File | Change |
-|------|--------|
-| `src/components/admin/UserFormSheet.tsx` | Add Organization Access section with multi-level selector |
-| `src/components/admin/OrgAccessManager.tsx` | New component for managing user organization assignments |
+**What you actually want:**
+1. All visible filters should be **ENABLED by default** for all users
+2. Organization access should be **flat, not hierarchical** - users can be assigned to any combination of regions, markets, facilities, or departments
+3. If user has no org access → show all options (no restrictions)
+4. If user has org access → only show their assigned items in the dropdown (but filter remains enabled)
 
 ---
 
-## Part 2: Auto-Populate Filters for Restricted Users
+## Changes Required
 
-When a user with restricted filter permissions loads the page:
+### 1. Remove Filter Cascade Disable Logic
 
-1. Fetch their `user_organization_access` records
-2. If they have a single assigned location, auto-select those filter values
-3. If they have multiple locations, show a filtered dropdown with only their allowed options
-4. If they have no assignments, show empty state prompting admin to configure access
+**File:** `src/components/staffing/FilterBar.tsx`
 
-### Filter Pre-Population Logic
-
-```text
-+------------------+----------------------------------------+
-| Role             | Auto-Population Behavior               |
-+------------------+----------------------------------------+
-| Director         | Pre-select their assigned facility     |
-|                  | Show only departments at that facility |
-+------------------+----------------------------------------+
-| Manager          | Pre-select their assigned facility     |
-|                  | Pre-select their assigned department   |
-+------------------+----------------------------------------+
-| CNO              | Pre-select their assigned market       |
-|                  | Show only facilities in that market    |
-+------------------+----------------------------------------+
+Current problematic code (lines 124-134):
+```tsx
+// This logic DISABLES filters - we need to REMOVE it
+const isFacilityDisabled = hasRestrictions 
+  ? lockedFilters.facility 
+  : selectedMarket === "all-markets";
+  
+const isDepartmentDisabled = hasRestrictions
+  ? lockedFilters.department
+  : selectedFacility === "all-facilities";
 ```
 
-### Files to Modify
+**Change to:** Only disable if user has a single assigned option (locked):
+```tsx
+// Only lock when user has exactly ONE option (no choice to make)
+const isFacilityDisabled = lockedFilters.facility;
+const isDepartmentDisabled = lockedFilters.department;
+```
 
-| File | Change |
-|------|--------|
-| `src/hooks/useUserOrgAccess.ts` | Add method to get default filter values |
-| `src/hooks/useFilterData.ts` | Add filtering based on org access restrictions |
-| `src/pages/staffing/StaffingSummary.tsx` | Initialize filters from user's org access |
-| `src/pages/positions/PositionsPage.tsx` | Initialize filters from user's org access |
-| `src/components/staffing/FilterBar.tsx` | Handle restricted filter options |
+### 2. Update Organization Access to Flat Structure
 
----
+**File:** `src/hooks/useUserOrgAccess.ts`
 
-## Part 3: Restrict Filter Options
-
-For users with org access restrictions:
-
-1. Hide "All Markets/Facilities/Departments" options
-2. Only show locations they have access to
-3. Auto-select if they only have one option
-4. Lock (disable) filters if user has single assignment
-
-### Example: Director with Single Facility
-
-- Market filter: Hidden (no permission)
-- Facility filter: Shows assigned facility, locked
-- Department filter: Shows only departments at their facility
-
-### Example: Director with Multiple Facilities
-
-- Market filter: Hidden (no permission)
-- Facility filter: Dropdown with only their assigned facilities
-- Department filter: Cascades based on selected facility
-
----
-
-## Part 4: Create Custom Hook for Org-Scoped Filters
-
-Create a new hook that combines RBAC permissions with org access:
-
-### New File: `src/hooks/useOrgScopedFilters.ts`
-
+Change the data structure from hierarchical (market → facility → department) to flat:
 ```typescript
-// Combines filter permissions + org access restrictions
-function useOrgScopedFilters() {
-  const { getFilterPermissions } = useRBAC();
-  const { orgAccess } = useUserOrgAccess(userId);
-  
-  return {
-    // Initial values based on org access
-    defaultFilters: { ... },
-    
-    // Available options (filtered by org access)
-    availableMarkets: [...],
-    availableFacilities: [...],
-    availableDepartments: [...],
-    
-    // Which filters are locked (single assignment)
-    lockedFilters: { market: false, facility: true, department: false },
-  };
+interface OrgAccessFlat {
+  regions: string[];
+  markets: string[];
+  facilityIds: string[];
+  departmentIds: string[];
 }
 ```
 
+Each level is independent - a user can have access to:
+- Department "D1" without being assigned to its parent Facility
+- Facility "F1" without being assigned to its parent Market
+
+### 3. Update OrgScopedFilters Hook
+
+**File:** `src/hooks/useOrgScopedFilters.ts`
+
+- Change logic to work with flat structure
+- For each filter level, check if user has any restrictions at that level
+- If they have restrictions, filter the dropdown to only show those items
+- Never disable filters (only lock if single option)
+
+### 4. Update Admin UI for Flat Multi-Select
+
+**File:** `src/components/admin/OrgAccessManager.tsx`
+
+Change from cascading single-selects to multi-select checkboxes:
+- Region multi-select (optional)
+- Market multi-select (optional)
+- Facility multi-select (optional)
+- Department multi-select (optional)
+
+Each level is independent - admin can assign any combination.
+
 ---
 
-## Implementation Steps
+## Filter Behavior Matrix
 
-### Step 1: Update User Form with Org Access Manager
-- Add collapsible section below role selector
-- Create OrgAccessManager component with market > facility > department cascade
-- Save to user_organization_access table
+| User Has Org Access? | Filter Behavior |
+|---------------------|-----------------|
+| No records | Shows ALL options, filter enabled |
+| 1 item at level | Pre-selected, filter locked (disabled) |
+| 2+ items at level | Dropdown shows only those items, filter enabled |
+| 0 items at level | Shows ALL options at that level (no restriction) |
 
-### Step 2: Create useOrgScopedFilters Hook
-- Fetch user's org access records
-- Calculate default filter values
-- Determine available options per filter level
-- Identify locked filters
+### Example: Director with Org Access
 
-### Step 3: Update FilterBar Component
-- Accept org access restrictions as props
-- Disable locked filters (show value but prevent change)
-- Filter dropdown options based on allowed locations
-- Hide "All X" option when user has restrictions
+**Org Access Records:**
+- Facility: "Hospital A", "Hospital B"
+- Department: "ICU", "ER", "Med Surg"
 
-### Step 4: Update Page Components
-- Initialize filter state from useOrgScopedFilters defaults
-- Pass restricted options to FilterBar
+**Filter Behavior:**
+- Region filter: Not visible (no RBAC permission)
+- Market filter: Not visible (no RBAC permission)
+- Facility filter: Shows only "Hospital A" and "Hospital B" (enabled, can select)
+- Department filter: Shows only "ICU", "ER", "Med Surg" (enabled, can select)
 
-### Step 5: Test with Demo Users
-- Create org access records for demo.director and demo.manager
-- Verify filters auto-populate correctly
-- Verify restricted dropdowns work
+---
+
+## Files to Modify
+
+| File | Change |
+|------|--------|
+| `src/components/staffing/FilterBar.tsx` | Remove cascade disable logic |
+| `src/hooks/useUserOrgAccess.ts` | Change to flat structure |
+| `src/hooks/useOrgScopedFilters.ts` | Update for flat access model |
+| `src/components/admin/OrgAccessManager.tsx` | Multi-select UI for each level |
+| `src/pages/staffing/StaffingSummary.tsx` | Remove market-dependent facility logic |
+| `src/pages/positions/PositionsPage.tsx` | Remove market-dependent facility logic |
+
+---
+
+## Database: user_organization_access Table
+
+The existing table structure supports this flat model:
+- Each row can have any combination of `market`, `facility_id`, `department_id`
+- A user can have multiple rows with different combinations
+- Query will extract unique values at each level independently
 
 ---
 
 ## Technical Details
 
-### Database Table: user_organization_access
+### New Flat Access Structure
 
-Already exists with schema:
-- `id` (uuid)
-- `user_id` (uuid, FK to profiles)
-- `market` (text, optional)
-- `facility_id` (text, optional)
-- `facility_name` (text, optional)
-- `department_id` (text, optional)
-- `department_name` (text, optional)
+```typescript
+interface OrgAccessFlat {
+  // Each array contains independently assigned items
+  regions: string[];        // User can access these regions
+  markets: string[];        // User can access these markets  
+  facilities: Facility[];   // User can access these facilities
+  departments: Department[]; // User can access these departments
+  
+  // Quick lookup
+  hasRegionRestriction: boolean;
+  hasMarketRestriction: boolean;
+  hasFacilityRestriction: boolean;
+  hasDepartmentRestriction: boolean;
+}
+```
 
-### Filter Lock Visual Treatment
+### Filter Dropdown Logic
 
-Locked filters will:
-- Show the assigned value
-- Have `disabled` state on the Select
-- Display a lock icon to indicate it's fixed
-- Tooltip explaining "Assigned by administrator"
+```typescript
+// For each filter level:
+function getAvailableOptions(level: 'market' | 'facility' | 'department') {
+  const orgAccess = useOrgScopedFilters();
+  
+  // If user has restrictions at this level, return only their assigned items
+  if (orgAccess.hasRestrictionAt(level)) {
+    return orgAccess.getRestrictedOptions(level);
+  }
+  
+  // Otherwise, return all options
+  return getAllOptions(level);
+}
+```
 
 ---
 
-## Files Summary
+## Summary
 
-| File | Action |
-|------|--------|
-| `src/components/admin/OrgAccessManager.tsx` | CREATE - New component for org access UI |
-| `src/components/admin/UserFormSheet.tsx` | MODIFY - Add OrgAccessManager section |
-| `src/hooks/useOrgScopedFilters.ts` | CREATE - New hook combining permissions + org access |
-| `src/hooks/useUserOrgAccess.ts` | MODIFY - Add getDefaultFilters method |
-| `src/hooks/useFilterData.ts` | MODIFY - Add filterByOrgAccess method |
-| `src/components/staffing/FilterBar.tsx` | MODIFY - Handle locked filters and restricted options |
-| `src/pages/staffing/StaffingSummary.tsx` | MODIFY - Initialize from org-scoped defaults |
-| `src/pages/positions/PositionsPage.tsx` | MODIFY - Initialize from org-scoped defaults |
-
----
-
-## Edge Cases
-
-1. **No Org Access Assigned**: Show empty state message asking user to contact admin
-2. **Multiple Roles with Different Access**: Union all accessible locations
-3. **Admin Viewing**: No restrictions, all filters available
-4. **Org Access Without Role Restriction**: Org access only applies when role lacks filter permissions
+1. **Filters are never disabled** except when locked (single option)
+2. **Organization access is flat** - each level independent
+3. **Dropdowns show restricted options** when user has org access
+4. **Admin UI uses multi-select** for each level independently
