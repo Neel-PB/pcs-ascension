@@ -56,22 +56,23 @@ const AppContent = () => {
 
   return (
     <>
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route path="/auth" element={<AuthPage />} />
-          <Route path="/auth/setup-password" element={<SetupPasswordPage />} />
-          <Route path="/" element={<Navigate to="/staffing" replace />} />
-          <Route path="/staffing" element={<ShellLayout><StaffingSummary /></ShellLayout>} />
-          <Route path="/positions" element={<ShellLayout><PositionsPage /></ShellLayout>} />
-          <Route path="/analytics" element={<ShellLayout><AnalyticsRegion /></ShellLayout>} />
-          <Route path="/reports" element={<ShellLayout><ReportsRegion /></ShellLayout>} />
-          <Route path="/support" element={<ShellLayout><SupportPage /></ShellLayout>} />
-          <Route path="/feedback" element={<ShellLayout><FeedbackPage /></ShellLayout>} />
-          <Route path="/admin" element={<ShellLayout><AdminPage /></ShellLayout>} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<ShellLayout><NotFound /></ShellLayout>} />
-        </Routes>
-      </Suspense>
+      <Routes>
+        {/* Auth pages need their own Suspense since they don't use ShellLayout */}
+        <Route path="/auth" element={<Suspense fallback={<PageLoader />}><AuthPage /></Suspense>} />
+        <Route path="/auth/setup-password" element={<Suspense fallback={<PageLoader />}><SetupPasswordPage /></Suspense>} />
+        
+        {/* Shell routes - ShellLayout handles its own Suspense for content */}
+        <Route path="/" element={<Navigate to="/staffing" replace />} />
+        <Route path="/staffing" element={<ShellLayout><StaffingSummary /></ShellLayout>} />
+        <Route path="/positions" element={<ShellLayout><PositionsPage /></ShellLayout>} />
+        <Route path="/analytics" element={<ShellLayout><AnalyticsRegion /></ShellLayout>} />
+        <Route path="/reports" element={<ShellLayout><ReportsRegion /></ShellLayout>} />
+        <Route path="/support" element={<ShellLayout><SupportPage /></ShellLayout>} />
+        <Route path="/feedback" element={<ShellLayout><FeedbackPage /></ShellLayout>} />
+        <Route path="/admin" element={<ShellLayout><AdminPage /></ShellLayout>} />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<ShellLayout><NotFound /></ShellLayout>} />
+      </Routes>
       {!loading && user && (
         <Suspense fallback={null}>
           {uiSettings?.showFeedbackTrigger !== false && <FeedbackTrigger enableScreenshotCapture={uiSettings?.enableScreenshotCapture !== false} />}

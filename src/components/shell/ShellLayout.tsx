@@ -1,9 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { DynamicIconOnlySidebar } from "../layout/DynamicIconOnlySidebar";
 import { AppHeader } from "./AppHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { LogoLoader } from "@/components/ui/LogoLoader";
+
+// Content area loader - shows in main content while keeping shell visible
+const ContentLoader = () => (
+  <div className="flex items-center justify-center h-full">
+    <LogoLoader size="md" variant="default" />
+  </div>
+);
 
 interface ShellLayoutProps {
   children: React.ReactNode;
@@ -40,7 +47,9 @@ export function ShellLayout({ children }: ShellLayoutProps) {
           height: 'calc(100vh - var(--header-height))'
         }}
       >
-        {children}
+        <Suspense fallback={<ContentLoader />}>
+          {children}
+        </Suspense>
       </main>
     </div>
   );
