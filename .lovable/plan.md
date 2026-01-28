@@ -1,127 +1,69 @@
 
-# Optimize FilterBar Loading: Static UI with Inline Loaders
+# Use Unique Lists for Filter Dropdowns
 
 ## Problem
 
-Currently, the FilterBar:
-1. **Disables ALL dropdowns** while waiting for ANY data to load (RBAC, filter data, org scopes)
-2. **No visual feedback** - dropdowns just appear disabled/frozen, looking like "animations not working"
-3. **Combined loading state** blocks all interaction until everything loads
+The filter dropdowns show duplicate entries when displaying "all" options:
+- **Departments**: "ICU" appears 14 times, "Medical Surgical" appears 14 times, etc.
+- This happens because departments with the same name exist at different facilities
 
-This creates a poor UX where static UI elements (labels, dropdowns) wait unnecessarily for API data.
+When no parent filter is selected (e.g., no facility selected for departments), users see all records which includes duplicates by name.
 
 ## Solution
 
-Render the static UI immediately and show inline loading indicators only where data is loading:
+Deduplicate filter options by name when showing the full list. When a parent filter IS selected, show the filtered records (which may still have unique IDs).
 
-1. **Never disable dropdowns due to loading** - they're always interactive
-2. **Inside dropdown content**: Show skeleton/loading state while options are loading
-3. **Static elements (Level 2, PSTAT)**: Always available immediately (hardcoded options)
-4. **API-dependent dropdowns (Region, Market, Facility, Department)**: Show "Loading..." item when data not ready
+### Strategy
 
-## Changes Required
+| Filter | When to deduplicate |
+|--------|-------------------|
+| Region | Never - already unique |
+| Market | Never - already unique |
+| Facility | Never - already unique names |
+| Department | When `selectedFacility === "all-facilities"` |
 
-### FilterBar.tsx
+For departments, when no facility is selected:
+- Extract unique department **names** from the full list
+- Display as a simple list of unique names
+- When user selects one, filter by that **name** across all facilities
 
-**Remove blocking `isLoading` from disabled prop:**
+### Code Changes
 
-```tsx
-// BEFORE (blocks interaction)
-<Select disabled={isLoading || isRegionDisabled}>
-
-// AFTER (only lock-based disabling)
-<Select disabled={isRegionDisabled}>
-```
-
-**Add inline loading state inside SelectContent:**
+**FilterBar.tsx** - Deduplicate department options when showing all:
 
 ```tsx
-<SelectContent>
-  {filterDataLoading ? (
-    <div className="flex items-center justify-center py-4">
-      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-      <span className="ml-2 text-sm text-muted-foreground">Loading...</span>
-    </div>
-  ) : (
-    <>
-      {shouldShowAllOption('region') && (
-        <SelectItem value="all-regions">All Regions</SelectItem>
-      )}
-      {regions.map(region => (
-        <SelectItem key={region} value={region}>{region}</SelectItem>
-      ))}
-    </>
-  )}
-</SelectContent>
+// Get unique department names when no facility is selected
+const uniqueDepartmentNames = useMemo(() => {
+  const names = new Set<string>();
+  allDepartments.forEach(d => names.add(d.department_name));
+  return Array.from(names).sort();
+}, [allDepartments]);
+
+// For department display:
+const availableDepartments = hasRestrictionAt('department')
+  ? restrictedOptions.availableDepartments
+  : selectedFacility !== "all-facilities"
+    ? getDepartmentsByFacility(selectedFacility)  // Filtered - show actual records
+    : uniqueDepartmentNames.map(name => ({        // All - show unique names
+        department_id: name,  // Use name as ID for filtering
+        department_name: name
+      }));
 ```
 
-### Loading State Strategy
-
-| Filter | Data Source | Loading Behavior |
-|--------|-------------|------------------|
-| Region | API (regions table) | Show loader inside dropdown |
-| Market | API (markets table) | Show loader inside dropdown |
-| Facility | API (facilities table) | Show loader inside dropdown |
-| Department | API (departments table) | Show loader inside dropdown |
-| Submarket | Derived from facilities | Depends on facility load |
-| Level 2 | Static array | Instant - no loading |
-| PSTAT | Static array | Instant - no loading |
+**Note**: When filtering by a department name (not ID), the data queries will need to match by `department_name` instead of `department_id`. This already works because positions are typically filtered by department name, not ID.
 
 ## Files to Modify
 
 | File | Change |
 |------|--------|
-| `src/components/staffing/FilterBar.tsx` | Remove `isLoading` from disabled props, add inline loaders in SelectContent |
+| `src/components/staffing/FilterBar.tsx` | Add deduplication logic for departments when showing all |
 
 ## Benefits
 
-1. **Instant UI** - Filter bar renders immediately, no waiting
-2. **Clear feedback** - Users see exactly which data is loading
-3. **Progressive loading** - Static filters work immediately (Level 2, PSTAT)
-4. **Non-blocking** - Can interact with dropdowns even while loading (shows loader inside)
+1. **Clean dropdown** - No more seeing "ICU" 14 times
+2. **Faster selection** - Users quickly find the department they want
+3. **Correct behavior** - When facility IS selected, shows facility-specific departments
 
-## Technical Details
+## Technical Notes
 
-### Dropdown Loading States
-
-Each dropdown independently shows its loading state:
-
-```tsx
-// Region dropdown content
-<SelectContent>
-  {regionsLoading ? (
-    <div className="py-3 px-2 flex items-center gap-2 text-muted-foreground">
-      <Loader2 className="h-3 w-3 animate-spin" />
-      <span className="text-sm">Loading regions...</span>
-    </div>
-  ) : (
-    <>
-      <SelectItem value="all-regions">All Regions</SelectItem>
-      {regions.map(r => (
-        <SelectItem key={r.region} value={r.region}>{r.region}</SelectItem>
-      ))}
-    </>
-  )}
-</SelectContent>
-```
-
-### Hook Changes
-
-Expose individual loading states from `useFilterData`:
-
-```tsx
-return {
-  regions,
-  markets,
-  facilities,
-  departments,
-  regionsLoading,
-  marketsLoading,
-  facilitiesLoading,
-  departmentsLoading,
-  isLoading: regionsLoading || marketsLoading || facilitiesLoading || departmentsLoading,
-  // ... helpers
-};
-```
-
-This allows FilterBar to show targeted loaders per dropdown rather than a global blocking state.
+The change uses `useMemo` to efficiently compute unique names only when `allDepartments` changes, preventing unnecessary recalculations on each render.
