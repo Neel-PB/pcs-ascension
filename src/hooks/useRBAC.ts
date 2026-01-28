@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   DEFAULT_ROLE_PERMISSIONS, 
   type AppRole, 
@@ -18,13 +19,29 @@ interface RolePermissionOverride {
 }
 
 export function useRBAC() {
-  const queryClient = useQueryClient();
-  const [loading, setLoading] = useState(true);
-  const [roles, setRoles] = useState<AppRole[]>([]);
-  const [userId, setUserId] = useState<string | null>(null);
+  // Use centralized auth context instead of separate getUser() call
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
 
-  // Fetch permission overrides
-  const { data: permissionOverrides } = useQuery({
+  // Fetch user roles with React Query
+  const { data: roles = [], isLoading: rolesLoading } = useQuery({
+    queryKey: ['user-roles', userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId);
+
+      if (error) throw error;
+      return data?.map(r => r.role as AppRole) || [];
+    },
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Fetch permission overrides with React Query
+  const { data: permissionOverrides, isLoading: permissionsLoading } = useQuery({
     queryKey: ['role-permissions'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -36,81 +53,6 @@ export function useRBAC() {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
-
-  useEffect(() => {
-    const fetchUserRoles = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (user) {
-          setUserId(user.id);
-          
-          const { data: userRoles, error } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', user.id);
-
-          if (error) throw error;
-
-          const rolesList = userRoles?.map(r => r.role as AppRole) || [];
-          setRoles(rolesList);
-        } else {
-          setUserId(null);
-          setRoles([]);
-        }
-      } catch (error) {
-        console.error('Error fetching user roles:', error);
-        setRoles([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserRoles();
-
-    // Subscribe to auth changes
-    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(() => {
-      fetchUserRoles();
-    });
-
-    // Subscribe to realtime changes on user_roles for current user
-    const rolesChannel = supabase
-      .channel('user-roles-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'user_roles',
-        },
-        () => {
-          fetchUserRoles();
-        }
-      )
-      .subscribe();
-
-    // Subscribe to realtime changes on role_permissions
-    const permissionsChannel = supabase
-      .channel('role-permissions-changes-rbac')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'role_permissions',
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['role-permissions'] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      authSubscription.unsubscribe();
-      supabase.removeChannel(rolesChannel);
-      supabase.removeChannel(permissionsChannel);
-    };
-  }, [queryClient]);
 
   // Calculate effective permissions for user's roles
   const effectivePermissions = useMemo(() => {
@@ -140,10 +82,7 @@ export function useRBAC() {
   }, [roles, permissionOverrides]);
 
   const hasPermission = useCallback((permission: string): boolean => {
-    // Parse permission format: "resource.action" (e.g., "admin.access")
     const permissionKey = permission as PermissionKey;
-    
-    // Check if any of the user's roles grant this permission
     return effectivePermissions.has(permissionKey);
   }, [effectivePermissions]);
 
@@ -178,6 +117,8 @@ export function useRBAC() {
       pstat: effectivePermissions.has('filters.pstat'),
     };
   }, [effectivePermissions]);
+
+  const loading = rolesLoading || permissionsLoading;
 
   return {
     hasPermission,
