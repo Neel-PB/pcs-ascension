@@ -1,5 +1,4 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { useFilterData } from "@/hooks/useFilterData";
@@ -106,12 +105,7 @@ export function FilterBar({
   return (
     <div className="flex items-center justify-center overflow-x-auto flex-nowrap gap-2 xl:gap-0 scrollbar-thin">
       {/* LEFT GROUP: Main Hierarchy Filters + Clear Button */}
-      <motion.div
-        className={`flex flex-wrap xl:flex-nowrap gap-2 xl:gap-3 items-center ${className}`}
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-      >
+      <div className={`flex flex-wrap xl:flex-nowrap gap-2 xl:gap-3 items-center ${className}`}>
         {/* Region Filter - only show if user has permission */}
         {filterPermissions.region && (
           <Select value={selectedRegion} onValueChange={onRegionChange}>
@@ -192,7 +186,7 @@ export function FilterBar({
         >
           <X className="h-3 w-3" />
         </Button>
-      </motion.div>
+      </div>
 
       {/* SEPARATOR - hidden on compact screens, only show if any sub-filter is accessible */}
       {(subfilterPermissions.submarket || subfilterPermissions.level2 || subfilterPermissions.pstat) && (

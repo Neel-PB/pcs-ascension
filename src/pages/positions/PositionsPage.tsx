@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, LayoutGroup, AnimatePresence } from "framer-motion";
+import { motion, LayoutGroup } from "framer-motion";
 import { FilterBar } from "@/components/staffing/FilterBar";
 import { EmployeesTab } from "./EmployeesTab";
 import { ContractorsTab } from "./ContractorsTab";
@@ -98,24 +98,19 @@ export default function PositionsPage() {
         <LayoutGroup>
           <div className="relative bg-background rounded-lg p-1 flex-shrink-0 mb-6">
             <div className="flex">
-              {tabs.map((tab, index) => (
-                <motion.button
+              {tabs.map((tab) => (
+                <button
                   key={tab.id}
-                  className={`relative flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors z-10 ${
+                  className={`relative flex items-center justify-center px-4 py-2 text-sm font-medium transition-all z-10 hover:scale-[1.02] active:scale-[0.98] ${
                     activeTab === tab.id
                       ? "text-primary-foreground"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                   onClick={() => setActiveTab(tab.id)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
                   style={{ flex: 1 }}
                 >
                   {tab.label}
-                </motion.button>
+                </button>
               ))}
               
               <motion.div
@@ -135,15 +130,7 @@ export default function PositionsPage() {
           </div>
         </LayoutGroup>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="flex-1 min-h-0 flex flex-col animate-fade-in"
-          >
+        <div className="flex-1 min-h-0 flex flex-col">
             {activeTab === "employees" && (
               <EmployeesTab
                 selectedRegion={selectedRegion}
@@ -174,8 +161,7 @@ export default function PositionsPage() {
                 selectedDepartment={selectedDepartment}
               />
             )}
-          </motion.div>
-        </AnimatePresence>
+        </div>
       </div>
     </>
   );
