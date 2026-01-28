@@ -1,6 +1,6 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { X, Lock } from "lucide-react";
+import { X, Lock, Loader2 } from "lucide-react";
 import { useFilterData } from "@/hooks/useFilterData";
 import { useIsCompactScreen } from "@/hooks/use-compact-screen";
 import { CombinedOptionalFilters } from "./CombinedOptionalFilters";
@@ -54,7 +54,10 @@ export function FilterBar({
     getFacilitiesByMarket, 
     getDepartmentsByFacility,
     getSubmarketsByMarket,
-    isLoading: filterDataLoading,
+    regionsLoading,
+    marketsLoading,
+    facilitiesLoading,
+    departmentsLoading,
   } = useFilterData();
   
   const { 
@@ -63,14 +66,10 @@ export function FilterBar({
     hasRestrictions, 
     hasRestrictionAt,
     shouldShowAllOption,
-    isLoading: orgScopedLoading 
   } = useOrgScopedFilters();
 
   const isCompact = useIsCompactScreen();
   const { getFilterPermissions, getSubfilterPermissions, loading: rbacLoading } = useRBAC();
-  
-  // Combined loading state
-  const isLoading = rbacLoading || filterDataLoading || orgScopedLoading;
   
   // During loading, show all filters to prevent layout shift
   const filterPermissions = rbacLoading 
@@ -152,17 +151,26 @@ export function FilterBar({
         {/* Region Filter - only show if user has permission */}
         {filterPermissions.region && (
           <div className="relative">
-            <Select value={selectedRegion} onValueChange={onRegionChange} disabled={isLoading || isRegionDisabled}>
+            <Select value={selectedRegion} onValueChange={onRegionChange} disabled={isRegionDisabled}>
               <SelectTrigger className={`${isCompact ? 'min-w-[120px] flex-shrink' : 'w-[150px]'} bg-background border-border ${isRegionDisabled ? 'pr-8' : ''}`}>
                 <SelectValue placeholder="Select region" />
               </SelectTrigger>
               <SelectContent className="bg-popover border-border z-50">
-                {shouldShowAllOption('region') && (
-                  <SelectItem value="all-regions">All Regions</SelectItem>
+                {regionsLoading ? (
+                  <div className="py-3 px-2 flex items-center gap-2 text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span className="text-sm">Loading...</span>
+                  </div>
+                ) : (
+                  <>
+                    {shouldShowAllOption('region') && (
+                      <SelectItem value="all-regions">All Regions</SelectItem>
+                    )}
+                    {(hasRestrictionAt('region') ? restrictedOptions.availableRegions : regions.map(r => r.region)).map(region => (
+                      <SelectItem key={region} value={region}>{region}</SelectItem>
+                    ))}
+                  </>
                 )}
-                {(hasRestrictionAt('region') ? restrictedOptions.availableRegions : regions.map(r => r.region)).map(region => (
-                  <SelectItem key={region} value={region}>{region}</SelectItem>
-                ))}
               </SelectContent>
             </Select>
             {isRegionDisabled && (
@@ -179,17 +187,26 @@ export function FilterBar({
         {/* Market Filter - only show if user has permission */}
         {filterPermissions.market && (
           <div className="relative">
-            <Select value={selectedMarket} onValueChange={onMarketChange} disabled={isLoading || isMarketDisabled}>
+            <Select value={selectedMarket} onValueChange={onMarketChange} disabled={isMarketDisabled}>
               <SelectTrigger className={`${isCompact ? 'min-w-[120px] flex-shrink' : 'w-[150px]'} bg-background border-border ${isMarketDisabled ? 'pr-8' : ''}`}>
                 <SelectValue placeholder="Select market" />
               </SelectTrigger>
               <SelectContent className="bg-popover border-border z-50">
-                {shouldShowAllOption('market') && (
-                  <SelectItem value="all-markets">All Markets</SelectItem>
+                {marketsLoading ? (
+                  <div className="py-3 px-2 flex items-center gap-2 text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span className="text-sm">Loading...</span>
+                  </div>
+                ) : (
+                  <>
+                    {shouldShowAllOption('market') && (
+                      <SelectItem value="all-markets">All Markets</SelectItem>
+                    )}
+                    {availableMarkets.map(market => (
+                      <SelectItem key={market.id} value={market.market}>{market.market}</SelectItem>
+                    ))}
+                  </>
                 )}
-                {availableMarkets.map(market => (
-                  <SelectItem key={market.id} value={market.market}>{market.market}</SelectItem>
-                ))}
               </SelectContent>
             </Select>
             {isMarketDisabled && (
@@ -209,18 +226,27 @@ export function FilterBar({
             <Select 
               value={selectedFacility} 
               onValueChange={onFacilityChange}
-              disabled={isLoading || isFacilityDisabled}
+              disabled={isFacilityDisabled}
             >
               <SelectTrigger className={`${isCompact ? 'min-w-[160px] flex-shrink' : 'w-[250px]'} bg-background border-border ${isFacilityDisabled ? 'pr-8' : ''}`}>
                 <SelectValue placeholder="Select facility" />
               </SelectTrigger>
               <SelectContent className="bg-popover border-border z-50">
-                {shouldShowAllOption('facility') && (
-                  <SelectItem value="all-facilities">All Facilities</SelectItem>
+                {facilitiesLoading ? (
+                  <div className="py-3 px-2 flex items-center gap-2 text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span className="text-sm">Loading...</span>
+                  </div>
+                ) : (
+                  <>
+                    {shouldShowAllOption('facility') && (
+                      <SelectItem value="all-facilities">All Facilities</SelectItem>
+                    )}
+                    {availableFacilities.map(facility => (
+                      <SelectItem key={facility.facility_id || facility.id} value={facility.facility_id}>{facility.facility_name}</SelectItem>
+                    ))}
+                  </>
                 )}
-                {availableFacilities.map(facility => (
-                  <SelectItem key={facility.facility_id || facility.id} value={facility.facility_id}>{facility.facility_name}</SelectItem>
-                ))}
               </SelectContent>
             </Select>
             {isFacilityDisabled && (
@@ -240,18 +266,27 @@ export function FilterBar({
             <Select 
               value={selectedDepartment} 
               onValueChange={onDepartmentChange}
-              disabled={isLoading || isDepartmentDisabled}
+              disabled={isDepartmentDisabled}
             >
               <SelectTrigger className={`${isCompact ? 'min-w-[140px] flex-shrink' : 'w-[180px]'} bg-background border-border ${isDepartmentDisabled ? 'pr-8' : ''}`}>
                 <SelectValue placeholder="Select department" />
               </SelectTrigger>
               <SelectContent className="bg-popover border-border z-50">
-                {shouldShowAllOption('department') && (
-                  <SelectItem value="all-departments">All Departments</SelectItem>
+                {departmentsLoading ? (
+                  <div className="py-3 px-2 flex items-center gap-2 text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span className="text-sm">Loading...</span>
+                  </div>
+                ) : (
+                  <>
+                    {shouldShowAllOption('department') && (
+                      <SelectItem value="all-departments">All Departments</SelectItem>
+                    )}
+                    {availableDepartments.map(dept => (
+                      <SelectItem key={dept.department_id || dept.id} value={dept.department_id}>{dept.department_name}</SelectItem>
+                    ))}
+                  </>
                 )}
-                {availableDepartments.map(dept => (
-                  <SelectItem key={dept.department_id || dept.id} value={dept.department_id}>{dept.department_name}</SelectItem>
-                ))}
               </SelectContent>
             </Select>
             {isDepartmentDisabled && (
@@ -306,7 +341,7 @@ export function FilterBar({
               <Select 
                 value={selectedSubmarket} 
                 onValueChange={onSubmarketChange}
-                disabled={isLoading || selectedMarket === "all-markets" || availableSubmarkets.length === 0}
+                disabled={selectedMarket === "all-markets" || availableSubmarkets.length === 0}
               >
                 <SelectTrigger className="w-[150px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                   <SelectValue placeholder="Submarket" />
@@ -320,12 +355,11 @@ export function FilterBar({
               </Select>
             )}
 
-            {/* Level 2 Filter */}
+            {/* Level 2 Filter - Static options, no loading needed */}
             {subfilterPermissions.level2 && (
               <Select 
                 value={selectedLevel2} 
                 onValueChange={onLevel2Change}
-                disabled={isLoading}
               >
                 <SelectTrigger className="w-[200px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
                   <SelectValue placeholder="Level 2" />
@@ -339,12 +373,11 @@ export function FilterBar({
               </Select>
             )}
 
-            {/* PSTAT Filter */}
+            {/* PSTAT Filter - Static options, no loading needed */}
             {subfilterPermissions.pstat && (
               <Select 
                 value={selectedPstat} 
                 onValueChange={onPstatChange}
-                disabled={isLoading}
               >
                 <SelectTrigger className="w-[200px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
                   <SelectValue placeholder="PSTAT" />
