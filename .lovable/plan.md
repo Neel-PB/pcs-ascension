@@ -1,169 +1,75 @@
 
-# Optimize Page Loading: Unified Loading States for API Data
+# Fix Access Scope Selection Not Saving
 
-## Current Issues
+## Problem
 
-1. **Animation Mismatch** - Pages render with animations (motion.div fade-in, y: 20) before data is ready, causing:
-   - KPI cards animate in with placeholder/empty values
-   - Tab animations run while content is still loading
-   - Motion.div elements finish their entry animation, then content pops in late
+The Access Scope selection UI works correctly (users can select regions, markets, facilities, and departments), but the selections are **never saved to the database**. 
 
-2. **Multiple Competing Loading States**:
-   - `useRBAC().loading` - RBAC permissions
-   - `useOrgScopedFilters().isLoading` - Org scopes + filter data
-   - `useFilterData().isLoading` - Filter dropdown data
-   - `useForecastBalance().isLoading` - Forecast data
-   - `useEmployees().isFetching` - Employee table data
+### Root Cause
 
-3. **Static Content Animates Before Data Ready**:
-   - StaffingSummary has KPI sections with motion.div animations
-   - KPICard uses `motion.div initial={{ opacity: 0, y: 20 }}` with staggered delays
-   - Animations complete before chart data or values are available from API
+The `AccessScopeManager` component exposes a save function via `window.__accessScopeSave`, but the parent `UserFormSheet` component never calls this function when the form is submitted.
 
-## Solution Strategy
+**Current flow:**
+1. User opens Edit User sheet
+2. User expands Access Scope section
+3. User selects regions/markets/facilities/departments (works correctly)
+4. User clicks "Update" button
+5. `handleSubmit` is called, which only saves profile + roles
+6. Access Scope selections are **lost** (never saved)
 
-### 1. Page-Level Loading Guard
-Show a content loader until all critical data is ready, THEN render the animated content:
+## Solution
 
-```text
-+---------------------------------------------------+
-|  Sidebar  |  Header                               |
-|           |---------------------------------------|
-|           |                                       |
-|           |       [LogoLoader]                    |
-|           |   "Loading staffing data..."          |
-|           |                                       |
-+---------------------------------------------------+
-                      ↓ Data Ready
-+---------------------------------------------------+
-|  Sidebar  |  Header                               |
-|           |---------------------------------------|
-|           |  [Animated FilterBar]                 |
-|           |  [Animated Tabs]                      |
-|           |  [Animated KPI Cards - all at once]   |
-+---------------------------------------------------+
-```
+Modify `UserFormSheet` to call the `__accessScopeSave` function when the form is submitted in edit mode.
 
-### 2. Components to Modify
+### Code Change
 
-**StaffingSummary.tsx** - Add loading guard:
+**File: `src/components/admin/UserFormSheet.tsx`**
+
+Update the `handleSubmit` function to also trigger the Access Scope save:
+
 ```tsx
-export default function StaffingSummary() {
-  const { loading: rbacLoading } = useRBAC();
-  const { isLoading: orgScopedLoading } = useOrgScopedFilters();
-  
-  // Combined loading state for critical data
-  const isInitializing = rbacLoading || orgScopedLoading;
-  
-  if (isInitializing) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100vh-var(--header-height)-2rem)]">
-        <LogoLoader size="lg" />
-      </div>
-    );
+const handleSubmit = async (data: UserFormValues) => {
+  if (isEditMode) {
+    // Trigger access scope save if available
+    if ((window as any).__accessScopeSave) {
+      await (window as any).__accessScopeSave();
+    }
+    
+    onSubmit({
+      userId: user.id,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      bio: data.bio,
+      roles: data.roles,
+    });
+  } else {
+    onSubmit({
+      email: data.email,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      bio: data.bio,
+      roles: data.roles,
+    });
   }
-  
-  // Now render animated content - all data is ready
-  return (
-    <>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        {/* FilterBar, Tabs, KPIs */}
-      </motion.div>
-    </>
-  );
-}
+};
 ```
 
-**PositionsPage.tsx** - Same pattern:
-```tsx
-const { isLoading: orgScopedLoading } = useOrgScopedFilters();
+### Alternative (Better Architecture)
 
-if (orgScopedLoading) {
-  return (
-    <div className="flex items-center justify-center h-full">
-      <LogoLoader size="lg" />
-    </div>
-  );
-}
-```
+Instead of using `window` global, pass a ref or callback pattern. However, the window approach is already in place and works, so the minimal fix is to simply call the exposed function.
 
-### 3. Tab Content Loading Pattern
-For tabs with API data (ForecastTab, EmployeesTab, etc.), the pattern is already correct:
-- Tab container renders immediately
-- Table/KPI content shows LogoLoader while fetching
-- This is the "progressive loading" approach we want
-
-### 4. Animation Timing Fix
-The key insight: **Animations should only run AFTER critical data is available**
-
-| Component | Current | Fixed |
-|-----------|---------|-------|
-| StaffingSummary | Animates immediately | Wait for RBAC + OrgScopes |
-| PositionsPage | Animates immediately | Wait for OrgScopes |
-| KPICard | Staggered delay animation | Same, but parent waits for data first |
-| FilterBar | Inline loaders per dropdown | Keep this - already correct |
-
-### 5. Critical vs Non-Critical Data
-
-**Critical (block page render):**
-- RBAC permissions (needed for tab visibility)
-- Org scoped filters (needed for filter defaults)
-
-**Non-Critical (show inline loaders):**
-- Filter dropdown options (inline loader in SelectContent)
-- Table data (LogoLoader in table area)
-- KPI values when fetched from API (if applicable)
-
-## Files to Modify
+## Technical Details
 
 | File | Change |
 |------|--------|
-| `src/pages/staffing/StaffingSummary.tsx` | Add loading guard for RBAC + OrgScopes before rendering |
-| `src/pages/positions/PositionsPage.tsx` | Add loading guard for OrgScopes before rendering |
+| `src/components/admin/UserFormSheet.tsx` | Call `window.__accessScopeSave()` in `handleSubmit` when in edit mode |
 
-## Technical Implementation
+## Testing Steps
 
-### StaffingSummary Loading Guard
-```tsx
-// At the top of the component
-const { loading: rbacLoading } = useRBAC();
-const { isLoading: orgScopedLoading } = useOrgScopedFilters();
-
-// Combined check - don't render animated content until ready
-const isInitializing = rbacLoading || (orgScopedLoading && !filtersInitialized);
-
-if (isInitializing) {
-  return (
-    <div className="flex items-center justify-center h-[calc(100vh-var(--header-height)-2rem)]">
-      <LogoLoader size="lg" />
-    </div>
-  );
-}
-```
-
-### PositionsPage Loading Guard
-```tsx
-const { isLoading: orgScopedLoading } = useOrgScopedFilters();
-
-if (orgScopedLoading && !filtersInitialized) {
-  return (
-    <div className="flex items-center justify-center h-[calc(100vh-var(--header-height)-2rem)]">
-      <LogoLoader size="lg" />
-    </div>
-  );
-}
-```
-
-## Benefits
-
-1. **No animation mismatch** - Content only animates once data is ready
-2. **Clear loading state** - Users see LogoLoader, then smooth animated transition
-3. **Maintains existing patterns** - Tab-level loading for table data stays the same
-4. **Better perceived performance** - Single clear transition vs. multiple partial loads
-
-## Important Notes
-
-- The FilterBar inline loaders for dropdown content remain unchanged - those are correct
-- Tab content (EmployeesTab, ForecastTab) already has proper LogoLoader patterns
-- This change only adds a **page-level** guard for critical initialization data
-- KPICard animations will now run all at once after the parent renders (staggered by delay prop)
+1. Navigate to Admin → Users
+2. Click Edit on any user
+3. Expand "Access Scope Restrictions"
+4. Select a Region, Market, Facility, or Department
+5. Click "Update"
+6. Re-open the same user's edit form
+7. Verify the selections persist
