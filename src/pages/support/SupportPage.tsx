@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, LayoutGroup, AnimatePresence } from "framer-motion";
+import { motion, LayoutGroup } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -127,12 +127,7 @@ export default function SupportPage() {
   );
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-6"
-    >
+    <div className="space-y-6">
       {/* Contact Support Banner */}
       <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
         <div className="flex items-center gap-3 mb-4">
@@ -160,24 +155,19 @@ export default function SupportPage() {
       <LayoutGroup>
         <div className="relative bg-background rounded-lg p-1 mb-6">
           <div className="flex">
-            {tabs.map((tab, index) => (
-              <motion.button
+            {tabs.map((tab) => (
+              <button
                 key={tab.id}
-                className={`relative flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors z-10 ${
+                className={`relative flex items-center justify-center px-4 py-2 text-sm font-medium transition-all z-10 hover:scale-[1.02] active:scale-[0.98] ${
                   activeTab === tab.id
                     ? "text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
                 onClick={() => setActiveTab(tab.id)}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
                 style={{ flex: 1 }}
               >
                 {tab.label}
-              </motion.button>
+              </button>
             ))}
             
             <motion.div
@@ -197,130 +187,121 @@ export default function SupportPage() {
         </div>
       </LayoutGroup>
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="space-y-6 animate-fade-in"
-        >
-          {activeTab === "faqs" && (
-            <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
-            <div className="mb-6">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-shell-muted" />
-                <Input
-                  type="text"
-                  placeholder="Search FAQs..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+      <div className="space-y-6">
+        {activeTab === "faqs" && (
+          <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
+          <div className="mb-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-shell-muted" />
+              <Input
+                type="text"
+                placeholder="Search FAQs..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
             </div>
-
-            <Accordion type="single" collapsible className="space-y-2">
-              {filteredFaqs.map((faq, index) => (
-                <AccordionItem key={index} value={`faq-${index}`} className="border border-shell-elevated rounded-lg px-4">
-                  <AccordionTrigger className="hover:no-underline">
-                    <span className="text-left font-medium">{faq.question}</span>
-                  </AccordionTrigger>
-                  <AccordionContent className="text-shell-muted">
-                    {faq.answer}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-
-            {filteredFaqs.length === 0 && (
-              <div className="text-center py-8">
-                <p className="text-shell-muted">No FAQs match your search. Try different keywords or browse all topics.</p>
-              </div>
-            )}
           </div>
-          )}
 
-          {activeTab === "videos" && (
-            <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {trainingVideos.map((video, index) => (
-                <div key={index} className="group bg-shell-elevated rounded-lg p-4 hover:shadow-medium transition-all cursor-pointer">
-                  <div className="flex items-center justify-center bg-gradient-primary rounded-lg h-32 mb-4 text-4xl">
-                    {video.thumbnail}
-                  </div>
-                  <h3 className="font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-                    {video.title}
-                  </h3>
-                  <p className="text-sm text-shell-muted mb-3">{video.description}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-shell-muted">{video.duration}</span>
-                    <Button size="sm" variant="ghost" className="gap-2">
-                      <Play className="h-3 w-3" />
-                      Watch
-                    </Button>
-                  </div>
+          <Accordion type="single" collapsible className="space-y-2">
+            {filteredFaqs.map((faq, index) => (
+              <AccordionItem key={index} value={`faq-${index}`} className="border border-shell-elevated rounded-lg px-4">
+                <AccordionTrigger className="hover:no-underline">
+                  <span className="text-left font-medium">{faq.question}</span>
+                </AccordionTrigger>
+                <AccordionContent className="text-shell-muted">
+                  {faq.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+
+          {filteredFaqs.length === 0 && (
+            <div className="text-center py-8">
+              <p className="text-shell-muted">No FAQs match your search. Try different keywords or browse all topics.</p>
+            </div>
+          )}
+        </div>
+        )}
+
+        {activeTab === "videos" && (
+          <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {trainingVideos.map((video, index) => (
+              <div key={index} className="group bg-shell-elevated rounded-lg p-4 hover:shadow-medium transition-all cursor-pointer">
+                <div className="flex items-center justify-center bg-gradient-primary rounded-lg h-32 mb-4 text-4xl">
+                  {video.thumbnail}
                 </div>
-              ))}
-            </div>
-          </div>
-          )}
-
-          {activeTab === "troubleshooting" && (
-            <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
-            <div className="space-y-4">
-              {troubleshootingTopics.map((topic, index) => (
-                <div key={index} className="p-4 bg-shell-elevated rounded-lg border border-shell-elevated">
-                  <h3 className="font-semibold text-foreground mb-2 flex items-start gap-2">
-                    <AlertCircle className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
-                    {topic.issue}
-                  </h3>
-                  <p className="text-sm text-shell-muted ml-7">{topic.solution}</p>
+                <h3 className="font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+                  {video.title}
+                </h3>
+                <p className="text-sm text-shell-muted mb-3">{video.description}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-shell-muted">{video.duration}</span>
+                  <Button size="sm" variant="ghost" className="gap-2">
+                    <Play className="h-3 w-3" />
+                    Watch
+                  </Button>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
-          )}
+        </div>
+        )}
 
-          {activeTab === "report" && (
-            <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
-            <form onSubmit={handleSubmitIssue} className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Issue Title</label>
-                <Input
-                  type="text"
-                  placeholder="Brief description of the issue"
-                  value={issueTitle}
-                  onChange={(e) => setIssueTitle(e.target.value)}
-                  required
-                />
+        {activeTab === "troubleshooting" && (
+          <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
+          <div className="space-y-4">
+            {troubleshootingTopics.map((topic, index) => (
+              <div key={index} className="p-4 bg-shell-elevated rounded-lg border border-shell-elevated">
+                <h3 className="font-semibold text-foreground mb-2 flex items-start gap-2">
+                  <AlertCircle className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                  {topic.issue}
+                </h3>
+                <p className="text-sm text-shell-muted ml-7">{topic.solution}</p>
               </div>
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Description</label>
-                <Textarea
-                  placeholder="Please provide detailed information about the issue you're experiencing..."
-                  value={issueDescription}
-                  onChange={(e) => setIssueDescription(e.target.value)}
-                  required
-                  rows={6}
-                />
-              </div>
-              <div className="flex gap-3">
-                <Button type="submit" className="gap-2">
-                  <FileText className="h-4 w-4" />
-                  Submit Issue
-                </Button>
-                <Button type="button" variant="outline" className="gap-2">
-                  <ExternalLink className="h-4 w-4" />
-                  View My Tickets
-                </Button>
-              </div>
-            </form>
+            ))}
           </div>
-          )}
-        </motion.div>
-      </AnimatePresence>
-    </motion.div>
+        </div>
+        )}
+
+        {activeTab === "report" && (
+          <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
+          <form onSubmit={handleSubmitIssue} className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">Issue Title</label>
+              <Input
+                type="text"
+                placeholder="Brief description of the issue"
+                value={issueTitle}
+                onChange={(e) => setIssueTitle(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">Description</label>
+              <Textarea
+                placeholder="Please provide detailed information about the issue you're experiencing..."
+                value={issueDescription}
+                onChange={(e) => setIssueDescription(e.target.value)}
+                required
+                rows={6}
+              />
+            </div>
+            <div className="flex gap-3">
+              <Button type="submit" className="gap-2">
+                <FileText className="h-4 w-4" />
+                Submit Issue
+              </Button>
+              <Button type="button" variant="outline" className="gap-2">
+                <ExternalLink className="h-4 w-4" />
+                View My Tickets
+              </Button>
+            </div>
+          </form>
+        </div>
+        )}
+      </div>
+    </div>
   );
 }
