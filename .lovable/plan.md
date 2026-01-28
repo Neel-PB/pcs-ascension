@@ -1,135 +1,124 @@
 
-# Standardize Loading Patterns Across Application
+# Fix Multi-Role Display Bug and Clean Demo Director Data
 
-## Problem
+## Problem Summary
 
-Multiple pages still have staggered entrance animations on static elements (tabs, page wrappers) causing a "scramble" effect when navigating:
+The Demo Director user has **two roles** in the database:
+- `director` (assigned first)
+- `admin` (assigned later, causing Admin module access)
 
-1. **AnalyticsRegion.tsx** - motion.div page wrapper + motion.button tabs + AnimatePresence content
-2. **StaffingSummary.tsx** - motion.button tabs with staggered delays + AnimatePresence content
-3. **AdminPage.tsx** - motion.button tabs with staggered delays + AnimatePresence content
-4. **ReportsRegion.tsx** - motion.div page wrapper + motion.button tabs + AnimatePresence content
-5. **SupportPage.tsx** - motion.div page wrapper + motion.button tabs + AnimatePresence content
+The UI only displays "Director" because `useUsers.ts` uses `.find()` which returns only the first matching role. This creates a confusing situation where:
+- The sidebar shows Admin module (because RBAC correctly aggregates all roles)
+- The Users table only shows "Director" (because display logic is broken)
+
+## Root Cause
+
+### Database Issue
+```sql
+-- Current state: Demo Director has TWO roles
+user_roles table:
+| role     | created_at          |
+|----------|---------------------|
+| director | 2026-01-28 12:08:35 |
+| admin    | 2026-01-28 12:14:20 |
+```
+
+### Code Issue
+```typescript
+// src/hooks/useUsers.ts line 42
+const userRole = userRoles.find(ur => ur.user_id === profile.id);
+// ^^^ Only returns FIRST role, not all roles!
+```
 
 ## Solution
 
-Apply the same pattern already working in PositionsPage.tsx to all pages:
+### Part 1: Clean the Data
+Remove the incorrect `admin` role from Demo Director user so they only have `director` role.
 
-1. **Static elements render instantly** - tabs, filters, page structure
-2. **Keep tab indicator animation** - the sliding highlight when switching tabs
-3. **Remove content wrapper animation** - AnimatePresence/motion.div around content
-4. **Content components handle their own loading** - using LogoLoader internally
+### Part 2: Fix the Code (Optional - for future multi-role support)
+Update `useUsers.ts` to fetch and display ALL roles a user has, not just the first one.
 
-## Changes by File
+However, if the system design is that users should only have ONE role at a time, then:
+- The data cleanup is the fix
+- The code should prevent multiple role assignments
 
-### 1. `src/pages/analytics/AnalyticsRegion.tsx`
+## Recommended Changes
 
-| Line | Element | Change |
-|------|---------|--------|
-| 24-28 | Page wrapper | Replace `motion.div` with regular `div`, remove entrance animation |
-| 34-50 | Tab buttons | Replace `motion.button` with `button`, remove initial/animate/transition |
-| 70-88 | Content wrapper | Remove `AnimatePresence` and `motion.div`, use plain `div` |
+### Database Change
+Delete the extra `admin` role from Demo Director:
 
-### 2. `src/pages/staffing/StaffingSummary.tsx`
-
-| Line | Element | Change |
-|------|---------|--------|
-| 498-514 | Tab buttons | Replace `motion.button` with `button`, remove initial/animate/transition |
-| 534-541 | Content wrapper | Remove `AnimatePresence` and `motion.div`, use plain `div` |
-
-### 3. `src/pages/admin/AdminPage.tsx`
-
-| Line | Element | Change |
-|------|---------|--------|
-| 81-98 | Tab buttons | Replace `motion.button` with `button`, remove initial/animate/transition |
-| 118-125 | Content wrapper | Remove `AnimatePresence` and `motion.div`, use plain `div` |
-
-### 4. `src/pages/reports/ReportsRegion.tsx`
-
-| Line | Element | Change |
-|------|---------|--------|
-| 38-43 | Page wrapper | Replace `motion.div` with regular `div`, remove entrance animation |
-| 48-64 | Tab buttons | Replace `motion.button` with `button`, remove initial/animate/transition |
-| 84-91 | Content wrapper | Remove `AnimatePresence` and `motion.div`, use plain `div` |
-
-### 5. `src/pages/support/SupportPage.tsx`
-
-| Line | Element | Change |
-|------|---------|--------|
-| 130-135 | Page wrapper | Replace `motion.div` with regular `div`, remove entrance animation |
-| 164-180 | Tab buttons | Replace `motion.button` with `button`, remove initial/animate/transition |
-| 200-207 | Content wrapper | Remove `AnimatePresence` and `motion.div`, use plain `div` |
-
-## What Stays vs What Gets Removed
-
-| Element | Description | Keep/Remove |
-|---------|-------------|-------------|
-| Page wrapper animation | Fade-in on page load | Remove |
-| Tab button entrance | Staggered fade-in | Remove |
-| Tab indicator slide | Sliding highlight on tab switch | Keep |
-| Content wrapper animation | Fade on tab switch | Remove |
-| Content internal loaders | LogoLoader inside components | Keep (existing pattern) |
-
-## Before/After Examples
-
-**Tab Button - Before:**
-```tsx
-<motion.button
-  key={tab.id}
-  onClick={() => setActiveTab(tab.id)}
-  whileHover={{ scale: 1.02 }}
-  whileTap={{ scale: 0.98 }}
-  initial={{ opacity: 0, y: 10 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ delay: index * 0.1 }}
-  style={{ flex: 1 }}
->
+```sql
+DELETE FROM user_roles 
+WHERE user_id = '4f08a81b-af3e-4e91-98a4-8c742e8b585f' 
+AND role = 'admin';
 ```
 
-**Tab Button - After:**
-```tsx
-<button
-  key={tab.id}
-  onClick={() => setActiveTab(tab.id)}
-  className="... hover:scale-[1.02] active:scale-[0.98]"
-  style={{ flex: 1 }}
->
+### Code Changes (to show all roles in UI)
+
+**File: `src/hooks/useUsers.ts`**
+
+Change from `.find()` to `.filter()` to get all roles:
+
+```typescript
+// Before (line 42):
+const userRole = userRoles.find(ur => ur.user_id === profile.id);
+
+// After:
+const userRolesList = userRoles.filter(ur => ur.user_id === profile.id);
 ```
 
-**Content Wrapper - Before:**
-```tsx
-<AnimatePresence mode="wait">
-  <motion.div
-    key={activeTab}
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -10 }}
-    transition={{ duration: 0.2 }}
-  >
-    {/* content */}
-  </motion.div>
-</AnimatePresence>
+Update the `UserWithProfile` interface to support multiple roles:
+
+```typescript
+// Change from:
+role: UserRole;
+
+// To:
+roles: UserRole[];  // Array of roles
 ```
 
-**Content Wrapper - After:**
+**File: `src/components/admin/UserManagementTable.tsx`**
+
+Update to display multiple role badges:
+
 ```tsx
-<div>
-  {/* content - each tab handles its own loading state */}
-</div>
+// Before:
+<Badge variant={getRoleBadgeVariant(user.role)}>
+  {getRoleDisplayName(user.role)}
+</Badge>
+
+// After:
+{user.roles.map(role => (
+  <Badge key={role} variant={getRoleBadgeVariant(role)}>
+    {getRoleDisplayName(role)}
+  </Badge>
+))}
 ```
 
-## Expected Result
+## Recommended Approach
 
-- All pages load with tabs and filters instantly visible
-- No staggered animation when navigating to any page
-- Tab switching still has smooth indicator animation
-- Data-dependent content shows LogoLoader while fetching
-- Consistent experience across Staffing, Positions, Analytics, Admin, Reports, and Support pages
+Since your current design appears to be **one role per user** (the form only allows selecting one role), I recommend:
+
+1. **Data fix only** - Remove the duplicate admin role from Demo Director
+2. **No code changes** - Keep the current single-role display
+
+If you want proper multi-role support, we would need to update:
+- `useUsers.ts` - fetch all roles
+- `UserWithProfile` type - change `role` to `roles[]`
+- `UserManagementTable` - display multiple badges
+- `UserFormSheet` - multi-select for roles
+- Update mutation - handle multiple roles on save
 
 ## Files to Modify
 
-1. `src/pages/analytics/AnalyticsRegion.tsx`
-2. `src/pages/staffing/StaffingSummary.tsx`
-3. `src/pages/admin/AdminPage.tsx`
-4. `src/pages/reports/ReportsRegion.tsx`
-5. `src/pages/support/SupportPage.tsx`
+| Change | Files |
+|--------|-------|
+| Database cleanup | Run SQL to remove duplicate role |
+| (Optional) Multi-role UI | `src/hooks/useUsers.ts`, `src/components/admin/UserManagementTable.tsx`, `src/components/admin/UserFormSheet.tsx` |
+
+## Decision Needed
+
+Which approach do you prefer?
+1. **Quick fix**: Just clean up the database (remove duplicate admin role)
+2. **Full fix**: Clean database + add multi-role support to UI
+
