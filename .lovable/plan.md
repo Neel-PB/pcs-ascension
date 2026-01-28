@@ -1,76 +1,47 @@
 
-# Fix Skills Column Width to Be Truly Fixed (Both Views)
+# Fix Skills Column Width for Nursing and Non-Nursing Views
 
 ## Problem
 
-In the Non-Nursing view, the Skills column is **expanding** to fill the extra horizontal space when the Target FTEs and Variance columns are hidden. While we added `min-w-48` to prevent shrinking, the column is still growing.
+Looking at your screenshots:
+- **Nursing view**: Skills column has proper narrow width
+- **Non-Nursing view**: Skills column is expanding much wider
 
-The table uses `w-full` CSS which causes it to fill available space, and remaining columns stretch proportionally.
+This happens because the HTML table automatically redistributes space when columns are hidden. Even though we added `w-48 min-w-48 max-w-48`, the table ignores these constraints due to its default `table-layout: auto` behavior.
 
 ## Solution
 
-Add `max-w-48` to all Skills column elements to create a truly fixed-width column that cannot shrink OR grow:
-
-| Width Class | Purpose |
-|-------------|---------|
-| `w-48` | Sets default width to 192px |
-| `min-w-48` | Prevents shrinking below 192px |
-| `max-w-48` | Prevents growing above 192px |
+Add `table-layout: fixed` to the table. This CSS property forces the table to respect explicit column widths rather than auto-calculating them based on content and available space.
 
 ## Files to Modify
 
-**`src/pages/staffing/PositionPlanning.tsx`**
+### 1. `src/pages/staffing/PositionPlanning.tsx`
 
-### Change 1: Skills Header (line 540)
+**Change**: Add `table-fixed` class to the Table component
+
+**Location**: Line 537
+
 ```tsx
 // Before
-<TableHead className="font-semibold text-foreground w-48 min-w-48">Skills</TableHead>
+<Table>
 
 // After
-<TableHead className="font-semibold text-foreground w-48 min-w-48 max-w-48">Skills</TableHead>
+<Table className="table-fixed">
 ```
 
-### Change 2: Second Header Row Empty Cell (line 561)
-```tsx
-// Before
-<TableHead className="w-48 min-w-48"></TableHead>
+This single change will:
+- Force all columns to respect their explicit `w-*` class widths
+- Prevent the Skills column from expanding in Non-Nursing view
+- Keep the same 192px width (`w-48`) for both Nursing and Non-Nursing views
 
-// After
-<TableHead className="w-48 min-w-48 max-w-48"></TableHead>
-```
+## How It Works
 
-### Change 3: GroupRow TableCell (line 367)
-```tsx
-// Before
-<TableCell className="font-semibold whitespace-nowrap w-48 min-w-48">
+| CSS Property | Behavior |
+|--------------|----------|
+| `table-layout: auto` (default) | Table calculates column widths based on content and distributes extra space |
+| `table-layout: fixed` | Table respects explicit width values, doesn't redistribute space |
 
-// After
-<TableCell className="font-semibold whitespace-nowrap w-48 min-w-48 max-w-48">
-```
-
-### Change 4: SkillRow TableCell (line 429)
-```tsx
-// Before
-<TableCell className={cn(
-  "font-medium whitespace-nowrap w-48 min-w-48",
-  isChildRow && "pl-8"
-)}>
-
-// After
-<TableCell className={cn(
-  "font-medium whitespace-nowrap w-48 min-w-48 max-w-48",
-  isChildRow && "pl-8"
-)}>
-```
-
-### Change 5: TotalRow TableCell (line 478)
-```tsx
-// Before
-<TableCell className="font-semibold whitespace-nowrap w-48 min-w-48">{data.skill}</TableCell>
-
-// After
-<TableCell className="font-semibold whitespace-nowrap w-48 min-w-48 max-w-48">{data.skill}</TableCell>
-```
+Tailwind's `table-fixed` utility applies `table-layout: fixed`.
 
 ## Expected Result
 
@@ -79,4 +50,4 @@ Add `max-w-48` to all Skills column elements to create a truly fixed-width colum
 | Nursing | 192px (fixed) |
 | Non-Nursing | 192px (fixed) |
 
-The Skills column will now maintain exactly 192px in BOTH directions - it cannot shrink OR grow, ensuring identical appearance in both Nursing and Non-Nursing views.
+Both views will have identical Skills column width that doesn't change when toggling between them.
