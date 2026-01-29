@@ -1,38 +1,51 @@
 
 
-# Revert to Single-Column Layout for Shared Position
+# Compact Form Elements to Eliminate Scrolling
 
 ## Problem
 
-The two-column grid layout looks odd. The user prefers a consistent single-column layout for both Shared Position and other statuses.
+The Active FTE popover form is too tall when "Shared Position" is selected, requiring scrolling. The user wants all fields visible without scrolling by reducing the height of dropdowns and date picker elements.
 
 ---
 
 ## Solution
 
-Revert to a single-column layout for all statuses, with a scrollable container using the Radix `--radix-popper-available-height` CSS variable to ensure all fields remain accessible.
+Reduce form element heights and spacing to create a more compact layout that fits within the viewport.
 
-### Layout
+### Height Reductions
+
+| Element | Current | New |
+|---------|---------|-----|
+| Select triggers | `h-9` (36px) | `h-7` (28px) |
+| Date picker button | `h-9` (36px) | `h-7` (28px) |
+| Text input | `h-9` (36px) | `h-7` (28px) |
+| Field gap | `space-y-4` (16px) | `space-y-3` (12px) |
+| Label-to-input gap | `space-y-2` (8px) | `space-y-1.5` (6px) |
+| Action buttons | `size="sm"` | Keep same |
+| Padding | `p-4` | `p-3` |
+
+### Visual Comparison
 
 ```text
-+--------------------------------+
-|  Status / Reason               |
-|  [Dropdown...................]  |
-+--------------------------------+
-|  Active FTE                    |
-|  [Dropdown..]                  |
-+--------------------------------+
-|  Shared With                   |
-|  [Input field................]  |
-+--------------------------------+
-|  Shared FTE                    |
-|  [Dropdown..]                  |
-+--------------------------------+
-|  Shared Expiry Date            |
-|  [Date picker................]  |
-+--------------------------------+
-|       [Revert]  [Save]         |
-+--------------------------------+
+Before (tall):                    After (compact):
++---------------------------+     +---------------------------+
+|  Status / Reason          |     |  Status / Reason          |
+|  [h-9 dropdown........]   |     |  [h-7 dropdown........]   |
+|                           |     +---------------------------+
++---------------------------+     |  Active FTE               |
+|  Active FTE               |     |  [h-7 dropdown]           |
+|  [h-9 dropdown]           |     +---------------------------+
+|                           |     |  Shared With              |
++---------------------------+     |  [h-7 input............]  |
+|  Shared With              |     +---------------------------+
+|  [h-9 input............]  |     |  Shared FTE               |
+|                           |     |  [h-7 dropdown]           |
+... scrolling required ...        +---------------------------+
+                                  |  Shared Expiry Date       |
+                                  |  [h-7 date picker]        |
+                                  +---------------------------+
+                                  |     [Revert]  [Save]      |
+                                  +---------------------------+
 ```
 
 ---
@@ -41,16 +54,21 @@ Revert to a single-column layout for all statuses, with a scrollable container u
 
 | File | Change |
 |------|--------|
-| `src/components/editable-table/cells/EditableFTECell.tsx` | Remove two-column grid; use single unified layout with dynamic scroll height |
+| `src/components/editable-table/cells/EditableFTECell.tsx` | Reduce heights from `h-9` to `h-7`, tighten spacing from `space-y-4` to `space-y-3`, reduce label gap to `space-y-1.5`, reduce padding from `p-4` to `p-3` |
 
 ---
 
-## Implementation Details
+## Space Savings Calculation
 
-1. **Unified single-column layout**: Use the same `space-y-4` vertical stack for all statuses
-2. **Dynamic scroll container**: Wrap content in a scrollable div with `max-height: calc(var(--radix-popper-available-height, 70vh) - 20px)`
-3. **Consistent width**: Keep `w-80` (320px) for all cases
-4. **Conditional fields**: Show Shared With, Shared FTE, and Shared Expiry fields only when status is "Shared Position"
+| Item | Before | After | Saved |
+|------|--------|-------|-------|
+| 6 form fields (triggers/inputs) | 6 × 36px = 216px | 6 × 28px = 168px | 48px |
+| 6 field gaps | 6 × 16px = 96px | 6 × 12px = 72px | 24px |
+| 6 label gaps | 6 × 8px = 48px | 6 × 6px = 36px | 12px |
+| Container padding | 32px | 24px | 8px |
+| **Total saved** | | | **~92px** |
+
+This should eliminate the need for scrolling on most viewport sizes.
 
 ---
 
@@ -58,7 +76,7 @@ Revert to a single-column layout for all statuses, with a scrollable container u
 
 | Scenario | Before | After |
 |----------|--------|-------|
-| Shared Position | Wide two-column grid | Consistent single-column layout |
-| Form height exceeds viewport | Content clips | Scrollable within available space |
-| Visual consistency | Different layouts per status | Same layout pattern for all |
+| Shared Position (6 fields) | Requires scrolling | All fields visible |
+| Other statuses (2-3 fields) | Compact | Even more compact |
+| Visual density | Standard spacing | Tighter, efficient layout |
 
