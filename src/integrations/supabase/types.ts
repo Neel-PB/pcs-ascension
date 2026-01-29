@@ -691,6 +691,9 @@ export type Database = {
         Row: {
           actual_fte: number | null
           actual_fte_expiry: string | null
+          actual_fte_shared_expiry: string | null
+          actual_fte_shared_fte: number | null
+          actual_fte_shared_with: string | null
           actual_fte_status: string | null
           created_at: string
           departmentId: string
@@ -724,6 +727,9 @@ export type Database = {
         Insert: {
           actual_fte?: number | null
           actual_fte_expiry?: string | null
+          actual_fte_shared_expiry?: string | null
+          actual_fte_shared_fte?: number | null
+          actual_fte_shared_with?: string | null
           actual_fte_status?: string | null
           created_at?: string
           departmentId: string
@@ -757,6 +763,9 @@ export type Database = {
         Update: {
           actual_fte?: number | null
           actual_fte_expiry?: string | null
+          actual_fte_shared_expiry?: string | null
+          actual_fte_shared_fte?: number | null
+          actual_fte_shared_with?: string | null
           actual_fte_status?: string | null
           created_at?: string
           departmentId?: string

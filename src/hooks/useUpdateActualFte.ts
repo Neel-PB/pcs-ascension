@@ -9,6 +9,9 @@ interface UpdateActualFteParams {
   actual_fte: number | null;
   actual_fte_expiry?: string | null;
   actual_fte_status?: string | null;
+  actual_fte_shared_with?: string | null;
+  actual_fte_shared_fte?: number | null;
+  actual_fte_shared_expiry?: string | null;
   // Previous values for activity logging
   previousFte?: number | null;
   previousExpiry?: string | null;
@@ -24,7 +27,10 @@ export function useUpdateActualFte() {
       id, 
       actual_fte, 
       actual_fte_expiry, 
-      actual_fte_status, 
+      actual_fte_status,
+      actual_fte_shared_with,
+      actual_fte_shared_fte,
+      actual_fte_shared_expiry,
       previousFte,
       previousExpiry,
       previousStatus,
@@ -35,6 +41,9 @@ export function useUpdateActualFte() {
           actual_fte,
           actual_fte_expiry,
           actual_fte_status,
+          actual_fte_shared_with,
+          actual_fte_shared_fte,
+          actual_fte_shared_expiry,
           updated_at: new Date().toISOString(),
         })
         .eq('id', id)
@@ -59,6 +68,9 @@ export function useUpdateActualFte() {
                 actual_fte: updatedData.actual_fte,
                 actual_fte_expiry: updatedData.actual_fte_expiry,
                 actual_fte_status: updatedData.actual_fte_status,
+                actual_fte_shared_with: updatedData.actual_fte_shared_with,
+                actual_fte_shared_fte: updatedData.actual_fte_shared_fte,
+                actual_fte_shared_expiry: updatedData.actual_fte_shared_expiry,
               }
             : position
         );
