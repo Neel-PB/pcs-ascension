@@ -270,34 +270,35 @@ export function EditableFTECell({
         sticky="partial"
       >
         <div className="p-3">
-          <div className="space-y-0">
-            {/* Status / Reason Dropdown */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Status / Reason</Label>
-              <Select value={editStatus} onValueChange={handleStatusChange}>
-                <SelectTrigger className="h-7 text-xs">
-                  <SelectValue placeholder="Select reason..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {visibleStatusOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Status / Reason Dropdown - always visible, no animation */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">Status / Reason</Label>
+            <Select value={editStatus} onValueChange={handleStatusChange}>
+              <SelectTrigger className="h-7 text-xs">
+                <SelectValue placeholder="Select reason..." />
+              </SelectTrigger>
+              <SelectContent>
+                {visibleStatusOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
+          {/* Dynamic content area with stable height to prevent popover repositioning */}
+          <div className="min-h-[280px] relative overflow-hidden mt-3">
             {/* Active FTE Dropdown - shown after status selected */}
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="sync">
               {editStatus && (
                 <motion.div
                   key="fte-field"
-                  initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                  animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
-                  exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2, ease: 'easeOut' }}
-                  className="space-y-1.5 overflow-hidden"
+                  className="space-y-1.5"
                 >
                   <Label className="text-xs font-medium">Active FTE</Label>
                   <Select value={editFte} onValueChange={setEditFte}>
@@ -316,16 +317,16 @@ export function EditableFTECell({
               )}
             </AnimatePresence>
 
-            {/* Expiry Date - shown for non-shared position statuses */}
-            <AnimatePresence mode="wait">
+            {/* Non-shared position: Expiry Date field */}
+            <AnimatePresence mode="sync">
               {editStatus && !isSharedPosition && (
                 <motion.div
                   key="expiry-field"
-                  initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                  animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
-                  exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
                   transition={{ duration: 0.2, ease: 'easeOut' }}
-                  className="space-y-1.5 overflow-hidden"
+                  className="space-y-1.5 mt-3"
                 >
                   <Label className="text-xs font-medium">
                     Expiry Date
@@ -375,23 +376,23 @@ export function EditableFTECell({
               )}
             </AnimatePresence>
 
-            {/* Shared Position fields with cascading selects */}
-            <AnimatePresence mode="wait">
+            {/* Shared Position fields - slide in from right */}
+            <AnimatePresence mode="sync">
               {isSharedPosition && (
                 <motion.div
                   key="shared-fields"
-                  initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                  animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
-                  exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                  transition={{ duration: 0.25, ease: 'easeOut' }}
-                  className="space-y-3 overflow-hidden"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.2, ease: 'easeOut' }}
+                  className="space-y-3 mt-3"
                 >
                   {/* Share With - Cascading Selection */}
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">Share With</Label>
                     
                     {/* Show badge if department already selected */}
-                    <AnimatePresence mode="wait">
+                    <AnimatePresence mode="sync">
                       {sharedDepartment && !sharedMarket ? (
                         <motion.div
                           key="selected-badge"
@@ -447,7 +448,7 @@ export function EditableFTECell({
                           </Select>
 
                           {/* Facility Selection - animates in after market */}
-                          <AnimatePresence mode="wait">
+                          <AnimatePresence mode="sync">
                             {sharedMarket && (
                               <motion.div
                                 key="facility-select"
@@ -474,7 +475,7 @@ export function EditableFTECell({
                           </AnimatePresence>
 
                           {/* Department Selection - animates in after facility */}
-                          <AnimatePresence mode="wait">
+                          <AnimatePresence mode="sync">
                             {sharedFacility && (
                               <motion.div
                                 key="department-select"
@@ -568,32 +569,29 @@ export function EditableFTECell({
                 </motion.div>
               )}
             </AnimatePresence>
+          </div>
 
-            {/* Actions */}
-            <motion.div 
-              className="flex gap-2 pt-3"
-              layout
-            >
-              {isModified && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={handleRevert}
-                >
-                  <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                  Revert
-                </Button>
-              )}
+          {/* Actions - outside stable area, no layout animation */}
+          <div className="flex gap-2 pt-3 border-t">
+            {isModified && (
               <Button
+                variant="outline"
                 size="sm"
                 className="flex-1"
-                onClick={handleSave}
-                disabled={!editStatus}
+                onClick={handleRevert}
               >
-                Save
+                <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                Revert
               </Button>
-            </motion.div>
+            )}
+            <Button
+              size="sm"
+              className="flex-1"
+              onClick={handleSave}
+              disabled={!editStatus}
+            >
+              Save
+            </Button>
           </div>
         </div>
       </PopoverContent>
