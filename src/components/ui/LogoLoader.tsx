@@ -85,7 +85,8 @@ export function LogoLoader({ size = "md", variant = "default", className = "" }:
         height={dimension}
         loading="eager"
         decoding="sync"
-        fetchPriority="high"
+        // @ts-expect-error - fetchpriority is valid HTML but not in React types yet
+        fetchpriority="high"
         className="object-contain"
         style={{ 
           minWidth: dimension, 

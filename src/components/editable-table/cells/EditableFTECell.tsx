@@ -1,20 +1,29 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { cn } from '@/lib/utils';
 import { RotateCcw, CalendarIcon, Pencil, X } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, parseISO } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useFilterData } from '@/hooks/useFilterData';
+import type { Market, Facility, Department } from '@/hooks/useFilterData';
 import {
   getMaxExpiryDate,
   getFteValuesForStatus,
   getVisibleStatusOptions,
 } from '@/lib/fteStatusRules';
+
+// Lazy load Calendar for performance - only imported when popover opens
+const Calendar = lazy(() => import('@/components/ui/calendar').then(m => ({ default: m.Calendar })));
+
+// Filter data provider type for prop drilling
+export interface FilterDataProvider {
+  markets: Market[];
+  getFacilitiesByMarket: (market: string) => Facility[];
+  getDepartmentsByFacility: (facilityId: string) => Department[];
+}
 
 interface EditableFTECellProps {
   value: number | null | undefined;
@@ -34,6 +43,8 @@ interface EditableFTECellProps {
     actual_fte_shared_expiry?: string | null;
   }) => void | Promise<void>;
   className?: string;
+  // Performance optimization: pass filter data from parent instead of calling hook per cell
+  filterDataProvider?: FilterDataProvider;
 }
 
 export function EditableFTECell({
@@ -47,6 +58,7 @@ export function EditableFTECell({
   sharedExpiry,
   onSave,
   className,
+  filterDataProvider,
 }: EditableFTECellProps) {
   const [open, setOpen] = useState(false);
   const [editStatus, setEditStatus] = useState(status || '');
@@ -68,8 +80,10 @@ export function EditableFTECell({
   );
   const [sharedCalendarOpen, setSharedCalendarOpen] = useState(false);
 
-  // Filter data for cascading selects
-  const { markets, getFacilitiesByMarket, getDepartmentsByFacility } = useFilterData();
+  // Use filter data from provider (passed from parent) - no hook call per cell
+  const markets = filterDataProvider?.markets ?? [];
+  const getFacilitiesByMarket = filterDataProvider?.getFacilitiesByMarket ?? (() => []);
+  const getDepartmentsByFacility = filterDataProvider?.getDepartmentsByFacility ?? (() => []);
 
   const isModified = originalValue !== undefined && value !== originalValue;
   const isSharedPosition = editStatus === 'SHARED_POSITION';
@@ -335,14 +349,16 @@ export function EditableFTECell({
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0 z-[60]" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={editExpiry}
-                        onSelect={handleDateSelect}
-                        disabled={isDateDisabled}
-                        initialFocus
-                        className="p-3 pointer-events-auto"
-                      />
+                      <Suspense fallback={<div className="p-3 text-xs text-muted-foreground">Loading...</div>}>
+                        <Calendar
+                          mode="single"
+                          selected={editExpiry}
+                          onSelect={handleDateSelect}
+                          disabled={isDateDisabled}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </Suspense>
                     </PopoverContent>
                   </Popover>
                   {editExpiry && (
@@ -522,18 +538,20 @@ export function EditableFTECell({
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0 z-[60]" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={editSharedExpiry}
-                          onSelect={handleSharedDateSelect}
-                          disabled={(date) => {
-                            const today = new Date();
-                            today.setHours(0, 0, 0, 0);
-                            return date < today;
-                          }}
-                          initialFocus
-                          className="p-3 pointer-events-auto"
-                        />
+                        <Suspense fallback={<div className="p-3 text-xs text-muted-foreground">Loading...</div>}>
+                          <Calendar
+                            mode="single"
+                            selected={editSharedExpiry}
+                            onSelect={handleSharedDateSelect}
+                            disabled={(date) => {
+                              const today = new Date();
+                              today.setHours(0, 0, 0, 0);
+                              return date < today;
+                            }}
+                            initialFocus
+                            className="p-3 pointer-events-auto"
+                          />
+                        </Suspense>
                       </PopoverContent>
                     </Popover>
                     {editSharedExpiry && (

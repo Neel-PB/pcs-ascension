@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { ColumnDef } from '@/types/table';
 import { TextCell } from './cells/TextCell';
 import { NumberCell } from './cells/NumberCell';
@@ -13,7 +14,8 @@ interface TableRowProps<T = any> {
   className?: string;
 }
 
-export function TableRow<T = any>({
+// Memoized table row to prevent re-renders during virtualization scroll
+function TableRowInner<T = any>({
   data,
   columns,
   gridTemplate,
@@ -67,3 +69,13 @@ export function TableRow<T = any>({
     </div>
   );
 }
+
+// Export memoized version with custom comparison for virtualization performance
+export const TableRow = memo(TableRowInner, (prevProps, nextProps) => {
+  return (
+    prevProps.data === nextProps.data &&
+    prevProps.gridTemplate === nextProps.gridTemplate &&
+    prevProps.columns === nextProps.columns &&
+    prevProps.className === nextProps.className
+  );
+}) as typeof TableRowInner;
