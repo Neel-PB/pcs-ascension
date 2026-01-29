@@ -16,6 +16,7 @@ import { useUpdateShiftOverride } from "@/hooks/useUpdateShiftOverride";
 import { EditableFTECell } from "@/components/editable-table/cells/EditableFTECell";
 import { usePositionCommentCounts } from "@/hooks/usePositionCommentCounts";
 import { KPISummaryModal } from "@/components/staffing/KPISummaryModal";
+import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 
 interface EmployeesTabProps {
   selectedRegion: string;
@@ -47,7 +48,7 @@ export function EmployeesTab({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetDefaultTab, setSheetDefaultTab] = useState<"details" | "comments">("details");
   const [filterOpen, setFilterOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const { inputValue: searchQuery, debouncedValue: debouncedSearch, setInputValue: setSearchQuery } = useDebouncedSearch(300);
   const [sortColumn, setSortColumn] = useState<string>("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [filters, setFilters] = useState({
@@ -59,17 +60,17 @@ export function EmployeesTab({
     fteMax: "",
   });
 
-  const handleRowClick = (employee: any) => {
+  const handleRowClick = useCallback((employee: any) => {
     setSelectedEmployee(employee);
     setSheetDefaultTab("details");
     setSheetOpen(true);
-  };
+  }, []);
 
-  const handleCommentClick = (employee: any) => {
+  const handleCommentClick = useCallback((employee: any) => {
     setSelectedEmployee(employee);
     setSheetDefaultTab("comments");
     setSheetOpen(true);
-  };
+  }, []);
 
   const handleSort = (columnId: string, direction: "asc" | "desc") => {
     setSortColumn(columnId);
@@ -121,9 +122,9 @@ export function EmployeesTab({
 
     let filtered = [...employees];
 
-    // Apply search
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    // Apply debounced search
+    if (debouncedSearch) {
+      const query = debouncedSearch.toLowerCase();
       filtered = filtered.filter((e) => {
         const searchFields = [
           e.employeeName,
@@ -197,7 +198,7 @@ export function EmployeesTab({
     }
 
     return filtered;
-  }, [employees, searchQuery, filters, sortColumn, sortDirection]);
+  }, [employees, debouncedSearch, filters, sortColumn, sortDirection]);
 
   // Extract position IDs for comment count fetching
   const positionIds = useMemo(() => 
