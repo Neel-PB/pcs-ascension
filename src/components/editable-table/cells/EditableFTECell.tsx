@@ -287,17 +287,31 @@ export function EditableFTECell({
             </Select>
           </div>
 
-          {/* Dynamic content area with stable height to prevent popover repositioning */}
-          <div className="min-h-[280px] relative overflow-hidden mt-3">
+          {/* Dynamic content area with animated height */}
+          <motion.div 
+            layout
+            transition={{ 
+              layout: { 
+                type: "spring", 
+                stiffness: 500, 
+                damping: 35 
+              }
+            }}
+            className="relative overflow-hidden mt-3"
+          >
             {/* Active FTE Dropdown - shown after status selected */}
             <AnimatePresence mode="sync">
               {editStatus && (
                 <motion.div
                   key="fte-field"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2, ease: 'easeOut' }}
+                  layout
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ 
+                    opacity: { duration: 0.15 },
+                    layout: { type: "spring", stiffness: 500, damping: 35 }
+                  }}
                   className="space-y-1.5"
                 >
                   <Label className="text-xs font-medium">Active FTE</Label>
@@ -322,10 +336,14 @@ export function EditableFTECell({
               {editStatus && !isSharedPosition && (
                 <motion.div
                   key="expiry-field"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.2, ease: 'easeOut' }}
+                  layout
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ 
+                    opacity: { duration: 0.15 },
+                    layout: { type: "spring", stiffness: 500, damping: 35 }
+                  }}
                   className="space-y-1.5 mt-3"
                 >
                   <Label className="text-xs font-medium">
@@ -376,15 +394,19 @@ export function EditableFTECell({
               )}
             </AnimatePresence>
 
-            {/* Shared Position fields - slide in from right */}
+            {/* Shared Position fields */}
             <AnimatePresence mode="sync">
               {isSharedPosition && (
                 <motion.div
                   key="shared-fields"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.2, ease: 'easeOut' }}
+                  layout
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ 
+                    opacity: { duration: 0.15 },
+                    layout: { type: "spring", stiffness: 500, damping: 35 }
+                  }}
                   className="space-y-3 mt-3"
                 >
                   {/* Share With - Cascading Selection */}
@@ -452,10 +474,15 @@ export function EditableFTECell({
                             {sharedMarket && (
                               <motion.div
                                 key="facility-select"
+                                layout
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
                                 exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.15, ease: 'easeOut' }}
+                                transition={{ 
+                                  opacity: { duration: 0.12 },
+                                  height: { duration: 0.15 },
+                                  layout: { type: "spring", stiffness: 500, damping: 35 }
+                                }}
                                 className="overflow-hidden"
                               >
                                 <Select value={sharedFacility} onValueChange={handleFacilityChange}>
@@ -479,10 +506,15 @@ export function EditableFTECell({
                             {sharedFacility && (
                               <motion.div
                                 key="department-select"
+                                layout
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
                                 exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.15, ease: 'easeOut' }}
+                                transition={{ 
+                                  opacity: { duration: 0.12 },
+                                  height: { duration: 0.15 },
+                                  layout: { type: "spring", stiffness: 500, damping: 35 }
+                                }}
                                 className="overflow-hidden"
                               >
                                 <Select value={sharedDepartment} onValueChange={setSharedDepartment}>
@@ -569,9 +601,9 @@ export function EditableFTECell({
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
+          </motion.div>
 
-          {/* Actions - outside stable area, no layout animation */}
+          {/* Actions */}
           <div className="flex gap-2 pt-3 border-t">
             {isModified && (
               <Button
