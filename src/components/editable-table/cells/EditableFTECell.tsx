@@ -207,7 +207,14 @@ export function EditableFTECell({
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-4" align="center">
+      <PopoverContent 
+        className="w-80 p-4 z-50" 
+        align="center"
+        side="top"
+        sideOffset={8}
+        collisionPadding={20}
+        avoidCollisions={true}
+      >
         <div className="space-y-4">
           {/* Status / Reason Dropdown */}
           <div className="space-y-2">
@@ -269,7 +276,7 @@ export function EditableFTECell({
                     {editExpiry ? format(editExpiry, 'MMM d, yyyy') : 'Select date'}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 z-[60]" align="start">
                   <Calendar
                     mode="single"
                     selected={editExpiry}
@@ -346,7 +353,7 @@ export function EditableFTECell({
                         {editSharedExpiry ? format(editSharedExpiry, 'MMM d, yyyy') : 'Select date'}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className="w-auto p-0 z-[60]" align="start">
                       <Calendar
                         mode="single"
                         selected={editSharedExpiry}
