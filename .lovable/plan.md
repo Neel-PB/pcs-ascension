@@ -1,141 +1,188 @@
 
+# Fix: Hierarchical Access Scope with Facility → Department Inheritance
 
-# Fix: Facility/Department Filter Should Override Access Scope
+## Problem Summary
 
-## Problem Identified
+Two issues preventing filters and forecast from working:
 
-When a Director user selects a **specific facility** from the dropdown, the Forecast tab shows no data. The root cause:
+1. **Demo Director** - Market case mismatch ("FLORIDA" vs "Florida") causes `.in()` filter to fail
+2. **Demo Manager** - Assigned department ID (14452) doesn't exist in `positions` table for their facility
 
-**Current Logic (broken):**
-```
-Query = .or(accessScopeFilter) AND .eq(facilityId)
-```
-
-This creates a PostgREST query that requires BOTH conditions to match, but the OR filter syntax combined with AND can produce unexpected results.
-
-**Expected Logic:**
-When a specific facility is selected from the dropdown, we should trust that selection (since the FilterBar already restricts options to allowed facilities) and use ONLY that filter - not also apply the access scope.
+**User's Requirement**: When a user is assigned to a **facility**, they should see ALL departments within that facility (not just specific department assignments).
 
 ---
 
-## Solution
+## Current Access Scope Logic (Broken)
 
-Update `useForecastBalance.ts` to:
+```text
+Demo Manager:
+├── Assigned: Facility 52005
+├── Assigned: Department 14452 (ICU)
+│
+Current Filter Logic:
+├── departmentId.in.(14452)  ← FAILS because 14452 not in positions
+└── Result: No data
+```
 
-1. **Skip access scope filter when specific UI filters are applied**
-   - If `facilityId` is provided → use only the facility filter
-   - If `market` is provided (no facility) → use only the market filter  
-   - If neither → apply access scope filter for the OR union
+---
 
-2. **Same pattern for departments**
-   - If `departmentId` is provided → use only that filter
-   - Access scope only applies when using "All Departments"
+## Proposed Solution: Hierarchical Inheritance
+
+### Logic Change
+
+```text
+Demo Manager:
+├── Assigned: Facility 52005 (has departments: 22700, 10277, 14450, ...)
+├── Assigned: Department 14452 (ignored since facility covers broader access)
+│
+New Filter Logic:
+├── facilityId = 52005  ← Uses facility assignment
+├── Department dropdown: Shows all 11 departments in facility 52005
+└── Result: Data appears ✓
+```
+
+### Access Hierarchy Rules
+
+| Assignment | Behavior |
+|------------|----------|
+| **Facility only** | User sees ALL departments in that facility |
+| **Department only** | User sees ONLY that department |
+| **Both Facility + Department** | Facility "wins" - user sees all departments in facility |
+| **Market only** | User sees all facilities in market, and all their departments |
 
 ---
 
 ## Technical Changes
 
-| File | Change |
-|------|--------|
-| `src/hooks/useForecastBalance.ts` | Restructure filter logic so specific UI selections bypass access scope filter |
+### File 1: `src/hooks/useOrgScopedFilters.ts`
 
----
-
-## Implementation Details
-
-### Updated Filter Logic
+**Change**: When determining available departments, inherit from facility assignments:
 
 ```typescript
-// Determine if we need access scope filter at all
-// When a specific facility or market is selected, trust that selection
-// (FilterBar already ensures it's within user's allowed scope)
-const needsAccessScopeFilter = !hasUnrestrictedAccess && !facilityId && !market;
-
-// Build access scope filter only when needed
-const accessScopeFilter = needsAccessScopeFilter ? buildAccessScopeFilter() : null;
-
-// Apply filters
-let employedQuery = supabase
-  .from('positions')
-  .select('*')
-  .not('employeeName', 'is', null);
-
-// Step 1: Access scope OR gate (only when no specific UI filter)
-if (accessScopeFilter) {
-  employedQuery = employedQuery.or(accessScopeFilter);
+// If user has facility restrictions, they can see ALL departments in those facilities
+if (accessScope.hasFacilityRestriction) {
+  // Get all departments from positions for allowed facilities
+  // Instead of checking department restrictions separately
 }
+```
 
-// Step 2: Apply UI filters as AND
-if (facilityId) {
-  employedQuery = employedQuery.eq('facilityId', facilityId);
-}
-if (market) {
-  employedQuery = employedQuery.ilike('market', market);
-}
-if (departmentId) {
-  // existing logic...
-}
+### File 2: `src/hooks/useForecastBalance.ts`
+
+**Change**: Restructure access scope filter to prioritize facility-level access:
+
+```typescript
+// Build access scope filter with inheritance
+// If user has facility access, use facilityId.in.(...)
+// Department restrictions only apply if NO facility restrictions exist
+
+const buildAccessScopeFilter = (): string | null => {
+  if (hasUnrestrictedAccess) return null;
+  
+  const conditions: string[] = [];
+  
+  // 1. Facility restrictions take precedence (grants access to all depts)
+  if (allowedFacilities.length > 0) {
+    conditions.push(`facilityId.in.(${allowedFacilities.join(',')})`);
+  }
+  
+  // 2. Market restrictions (case-insensitive)
+  if (allowedMarkets.length > 0) {
+    for (const m of allowedMarkets) {
+      conditions.push(`market.ilike.${m}`);
+    }
+  }
+  
+  // 3. Region restrictions (as facility IDs)
+  if (facilityIdsInAllowedRegions.length > 0) {
+    conditions.push(`facilityId.in.(${facilityIdsInAllowedRegions.join(',')})`);
+  }
+  
+  // 4. Department restrictions ONLY if no facility restrictions
+  // (facility access implies access to all departments)
+  if (allowedDepartments.length > 0 && allowedFacilities.length === 0) {
+    conditions.push(`departmentId.in.(${allowedDepartments.join(',')})`);
+  }
+  
+  return conditions.length > 0 ? conditions.join(',') : null;
+};
+```
+
+### File 3: `src/components/staffing/FilterBar.tsx`
+
+**Change**: Department dropdown should show departments from user's allowed facilities:
+
+```typescript
+const getAvailableDepartments = () => {
+  // If user has department restrictions AND no facility restrictions
+  if (hasRestrictionAt('department') && !hasRestrictionAt('facility')) {
+    return restrictedOptions.availableDepartments;
+  }
+  
+  // If user has facility restrictions, show ALL departments in those facilities
+  if (hasRestrictionAt('facility')) {
+    // Filter allDepartments to only those in allowed facilities
+    const allowedFacilityIds = new Set(
+      restrictedOptions.availableFacilities.map(f => f.facility_id)
+    );
+    const deptsByFacility = allDepartments.filter(d => 
+      allowedFacilityIds.has(d.facility_id)
+    );
+    // Return unique department names
+    const names = new Set<string>();
+    deptsByFacility.forEach(d => names.add(d.department_name));
+    return Array.from(names).sort().map(name => ({
+      department_id: name,
+      department_name: name,
+    }));
+  }
+  
+  // ... rest of existing logic
+};
 ```
 
 ---
 
-## Why This Works
-
-| Scenario | Filter Applied | Expected Result |
-|----------|----------------|-----------------|
-| Director selects "St. Vincent's Southside" | `.eq('facilityId', '52005')` only | Shows facility 52005 data |
-| Director selects "All Facilities" | `.or(accessScopeFilter)` | Shows all allowed facilities |
-| Director selects market "INDIANA" | `.ilike('market', 'INDIANA')` only | Shows INDIANA market data |
-| Admin selects facility | `.eq('facilityId', X)` only | Shows that facility |
-| Admin selects "All" | No filter | Shows all data |
-
----
-
-## Data Flow
+## Data Flow After Fix
 
 ```text
-User: Demo Director
-  ↓
-FilterBar: Shows only allowed facilities (52005, 40015, etc.)
-  ↓
-User selects: "St. Vincent's Southside" (facility 52005)
-  ↓
+User: Demo Manager
+├── Assigned: Facility 52005
+│
+FilterBar:
+├── Facility dropdown: Shows "St. Vincent's Southside" (52005)
+├── Department dropdown: Shows ALL 11 departments in 52005
+│   └── Critical Care Unit 001, Neonatal ICU Unit 001, etc.
+│
 useForecastBalance:
-  - facilityId = '52005' is provided
-  - Skip access scope filter (trust FilterBar)
-  - Apply: WHERE facilityId = '52005'
-  ↓
-Result: Data for facility 52005 displayed ✓
+├── Access Scope Filter: facilityId.in.(52005)
+├── (Department filter NOT applied since facility grants full access)
+│
+Result: Data appears for all departments in facility 52005 ✓
 ```
 
 ---
 
-## Trust Model
+## Expected Results
 
-This approach works because:
-
-1. **FilterBar already enforces access scope** in the dropdown options
-   - Users can only select facilities within their allowed markets
-   - The `getAvailableFacilities()` function filters based on `restrictedOptions`
-
-2. **Double-filtering causes problems**
-   - PostgREST OR + AND syntax can have edge cases
-   - Redundant to check scope twice (once in UI, once in query)
-
-3. **Simpler queries are more reliable**
-   - `WHERE facilityId = X` is straightforward
-   - Complex OR conditions can fail silently
+| User | Current | After Fix |
+|------|---------|-----------|
+| Demo Director | No data (market case mismatch) | ✓ Sees all 4 facilities and their departments |
+| Demo Manager | No data (dept 14452 not found) | ✓ Sees all 11 departments in facility 52005 |
+| Admin | ✓ All data | ✓ All data (no change) |
 
 ---
 
 ## Testing Verification
 
-1. Login as Demo Director
-2. Select "St. Vincent's Southside" from facility dropdown
-3. Navigate to Forecast tab
-4. **Verify**: Data appears for that facility
-5. Select "All Facilities" 
-6. **Verify**: Shows data from all allowed facilities (INDIANA, ILLINOIS, FLORIDA markets)
-7. Login as Admin
-8. **Verify**: No regression, sees all data
+1. **Demo Director**:
+   - Select "All Facilities" → see data from all 4 allowed facilities
+   - Select "St. Vincent's Southside" → see data for that facility
+   - Department dropdown shows departments from allowed facilities
 
+2. **Demo Manager**:
+   - Facility dropdown shows "St. Vincent's Southside"
+   - Department dropdown shows ALL 11 departments in that facility
+   - Select any department → forecast data appears
+
+3. **Admin**:
+   - No regression - sees all data with no restrictions
