@@ -1,18 +1,18 @@
 
 
-# Fix Dynamic Height Animation for Active FTE Popover
+# Add Content Animations to Active FTE Popover
 
-## Problem Analysis
+## Current State
 
-The current implementation doesn't animate height smoothly because:
+The popover currently animates:
+- **Height**: `height: 0` to `height: "auto"` (working)
+- **Opacity**: `opacity: 0` to `opacity: 1` (working)
 
-1. **Opacity-only animations**: The `motion.div` sections use `initial={{ opacity: 0 }}` and `animate={{ opacity: 1 }}` but don't include height transitions
-2. **Layout prop limitations**: The `layout` prop alone doesn't animate height when children appear/disappear - it only animates position/size when the element's **own** dimensions change due to layout shifts
-3. **Missing coordination**: Multiple `AnimatePresence` blocks need a `LayoutGroup` to coordinate their animations
+But the content itself doesn't have any movement - it just fades in/out while the container resizes.
 
-## Solution
+## Enhancement: Add Slide/Transform Animations
 
-Use explicit `height: 0` → `height: "auto"` animations combined with `LayoutGroup` for smooth, coordinated height transitions.
+Add `y` (vertical slide) animations to content sections so they slide up/down while fading in/out, creating a more polished feel.
 
 ---
 
@@ -20,162 +20,168 @@ Use explicit `height: 0` → `height: "auto"` animations combined with `LayoutGr
 
 ### File: `src/components/editable-table/cells/EditableFTECell.tsx`
 
-#### Change 1: Import LayoutGroup
+#### Change 1: Add Y-Slide to Active FTE Field (Lines 306-316)
 
 ```typescript
-// Line 10 - BEFORE:
-import { motion, AnimatePresence } from 'framer-motion';
-
-// AFTER:
-import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
-```
-
-#### Change 2: Wrap Dynamic Content in LayoutGroup
-
-The `LayoutGroup` coordinates all layout animations within it, preventing jumpy transitions.
-
-```typescript
-// Line 290-291 - BEFORE:
-{/* Dynamic content area with animated height */}
-<motion.div 
+// BEFORE:
+<motion.div
+  key="fte-field"
   layout
+  initial={{ opacity: 0, height: 0 }}
+  animate={{ opacity: 1, height: "auto" }}
+  exit={{ opacity: 0, height: 0 }}
   transition={{ 
-    layout: { 
-      type: "spring", 
-      stiffness: 500, 
-      damping: 35 
-    }
+    opacity: { duration: 0.15 },
+    height: { type: "spring", stiffness: 500, damping: 35 },
+    layout: { type: "spring", stiffness: 500, damping: 35 }
   }}
-  className="relative overflow-hidden mt-3"
+  className="space-y-1.5 overflow-hidden"
 >
 
 // AFTER:
-{/* Dynamic content area with animated height */}
-<LayoutGroup>
-  <motion.div 
-    layout
-    transition={{ 
-      layout: { 
-        type: "spring", 
-        stiffness: 500, 
-        damping: 35 
-      }
-    }}
-    className="relative mt-3"
-  >
+<motion.div
+  key="fte-field"
+  layout
+  initial={{ opacity: 0, height: 0, y: -8 }}
+  animate={{ opacity: 1, height: "auto", y: 0 }}
+  exit={{ opacity: 0, height: 0, y: -8 }}
+  transition={{ 
+    opacity: { duration: 0.15 },
+    y: { type: "spring", stiffness: 500, damping: 35 },
+    height: { type: "spring", stiffness: 500, damping: 35 },
+    layout: { type: "spring", stiffness: 500, damping: 35 }
+  }}
+  className="space-y-1.5 overflow-hidden"
+>
 ```
 
-#### Change 3: Add Height Animation to Child Sections
-
-For each animated section, add explicit `height: 0` → `height: "auto"` transitions:
+#### Change 2: Add Y-Slide to Expiry Date Field (Lines 339-350)
 
 ```typescript
-// Active FTE dropdown (around line 305-330)
-<AnimatePresence mode="sync">
-  {editStatus && (
-    <motion.div
-      key="fte-field"
-      layout
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: "auto" }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ 
-        opacity: { duration: 0.15 },
-        height: { type: "spring", stiffness: 500, damping: 35 },
-        layout: { type: "spring", stiffness: 500, damping: 35 }
-      }}
-      className="space-y-1.5 overflow-hidden"
-    >
-      {/* ... */}
-    </motion.div>
-  )}
-</AnimatePresence>
-```
-
-```typescript
-// Expiry Date field (around line 337-394)
-<AnimatePresence mode="sync">
-  {editStatus && !isSharedPosition && (
-    <motion.div
-      key="expiry-field"
-      layout
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: "auto" }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ 
-        opacity: { duration: 0.15 },
-        height: { type: "spring", stiffness: 500, damping: 35 },
-        layout: { type: "spring", stiffness: 500, damping: 35 }
-      }}
-      className="space-y-1.5 mt-3 overflow-hidden"
-    >
-      {/* ... */}
-    </motion.div>
-  )}
-</AnimatePresence>
-```
-
-```typescript
-// Shared Position fields (around line 400-601)
-<AnimatePresence mode="sync">
-  {isSharedPosition && (
-    <motion.div
-      key="shared-fields"
-      layout
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: "auto" }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ 
-        opacity: { duration: 0.15 },
-        height: { type: "spring", stiffness: 500, damping: 35 },
-        layout: { type: "spring", stiffness: 500, damping: 35 }
-      }}
-      className="space-y-3 mt-3 overflow-hidden"
-    >
-      {/* ... */}
-    </motion.div>
-  )}
-</AnimatePresence>
-```
-
-#### Change 4: Close LayoutGroup
-
-```typescript
-// Line 604 - BEFORE:
-</motion.div>
+// BEFORE:
+<motion.div
+  key="expiry-field"
+  layout
+  initial={{ opacity: 0, height: 0 }}
+  animate={{ opacity: 1, height: "auto" }}
+  exit={{ opacity: 0, height: 0 }}
+  transition={{ 
+    opacity: { duration: 0.15 },
+    height: { type: "spring", stiffness: 500, damping: 35 },
+    layout: { type: "spring", stiffness: 500, damping: 35 }
+  }}
+  className="space-y-1.5 mt-3 overflow-hidden"
+>
 
 // AFTER:
-  </motion.div>
-</LayoutGroup>
+<motion.div
+  key="expiry-field"
+  layout
+  initial={{ opacity: 0, height: 0, y: -8 }}
+  animate={{ opacity: 1, height: "auto", y: 0 }}
+  exit={{ opacity: 0, height: 0, y: -8 }}
+  transition={{ 
+    opacity: { duration: 0.15 },
+    y: { type: "spring", stiffness: 500, damping: 35 },
+    height: { type: "spring", stiffness: 500, damping: 35 },
+    layout: { type: "spring", stiffness: 500, damping: 35 }
+  }}
+  className="space-y-1.5 mt-3 overflow-hidden"
+>
 ```
 
+#### Change 3: Add X-Slide to Shared Position Fields (Lines 403-414)
+
+Use horizontal slide (`x`) for the shared position section to create a "page switch" effect when transitioning between non-shared and shared modes:
+
+```typescript
+// BEFORE:
+<motion.div
+  key="shared-fields"
+  layout
+  initial={{ opacity: 0, height: 0 }}
+  animate={{ opacity: 1, height: "auto" }}
+  exit={{ opacity: 0, height: 0 }}
+  transition={{ 
+    opacity: { duration: 0.15 },
+    height: { type: "spring", stiffness: 500, damping: 35 },
+    layout: { type: "spring", stiffness: 500, damping: 35 }
+  }}
+  className="space-y-3 mt-3 overflow-hidden"
+>
+
+// AFTER:
+<motion.div
+  key="shared-fields"
+  layout
+  initial={{ opacity: 0, height: 0, x: 12 }}
+  animate={{ opacity: 1, height: "auto", x: 0 }}
+  exit={{ opacity: 0, height: 0, x: -12 }}
+  transition={{ 
+    opacity: { duration: 0.15 },
+    x: { type: "spring", stiffness: 500, damping: 35 },
+    height: { type: "spring", stiffness: 500, damping: 35 },
+    layout: { type: "spring", stiffness: 500, damping: 35 }
+  }}
+  className="space-y-3 mt-3 overflow-hidden"
+>
+```
+
+#### Change 4: Add Y-Slide to Cascading Selects (Lines 479-489 and 511-521)
+
+```typescript
+// Facility Select - BEFORE:
+<motion.div
+  key="facility-select"
+  layout
+  initial={{ opacity: 0, height: 0 }}
+  animate={{ opacity: 1, height: 'auto' }}
+  exit={{ opacity: 0, height: 0 }}
+  transition={{ 
+    opacity: { duration: 0.12 },
+    height: { duration: 0.15 },
+    layout: { type: "spring", stiffness: 500, damping: 35 }
+  }}
+  className="overflow-hidden"
+>
+
+// AFTER:
+<motion.div
+  key="facility-select"
+  layout
+  initial={{ opacity: 0, height: 0, y: -6 }}
+  animate={{ opacity: 1, height: 'auto', y: 0 }}
+  exit={{ opacity: 0, height: 0, y: -6 }}
+  transition={{ 
+    opacity: { duration: 0.12 },
+    y: { type: "spring", stiffness: 500, damping: 35 },
+    height: { type: "spring", stiffness: 500, damping: 35 },
+    layout: { type: "spring", stiffness: 500, damping: 35 }
+  }}
+  className="overflow-hidden"
+>
+```
+
+Apply the same pattern to Department Select (lines 511-521).
+
 ---
 
-## Animation Breakdown
+## Animation Summary
 
-| Element | Initial | Animate | Exit |
-|---------|---------|---------|------|
-| Container | - | `layout` spring | - |
-| Active FTE | `opacity: 0, height: 0` | `opacity: 1, height: "auto"` | `opacity: 0, height: 0` |
-| Expiry Date | `opacity: 0, height: 0` | `opacity: 1, height: "auto"` | `opacity: 0, height: 0` |
-| Shared Fields | `opacity: 0, height: 0` | `opacity: 1, height: "auto"` | `opacity: 0, height: 0` |
-| Cascading Selects | Already have `height: 0` → `height: "auto"` | Same | Same |
-
----
-
-## Why This Works
-
-1. **`height: "auto"`**: Framer Motion can interpolate from 0 to "auto" height smoothly
-2. **`overflow-hidden`**: Prevents content from overflowing during height transition
-3. **`LayoutGroup`**: Coordinates all nested layout animations so they happen together
-4. **Spring physics**: Matching `stiffness: 500, damping: 35` creates consistent, snappy feel
+| Element | Enter Animation | Exit Animation |
+|---------|-----------------|----------------|
+| Active FTE | Fade in + slide down from -8px | Fade out + slide up to -8px |
+| Expiry Date | Fade in + slide down from -8px | Fade out + slide up to -8px |
+| Shared Fields | Fade in + slide from right (12px) | Fade out + slide left (-12px) |
+| Facility/Dept | Fade in + slide down from -6px | Fade out + slide up to -6px |
 
 ---
 
-## Expected Visual Behavior
+## Visual Result
 
-- **Select LOA/FMLA**: Form expands smoothly to show 3 fields
-- **Switch to Shared Position**: Current fields animate out (shrink), shared fields animate in (grow)
-- **Cascading selects**: Each new dropdown slides in with height animation
-- **Switch back**: Shared fields collapse smoothly, expiry date expands in
+- **Status selection**: Active FTE field slides down smoothly from above
+- **LOA/FMLA**: Expiry date slides down beneath the FTE field
+- **Switch to Shared Position**: Expiry slides out left, Shared section slides in from right (page-switch feel)
+- **Cascading selects**: Each dropdown slides down as it appears
+- **All transitions**: Combined with height animation for smooth container resizing
 
