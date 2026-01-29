@@ -306,11 +306,12 @@ export function EditableFTECell({
                   <motion.div
                     key="fte-field"
                     layout
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
+                    initial={{ opacity: 0, height: 0, y: -8 }}
+                    animate={{ opacity: 1, height: "auto", y: 0 }}
+                    exit={{ opacity: 0, height: 0, y: -8 }}
                     transition={{ 
                       opacity: { duration: 0.15 },
+                      y: { type: "spring", stiffness: 500, damping: 35 },
                       height: { type: "spring", stiffness: 500, damping: 35 },
                       layout: { type: "spring", stiffness: 500, damping: 35 }
                     }}
@@ -339,11 +340,12 @@ export function EditableFTECell({
                   <motion.div
                     key="expiry-field"
                     layout
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
+                    initial={{ opacity: 0, height: 0, y: -8 }}
+                    animate={{ opacity: 1, height: "auto", y: 0 }}
+                    exit={{ opacity: 0, height: 0, y: -8 }}
                     transition={{ 
                       opacity: { duration: 0.15 },
+                      y: { type: "spring", stiffness: 500, damping: 35 },
                       height: { type: "spring", stiffness: 500, damping: 35 },
                       layout: { type: "spring", stiffness: 500, damping: 35 }
                     }}
@@ -403,11 +405,12 @@ export function EditableFTECell({
                   <motion.div
                     key="shared-fields"
                     layout
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
+                    initial={{ opacity: 0, height: 0, x: 12 }}
+                    animate={{ opacity: 1, height: "auto", x: 0 }}
+                    exit={{ opacity: 0, height: 0, x: -12 }}
                     transition={{ 
                       opacity: { duration: 0.15 },
+                      x: { type: "spring", stiffness: 500, damping: 35 },
                       height: { type: "spring", stiffness: 500, damping: 35 },
                       layout: { type: "spring", stiffness: 500, damping: 35 }
                     }}
@@ -479,12 +482,13 @@ export function EditableFTECell({
                               <motion.div
                                 key="facility-select"
                                 layout
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
+                                initial={{ opacity: 0, height: 0, y: -6 }}
+                                animate={{ opacity: 1, height: 'auto', y: 0 }}
+                                exit={{ opacity: 0, height: 0, y: -6 }}
                                 transition={{ 
                                   opacity: { duration: 0.12 },
-                                  height: { duration: 0.15 },
+                                  y: { type: "spring", stiffness: 500, damping: 35 },
+                                  height: { type: "spring", stiffness: 500, damping: 35 },
                                   layout: { type: "spring", stiffness: 500, damping: 35 }
                                 }}
                                 className="overflow-hidden"
@@ -511,12 +515,13 @@ export function EditableFTECell({
                               <motion.div
                                 key="department-select"
                                 layout
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
+                                initial={{ opacity: 0, height: 0, y: -6 }}
+                                animate={{ opacity: 1, height: 'auto', y: 0 }}
+                                exit={{ opacity: 0, height: 0, y: -6 }}
                                 transition={{ 
                                   opacity: { duration: 0.12 },
-                                  height: { duration: 0.15 },
+                                  y: { type: "spring", stiffness: 500, damping: 35 },
+                                  height: { type: "spring", stiffness: 500, damping: 35 },
                                   layout: { type: "spring", stiffness: 500, damping: 35 }
                                 }}
                                 className="overflow-hidden"
