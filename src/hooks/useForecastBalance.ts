@@ -369,7 +369,14 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
       // Filter by market/facility/department which ARE on positions table
       if (market) employedQuery = employedQuery.ilike('market', market);
       if (facilityId) employedQuery = employedQuery.eq('facilityId', facilityId);
-      if (departmentId) employedQuery = employedQuery.eq('departmentId', departmentId);
+      // Department filter - could be ID (numeric) or name (string)
+      if (departmentId) {
+        if (/^\d+$/.test(departmentId)) {
+          employedQuery = employedQuery.eq('departmentId', departmentId);
+        } else {
+          employedQuery = employedQuery.ilike('departmentName', departmentId);
+        }
+      }
       
       const { data: employedPositions, error: empError } = await employedQuery;
       if (empError) throw empError;
@@ -383,7 +390,14 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
       // Same filters as employed query
       if (market) openReqsQuery = openReqsQuery.ilike('market', market);
       if (facilityId) openReqsQuery = openReqsQuery.eq('facilityId', facilityId);
-      if (departmentId) openReqsQuery = openReqsQuery.eq('departmentId', departmentId);
+      // Department filter - could be ID (numeric) or name (string)
+      if (departmentId) {
+        if (/^\d+$/.test(departmentId)) {
+          openReqsQuery = openReqsQuery.eq('departmentId', departmentId);
+        } else {
+          openReqsQuery = openReqsQuery.ilike('departmentName', departmentId);
+        }
+      }
       
       const { data: openReqs, error: reqError } = await openReqsQuery;
       if (reqError) throw reqError;
