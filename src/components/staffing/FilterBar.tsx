@@ -139,19 +139,38 @@ export function FilterBar({
     return Array.from(names).sort();
   }, [allDepartments]);
 
-  // For departments: use restricted if user has department restrictions
-  // Otherwise, if facility is selected cascade from facility
-  // If user has market restrictions and no specific facility/market, filter by allowed markets
+  // HIERARCHICAL INHERITANCE for departments:
+  // 1. If user has facility restrictions → show ALL departments in those facilities
+  // 2. If user has ONLY department restrictions (no facility) → show only assigned departments
+  // 3. If user has market restrictions → show departments from facilities in those markets
+  // 4. Otherwise, cascade normally from selected facility
   const getAvailableDepartments = () => {
-    if (hasRestrictionAt('department')) {
-      return restrictedOptions.availableDepartments;
-    }
+    // When a specific facility is selected in the UI, cascade from that selection
     if (selectedFacility !== "all-facilities") {
       return getDepartmentsByFacility(selectedFacility);
     }
-    // When "All Facilities" is selected, filter by allowed markets if user has market restrictions
+    
+    // FACILITY RESTRICTION: Show ALL departments in user's allowed facilities
+    // This implements the "facility grants access to all its departments" rule
+    if (hasRestrictionAt('facility')) {
+      const allowedFacilityIds = new Set(
+        restrictedOptions.availableFacilities.map(f => f.facility_id)
+      );
+      // Filter departments to only those in allowed facilities
+      const filteredDepts = allDepartments.filter(d => 
+        allowedFacilityIds.has(d.facility_id)
+      );
+      // Get unique department names
+      const uniqueNames = new Set<string>();
+      filteredDepts.forEach(d => uniqueNames.add(d.department_name));
+      return Array.from(uniqueNames).sort().map(name => ({
+        department_id: name,
+        department_name: name
+      }));
+    }
+    
+    // MARKET RESTRICTION (no facility restriction): Show departments from facilities in allowed markets
     if (hasRestrictionAt('market')) {
-      // Get facility IDs that belong to allowed markets
       const allowedFacilityIds = new Set(
         allFacilities
           .filter(f => restrictedOptions.availableMarkets.some(m => 
@@ -159,7 +178,6 @@ export function FilterBar({
           ))
           .map(f => f.facility_id)
       );
-      // Filter departments to only those in allowed facilities, then get unique names
       const filteredNames = new Set<string>();
       allDepartments
         .filter(d => allowedFacilityIds.has(d.facility_id))
@@ -169,7 +187,14 @@ export function FilterBar({
         department_name: name
       }));
     }
-    // All - show unique names only
+    
+    // DEPARTMENT-ONLY RESTRICTION (no facility/market restrictions):
+    // Show only the specific departments assigned to the user
+    if (hasRestrictionAt('department')) {
+      return restrictedOptions.availableDepartments;
+    }
+    
+    // No restrictions - show all unique department names
     return uniqueDepartmentNames.map(name => ({
       department_id: name,
       department_name: name

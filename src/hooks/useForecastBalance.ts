@@ -381,33 +381,38 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         }
       }
       
-      // Build UNION access scope filter (OR across all levels)
-      // User sees data that matches ANY of: their facilities OR markets OR regions OR departments
+      // Build UNION access scope filter with HIERARCHICAL INHERITANCE
+      // Key rule: Facility assignment grants access to ALL departments in that facility
+      // Department restrictions only apply if user has NO facility restrictions
       const buildAccessScopeFilter = (): string | null => {
         if (hasUnrestrictedAccess) return null;
         
         const conditions: string[] = [];
         
-        // Add facility restrictions
+        // 1. Facility restrictions take precedence (grants access to all depts in those facilities)
         if (allowedFacilities.length > 0) {
           conditions.push(`facilityId.in.(${allowedFacilities.join(',')})`);
         }
         
-        // Add department restrictions
-        if (allowedDepartments.length > 0) {
-          conditions.push(`departmentId.in.(${allowedDepartments.join(',')})`);
-        }
-        
-        // Add market restrictions (case-insensitive)
+        // 2. Market restrictions (case-insensitive) - grants access to all facilities/depts in those markets
         if (allowedMarkets.length > 0) {
           for (const m of allowedMarkets) {
             conditions.push(`market.ilike.${m}`);
           }
         }
         
-        // Add region restrictions (converted to facility IDs)
+        // 3. Region restrictions (converted to facility IDs)
         if (facilityIdsInAllowedRegions.length > 0) {
           conditions.push(`facilityId.in.(${facilityIdsInAllowedRegions.join(',')})`);
+        }
+        
+        // 4. Department restrictions ONLY if no facility/market restrictions
+        // (facility access implies access to all departments within)
+        if (allowedDepartments.length > 0 && 
+            allowedFacilities.length === 0 && 
+            allowedMarkets.length === 0 &&
+            facilityIdsInAllowedRegions.length === 0) {
+          conditions.push(`departmentId.in.(${allowedDepartments.join(',')})`);
         }
         
         // If no restrictions at any level, return null (unrestricted)
