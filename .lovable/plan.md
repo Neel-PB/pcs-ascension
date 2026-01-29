@@ -1,126 +1,142 @@
 
-# Fix: Clear Filters Respects Access Scope + Exact Department Name Match
+# Fix: Variance Analysis Must Respect Access Scope
 
-## Problems Identified
+## Problem Summary
 
-### Problem 1: Clear Filters Ignores Access Scope
-When Demo Manager clicks "Clear Filters":
-- **Current behavior**: Department set to `"all-departments"` (locked but empty label)
-- **Expected behavior**: Department reset to `"ICU"` (their assigned default)
+The Variance Analysis tab for Demo Manager shows data from markets/facilities outside the user's authorized Access Scope. The filter dropdown shows "All Departments" because the user has multiple department assignments, but the table should only display data for the assigned departments.
 
-### Problem 2: Table Shows Wrong Data
-When Demo Manager is assigned Department = "ICU":
-- **Current behavior**: Table shows all departments containing "ICU" (Neonatal ICU, Pediatric ICU, Neuro Trauma ICU, etc.)
-- **Expected behavior**: Table shows ONLY exact "ICU" department match
+## Demo Manager's Actual Access Scope (from DB)
+
+| Facility | Facility Name | Department | Department Name |
+|----------|---------------|------------|-----------------|
+| 52005 | St. Vincent's Southside | 14452 | ICU |
+| 52005 | St. Vincent's Southside | (facility-only) | - |
+| 26012 | ASH Pensacola Hospital | 10298 | Adult ECMO 001 |
+| 26012 | ASH Pensacola Hospital | 10277 | Bariatric Surgical Unit 001 |
+| 26012 | ASH Pensacola Hospital | 11012 | Cardiac Care |
+
+**Most Specific Assignment Wins Rule:**
+- Facility 52005: Has department "ICU" → Only show "ICU" (department wins over facility-level)
+- Facility 26012: Has 3 specific departments → Only show those 3 departments
+
+**Result**: Demo Manager should see exactly 4 departments across 2 facilities.
 
 ---
 
 ## Root Cause Analysis
 
-### Clear Filters Issue
-The `handleClearFilters()` function in `StaffingSummary.tsx` (line 125-133) blindly resets all filters to `"all-*"` values without consulting Access Scope defaults:
+### Issue 1: Filter Dropdown Shows "All Departments"
+Since the user has 4 assigned departments, `availableDepartments.length !== 1`, so the default is "all-departments" and the filter isn't locked.
 
-```typescript
-const handleClearFilters = () => {
-  setSelectedRegion("all-regions");
-  setSelectedMarket("all-markets");
-  // ...
-  setSelectedDepartment("all-departments"); // WRONG for restricted users
-};
-```
+**However**: "All Departments" in this context should mean "All of MY assigned departments" - which is only 4, not ALL departments in the database.
 
-### Table Data Issue
-The `useForecastBalance.ts` hook uses partial matching (`ilike`) for department names (line 395):
+### Issue 2: Variance Analysis Doesn't Use Access Scope
+The `VarianceAnalysis.tsx` component:
+- Uses `useFilterData()` directly (fetches ALL regions/markets/facilities/departments)
+- Cascades based on UI selection, not Access Scope
+- When `selectedDepartment === "all-departments"`, it shows ALL facilities/markets
 
-```typescript
-conditions.push(`departmentName.ilike.%${deptName}%`); // Matches "Neonatal ICU Unit 001"
-```
-
-Should use exact matching instead:
-
-```typescript
-conditions.push(`departmentName.eq.${deptName}`); // Matches only "ICU"
-```
+**Expected behavior**: When `selectedDepartment === "all-departments"`:
+- The table should still only show data for the user's 4 authorized departments
+- NOT all departments in the database
 
 ---
 
 ## Technical Changes
 
-### File 1: `src/pages/staffing/StaffingSummary.tsx`
+### File 1: `src/pages/staffing/VarianceAnalysis.tsx`
 
-**Change**: Modify `handleClearFilters` to reset filters to Access Scope defaults, not hardcoded `"all-*"` values.
+**Change**: Integrate Access Scope filtering into the component's data generation logic.
 
 ```typescript
-const handleClearFilters = () => {
-  // Reset to Access Scope defaults instead of "all-*"
-  // For restricted filters, this respects assigned values
-  // For unrestricted filters, this sets them to "all-*"
-  setSelectedRegion(defaultFilters?.region ?? "all-regions");
-  setSelectedMarket(defaultFilters?.market ?? "all-markets");
-  setSelectedFacility(defaultFilters?.facility ?? "all-facilities");
-  setSelectedSubmarket("all-submarkets"); // Optional filter - always reset
-  setSelectedPstat("all-pstat"); // Optional filter - always reset
-  setSelectedLevel2("all-level2"); // Optional filter - always reset
-  setSelectedDepartment(defaultFilters?.department ?? "all-departments");
+// Current (line 22):
+import { useFilterData } from "@/hooks/useFilterData";
+
+// Add:
+import { useOrgScopedFilters } from "@/hooks/useOrgScopedFilters";
+
+// In component (around line 87):
+const { 
+  restrictedOptions, 
+  hasRestrictions, 
+  hasRestrictionAt 
+} = useOrgScopedFilters();
+
+// Modify getData() to filter by Access Scope when "all" is selected:
+const getData = (): GroupedVarianceData[] => {
+  // STEP 1: If user has department restrictions, filter to only authorized departments
+  if (hasRestrictionAt('department') && selectedDepartment === "all-departments") {
+    // Show only the user's authorized departments, grouped by their facilities
+    const authorizedDepts = restrictedOptions.availableDepartments;
+    // Group by facility and return as rows
+    return authorizedDepts.map((dept, idx) => ({
+      name: dept.department_name,
+      subText: dept.department_id,
+      ...generateVariance(),
+      type: 'skill' as const,
+      id: `dept-${idx}`,
+    }));
+  }
+  
+  // STEP 2: If specific department selected (or no restrictions), continue normal flow
+  // ... existing logic
 };
 ```
 
-**Result for Demo Manager**:
-- Clear Filters will set Department back to "ICU" (their assigned default)
-- Facility stays at their assigned facility
-- Optional filters reset to "All"
+### File 2: Cascade Through Facilities/Markets
 
-### File 2: `src/pages/positions/PositionsPage.tsx`
-
-**Change**: Same fix for `handleClearFilters` (line 103-110).
-
-### File 3: `src/hooks/useForecastBalance.ts`
-
-**Change**: Replace `ilike` (partial match) with `eq` (exact match) for department names in `buildAccessScopeFilter`:
+When user has facility-level restrictions but no department filter is selected:
 
 ```typescript
-// PRIORITY 1: Department restrictions (most specific) - use EXACT NAME matching
-if (allowedDepartmentNames.length > 0) {
-  for (const deptName of allowedDepartmentNames) {
-    // Use exact match instead of partial match
-    conditions.push(`departmentName.eq.${deptName}`);
-  }
-  return conditions.join(',');
+// Modify getData() to also check facility restrictions:
+if (hasRestrictionAt('facility') && selectedFacility === "all-facilities") {
+  // Show only facilities the user has access to
+  const authorizedFacilities = restrictedOptions.availableFacilities;
+  // ... generate data only for these facilities
 }
 ```
 
----
+### File 3: `src/components/staffing/FilterBar.tsx`
 
-## Summary of Changes
+**Change**: Ensure the dropdown label shows "All Departments" with a count indicator when user has multiple assignments:
 
-| File | Change | Purpose |
-|------|--------|---------|
-| `src/pages/staffing/StaffingSummary.tsx` | `handleClearFilters` uses `defaultFilters` | Clear button respects Access Scope |
-| `src/pages/positions/PositionsPage.tsx` | Same fix for `handleClearFilters` | Clear button respects Access Scope |
-| `src/hooks/useForecastBalance.ts` | Replace `ilike.%name%` with `eq.name` | Exact department name matching |
+```typescript
+// When department has restrictions and multiple options exist:
+// Show "All Departments (4)" or similar to indicate the user's scope
+```
 
 ---
 
 ## Expected Behavior After Fix
 
-| Action | Before | After |
-|--------|--------|-------|
-| Demo Manager clicks Clear | Department shows "All Departments" (locked) | Department shows "ICU" (locked) |
-| Demo Manager views table | Shows 15+ rows (all departments with "ICU" in name) | Shows only rows where `departmentName = "ICU"` exactly |
+### Demo Manager's View
+
+| Filter State | Table Shows |
+|--------------|-------------|
+| Department = "All Departments" | 4 rows: ICU, Adult ECMO 001, Bariatric Surgical Unit 001, Cardiac Care |
+| Department = "ICU" | 1 row: ICU only |
+| Clear Filters | Returns to "All Departments" showing their 4 authorized departments |
+
+### Variance Analysis Data Scope
+
+| User | Authorized Scope | Table Content |
+|------|------------------|---------------|
+| Demo Manager | 4 departments in 2 facilities | Only those 4 departments |
+| Demo Director | Markets: INDIANA, ILLINOIS, FLORIDA | All facilities/departments in those markets |
+| Admin | All | All regions/markets/facilities |
 
 ---
 
 ## Testing Verification
 
 1. **Demo Manager Login**:
-   - Department filter shows "ICU" (locked)
-   - Table shows ONLY departments named exactly "ICU"
-   - Click Clear → Filter stays at "ICU", not "All Departments"
+   - Variance Analysis should show exactly 4 department rows
+   - No data from unauthorized facilities (e.g., FLJAC shouldn't appear if not in scope)
+   - Clear Filters → still shows only the 4 authorized departments
 
 2. **Demo Director Login**:
-   - Filters reset to their market defaults
-   - No department restriction → shows all departments in allowed markets
+   - Variance Analysis should show all data from their authorized markets only
+   - Facilities outside Indiana/Illinois/Florida should NOT appear
 
 3. **Admin Login**:
-   - Clear resets everything to "All" (no restrictions)
-   - Table shows all data
+   - No restrictions - sees all regions/markets/facilities as before
