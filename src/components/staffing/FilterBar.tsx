@@ -174,7 +174,7 @@ export function FilterBar({
                   </div>
                 ) : (
                   <>
-                    {shouldShowAllOption('region') && (
+                    {(shouldShowAllOption('region') || selectedRegion === 'all-regions') && (
                       <SelectItem value="all-regions">All Regions</SelectItem>
                     )}
                     {(hasRestrictionAt('region') ? restrictedOptions.availableRegions : regions.map(r => r.region)).map(region => (
@@ -210,7 +210,7 @@ export function FilterBar({
                   </div>
                 ) : (
                   <>
-                    {shouldShowAllOption('market') && (
+                    {(shouldShowAllOption('market') || selectedMarket === 'all-markets') && (
                       <SelectItem value="all-markets">All Markets</SelectItem>
                     )}
                     {availableMarkets.map(market => (
@@ -250,7 +250,7 @@ export function FilterBar({
                   </div>
                 ) : (
                   <>
-                    {shouldShowAllOption('facility') && (
+                    {(shouldShowAllOption('facility') || selectedFacility === 'all-facilities') && (
                       <SelectItem value="all-facilities">All Facilities</SelectItem>
                     )}
                     {availableFacilities.map(facility => (
@@ -290,7 +290,7 @@ export function FilterBar({
                   </div>
                 ) : (
                   <>
-                    {shouldShowAllOption('department') && (
+                    {(shouldShowAllOption('department') || selectedDepartment === 'all-departments') && (
                       <SelectItem value="all-departments">All Departments</SelectItem>
                     )}
                     {availableDepartments.map(dept => (
