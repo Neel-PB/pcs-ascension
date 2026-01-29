@@ -359,10 +359,10 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
   return useQuery({
     queryKey: ['forecast-balance', user?.id, { departmentId, region, market, facilityId, level2, pstat }],
     queryFn: async (): Promise<ForecastBalanceSummary> => {
-      // Fetch facilities for region lookup
+      // Fetch facilities for region lookup (include market for region->facility mapping)
       const { data: facilities, error: facError } = await supabase
         .from('facilities')
-        .select('facility_id, region');
+        .select('facility_id, region, market');
       if (facError) throw facError;
       
       // Create region lookup map
@@ -371,41 +371,77 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         regionLookup.set(fac.facility_id, fac.region || 'Unknown');
       }
       
+      // Convert region restrictions to facility IDs (since positions don't have region field)
+      const facilityIdsInAllowedRegions: string[] = [];
+      if (!hasUnrestrictedAccess && allowedRegions.length > 0) {
+        for (const fac of facilities || []) {
+          if (fac.region && allowedRegions.some(r => r.toLowerCase() === fac.region?.toLowerCase())) {
+            facilityIdsInAllowedRegions.push(fac.facility_id);
+          }
+        }
+      }
+      
+      // Build UNION access scope filter (OR across all levels)
+      // User sees data that matches ANY of: their facilities OR markets OR regions OR departments
+      const buildAccessScopeFilter = (): string | null => {
+        if (hasUnrestrictedAccess) return null;
+        
+        const conditions: string[] = [];
+        
+        // Add facility restrictions
+        if (allowedFacilities.length > 0) {
+          conditions.push(`facilityId.in.(${allowedFacilities.join(',')})`);
+        }
+        
+        // Add department restrictions
+        if (allowedDepartments.length > 0) {
+          conditions.push(`departmentId.in.(${allowedDepartments.join(',')})`);
+        }
+        
+        // Add market restrictions (case-insensitive)
+        if (allowedMarkets.length > 0) {
+          for (const m of allowedMarkets) {
+            conditions.push(`market.ilike.${m}`);
+          }
+        }
+        
+        // Add region restrictions (converted to facility IDs)
+        if (facilityIdsInAllowedRegions.length > 0) {
+          conditions.push(`facilityId.in.(${facilityIdsInAllowedRegions.join(',')})`);
+        }
+        
+        // If no restrictions at any level, return null (unrestricted)
+        if (conditions.length === 0) return null;
+        
+        return conditions.join(',');
+      };
+      
+      const accessScopeFilter = buildAccessScopeFilter();
+      
       // Build query for filled positions (employees)
       let employedQuery = supabase
         .from('positions')
         .select('*')
         .not('employeeName', 'is', null);
       
-      // Apply UI filters first, then fall back to access scope restrictions
-      // PRIORITY: Facility > Market > Region (more specific takes precedence)
-      
-      // Facility filter - most specific, takes full precedence
-      if (facilityId) {
-        employedQuery = employedQuery.eq('facilityId', facilityId);
-      } else if (!hasUnrestrictedAccess && allowedFacilities.length > 0) {
-        // User has facility restrictions - apply them
-        employedQuery = employedQuery.in('facilityId', allowedFacilities);
-      } else {
-        // No facility filter - check market filter
-        if (market) {
-          employedQuery = employedQuery.ilike('market', market);
-        } else if (!hasUnrestrictedAccess && allowedMarkets.length > 0) {
-          // Use case-insensitive OR filter for markets
-          const marketFilter = allowedMarkets.map(m => `market.ilike.${m}`).join(',');
-          employedQuery = employedQuery.or(marketFilter);
-        }
+      // Step 1: Apply access scope as UNION (OR) gate
+      if (accessScopeFilter) {
+        employedQuery = employedQuery.or(accessScopeFilter);
       }
       
-      // Department filter - could be ID (numeric) or name (string)
+      // Step 2: Apply UI filters as AND (narrowing)
+      if (facilityId) {
+        employedQuery = employedQuery.eq('facilityId', facilityId);
+      }
+      if (market) {
+        employedQuery = employedQuery.ilike('market', market);
+      }
       if (departmentId) {
         if (/^\d+$/.test(departmentId)) {
           employedQuery = employedQuery.eq('departmentId', departmentId);
         } else {
           employedQuery = employedQuery.ilike('departmentName', departmentId);
         }
-      } else if (!hasUnrestrictedAccess && allowedDepartments.length > 0) {
-        employedQuery = employedQuery.in('departmentId', allowedDepartments);
       }
       
       const { data: employedPositions, error: empError } = await employedQuery;
@@ -417,33 +453,24 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         .select('*')
         .is('employeeName', null);
       
-      // Apply same filters to open reqs query (same priority: Facility > Market > Region)
-      
-      // Facility filter - most specific, takes full precedence
-      if (facilityId) {
-        openReqsQuery = openReqsQuery.eq('facilityId', facilityId);
-      } else if (!hasUnrestrictedAccess && allowedFacilities.length > 0) {
-        openReqsQuery = openReqsQuery.in('facilityId', allowedFacilities);
-      } else {
-        // No facility filter - check market filter
-        if (market) {
-          openReqsQuery = openReqsQuery.ilike('market', market);
-        } else if (!hasUnrestrictedAccess && allowedMarkets.length > 0) {
-          // Use case-insensitive OR filter for markets
-          const marketFilter = allowedMarkets.map(m => `market.ilike.${m}`).join(',');
-          openReqsQuery = openReqsQuery.or(marketFilter);
-        }
+      // Step 1: Apply access scope as UNION (OR) gate
+      if (accessScopeFilter) {
+        openReqsQuery = openReqsQuery.or(accessScopeFilter);
       }
       
-      // Department filter - could be ID (numeric) or name (string)
+      // Step 2: Apply UI filters as AND (narrowing)
+      if (facilityId) {
+        openReqsQuery = openReqsQuery.eq('facilityId', facilityId);
+      }
+      if (market) {
+        openReqsQuery = openReqsQuery.ilike('market', market);
+      }
       if (departmentId) {
         if (/^\d+$/.test(departmentId)) {
           openReqsQuery = openReqsQuery.eq('departmentId', departmentId);
         } else {
           openReqsQuery = openReqsQuery.ilike('departmentName', departmentId);
         }
-      } else if (!hasUnrestrictedAccess && allowedDepartments.length > 0) {
-        openReqsQuery = openReqsQuery.in('departmentId', allowedDepartments);
       }
       
       const { data: openReqs, error: reqError } = await openReqsQuery;
@@ -470,12 +497,10 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
       
       // Process employed positions
       for (const pos of employedPositions || []) {
-        // Filter by region if specified OR if user has region restrictions
+        // Filter by UI-selected region only (access scope already applied at query level)
         const posRegion = regionLookup.get(pos.facilityId);
-        if (region) {
-          if (posRegion !== region) continue;
-        } else if (!hasUnrestrictedAccess && allowedRegions.length > 0) {
-          if (!posRegion || !allowedRegions.includes(posRegion)) continue;
+        if (region && posRegion !== region) {
+          continue;
         }
         
         const shift = normalizeShift(pos.shift_override || pos.shift);
@@ -522,12 +547,10 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
 
       // Process open requisitions
       for (const req of openReqs || []) {
-        // Filter by region if specified OR if user has region restrictions
+        // Filter by UI-selected region only (access scope already applied at query level)
         const reqRegion = regionLookup.get(req.facilityId);
-        if (region) {
-          if (reqRegion !== region) continue;
-        } else if (!hasUnrestrictedAccess && allowedRegions.length > 0) {
-          if (!reqRegion || !allowedRegions.includes(reqRegion)) continue;
+        if (region && reqRegion !== region) {
+          continue;
         }
         
         const shift = normalizeShift(req.shift_override || req.shift);

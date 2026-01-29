@@ -111,12 +111,26 @@ export function FilterBar({
     : getMarketsByRegion(selectedRegion);
 
   // For facilities: use restricted if user has facility restrictions
-  // Otherwise, if market is selected cascade from market, else show ALL facilities
-  const availableFacilities = hasRestrictionAt('facility')
-    ? restrictedOptions.availableFacilities
-    : selectedMarket !== "all-markets" 
-      ? getFacilitiesByMarket(selectedMarket)
-      : allFacilities;  // No restrictions AND no market = show ALL facilities
+  // Otherwise, if market is selected cascade from market
+  // If user has market restrictions and no specific market selected, filter by allowed markets
+  const getAvailableFacilities = () => {
+    if (hasRestrictionAt('facility')) {
+      return restrictedOptions.availableFacilities;
+    }
+    if (selectedMarket !== "all-markets") {
+      return getFacilitiesByMarket(selectedMarket);
+    }
+    // When "All Markets" is selected, but user has market restrictions, filter facilities by allowed markets
+    if (hasRestrictionAt('market')) {
+      return allFacilities.filter(f => 
+        restrictedOptions.availableMarkets.some(m => 
+          m.toLowerCase() === f.market?.toLowerCase()
+        )
+      );
+    }
+    return allFacilities;
+  };
+  const availableFacilities = getAvailableFacilities();
 
   // Get unique department names when no facility is selected (to avoid duplicates like "ICU" x14)
   const uniqueDepartmentNames = useMemo(() => {
@@ -126,15 +140,42 @@ export function FilterBar({
   }, [allDepartments]);
 
   // For departments: use restricted if user has department restrictions
-  // Otherwise, if facility is selected cascade from facility, else show unique names only
-  const availableDepartments = hasRestrictionAt('department')
-    ? restrictedOptions.availableDepartments
-    : selectedFacility !== "all-facilities"
-      ? getDepartmentsByFacility(selectedFacility)  // Filtered - show actual records
-      : uniqueDepartmentNames.map(name => ({        // All - show unique names only
-          department_id: name,
-          department_name: name
-        }));
+  // Otherwise, if facility is selected cascade from facility
+  // If user has market restrictions and no specific facility/market, filter by allowed markets
+  const getAvailableDepartments = () => {
+    if (hasRestrictionAt('department')) {
+      return restrictedOptions.availableDepartments;
+    }
+    if (selectedFacility !== "all-facilities") {
+      return getDepartmentsByFacility(selectedFacility);
+    }
+    // When "All Facilities" is selected, filter by allowed markets if user has market restrictions
+    if (hasRestrictionAt('market')) {
+      // Get facility IDs that belong to allowed markets
+      const allowedFacilityIds = new Set(
+        allFacilities
+          .filter(f => restrictedOptions.availableMarkets.some(m => 
+            m.toLowerCase() === f.market?.toLowerCase()
+          ))
+          .map(f => f.facility_id)
+      );
+      // Filter departments to only those in allowed facilities, then get unique names
+      const filteredNames = new Set<string>();
+      allDepartments
+        .filter(d => allowedFacilityIds.has(d.facility_id))
+        .forEach(d => filteredNames.add(d.department_name));
+      return Array.from(filteredNames).sort().map(name => ({
+        department_id: name,
+        department_name: name
+      }));
+    }
+    // All - show unique names only
+    return uniqueDepartmentNames.map(name => ({
+      department_id: name,
+      department_name: name
+    }));
+  };
+  const availableDepartments = getAvailableDepartments();
 
   // Get available submarkets based on selected market
   const availableSubmarkets = getSubmarketsByMarket(selectedMarket);
