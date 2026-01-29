@@ -1,130 +1,344 @@
 
 
-# Fix: Access Scope Manager Options Not Showing
+# Enhanced Active FTE Form with Status-Based Business Rules
 
-## Problem Summary
+## Overview
 
-When editing a user in the Admin panel and expanding the "Access Scope Restrictions" section, clicking "+ Add" on Market, Facility, or Department shows an empty dropdown with "No items found". Only Region shows options.
-
-## Root Cause
-
-**RLS Policy Mismatch**: The lookup tables have different RLS policies:
-- `regions` table: Policy allows `public` role → Works ✓
-- `markets`, `facilities`, `departments` tables: Policies require `authenticated` role → Returns empty array
-
-The network requests confirm this - the API returns `[]` for markets/facilities/departments but returns data for regions.
-
-The `useFilterData` hook's React Query cache may also be stale from before authentication, but the primary issue is the RLS policy.
-
-## Solution
-
-**Option A (Recommended)**: Update RLS policies to allow public read access for lookup tables
-
-These are non-sensitive reference data tables. Making them publicly readable matches the `regions` table pattern and simplifies data access throughout the app.
-
-**Option B**: Make `useFilterData` refetch when auth state changes
-
-Add `session?.access_token` to the query key so it invalidates after login. This is more complex and adds latency.
+Transform the Active FTE edit popover from a freeform text input to a structured form with dropdown-based status selection, FTE value constraints, and dynamic expiry date limits based on business rules.
 
 ---
 
-## Implementation (Option A)
+## Business Rules Summary
 
-### Step 1: Update RLS Policies via Database Migration
+| Status | FTE Range | Max Expiry Duration |
+|--------|-----------|---------------------|
+| LOA | 0 to original FTE | 12 months |
+| FMLA | 0 to original FTE | 12 months |
+| Intermittent FMLA | 0 to original FTE | 12 months |
+| Military Leave | 0 to original FTE | 12 months |
+| Voluntary Separation | 0 to original FTE | 1 month |
+| Involuntary Separation | 0 to original FTE | 1 month |
+| Orientation | 0 to original FTE | 6 months |
+| PRNs (PRN only) | 0.2 to 1.0 | 6 months |
+| Shared Position | Non-zero values | No date limit, requires additional shared position details |
 
-Update the SELECT policies on `markets`, `facilities`, and `departments` tables to use `public` instead of `authenticated`:
+---
 
-```sql
--- Update markets policy to allow public read
-DROP POLICY IF EXISTS "Markets are viewable by authenticated users" ON markets;
-CREATE POLICY "Markets are viewable by everyone" ON markets
-  FOR SELECT
-  TO public
-  USING (true);
+## Expiry Date Calculation Logic
 
--- Update facilities policy to allow public read  
-DROP POLICY IF EXISTS "Facilities are viewable by authenticated users" ON facilities;
-CREATE POLICY "Facilities are viewable by everyone" ON facilities
-  FOR SELECT
-  TO public
-  USING (true);
+**Key Rule**: Months are calculated from the **1st of the current month**, and the max expiry is the **last day of the target month**.
 
--- Update departments policy to allow public read
-DROP POLICY IF EXISTS "Departments are viewable by authenticated users" ON departments;
-CREATE POLICY "Departments are viewable by everyone" ON departments
-  FOR SELECT
-  TO public
-  USING (true);
+### Calculation Formula
+
+```text
+Current Date: January 29, 2026
+
+1 Month Max (Voluntary/Involuntary Separation):
+   Start: January 1, 2026
+   Add 1 month → February 1, 2026
+   Max Date = Last day of January = January 31, 2026
+
+6 Month Max (Orientation, PRNs):
+   Start: January 1, 2026
+   Add 6 months → July 1, 2026
+   Max Date = Last day of June = June 30, 2026
+
+12 Month Max (LOA, FMLA, Military Leave):
+   Start: January 1, 2026
+   Add 12 months → January 1, 2027
+   Max Date = Last day of December 2026 = December 31, 2026
 ```
 
-### Step 2: Invalidate Cached Query (Code Change)
-
-After the policy change, the stale cache won't automatically refresh. Add auth-awareness to `useFilterData` by including the session in the query key.
-
-**File: `src/hooks/useFilterData.ts`**
+### Implementation
 
 ```typescript
-import { useAuthContext } from "@/contexts/AuthContext";
+import { startOfMonth, addMonths, endOfMonth, subDays } from 'date-fns';
 
-export function useFilterData() {
-  const { session } = useAuthContext();
+export function getMaxExpiryDate(statusValue: string): Date | null {
+  const status = FTE_STATUS_OPTIONS.find(s => s.value === statusValue);
+  if (!status || status.maxMonths === null) return null;
   
-  const { data, isLoading } = useQuery({
-    // Include session token in key to refetch after login
-    queryKey: ["all-filter-data", session?.access_token ? "authenticated" : "anonymous"],
-    queryFn: async (): Promise<FilterDataResult> => {
-      // ... existing code
-    },
-    staleTime: 10 * 60 * 1000,
-  });
-  // ...
+  const today = new Date();
+  
+  // Start from 1st of current month
+  const monthStart = startOfMonth(today);
+  
+  // Add the max months
+  const targetMonthStart = addMonths(monthStart, status.maxMonths);
+  
+  // Get the last day of the month BEFORE the target month
+  // (because "within X months" means up to but not exceeding)
+  const maxDate = endOfMonth(subDays(targetMonthStart, 1));
+  
+  return maxDate;
 }
 ```
 
-This ensures the query refetches after the user logs in, picking up the new RLS policies.
+### Examples Table
+
+| Status Selected | Today | Max Months | Calculation | Max Expiry Date |
+|-----------------|-------|------------|-------------|-----------------|
+| Voluntary Separation | Jan 29 | 1 | Jan 1 + 1 month = Feb 1 → end of Jan | **Jan 31** |
+| Voluntary Separation | Feb 15 | 1 | Feb 1 + 1 month = Mar 1 → end of Feb | **Feb 28** |
+| Orientation | Jan 29 | 6 | Jan 1 + 6 months = Jul 1 → end of Jun | **Jun 30** |
+| LOA | Jan 29 | 12 | Jan 1 + 12 months = Jan 1, 2027 → end of Dec 2026 | **Dec 31, 2026** |
+| FMLA | Mar 15 | 12 | Mar 1 + 12 months = Mar 1, 2027 → end of Feb 2027 | **Feb 28, 2027** |
+| Shared Position | Any | null | No limit | No max constraint |
 
 ---
 
-## Secondary Issue: Selected Values Not Highlighted
+## UI Flow
 
-The user also mentioned selected values should be highlighted. Looking at `MultiSelectChips`, selected items already show:
-- A check mark icon on the right
-- A light primary background: `isSelected ? "bg-primary/10" : "hover:bg-muted/50"`
+```text
+1. User clicks Active FTE cell
+   └── Popover opens with form
 
-However, this might not be visible enough. We can enhance it:
+2. Status/Reason dropdown (required first step)
+   └── Options: LOA, FMLA, Intermittent FMLA, Military Leave,
+       Voluntary Separation, Involuntary Separation, Orientation,
+       PRNs (conditionally shown for PRN employees only), Shared Position
 
-**File: `src/components/ui/multi-select-chips.tsx`**
+3. Once status selected:
+   └── Active FTE dropdown appears (0.0, 0.1, 0.2 ... 1.0)
+       └── Values constrained based on status rules
 
-Increase the visual contrast for selected items:
+4. Expiry Date picker appears
+   └── Calendar shows dates from today to max expiry (calculated per rules)
+   └── Dates outside range are disabled/grayed out
 
-```typescript
-<label
-  key={option.value}
-  className={cn(
-    "flex items-start gap-2 p-2 rounded-md cursor-pointer transition-colors",
-    isSelected 
-      ? "bg-primary/15 border border-primary/30" 
-      : "hover:bg-muted/50"
-  )}
->
+5. IF "Shared Position" selected:
+   └── Additional fields appear:
+       - Shared With (text field for department/facility info)
+       - Shared FTE (the portion shared)
+       - Shared Expiry (when the sharing arrangement ends - no date limit)
+
+6. Save button validates and persists
 ```
 
 ---
 
-## Expected Outcome
+## Files to Create/Modify
 
-| Before | After |
-|--------|-------|
-| Market/Facility/Department dropdowns show "No items found" | All dropdowns show full list of options |
-| Selected items have subtle background | Selected items have stronger visual highlight with border |
+### 1. Create FTE Status Constants File
+
+**New File: `src/lib/fteStatusRules.ts`**
+
+```typescript
+import { startOfMonth, addMonths, endOfMonth, subDays } from 'date-fns';
+
+export interface FteStatusOption {
+  value: string;
+  label: string;
+  maxMonths: number | null; // null = no limit
+  requiresPRNStatus?: boolean;
+  minFte?: number;
+}
+
+export const FTE_STATUS_OPTIONS: FteStatusOption[] = [
+  { value: 'LOA', label: 'LOA (Leave of Absence)', maxMonths: 12 },
+  { value: 'FMLA', label: 'FMLA', maxMonths: 12 },
+  { value: 'INTERMITTENT_FMLA', label: 'Intermittent FMLA', maxMonths: 12 },
+  { value: 'MILITARY_LEAVE', label: 'Military Leave', maxMonths: 12 },
+  { value: 'VOLUNTARY_SEPARATION', label: 'Voluntary Separation', maxMonths: 1 },
+  { value: 'INVOLUNTARY_SEPARATION', label: 'Involuntary Separation', maxMonths: 1 },
+  { value: 'ORIENTATION', label: 'Orientation', maxMonths: 6 },
+  { value: 'PRN', label: 'PRNs', maxMonths: 6, requiresPRNStatus: true, minFte: 0.2 },
+  { value: 'SHARED_POSITION', label: 'Shared Position', maxMonths: null },
+];
+
+// FTE dropdown values: 0.0 to 1.0 in 0.1 increments
+export const FTE_VALUES = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0];
+
+/**
+ * Calculate max expiry date based on status rules.
+ * Months start from 1st of current month.
+ * Max date is the last day of the month before the target.
+ */
+export function getMaxExpiryDate(statusValue: string): Date | null {
+  const status = FTE_STATUS_OPTIONS.find(s => s.value === statusValue);
+  if (!status || status.maxMonths === null) return null;
+  
+  const today = new Date();
+  const monthStart = startOfMonth(today);
+  const targetMonthStart = addMonths(monthStart, status.maxMonths);
+  const maxDate = endOfMonth(subDays(targetMonthStart, 1));
+  
+  return maxDate;
+}
+
+/**
+ * Get allowed FTE values based on status and original FTE.
+ */
+export function getFteValuesForStatus(
+  statusValue: string, 
+  originalFte: number | null | undefined
+): number[] {
+  const status = FTE_STATUS_OPTIONS.find(s => s.value === statusValue);
+  const maxFte = originalFte ?? 1.0;
+  
+  if (status?.value === 'PRN') {
+    // PRN: 0.2 to 1.0
+    return FTE_VALUES.filter(v => v >= 0.2 && v <= 1.0);
+  }
+  
+  if (status?.value === 'SHARED_POSITION') {
+    // Shared Position: anything other than zero
+    return FTE_VALUES.filter(v => v > 0 && v <= maxFte);
+  }
+  
+  // All others: 0 to original FTE
+  return FTE_VALUES.filter(v => v <= maxFte);
+}
+```
+
+### 2. Update EditableFTECell Component
+
+**File: `src/components/editable-table/cells/EditableFTECell.tsx`**
+
+Major changes:
+- Add `employmentType` prop to conditionally show PRN option
+- Replace freeform textarea with Select dropdown for status
+- Replace freeform number input with Select dropdown for FTE
+- Add dynamic expiry date constraints based on selected status
+- Add conditional "Shared Position" additional fields section
+- Show calculated max expiry date as helper text
+
+```typescript
+interface EditableFTECellProps {
+  value: number | null | undefined;
+  originalValue?: number | null | undefined;
+  expiryDate?: string | null;
+  status?: string | null;
+  employmentType?: string | null; // NEW: to show/hide PRN option
+  sharedWith?: string | null;     // NEW: for shared position
+  sharedFte?: number | null;      // NEW: for shared position
+  sharedExpiry?: string | null;   // NEW: for shared position
+  onSave: (data: {
+    actual_fte: number | null;
+    actual_fte_expiry: string | null;
+    actual_fte_status: string | null;
+    actual_fte_shared_with?: string | null;
+    actual_fte_shared_fte?: number | null;
+    actual_fte_shared_expiry?: string | null;
+  }) => void | Promise<void>;
+  className?: string;
+}
+```
+
+**Form Layout:**
+
+```
+┌─────────────────────────────────────┐
+│ Status / Reason                     │
+│ ┌─────────────────────────────────┐ │
+│ │ Select reason... ▼              │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ Active FTE                          │
+│ ┌─────────────────────────────────┐ │
+│ │ 0.5 ▼                           │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ Expiry Date (max: Jan 31, 2026)     │
+│ ┌─────────────────────────────────┐ │
+│ │ 📅 Jan 15, 2026                 │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ─────────────────────────────────── │
+│ (If Shared Position selected)       │
+│                                     │
+│ Shared With                         │
+│ ┌─────────────────────────────────┐ │
+│ │ ICU - Building A                │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ Shared FTE                          │
+│ ┌─────────────────────────────────┐ │
+│ │ 0.3 ▼                           │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ Shared Expiry Date                  │
+│ ┌─────────────────────────────────┐ │
+│ │ 📅 Jun 30, 2026                 │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│     [Revert]          [Save]        │
+└─────────────────────────────────────┘
+```
+
+### 3. Update EmployeesTab.tsx
+
+**File: `src/pages/positions/EmployeesTab.tsx`**
+
+Pass `employmentType` and shared position fields to EditableFTECell:
+
+```typescript
+<EditableFTECell
+  value={row.actual_fte}
+  originalValue={row.FTE}
+  expiryDate={row.actual_fte_expiry}
+  status={row.actual_fte_status}
+  employmentType={row.employmentType}
+  sharedWith={row.actual_fte_shared_with}
+  sharedFte={row.actual_fte_shared_fte}
+  sharedExpiry={row.actual_fte_shared_expiry}
+  onSave={(data) => handleActualFteUpdate(...)}
+/>
+```
+
+### 4. Update ContractorsTab.tsx
+
+**File: `src/pages/positions/ContractorsTab.tsx`**
+
+Same changes as EmployeesTab.
+
+### 5. Database Migration
+
+Add columns for shared position data:
+
+```sql
+ALTER TABLE positions 
+ADD COLUMN IF NOT EXISTS actual_fte_shared_with TEXT,
+ADD COLUMN IF NOT EXISTS actual_fte_shared_fte NUMERIC,
+ADD COLUMN IF NOT EXISTS actual_fte_shared_expiry DATE;
+
+COMMENT ON COLUMN positions.actual_fte_shared_with IS 'Department/facility the position is shared with';
+COMMENT ON COLUMN positions.actual_fte_shared_fte IS 'FTE portion allocated to the shared arrangement';
+COMMENT ON COLUMN positions.actual_fte_shared_expiry IS 'When the sharing arrangement ends';
+```
+
+### 6. Update useUpdateActualFte Hook
+
+**File: `src/hooks/useUpdateActualFte.ts`**
+
+Add shared position fields to the mutation:
+
+```typescript
+interface UpdateActualFteParams {
+  id: string;
+  actual_fte: number | null;
+  actual_fte_expiry?: string | null;
+  actual_fte_status?: string | null;
+  actual_fte_shared_with?: string | null;
+  actual_fte_shared_fte?: number | null;
+  actual_fte_shared_expiry?: string | null;
+  // Previous values for activity logging
+  previousFte?: number | null;
+  previousExpiry?: string | null;
+  previousStatus?: string | null;
+}
+```
 
 ---
 
-## Technical Summary
+## Summary of Changes
 
-| Change | File | Description |
-|--------|------|-------------|
-| Database Migration | N/A | Update RLS policies to allow public SELECT on lookup tables |
-| Code Change | `src/hooks/useFilterData.ts` | Add session awareness to query key for proper cache invalidation |
-| UI Enhancement | `src/components/ui/multi-select-chips.tsx` | Stronger visual highlight for selected options |
+| File | Type | Description |
+|------|------|-------------|
+| `src/lib/fteStatusRules.ts` | CREATE | Status options, FTE values, expiry calculation logic |
+| `src/components/editable-table/cells/EditableFTECell.tsx` | UPDATE | Structured form with dropdowns & shared position fields |
+| `src/pages/positions/EmployeesTab.tsx` | UPDATE | Pass employmentType and shared fields to cell |
+| `src/pages/positions/ContractorsTab.tsx` | UPDATE | Pass employmentType and shared fields to cell |
+| `src/hooks/useUpdateActualFte.ts` | UPDATE | Handle shared position fields |
+| Database Migration | CREATE | Add shared position columns |
 
