@@ -1,14 +1,18 @@
 
 
-# Dynamic Height Animation for Active FTE Popover
+# Fix Dynamic Height Animation for Active FTE Popover
 
-## Problem
+## Problem Analysis
 
-The current implementation uses `min-h-[280px]` to prevent popover repositioning, but this creates excessive empty space when showing fewer fields (like FMLA status which only has 3 fields as shown in the screenshot).
+The current implementation doesn't animate height smoothly because:
 
-## Solution: Animated Height with `motion.div` Layout
+1. **Opacity-only animations**: The `motion.div` sections use `initial={{ opacity: 0 }}` and `animate={{ opacity: 1 }}` but don't include height transitions
+2. **Layout prop limitations**: The `layout` prop alone doesn't animate height when children appear/disappear - it only animates position/size when the element's **own** dimensions change due to layout shifts
+3. **Missing coordination**: Multiple `AnimatePresence` blocks need a `LayoutGroup` to coordinate their animations
 
-Replace the fixed min-height container with Framer Motion's `layout` animation that smoothly animates height changes. Use a single `AnimatePresence` with proper key management to handle the transition between different form states.
+## Solution
+
+Use explicit `height: 0` → `height: "auto"` animations combined with `LayoutGroup` for smooth, coordinated height transitions.
 
 ---
 
@@ -16,15 +20,23 @@ Replace the fixed min-height container with Framer Motion's `layout` animation t
 
 ### File: `src/components/editable-table/cells/EditableFTECell.tsx`
 
-#### Change 1: Replace Fixed Min-Height with Animated Container
-
-Remove `min-h-[280px]` and instead use `motion.div` with `layout` prop to animate height changes smoothly.
+#### Change 1: Import LayoutGroup
 
 ```typescript
-// Line 291 - BEFORE:
-<div className="min-h-[280px] relative overflow-hidden mt-3">
+// Line 10 - BEFORE:
+import { motion, AnimatePresence } from 'framer-motion';
 
 // AFTER:
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
+```
+
+#### Change 2: Wrap Dynamic Content in LayoutGroup
+
+The `LayoutGroup` coordinates all layout animations within it, preventing jumpy transitions.
+
+```typescript
+// Line 290-291 - BEFORE:
+{/* Dynamic content area with animated height */}
 <motion.div 
   layout
   transition={{ 
@@ -36,130 +48,134 @@ Remove `min-h-[280px]` and instead use `motion.div` with `layout` prop to animat
   }}
   className="relative overflow-hidden mt-3"
 >
+
+// AFTER:
+{/* Dynamic content area with animated height */}
+<LayoutGroup>
+  <motion.div 
+    layout
+    transition={{ 
+      layout: { 
+        type: "spring", 
+        stiffness: 500, 
+        damping: 35 
+      }
+    }}
+    className="relative mt-3"
+  >
 ```
 
-#### Change 2: Add Layout Animation to Child Sections
+#### Change 3: Add Height Animation to Child Sections
 
-Wrap each conditional section in `motion.div` with `layout` prop so height transitions animate smoothly:
+For each animated section, add explicit `height: 0` → `height: "auto"` transitions:
 
 ```typescript
-// For the Active FTE dropdown (line 295-317):
+// Active FTE dropdown (around line 305-330)
 <AnimatePresence mode="sync">
   {editStatus && (
     <motion.div
       key="fte-field"
       layout
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      exit={{ opacity: 0, height: 0 }}
       transition={{ 
         opacity: { duration: 0.15 },
+        height: { type: "spring", stiffness: 500, damping: 35 },
         layout: { type: "spring", stiffness: 500, damping: 35 }
       }}
-      className="space-y-1.5"
+      className="space-y-1.5 overflow-hidden"
     >
-      {/* Active FTE dropdown */}
+      {/* ... */}
     </motion.div>
   )}
 </AnimatePresence>
+```
 
-// For non-shared Expiry Date (line 321-377):
+```typescript
+// Expiry Date field (around line 337-394)
 <AnimatePresence mode="sync">
   {editStatus && !isSharedPosition && (
     <motion.div
       key="expiry-field"
       layout
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      exit={{ opacity: 0, height: 0 }}
       transition={{ 
         opacity: { duration: 0.15 },
+        height: { type: "spring", stiffness: 500, damping: 35 },
         layout: { type: "spring", stiffness: 500, damping: 35 }
       }}
-      className="space-y-1.5 mt-3"
+      className="space-y-1.5 mt-3 overflow-hidden"
     >
-      {/* Expiry Date field */}
+      {/* ... */}
     </motion.div>
   )}
 </AnimatePresence>
+```
 
-// For Shared Position fields (line 380-570):
+```typescript
+// Shared Position fields (around line 400-601)
 <AnimatePresence mode="sync">
   {isSharedPosition && (
     <motion.div
       key="shared-fields"
       layout
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      exit={{ opacity: 0, height: 0 }}
       transition={{ 
         opacity: { duration: 0.15 },
+        height: { type: "spring", stiffness: 500, damping: 35 },
         layout: { type: "spring", stiffness: 500, damping: 35 }
       }}
-      className="space-y-3 mt-3"
+      className="space-y-3 mt-3 overflow-hidden"
     >
-      {/* All shared position fields */}
+      {/* ... */}
     </motion.div>
   )}
 </AnimatePresence>
 ```
 
-#### Change 3: Close the Wrapper with `motion.div`
+#### Change 4: Close LayoutGroup
 
 ```typescript
-// Line 572 - BEFORE:
-</div>
+// Line 604 - BEFORE:
+</motion.div>
 
 // AFTER:
-</motion.div>
-```
-
-#### Change 4: Add `layout` to Nested Animated Elements
-
-For the cascading selects that animate in/out, add `layout` prop to ensure parent container animates smoothly:
-
-```typescript
-// Lines 453-474 (facility select) and 480-501 (department select):
-<motion.div
-  key="facility-select"
-  layout
-  initial={{ opacity: 0, height: 0 }}
-  animate={{ opacity: 1, height: 'auto' }}
-  exit={{ opacity: 0, height: 0 }}
-  transition={{ 
-    opacity: { duration: 0.12 },
-    height: { duration: 0.15 },
-    layout: { type: "spring", stiffness: 500, damping: 35 }
-  }}
-  className="overflow-hidden"
->
+  </motion.div>
+</LayoutGroup>
 ```
 
 ---
 
-## Animation Behavior
+## Animation Breakdown
 
-| State | Fields Shown | Height | Transition |
-|-------|--------------|--------|------------|
-| FMLA selected | Status + Active FTE + Expiry | ~180px | Smooth spring shrink |
-| Shared Position | Status + FTE + Share With (3) + Shared FTE + Shared Expiry | ~350px | Smooth spring grow |
-| Cascading select | +1 dropdown at a time | +28px each | Accordion-style |
+| Element | Initial | Animate | Exit |
+|---------|---------|---------|------|
+| Container | - | `layout` spring | - |
+| Active FTE | `opacity: 0, height: 0` | `opacity: 1, height: "auto"` | `opacity: 0, height: 0` |
+| Expiry Date | `opacity: 0, height: 0` | `opacity: 1, height: "auto"` | `opacity: 0, height: 0` |
+| Shared Fields | `opacity: 0, height: 0` | `opacity: 1, height: "auto"` | `opacity: 0, height: 0` |
+| Cascading Selects | Already have `height: 0` → `height: "auto"` | Same | Same |
 
 ---
 
 ## Why This Works
 
-1. **`layout` prop**: Tells Framer Motion to automatically animate this element's position/size when it changes
-2. **Spring physics**: `stiffness: 500, damping: 35` creates snappy but smooth transitions (matching existing tab indicator pattern from memory)
-3. **No fixed height**: Container naturally fits content, animation handles the transition
-4. **Popover stability**: The spring animation is fast enough that Radix doesn't reposition mid-animation
+1. **`height: "auto"`**: Framer Motion can interpolate from 0 to "auto" height smoothly
+2. **`overflow-hidden`**: Prevents content from overflowing during height transition
+3. **`LayoutGroup`**: Coordinates all nested layout animations so they happen together
+4. **Spring physics**: Matching `stiffness: 500, damping: 35` creates consistent, snappy feel
 
 ---
 
-## Expected Visual Result
+## Expected Visual Behavior
 
-- **FMLA/LOA**: Compact form with just 3 fields, no wasted space
-- **Switch to Shared Position**: Form smoothly expands to accommodate all fields
-- **Cascading selects**: Each dropdown slides in with height animation
-- **Switch back**: Form smoothly contracts to original size
+- **Select LOA/FMLA**: Form expands smoothly to show 3 fields
+- **Switch to Shared Position**: Current fields animate out (shrink), shared fields animate in (grow)
+- **Cascading selects**: Each new dropdown slides in with height animation
+- **Switch back**: Shared fields collapse smoothly, expiry date expands in
 
