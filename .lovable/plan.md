@@ -1,18 +1,23 @@
 
 
-# Add Content Animations to Active FTE Popover
+# Show Only Department Badge After Selection
 
-## Current State
+## Problem
 
-The popover currently animates:
-- **Height**: `height: 0` to `height: "auto"` (working)
-- **Opacity**: `opacity: 0` to `opacity: 1` (working)
+Currently, after selecting Market → Facility → Department in the "Share With" cascading selects, all three dropdowns remain visible. The user expects to see only the selected department name as a compact badge.
 
-But the content itself doesn't have any movement - it just fades in/out while the container resizes.
+The issue is the condition on line 425:
+```typescript
+{sharedDepartment && !sharedMarket ? (
+```
 
-## Enhancement: Add Slide/Transform Animations
+This shows the badge only when `sharedDepartment` exists AND `sharedMarket` is empty. But after completing the cascade, `sharedMarket` still has a value, so the condition is always false.
 
-Add `y` (vertical slide) animations to content sections so they slide up/down while fading in/out, creating a more polished feel.
+---
+
+## Solution
+
+Change the condition to show the badge whenever a department is selected, and introduce an "editing" state to toggle back to the cascading selects when the user clicks "Change".
 
 ---
 
@@ -20,168 +25,105 @@ Add `y` (vertical slide) animations to content sections so they slide up/down wh
 
 ### File: `src/components/editable-table/cells/EditableFTECell.tsx`
 
-#### Change 1: Add Y-Slide to Active FTE Field (Lines 306-316)
+#### Change 1: Add Editing State (around line 130)
+
+Add a state variable to track whether the user is actively editing the share selection:
+
+```typescript
+// Add after other useState declarations
+const [isEditingShare, setIsEditingShare] = useState(false);
+```
+
+#### Change 2: Update Market Change Handler (line 150-154)
+
+When a market is selected initially, set editing mode to true:
+
+```typescript
+const handleMarketChange = (market: string) => {
+  setSharedMarket(market);
+  setSharedFacility('');
+  setSharedDepartment('');
+  setIsEditingShare(true);
+};
+```
+
+#### Change 3: Auto-Complete After Department Selection (line 529)
+
+When a department is selected, exit editing mode to show the badge:
+
+```typescript
+<Select 
+  value={sharedDepartment} 
+  onValueChange={(value) => {
+    setSharedDepartment(value);
+    setIsEditingShare(false); // Exit editing mode after selection
+  }}
+>
+```
+
+#### Change 4: Update Badge Display Condition (line 425)
+
+Change the condition to show the badge when department is selected AND not in editing mode:
 
 ```typescript
 // BEFORE:
-<motion.div
-  key="fte-field"
-  layout
-  initial={{ opacity: 0, height: 0 }}
-  animate={{ opacity: 1, height: "auto" }}
-  exit={{ opacity: 0, height: 0 }}
-  transition={{ 
-    opacity: { duration: 0.15 },
-    height: { type: "spring", stiffness: 500, damping: 35 },
-    layout: { type: "spring", stiffness: 500, damping: 35 }
-  }}
-  className="space-y-1.5 overflow-hidden"
->
+{sharedDepartment && !sharedMarket ? (
 
 // AFTER:
-<motion.div
-  key="fte-field"
-  layout
-  initial={{ opacity: 0, height: 0, y: -8 }}
-  animate={{ opacity: 1, height: "auto", y: 0 }}
-  exit={{ opacity: 0, height: 0, y: -8 }}
-  transition={{ 
-    opacity: { duration: 0.15 },
-    y: { type: "spring", stiffness: 500, damping: 35 },
-    height: { type: "spring", stiffness: 500, damping: 35 },
-    layout: { type: "spring", stiffness: 500, damping: 35 }
-  }}
-  className="space-y-1.5 overflow-hidden"
->
+{sharedDepartment && !isEditingShare ? (
 ```
 
-#### Change 2: Add Y-Slide to Expiry Date Field (Lines 339-350)
+#### Change 5: Update "Change" Button Handler (line 451)
+
+When "Change" is clicked, enter editing mode instead of clearing market:
 
 ```typescript
 // BEFORE:
-<motion.div
-  key="expiry-field"
-  layout
-  initial={{ opacity: 0, height: 0 }}
-  animate={{ opacity: 1, height: "auto" }}
-  exit={{ opacity: 0, height: 0 }}
-  transition={{ 
-    opacity: { duration: 0.15 },
-    height: { type: "spring", stiffness: 500, damping: 35 },
-    layout: { type: "spring", stiffness: 500, damping: 35 }
-  }}
-  className="space-y-1.5 mt-3 overflow-hidden"
->
+onClick={() => setSharedMarket('')}
 
 // AFTER:
-<motion.div
-  key="expiry-field"
-  layout
-  initial={{ opacity: 0, height: 0, y: -8 }}
-  animate={{ opacity: 1, height: "auto", y: 0 }}
-  exit={{ opacity: 0, height: 0, y: -8 }}
-  transition={{ 
-    opacity: { duration: 0.15 },
-    y: { type: "spring", stiffness: 500, damping: 35 },
-    height: { type: "spring", stiffness: 500, damping: 35 },
-    layout: { type: "spring", stiffness: 500, damping: 35 }
-  }}
-  className="space-y-1.5 mt-3 overflow-hidden"
->
+onClick={() => setIsEditingShare(true)}
 ```
 
-#### Change 3: Add X-Slide to Shared Position Fields (Lines 403-414)
+#### Change 6: Update Clear Handler (line 161-165)
 
-Use horizontal slide (`x`) for the shared position section to create a "page switch" effect when transitioning between non-shared and shared modes:
+When clearing, also reset editing state:
 
 ```typescript
-// BEFORE:
-<motion.div
-  key="shared-fields"
-  layout
-  initial={{ opacity: 0, height: 0 }}
-  animate={{ opacity: 1, height: "auto" }}
-  exit={{ opacity: 0, height: 0 }}
-  transition={{ 
-    opacity: { duration: 0.15 },
-    height: { type: "spring", stiffness: 500, damping: 35 },
-    layout: { type: "spring", stiffness: 500, damping: 35 }
-  }}
-  className="space-y-3 mt-3 overflow-hidden"
->
-
-// AFTER:
-<motion.div
-  key="shared-fields"
-  layout
-  initial={{ opacity: 0, height: 0, x: 12 }}
-  animate={{ opacity: 1, height: "auto", x: 0 }}
-  exit={{ opacity: 0, height: 0, x: -12 }}
-  transition={{ 
-    opacity: { duration: 0.15 },
-    x: { type: "spring", stiffness: 500, damping: 35 },
-    height: { type: "spring", stiffness: 500, damping: 35 },
-    layout: { type: "spring", stiffness: 500, damping: 35 }
-  }}
-  className="space-y-3 mt-3 overflow-hidden"
->
+const handleClearDepartment = () => {
+  setSharedMarket('');
+  setSharedFacility('');
+  setSharedDepartment('');
+  setIsEditingShare(false);
+};
 ```
 
-#### Change 4: Add Y-Slide to Cascading Selects (Lines 479-489 and 511-521)
+#### Change 7: Reset Editing State on Popover Open (around line 96)
+
+When the popover opens with existing data, ensure editing is off:
 
 ```typescript
-// Facility Select - BEFORE:
-<motion.div
-  key="facility-select"
-  layout
-  initial={{ opacity: 0, height: 0 }}
-  animate={{ opacity: 1, height: 'auto' }}
-  exit={{ opacity: 0, height: 0 }}
-  transition={{ 
-    opacity: { duration: 0.12 },
-    height: { duration: 0.15 },
-    layout: { type: "spring", stiffness: 500, damping: 35 }
-  }}
-  className="overflow-hidden"
->
-
-// AFTER:
-<motion.div
-  key="facility-select"
-  layout
-  initial={{ opacity: 0, height: 0, y: -6 }}
-  animate={{ opacity: 1, height: 'auto', y: 0 }}
-  exit={{ opacity: 0, height: 0, y: -6 }}
-  transition={{ 
-    opacity: { duration: 0.12 },
-    y: { type: "spring", stiffness: 500, damping: 35 },
-    height: { type: "spring", stiffness: 500, damping: 35 },
-    layout: { type: "spring", stiffness: 500, damping: 35 }
-  }}
-  className="overflow-hidden"
->
+// In the useEffect that runs on open, add:
+setIsEditingShare(false);
 ```
-
-Apply the same pattern to Department Select (lines 511-521).
 
 ---
 
-## Animation Summary
+## Animation Behavior
 
-| Element | Enter Animation | Exit Animation |
-|---------|-----------------|----------------|
-| Active FTE | Fade in + slide down from -8px | Fade out + slide up to -8px |
-| Expiry Date | Fade in + slide down from -8px | Fade out + slide up to -8px |
-| Shared Fields | Fade in + slide from right (12px) | Fade out + slide left (-12px) |
-| Facility/Dept | Fade in + slide down from -6px | Fade out + slide up to -6px |
+| User Action | Result |
+|-------------|--------|
+| Open popover (with existing department) | Shows badge with department name |
+| Click "Change" | Badge animates out, cascading selects animate in |
+| Complete selection | Selects animate out, badge animates in |
+| Click X on badge | Badge clears, shows empty market select |
 
 ---
 
 ## Visual Result
 
-- **Status selection**: Active FTE field slides down smoothly from above
-- **LOA/FMLA**: Expiry date slides down beneath the FTE field
-- **Switch to Shared Position**: Expiry slides out left, Shared section slides in from right (page-switch feel)
-- **Cascading selects**: Each dropdown slides down as it appears
-- **All transitions**: Combined with height animation for smooth container resizing
+- **Initial state with department**: Compact badge showing department name
+- **Click "Change"**: Smooth transition to cascading selects (preserving previous values)
+- **Complete new selection**: Smooth transition back to badge with new department
+- **Clear**: Empty market dropdown ready for new selection
 
