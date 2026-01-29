@@ -1,20 +1,16 @@
 
 
-# Fix Popover Content Overflow Issue
+# Remove Scroll and Use Smart Positioning
 
 ## Problem
 
-The popover content is being cut off at the bottom, as shown in the screenshot. The "Status / Reason" form with "Shared Position" selected shows the "Share With" section partially visible but there's no scrollbar to access the rest of the content.
-
-The issue is with the CSS:
-1. `overflow-hidden` on `PopoverContent` (line 270) blocks the scrollbar from appearing
-2. The inner scrollable container needs proper height constraints to enable scrolling
+The current implementation has a fixed max-height with internal scrolling, which the user doesn't want. Instead, the popover should automatically position itself so all content is visible without scrolling, staying within viewport bounds.
 
 ---
 
 ## Solution
 
-Fix the overflow and height constraints so the inner content scrolls properly while keeping the popover in a fixed position.
+Re-enable collision avoidance so the popover smartly positions itself (flipping to top if needed) to ensure all content fits within the viewport without requiring any scroll.
 
 ---
 
@@ -22,50 +18,52 @@ Fix the overflow and height constraints so the inner content scrolls properly wh
 
 ### File: `src/components/editable-table/cells/EditableFTECell.tsx`
 
-#### Change 1: Update PopoverContent className (Line 270)
-
-Remove `overflow-hidden` from PopoverContent and let the inner container handle scrolling:
+#### Change 1: Update PopoverContent to enable smart positioning (Lines 269-278)
 
 ```typescript
 // BEFORE:
-className="w-80 p-0 z-50 max-h-[420px] overflow-hidden"
+<PopoverContent 
+  className="w-80 p-0 z-50"
+  align="end"
+  side="bottom"
+  sideOffset={8}
+  collisionPadding={16}
+  avoidCollisions={false}
+>
+  <div className="flex flex-col max-h-[420px]">
+    <div className="flex-1 min-h-0 overflow-y-auto p-3">
 
 // AFTER:
-className="w-80 p-0 z-50"
+<PopoverContent 
+  className="w-80 p-0 z-50"
+  align="end"
+  side="bottom"
+  sideOffset={8}
+  collisionPadding={16}
+  avoidCollisions={true}
+>
+  <div className="flex flex-col">
+    <div className="p-3">
 ```
 
-#### Change 2: Fix the flex container height calculation (Line 277)
-
-The flex container needs a proper height constraint that accounts for the actions section:
-
-```typescript
-// BEFORE:
-<div className="flex flex-col max-h-[420px]">
-  <div className="flex-1 overflow-y-auto p-3">
-
-// AFTER:
-<div className="flex flex-col max-h-[420px]">
-  <div className="flex-1 min-h-0 overflow-y-auto p-3">
-```
-
-The key fix is adding `min-h-0` to the scrollable container. In flexbox, children default to `min-height: auto` which prevents them from shrinking below their content size. Adding `min-h-0` allows the element to shrink and enables the `overflow-y-auto` to work correctly.
+Key changes:
+- **`avoidCollisions={true}`** - Radix will automatically flip the popover to the top or adjust position if content would overflow the viewport
+- **Removed `max-h-[420px]`** - No height constraint needed since content will always fit
+- **Removed `overflow-y-auto` and `min-h-0`** - No scrolling needed
 
 ---
 
-## Why This Works
+## How It Works
 
-| Issue | Root Cause | Fix |
-|-------|-----------|-----|
-| No scrollbar visible | `overflow-hidden` on parent | Remove it from PopoverContent |
-| Content not scrolling | Flex child min-height default | Add `min-h-0` to allow shrinking |
-| Container height | Double max-h constraint | Keep only on outer flex container |
+| Scenario | Behavior |
+|----------|----------|
+| Row near top of table | Popover opens below, all content visible |
+| Row near bottom of table | Popover flips to open above the trigger |
+| Content height changes | Radix recalculates position to keep content in viewport |
 
 ---
 
-## Visual Result
+## Trade-off
 
-- Popover stays in fixed position (no jumping)
-- Content scrolls when it exceeds 420px height
-- Scrollbar appears when needed
-- Save/Revert buttons stay sticky at bottom
+This means the popover may appear above or below the trigger depending on available space. The position will be consistent for any given row location, but different rows may have popovers in different positions relative to viewport edges.
 
