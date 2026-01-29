@@ -1,23 +1,20 @@
 
-
-# Show Only Department Badge After Selection
+# Stabilize Form Layout During Animations
 
 ## Problem
 
-Currently, after selecting Market → Facility → Department in the "Share With" cascading selects, all three dropdowns remain visible. The user expects to see only the selected department name as a compact badge.
+The current implementation uses Framer Motion's `layout` prop extensively, which causes form elements to shift position when:
+1. Selecting a status shows/hides the Active FTE field
+2. Switching between Shared Position and non-shared modes
+3. Cascading selects appear/disappear during "Share With" selection
 
-The issue is the condition on line 425:
-```typescript
-{sharedDepartment && !sharedMarket ? (
-```
-
-This shows the badge only when `sharedDepartment` exists AND `sharedMarket` is empty. But after completing the cascade, `sharedMarket` still has a value, so the condition is always false.
+The `layout` prop animates an element's position when its layout changes. Combined with `height: 0` → `height: "auto"` animations, this causes fields to "slide into" new positions rather than staying fixed.
 
 ---
 
 ## Solution
 
-Change the condition to show the badge whenever a department is selected, and introduce an "editing" state to toggle back to the cascading selects when the user clicks "Change".
+Remove the `layout` prop from child elements and rely only on `height` + `opacity` animations. The container will naturally expand/contract, but content inside won't slide around.
 
 ---
 
@@ -25,105 +22,140 @@ Change the condition to show the badge whenever a department is selected, and in
 
 ### File: `src/components/editable-table/cells/EditableFTECell.tsx`
 
-#### Change 1: Add Editing State (around line 130)
-
-Add a state variable to track whether the user is actively editing the share selection:
+#### Change 1: Remove `layout` from Active FTE Field (Line 314)
 
 ```typescript
-// Add after other useState declarations
-const [isEditingShare, setIsEditingShare] = useState(false);
-```
-
-#### Change 2: Update Market Change Handler (line 150-154)
-
-When a market is selected initially, set editing mode to true:
-
-```typescript
-const handleMarketChange = (market: string) => {
-  setSharedMarket(market);
-  setSharedFacility('');
-  setSharedDepartment('');
-  setIsEditingShare(true);
-};
-```
-
-#### Change 3: Auto-Complete After Department Selection (line 529)
-
-When a department is selected, exit editing mode to show the badge:
-
-```typescript
-<Select 
-  value={sharedDepartment} 
-  onValueChange={(value) => {
-    setSharedDepartment(value);
-    setIsEditingShare(false); // Exit editing mode after selection
+// BEFORE:
+<motion.div
+  key="fte-field"
+  layout
+  initial={{ opacity: 0, height: 0, y: -8 }}
+  animate={{ opacity: 1, height: "auto", y: 0 }}
+  exit={{ opacity: 0, height: 0, y: -8 }}
+  transition={{ 
+    opacity: { duration: 0.15 },
+    y: { type: "spring", stiffness: 500, damping: 35 },
+    height: { type: "spring", stiffness: 500, damping: 35 },
+    layout: { type: "spring", stiffness: 500, damping: 35 }
   }}
->
+
+// AFTER:
+<motion.div
+  key="fte-field"
+  initial={{ opacity: 0, height: 0 }}
+  animate={{ opacity: 1, height: "auto" }}
+  exit={{ opacity: 0, height: 0 }}
+  transition={{ 
+    opacity: { duration: 0.15 },
+    height: { type: "spring", stiffness: 500, damping: 35 }
+  }}
 ```
 
-#### Change 4: Update Badge Display Condition (line 425)
-
-Change the condition to show the badge when department is selected AND not in editing mode:
+#### Change 2: Remove `layout` from Expiry Date Field (Line 348)
 
 ```typescript
 // BEFORE:
-{sharedDepartment && !sharedMarket ? (
+<motion.div
+  key="expiry-field"
+  layout
+  initial={{ opacity: 0, height: 0, y: -8 }}
+  ...
 
 // AFTER:
-{sharedDepartment && !isEditingShare ? (
+<motion.div
+  key="expiry-field"
+  initial={{ opacity: 0, height: 0 }}
+  animate={{ opacity: 1, height: "auto" }}
+  exit={{ opacity: 0, height: 0 }}
+  transition={{ 
+    opacity: { duration: 0.15 },
+    height: { type: "spring", stiffness: 500, damping: 35 }
+  }}
 ```
 
-#### Change 5: Update "Change" Button Handler (line 451)
-
-When "Change" is clicked, enter editing mode instead of clearing market:
+#### Change 3: Remove `layout` and `x` slide from Shared Position Fields (Line 413)
 
 ```typescript
 // BEFORE:
-onClick={() => setSharedMarket('')}
+<motion.div
+  key="shared-fields"
+  layout
+  initial={{ opacity: 0, height: 0, x: 12 }}
+  animate={{ opacity: 1, height: "auto", x: 0 }}
+  exit={{ opacity: 0, height: 0, x: -12 }}
+  ...
 
 // AFTER:
-onClick={() => setIsEditingShare(true)}
+<motion.div
+  key="shared-fields"
+  initial={{ opacity: 0, height: 0 }}
+  animate={{ opacity: 1, height: "auto" }}
+  exit={{ opacity: 0, height: 0 }}
+  transition={{ 
+    opacity: { duration: 0.15 },
+    height: { type: "spring", stiffness: 500, damping: 35 }
+  }}
 ```
 
-#### Change 6: Update Clear Handler (line 161-165)
-
-When clearing, also reset editing state:
+#### Change 4: Remove `layout` and `y` slide from Cascading Selects (Lines 490, 523)
 
 ```typescript
-const handleClearDepartment = () => {
-  setSharedMarket('');
-  setSharedFacility('');
-  setSharedDepartment('');
-  setIsEditingShare(false);
-};
+// Facility Select - BEFORE:
+<motion.div
+  key="facility-select"
+  layout
+  initial={{ opacity: 0, height: 0, y: -6 }}
+  ...
+
+// AFTER:
+<motion.div
+  key="facility-select"
+  initial={{ opacity: 0, height: 0 }}
+  animate={{ opacity: 1, height: "auto" }}
+  exit={{ opacity: 0, height: 0 }}
+  transition={{ 
+    opacity: { duration: 0.12 },
+    height: { type: "spring", stiffness: 500, damping: 35 }
+  }}
 ```
 
-#### Change 7: Reset Editing State on Popover Open (around line 96)
+Apply same pattern to Department Select.
 
-When the popover opens with existing data, ensure editing is off:
+#### Change 5: Remove `LayoutGroup` Wrapper (Lines 297-298)
+
+Since we're no longer using `layout` prop on children, the `LayoutGroup` wrapper is unnecessary:
 
 ```typescript
-// In the useEffect that runs on open, add:
-setIsEditingShare(false);
+// BEFORE:
+<LayoutGroup>
+  <motion.div 
+    layout
+    transition={{ ... }}
+    className="relative mt-3"
+  >
+
+// AFTER:
+<div className="relative mt-3">
 ```
+
+And close with `</div>` instead of `</motion.div></LayoutGroup>`.
 
 ---
 
-## Animation Behavior
+## Animation Summary
 
-| User Action | Result |
-|-------------|--------|
-| Open popover (with existing department) | Shows badge with department name |
-| Click "Change" | Badge animates out, cascading selects animate in |
-| Complete selection | Selects animate out, badge animates in |
-| Click X on badge | Badge clears, shows empty market select |
+| Element | Before | After |
+|---------|--------|-------|
+| Active FTE | height + y + layout | height + opacity only |
+| Expiry Date | height + y + layout | height + opacity only |
+| Shared Fields | height + x + layout | height + opacity only |
+| Cascading Selects | height + y + layout | height + opacity only |
 
 ---
 
 ## Visual Result
 
-- **Initial state with department**: Compact badge showing department name
-- **Click "Change"**: Smooth transition to cascading selects (preserving previous values)
-- **Complete new selection**: Smooth transition back to badge with new department
-- **Clear**: Empty market dropdown ready for new selection
-
+- **Forms stay fixed**: Fields don't shift position when siblings appear/disappear
+- **Smooth expansion**: Container still expands/contracts smoothly via `height: "auto"`
+- **Clean fade**: Content fades in/out without sliding
+- **Stable UX**: Users can focus on filling forms without visual distraction
