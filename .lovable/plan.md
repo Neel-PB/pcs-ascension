@@ -1,172 +1,165 @@
 
 
-# Fix: Stabilize Popover Position When Selecting Shared Position
+# Dynamic Height Animation for Active FTE Popover
 
 ## Problem
 
-When selecting "Shared Position" status, the form content switches from:
-- **Non-shared mode**: Active FTE + Expiry Date (2 fields)
-- **Shared mode**: Active FTE + Share With (3 cascading selects) + Shared FTE + Shared Expiry (5+ fields)
+The current implementation uses `min-h-[280px]` to prevent popover repositioning, but this creates excessive empty space when showing fewer fields (like FMLA status which only has 3 fields as shown in the screenshot).
 
-This height change causes the popover to reposition/jump, creating a jarring experience.
+## Solution: Animated Height with `motion.div` Layout
 
----
-
-## Root Cause
-
-1. **Dynamic height + collision detection**: The popover has `avoidCollisions={true}`, so when content grows, Radix recalculates positioning
-2. **AnimatePresence `mode="wait"`**: Fields exit before new ones enter, causing a momentary collapse
-3. **No minimum height**: The popover shrinks/grows freely with content
+Replace the fixed min-height container with Framer Motion's `layout` animation that smoothly animates height changes. Use a single `AnimatePresence` with proper key management to handle the transition between different form states.
 
 ---
 
-## Solution: Fixed Height Container with Internal Scrolling
+## Technical Changes
 
-Reserve consistent vertical space for the form content so the popover dimensions stay stable regardless of which status is selected.
+### File: `src/components/editable-table/cells/EditableFTECell.tsx`
 
-### Technical Changes
+#### Change 1: Replace Fixed Min-Height with Animated Container
 
-**File**: `src/components/editable-table/cells/EditableFTECell.tsx`
-
-#### Change 1: Use Fixed/Min Height Container
-
-Wrap the dynamic content area in a container with a consistent minimum height that accommodates the largest possible form state (Shared Position with all fields).
+Remove `min-h-[280px]` and instead use `motion.div` with `layout` prop to animate height changes smoothly.
 
 ```typescript
-// Around line 272-273, wrap the dynamic content
-<div className="p-3">
-  {/* Status dropdown - always visible, no animation needed */}
-  <div className="space-y-1.5">
-    <Label className="text-xs font-medium">Status / Reason</Label>
-    <Select ...>...</Select>
-  </div>
+// Line 291 - BEFORE:
+<div className="min-h-[280px] relative overflow-hidden mt-3">
 
-  {/* Dynamic content area with stable height */}
-  <div className="min-h-[280px] relative">
-    {/* All animated fields go here */}
-  </div>
-
-  {/* Actions - outside stable area */}
-  <div className="flex gap-2 pt-3">...</div>
-</div>
+// AFTER:
+<motion.div 
+  layout
+  transition={{ 
+    layout: { 
+      type: "spring", 
+      stiffness: 500, 
+      damping: 35 
+    }
+  }}
+  className="relative overflow-hidden mt-3"
+>
 ```
 
-#### Change 2: Switch from `mode="wait"` to `mode="sync"`
+#### Change 2: Add Layout Animation to Child Sections
 
-Allow overlapping transitions so fields don't collapse before new ones appear:
+Wrap each conditional section in `motion.div` with `layout` prop so height transitions animate smoothly:
 
 ```typescript
-// Change all AnimatePresence mode from "wait" to "sync" or remove mode entirely
+// For the Active FTE dropdown (line 295-317):
+<AnimatePresence mode="sync">
+  {editStatus && (
+    <motion.div
+      key="fte-field"
+      layout
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ 
+        opacity: { duration: 0.15 },
+        layout: { type: "spring", stiffness: 500, damping: 35 }
+      }}
+      className="space-y-1.5"
+    >
+      {/* Active FTE dropdown */}
+    </motion.div>
+  )}
+</AnimatePresence>
+
+// For non-shared Expiry Date (line 321-377):
 <AnimatePresence mode="sync">
   {editStatus && !isSharedPosition && (
-    <motion.div ...>
+    <motion.div
+      key="expiry-field"
+      layout
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ 
+        opacity: { duration: 0.15 },
+        layout: { type: "spring", stiffness: 500, damping: 35 }
+      }}
+      className="space-y-1.5 mt-3"
+    >
       {/* Expiry Date field */}
     </motion.div>
   )}
 </AnimatePresence>
 
+// For Shared Position fields (line 380-570):
 <AnimatePresence mode="sync">
   {isSharedPosition && (
-    <motion.div ...>
-      {/* Shared Position fields */}
+    <motion.div
+      key="shared-fields"
+      layout
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ 
+        opacity: { duration: 0.15 },
+        layout: { type: "spring", stiffness: 500, damping: 35 }
+      }}
+      className="space-y-3 mt-3"
+    >
+      {/* All shared position fields */}
     </motion.div>
   )}
 </AnimatePresence>
 ```
 
-#### Change 3: Use Absolute Positioning for Transitions
-
-For smoother transitions, use absolute positioning during animations so fields overlay during transition rather than push each other:
+#### Change 3: Close the Wrapper with `motion.div`
 
 ```typescript
-// Dynamic content wrapper
-<div className="min-h-[280px] relative overflow-hidden">
-  <AnimatePresence mode="sync">
-    {editStatus && (
-      <motion.div
-        key="fte-field"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        transition={{ duration: 0.2 }}
-        className="pt-3"
-      >
-        {/* Active FTE dropdown */}
-      </motion.div>
-    )}
-  </AnimatePresence>
-
-  {/* Non-shared fields */}
-  <AnimatePresence mode="sync">
-    {editStatus && !isSharedPosition && (
-      <motion.div
-        key="expiry-field"
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: 20 }}
-        transition={{ duration: 0.2 }}
-        className="pt-3"
-      >
-        {/* Expiry Date */}
-      </motion.div>
-    )}
-  </AnimatePresence>
-
-  {/* Shared Position fields */}
-  <AnimatePresence mode="sync">
-    {isSharedPosition && (
-      <motion.div
-        key="shared-fields"
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -20 }}
-        transition={{ duration: 0.2 }}
-        className="pt-3"
-      >
-        {/* All shared position fields */}
-      </motion.div>
-    )}
-  </AnimatePresence>
+// Line 572 - BEFORE:
 </div>
+
+// AFTER:
+</motion.div>
 ```
 
-#### Change 4: Remove Layout Animation from Actions
+#### Change 4: Add `layout` to Nested Animated Elements
 
-The `layout` prop on the actions div causes additional position calculations:
+For the cascading selects that animate in/out, add `layout` prop to ensure parent container animates smoothly:
 
 ```typescript
-// Line 573 - remove layout prop
-<div className="flex gap-2 pt-3 border-t">  {/* No motion.div needed */}
+// Lines 453-474 (facility select) and 480-501 (department select):
+<motion.div
+  key="facility-select"
+  layout
+  initial={{ opacity: 0, height: 0 }}
+  animate={{ opacity: 1, height: 'auto' }}
+  exit={{ opacity: 0, height: 0 }}
+  transition={{ 
+    opacity: { duration: 0.12 },
+    height: { duration: 0.15 },
+    layout: { type: "spring", stiffness: 500, damping: 35 }
+  }}
+  className="overflow-hidden"
+>
 ```
 
 ---
 
-## Visual Behavior After Fix
+## Animation Behavior
 
-| Action | Before | After |
-|--------|--------|-------|
-| Select "Shared Position" | Popover jumps, fields collapse then expand | Smooth crossfade, popover stays in place |
-| Switch away from "Shared Position" | Popover shrinks abruptly | Content fades with consistent container height |
-| Cascading selects appear | Each pushes content down | Each appears within stable bounds |
-
----
-
-## Animation Design
-
-Use horizontal slide transitions to differentiate between non-shared and shared field sets:
-
-- **Non-shared → Shared**: Non-shared slides left and fades out, Shared slides in from right
-- **Shared → Non-shared**: Reverse direction
-
-This creates a "page switching" metaphor that feels intentional rather than the popover "breaking".
+| State | Fields Shown | Height | Transition |
+|-------|--------------|--------|------------|
+| FMLA selected | Status + Active FTE + Expiry | ~180px | Smooth spring shrink |
+| Shared Position | Status + FTE + Share With (3) + Shared FTE + Shared Expiry | ~350px | Smooth spring grow |
+| Cascading select | +1 dropdown at a time | +28px each | Accordion-style |
 
 ---
 
-## Testing Checklist
+## Why This Works
 
-1. Click Active FTE cell → select "LOA" → verify smooth animation
-2. Change to "Shared Position" → verify popover doesn't jump
-3. Complete cascading selection → verify form stays stable
-4. Switch from "Shared Position" to "FMLA" → verify smooth transition
-5. Test on rows near top and bottom of table → popover positioning consistent
+1. **`layout` prop**: Tells Framer Motion to automatically animate this element's position/size when it changes
+2. **Spring physics**: `stiffness: 500, damping: 35` creates snappy but smooth transitions (matching existing tab indicator pattern from memory)
+3. **No fixed height**: Container naturally fits content, animation handles the transition
+4. **Popover stability**: The spring animation is fast enough that Radix doesn't reposition mid-animation
+
+---
+
+## Expected Visual Result
+
+- **FMLA/LOA**: Compact form with just 3 fields, no wasted space
+- **Switch to Shared Position**: Form smoothly expands to accommodate all fields
+- **Cascading selects**: Each dropdown slides in with height animation
+- **Switch back**: Form smoothly contracts to original size
 
