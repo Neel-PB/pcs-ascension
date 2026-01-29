@@ -67,7 +67,7 @@ export default function PositionsPage() {
   const tabs = [
     { id: "employees", label: "Employees" },
     { id: "contractors", label: "Contractors" },
-    { id: "requisitions", label: "Requisitions" },
+    { id: "requisitions", label: "Open Positions" },
   ];
 
   const handleRegionChange = (value: string) => {
