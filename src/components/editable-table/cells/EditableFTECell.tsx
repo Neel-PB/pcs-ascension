@@ -267,7 +267,7 @@ export function EditableFTECell({
         </button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-80 p-0 z-50 max-h-[420px] overflow-hidden"
+        className="w-80 p-0 z-50"
         align="end"
         side="bottom"
         sideOffset={8}
@@ -275,7 +275,7 @@ export function EditableFTECell({
         avoidCollisions={false}
       >
         <div className="flex flex-col max-h-[420px]">
-          <div className="flex-1 overflow-y-auto p-3">
+          <div className="flex-1 min-h-0 overflow-y-auto p-3">
           {/* Status / Reason Dropdown - always visible, no animation */}
           <div className="space-y-1.5">
             <Label className="text-xs font-medium">Status / Reason</Label>
