@@ -16,6 +16,7 @@ import { useUpdateShiftOverride } from "@/hooks/useUpdateShiftOverride";
 import { EditableFTECell } from "@/components/editable-table/cells/EditableFTECell";
 import { usePositionCommentCounts } from "@/hooks/usePositionCommentCounts";
 import { KPISummaryModal } from "@/components/staffing/KPISummaryModal";
+import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 
 interface ContractorsTabProps {
   selectedRegion: string;
@@ -47,7 +48,7 @@ export function ContractorsTab({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetDefaultTab, setSheetDefaultTab] = useState<"details" | "comments">("details");
   const [filterOpen, setFilterOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const { inputValue: searchQuery, debouncedValue: debouncedSearch, setInputValue: setSearchQuery } = useDebouncedSearch(300);
   const [sortColumn, setSortColumn] = useState<string>("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [filters, setFilters] = useState({
@@ -58,17 +59,17 @@ export function ContractorsTab({
     fteMax: "",
   });
 
-  const handleRowClick = (contractor: any) => {
+  const handleRowClick = useCallback((contractor: any) => {
     setSelectedContractor(contractor);
     setSheetDefaultTab("details");
     setSheetOpen(true);
-  };
+  }, []);
 
-  const handleCommentClick = (contractor: any) => {
+  const handleCommentClick = useCallback((contractor: any) => {
     setSelectedContractor(contractor);
     setSheetDefaultTab("comments");
     setSheetOpen(true);
-  };
+  }, []);
 
   const handleSort = (columnId: string, direction: "asc" | "desc") => {
     setSortColumn(columnId);
@@ -118,9 +119,9 @@ export function ContractorsTab({
 
     let filtered = [...contractors];
 
-    // Apply search
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    // Apply debounced search
+    if (debouncedSearch) {
+      const query = debouncedSearch.toLowerCase();
       filtered = filtered.filter((c) => {
         const searchFields = [
           c.employeeName,
@@ -191,7 +192,7 @@ export function ContractorsTab({
     }
 
     return filtered;
-  }, [contractors, searchQuery, filters, sortColumn, sortDirection]);
+  }, [contractors, debouncedSearch, filters, sortColumn, sortDirection]);
 
   // Extract position IDs for comment count fetching
   const positionIds = useMemo(() => 

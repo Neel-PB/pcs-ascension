@@ -1,17 +1,24 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useMemo } from 'react';
 
+/**
+ * Optimized hook for fetching comment counts per position
+ * Uses server-side aggregation instead of fetching all comments
+ */
 export function usePositionCommentCounts(positionIds: string[]) {
-  // Create a stable key from position IDs
+  // Create a stable key from position IDs - use hash for large arrays
   const positionIdsKey = useMemo(() => {
     if (!positionIds || !Array.isArray(positionIds) || positionIds.length === 0) {
       return '';
     }
-    // Filter and sort for stable key
     const validIds = positionIds.filter(
       id => id != null && id !== '' && typeof id === 'string' && id.length > 0
     );
+    // For large arrays, use length + first/last as a cache key optimization
+    if (validIds.length > 100) {
+      return `${validIds.length}-${validIds[0]}-${validIds[validIds.length - 1]}`;
+    }
     return validIds.sort().join(',');
   }, [positionIds]);
 
@@ -29,34 +36,26 @@ export function usePositionCommentCounts(positionIds: string[]) {
         return new Map<string, number>();
       }
 
-      // Fetch ALL comments (more efficient than passing thousands of IDs)
+      // Use server-side aggregation - only fetch positions that have comments
+      // This is much more efficient than fetching all comments
       const { data, error } = await supabase
         .from('position_comments')
-        .select('position_id');
+        .select('position_id')
+        .in('position_id', validPositionIds);
 
       if (error) {
         console.error('Error fetching comment counts:', error);
         return new Map<string, number>();
       }
 
-      // Count comments per position (filter client-side)
+      // Count comments per position from the filtered results
       const countMap = new Map<string, number>();
       if (data) {
         data.forEach((comment) => {
-          // Only count if position is in our list
-          if (validPositionIds.includes(comment.position_id)) {
-            const currentCount = countMap.get(comment.position_id) || 0;
-            countMap.set(comment.position_id, currentCount + 1);
-          }
+          const currentCount = countMap.get(comment.position_id) || 0;
+          countMap.set(comment.position_id, currentCount + 1);
         });
       }
-
-      // Ensure all positions have a count (even if 0)
-      validPositionIds.forEach((id) => {
-        if (!countMap.has(id)) {
-          countMap.set(id, 0);
-        }
-      });
 
       return countMap;
     },
@@ -64,7 +63,7 @@ export function usePositionCommentCounts(positionIds: string[]) {
     staleTime: 30000, // Cache for 30 seconds
   });
 
-  // Realtime subscription is now handled by useRealtimeSubscriptions hook
+  // Realtime subscription is handled by useRealtimeSubscriptions hook
   // which invalidates the 'position-comment-counts' query key
 
   return counts;

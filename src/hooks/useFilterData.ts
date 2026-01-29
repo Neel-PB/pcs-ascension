@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useMemo } from "react";
 
 export interface Region {
   id: string;
@@ -28,58 +29,44 @@ export interface Department {
   facility_id: string;
 }
 
+interface FilterDataResult {
+  regions: Region[];
+  markets: Market[];
+  facilities: Facility[];
+  departments: Department[];
+}
+
 export function useFilterData() {
-  // Fetch regions
-  const { data: regions = [], isLoading: regionsLoading } = useQuery({
-    queryKey: ["filter-regions"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("regions")
-        .select("*")
-        .order("region");
-      if (error) throw error;
-      return data as Region[];
+  // Single query that fetches all filter data in parallel
+  const { data, isLoading } = useQuery({
+    queryKey: ["all-filter-data"],
+    queryFn: async (): Promise<FilterDataResult> => {
+      const [regionsRes, marketsRes, facilitiesRes, departmentsRes] = await Promise.all([
+        supabase.from("regions").select("*").order("region"),
+        supabase.from("markets").select("*").order("market"),
+        supabase.from("facilities").select("*").order("facility_name"),
+        supabase.from("departments").select("*").order("department_name"),
+      ]);
+
+      if (regionsRes.error) throw regionsRes.error;
+      if (marketsRes.error) throw marketsRes.error;
+      if (facilitiesRes.error) throw facilitiesRes.error;
+      if (departmentsRes.error) throw departmentsRes.error;
+
+      return {
+        regions: regionsRes.data as Region[],
+        markets: marketsRes.data as Market[],
+        facilities: facilitiesRes.data as Facility[],
+        departments: departmentsRes.data as Department[],
+      };
     },
+    staleTime: 10 * 60 * 1000, // 10 minutes - this is mostly static data
   });
 
-  // Fetch markets
-  const { data: markets = [], isLoading: marketsLoading } = useQuery({
-    queryKey: ["filter-markets"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("markets")
-        .select("*")
-        .order("market");
-      if (error) throw error;
-      return data as Market[];
-    },
-  });
-
-  // Fetch facilities
-  const { data: facilities = [], isLoading: facilitiesLoading } = useQuery({
-    queryKey: ["filter-facilities"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("facilities")
-        .select("*")
-        .order("facility_name");
-      if (error) throw error;
-      return data as Facility[];
-    },
-  });
-
-  // Fetch departments
-  const { data: departments = [], isLoading: departmentsLoading } = useQuery({
-    queryKey: ["filter-departments"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("departments")
-        .select("*")
-        .order("department_name");
-      if (error) throw error;
-      return data as Department[];
-    },
-  });
+  const regions = data?.regions ?? [];
+  const markets = data?.markets ?? [];
+  const facilities = data?.facilities ?? [];
+  const departments = data?.departments ?? [];
 
   // Helper: get markets filtered by region
   const getMarketsByRegion = (regionName: string | null) => {
@@ -128,11 +115,12 @@ export function useFilterData() {
     markets,
     facilities,
     departments,
-    regionsLoading,
-    marketsLoading,
-    facilitiesLoading,
-    departmentsLoading,
-    isLoading: regionsLoading || marketsLoading || facilitiesLoading || departmentsLoading,
+    // Keep backward compatibility with individual loading states
+    regionsLoading: isLoading,
+    marketsLoading: isLoading,
+    facilitiesLoading: isLoading,
+    departmentsLoading: isLoading,
+    isLoading,
     getMarketsByRegion,
     getFacilitiesByMarket,
     getDepartmentsByFacility,

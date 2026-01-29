@@ -3,7 +3,7 @@ import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '
 import { TableConfig, ColumnDef, ColumnState } from '@/types/table';
 import { useColumnStore } from '@/stores/useColumnStore';
 import { TableHeader } from './TableHeader';
-import { TableRow } from './TableRow';
+import { VirtualizedTableBody } from './VirtualizedTableBody';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -219,9 +219,9 @@ export function EditableTable<T = any>({
               </p>
             </div>
           )}
-          <div ref={containerRef} className="flex-1 overflow-auto">
+          <div ref={containerRef} className="flex-1 flex flex-col overflow-hidden">
             <div style={{ minWidth: 'max-content', width: '100%' }}>
-              {/* Header */}
+              {/* Header - sticky */}
               <TableHeader
                 columns={visibleColumns}
                 gridTemplate={gridTemplate}
@@ -233,22 +233,17 @@ export function EditableTable<T = any>({
                 sortField={sortField}
                 sortDirection={sortDirection}
               />
-
-              {/* Data rows */}
-              {data.map((row) => {
-                const rowId = getRowId(row);
-                return (
-                  <TableRow
-                    key={rowId}
-                    data={row}
-                    columns={visibleColumns}
-                    gridTemplate={gridTemplate}
-                    onClick={() => onRowClick?.(row)}
-                    className={typeof rowClassName === 'function' ? rowClassName(row) : rowClassName}
-                  />
-                );
-              })}
             </div>
+
+            {/* Virtualized data rows */}
+            <VirtualizedTableBody
+              data={data}
+              columns={visibleColumns}
+              gridTemplate={gridTemplate}
+              getRowId={getRowId}
+              onRowClick={onRowClick}
+              rowClassName={rowClassName}
+            />
           </div>
         </div>
       </DndContext>

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Filter, Search } from "lucide-react";
 import { differenceInDays } from "date-fns";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
@@ -14,6 +14,7 @@ import { ColumnVisibilityPanel } from "@/components/editable-table/ColumnVisibil
 import { requisitionColumns, createRequisitionColumnsWithComments } from "@/config/requisitionColumns";
 import { usePositionCommentCounts } from "@/hooks/usePositionCommentCounts";
 import { KPISummaryModal } from "@/components/staffing/KPISummaryModal";
+import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 
 interface RequisitionsTabProps {
   selectedRegion: string;
@@ -43,7 +44,7 @@ export function RequisitionsTab({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetDefaultTab, setSheetDefaultTab] = useState<"details" | "comments">("details");
   const [filterOpen, setFilterOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const { inputValue: searchQuery, debouncedValue: debouncedSearch, setInputValue: setSearchQuery } = useDebouncedSearch(300);
   const [sortColumn, setSortColumn] = useState<string>("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [filters, setFilters] = useState({
@@ -55,17 +56,17 @@ export function RequisitionsTab({
     employmentType: "all",
   });
 
-  const handleRowClick = (requisition: any) => {
+  const handleRowClick = useCallback((requisition: any) => {
     setSelectedRequisition(requisition);
     setSheetDefaultTab("details");
     setSheetOpen(true);
-  };
+  }, []);
 
-  const handleCommentClick = (requisition: any) => {
+  const handleCommentClick = useCallback((requisition: any) => {
     setSelectedRequisition(requisition);
     setSheetDefaultTab("comments");
     setSheetOpen(true);
-  };
+  }, []);
 
   const getVacancyAge = (statusDate: string | null) => {
     if (!statusDate) return null;
@@ -116,9 +117,9 @@ export function RequisitionsTab({
       vacancyAge: getVacancyAge(req.positionStatusDate),
     }));
 
-    // Apply search
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    // Apply debounced search
+    if (debouncedSearch) {
+      const query = debouncedSearch.toLowerCase();
       filtered = filtered.filter((r) => {
         const searchFields = [
           r.positionNum,
@@ -186,7 +187,7 @@ export function RequisitionsTab({
     }
 
     return filtered;
-  }, [requisitions, searchQuery, filters, sortColumn, sortDirection]);
+  }, [requisitions, debouncedSearch, filters, sortColumn, sortDirection]);
 
   // Extract position IDs for comment count fetching
   const positionIds = useMemo(() => 
