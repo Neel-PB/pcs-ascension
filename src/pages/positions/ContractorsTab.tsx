@@ -16,7 +16,6 @@ import { useUpdateActualFte } from "@/hooks/useUpdateActualFte";
 import { useUpdateShiftOverride } from "@/hooks/useUpdateShiftOverride";
 import { EditableFTECell } from "@/components/editable-table/cells/EditableFTECell";
 import { usePositionCommentCounts } from "@/hooks/usePositionCommentCounts";
-import { KPISummaryModal } from "@/components/staffing/KPISummaryModal";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 
 interface ContractorsTabProps {
@@ -263,7 +262,6 @@ export function ContractorsTab({
         
         <div className="flex gap-2 flex-shrink-0">
           <DataRefreshButton dataSources={['positions_data']} />
-          <KPISummaryModal />
           <ColumnVisibilityPanel
             columns={contractorColumns}
             storeNamespace="contractors-columns-v2"

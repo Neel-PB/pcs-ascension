@@ -13,7 +13,6 @@ import { EditableTable } from "@/components/editable-table/EditableTable";
 import { ColumnVisibilityPanel } from "@/components/editable-table/ColumnVisibilityPanel";
 import { requisitionColumns, createRequisitionColumnsWithComments } from "@/config/requisitionColumns";
 import { usePositionCommentCounts } from "@/hooks/usePositionCommentCounts";
-import { KPISummaryModal } from "@/components/staffing/KPISummaryModal";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 
 interface RequisitionsTabProps {
@@ -221,7 +220,6 @@ export function RequisitionsTab({
         
         <div className="flex gap-2 flex-shrink-0">
           <DataRefreshButton dataSources={['positions_data']} />
-          <KPISummaryModal />
           <ColumnVisibilityPanel
             columns={requisitionColumns}
             storeNamespace="requisitions-columns"
