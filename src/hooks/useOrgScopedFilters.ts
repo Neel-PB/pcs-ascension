@@ -98,16 +98,36 @@ export function useOrgScopedFilters(): AccessScopedFiltersResult {
       : markets.map(m => m.market);
     
     // Facilities - map to full Facility objects from filter data
+    // If filter data hasn't loaded yet but we have Access Scope, use Access Scope data directly
     const availableFacilities = accessScope.hasFacilityRestriction
-      ? facilities.filter(f => 
-          accessScope.facilities.some(of => of.facilityId === f.facility_id)
+      ? (facilities.length > 0 
+          ? facilities.filter(f => 
+              accessScope.facilities.some(of => of.facilityId === f.facility_id)
+            )
+          : accessScope.facilities.map(f => ({
+              facility_id: f.facilityId,
+              facility_name: f.facilityName,
+              id: f.facilityId,
+              market: '',
+              region: null,
+              submarket: null,
+            }))
         )
       : facilities;
     
     // Departments - map to full Department objects from filter data
+    // If filter data hasn't loaded yet but we have Access Scope, use Access Scope data directly
     const availableDepartments = accessScope.hasDepartmentRestriction
-      ? departments.filter(d =>
-          accessScope.departments.some(od => od.departmentId === d.department_id)
+      ? (departments.length > 0
+          ? departments.filter(d =>
+              accessScope.departments.some(od => od.departmentId === d.department_id)
+            )
+          : accessScope.departments.map(d => ({
+              department_id: d.departmentId,
+              department_name: d.departmentName,
+              id: d.departmentId,
+              facility_id: d.facilityId || '',
+            }))
         )
       : departments;
     
