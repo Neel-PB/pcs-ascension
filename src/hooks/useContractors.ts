@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface UseContractorsProps {
@@ -9,33 +8,12 @@ interface UseContractorsProps {
   selectedDepartment: string;
 }
 
-// Check for expired Active FTE overrides once per session
-let hasCheckedExpiredFte = false;
-
 export function useContractors({
   selectedRegion,
   selectedMarket,
   selectedFacility,
   selectedDepartment,
 }: UseContractorsProps) {
-  const hasInvoked = useRef(false);
-
-  // Call the expiry check function once when component mounts
-  useEffect(() => {
-    if (!hasCheckedExpiredFte && !hasInvoked.current) {
-      hasInvoked.current = true;
-      hasCheckedExpiredFte = true;
-      
-      supabase.functions.invoke('check-expired-fte').then(({ data, error }) => {
-        if (error) {
-          console.error('Error checking expired FTE:', error);
-        } else if (data?.count > 0 || data?.sharedExpiredCount > 0) {
-          console.log(`Reverted ${data.count} expired FTE override(s), ${data.sharedExpiredCount} shared expiry(s)`);
-        }
-      });
-    }
-  }, []);
-
   return useQuery({
     queryKey: ["contractors", selectedRegion, selectedMarket, selectedFacility, selectedDepartment],
     queryFn: async () => {
