@@ -416,7 +416,11 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         return conditions.join(',');
       };
       
-      const accessScopeFilter = buildAccessScopeFilter();
+      // TRUST MODEL: When a specific UI filter is selected, bypass access scope filter
+      // FilterBar already enforces access scope in dropdown options, so we trust it
+      // Only apply access scope when "All" is selected (no specific facilityId or market)
+      const needsAccessScopeFilter = !hasUnrestrictedAccess && !facilityId && !market;
+      const accessScopeFilter = needsAccessScopeFilter ? buildAccessScopeFilter() : null;
       
       // Build query for filled positions (employees)
       let employedQuery = supabase
@@ -424,7 +428,7 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         .select('*')
         .not('employeeName', 'is', null);
       
-      // Step 1: Apply access scope as UNION (OR) gate
+      // Step 1: Apply access scope ONLY when no specific UI filter is selected
       if (accessScopeFilter) {
         employedQuery = employedQuery.or(accessScopeFilter);
       }
@@ -453,7 +457,7 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         .select('*')
         .is('employeeName', null);
       
-      // Step 1: Apply access scope as UNION (OR) gate
+      // Step 1: Apply access scope ONLY when no specific UI filter is selected
       if (accessScopeFilter) {
         openReqsQuery = openReqsQuery.or(accessScopeFilter);
       }
