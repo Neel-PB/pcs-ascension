@@ -618,7 +618,14 @@ This metric helps:
           )}
           
           {activeTab === "forecasts" && (
-            <ForecastTab />
+            <ForecastTab 
+              selectedRegion={selectedRegion}
+              selectedMarket={selectedMarket}
+              selectedFacility={selectedFacility}
+              selectedDepartment={selectedDepartment}
+              selectedLevel2={selectedLevel2}
+              selectedPstat={selectedPstat}
+            />
           )}
           
           {activeTab === "volume-settings" && (
