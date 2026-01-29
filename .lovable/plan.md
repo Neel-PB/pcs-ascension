@@ -1,142 +1,300 @@
 
-# Fix: Variance Analysis Must Respect Access Scope
+# Enhancements: Status/Reason Popover Positioning, Share With Selection, and View Change Animations
 
-## Problem Summary
+## Summary of Requested Changes
 
-The Variance Analysis tab for Demo Manager shows data from markets/facilities outside the user's authorized Access Scope. The filter dropdown shows "All Departments" because the user has multiple department assignments, but the table should only display data for the assigned departments.
-
-## Demo Manager's Actual Access Scope (from DB)
-
-| Facility | Facility Name | Department | Department Name |
-|----------|---------------|------------|-----------------|
-| 52005 | St. Vincent's Southside | 14452 | ICU |
-| 52005 | St. Vincent's Southside | (facility-only) | - |
-| 26012 | ASH Pensacola Hospital | 10298 | Adult ECMO 001 |
-| 26012 | ASH Pensacola Hospital | 10277 | Bariatric Surgical Unit 001 |
-| 26012 | ASH Pensacola Hospital | 11012 | Cardiac Care |
-
-**Most Specific Assignment Wins Rule:**
-- Facility 52005: Has department "ICU" → Only show "ICU" (department wins over facility-level)
-- Facility 26012: Has 3 specific departments → Only show those 3 departments
-
-**Result**: Demo Manager should see exactly 4 departments across 2 facilities.
-
----
-
-## Root Cause Analysis
-
-### Issue 1: Filter Dropdown Shows "All Departments"
-Since the user has 4 assigned departments, `availableDepartments.length !== 1`, so the default is "all-departments" and the filter isn't locked.
-
-**However**: "All Departments" in this context should mean "All of MY assigned departments" - which is only 4, not ALL departments in the database.
-
-### Issue 2: Variance Analysis Doesn't Use Access Scope
-The `VarianceAnalysis.tsx` component:
-- Uses `useFilterData()` directly (fetches ALL regions/markets/facilities/departments)
-- Cascades based on UI selection, not Access Scope
-- When `selectedDepartment === "all-departments"`, it shows ALL facilities/markets
-
-**Expected behavior**: When `selectedDepartment === "all-departments"`:
-- The table should still only show data for the user's 4 authorized departments
-- NOT all departments in the database
+1. **Status/Reason Popover Positioning**: Currently opens on top (`side="top"`) which looks bad when clicking top rows - the popover appears outside the visible area
+2. **Share With Department Selection**: Currently a simple text input - should allow hierarchical selection of Market → Facility → Department, but only show Department in the UI after selection
+3. **View Change Animations**: Add polished animations when switching between different form states (selecting status, revealing Shared Position fields, etc.)
 
 ---
 
 ## Technical Changes
 
-### File 1: `src/pages/staffing/VarianceAnalysis.tsx`
+### File 1: `src/components/editable-table/cells/EditableFTECell.tsx`
 
-**Change**: Integrate Access Scope filtering into the component's data generation logic.
+#### Change 1.1: Fix Popover Positioning
+
+**Problem**: The popover uses `side="top"` which causes it to appear outside the viewport when clicking rows at the top of the table.
+
+**Solution**: Change to `side="bottom"` with intelligent collision handling - Radix will automatically flip to top when there's more room above.
 
 ```typescript
-// Current (line 22):
-import { useFilterData } from "@/hooks/useFilterData";
+// Current (line 210-216):
+<PopoverContent 
+  className="w-80 p-0 z-50"
+  align="center"
+  side="top"
+  sideOffset={8}
+  collisionPadding={20}
+  avoidCollisions={true}
+>
 
-// Add:
-import { useOrgScopedFilters } from "@/hooks/useOrgScopedFilters";
-
-// In component (around line 87):
-const { 
-  restrictedOptions, 
-  hasRestrictions, 
-  hasRestrictionAt 
-} = useOrgScopedFilters();
-
-// Modify getData() to filter by Access Scope when "all" is selected:
-const getData = (): GroupedVarianceData[] => {
-  // STEP 1: If user has department restrictions, filter to only authorized departments
-  if (hasRestrictionAt('department') && selectedDepartment === "all-departments") {
-    // Show only the user's authorized departments, grouped by their facilities
-    const authorizedDepts = restrictedOptions.availableDepartments;
-    // Group by facility and return as rows
-    return authorizedDepts.map((dept, idx) => ({
-      name: dept.department_name,
-      subText: dept.department_id,
-      ...generateVariance(),
-      type: 'skill' as const,
-      id: `dept-${idx}`,
-    }));
-  }
-  
-  // STEP 2: If specific department selected (or no restrictions), continue normal flow
-  // ... existing logic
-};
+// Change to:
+<PopoverContent 
+  className="w-80 p-0 z-50"
+  align="end"
+  side="bottom"
+  sideOffset={8}
+  collisionPadding={16}
+  avoidCollisions={true}
+  sticky="partial"
+>
 ```
 
-### File 2: Cascade Through Facilities/Markets
+With `side="bottom"` as the preferred side and `avoidCollisions={true}`, Radix Popover will:
+- Try to position below the trigger first
+- Flip to above when there's not enough space below
+- This gives the best UX for both top and bottom rows
 
-When user has facility-level restrictions but no department filter is selected:
+#### Change 1.2: Replace "Shared With" Text Input with Cascading Selects
+
+**Current Implementation** (lines 307-315):
+```typescript
+<div className="space-y-1.5">
+  <Label className="text-xs font-medium">Shared With</Label>
+  <Input
+    value={editSharedWith}
+    onChange={(e) => setEditSharedWith(e.target.value)}
+    placeholder="e.g., ICU - Building A"
+    className="h-7 text-xs"
+  />
+</div>
+```
+
+**New Implementation**: Add hierarchical selection with Market → Facility → Department selects, but save only the department name to display in the UI.
 
 ```typescript
-// Modify getData() to also check facility restrictions:
-if (hasRestrictionAt('facility') && selectedFacility === "all-facilities") {
-  // Show only facilities the user has access to
-  const authorizedFacilities = restrictedOptions.availableFacilities;
-  // ... generate data only for these facilities
+// Add new state variables for cascading selection
+const [sharedMarket, setSharedMarket] = useState('');
+const [sharedFacility, setSharedFacility] = useState('');
+const [sharedDepartment, setSharedDepartment] = useState('');
+
+// Use filter data hook for cascading options
+const { markets, getFacilitiesByMarket, getDepartmentsByFacility } = useFilterData();
+
+// Compute filtered options based on selections
+const sharedFacilities = sharedMarket ? getFacilitiesByMarket(sharedMarket) : [];
+const sharedDepartments = sharedFacility ? getDepartmentsByFacility(sharedFacility) : [];
+
+// Replace the Input with three cascading Selects wrapped in AnimatePresence
+{isSharedPosition && (
+  <>
+    <motion.div 
+      className="space-y-1.5"
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
+    >
+      <Label className="text-xs font-medium">Share With</Label>
+      
+      {/* Step 1: Market Selection */}
+      <Select value={sharedMarket} onValueChange={handleMarketChange}>
+        <SelectTrigger className="h-7 text-xs">
+          <SelectValue placeholder="Select market..." />
+        </SelectTrigger>
+        <SelectContent>
+          {markets.map((m) => (
+            <SelectItem key={m.id} value={m.market}>{m.market}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      
+      {/* Step 2: Facility Selection (visible after market selected) */}
+      <AnimatePresence>
+        {sharedMarket && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+          >
+            <Select value={sharedFacility} onValueChange={handleFacilityChange}>
+              <SelectTrigger className="h-7 text-xs">
+                <SelectValue placeholder="Select facility..." />
+              </SelectTrigger>
+              <SelectContent>
+                {sharedFacilities.map((f) => (
+                  <SelectItem key={f.id} value={f.facility_id}>{f.facility_name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Step 3: Department Selection (visible after facility selected) */}
+      <AnimatePresence>
+        {sharedFacility && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+          >
+            <Select 
+              value={sharedDepartment} 
+              onValueChange={setSharedDepartment}
+            >
+              <SelectTrigger className="h-7 text-xs">
+                <SelectValue placeholder="Select department..." />
+              </SelectTrigger>
+              <SelectContent>
+                {sharedDepartments.map((d) => (
+                  <SelectItem key={d.id} value={d.department_name}>
+                    {d.department_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Show selected department name as chip after selection */}
+      <AnimatePresence>
+        {sharedDepartment && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="pt-1"
+          >
+            <Badge variant="secondary" className="text-xs">
+              {sharedDepartment}
+            </Badge>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+    
+    {/* ...Shared FTE and Shared Expiry fields remain the same */}
+  </>
+)}
+```
+
+**Data Storage**: Save only the department name to `actual_fte_shared_with` (current schema preserved):
+```typescript
+saveData.actual_fte_shared_with = sharedDepartment || null;
+```
+
+#### Change 1.3: Add Smooth Animations for Form State Changes
+
+Wrap the form sections in AnimatePresence for smooth transitions when:
+- Status is selected (reveal FTE dropdown)
+- Shared Position is selected (reveal share with fields)
+- Expiry fields appear/disappear
+
+```typescript
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Animation variants for consistent motion design
+const formFieldVariants = {
+  hidden: { opacity: 0, height: 0, marginTop: 0 },
+  visible: { opacity: 1, height: 'auto', marginTop: 12 },
+  exit: { opacity: 0, height: 0, marginTop: 0 }
+};
+
+// Wrap each conditional section
+<AnimatePresence mode="wait">
+  {editStatus && (
+    <motion.div
+      key="fte-field"
+      variants={formFieldVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      transition={{ duration: 0.2, ease: 'easeOut' }}
+    >
+      {/* Active FTE Dropdown content */}
+    </motion.div>
+  )}
+</AnimatePresence>
+
+<AnimatePresence mode="wait">
+  {editStatus && !isSharedPosition && (
+    <motion.div
+      key="expiry-field"
+      variants={formFieldVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      transition={{ duration: 0.2, ease: 'easeOut' }}
+    >
+      {/* Expiry Date content */}
+    </motion.div>
+  )}
+</AnimatePresence>
+
+<AnimatePresence mode="wait">
+  {isSharedPosition && (
+    <motion.div
+      key="shared-fields"
+      variants={formFieldVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      transition={{ duration: 0.25, ease: 'easeOut' }}
+    >
+      {/* All shared position fields */}
+    </motion.div>
+  )}
+</AnimatePresence>
+```
+
+---
+
+## Visual Behavior Summary
+
+| Action | Current Behavior | New Behavior |
+|--------|-----------------|--------------|
+| Click top row | Popover opens above, possibly clipped | Popover opens below (or flips if needed) |
+| Select "Shared Position" | Fields appear instantly | Fields slide in smoothly with fade |
+| "Share With" field | Free text input | Cascading Market → Facility → Dept selects |
+| After dept selection | Shows raw text | Shows department name as Badge chip |
+| Change status | Instant field changes | Smooth animated transitions |
+
+---
+
+## Animation Design
+
+The animations follow the existing patterns in the codebase:
+
+1. **Accordion-style reveals**: Using `height: 0 → auto` for expanding sections
+2. **Fade + scale**: For the department badge chip that appears after selection
+3. **Staggered reveals**: Each cascading dropdown appears after the previous selection
+4. **Spring transitions**: Consistent with the tab indicator animations using spring physics
+
+```typescript
+// Transition configurations used:
+{
+  type: "spring",
+  stiffness: 400,
+  damping: 30
+}
+// For simpler transitions:
+{
+  duration: 0.2,
+  ease: [0.4, 0, 0.2, 1] // ease-out
 }
 ```
 
-### File 3: `src/components/staffing/FilterBar.tsx`
-
-**Change**: Ensure the dropdown label shows "All Departments" with a count indicator when user has multiple assignments:
-
-```typescript
-// When department has restrictions and multiple options exist:
-// Show "All Departments (4)" or similar to indicate the user's scope
-```
-
 ---
 
-## Expected Behavior After Fix
+## Testing Checklist
 
-### Demo Manager's View
+1. **Popover Positioning**:
+   - Click top row → popover opens below the cell
+   - Click bottom row → popover opens above (or below with scroll)
+   - Resize window → popover stays within viewport
 
-| Filter State | Table Shows |
-|--------------|-------------|
-| Department = "All Departments" | 4 rows: ICU, Adult ECMO 001, Bariatric Surgical Unit 001, Cardiac Care |
-| Department = "ICU" | 1 row: ICU only |
-| Clear Filters | Returns to "All Departments" showing their 4 authorized departments |
+2. **Share With Selection**:
+   - Select "Shared Position" status → Market dropdown appears
+   - Select market → Facility dropdown animates in
+   - Select facility → Department dropdown animates in
+   - Select department → Badge chip appears with department name
+   - Save → Only department name is stored in DB
 
-### Variance Analysis Data Scope
-
-| User | Authorized Scope | Table Content |
-|------|------------------|---------------|
-| Demo Manager | 4 departments in 2 facilities | Only those 4 departments |
-| Demo Director | Markets: INDIANA, ILLINOIS, FLORIDA | All facilities/departments in those markets |
-| Admin | All | All regions/markets/facilities |
-
----
-
-## Testing Verification
-
-1. **Demo Manager Login**:
-   - Variance Analysis should show exactly 4 department rows
-   - No data from unauthorized facilities (e.g., FLJAC shouldn't appear if not in scope)
-   - Clear Filters → still shows only the 4 authorized departments
-
-2. **Demo Director Login**:
-   - Variance Analysis should show all data from their authorized markets only
-   - Facilities outside Indiana/Illinois/Florida should NOT appear
-
-3. **Admin Login**:
-   - No restrictions - sees all regions/markets/facilities as before
+3. **Animations**:
+   - Status change → FTE field slides in smoothly
+   - Switch to Shared Position → Share fields animate in
+   - Switch away from Shared Position → Fields animate out
+   - No jank or layout shifts during animations
