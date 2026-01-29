@@ -388,11 +388,12 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         
         const conditions: string[] = [];
         
-        // PRIORITY 1: Department restrictions (most specific) - use NAME matching
-        // This handles cases where department IDs in access scope don't match positions table
+        // PRIORITY 1: Department restrictions (most specific) - use EXACT NAME matching
+        // This ensures users only see their assigned department, not partial matches
         if (allowedDepartmentNames.length > 0) {
           for (const deptName of allowedDepartmentNames) {
-            conditions.push(`departmentName.ilike.%${deptName}%`);
+            // Use exact match (.eq) instead of partial match (.ilike)
+            conditions.push(`departmentName.eq.${deptName}`);
           }
           // Return immediately - department restriction wins over all others
           return conditions.join(',');
