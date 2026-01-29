@@ -123,13 +123,16 @@ export default function StaffingSummary() {
   };
 
   const handleClearFilters = () => {
-    setSelectedRegion("all-regions");
-    setSelectedMarket("all-markets");
-    setSelectedFacility("all-facilities");
-    setSelectedSubmarket("all-submarkets");
-    setSelectedPstat("all-pstat");
-    setSelectedLevel2("all-level2");
-    setSelectedDepartment("all-departments");
+    // Reset to Access Scope defaults instead of "all-*"
+    // For restricted filters, this respects assigned values
+    // For unrestricted filters, this sets them to "all-*"
+    setSelectedRegion(defaultFilters?.region ?? "all-regions");
+    setSelectedMarket(defaultFilters?.market ?? "all-markets");
+    setSelectedFacility(defaultFilters?.facility ?? "all-facilities");
+    setSelectedSubmarket("all-submarkets"); // Optional filter - always reset
+    setSelectedPstat("all-pstat"); // Optional filter - always reset
+    setSelectedLevel2("all-level2"); // Optional filter - always reset
+    setSelectedDepartment(defaultFilters?.department ?? "all-departments");
   };
   
   // Realistic chart data generators
