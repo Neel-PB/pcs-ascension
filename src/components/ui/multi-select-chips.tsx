@@ -143,7 +143,9 @@ export function MultiSelectChips({
                         key={option.value}
                         className={cn(
                           "flex items-start gap-2 p-2 rounded-md cursor-pointer transition-colors",
-                          isSelected ? "bg-primary/10" : "hover:bg-muted/50"
+                          isSelected 
+                            ? "bg-primary/15 border border-primary/30" 
+                            : "border border-transparent hover:bg-muted/50"
                         )}
                       >
                         <Checkbox

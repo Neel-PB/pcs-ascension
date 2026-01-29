@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useMemo } from "react";
-
+import { useAuthContext } from "@/contexts/AuthContext";
 export interface Region {
   id: string;
   region: string;
@@ -37,9 +36,12 @@ interface FilterDataResult {
 }
 
 export function useFilterData() {
+  const { session } = useAuthContext();
+  
   // Single query that fetches all filter data in parallel
   const { data, isLoading } = useQuery({
-    queryKey: ["all-filter-data"],
+    // Include auth state in key to refetch after login
+    queryKey: ["all-filter-data", session?.access_token ? "authenticated" : "anonymous"],
     queryFn: async (): Promise<FilterDataResult> => {
       const [regionsRes, marketsRes, facilitiesRes, departmentsRes] = await Promise.all([
         supabase.from("regions").select("*").order("region"),
