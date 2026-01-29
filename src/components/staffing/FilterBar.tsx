@@ -139,28 +139,27 @@ export function FilterBar({
     return Array.from(names).sort();
   }, [allDepartments]);
 
-  // HIERARCHICAL INHERITANCE for departments:
-  // 1. If user has facility restrictions → show ALL departments in those facilities
-  // 2. If user has ONLY department restrictions (no facility) → show only assigned departments
-  // 3. If user has market restrictions → show departments from facilities in those markets
-  // 4. Otherwise, cascade normally from selected facility
+  // PRIORITY ORDER for departments: Most specific wins
+  // Department > Facility > Market > Region
   const getAvailableDepartments = () => {
     // When a specific facility is selected in the UI, cascade from that selection
     if (selectedFacility !== "all-facilities") {
       return getDepartmentsByFacility(selectedFacility);
     }
     
-    // FACILITY RESTRICTION: Show ALL departments in user's allowed facilities
-    // This implements the "facility grants access to all its departments" rule
+    // PRIORITY 1: Department restrictions (most specific) - always wins
+    if (hasRestrictionAt('department')) {
+      return restrictedOptions.availableDepartments;
+    }
+    
+    // PRIORITY 2: Facility restrictions - show ALL departments in those facilities
     if (hasRestrictionAt('facility')) {
       const allowedFacilityIds = new Set(
         restrictedOptions.availableFacilities.map(f => f.facility_id)
       );
-      // Filter departments to only those in allowed facilities
       const filteredDepts = allDepartments.filter(d => 
         allowedFacilityIds.has(d.facility_id)
       );
-      // Get unique department names
       const uniqueNames = new Set<string>();
       filteredDepts.forEach(d => uniqueNames.add(d.department_name));
       return Array.from(uniqueNames).sort().map(name => ({
@@ -169,7 +168,7 @@ export function FilterBar({
       }));
     }
     
-    // MARKET RESTRICTION (no facility restriction): Show departments from facilities in allowed markets
+    // PRIORITY 3: Market restrictions - show departments from facilities in those markets
     if (hasRestrictionAt('market')) {
       const allowedFacilityIds = new Set(
         allFacilities
@@ -188,10 +187,23 @@ export function FilterBar({
       }));
     }
     
-    // DEPARTMENT-ONLY RESTRICTION (no facility/market restrictions):
-    // Show only the specific departments assigned to the user
-    if (hasRestrictionAt('department')) {
-      return restrictedOptions.availableDepartments;
+    // PRIORITY 4: Region restrictions - show departments from facilities in those regions
+    if (hasRestrictionAt('region')) {
+      const allowedFacilityIds = new Set(
+        allFacilities
+          .filter(f => f.region && restrictedOptions.availableRegions.some(r => 
+            r.toLowerCase() === f.region?.toLowerCase()
+          ))
+          .map(f => f.facility_id)
+      );
+      const filteredNames = new Set<string>();
+      allDepartments
+        .filter(d => allowedFacilityIds.has(d.facility_id))
+        .forEach(d => filteredNames.add(d.department_name));
+      return Array.from(filteredNames).sort().map(name => ({
+        department_id: name,
+        department_name: name
+      }));
     }
     
     // No restrictions - show all unique department names

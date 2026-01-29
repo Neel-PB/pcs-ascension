@@ -115,32 +115,10 @@ export function useOrgScopedFilters(): AccessScopedFiltersResult {
         )
       : facilities;
     
-    // HIERARCHICAL INHERITANCE: Facility assignment grants access to ALL departments in that facility
-    // Department restrictions only apply if user has NO facility restrictions
+    // PRIORITY ORDER: Most specific assignment wins
+    // Department > Facility > Market > Region
     const getAvailableDepartments = (): Department[] => {
-      // If user has facility restrictions, they can see ALL departments in those facilities
-      if (accessScope.hasFacilityRestriction) {
-        const allowedFacilityIds = new Set(
-          accessScope.facilities.map(f => f.facilityId)
-        );
-        // Filter departments table to only those in allowed facilities
-        return departments.filter(d => allowedFacilityIds.has(d.facility_id));
-      }
-      
-      // If user has market restrictions but no facility restrictions, 
-      // show departments from facilities in those markets
-      if (accessScope.hasMarketRestriction) {
-        const allowedFacilityIds = new Set(
-          facilities
-            .filter(f => accessScope.markets.some(m => 
-              m.toLowerCase() === f.market?.toLowerCase()
-            ))
-            .map(f => f.facility_id)
-        );
-        return departments.filter(d => allowedFacilityIds.has(d.facility_id));
-      }
-      
-      // If user has ONLY department restrictions (no facility/market), use those directly
+      // PRIORITY 1: Department restrictions (most specific) - always wins
       if (accessScope.hasDepartmentRestriction) {
         if (departments.length > 0) {
           return departments.filter(d =>
@@ -156,7 +134,39 @@ export function useOrgScopedFilters(): AccessScopedFiltersResult {
         }));
       }
       
-      // No restrictions at any level that affects departments
+      // PRIORITY 2: Facility restrictions - show ALL departments in those facilities
+      if (accessScope.hasFacilityRestriction) {
+        const allowedFacilityIds = new Set(
+          accessScope.facilities.map(f => f.facilityId)
+        );
+        return departments.filter(d => allowedFacilityIds.has(d.facility_id));
+      }
+      
+      // PRIORITY 3: Market restrictions - show departments from facilities in those markets
+      if (accessScope.hasMarketRestriction) {
+        const allowedFacilityIds = new Set(
+          facilities
+            .filter(f => accessScope.markets.some(m => 
+              m.toLowerCase() === f.market?.toLowerCase()
+            ))
+            .map(f => f.facility_id)
+        );
+        return departments.filter(d => allowedFacilityIds.has(d.facility_id));
+      }
+      
+      // PRIORITY 4: Region restrictions - show departments from facilities in those regions
+      if (accessScope.hasRegionRestriction) {
+        const allowedFacilityIds = new Set(
+          facilities
+            .filter(f => f.region && accessScope.regions.some(r => 
+              r.toLowerCase() === f.region?.toLowerCase()
+            ))
+            .map(f => f.facility_id)
+        );
+        return departments.filter(d => allowedFacilityIds.has(d.facility_id));
+      }
+      
+      // No restrictions at any level
       return departments;
     };
     
