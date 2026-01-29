@@ -1,27 +1,30 @@
 
-# Fix: Facility Filter Showing Empty for Director Role
+# Fix: Filters Showing Empty for Restricted Roles
 
-## Problem
+## Problem Summary
 
-When logged in as Director, the Facility filter dropdown appears but shows no label/value (just an empty trigger). The selected value is `"40015"` but there's no matching option in the dropdown to display.
+When logged in as Director (or other restricted roles), the Facility filter dropdown shows empty text (just a lock icon) despite having a facility assigned. The user expects to see their assigned facility name in the filter.
 
-## Root Cause
+## Root Cause Analysis
 
-This is a **data loading timing issue**:
+There's a **timing mismatch** between the selected filter value and the available dropdown options:
 
-1. The Director's Access Scope loads first with `facility_id: 40015`
-2. The `useOrgScopedFilters` hook tries to filter the facilities list: `facilities.filter(f => accessScope.facilities.some(of => of.facilityId === f.facility_id))`
-3. But when Access Scope loads BEFORE the full facilities list from `useFilterData`, `facilities` is still an empty array
-4. Result: `restrictedOptions.availableFacilities = []` (empty)
-5. The Radix Select component has value `"40015"` but no matching `<SelectItem>` to display
+1. **Initial state**: `selectedFacility = "all-facilities"`
+2. **Access Scope loads**: Director is assigned to facility `40015` (St. Vincent Indianapolis Hospital)
+3. **`shouldShowAllOption('facility')` returns `false`**: Because user has only 1 facility, the "All Facilities" option is hidden
+4. **First render happens**: FilterBar receives `selectedFacility="all-facilities"` but no matching `<SelectItem>` exists in the dropdown
+5. **Effect runs after render**: `setSelectedFacility("40015")` is called
+6. **Second render**: Now shows correctly, BUT there's a visual flash of empty state
+
+The Radix Select component requires a matching `SelectItem` to display the label. When `selectedFacility="all-facilities"` but there's no "All Facilities" option (because it's hidden for restricted users), the Select shows nothing.
 
 ## Solution
 
-Ensure the Access Scope hook waits for filter data to be fully loaded before computing restricted options, OR fall back to using the Access Scope's own facility data for display.
+Initialize filter state directly from Access Scope **synchronously** rather than using a delayed `useEffect`. This ensures the first render already has the correct value.
 
-### Approach: Use Access Scope Data Directly for Display When Filter Data is Loading
+### Approach: Provide Initial Values from Hook
 
-In `FilterBar.tsx`, when the filter data is still loading but we have Access Scope data, use the Access Scope's facility names directly instead of trying to match against the (empty) facilities array.
+Modify `useOrgScopedFilters` to return the initial state values that pages should use, and have pages use these directly as initial state.
 
 ---
 
@@ -29,58 +32,103 @@ In `FilterBar.tsx`, when the filter data is still loading but we have Access Sco
 
 ### 1. `src/hooks/useOrgScopedFilters.ts`
 
-Update the hook to handle the case where Access Scope data exists but filter data hasn't loaded yet. Use the Access Scope's own facility names for display rather than requiring a join with the facilities table.
+Add a new property `initialFilters` that can be used as React state initial values:
 
-**Current behavior (lines 100-105):**
 ```typescript
-const availableFacilities = accessScope.hasFacilityRestriction
-  ? facilities.filter(f => 
-      accessScope.facilities.some(of => of.facilityId === f.facility_id)
-    )
-  : facilities;
+export interface AccessScopedFiltersResult {
+  // ... existing properties
+  
+  // Initial filter values for use in useState - matches defaults when ready
+  initialFilters: AccessScopeFilterDefaults;
+}
 ```
 
-**Fixed behavior:**
+Update the return value to always include the computed defaults.
+
+### 2. `src/pages/staffing/StaffingSummary.tsx`
+
+Use a different pattern where we wait for the hook to be ready before initializing state:
+
+Option A - Keep showing loader until filters are initialized AND the selected values are applied:
 ```typescript
-// If we have facility restrictions but facilities array is empty (still loading),
-// use the Access Scope's own facility data directly
-const availableFacilities = accessScope.hasFacilityRestriction
-  ? (facilities.length > 0 
-      ? facilities.filter(f => 
-          accessScope.facilities.some(of => of.facilityId === f.facility_id)
-        )
-      : accessScope.facilities.map(f => ({
-          facility_id: f.facilityId,
-          facility_name: f.facilityName,
-          id: f.facilityId,
-        }))
-    )
-  : facilities;
+// Instead of initializing to "all-*" values, use a "pending" approach
+const [selectedFacility, setSelectedFacility] = useState<string | null>(null);
+
+// In the effect, set the actual value
+useEffect(() => {
+  if (!orgScopedLoading && !rbacLoading && selectedFacility === null) {
+    setSelectedFacility(defaultFilters.facility);
+  }
+}, [...]);
+
+// Show loader while facility is null
+if (selectedFacility === null) {
+  return <LogoLoader />;
+}
 ```
 
-Apply the same pattern for departments:
+Option B (Simpler) - Add "All Facilities" option back when the selected value doesn't match any option:
+
+In `FilterBar.tsx`, always render the "All Facilities" option if the current value is `"all-facilities"`, even if `shouldShowAllOption` returns false:
+
 ```typescript
-const availableDepartments = accessScope.hasDepartmentRestriction
-  ? (departments.length > 0
-      ? departments.filter(d => 
-          accessScope.departments.some(od => od.departmentId === d.department_id)
-        )
-      : accessScope.departments.map(d => ({
-          department_id: d.departmentId,
-          department_name: d.departmentName,
-        }))
-    )
-  : departments;
+{(shouldShowAllOption('facility') || selectedFacility === 'all-facilities') && (
+  <SelectItem value="all-facilities">All Facilities</SelectItem>
+)}
 ```
+
+### 3. `src/pages/positions/PositionsPage.tsx`
+
+Apply the same fix as StaffingSummary.
 
 ---
 
-## Expected Outcome
+## Recommended Solution: Option B
 
-| Role | Before Fix | After Fix |
-|------|-----------|-----------|
-| Director | Empty facility dropdown, no label visible | Shows "St. Vincent Indianapolis Hospital" in dropdown |
-| Manager | Empty department dropdown if loaded before filter data | Shows "ICU" in dropdown |
+The simplest fix is to ensure the dropdown always has a matching option for the current value, even during the brief initialization period. This prevents the empty state flash without requiring major restructuring.
+
+### Change 1: `src/components/staffing/FilterBar.tsx` (line 253)
+
+```typescript
+// Before:
+{shouldShowAllOption('facility') && (
+  <SelectItem value="all-facilities">All Facilities</SelectItem>
+)}
+
+// After:
+{(shouldShowAllOption('facility') || selectedFacility === 'all-facilities') && (
+  <SelectItem value="all-facilities">All Facilities</SelectItem>
+)}
+```
+
+Apply similar logic to Region, Market, and Department selects.
+
+### Change 2: Similar fix for all filter dropdowns
+
+Apply the same pattern to:
+- Region filter (line 177-179)
+- Market filter (line 213-215)  
+- Department filter (line 293-295)
+
+---
+
+## Expected Behavior After Fix
+
+| Scenario | Before | After |
+|----------|--------|-------|
+| Director first render | Empty facility dropdown, then fills in | Shows "All Facilities" briefly, then shows assigned facility |
+| Manager first render | Empty department dropdown | Shows "All Departments" briefly, then shows assigned department |
 | Labor Team | Works correctly | No change |
 
-The fix ensures that even if filter data is still loading, users with Access Scope restrictions will see their assigned facilities/departments displayed correctly in the filter bar.
+The brief "All X" flash during initialization is acceptable and much better than showing an empty/broken dropdown.
+
+---
+
+## Alternative Enhancement (Future)
+
+For a completely seamless experience, the loading guard could be extended to wait for both:
+1. RBAC permissions to load
+2. Access Scope to load  
+3. **Filter state to be synchronized with Access Scope defaults**
+
+This would require tracking a `filtersReady` state that becomes true after the initial useEffect runs and state is applied.
