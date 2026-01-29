@@ -108,6 +108,9 @@ export function EmployeesTab({
       actual_fte: number | null;
       actual_fte_expiry: string | null;
       actual_fte_status: string | null;
+      actual_fte_shared_with?: string | null;
+      actual_fte_shared_fte?: number | null;
+      actual_fte_shared_expiry?: string | null;
     }
   ) => {
     updateActualFte.mutate({ id, ...data, previousFte, previousExpiry, previousStatus });
@@ -225,6 +228,10 @@ export function EmployeesTab({
               originalValue={row.FTE}
               expiryDate={row.actual_fte_expiry}
               status={row.actual_fte_status}
+              employmentType={row.employmentType}
+              sharedWith={row.actual_fte_shared_with}
+              sharedFte={row.actual_fte_shared_fte}
+              sharedExpiry={row.actual_fte_shared_expiry}
               onSave={(data) => handleActualFteUpdate(
                 row.id, 
                 row.actual_fte, 
