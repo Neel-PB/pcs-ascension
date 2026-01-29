@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserAccessScope } from "@/hooks/useUserOrgAccess";
 
 // Valid FTE values per employment type
 const FT_VALUES = [1.0, 0.9, 0.8, 0.75];
@@ -344,8 +346,18 @@ export interface ForecastBalanceFilters {
 export function useForecastBalance(filters?: ForecastBalanceFilters) {
   const { departmentId, region, market, facilityId, level2, pstat } = filters || {};
   
+  // Get current user and their access scope
+  const { user } = useAuth();
+  const { accessScope, hasUnrestrictedAccess } = useUserAccessScope(user?.id);
+  
+  // Extract allowed values from access scope
+  const allowedRegions = accessScope?.regions || [];
+  const allowedMarkets = accessScope?.markets || [];
+  const allowedFacilities = accessScope?.facilities?.map(f => f.facilityId) || [];
+  const allowedDepartments = accessScope?.departments?.map(d => d.departmentId) || [];
+  
   return useQuery({
-    queryKey: ['forecast-balance', { departmentId, region, market, facilityId, level2, pstat }],
+    queryKey: ['forecast-balance', user?.id, { departmentId, region, market, facilityId, level2, pstat }],
     queryFn: async (): Promise<ForecastBalanceSummary> => {
       // Fetch facilities for region lookup
       const { data: facilities, error: facError } = await supabase
@@ -365,10 +377,21 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         .select('*')
         .not('employeeName', 'is', null);
       
-      // Note: 'region' is not a direct column on positions table - it comes from facilities
-      // Filter by market/facility/department which ARE on positions table
-      if (market) employedQuery = employedQuery.ilike('market', market);
-      if (facilityId) employedQuery = employedQuery.eq('facilityId', facilityId);
+      // Apply UI filters first, then fall back to access scope restrictions
+      // Market filter
+      if (market) {
+        employedQuery = employedQuery.ilike('market', market);
+      } else if (!hasUnrestrictedAccess && allowedMarkets.length > 0) {
+        employedQuery = employedQuery.in('market', allowedMarkets);
+      }
+      
+      // Facility filter
+      if (facilityId) {
+        employedQuery = employedQuery.eq('facilityId', facilityId);
+      } else if (!hasUnrestrictedAccess && allowedFacilities.length > 0) {
+        employedQuery = employedQuery.in('facilityId', allowedFacilities);
+      }
+      
       // Department filter - could be ID (numeric) or name (string)
       if (departmentId) {
         if (/^\d+$/.test(departmentId)) {
@@ -376,6 +399,8 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         } else {
           employedQuery = employedQuery.ilike('departmentName', departmentId);
         }
+      } else if (!hasUnrestrictedAccess && allowedDepartments.length > 0) {
+        employedQuery = employedQuery.in('departmentId', allowedDepartments);
       }
       
       const { data: employedPositions, error: empError } = await employedQuery;
@@ -387,9 +412,21 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         .select('*')
         .is('employeeName', null);
       
-      // Same filters as employed query
-      if (market) openReqsQuery = openReqsQuery.ilike('market', market);
-      if (facilityId) openReqsQuery = openReqsQuery.eq('facilityId', facilityId);
+      // Apply same filters to open reqs query
+      // Market filter
+      if (market) {
+        openReqsQuery = openReqsQuery.ilike('market', market);
+      } else if (!hasUnrestrictedAccess && allowedMarkets.length > 0) {
+        openReqsQuery = openReqsQuery.in('market', allowedMarkets);
+      }
+      
+      // Facility filter
+      if (facilityId) {
+        openReqsQuery = openReqsQuery.eq('facilityId', facilityId);
+      } else if (!hasUnrestrictedAccess && allowedFacilities.length > 0) {
+        openReqsQuery = openReqsQuery.in('facilityId', allowedFacilities);
+      }
+      
       // Department filter - could be ID (numeric) or name (string)
       if (departmentId) {
         if (/^\d+$/.test(departmentId)) {
@@ -397,6 +434,8 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         } else {
           openReqsQuery = openReqsQuery.ilike('departmentName', departmentId);
         }
+      } else if (!hasUnrestrictedAccess && allowedDepartments.length > 0) {
+        openReqsQuery = openReqsQuery.in('departmentId', allowedDepartments);
       }
       
       const { data: openReqs, error: reqError } = await openReqsQuery;
@@ -423,10 +462,12 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
       
       // Process employed positions
       for (const pos of employedPositions || []) {
-        // Filter by region if specified (region is looked up from facilities)
+        // Filter by region if specified OR if user has region restrictions
+        const posRegion = regionLookup.get(pos.facilityId);
         if (region) {
-          const posRegion = regionLookup.get(pos.facilityId);
           if (posRegion !== region) continue;
+        } else if (!hasUnrestrictedAccess && allowedRegions.length > 0) {
+          if (!posRegion || !allowedRegions.includes(posRegion)) continue;
         }
         
         const shift = normalizeShift(pos.shift_override || pos.shift);
@@ -473,10 +514,12 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
 
       // Process open requisitions
       for (const req of openReqs || []) {
-        // Filter by region if specified (region is looked up from facilities)
+        // Filter by region if specified OR if user has region restrictions
+        const reqRegion = regionLookup.get(req.facilityId);
         if (region) {
-          const reqRegion = regionLookup.get(req.facilityId);
           if (reqRegion !== region) continue;
+        } else if (!hasUnrestrictedAccess && allowedRegions.length > 0) {
+          if (!reqRegion || !allowedRegions.includes(reqRegion)) continue;
         }
         
         const shift = normalizeShift(req.shift_override || req.shift);
