@@ -36,25 +36,29 @@ export function usePositionCommentCounts(positionIds: string[]) {
         return new Map<string, number>();
       }
 
-      // Use server-side aggregation - only fetch positions that have comments
-      // This is much more efficient than fetching all comments
-      const { data, error } = await supabase
-        .from('position_comments')
-        .select('position_id')
-        .in('position_id', validPositionIds);
-
-      if (error) {
-        console.error('Error fetching comment counts:', error);
-        return new Map<string, number>();
-      }
-
-      // Count comments per position from the filtered results
+      // Batch queries for large arrays to avoid URL length limits (~8KB)
+      const BATCH_SIZE = 500;
       const countMap = new Map<string, number>();
-      if (data) {
-        data.forEach((comment) => {
-          const currentCount = countMap.get(comment.position_id) || 0;
-          countMap.set(comment.position_id, currentCount + 1);
-        });
+
+      // Process in batches to avoid "Bad Request" errors on large datasets
+      for (let i = 0; i < validPositionIds.length; i += BATCH_SIZE) {
+        const batch = validPositionIds.slice(i, i + BATCH_SIZE);
+        const { data, error } = await supabase
+          .from('position_comments')
+          .select('position_id')
+          .in('position_id', batch);
+
+        if (error) {
+          console.error('Error fetching comment counts batch:', error);
+          continue;
+        }
+
+        if (data) {
+          data.forEach((comment) => {
+            const currentCount = countMap.get(comment.position_id) || 0;
+            countMap.set(comment.position_id, currentCount + 1);
+          });
+        }
       }
 
       return countMap;

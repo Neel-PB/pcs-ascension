@@ -14,9 +14,10 @@ import { ColumnVisibilityPanel } from "@/components/editable-table/ColumnVisibil
 import { employeeColumns, createEmployeeColumnsWithComments } from "@/config/employeeColumns";
 import { useUpdateActualFte } from "@/hooks/useUpdateActualFte";
 import { useUpdateShiftOverride } from "@/hooks/useUpdateShiftOverride";
-import { EditableFTECell } from "@/components/editable-table/cells/EditableFTECell";
+import { EditableFTECell, FilterDataProvider } from "@/components/editable-table/cells/EditableFTECell";
 import { usePositionCommentCounts } from "@/hooks/usePositionCommentCounts";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
+import { useFilterData } from "@/hooks/useFilterData";
 
 interface EmployeesTabProps {
   selectedRegion: string;
@@ -47,6 +48,14 @@ export function EmployeesTab({
 
   const updateActualFte = useUpdateActualFte();
   const updateShiftOverride = useUpdateShiftOverride();
+  
+  // Lift filter data to parent - passed to EditableFTECell via props instead of per-cell hook
+  const { markets, getFacilitiesByMarket, getDepartmentsByFacility } = useFilterData();
+  const filterDataProvider: FilterDataProvider = useMemo(() => ({
+    markets,
+    getFacilitiesByMarket,
+    getDepartmentsByFacility,
+  }), [markets, getFacilitiesByMarket, getDepartmentsByFacility]);
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetDefaultTab, setSheetDefaultTab] = useState<"details" | "comments">("details");
@@ -242,13 +251,14 @@ export function EmployeesTab({
                 row.actual_fte_status,
                 data
               )}
+              filterDataProvider={filterDataProvider}
             />
           ),
         };
       }
       return col;
     });
-  }, [commentCounts, handleRowClick, handleActualFteUpdate, handleShiftOverrideUpdate]);
+  }, [commentCounts, handleCommentClick, handleActualFteUpdate, handleShiftOverrideUpdate, filterDataProvider]);
 
   const showEmptyState = !isFetching && (!employees || employees.length === 0);
 
