@@ -79,6 +79,9 @@ export function EditableFTECell({
     sharedExpiry ? parseISO(sharedExpiry) : undefined
   );
   const [sharedCalendarOpen, setSharedCalendarOpen] = useState(false);
+  
+  // Editing state for share selection - when false, show badge; when true, show cascading selects
+  const [isEditingShare, setIsEditingShare] = useState(false);
 
   // Use filter data from provider (passed from parent) - no hook call per cell
   const markets = filterDataProvider?.markets ?? [];
@@ -128,6 +131,7 @@ export function EditableFTECell({
       setSharedDepartment(sharedWith || '');
       setEditSharedFte(sharedFte?.toString() || '');
       setEditSharedExpiry(sharedExpiry ? parseISO(sharedExpiry) : undefined);
+      setIsEditingShare(false); // Reset editing state when opening
     }
     setOpen(newOpen);
   };
@@ -151,6 +155,7 @@ export function EditableFTECell({
     setSharedMarket(market);
     setSharedFacility('');
     setSharedDepartment('');
+    setIsEditingShare(true);
   };
 
   const handleFacilityChange = (facilityId: string) => {
@@ -162,6 +167,7 @@ export function EditableFTECell({
     setSharedMarket('');
     setSharedFacility('');
     setSharedDepartment('');
+    setIsEditingShare(false);
   };
 
   const handleSave = async () => {
@@ -422,7 +428,7 @@ export function EditableFTECell({
                     
                     {/* Show badge if department already selected */}
                     <AnimatePresence mode="sync">
-                      {sharedDepartment && !sharedMarket ? (
+                      {sharedDepartment && !isEditingShare ? (
                         <motion.div
                           key="selected-badge"
                           initial={{ opacity: 0, scale: 0.95 }}
@@ -448,7 +454,7 @@ export function EditableFTECell({
                             variant="ghost"
                             size="sm"
                             className="h-6 px-2 text-xs"
-                            onClick={() => setSharedMarket('')}
+                            onClick={() => setIsEditingShare(true)}
                           >
                             Change
                           </Button>
@@ -526,7 +532,10 @@ export function EditableFTECell({
                                 }}
                                 className="overflow-hidden"
                               >
-                                <Select value={sharedDepartment} onValueChange={setSharedDepartment}>
+                                <Select value={sharedDepartment} onValueChange={(value) => {
+                                  setSharedDepartment(value);
+                                  setIsEditingShare(false); // Exit editing mode after selection
+                                }}>
                                   <SelectTrigger className="h-7 text-xs">
                                     <SelectValue placeholder="Select department..." />
                                   </SelectTrigger>
