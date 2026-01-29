@@ -1,54 +1,35 @@
 
-# Fix: Hierarchical Access Scope with Facility → Department Inheritance
 
-## Problem Summary
+# Fix: Access Scope Priority - Most Specific Assignment Wins
 
-Two issues preventing filters and forecast from working:
+## User Requirement Clarified
 
-1. **Demo Director** - Market case mismatch ("FLORIDA" vs "Florida") causes `.in()` filter to fail
-2. **Demo Manager** - Assigned department ID (14452) doesn't exist in `positions` table for their facility
+When a user has multiple levels of assignment, the **most specific** takes priority:
 
-**User's Requirement**: When a user is assigned to a **facility**, they should see ALL departments within that facility (not just specific department assignments).
+| Priority | Assignment Level | Behavior |
+|----------|-----------------|----------|
+| 1 (highest) | Department | Show ONLY assigned departments |
+| 2 | Facility | Show ALL departments in assigned facilities |
+| 3 | Market | Show all facilities and departments in assigned markets |
+| 4 (lowest) | Region | Show all markets, facilities, and departments in assigned regions |
 
----
-
-## Current Access Scope Logic (Broken)
-
-```text
-Demo Manager:
-├── Assigned: Facility 52005
-├── Assigned: Department 14452 (ICU)
-│
-Current Filter Logic:
-├── departmentId.in.(14452)  ← FAILS because 14452 not in positions
-└── Result: No data
-```
+**Example - Demo Manager**:
+- Has: Facility 52005 + Department 14452 (ICU)
+- Result: Department wins → See ONLY "ICU"
 
 ---
 
-## Proposed Solution: Hierarchical Inheritance
+## Current Logic (Wrong)
 
-### Logic Change
+The current `useOrgScopedFilters.ts` gives facility priority over department (line 155-170), which is backwards.
 
-```text
-Demo Manager:
-├── Assigned: Facility 52005 (has departments: 22700, 10277, 14450, ...)
-├── Assigned: Department 14452 (ignored since facility covers broader access)
-│
-New Filter Logic:
-├── facilityId = 52005  ← Uses facility assignment
-├── Department dropdown: Shows all 11 departments in facility 52005
-└── Result: Data appears ✓
+```typescript
+// WRONG: Current code checks facility FIRST
+if (hasRestrictionAt('facility')) {
+  // Shows all departments in facility - INCORRECT
+}
+// Department check comes second - INCORRECT
 ```
-
-### Access Hierarchy Rules
-
-| Assignment | Behavior |
-|------------|----------|
-| **Facility only** | User sees ALL departments in that facility |
-| **Department only** | User sees ONLY that department |
-| **Both Facility + Department** | Facility "wins" - user sees all departments in facility |
-| **Market only** | User sees all facilities in market, and all their departments |
 
 ---
 
@@ -56,89 +37,100 @@ New Filter Logic:
 
 ### File 1: `src/hooks/useOrgScopedFilters.ts`
 
-**Change**: When determining available departments, inherit from facility assignments:
+**Change**: Reverse priority order - check department FIRST:
 
 ```typescript
-// If user has facility restrictions, they can see ALL departments in those facilities
-if (accessScope.hasFacilityRestriction) {
-  // Get all departments from positions for allowed facilities
-  // Instead of checking department restrictions separately
-}
+const getAvailableDepartments = (): Department[] => {
+  // PRIORITY 1: Department restrictions (most specific)
+  if (accessScope.hasDepartmentRestriction) {
+    return accessScope.departments.map(d => ({
+      department_id: d.departmentId,
+      department_name: d.departmentName,
+      id: d.departmentId,
+      facility_id: d.facilityId || '',
+    }));
+  }
+  
+  // PRIORITY 2: Facility restrictions (show all depts in those facilities)
+  if (accessScope.hasFacilityRestriction) {
+    // ... existing logic to get all departments in allowed facilities
+  }
+  
+  // PRIORITY 3: Market restrictions
+  if (accessScope.hasMarketRestriction) {
+    // ... show departments from facilities in those markets
+  }
+  
+  // PRIORITY 4: Region restrictions
+  if (accessScope.hasRegionRestriction) {
+    // ... show departments from facilities in those regions
+  }
+  
+  return departments; // No restrictions
+};
 ```
 
 ### File 2: `src/hooks/useForecastBalance.ts`
 
-**Change**: Restructure access scope filter to prioritize facility-level access:
+**Change**: Same priority order in `buildAccessScopeFilter`:
 
 ```typescript
-// Build access scope filter with inheritance
-// If user has facility access, use facilityId.in.(...)
-// Department restrictions only apply if NO facility restrictions exist
-
 const buildAccessScopeFilter = (): string | null => {
   if (hasUnrestrictedAccess) return null;
   
   const conditions: string[] = [];
   
-  // 1. Facility restrictions take precedence (grants access to all depts)
-  if (allowedFacilities.length > 0) {
-    conditions.push(`facilityId.in.(${allowedFacilities.join(',')})`);
+  // PRIORITY 1: Department restrictions (most specific) - use name matching
+  if (allowedDepartmentNames.length > 0) {
+    for (const deptName of allowedDepartmentNames) {
+      conditions.push(`departmentName.ilike.%${deptName}%`);
+    }
+    // STOP HERE - don't add facility/market conditions
+    return conditions.join(',');
   }
   
-  // 2. Market restrictions (case-insensitive)
+  // PRIORITY 2: Facility restrictions
+  if (allowedFacilities.length > 0) {
+    conditions.push(`facilityId.in.(${allowedFacilities.join(',')})`);
+    return conditions.join(',');
+  }
+  
+  // PRIORITY 3: Market restrictions
   if (allowedMarkets.length > 0) {
     for (const m of allowedMarkets) {
       conditions.push(`market.ilike.${m}`);
     }
+    return conditions.join(',');
   }
   
-  // 3. Region restrictions (as facility IDs)
+  // PRIORITY 4: Region restrictions
   if (facilityIdsInAllowedRegions.length > 0) {
     conditions.push(`facilityId.in.(${facilityIdsInAllowedRegions.join(',')})`);
+    return conditions.join(',');
   }
   
-  // 4. Department restrictions ONLY if no facility restrictions
-  // (facility access implies access to all departments)
-  if (allowedDepartments.length > 0 && allowedFacilities.length === 0) {
-    conditions.push(`departmentId.in.(${allowedDepartments.join(',')})`);
-  }
-  
-  return conditions.length > 0 ? conditions.join(',') : null;
+  return null; // Unrestricted
 };
 ```
+
+**Key change**: Use **department NAME matching** (`departmentName.ilike.%ICU%`) instead of ID matching, since the assigned department ID (14452) doesn't exist in positions data.
 
 ### File 3: `src/components/staffing/FilterBar.tsx`
 
-**Change**: Department dropdown should show departments from user's allowed facilities:
+**Change**: Same priority order for `getAvailableDepartments()`:
 
-```typescript
-const getAvailableDepartments = () => {
-  // If user has department restrictions AND no facility restrictions
-  if (hasRestrictionAt('department') && !hasRestrictionAt('facility')) {
-    return restrictedOptions.availableDepartments;
-  }
-  
-  // If user has facility restrictions, show ALL departments in those facilities
-  if (hasRestrictionAt('facility')) {
-    // Filter allDepartments to only those in allowed facilities
-    const allowedFacilityIds = new Set(
-      restrictedOptions.availableFacilities.map(f => f.facility_id)
-    );
-    const deptsByFacility = allDepartments.filter(d => 
-      allowedFacilityIds.has(d.facility_id)
-    );
-    // Return unique department names
-    const names = new Set<string>();
-    deptsByFacility.forEach(d => names.add(d.department_name));
-    return Array.from(names).sort().map(name => ({
-      department_id: name,
-      department_name: name,
-    }));
-  }
-  
-  // ... rest of existing logic
-};
-```
+Lines 147-202 need to be reordered to check department FIRST.
+
+---
+
+## Priority Logic Summary
+
+| User Has | FilterBar Shows | Query Filter |
+|----------|-----------------|--------------|
+| Department 14452 (ICU) | Only "ICU" | `departmentName.ilike.%ICU%` |
+| Facility 52005 only | All 11 departments in 52005 | `facilityId.in.(52005)` |
+| Market "INDIANA" only | All facilities + departments in Indiana | `market.ilike.INDIANA` |
+| Region "Midwest" only | All in Midwest | `facilityId.in.([facilities in Midwest])` |
 
 ---
 
@@ -146,43 +138,44 @@ const getAvailableDepartments = () => {
 
 ```text
 User: Demo Manager
-├── Assigned: Facility 52005
+├── Has: Facility 52005 + Department "ICU"
+├── Priority: Department wins (most specific)
 │
 FilterBar:
-├── Facility dropdown: Shows "St. Vincent's Southside" (52005)
-├── Department dropdown: Shows ALL 11 departments in 52005
-│   └── Critical Care Unit 001, Neonatal ICU Unit 001, etc.
+├── Facility: Shows 52005 (locked)
+├── Department: Shows ONLY "ICU"
 │
 useForecastBalance:
-├── Access Scope Filter: facilityId.in.(52005)
-├── (Department filter NOT applied since facility grants full access)
+├── Access Filter: departmentName.ilike.%ICU%
+├── Matches: "Neonatal ICU Unit 001" (contains "ICU")
 │
-Result: Data appears for all departments in facility 52005 ✓
+Result: Data for ICU-related departments ✓
 ```
 
 ---
 
 ## Expected Results
 
-| User | Current | After Fix |
-|------|---------|-----------|
-| Demo Director | No data (market case mismatch) | ✓ Sees all 4 facilities and their departments |
-| Demo Manager | No data (dept 14452 not found) | ✓ Sees all 11 departments in facility 52005 |
-| Admin | ✓ All data | ✓ All data (no change) |
+| User | Assigned | Dropdown Shows | Data Displayed |
+|------|----------|----------------|----------------|
+| Demo Manager | Facility 52005 + Dept ICU | Only "ICU" | Departments containing "ICU" |
+| Demo Director | Markets INDIANA, ILLINOIS, FLORIDA | All facilities/depts in those markets | All data in those markets |
+| Admin | None | All | All data |
 
 ---
 
 ## Testing Verification
 
-1. **Demo Director**:
-   - Select "All Facilities" → see data from all 4 allowed facilities
-   - Select "St. Vincent's Southside" → see data for that facility
-   - Department dropdown shows departments from allowed facilities
+1. **Demo Manager**:
+   - Department dropdown: Shows ONLY "ICU" (not all 11 departments)
+   - Forecast: Shows data for departments matching "ICU"
 
-2. **Demo Manager**:
-   - Facility dropdown shows "St. Vincent's Southside"
-   - Department dropdown shows ALL 11 departments in that facility
-   - Select any department → forecast data appears
+2. **Demo Director**:
+   - Market dropdown: Shows allowed markets
+   - Facility dropdown: Shows all facilities in allowed markets
+   - Department dropdown: Shows all departments in allowed facilities
+   - Forecast: Shows all data from allowed markets
 
 3. **Admin**:
-   - No regression - sees all data with no restrictions
+   - No restrictions - sees everything
+
