@@ -216,7 +216,7 @@ export function EditableFTECell({
         collisionPadding={20}
         avoidCollisions={true}
       >
-        <ScrollArea className="max-h-[70vh]">
+        <ScrollArea style={{ maxHeight: 'calc(var(--radix-popper-available-height, 70vh) - 20px)' }}>
           <div className="p-4 space-y-4">
           {/* Status / Reason Dropdown */}
           <div className="space-y-2">
