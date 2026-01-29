@@ -1,138 +1,86 @@
 
-# Fix: Filters Not Working for Director and Other Roles
+# Fix: Facility Filter Showing Empty for Director Role
 
-## Problem Summary
+## Problem
 
-When logged in as Director, Manager, or other non-admin roles, the filter dropdowns at the top of Staffing and Positions pages don't appear or function correctly. Only Labor Team users can see and use all filters.
+When logged in as Director, the Facility filter dropdown appears but shows no label/value (just an empty trigger). The selected value is `"40015"` but there's no matching option in the dropdown to display.
 
 ## Root Cause
 
-This is caused by two separate systems not working together properly:
+This is a **data loading timing issue**:
 
-1. **RBAC Permissions** (controls which filters are visible)
-   - Director role only has permission to see Facility and Department filters
-   - Manager role only has permission to see the Department filter
-   - Region and Market filters are hidden for these roles
-
-2. **Access Scope** (controls which data the user can see)
-   - These demo users have NO entries in the Access Scope table
-   - This means they have unrestricted access to ALL data
-
-When a filter is hidden due to RBAC permissions, the system keeps the default value of "all-regions" or "all-markets", which then shows ALL data instead of restricting it.
+1. The Director's Access Scope loads first with `facility_id: 40015`
+2. The `useOrgScopedFilters` hook tries to filter the facilities list: `facilities.filter(f => accessScope.facilities.some(of => of.facilityId === f.facility_id))`
+3. But when Access Scope loads BEFORE the full facilities list from `useFilterData`, `facilities` is still an empty array
+4. Result: `restrictedOptions.availableFacilities = []` (empty)
+5. The Radix Select component has value `"40015"` but no matching `<SelectItem>` to display
 
 ## Solution
 
-The fix requires ensuring that when filters are hidden, the system still properly restricts data based on the user's assigned Access Scope. We need to:
+Ensure the Access Scope hook waits for filter data to be fully loaded before computing restricted options, OR fall back to using the Access Scope's own facility data for display.
 
-### Step 1: Add Access Scope Assignments (Required)
+### Approach: Use Access Scope Data Directly for Display When Filter Data is Loading
 
-Add entries to the `user_organization_access` table for Director and Manager demo users to restrict their data visibility:
-
-- **Director** (demo.director@ascension.org): Assign to specific Facility(s)
-- **Manager** (demo.manager@ascension.org): Assign to specific Department(s)
-
-### Step 2: Update Filter Initialization Logic
-
-Modify the filter initialization in `StaffingSummary.tsx` and `PositionsPage.tsx` to:
-
-1. Check the user's Access Scope restrictions
-2. For hidden filters (due to RBAC), auto-select the first restricted value instead of "all-*"
-3. This ensures the data is filtered even when the dropdown isn't visible
-
-### Step 3: Update Data Query Logic (Optional Enhancement)
-
-Optionally add a safety check in data-fetching hooks to:
-- Detect when a user has no visible filter for a level (Region/Market) but also no Access Scope restriction
-- Log a warning or apply a default restriction to prevent showing ALL data
+In `FilterBar.tsx`, when the filter data is still loading but we have Access Scope data, use the Access Scope's facility names directly instead of trying to match against the (empty) facilities array.
 
 ---
 
-## Technical Changes
+## Files to Modify
 
-### File: `src/pages/staffing/StaffingSummary.tsx`
+### 1. `src/hooks/useOrgScopedFilters.ts`
 
-Update the filter initialization effect to account for hidden filters:
+Update the hook to handle the case where Access Scope data exists but filter data hasn't loaded yet. Use the Access Scope's own facility names for display rather than requiring a join with the facilities table.
 
+**Current behavior (lines 100-105):**
 ```typescript
-// Current (lines 35-48):
-useEffect(() => {
-  if (!orgScopedLoading && !filtersInitialized && defaultFilters) {
-    if (defaultFilters.market !== "all-markets") {
-      setSelectedMarket(defaultFilters.market);
-    }
-    // ... etc
-  }
-}, [...]);
-
-// Updated - also apply defaults for hidden filters:
-useEffect(() => {
-  if (!orgScopedLoading && !rbacLoading && !filtersInitialized && defaultFilters) {
-    // For filters the user CAN'T see, force-apply Access Scope defaults
-    const { region: canSeeRegion, market: canSeeMarket } = getFilterPermissions();
-    
-    // Always apply region default if user can't see the filter
-    if (!canSeeRegion && defaultFilters.region !== "all-regions") {
-      setSelectedRegion(defaultFilters.region);
-    }
-    
-    // Always apply market default if user can't see the filter
-    if (!canSeeMarket && defaultFilters.market !== "all-markets") {
-      setSelectedMarket(defaultFilters.market);
-    }
-    
-    // Apply other defaults as before
-    if (defaultFilters.facility !== "all-facilities") {
-      setSelectedFacility(defaultFilters.facility);
-    }
-    if (defaultFilters.department !== "all-departments") {
-      setSelectedDepartment(defaultFilters.department);
-    }
-    
-    setFiltersInitialized(true);
-  }
-}, [orgScopedLoading, rbacLoading, filtersInitialized, defaultFilters, getFilterPermissions]);
+const availableFacilities = accessScope.hasFacilityRestriction
+  ? facilities.filter(f => 
+      accessScope.facilities.some(of => of.facilityId === f.facility_id)
+    )
+  : facilities;
 ```
 
-### File: `src/pages/positions/PositionsPage.tsx`
+**Fixed behavior:**
+```typescript
+// If we have facility restrictions but facilities array is empty (still loading),
+// use the Access Scope's own facility data directly
+const availableFacilities = accessScope.hasFacilityRestriction
+  ? (facilities.length > 0 
+      ? facilities.filter(f => 
+          accessScope.facilities.some(of => of.facilityId === f.facility_id)
+        )
+      : accessScope.facilities.map(f => ({
+          facility_id: f.facilityId,
+          facility_name: f.facilityName,
+          id: f.facilityId,
+        }))
+    )
+  : facilities;
+```
 
-Apply the same pattern.
-
-### Database: Add Access Scope Assignments
-
-Run SQL to assign demo users to specific locations:
-
-```sql
--- Assign Director to a specific facility
-INSERT INTO user_organization_access (user_id, facility_id, facility_name)
-SELECT '4f08a81b-af3e-4e91-98a4-8c742e8b585f', facility_id, facility_name
-FROM facilities
-WHERE facility_name = 'St. Vincent Indianapolis Hospital'
-LIMIT 1;
-
--- Assign Manager to a specific department
-INSERT INTO user_organization_access (user_id, department_id, department_name, facility_id, facility_name)
-SELECT 
-  '62150a21-3387-4f58-9dd0-f5cc85a8a421',
-  d.department_id,
-  d.department_name,
-  f.facility_id,
-  f.facility_name
-FROM departments d
-JOIN facilities f ON d.facility_id = f.facility_id
-WHERE d.department_name = 'ICU'
-LIMIT 1;
+Apply the same pattern for departments:
+```typescript
+const availableDepartments = accessScope.hasDepartmentRestriction
+  ? (departments.length > 0
+      ? departments.filter(d => 
+          accessScope.departments.some(od => od.departmentId === d.department_id)
+        )
+      : accessScope.departments.map(d => ({
+          department_id: d.departmentId,
+          department_name: d.departmentName,
+        }))
+    )
+  : departments;
 ```
 
 ---
 
 ## Expected Outcome
 
-After these changes:
+| Role | Before Fix | After Fix |
+|------|-----------|-----------|
+| Director | Empty facility dropdown, no label visible | Shows "St. Vincent Indianapolis Hospital" in dropdown |
+| Manager | Empty department dropdown if loaded before filter data | Shows "ICU" in dropdown |
+| Labor Team | Works correctly | No change |
 
-| Role | Visible Filters | Data Shown |
-|------|----------------|------------|
-| Director | Facility, Department | Only data from assigned Facility |
-| Manager | Department | Only data from assigned Department |
-| Labor Team | All filters | All data (no restrictions) |
-
-The filters that users can't see will be auto-populated from their Access Scope, ensuring they only see data they're authorized to view.
+The fix ensures that even if filter data is still loading, users with Access Scope restrictions will see their assigned facilities/departments displayed correctly in the filter bar.
