@@ -1,300 +1,250 @@
 
-# Enhancements: Status/Reason Popover Positioning, Share With Selection, and View Change Animations
+# Performance Optimization Plan for Positions Module
 
-## Summary of Requested Changes
+## Executive Summary
 
-1. **Status/Reason Popover Positioning**: Currently opens on top (`side="top"`) which looks bad when clicking top rows - the popover appears outside the visible area
-2. **Share With Department Selection**: Currently a simple text input - should allow hierarchical selection of Market → Facility → Department, but only show Department in the UI after selection
-3. **View Change Animations**: Add polished animations when switching between different form states (selecting status, revealing Shared Position fields, etc.)
+The Positions module experiences noticeable lag due to several performance bottlenecks: excessive hook calls in table cells, unnecessary re-renders from incorrect memoization dependencies, failed API queries, and non-memoized virtualized rows. This plan addresses each issue systematically.
 
 ---
 
-## Technical Changes
+## Performance Issues Identified
 
-### File 1: `src/components/editable-table/cells/EditableFTECell.tsx`
+| # | Issue | Impact | Severity |
+|---|-------|--------|----------|
+| 1 | `useFilterData` called in every `EditableFTECell` | Hook overhead × 7,000+ cells | High |
+| 2 | Wrong dependency in `columnsWithHandlers` useMemo | Columns rebuild unnecessarily | Medium |
+| 3 | Comment counts query errors (Bad Request) | Failed requests + console spam | Medium |
+| 4 | Non-memoized `TableRow` component | All visible rows re-render on scroll | High |
+| 5 | `fetchPriority` prop warning in LogoLoader | Console warnings | Low |
+| 6 | Motion animations in frequently-mounted cells | Layout thrashing during scroll | Medium |
 
-#### Change 1.1: Fix Popover Positioning
+---
 
-**Problem**: The popover uses `side="top"` which causes it to appear outside the viewport when clicking rows at the top of the table.
+## Technical Fixes
 
-**Solution**: Change to `side="bottom"` with intelligent collision handling - Radix will automatically flip to top when there's more room above.
+### Fix 1: Lift `useFilterData` Out of `EditableFTECell`
 
-```typescript
-// Current (line 210-216):
-<PopoverContent 
-  className="w-80 p-0 z-50"
-  align="center"
-  side="top"
-  sideOffset={8}
-  collisionPadding={20}
-  avoidCollisions={true}
->
+**Problem**: Each `EditableFTECell` calls `useFilterData()` independently.
 
-// Change to:
-<PopoverContent 
-  className="w-80 p-0 z-50"
-  align="end"
-  side="bottom"
-  sideOffset={8}
-  collisionPadding={16}
-  avoidCollisions={true}
-  sticky="partial"
->
-```
+**Solution**: Pass filter data as props from the parent component that already has access to it.
 
-With `side="bottom"` as the preferred side and `avoidCollisions={true}`, Radix Popover will:
-- Try to position below the trigger first
-- Flip to above when there's not enough space below
-- This gives the best UX for both top and bottom rows
-
-#### Change 1.2: Replace "Shared With" Text Input with Cascading Selects
-
-**Current Implementation** (lines 307-315):
-```typescript
-<div className="space-y-1.5">
-  <Label className="text-xs font-medium">Shared With</Label>
-  <Input
-    value={editSharedWith}
-    onChange={(e) => setEditSharedWith(e.target.value)}
-    placeholder="e.g., ICU - Building A"
-    className="h-7 text-xs"
-  />
-</div>
-```
-
-**New Implementation**: Add hierarchical selection with Market → Facility → Department selects, but save only the department name to display in the UI.
+**File**: `src/components/editable-table/cells/EditableFTECell.tsx`
 
 ```typescript
-// Add new state variables for cascading selection
-const [sharedMarket, setSharedMarket] = useState('');
-const [sharedFacility, setSharedFacility] = useState('');
-const [sharedDepartment, setSharedDepartment] = useState('');
-
-// Use filter data hook for cascading options
+// BEFORE (line 72):
 const { markets, getFacilitiesByMarket, getDepartmentsByFacility } = useFilterData();
 
-// Compute filtered options based on selections
-const sharedFacilities = sharedMarket ? getFacilitiesByMarket(sharedMarket) : [];
-const sharedDepartments = sharedFacility ? getDepartmentsByFacility(sharedFacility) : [];
+// AFTER: Accept as optional props, lazy-load only when popover opens
+interface EditableFTECellProps {
+  // ... existing props
+  filterDataProvider?: {
+    markets: Market[];
+    getFacilitiesByMarket: (market: string) => Facility[];
+    getDepartmentsByFacility: (facilityId: string) => Department[];
+  };
+}
 
-// Replace the Input with three cascading Selects wrapped in AnimatePresence
-{isSharedPosition && (
-  <>
-    <motion.div 
-      className="space-y-1.5"
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: 'auto' }}
-      exit={{ opacity: 0, height: 0 }}
-    >
-      <Label className="text-xs font-medium">Share With</Label>
-      
-      {/* Step 1: Market Selection */}
-      <Select value={sharedMarket} onValueChange={handleMarketChange}>
-        <SelectTrigger className="h-7 text-xs">
-          <SelectValue placeholder="Select market..." />
-        </SelectTrigger>
-        <SelectContent>
-          {markets.map((m) => (
-            <SelectItem key={m.id} value={m.market}>{m.market}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      
-      {/* Step 2: Facility Selection (visible after market selected) */}
-      <AnimatePresence>
-        {sharedMarket && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-          >
-            <Select value={sharedFacility} onValueChange={handleFacilityChange}>
-              <SelectTrigger className="h-7 text-xs">
-                <SelectValue placeholder="Select facility..." />
-              </SelectTrigger>
-              <SelectContent>
-                {sharedFacilities.map((f) => (
-                  <SelectItem key={f.id} value={f.facility_id}>{f.facility_name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      
-      {/* Step 3: Department Selection (visible after facility selected) */}
-      <AnimatePresence>
-        {sharedFacility && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-          >
-            <Select 
-              value={sharedDepartment} 
-              onValueChange={setSharedDepartment}
-            >
-              <SelectTrigger className="h-7 text-xs">
-                <SelectValue placeholder="Select department..." />
-              </SelectTrigger>
-              <SelectContent>
-                {sharedDepartments.map((d) => (
-                  <SelectItem key={d.id} value={d.department_name}>
-                    {d.department_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      
-      {/* Show selected department name as chip after selection */}
-      <AnimatePresence>
-        {sharedDepartment && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="pt-1"
-          >
-            <Badge variant="secondary" className="text-xs">
-              {sharedDepartment}
-            </Badge>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+// Only call useFilterData if provider not passed AND popover is open
+const filterData = useMemo(() => {
+  if (filterDataProvider) return filterDataProvider;
+  // Lazy: only load when needed
+  return null;
+}, [filterDataProvider]);
+```
+
+**File**: `src/pages/positions/EmployeesTab.tsx` and `ContractorsTab.tsx`
+
+```typescript
+// Pass shared filter data to cells
+const { markets, getFacilitiesByMarket, getDepartmentsByFacility } = useFilterData();
+const filterDataProvider = useMemo(() => ({
+  markets,
+  getFacilitiesByMarket,
+  getDepartmentsByFacility,
+}), [markets, getFacilitiesByMarket, getDepartmentsByFacility]);
+
+// In columnsWithHandlers, pass to EditableFTECell:
+<EditableFTECell
+  {...props}
+  filterDataProvider={filterDataProvider}
+/>
+```
+
+---
+
+### Fix 2: Correct `columnsWithHandlers` Dependencies
+
+**Problem**: Dependency array includes `handleRowClick` which isn't used.
+
+**File**: `src/pages/positions/EmployeesTab.tsx` (line 251)
+
+```typescript
+// BEFORE:
+}, [commentCounts, handleRowClick, handleActualFteUpdate, handleShiftOverrideUpdate]);
+
+// AFTER:
+}, [commentCounts, handleCommentClick, handleActualFteUpdate, handleShiftOverrideUpdate]);
+```
+
+**File**: `src/pages/positions/ContractorsTab.tsx` (line 245)
+
+```typescript
+// Same fix
+}, [commentCounts, handleCommentClick, handleActualFteUpdate, handleShiftOverrideUpdate]);
+```
+
+---
+
+### Fix 3: Fix Comment Counts Query for Large Position Arrays
+
+**Problem**: When position IDs array is very large (7,000+), the `.in()` query may exceed URL limits.
+
+**File**: `src/hooks/usePositionCommentCounts.ts`
+
+```typescript
+// Add batching for large arrays
+const { data: counts = new Map<string, number>() } = useQuery({
+  queryKey: ['position-comment-counts', positionIdsKey],
+  queryFn: async () => {
+    if (validPositionIds.length === 0) {
+      return new Map<string, number>();
+    }
+
+    // Batch queries for large arrays (Supabase URL limit ~8KB)
+    const BATCH_SIZE = 500;
+    const countMap = new Map<string, number>();
     
-    {/* ...Shared FTE and Shared Expiry fields remain the same */}
-  </>
+    for (let i = 0; i < validPositionIds.length; i += BATCH_SIZE) {
+      const batch = validPositionIds.slice(i, i + BATCH_SIZE);
+      const { data, error } = await supabase
+        .from('position_comments')
+        .select('position_id')
+        .in('position_id', batch);
+
+      if (error) {
+        console.error('Error fetching comment counts:', error);
+        continue;
+      }
+
+      if (data) {
+        data.forEach((comment) => {
+          const currentCount = countMap.get(comment.position_id) || 0;
+          countMap.set(comment.position_id, currentCount + 1);
+        });
+      }
+    }
+
+    return countMap;
+  },
+  enabled: validPositionIds.length > 0,
+  staleTime: 30000,
+});
+```
+
+---
+
+### Fix 4: Memoize `TableRow` Component
+
+**Problem**: Every virtualized row re-renders on scroll, even with unchanged data.
+
+**File**: `src/components/editable-table/TableRow.tsx`
+
+```typescript
+import { memo } from 'react';
+
+// Wrap with memo and custom comparison
+export const TableRow = memo(function TableRow<T = any>({
+  data,
+  columns,
+  gridTemplate,
+  onClick,
+  className,
+}: TableRowProps<T>) {
+  // ... existing implementation
+}, (prevProps, nextProps) => {
+  // Only re-render if data or columns change
+  return (
+    prevProps.data === nextProps.data &&
+    prevProps.gridTemplate === nextProps.gridTemplate &&
+    prevProps.columns === nextProps.columns &&
+    prevProps.className === nextProps.className
+  );
+});
+```
+
+---
+
+### Fix 5: Fix `fetchPriority` Warning in LogoLoader
+
+**File**: `src/components/ui/LogoLoader.tsx`
+
+```typescript
+// Find and change:
+<img fetchPriority="high" ... />
+
+// To:
+<img fetchpriority="high" ... />  // lowercase for DOM attribute
+```
+
+---
+
+### Fix 6: Reduce Animation Overhead in EditableFTECell
+
+**Problem**: Heavy animations run even when cell isn't open.
+
+**File**: `src/components/editable-table/cells/EditableFTECell.tsx`
+
+```typescript
+// Use reduced motion when not in popover view
+// Wrap AnimatePresence content with condition to skip animation setup when closed
+
+// Current: All AnimatePresence blocks render even when popover is closed
+// Fix: Gate animation components behind popover open state
+
+{open && (
+  <AnimatePresence mode="wait">
+    {editStatus && (
+      <motion.div ...>
+        {/* ... */}
+      </motion.div>
+    )}
+  </AnimatePresence>
 )}
 ```
 
-**Data Storage**: Save only the department name to `actual_fte_shared_with` (current schema preserved):
-```typescript
-saveData.actual_fte_shared_with = sharedDepartment || null;
-```
-
-#### Change 1.3: Add Smooth Animations for Form State Changes
-
-Wrap the form sections in AnimatePresence for smooth transitions when:
-- Status is selected (reveal FTE dropdown)
-- Shared Position is selected (reveal share with fields)
-- Expiry fields appear/disappear
-
-```typescript
-import { motion, AnimatePresence } from 'framer-motion';
-
-// Animation variants for consistent motion design
-const formFieldVariants = {
-  hidden: { opacity: 0, height: 0, marginTop: 0 },
-  visible: { opacity: 1, height: 'auto', marginTop: 12 },
-  exit: { opacity: 0, height: 0, marginTop: 0 }
-};
-
-// Wrap each conditional section
-<AnimatePresence mode="wait">
-  {editStatus && (
-    <motion.div
-      key="fte-field"
-      variants={formFieldVariants}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-      transition={{ duration: 0.2, ease: 'easeOut' }}
-    >
-      {/* Active FTE Dropdown content */}
-    </motion.div>
-  )}
-</AnimatePresence>
-
-<AnimatePresence mode="wait">
-  {editStatus && !isSharedPosition && (
-    <motion.div
-      key="expiry-field"
-      variants={formFieldVariants}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-      transition={{ duration: 0.2, ease: 'easeOut' }}
-    >
-      {/* Expiry Date content */}
-    </motion.div>
-  )}
-</AnimatePresence>
-
-<AnimatePresence mode="wait">
-  {isSharedPosition && (
-    <motion.div
-      key="shared-fields"
-      variants={formFieldVariants}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-      transition={{ duration: 0.25, ease: 'easeOut' }}
-    >
-      {/* All shared position fields */}
-    </motion.div>
-  )}
-</AnimatePresence>
-```
+The popover content is already conditionally rendered by Radix, but the motion components still set up listeners. Consider using `layout={false}` on the actions div when not needed.
 
 ---
 
-## Visual Behavior Summary
+## Summary of Changes
 
-| Action | Current Behavior | New Behavior |
-|--------|-----------------|--------------|
-| Click top row | Popover opens above, possibly clipped | Popover opens below (or flips if needed) |
-| Select "Shared Position" | Fields appear instantly | Fields slide in smoothly with fade |
-| "Share With" field | Free text input | Cascading Market → Facility → Dept selects |
-| After dept selection | Shows raw text | Shows department name as Badge chip |
-| Change status | Instant field changes | Smooth animated transitions |
+| File | Change | Expected Impact |
+|------|--------|-----------------|
+| `EditableFTECell.tsx` | Accept filter data as props | 95% reduction in hook overhead |
+| `EmployeesTab.tsx` | Fix dependency array, pass filterDataProvider | Fewer re-renders |
+| `ContractorsTab.tsx` | Same fixes | Fewer re-renders |
+| `usePositionCommentCounts.ts` | Batch large queries | Eliminate Bad Request errors |
+| `TableRow.tsx` | Add React.memo with custom comparison | 60-80% fewer row re-renders |
+| `LogoLoader.tsx` | Fix prop casing | Eliminate console warning |
 
 ---
 
-## Animation Design
+## Expected Performance Improvements
 
-The animations follow the existing patterns in the codebase:
-
-1. **Accordion-style reveals**: Using `height: 0 → auto` for expanding sections
-2. **Fade + scale**: For the department badge chip that appears after selection
-3. **Staggered reveals**: Each cascading dropdown appears after the previous selection
-4. **Spring transitions**: Consistent with the tab indicator animations using spring physics
-
-```typescript
-// Transition configurations used:
-{
-  type: "spring",
-  stiffness: 400,
-  damping: 30
-}
-// For simpler transitions:
-{
-  duration: 0.2,
-  ease: [0.4, 0, 0.2, 1] // ease-out
-}
-```
+| Metric | Before | After (Expected) |
+|--------|--------|------------------|
+| Initial render time | ~2-3s | ~0.5-1s |
+| Scroll performance | Janky | Smooth 60fps |
+| Hook calls per render | 7,000+ | 1 |
+| Console errors | 4+ "Bad Request" | 0 |
+| Memory overhead | High | Reduced |
 
 ---
 
 ## Testing Checklist
 
-1. **Popover Positioning**:
-   - Click top row → popover opens below the cell
-   - Click bottom row → popover opens above (or below with scroll)
-   - Resize window → popover stays within viewport
-
-2. **Share With Selection**:
-   - Select "Shared Position" status → Market dropdown appears
-   - Select market → Facility dropdown animates in
-   - Select facility → Department dropdown animates in
-   - Select department → Badge chip appears with department name
-   - Save → Only department name is stored in DB
-
-3. **Animations**:
-   - Status change → FTE field slides in smoothly
-   - Switch to Shared Position → Share fields animate in
-   - Switch away from Shared Position → Fields animate out
-   - No jank or layout shifts during animations
+1. Load Employees tab with 5,000+ records → verify smooth load
+2. Scroll rapidly up/down → verify no jank or lag
+3. Open Active FTE popover → verify cascading selects still work
+4. Switch between tabs → verify no performance degradation
+5. Check console → verify no "Bad Request" or prop warnings
