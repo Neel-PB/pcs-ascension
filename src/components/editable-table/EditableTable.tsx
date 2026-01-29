@@ -219,8 +219,8 @@ export function EditableTable<T = any>({
               </p>
             </div>
           )}
-          <div ref={containerRef} className="flex-1 flex flex-col overflow-hidden">
-            <div style={{ minWidth: 'max-content', width: '100%' }}>
+          <div ref={containerRef} className="flex-1 flex flex-col overflow-x-auto overflow-y-hidden">
+            <div style={{ minWidth: 'max-content', width: '100%' }} className="flex flex-col flex-1">
               {/* Header - sticky */}
               <TableHeader
                 columns={visibleColumns}
@@ -233,17 +233,17 @@ export function EditableTable<T = any>({
                 sortField={sortField}
                 sortDirection={sortDirection}
               />
-            </div>
 
-            {/* Virtualized data rows */}
-            <VirtualizedTableBody
-              data={data}
-              columns={visibleColumns}
-              gridTemplate={gridTemplate}
-              getRowId={getRowId}
-              onRowClick={onRowClick}
-              rowClassName={rowClassName}
-            />
+              {/* Virtualized data rows */}
+              <VirtualizedTableBody
+                data={data}
+                columns={visibleColumns}
+                gridTemplate={gridTemplate}
+                getRowId={getRowId}
+                onRowClick={onRowClick}
+                rowClassName={rowClassName}
+              />
+            </div>
           </div>
         </div>
       </DndContext>

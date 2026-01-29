@@ -37,7 +37,7 @@ export function VirtualizedTableBody<T = any>({
   return (
     <div
       ref={parentRef}
-      className="flex-1 overflow-auto"
+      className="flex-1 overflow-y-auto overflow-x-hidden"
       style={{ contain: 'strict' }}
     >
       <div
