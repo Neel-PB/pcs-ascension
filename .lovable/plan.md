@@ -1,134 +1,130 @@
 
-# Fix: Filters Showing Empty for Restricted Roles
+
+# Fix: Access Scope Manager Options Not Showing
 
 ## Problem Summary
 
-When logged in as Director (or other restricted roles), the Facility filter dropdown shows empty text (just a lock icon) despite having a facility assigned. The user expects to see their assigned facility name in the filter.
+When editing a user in the Admin panel and expanding the "Access Scope Restrictions" section, clicking "+ Add" on Market, Facility, or Department shows an empty dropdown with "No items found". Only Region shows options.
 
-## Root Cause Analysis
+## Root Cause
 
-There's a **timing mismatch** between the selected filter value and the available dropdown options:
+**RLS Policy Mismatch**: The lookup tables have different RLS policies:
+- `regions` table: Policy allows `public` role → Works ✓
+- `markets`, `facilities`, `departments` tables: Policies require `authenticated` role → Returns empty array
 
-1. **Initial state**: `selectedFacility = "all-facilities"`
-2. **Access Scope loads**: Director is assigned to facility `40015` (St. Vincent Indianapolis Hospital)
-3. **`shouldShowAllOption('facility')` returns `false`**: Because user has only 1 facility, the "All Facilities" option is hidden
-4. **First render happens**: FilterBar receives `selectedFacility="all-facilities"` but no matching `<SelectItem>` exists in the dropdown
-5. **Effect runs after render**: `setSelectedFacility("40015")` is called
-6. **Second render**: Now shows correctly, BUT there's a visual flash of empty state
+The network requests confirm this - the API returns `[]` for markets/facilities/departments but returns data for regions.
 
-The Radix Select component requires a matching `SelectItem` to display the label. When `selectedFacility="all-facilities"` but there's no "All Facilities" option (because it's hidden for restricted users), the Select shows nothing.
+The `useFilterData` hook's React Query cache may also be stale from before authentication, but the primary issue is the RLS policy.
 
 ## Solution
 
-Initialize filter state directly from Access Scope **synchronously** rather than using a delayed `useEffect`. This ensures the first render already has the correct value.
+**Option A (Recommended)**: Update RLS policies to allow public read access for lookup tables
 
-### Approach: Provide Initial Values from Hook
+These are non-sensitive reference data tables. Making them publicly readable matches the `regions` table pattern and simplifies data access throughout the app.
 
-Modify `useOrgScopedFilters` to return the initial state values that pages should use, and have pages use these directly as initial state.
+**Option B**: Make `useFilterData` refetch when auth state changes
+
+Add `session?.access_token` to the query key so it invalidates after login. This is more complex and adds latency.
 
 ---
 
-## Files to Modify
+## Implementation (Option A)
 
-### 1. `src/hooks/useOrgScopedFilters.ts`
+### Step 1: Update RLS Policies via Database Migration
 
-Add a new property `initialFilters` that can be used as React state initial values:
+Update the SELECT policies on `markets`, `facilities`, and `departments` tables to use `public` instead of `authenticated`:
+
+```sql
+-- Update markets policy to allow public read
+DROP POLICY IF EXISTS "Markets are viewable by authenticated users" ON markets;
+CREATE POLICY "Markets are viewable by everyone" ON markets
+  FOR SELECT
+  TO public
+  USING (true);
+
+-- Update facilities policy to allow public read  
+DROP POLICY IF EXISTS "Facilities are viewable by authenticated users" ON facilities;
+CREATE POLICY "Facilities are viewable by everyone" ON facilities
+  FOR SELECT
+  TO public
+  USING (true);
+
+-- Update departments policy to allow public read
+DROP POLICY IF EXISTS "Departments are viewable by authenticated users" ON departments;
+CREATE POLICY "Departments are viewable by everyone" ON departments
+  FOR SELECT
+  TO public
+  USING (true);
+```
+
+### Step 2: Invalidate Cached Query (Code Change)
+
+After the policy change, the stale cache won't automatically refresh. Add auth-awareness to `useFilterData` by including the session in the query key.
+
+**File: `src/hooks/useFilterData.ts`**
 
 ```typescript
-export interface AccessScopedFiltersResult {
-  // ... existing properties
+import { useAuthContext } from "@/contexts/AuthContext";
+
+export function useFilterData() {
+  const { session } = useAuthContext();
   
-  // Initial filter values for use in useState - matches defaults when ready
-  initialFilters: AccessScopeFilterDefaults;
+  const { data, isLoading } = useQuery({
+    // Include session token in key to refetch after login
+    queryKey: ["all-filter-data", session?.access_token ? "authenticated" : "anonymous"],
+    queryFn: async (): Promise<FilterDataResult> => {
+      // ... existing code
+    },
+    staleTime: 10 * 60 * 1000,
+  });
+  // ...
 }
 ```
 
-Update the return value to always include the computed defaults.
-
-### 2. `src/pages/staffing/StaffingSummary.tsx`
-
-Use a different pattern where we wait for the hook to be ready before initializing state:
-
-Option A - Keep showing loader until filters are initialized AND the selected values are applied:
-```typescript
-// Instead of initializing to "all-*" values, use a "pending" approach
-const [selectedFacility, setSelectedFacility] = useState<string | null>(null);
-
-// In the effect, set the actual value
-useEffect(() => {
-  if (!orgScopedLoading && !rbacLoading && selectedFacility === null) {
-    setSelectedFacility(defaultFilters.facility);
-  }
-}, [...]);
-
-// Show loader while facility is null
-if (selectedFacility === null) {
-  return <LogoLoader />;
-}
-```
-
-Option B (Simpler) - Add "All Facilities" option back when the selected value doesn't match any option:
-
-In `FilterBar.tsx`, always render the "All Facilities" option if the current value is `"all-facilities"`, even if `shouldShowAllOption` returns false:
-
-```typescript
-{(shouldShowAllOption('facility') || selectedFacility === 'all-facilities') && (
-  <SelectItem value="all-facilities">All Facilities</SelectItem>
-)}
-```
-
-### 3. `src/pages/positions/PositionsPage.tsx`
-
-Apply the same fix as StaffingSummary.
+This ensures the query refetches after the user logs in, picking up the new RLS policies.
 
 ---
 
-## Recommended Solution: Option B
+## Secondary Issue: Selected Values Not Highlighted
 
-The simplest fix is to ensure the dropdown always has a matching option for the current value, even during the brief initialization period. This prevents the empty state flash without requiring major restructuring.
+The user also mentioned selected values should be highlighted. Looking at `MultiSelectChips`, selected items already show:
+- A check mark icon on the right
+- A light primary background: `isSelected ? "bg-primary/10" : "hover:bg-muted/50"`
 
-### Change 1: `src/components/staffing/FilterBar.tsx` (line 253)
+However, this might not be visible enough. We can enhance it:
+
+**File: `src/components/ui/multi-select-chips.tsx`**
+
+Increase the visual contrast for selected items:
 
 ```typescript
-// Before:
-{shouldShowAllOption('facility') && (
-  <SelectItem value="all-facilities">All Facilities</SelectItem>
-)}
-
-// After:
-{(shouldShowAllOption('facility') || selectedFacility === 'all-facilities') && (
-  <SelectItem value="all-facilities">All Facilities</SelectItem>
-)}
+<label
+  key={option.value}
+  className={cn(
+    "flex items-start gap-2 p-2 rounded-md cursor-pointer transition-colors",
+    isSelected 
+      ? "bg-primary/15 border border-primary/30" 
+      : "hover:bg-muted/50"
+  )}
+>
 ```
 
-Apply similar logic to Region, Market, and Department selects.
+---
 
-### Change 2: Similar fix for all filter dropdowns
+## Expected Outcome
 
-Apply the same pattern to:
-- Region filter (line 177-179)
-- Market filter (line 213-215)  
-- Department filter (line 293-295)
+| Before | After |
+|--------|-------|
+| Market/Facility/Department dropdowns show "No items found" | All dropdowns show full list of options |
+| Selected items have subtle background | Selected items have stronger visual highlight with border |
 
 ---
 
-## Expected Behavior After Fix
+## Technical Summary
 
-| Scenario | Before | After |
-|----------|--------|-------|
-| Director first render | Empty facility dropdown, then fills in | Shows "All Facilities" briefly, then shows assigned facility |
-| Manager first render | Empty department dropdown | Shows "All Departments" briefly, then shows assigned department |
-| Labor Team | Works correctly | No change |
+| Change | File | Description |
+|--------|------|-------------|
+| Database Migration | N/A | Update RLS policies to allow public SELECT on lookup tables |
+| Code Change | `src/hooks/useFilterData.ts` | Add session awareness to query key for proper cache invalidation |
+| UI Enhancement | `src/components/ui/multi-select-chips.tsx` | Stronger visual highlight for selected options |
 
-The brief "All X" flash during initialization is acceptable and much better than showing an empty/broken dropdown.
-
----
-
-## Alternative Enhancement (Future)
-
-For a completely seamless experience, the loading guard could be extended to wait for both:
-1. RBAC permissions to load
-2. Access Scope to load  
-3. **Filter state to be synchronized with Access Scope defaults**
-
-This would require tracking a `filtersReady` state that becomes true after the initial useEffect runs and state is applied.
