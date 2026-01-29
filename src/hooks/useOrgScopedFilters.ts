@@ -43,6 +43,9 @@ export interface AccessScopedFiltersResult {
   // Loading state
   isLoading: boolean;
   
+  // Ready state: true only when all data is loaded and stable
+  isReady: boolean;
+  
   // Helper to check if a filter should show "All X" option
   shouldShowAllOption: (filterType: 'region' | 'market' | 'facility' | 'department') => boolean;
 }
@@ -237,9 +240,14 @@ export function useOrgScopedFilters(): AccessScopedFiltersResult {
     return true;
   };
   
+  // isReady is true only when all data is loaded AND stable
+  const isReady = !scopeLoading && !filterLoading && 
+    (hasUnrestrictedAccess || departments.length > 0 || (accessScope?.hasDepartmentRestriction ?? false));
+
   return {
     ...result,
     isLoading: scopeLoading || filterLoading,
+    isReady,
     shouldShowAllOption,
   };
 }
