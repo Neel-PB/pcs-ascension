@@ -1,76 +1,198 @@
 
+# Auto-Revert Expired Active FTE Values
 
-# Fix: Active FTE Popover Being Cut Off
+## Overview
 
-## Problem
+Create an edge function that automatically reverts `actual_fte` to the original `FTE` (hired FTE) value when the expiry date passes. This follows the same pattern as the existing `check-expired-overrides` function for volume overrides.
 
-When selecting "Shared Position" in the Active FTE form, the popover expands to show additional fields. However, the bottom portion of the popover (including the Save button) is being cut off and hidden behind other elements.
+---
 
-## Root Cause
+## Current State
 
-Two issues are causing this:
+| Column | Purpose |
+|--------|---------|
+| `FTE` | Original hired FTE value (source of truth) |
+| `actual_fte` | Temporary override value set by department leaders |
+| `actual_fte_expiry` | Date when the override should expire |
+| `actual_fte_status` | Reason for the override (LOA, FMLA, etc.) |
 
-1. **CSS `contain: strict`**: The `VirtualizedTableBody` component uses `style={{ contain: 'strict' }}` which creates an aggressive containment context that can interfere with how Portals render and position their content
-
-2. **Popover Collision Detection**: The Radix Popover needs explicit configuration to avoid collisions with viewport boundaries when the content is tall
-
-3. **Nested Popover z-index**: The date picker popovers inside the form may have conflicting z-index with the parent popover
+---
 
 ## Solution
 
-### 1. Update PopoverContent in EditableFTECell
+### 1. Create Edge Function: `check-expired-fte`
 
-Add collision handling properties to ensure the popover repositions itself when it would be cut off:
+**New File: `supabase/functions/check-expired-fte/index.ts`**
 
-```typescript
-<PopoverContent 
-  className="w-80 p-4" 
-  align="center"
-  side="top"                    // Prefer opening above the trigger
-  sideOffset={8}
-  collisionPadding={20}         // Keep 20px from viewport edges
-  avoidCollisions={true}        // Enable collision detection
->
-```
-
-### 2. Increase z-index for Nested Calendar Popovers
-
-The calendar popovers inside the form need higher z-index to appear above the parent popover:
+This function will:
+1. Query positions where `actual_fte_expiry < today`
+2. Reset `actual_fte` back to the `FTE` value
+3. Clear `actual_fte_expiry`, `actual_fte_status`, and shared position fields
+4. Return count of reverted positions
 
 ```typescript
-<PopoverContent className="w-auto p-0 z-[60]" align="start">
-  <Calendar ... />
-</PopoverContent>
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
+  try {
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    );
+
+    const today = new Date().toISOString().split('T')[0];
+
+    // Find positions with expired Active FTE overrides
+    const { data: expiredPositions, error: fetchError } = await supabaseClient
+      .from('positions')
+      .select('id, FTE, actual_fte, actual_fte_expiry, actual_fte_status')
+      .not('actual_fte_expiry', 'is', null)
+      .lt('actual_fte_expiry', today);
+
+    if (fetchError) throw fetchError;
+
+    if (!expiredPositions || expiredPositions.length === 0) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: 'No expired Active FTE overrides found',
+          count: 0,
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      );
+    }
+
+    // Revert each expired position
+    let revertedCount = 0;
+    for (const position of expiredPositions) {
+      const { error: updateError } = await supabaseClient
+        .from('positions')
+        .update({
+          actual_fte: position.FTE, // Revert to hired FTE
+          actual_fte_expiry: null,
+          actual_fte_status: null,
+          actual_fte_shared_with: null,
+          actual_fte_shared_fte: null,
+          actual_fte_shared_expiry: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', position.id);
+
+      if (!updateError) revertedCount++;
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: `Reverted ${revertedCount} expired Active FTE override(s)`,
+        count: revertedCount,
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+    );
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return new Response(
+      JSON.stringify({ success: false, error: errorMessage }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+    );
+  }
+});
 ```
-
-### 3. Adjust VirtualizedTableBody Containment (Optional)
-
-If the above doesn't fully resolve the issue, change the containment to be less aggressive:
-
-```typescript
-// Change from:
-style={{ contain: 'strict' }}
-
-// To:
-style={{ contain: 'layout' }}
-```
-
-This maintains performance benefits for virtualization while allowing portaled content to render correctly.
 
 ---
 
-## Technical Changes
+### 2. Update Supabase Config
 
-| File | Change |
-|------|--------|
-| `src/components/editable-table/cells/EditableFTECell.tsx` | Add `side="top"`, `collisionPadding`, and `avoidCollisions` props to main PopoverContent; increase z-index on nested calendar popovers |
-| `src/components/editable-table/VirtualizedTableBody.tsx` | Change `contain: 'strict'` to `contain: 'layout'` (only if needed) |
+**File: `supabase/config.toml`**
+
+Add configuration for the new function:
+
+```toml
+[functions.check-expired-fte]
+verify_jwt = false
+```
 
 ---
 
-## Expected Outcome
+### 3. Also Check Shared Position Expiry
 
-- The Active FTE popover will automatically reposition (open above or below) to avoid being cut off
-- All form fields including the Save button will be fully visible
-- Nested calendar pickers will appear above the form popover without z-index conflicts
+The function should also handle `actual_fte_shared_expiry` - when this expires, only the shared portion should be cleared while keeping the main override:
 
+```typescript
+// After handling main expiry, also check shared expiry separately
+const { data: expiredShared, error: sharedFetchError } = await supabaseClient
+  .from('positions')
+  .select('id')
+  .not('actual_fte_shared_expiry', 'is', null)
+  .lt('actual_fte_shared_expiry', today);
+
+if (!sharedFetchError && expiredShared?.length > 0) {
+  await supabaseClient
+    .from('positions')
+    .update({
+      actual_fte_shared_with: null,
+      actual_fte_shared_fte: null,
+      actual_fte_shared_expiry: null,
+      updated_at: new Date().toISOString(),
+    })
+    .in('id', expiredShared.map(p => p.id));
+}
+```
+
+---
+
+## Triggering the Function
+
+The function can be called:
+
+1. **Via Cron Job**: Set up a scheduled job (e.g., daily at midnight) to call this function
+2. **On Page Load**: Call the function when loading the Employees/Contractors tabs
+3. **Manually**: Admin can trigger it from a button
+
+### Option: Call on Page Load (Recommended for now)
+
+Add a check in the employees/contractors data hooks:
+
+```typescript
+// In useEmployees.ts or similar
+useEffect(() => {
+  // Call expiry check once when component mounts
+  supabase.functions.invoke('check-expired-fte');
+}, []);
+```
+
+---
+
+## Summary of Changes
+
+| File | Type | Description |
+|------|------|-------------|
+| `supabase/functions/check-expired-fte/index.ts` | CREATE | Edge function to revert expired Active FTE overrides |
+| `supabase/config.toml` | UPDATE | Add function configuration |
+| `src/hooks/useEmployees.ts` | UPDATE | Optionally invoke expiry check on load |
+| `src/hooks/useContractors.ts` | UPDATE | Optionally invoke expiry check on load |
+
+---
+
+## Expected Behavior
+
+| Scenario | Before | After |
+|----------|--------|-------|
+| Position with `actual_fte=0.5`, `actual_fte_expiry=2026-01-28` (yesterday) | Shows 0.5 FTE | Auto-reverts to `FTE` value, clears expiry/status |
+| Position with only `actual_fte_shared_expiry` expired | Keeps main override, shows shared info | Clears shared fields, keeps main override |
+| Position with no expiry date set | No change | No change |
