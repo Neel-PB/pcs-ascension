@@ -1,37 +1,38 @@
 
 
-# Widen Popover with Two-Column Layout for Shared Position
+# Revert to Single-Column Layout for Shared Position
 
 ## Problem
 
-The current Active FTE popover uses a narrow single-column layout (320px). When "Shared Position" is selected, 6 fields are stacked vertically, making the form too tall for the viewport. The user wants all fields visible at once without scrolling.
+The two-column grid layout looks odd. The user prefers a consistent single-column layout for both Shared Position and other statuses.
 
 ---
 
 ## Solution
 
-Use a wider popover with a two-column grid layout when "Shared Position" is selected. This keeps all fields visible within the viewport.
+Revert to a single-column layout for all statuses, with a scrollable container using the Radix `--radix-popper-available-height` CSS variable to ensure all fields remain accessible.
 
-### Layout Strategy
-
-| Status | Width | Layout |
-|--------|-------|--------|
-| Any non-shared status | 320px (`w-80`) | Single column (3 fields max) |
-| Shared Position | 560px (`w-[560px]`) | Two-column grid |
-
-### Two-Column Grid for Shared Position
+### Layout
 
 ```text
-+---------------------------+---------------------------+
-|  Status / Reason          |  Active FTE               |
-|  [Dropdown.............]  |  [Dropdown..]             |
-+---------------------------+---------------------------+
-|  Shared With              |  Shared FTE               |
-|  [Input field...........]  |  [Dropdown..]             |
-+---------------------------+---------------------------+
-|  Shared Expiry Date       |                           |
-|  [Date picker...........]  |        [Save] [Revert]   |
-+---------------------------+---------------------------+
++--------------------------------+
+|  Status / Reason               |
+|  [Dropdown...................]  |
++--------------------------------+
+|  Active FTE                    |
+|  [Dropdown..]                  |
++--------------------------------+
+|  Shared With                   |
+|  [Input field................]  |
++--------------------------------+
+|  Shared FTE                    |
+|  [Dropdown..]                  |
++--------------------------------+
+|  Shared Expiry Date            |
+|  [Date picker................]  |
++--------------------------------+
+|       [Revert]  [Save]         |
++--------------------------------+
 ```
 
 ---
@@ -40,28 +41,16 @@ Use a wider popover with a two-column grid layout when "Shared Position" is sele
 
 | File | Change |
 |------|--------|
-| `src/components/editable-table/cells/EditableFTECell.tsx` | Dynamic width based on status; two-column grid layout for Shared Position |
+| `src/components/editable-table/cells/EditableFTECell.tsx` | Remove two-column grid; use single unified layout with dynamic scroll height |
 
 ---
 
 ## Implementation Details
 
-1. **Dynamic popover width**: 
-   - Default: `w-80` (320px)
-   - Shared Position: `w-[560px]`
-
-2. **Grid layout for Shared Position**:
-   - Use `grid grid-cols-2 gap-4` for the form container
-   - Fields arranged in logical pairs (Status + FTE, Shared With + Shared FTE)
-   - Action buttons span full width at the bottom
-
-3. **Single-column for other statuses**:
-   - Keep existing vertical stack layout
-   - No change to current behavior
-
-4. **Remove scroll wrapper**:
-   - Since all fields fit, scrolling is no longer needed
-   - Remove the max-height constraint
+1. **Unified single-column layout**: Use the same `space-y-4` vertical stack for all statuses
+2. **Dynamic scroll container**: Wrap content in a scrollable div with `max-height: calc(var(--radix-popper-available-height, 70vh) - 20px)`
+3. **Consistent width**: Keep `w-80` (320px) for all cases
+4. **Conditional fields**: Show Shared With, Shared FTE, and Shared Expiry fields only when status is "Shared Position"
 
 ---
 
@@ -69,7 +58,7 @@ Use a wider popover with a two-column grid layout when "Shared Position" is sele
 
 | Scenario | Before | After |
 |----------|--------|-------|
-| Shared Position | Tall form with clipped Save button | Compact two-column layout, all fields visible |
-| Other statuses | 3-field vertical form | Same compact vertical form |
-| Viewport space | Scrolling required | No scrolling needed |
+| Shared Position | Wide two-column grid | Consistent single-column layout |
+| Form height exceeds viewport | Content clips | Scrollable within available space |
+| Visual consistency | Different layouts per status | Same layout pattern for all |
 
