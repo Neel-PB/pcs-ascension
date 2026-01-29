@@ -1,33 +1,51 @@
 
 
-# Fix: Shared Position Popover Content Being Cut Off
+# Fix: Shared Position Popover Dynamic Height Constraint
 
-## Problem
+## Problem Diagnosis
 
-When selecting "Shared Position" in the Active FTE popover, the additional fields (Shared With, Shared FTE, Shared Expiry Date) expand the form height significantly. The bottom of the popover—including the Save button—is being cut off and hidden behind the viewport boundary.
+After testing, I found the real issue: when selecting "Shared Position" on a row near the **top** of the table, the popover flips to open downward (since there's no room above). But the fixed `max-h-[70vh]` doesn't account for the actual available space below, causing the popover to extend beyond the viewport and clip the Save button.
+
+The `ScrollArea` with `max-h-[70vh]` works when the popover opens upward with plenty of space, but fails when space is limited in the direction the popover opens.
+
+---
 
 ## Root Cause
 
-1. **Fixed `side="top"`**: The popover is configured to always open above the trigger, which doesn't give it room to expand downward when content grows
-2. **No scrollability**: When the content becomes taller than available viewport space, there's no scroll mechanism
-3. **Collision handling limitations**: Even with `avoidCollisions={true}`, the popover may not have enough room in either direction for the expanded content
+1. **Fixed max-height**: `max-h-[70vh]` is arbitrary and doesn't adapt to actual available space
+2. **Radix provides available height**: The CSS variable `--radix-popper-available-height` contains the exact space available for the popover
+3. **Viewport clipping**: When available height is less than content height + 70vh, content is clipped
 
 ---
 
 ## Solution
 
-### Make Popover Content Scrollable
+Use the Radix-provided CSS variable for dynamic height constraint:
 
-Wrap the popover content in a `ScrollArea` component with a max height constraint. This ensures:
-- The popover stays within viewport bounds
-- All content remains accessible via scrolling
-- The Save button is always reachable
+```tsx
+<PopoverContent 
+  className="w-80 p-0 z-50" 
+  align="center"
+  sideOffset={8}
+  collisionPadding={20}
+  avoidCollisions={true}
+>
+  <ScrollArea 
+    className="max-h-[--radix-popper-available-height]"
+    style={{ maxHeight: 'calc(var(--radix-popper-available-height, 70vh) - 20px)' }}
+  >
+    <div className="p-4 space-y-4">
+      {/* Form content */}
+    </div>
+  </ScrollArea>
+</PopoverContent>
+```
 
-### Update PopoverContent Configuration
-
-1. Allow the popover to prefer "top" but flip to "bottom" if there's more room
-2. Add a max-height constraint with internal scroll
-3. Use higher z-index to ensure proper layering
+This approach:
+- Uses the **actual available height** reported by Radix
+- Subtracts 20px for the `collisionPadding` 
+- Falls back to `70vh` if the variable isn't available
+- Ensures the Save button is always visible within the scrollable area
 
 ---
 
@@ -35,39 +53,15 @@ Wrap the popover content in a `ScrollArea` component with a max height constrain
 
 | File | Change |
 |------|--------|
-| `src/components/editable-table/cells/EditableFTECell.tsx` | Wrap popover content in `ScrollArea` with `max-h-[70vh]`; keep collision handling props |
+| `src/components/editable-table/cells/EditableFTECell.tsx` | Replace `max-h-[70vh]` with dynamic height based on `--radix-popper-available-height` |
 
 ---
 
-## Implementation
-
-```tsx
-import { ScrollArea } from '@/components/ui/scroll-area';
-
-// In PopoverContent:
-<PopoverContent 
-  className="w-80 p-0 z-50"  // Remove padding, add at inner level
-  align="center"
-  side="top"
-  sideOffset={8}
-  collisionPadding={20}
-  avoidCollisions={true}
->
-  <ScrollArea className="max-h-[70vh]">
-    <div className="p-4 space-y-4">
-      {/* All existing form content */}
-    </div>
-  </ScrollArea>
-</PopoverContent>
-```
-
----
-
-## Expected Outcome
+## Expected Behavior
 
 | Scenario | Before | After |
 |----------|--------|-------|
-| Shared Position selected | Bottom cut off, Save button hidden | Scrollable content, Save button accessible |
-| Non-shared status selected | Works fine (shorter content) | No change in behavior |
-| Small viewport / row near top | Content cut off | Content scrolls within max height |
+| Click Active FTE near **top** of table (popover opens downward) | Save button cut off | Scrollable area fits available space, Save button accessible |
+| Click Active FTE near **bottom** of table (popover opens upward) | Works but could still clip | Dynamically sized to available space |
+| Any screen size | Fixed 70vh constraint | Adaptive to actual available viewport space |
 
