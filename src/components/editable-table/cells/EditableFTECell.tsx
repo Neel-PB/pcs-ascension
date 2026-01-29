@@ -267,15 +267,15 @@ export function EditableFTECell({
         </button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-80 p-0 z-50"
+        className="w-80 p-0 z-50 max-h-[420px] overflow-hidden"
         align="end"
         side="bottom"
         sideOffset={8}
         collisionPadding={16}
-        avoidCollisions={true}
-        sticky="partial"
+        avoidCollisions={false}
       >
-        <div className="p-3">
+        <div className="flex flex-col max-h-[420px]">
+          <div className="flex-1 overflow-y-auto p-3">
           {/* Status / Reason Dropdown - always visible, no animation */}
           <div className="space-y-1.5">
             <Label className="text-xs font-medium">Status / Reason</Label>
@@ -594,9 +594,10 @@ export function EditableFTECell({
             )}
             </AnimatePresence>
           </div>
+          </div>
 
-          {/* Actions */}
-          <div className="flex gap-2 pt-3 border-t">
+          {/* Actions - sticky at bottom */}
+          <div className="flex gap-2 p-3 pt-3 border-t bg-popover sticky bottom-0">
             {isModified && (
               <Button
                 variant="outline"
