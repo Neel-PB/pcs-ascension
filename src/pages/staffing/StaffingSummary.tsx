@@ -31,9 +31,25 @@ export default function StaffingSummary() {
   const [selectedDepartment, setSelectedDepartment] = useState("all-departments");
   const [filtersInitialized, setFiltersInitialized] = useState(false);
   
+  // Get filter visibility permissions from RBAC
+  const { getFilterPermissions } = useRBAC();
+  
   // Initialize filters from org-scoped defaults once loaded
+  // For hidden filters (due to RBAC), auto-select the Access Scope default
   useEffect(() => {
-    if (!orgScopedLoading && !filtersInitialized && defaultFilters) {
+    if (!orgScopedLoading && !rbacLoading && !filtersInitialized && defaultFilters) {
+      const filterPerms = getFilterPermissions();
+      
+      // For filters the user CAN'T see, force-apply Access Scope defaults
+      // This ensures data is filtered even when the dropdown isn't visible
+      if (!filterPerms.region && defaultFilters.region !== "all-regions") {
+        setSelectedRegion(defaultFilters.region);
+      }
+      if (!filterPerms.market && defaultFilters.market !== "all-markets") {
+        setSelectedMarket(defaultFilters.market);
+      }
+      
+      // Apply other defaults as before (for visible filters with restrictions)
       if (defaultFilters.market !== "all-markets") {
         setSelectedMarket(defaultFilters.market);
       }
@@ -45,7 +61,7 @@ export default function StaffingSummary() {
       }
       setFiltersInitialized(true);
     }
-  }, [orgScopedLoading, filtersInitialized, defaultFilters]);
+  }, [orgScopedLoading, rbacLoading, filtersInitialized, defaultFilters, getFilterPermissions]);
 
   // Build tabs based on permissions
   const tabs = useMemo(() => {

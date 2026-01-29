@@ -7,11 +7,13 @@ import { RequisitionsTab } from "./RequisitionsTab";
 import { WorkforceDrawer } from "@/components/workforce/WorkforceDrawer";
 import { WorkforceDrawerTrigger } from "@/components/workforce/WorkforceDrawerTrigger";
 import { useOrgScopedFilters } from "@/hooks/useOrgScopedFilters";
+import { useRBAC } from "@/hooks/useRBAC";
 import { LogoLoader } from "@/components/ui/LogoLoader";
 
 export default function PositionsPage() {
   const [activeTab, setActiveTab] = useState("employees");
   const { defaultFilters, isLoading: orgScopedLoading } = useOrgScopedFilters();
+  const { getFilterPermissions, loading: rbacLoading } = useRBAC();
   
   // State management for filters - initialized from org-scoped defaults
   const [selectedRegion, setSelectedRegion] = useState("all-regions");
@@ -23,8 +25,21 @@ export default function PositionsPage() {
   const [filtersInitialized, setFiltersInitialized] = useState(false);
   
   // Initialize filters from org-scoped defaults once loaded
+  // For hidden filters (due to RBAC), auto-select the Access Scope default
   useEffect(() => {
-    if (!orgScopedLoading && !filtersInitialized && defaultFilters) {
+    if (!orgScopedLoading && !rbacLoading && !filtersInitialized && defaultFilters) {
+      const filterPerms = getFilterPermissions();
+      
+      // For filters the user CAN'T see, force-apply Access Scope defaults
+      // This ensures data is filtered even when the dropdown isn't visible
+      if (!filterPerms.region && defaultFilters.region !== "all-regions") {
+        setSelectedRegion(defaultFilters.region);
+      }
+      if (!filterPerms.market && defaultFilters.market !== "all-markets") {
+        setSelectedMarket(defaultFilters.market);
+      }
+      
+      // Apply other defaults as before (for visible filters with restrictions)
       if (defaultFilters.market !== "all-markets") {
         setSelectedMarket(defaultFilters.market);
       }
@@ -36,7 +51,7 @@ export default function PositionsPage() {
       }
       setFiltersInitialized(true);
     }
-  }, [orgScopedLoading, filtersInitialized, defaultFilters]);
+  }, [orgScopedLoading, rbacLoading, filtersInitialized, defaultFilters, getFilterPermissions]);
 
   // Page-level loading guard: don't render animated content until critical data is ready
   const isInitializing = orgScopedLoading && !filtersInitialized;
