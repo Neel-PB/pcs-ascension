@@ -20,6 +20,7 @@ import {
 import { useExpandStore } from "@/stores/useExpandStore";
 import { cn } from "@/lib/utils";
 import { useFilterData } from "@/hooks/useFilterData";
+import { useOrgScopedFilters } from "@/hooks/useOrgScopedFilters";
 
 interface VarianceData {
   name: string;
@@ -84,7 +85,8 @@ export function VarianceAnalysis({
 }: VarianceAnalysisProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { isExpanded: isGroupExpanded, toggleExpanded } = useExpandStore();
-  const { markets, getFacilitiesGroupedBySubmarket, getDepartmentsByFacility } = useFilterData();
+  const { markets, getFacilitiesGroupedBySubmarket, getDepartmentsByFacility, facilities } = useFilterData();
+  const { restrictedOptions, hasRestrictions, hasRestrictionAt } = useOrgScopedFilters();
 
   // Build region-to-markets map from database
   const regionMap = useMemo(() => {
@@ -108,8 +110,17 @@ export function VarianceAnalysis({
     })), [markets]
   );
 
-  // Dynamic departments data from database based on selected facility
+  // Dynamic departments data from database based on selected facility OR access scope
   const dynamicDepartments = useMemo(() => {
+    // If user has department restrictions and viewing "all" departments, show only authorized ones
+    if (hasRestrictionAt('department') && selectedFacility === "all-facilities" && selectedDepartment === "all-departments") {
+      return restrictedOptions.availableDepartments.map(d => ({
+        name: d.department_name,
+        subText: d.department_id,
+        ...generateVariance()
+      }));
+    }
+    
     if (selectedFacility === "all-facilities") return [];
     const facilityDepts = getDepartmentsByFacility(selectedFacility);
     return facilityDepts.map(d => ({
@@ -117,7 +128,7 @@ export function VarianceAnalysis({
       subText: d.department_id,
       ...generateVariance()
     }));
-  }, [selectedFacility, getDepartmentsByFacility]);
+  }, [selectedFacility, selectedDepartment, getDepartmentsByFacility, hasRestrictionAt, restrictedOptions.availableDepartments]);
 
   // Format variance value with +/- sign
   const formatVariance = (value: number): string => {
@@ -126,19 +137,92 @@ export function VarianceAnalysis({
 
   const getColumnHeader = (): string => {
     if (selectedDepartment !== "all-departments") return "Department";
+    // If user has department restrictions, show "Departments" header even when "all-departments" is selected
+    if (hasRestrictionAt('department') && selectedDepartment === "all-departments") return "Departments";
     if (selectedFacility !== "all-facilities") return "Departments";
+    if (hasRestrictionAt('facility') && selectedFacility === "all-facilities") return "Facilities";
     if (selectedMarket !== "all-markets") return "Facilities";
+    if (hasRestrictionAt('market') && selectedMarket === "all-markets") return "Markets";
     if (selectedRegion !== "all-regions") return "Markets";
     return "Regions";
   };
 
   const getData = (): GroupedVarianceData[] => {
+    // PRIORITY 1: If user has department restrictions and "all-departments" is selected,
+    // show ONLY their authorized departments (not all departments in the database)
+    if (hasRestrictionAt('department') && selectedDepartment === "all-departments" && selectedFacility === "all-facilities") {
+      return dynamicDepartments.map((dept, idx) => ({
+        ...dept,
+        type: 'skill' as const,
+        id: `dept-${idx}`,
+      }));
+    }
+    
     // Show departments when facility is selected (no grouping)
     if (selectedFacility !== "all-facilities") {
       return dynamicDepartments.map((dept, idx) => ({
         ...dept,
         type: 'skill' as const,
         id: `dept-${idx}`,
+      }));
+    }
+    
+    // PRIORITY 2: If user has facility restrictions and "all-facilities" is selected,
+    // show ONLY their authorized facilities (grouped by submarket if available)
+    if (hasRestrictionAt('facility') && selectedFacility === "all-facilities" && selectedMarket === "all-markets") {
+      const authorizedFacilities = restrictedOptions.availableFacilities;
+      // Group authorized facilities by submarket
+      const submarketGroups: Record<string, typeof authorizedFacilities> = {};
+      authorizedFacilities.forEach(f => {
+        const submarket = f.submarket || "Other";
+        if (!submarketGroups[submarket]) submarketGroups[submarket] = [];
+        submarketGroups[submarket].push(f);
+      });
+      
+      const groups: GroupedVarianceData[] = [];
+      Object.entries(submarketGroups).forEach(([submarket, facs]) => {
+        if (facs.length > 0) {
+          const facilitiesWithVariance = facs.map(f => ({
+            name: f.facility_name,
+            subText: f.facility_id,
+            ...generateVariance(),
+          }));
+          
+          const groupTotal = facilitiesWithVariance.reduce((acc, curr) => ({
+            clDay: acc.clDay + curr.clDay, clNight: acc.clNight + curr.clNight, clTotal: acc.clTotal + curr.clTotal,
+            rnDay: acc.rnDay + curr.rnDay, rnNight: acc.rnNight + curr.rnNight, rnTotal: acc.rnTotal + curr.rnTotal,
+            pctDay: acc.pctDay + curr.pctDay, pctNight: acc.pctNight + curr.pctNight, pctTotal: acc.pctTotal + curr.pctTotal,
+            hucDay: acc.hucDay + curr.hucDay, hucNight: acc.hucNight + curr.hucNight, hucTotal: acc.hucTotal + curr.hucTotal,
+            overheadDay: acc.overheadDay + curr.overheadDay, overheadNight: acc.overheadNight + curr.overheadNight, overheadTotal: acc.overheadTotal + curr.overheadTotal,
+          }), { clDay: 0, clNight: 0, clTotal: 0, rnDay: 0, rnNight: 0, rnTotal: 0, pctDay: 0, pctNight: 0, pctTotal: 0, hucDay: 0, hucNight: 0, hucTotal: 0, overheadDay: 0, overheadNight: 0, overheadTotal: 0 });
+          
+          groups.push({
+            name: submarket,
+            type: 'group',
+            id: `group-${submarket}`,
+            ...groupTotal,
+            children: facilitiesWithVariance.map((f, idx) => ({
+              ...f,
+              type: 'skill' as const,
+              id: `${submarket}-${idx}`,
+            })),
+          });
+        }
+      });
+      return groups;
+    }
+    
+    // PRIORITY 3: If user has market restrictions and "all-markets" is selected,
+    // show ONLY their authorized markets
+    if (hasRestrictionAt('market') && selectedMarket === "all-markets" && selectedRegion === "all-regions") {
+      const authorizedMarkets = restrictedOptions.availableMarkets;
+      const marketData = dynamicMarkets.filter(m =>
+        authorizedMarkets.some(am => am.toUpperCase() === m.name.toUpperCase())
+      );
+      return marketData.map((market, idx) => ({
+        ...market,
+        type: 'skill' as const,
+        id: `market-${idx}`,
       }));
     }
 
