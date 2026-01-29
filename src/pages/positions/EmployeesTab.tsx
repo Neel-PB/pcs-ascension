@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { Filter, Search } from "lucide-react";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import { useEmployees } from "@/hooks/useEmployees";
+import { useCheckExpiredFte } from "@/hooks/useCheckExpiredFte";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LogoLoader } from "@/components/ui/LogoLoader";
@@ -35,6 +36,9 @@ export function EmployeesTab({
   selectedLevel2,
   selectedDepartment,
 }: EmployeesTabProps) {
+  // Check for expired Active FTE overrides once per session
+  useCheckExpiredFte();
+
   const { data: employees, isFetching } = useEmployees({
     selectedRegion,
     selectedMarket,
