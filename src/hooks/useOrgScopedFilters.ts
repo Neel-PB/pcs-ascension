@@ -115,21 +115,52 @@ export function useOrgScopedFilters(): AccessScopedFiltersResult {
         )
       : facilities;
     
-    // Departments - map to full Department objects from filter data
-    // If filter data hasn't loaded yet but we have Access Scope, use Access Scope data directly
-    const availableDepartments = accessScope.hasDepartmentRestriction
-      ? (departments.length > 0
-          ? departments.filter(d =>
-              accessScope.departments.some(od => od.departmentId === d.department_id)
-            )
-          : accessScope.departments.map(d => ({
-              department_id: d.departmentId,
-              department_name: d.departmentName,
-              id: d.departmentId,
-              facility_id: d.facilityId || '',
-            }))
-        )
-      : departments;
+    // HIERARCHICAL INHERITANCE: Facility assignment grants access to ALL departments in that facility
+    // Department restrictions only apply if user has NO facility restrictions
+    const getAvailableDepartments = (): Department[] => {
+      // If user has facility restrictions, they can see ALL departments in those facilities
+      if (accessScope.hasFacilityRestriction) {
+        const allowedFacilityIds = new Set(
+          accessScope.facilities.map(f => f.facilityId)
+        );
+        // Filter departments table to only those in allowed facilities
+        return departments.filter(d => allowedFacilityIds.has(d.facility_id));
+      }
+      
+      // If user has market restrictions but no facility restrictions, 
+      // show departments from facilities in those markets
+      if (accessScope.hasMarketRestriction) {
+        const allowedFacilityIds = new Set(
+          facilities
+            .filter(f => accessScope.markets.some(m => 
+              m.toLowerCase() === f.market?.toLowerCase()
+            ))
+            .map(f => f.facility_id)
+        );
+        return departments.filter(d => allowedFacilityIds.has(d.facility_id));
+      }
+      
+      // If user has ONLY department restrictions (no facility/market), use those directly
+      if (accessScope.hasDepartmentRestriction) {
+        if (departments.length > 0) {
+          return departments.filter(d =>
+            accessScope.departments.some(od => od.departmentId === d.department_id)
+          );
+        }
+        // Fallback to access scope data if departments haven't loaded
+        return accessScope.departments.map(d => ({
+          department_id: d.departmentId,
+          department_name: d.departmentName,
+          id: d.departmentId,
+          facility_id: d.facilityId || '',
+        }));
+      }
+      
+      // No restrictions at any level that affects departments
+      return departments;
+    };
+    
+    const availableDepartments = getAvailableDepartments();
     
     // Determine defaults - pre-select if only ONE option at that level
     const defaultRegion = availableRegions.length === 1 ? availableRegions[0] : "all-regions";
