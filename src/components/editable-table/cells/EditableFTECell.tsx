@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { format, parseISO } from 'date-fns';
 import {
   FTE_STATUS_OPTIONS,
@@ -208,14 +209,15 @@ export function EditableFTECell({
         </button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-80 p-4 z-50" 
+        className="w-80 p-0 z-50" 
         align="center"
         side="top"
         sideOffset={8}
         collisionPadding={20}
         avoidCollisions={true}
       >
-        <div className="space-y-4">
+        <ScrollArea className="max-h-[70vh]">
+          <div className="p-4 space-y-4">
           {/* Status / Reason Dropdown */}
           <div className="space-y-2">
             <Label className="text-sm font-medium">Status / Reason</Label>
@@ -406,6 +408,7 @@ export function EditableFTECell({
             </Button>
           </div>
         </div>
+        </ScrollArea>
       </PopoverContent>
     </Popover>
   );
