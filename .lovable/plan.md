@@ -1,20 +1,22 @@
 
-# Stabilize Form Layout During Animations
+
+# Fix Popover Position Jumping During Form State Changes
 
 ## Problem
 
-The current implementation uses Framer Motion's `layout` prop extensively, which causes form elements to shift position when:
-1. Selecting a status shows/hides the Active FTE field
-2. Switching between Shared Position and non-shared modes
-3. Cascading selects appear/disappear during "Share With" selection
+When the user selects different statuses or navigates through the "Share With" cascading selection, the popover repositions itself to a different location. This happens because:
 
-The `layout` prop animates an element's position when its layout changes. Combined with `height: 0` → `height: "auto"` animations, this causes fields to "slide into" new positions rather than staying fixed.
+1. The popover uses `avoidCollisions={true}` which recalculates position when content height changes
+2. The `sticky="partial"` setting allows repositioning during layout changes
+3. Dynamic content (Status form vs Shared Position form) causes significant height changes
+
+This makes it confusing because the form appears in one position initially, then jumps to a different location after making a selection.
 
 ---
 
 ## Solution
 
-Remove the `layout` prop from child elements and rely only on `height` + `opacity` animations. The container will naturally expand/contract, but content inside won't slide around.
+Disable collision avoidance repositioning after the popover opens and use a fixed maximum height with internal scrolling. This ensures the popover stays in place while content changes.
 
 ---
 
@@ -22,140 +24,90 @@ Remove the `layout` prop from child elements and rely only on `height` + `opacit
 
 ### File: `src/components/editable-table/cells/EditableFTECell.tsx`
 
-#### Change 1: Remove `layout` from Active FTE Field (Line 314)
+#### Change 1: Update PopoverContent Props (Lines 269-277)
+
+Replace collision-based positioning with fixed positioning:
 
 ```typescript
 // BEFORE:
-<motion.div
-  key="fte-field"
-  layout
-  initial={{ opacity: 0, height: 0, y: -8 }}
-  animate={{ opacity: 1, height: "auto", y: 0 }}
-  exit={{ opacity: 0, height: 0, y: -8 }}
-  transition={{ 
-    opacity: { duration: 0.15 },
-    y: { type: "spring", stiffness: 500, damping: 35 },
-    height: { type: "spring", stiffness: 500, damping: 35 },
-    layout: { type: "spring", stiffness: 500, damping: 35 }
-  }}
+<PopoverContent 
+  className="w-80 p-0 z-50"
+  align="end"
+  side="bottom"
+  sideOffset={8}
+  collisionPadding={16}
+  avoidCollisions={true}
+  sticky="partial"
+>
 
 // AFTER:
-<motion.div
-  key="fte-field"
-  initial={{ opacity: 0, height: 0 }}
-  animate={{ opacity: 1, height: "auto" }}
-  exit={{ opacity: 0, height: 0 }}
-  transition={{ 
-    opacity: { duration: 0.15 },
-    height: { type: "spring", stiffness: 500, damping: 35 }
-  }}
+<PopoverContent 
+  className="w-80 p-0 z-50 max-h-[420px] overflow-hidden"
+  align="end"
+  side="bottom"
+  sideOffset={8}
+  collisionPadding={16}
+  avoidCollisions={false}
+>
 ```
 
-#### Change 2: Remove `layout` from Expiry Date Field (Line 348)
+Key changes:
+- **`avoidCollisions={false}`** - Prevents repositioning when content height changes
+- **`max-h-[420px]`** - Fixed maximum height to contain all possible content
+- **Removed `sticky="partial"`** - No longer needed without collision avoidance
+
+#### Change 2: Add Scrollable Content Container (Lines 278-620)
+
+Wrap the form content in a scrollable container so users can access all fields even if the popover is near viewport edges:
 
 ```typescript
 // BEFORE:
-<motion.div
-  key="expiry-field"
-  layout
-  initial={{ opacity: 0, height: 0, y: -8 }}
+<div className="p-3">
+  {/* Status / Reason Dropdown */}
   ...
-
-// AFTER:
-<motion.div
-  key="expiry-field"
-  initial={{ opacity: 0, height: 0 }}
-  animate={{ opacity: 1, height: "auto" }}
-  exit={{ opacity: 0, height: 0 }}
-  transition={{ 
-    opacity: { duration: 0.15 },
-    height: { type: "spring", stiffness: 500, damping: 35 }
-  }}
-```
-
-#### Change 3: Remove `layout` and `x` slide from Shared Position Fields (Line 413)
-
-```typescript
-// BEFORE:
-<motion.div
-  key="shared-fields"
-  layout
-  initial={{ opacity: 0, height: 0, x: 12 }}
-  animate={{ opacity: 1, height: "auto", x: 0 }}
-  exit={{ opacity: 0, height: 0, x: -12 }}
+  {/* Dynamic content area */}
   ...
+  {/* Actions */}
+</div>
 
 // AFTER:
-<motion.div
-  key="shared-fields"
-  initial={{ opacity: 0, height: 0 }}
-  animate={{ opacity: 1, height: "auto" }}
-  exit={{ opacity: 0, height: 0 }}
-  transition={{ 
-    opacity: { duration: 0.15 },
-    height: { type: "spring", stiffness: 500, damping: 35 }
-  }}
+<div className="flex flex-col max-h-[420px]">
+  <div className="flex-1 overflow-y-auto p-3">
+    {/* Status / Reason Dropdown */}
+    ...
+    {/* Dynamic content area */}
+    ...
+  </div>
+  {/* Actions - sticky at bottom */}
+  <div className="flex gap-2 p-3 pt-3 border-t bg-popover sticky bottom-0">
+    ...
+  </div>
+</div>
 ```
 
-#### Change 4: Remove `layout` and `y` slide from Cascading Selects (Lines 490, 523)
-
-```typescript
-// Facility Select - BEFORE:
-<motion.div
-  key="facility-select"
-  layout
-  initial={{ opacity: 0, height: 0, y: -6 }}
-  ...
-
-// AFTER:
-<motion.div
-  key="facility-select"
-  initial={{ opacity: 0, height: 0 }}
-  animate={{ opacity: 1, height: "auto" }}
-  exit={{ opacity: 0, height: 0 }}
-  transition={{ 
-    opacity: { duration: 0.12 },
-    height: { type: "spring", stiffness: 500, damping: 35 }
-  }}
-```
-
-Apply same pattern to Department Select.
-
-#### Change 5: Remove `LayoutGroup` Wrapper (Lines 297-298)
-
-Since we're no longer using `layout` prop on children, the `LayoutGroup` wrapper is unnecessary:
-
-```typescript
-// BEFORE:
-<LayoutGroup>
-  <motion.div 
-    layout
-    transition={{ ... }}
-    className="relative mt-3"
-  >
-
-// AFTER:
-<div className="relative mt-3">
-```
-
-And close with `</div>` instead of `</motion.div></LayoutGroup>`.
-
----
-
-## Animation Summary
-
-| Element | Before | After |
-|---------|--------|-------|
-| Active FTE | height + y + layout | height + opacity only |
-| Expiry Date | height + y + layout | height + opacity only |
-| Shared Fields | height + x + layout | height + opacity only |
-| Cascading Selects | height + y + layout | height + opacity only |
+This ensures:
+- Content scrolls internally when it exceeds the max height
+- Save/Revert buttons stay visible at the bottom
+- Form position remains fixed regardless of content changes
 
 ---
 
 ## Visual Result
 
-- **Forms stay fixed**: Fields don't shift position when siblings appear/disappear
-- **Smooth expansion**: Container still expands/contracts smoothly via `height: "auto"`
-- **Clean fade**: Content fades in/out without sliding
-- **Stable UX**: Users can focus on filling forms without visual distraction
+| Scenario | Before | After |
+|----------|--------|-------|
+| Select status | Popover may reposition | Popover stays fixed |
+| Switch to Shared Position | Popover jumps to new location | Content scrolls, popover stays |
+| Cascading selects expand | Position shifts based on viewport | Smooth scroll, no jump |
+
+---
+
+## Alternative Approach (If scrolling is undesirable)
+
+If the user prefers no scrolling and wants all content visible at once, we can:
+1. Keep `avoidCollisions={true}` for initial positioning only
+2. Set the popover to a fixed height that accommodates the largest state (Shared Position with all fields)
+3. Use invisible placeholder divs to reserve space for all possible fields
+
+This would require a larger minimum height (~380px) but would eliminate both repositioning and scrolling.
+
