@@ -378,18 +378,23 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         .not('employeeName', 'is', null);
       
       // Apply UI filters first, then fall back to access scope restrictions
-      // Market filter
-      if (market) {
-        employedQuery = employedQuery.ilike('market', market);
-      } else if (!hasUnrestrictedAccess && allowedMarkets.length > 0) {
-        employedQuery = employedQuery.in('market', allowedMarkets);
-      }
+      // PRIORITY: Facility > Market > Region (more specific takes precedence)
       
-      // Facility filter
+      // Facility filter - most specific, takes full precedence
       if (facilityId) {
         employedQuery = employedQuery.eq('facilityId', facilityId);
       } else if (!hasUnrestrictedAccess && allowedFacilities.length > 0) {
+        // User has facility restrictions - apply them
         employedQuery = employedQuery.in('facilityId', allowedFacilities);
+      } else {
+        // No facility filter - check market filter
+        if (market) {
+          employedQuery = employedQuery.ilike('market', market);
+        } else if (!hasUnrestrictedAccess && allowedMarkets.length > 0) {
+          // Use case-insensitive OR filter for markets
+          const marketFilter = allowedMarkets.map(m => `market.ilike.${m}`).join(',');
+          employedQuery = employedQuery.or(marketFilter);
+        }
       }
       
       // Department filter - could be ID (numeric) or name (string)
@@ -412,19 +417,22 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         .select('*')
         .is('employeeName', null);
       
-      // Apply same filters to open reqs query
-      // Market filter
-      if (market) {
-        openReqsQuery = openReqsQuery.ilike('market', market);
-      } else if (!hasUnrestrictedAccess && allowedMarkets.length > 0) {
-        openReqsQuery = openReqsQuery.in('market', allowedMarkets);
-      }
+      // Apply same filters to open reqs query (same priority: Facility > Market > Region)
       
-      // Facility filter
+      // Facility filter - most specific, takes full precedence
       if (facilityId) {
         openReqsQuery = openReqsQuery.eq('facilityId', facilityId);
       } else if (!hasUnrestrictedAccess && allowedFacilities.length > 0) {
         openReqsQuery = openReqsQuery.in('facilityId', allowedFacilities);
+      } else {
+        // No facility filter - check market filter
+        if (market) {
+          openReqsQuery = openReqsQuery.ilike('market', market);
+        } else if (!hasUnrestrictedAccess && allowedMarkets.length > 0) {
+          // Use case-insensitive OR filter for markets
+          const marketFilter = allowedMarkets.map(m => `market.ilike.${m}`).join(',');
+          openReqsQuery = openReqsQuery.or(marketFilter);
+        }
       }
       
       // Department filter - could be ID (numeric) or name (string)
