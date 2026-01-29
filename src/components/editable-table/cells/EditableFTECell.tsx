@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { format, parseISO } from 'date-fns';
 import {
   FTE_STATUS_OPTIONS,
@@ -216,7 +215,13 @@ export function EditableFTECell({
         collisionPadding={20}
         avoidCollisions={true}
       >
-        <ScrollArea style={{ maxHeight: 'calc(var(--radix-popper-available-height, 70vh) - 20px)' }}>
+        <div
+          className="max-h-[70vh] overflow-y-auto"
+          style={{
+            maxHeight: 'calc(var(--radix-popper-available-height, 70vh) - 20px)',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
           <div className="p-4 space-y-4">
           {/* Status / Reason Dropdown */}
           <div className="space-y-2">
@@ -408,7 +413,7 @@ export function EditableFTECell({
             </Button>
           </div>
         </div>
-        </ScrollArea>
+        </div>
       </PopoverContent>
     </Popover>
   );
