@@ -215,16 +215,13 @@ export function EditableFTECell({
         collisionPadding={20}
         avoidCollisions={true}
       >
-        <div 
-          className="overflow-y-auto p-4"
-          style={{ maxHeight: 'calc(var(--radix-popper-available-height, 70vh) - 20px)' }}
-        >
-          <div className="space-y-4">
+        <div className="p-3">
+          <div className="space-y-3">
             {/* Status / Reason Dropdown */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Status / Reason</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">Status / Reason</Label>
               <Select value={editStatus} onValueChange={handleStatusChange}>
-                <SelectTrigger className="h-9">
+                <SelectTrigger className="h-7 text-xs">
                   <SelectValue placeholder="Select reason..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -239,10 +236,10 @@ export function EditableFTECell({
 
             {/* Active FTE Dropdown - shown after status selected */}
             {editStatus && (
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Active FTE</Label>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Active FTE</Label>
                 <Select value={editFte} onValueChange={setEditFte}>
-                  <SelectTrigger className="h-9">
+                  <SelectTrigger className="h-7 text-xs">
                     <SelectValue placeholder="Select FTE..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -258,8 +255,8 @@ export function EditableFTECell({
 
             {/* Expiry Date - shown for non-shared position statuses */}
             {editStatus && !isSharedPosition && (
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">
                   Expiry Date
                   {maxExpiryDate && (
                     <span className="text-xs text-muted-foreground ml-1">
@@ -272,7 +269,7 @@ export function EditableFTECell({
                     <Button
                       variant="outline"
                       className={cn(
-                        "w-full justify-start text-left font-normal h-9",
+                        "w-full justify-start text-left font-normal h-7 text-xs",
                         !editExpiry && "text-muted-foreground"
                       )}
                     >
@@ -307,20 +304,20 @@ export function EditableFTECell({
             {/* Shared Position fields */}
             {isSharedPosition && (
               <>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Shared With</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Shared With</Label>
                   <Input
                     value={editSharedWith}
                     onChange={(e) => setEditSharedWith(e.target.value)}
                     placeholder="e.g., ICU - Building A"
-                    className="h-9"
+                    className="h-7 text-xs"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Shared FTE</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Shared FTE</Label>
                   <Select value={editSharedFte} onValueChange={setEditSharedFte}>
-                    <SelectTrigger className="h-9">
+                    <SelectTrigger className="h-7 text-xs">
                       <SelectValue placeholder="Select FTE..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -333,14 +330,14 @@ export function EditableFTECell({
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Shared Expiry Date</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Shared Expiry Date</Label>
                   <Popover open={sharedCalendarOpen} onOpenChange={setSharedCalendarOpen}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
                         className={cn(
-                          "w-full justify-start text-left font-normal h-9",
+                          "w-full justify-start text-left font-normal h-7 text-xs",
                           !editSharedExpiry && "text-muted-foreground"
                         )}
                       >
