@@ -354,7 +354,7 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
   const allowedRegions = accessScope?.regions || [];
   const allowedMarkets = accessScope?.markets || [];
   const allowedFacilities = accessScope?.facilities?.map(f => f.facilityId) || [];
-  const allowedDepartments = accessScope?.departments?.map(d => d.departmentId) || [];
+  const allowedDepartmentNames = accessScope?.departments?.map(d => d.departmentName) || [];
   
   return useQuery({
     queryKey: ['forecast-balance', user?.id, { departmentId, region, market, facilityId, level2, pstat }],
@@ -381,44 +381,45 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         }
       }
       
-      // Build UNION access scope filter with HIERARCHICAL INHERITANCE
-      // Key rule: Facility assignment grants access to ALL departments in that facility
-      // Department restrictions only apply if user has NO facility restrictions
+      // Build access scope filter with PRIORITY ORDER: Most specific wins
+      // Department > Facility > Market > Region
       const buildAccessScopeFilter = (): string | null => {
         if (hasUnrestrictedAccess) return null;
         
         const conditions: string[] = [];
         
-        // 1. Facility restrictions take precedence (grants access to all depts in those facilities)
-        if (allowedFacilities.length > 0) {
-          conditions.push(`facilityId.in.(${allowedFacilities.join(',')})`);
+        // PRIORITY 1: Department restrictions (most specific) - use NAME matching
+        // This handles cases where department IDs in access scope don't match positions table
+        if (allowedDepartmentNames.length > 0) {
+          for (const deptName of allowedDepartmentNames) {
+            conditions.push(`departmentName.ilike.%${deptName}%`);
+          }
+          // Return immediately - department restriction wins over all others
+          return conditions.join(',');
         }
         
-        // 2. Market restrictions (case-insensitive) - grants access to all facilities/depts in those markets
+        // PRIORITY 2: Facility restrictions
+        if (allowedFacilities.length > 0) {
+          conditions.push(`facilityId.in.(${allowedFacilities.join(',')})`);
+          return conditions.join(',');
+        }
+        
+        // PRIORITY 3: Market restrictions (case-insensitive)
         if (allowedMarkets.length > 0) {
           for (const m of allowedMarkets) {
             conditions.push(`market.ilike.${m}`);
           }
+          return conditions.join(',');
         }
         
-        // 3. Region restrictions (converted to facility IDs)
+        // PRIORITY 4: Region restrictions (converted to facility IDs)
         if (facilityIdsInAllowedRegions.length > 0) {
           conditions.push(`facilityId.in.(${facilityIdsInAllowedRegions.join(',')})`);
+          return conditions.join(',');
         }
         
-        // 4. Department restrictions ONLY if no facility/market restrictions
-        // (facility access implies access to all departments within)
-        if (allowedDepartments.length > 0 && 
-            allowedFacilities.length === 0 && 
-            allowedMarkets.length === 0 &&
-            facilityIdsInAllowedRegions.length === 0) {
-          conditions.push(`departmentId.in.(${allowedDepartments.join(',')})`);
-        }
-        
-        // If no restrictions at any level, return null (unrestricted)
-        if (conditions.length === 0) return null;
-        
-        return conditions.join(',');
+        // No restrictions at any level - return null (unrestricted)
+        return null;
       };
       
       // TRUST MODEL: When a specific UI filter is selected, bypass access scope filter
