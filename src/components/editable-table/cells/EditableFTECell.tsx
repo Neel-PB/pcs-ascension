@@ -272,10 +272,10 @@ export function EditableFTECell({
         side="bottom"
         sideOffset={8}
         collisionPadding={16}
-        avoidCollisions={false}
+        avoidCollisions={true}
       >
-        <div className="flex flex-col max-h-[420px]">
-          <div className="flex-1 min-h-0 overflow-y-auto p-3">
+        <div className="flex flex-col">
+          <div className="p-3">
           {/* Status / Reason Dropdown - always visible, no animation */}
           <div className="space-y-1.5">
             <Label className="text-xs font-medium">Status / Reason</Label>
