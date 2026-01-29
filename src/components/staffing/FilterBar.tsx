@@ -141,16 +141,19 @@ export function FilterBar({
 
   // PRIORITY ORDER for departments: Most specific wins
   // Department > Facility > Market > Region
+  // IMPORTANT: Access Scope restrictions ALWAYS take priority over UI selections
   const getAvailableDepartments = () => {
+    // PRIORITY 1: Department restrictions (most specific) - ALWAYS wins over UI selection
+    if (hasRestrictionAt('department')) {
+      return restrictedOptions.availableDepartments;
+    }
+    
     // When a specific facility is selected in the UI, cascade from that selection
     if (selectedFacility !== "all-facilities") {
       return getDepartmentsByFacility(selectedFacility);
     }
     
-    // PRIORITY 1: Department restrictions (most specific) - always wins
-    if (hasRestrictionAt('department')) {
-      return restrictedOptions.availableDepartments;
-    }
+    // PRIORITY 2: Facility restrictions - show ALL departments in those facilities
     
     // PRIORITY 2: Facility restrictions - show ALL departments in those facilities
     if (hasRestrictionAt('facility')) {

@@ -19,7 +19,7 @@ import { LogoLoader } from "@/components/ui/LogoLoader";
 export default function StaffingSummary() {
   const [activeTab, setActiveTab] = useState("summary");
   const { hasPermission, loading: rbacLoading } = useRBAC();
-  const { defaultFilters, isLoading: orgScopedLoading } = useOrgScopedFilters();
+  const { defaultFilters, isLoading: orgScopedLoading, isReady: orgScopedReady } = useOrgScopedFilters();
   
   // State management for filters - initialized from org-scoped defaults
   const [selectedRegion, setSelectedRegion] = useState("all-regions");
@@ -34,10 +34,11 @@ export default function StaffingSummary() {
   // Get filter visibility permissions from RBAC
   const { getFilterPermissions } = useRBAC();
   
-  // Initialize filters from org-scoped defaults once loaded
+  // Initialize filters from org-scoped defaults once READY (not just loading=false)
   // For hidden filters (due to RBAC), auto-select the Access Scope default
+  // Use isReady to ensure all data is fully loaded before applying defaults
   useEffect(() => {
-    if (!orgScopedLoading && !rbacLoading && !filtersInitialized && defaultFilters) {
+    if (orgScopedReady && !rbacLoading && !filtersInitialized && defaultFilters) {
       const filterPerms = getFilterPermissions();
       
       // For filters the user CAN'T see, force-apply Access Scope defaults
@@ -61,7 +62,7 @@ export default function StaffingSummary() {
       }
       setFiltersInitialized(true);
     }
-  }, [orgScopedLoading, rbacLoading, filtersInitialized, defaultFilters, getFilterPermissions]);
+  }, [orgScopedReady, rbacLoading, filtersInitialized, defaultFilters, getFilterPermissions]);
 
   // Build tabs based on permissions
   const tabs = useMemo(() => {
