@@ -1,22 +1,20 @@
 
 
-# Fix Popover Position Jumping During Form State Changes
+# Fix Popover Content Overflow Issue
 
 ## Problem
 
-When the user selects different statuses or navigates through the "Share With" cascading selection, the popover repositions itself to a different location. This happens because:
+The popover content is being cut off at the bottom, as shown in the screenshot. The "Status / Reason" form with "Shared Position" selected shows the "Share With" section partially visible but there's no scrollbar to access the rest of the content.
 
-1. The popover uses `avoidCollisions={true}` which recalculates position when content height changes
-2. The `sticky="partial"` setting allows repositioning during layout changes
-3. Dynamic content (Status form vs Shared Position form) causes significant height changes
-
-This makes it confusing because the form appears in one position initially, then jumps to a different location after making a selection.
+The issue is with the CSS:
+1. `overflow-hidden` on `PopoverContent` (line 270) blocks the scrollbar from appearing
+2. The inner scrollable container needs proper height constraints to enable scrolling
 
 ---
 
 ## Solution
 
-Disable collision avoidance repositioning after the popover opens and use a fixed maximum height with internal scrolling. This ensures the popover stays in place while content changes.
+Fix the overflow and height constraints so the inner content scrolls properly while keeping the popover in a fixed position.
 
 ---
 
@@ -24,90 +22,50 @@ Disable collision avoidance repositioning after the popover opens and use a fixe
 
 ### File: `src/components/editable-table/cells/EditableFTECell.tsx`
 
-#### Change 1: Update PopoverContent Props (Lines 269-277)
+#### Change 1: Update PopoverContent className (Line 270)
 
-Replace collision-based positioning with fixed positioning:
+Remove `overflow-hidden` from PopoverContent and let the inner container handle scrolling:
 
 ```typescript
 // BEFORE:
-<PopoverContent 
-  className="w-80 p-0 z-50"
-  align="end"
-  side="bottom"
-  sideOffset={8}
-  collisionPadding={16}
-  avoidCollisions={true}
-  sticky="partial"
->
+className="w-80 p-0 z-50 max-h-[420px] overflow-hidden"
 
 // AFTER:
-<PopoverContent 
-  className="w-80 p-0 z-50 max-h-[420px] overflow-hidden"
-  align="end"
-  side="bottom"
-  sideOffset={8}
-  collisionPadding={16}
-  avoidCollisions={false}
->
+className="w-80 p-0 z-50"
 ```
 
-Key changes:
-- **`avoidCollisions={false}`** - Prevents repositioning when content height changes
-- **`max-h-[420px]`** - Fixed maximum height to contain all possible content
-- **Removed `sticky="partial"`** - No longer needed without collision avoidance
+#### Change 2: Fix the flex container height calculation (Line 277)
 
-#### Change 2: Add Scrollable Content Container (Lines 278-620)
-
-Wrap the form content in a scrollable container so users can access all fields even if the popover is near viewport edges:
+The flex container needs a proper height constraint that accounts for the actions section:
 
 ```typescript
 // BEFORE:
-<div className="p-3">
-  {/* Status / Reason Dropdown */}
-  ...
-  {/* Dynamic content area */}
-  ...
-  {/* Actions */}
-</div>
+<div className="flex flex-col max-h-[420px]">
+  <div className="flex-1 overflow-y-auto p-3">
 
 // AFTER:
 <div className="flex flex-col max-h-[420px]">
-  <div className="flex-1 overflow-y-auto p-3">
-    {/* Status / Reason Dropdown */}
-    ...
-    {/* Dynamic content area */}
-    ...
-  </div>
-  {/* Actions - sticky at bottom */}
-  <div className="flex gap-2 p-3 pt-3 border-t bg-popover sticky bottom-0">
-    ...
-  </div>
-</div>
+  <div className="flex-1 min-h-0 overflow-y-auto p-3">
 ```
 
-This ensures:
-- Content scrolls internally when it exceeds the max height
-- Save/Revert buttons stay visible at the bottom
-- Form position remains fixed regardless of content changes
+The key fix is adding `min-h-0` to the scrollable container. In flexbox, children default to `min-height: auto` which prevents them from shrinking below their content size. Adding `min-h-0` allows the element to shrink and enables the `overflow-y-auto` to work correctly.
+
+---
+
+## Why This Works
+
+| Issue | Root Cause | Fix |
+|-------|-----------|-----|
+| No scrollbar visible | `overflow-hidden` on parent | Remove it from PopoverContent |
+| Content not scrolling | Flex child min-height default | Add `min-h-0` to allow shrinking |
+| Container height | Double max-h constraint | Keep only on outer flex container |
 
 ---
 
 ## Visual Result
 
-| Scenario | Before | After |
-|----------|--------|-------|
-| Select status | Popover may reposition | Popover stays fixed |
-| Switch to Shared Position | Popover jumps to new location | Content scrolls, popover stays |
-| Cascading selects expand | Position shifts based on viewport | Smooth scroll, no jump |
-
----
-
-## Alternative Approach (If scrolling is undesirable)
-
-If the user prefers no scrolling and wants all content visible at once, we can:
-1. Keep `avoidCollisions={true}` for initial positioning only
-2. Set the popover to a fixed height that accommodates the largest state (Shared Position with all fields)
-3. Use invisible placeholder divs to reserve space for all possible fields
-
-This would require a larger minimum height (~380px) but would eliminate both repositioning and scrolling.
+- Popover stays in fixed position (no jumping)
+- Content scrolls when it exceeds 420px height
+- Scrollbar appears when needed
+- Save/Revert buttons stay sticky at bottom
 
