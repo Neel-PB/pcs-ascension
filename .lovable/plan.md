@@ -1,27 +1,70 @@
 
 
-# Apply User Access Scope to Forecast Tab
+# Fix Case Sensitivity Issue in Forecast Access Scope Filtering
 
 ## Problem
 
-The Demo Director user has access scope restricted to specific facilities (St. Vincent Indianapolis Hospital and Amita Health Mercy Ctr Aurora) in INDIANA and ILLINOIS markets. However, the Forecast tab shows data for ALL facilities including ones in Florida that the user should not be able to see.
+The Forecast tab shows "No forecast data available" even when the Demo Director selects a specific facility (St. Vincent's Southside) that they have access to. This happens because:
 
-The current implementation only filters by UI selections ("All Facilities" means no filter applied), but it doesn't apply the user's underlying access scope restrictions.
+1. The `user_organization_access` table stores market values in uppercase (e.g., `FLORIDA`)
+2. The `positions` table stores market values in title case (e.g., `Florida`)
+3. The `.in()` Supabase filter is **case-sensitive**, so `'Florida'` ≠ `'FLORIDA'`
+4. Even when a facility filter is applied, the market restriction is ALSO being applied, causing no results
 
----
+## Data Evidence
+
+| Table | Market Value |
+|-------|--------------|
+| `user_organization_access` | `FLORIDA`, `INDIANA`, `ILLINOIS` |
+| `positions` | `Florida`, `Indiana`, `Illinois` |
 
 ## Root Cause
 
-The `useForecastBalance` hook:
-1. Only filters by explicitly passed filter values from the UI
-2. Does not query or apply the user's `user_organization_access` restrictions
-3. When UI shows "All Facilities", no facility filter is applied to the database query
+In `useForecastBalance.ts`:
+```typescript
+if (!hasUnrestrictedAccess && allowedMarkets.length > 0) {
+  employedQuery = employedQuery.in('market', allowedMarkets);  // CASE SENSITIVE!
+}
+```
+
+The query compares `'Florida'` against `['FLORIDA', ...]` - no match.
 
 ---
 
 ## Solution
 
-Update `useForecastBalance` to also fetch and apply the current user's access scope restrictions. When "All Facilities" is selected in the UI but the user has facility restrictions, the query should filter to only their allowed facilities.
+Two changes needed:
+
+### 1. Use Case-Insensitive Comparison for Access Scope Filters
+
+Replace `.in()` with case-insensitive `.or()` filters using `ilike`:
+
+```typescript
+// Instead of:
+query.in('market', ['FLORIDA', 'INDIANA'])
+
+// Use:
+query.or('market.ilike.Florida,market.ilike.Indiana')
+// Or normalize to lowercase before comparison
+```
+
+### 2. Don't Apply Market/Region Restrictions When Facility is Explicitly Selected
+
+When a user selects a specific facility, they've already narrowed down to a valid scope. Applying additional market filters is redundant and can cause mismatches:
+
+```typescript
+// Only apply market restriction when no facility filter is active
+if (facilityId) {
+  employedQuery = employedQuery.eq('facilityId', facilityId);
+} else {
+  // Apply market restrictions only when facility not selected
+  if (market) {
+    employedQuery = employedQuery.ilike('market', market);
+  } else if (!hasUnrestrictedAccess && allowedMarkets.length > 0) {
+    // Use case-insensitive comparison
+  }
+}
+```
 
 ---
 
@@ -29,72 +72,49 @@ Update `useForecastBalance` to also fetch and apply the current user's access sc
 
 | File | Change |
 |------|--------|
-| `src/hooks/useForecastBalance.ts` | Add user access scope fetching and apply restrictions to both employed and open reqs queries |
+| `src/hooks/useForecastBalance.ts` | Fix case sensitivity issue by normalizing market values; restructure filter priority so facility selection takes precedence over market |
 
 ---
 
 ## Implementation Details
 
-### 1. Add Access Scope Fetching
+### Option A: Normalize Case (Recommended)
 
-Inside `useForecastBalance`, fetch the current user's access scope:
+Normalize market values to lowercase before comparing:
 
 ```typescript
-import { useAuth } from "@/hooks/useAuth";
+// Build case-insensitive market filter using OR with ilike
+const buildMarketFilter = (markets: string[]) => {
+  return markets.map(m => `market.ilike.${m}`).join(',');
+};
 
-// Get current user
-const { user } = useAuth();
-
-// Fetch user's access scope
-const { data: userAccessScope } = await supabase
-  .from('user_organization_access')
-  .select('region, market, facility_id')
-  .eq('user_id', user?.id);
+// Apply:
+if (!hasUnrestrictedAccess && allowedMarkets.length > 0 && !facilityId) {
+  employedQuery = employedQuery.or(buildMarketFilter(allowedMarkets));
+}
 ```
 
-### 2. Build Access Scope Filters
+### Option B: Prioritize Facility Selection
 
-Extract unique values the user has access to:
-
-```typescript
-const allowedMarkets = new Set<string>();
-const allowedFacilities = new Set<string>();
-
-userAccessScope?.forEach(row => {
-  if (row.market) allowedMarkets.add(row.market);
-  if (row.facility_id) allowedFacilities.add(row.facility_id);
-});
-```
-
-### 3. Apply Combined Filters
-
-When building queries, apply BOTH:
-- UI filter selections (if specific value selected)
-- Access scope restrictions (if no specific UI value selected and user has restrictions)
+When facility is selected, skip market filtering entirely since facility is more specific:
 
 ```typescript
-// If UI has specific facility selected, use that
-// Otherwise, if user has facility restrictions, filter to allowed facilities
 if (facilityId) {
   employedQuery = employedQuery.eq('facilityId', facilityId);
-} else if (allowedFacilities.size > 0) {
-  employedQuery = employedQuery.in('facilityId', Array.from(allowedFacilities));
-}
-
-// Same pattern for market
-if (market) {
+  // DON'T apply market filter - facility is already specific enough
+} else if (market) {
   employedQuery = employedQuery.ilike('market', market);
-} else if (allowedMarkets.size > 0) {
-  employedQuery = employedQuery.in('market', Array.from(allowedMarkets));
+} else if (!hasUnrestrictedAccess) {
+  // Apply facility restrictions first
+  if (allowedFacilities.length > 0) {
+    employedQuery = employedQuery.in('facilityId', allowedFacilities);
+  } else if (allowedMarkets.length > 0) {
+    // Use case-insensitive market filter
+    employedQuery = employedQuery.or(
+      allowedMarkets.map(m => `market.ilike.${m}`).join(',')
+    );
+  }
 }
-```
-
-### 4. Update Query Key
-
-Include user ID in the query key to ensure proper cache invalidation:
-
-```typescript
-queryKey: ['forecast-balance', userId, { departmentId, region, market, facilityId, ... }]
 ```
 
 ---
@@ -103,27 +123,16 @@ queryKey: ['forecast-balance', userId, { departmentId, region, market, facilityI
 
 | Scenario | Before | After |
 |----------|--------|-------|
-| Director selects "All Facilities" | Sees ALL facilities (Florida, etc.) | Sees only allowed facilities (Indiana, Illinois) |
-| Director selects specific allowed facility | Works correctly | Works correctly |
-| Admin with no restrictions | Sees all data | Sees all data (unchanged) |
-| KPI totals | Include unauthorized data | Reflect only authorized data |
+| Director selects "St. Vincent's Southside" | No data (case mismatch blocks query) | Shows facility data |
+| Director selects "All Facilities" | No data | Shows allowed facilities data |
+| Admin selects facility | Works | Works |
 
 ---
 
-## Data Flow
+## Testing Verification
 
-```text
-User: Demo Director
-  ↓
-Access Scope: Facilities 40015, 40012 (Indiana, Illinois markets)
-  ↓
-UI Selection: "All Facilities"
-  ↓
-useForecastBalance:
-  - Check UI filter: "all-facilities" → no explicit filter
-  - Check access scope: has facility restrictions
-  - Apply: WHERE facilityId IN ('40015', '40012')
-  ↓
-Result: Only authorized data displayed
-```
+1. Login as Demo Director
+2. Select "St. Vincent's Southside" facility
+3. Navigate to Forecast tab
+4. Verify data appears for that facility's departments
 
