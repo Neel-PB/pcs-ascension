@@ -1,52 +1,25 @@
 
-
-# Compact Form Elements to Eliminate Scrolling
+# Pass Filters to Forecast Tab
 
 ## Problem
 
-The Active FTE popover form is too tall when "Shared Position" is selected, requiring scrolling. The user wants all fields visible without scrolling by reducing the height of dropdowns and date picker elements.
+The Forecast tab is not respecting the department filter (or any other filters). When "ICU" is selected in the department dropdown, the Forecast table still shows data for all departments (OB High Risk Unit, Critical Care Unit, Mother Baby Unit, etc.).
+
+---
+
+## Root Cause
+
+The `ForecastTab` component calls `useForecastBalance()` without any filter parameters, even though:
+
+1. The hook already supports filters (`departmentId`, `region`, `market`, `facilityId`, `level2`, `pstat`)
+2. The parent `StaffingSummary` component has all the filter state available
+3. Other tabs like `VarianceAnalysis` already receive filter props
 
 ---
 
 ## Solution
 
-Reduce form element heights and spacing to create a more compact layout that fits within the viewport.
-
-### Height Reductions
-
-| Element | Current | New |
-|---------|---------|-----|
-| Select triggers | `h-9` (36px) | `h-7` (28px) |
-| Date picker button | `h-9` (36px) | `h-7` (28px) |
-| Text input | `h-9` (36px) | `h-7` (28px) |
-| Field gap | `space-y-4` (16px) | `space-y-3` (12px) |
-| Label-to-input gap | `space-y-2` (8px) | `space-y-1.5` (6px) |
-| Action buttons | `size="sm"` | Keep same |
-| Padding | `p-4` | `p-3` |
-
-### Visual Comparison
-
-```text
-Before (tall):                    After (compact):
-+---------------------------+     +---------------------------+
-|  Status / Reason          |     |  Status / Reason          |
-|  [h-9 dropdown........]   |     |  [h-7 dropdown........]   |
-|                           |     +---------------------------+
-+---------------------------+     |  Active FTE               |
-|  Active FTE               |     |  [h-7 dropdown]           |
-|  [h-9 dropdown]           |     +---------------------------+
-|                           |     |  Shared With              |
-+---------------------------+     |  [h-7 input............]  |
-|  Shared With              |     +---------------------------+
-|  [h-9 input............]  |     |  Shared FTE               |
-|                           |     |  [h-7 dropdown]           |
-... scrolling required ...        +---------------------------+
-                                  |  Shared Expiry Date       |
-                                  |  [h-7 date picker]        |
-                                  +---------------------------+
-                                  |     [Revert]  [Save]      |
-                                  +---------------------------+
-```
+Pass the filter state from `StaffingSummary` to `ForecastTab`, then pass those filters to `useForecastBalance`.
 
 ---
 
@@ -54,29 +27,68 @@ Before (tall):                    After (compact):
 
 | File | Change |
 |------|--------|
-| `src/components/editable-table/cells/EditableFTECell.tsx` | Reduce heights from `h-9` to `h-7`, tighten spacing from `space-y-4` to `space-y-3`, reduce label gap to `space-y-1.5`, reduce padding from `p-4` to `p-3` |
+| `src/pages/staffing/ForecastTab.tsx` | Add filter props interface; pass filters to `useForecastBalance` hook |
+| `src/pages/staffing/StaffingSummary.tsx` | Pass filter values as props to `<ForecastTab />` |
 
 ---
 
-## Space Savings Calculation
+## Implementation Details
 
-| Item | Before | After | Saved |
-|------|--------|-------|-------|
-| 6 form fields (triggers/inputs) | 6 × 36px = 216px | 6 × 28px = 168px | 48px |
-| 6 field gaps | 6 × 16px = 96px | 6 × 12px = 72px | 24px |
-| 6 label gaps | 6 × 8px = 48px | 6 × 6px = 36px | 12px |
-| Container padding | 32px | 24px | 8px |
-| **Total saved** | | | **~92px** |
+### 1. Update ForecastTab to Accept Filter Props
 
-This should eliminate the need for scrolling on most viewport sizes.
+Add a props interface matching the filter parameters that `useForecastBalance` expects:
+
+```typescript
+interface ForecastTabProps {
+  selectedRegion?: string;
+  selectedMarket?: string;
+  selectedFacility?: string;
+  selectedDepartment?: string;
+  selectedLevel2?: string;
+  selectedPstat?: string;
+}
+```
+
+Transform the filter values (handling "all-" prefixes) and pass to the hook:
+
+```typescript
+const filters = {
+  region: selectedRegion !== "all-regions" ? selectedRegion : null,
+  market: selectedMarket !== "all-markets" ? selectedMarket : null,
+  facilityId: selectedFacility !== "all-facilities" ? selectedFacility : null,
+  departmentId: selectedDepartment !== "all-departments" ? selectedDepartment : null,
+  level2: selectedLevel2 !== "all-level2" ? selectedLevel2 : null,
+  pstat: selectedPstat !== "all-pstat" ? selectedPstat : null,
+};
+
+const { data, isLoading } = useForecastBalance(filters);
+```
+
+### 2. Update StaffingSummary to Pass Filters
+
+Change the ForecastTab rendering from:
+```tsx
+<ForecastTab />
+```
+
+To:
+```tsx
+<ForecastTab
+  selectedRegion={selectedRegion}
+  selectedMarket={selectedMarket}
+  selectedFacility={selectedFacility}
+  selectedDepartment={selectedDepartment}
+  selectedLevel2={selectedLevel2}
+  selectedPstat={selectedPstat}
+/>
+```
 
 ---
 
-## Expected Outcome
+## Expected Result
 
-| Scenario | Before | After |
-|----------|--------|-------|
-| Shared Position (6 fields) | Requires scrolling | All fields visible |
-| Other statuses (2-3 fields) | Compact | Even more compact |
-| Visual density | Standard spacing | Tighter, efficient layout |
-
+| Before | After |
+|--------|-------|
+| Selecting "ICU" shows all departments | Selecting "ICU" shows only ICU-related data |
+| KPI totals include all data | KPI totals reflect filtered data only |
+| Filters have no effect on Forecast tab | All filters work consistently across tabs |
