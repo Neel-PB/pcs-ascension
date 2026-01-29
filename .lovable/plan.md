@@ -1,51 +1,38 @@
 
 
-# Fix: Shared Position Popover Dynamic Height Constraint
+# Widen Popover with Two-Column Layout for Shared Position
 
-## Problem Diagnosis
+## Problem
 
-After testing, I found the real issue: when selecting "Shared Position" on a row near the **top** of the table, the popover flips to open downward (since there's no room above). But the fixed `max-h-[70vh]` doesn't account for the actual available space below, causing the popover to extend beyond the viewport and clip the Save button.
-
-The `ScrollArea` with `max-h-[70vh]` works when the popover opens upward with plenty of space, but fails when space is limited in the direction the popover opens.
-
----
-
-## Root Cause
-
-1. **Fixed max-height**: `max-h-[70vh]` is arbitrary and doesn't adapt to actual available space
-2. **Radix provides available height**: The CSS variable `--radix-popper-available-height` contains the exact space available for the popover
-3. **Viewport clipping**: When available height is less than content height + 70vh, content is clipped
+The current Active FTE popover uses a narrow single-column layout (320px). When "Shared Position" is selected, 6 fields are stacked vertically, making the form too tall for the viewport. The user wants all fields visible at once without scrolling.
 
 ---
 
 ## Solution
 
-Use the Radix-provided CSS variable for dynamic height constraint:
+Use a wider popover with a two-column grid layout when "Shared Position" is selected. This keeps all fields visible within the viewport.
 
-```tsx
-<PopoverContent 
-  className="w-80 p-0 z-50" 
-  align="center"
-  sideOffset={8}
-  collisionPadding={20}
-  avoidCollisions={true}
->
-  <ScrollArea 
-    className="max-h-[--radix-popper-available-height]"
-    style={{ maxHeight: 'calc(var(--radix-popper-available-height, 70vh) - 20px)' }}
-  >
-    <div className="p-4 space-y-4">
-      {/* Form content */}
-    </div>
-  </ScrollArea>
-</PopoverContent>
+### Layout Strategy
+
+| Status | Width | Layout |
+|--------|-------|--------|
+| Any non-shared status | 320px (`w-80`) | Single column (3 fields max) |
+| Shared Position | 560px (`w-[560px]`) | Two-column grid |
+
+### Two-Column Grid for Shared Position
+
+```text
++---------------------------+---------------------------+
+|  Status / Reason          |  Active FTE               |
+|  [Dropdown.............]  |  [Dropdown..]             |
++---------------------------+---------------------------+
+|  Shared With              |  Shared FTE               |
+|  [Input field...........]  |  [Dropdown..]             |
++---------------------------+---------------------------+
+|  Shared Expiry Date       |                           |
+|  [Date picker...........]  |        [Save] [Revert]   |
++---------------------------+---------------------------+
 ```
-
-This approach:
-- Uses the **actual available height** reported by Radix
-- Subtracts 20px for the `collisionPadding` 
-- Falls back to `70vh` if the variable isn't available
-- Ensures the Save button is always visible within the scrollable area
 
 ---
 
@@ -53,15 +40,36 @@ This approach:
 
 | File | Change |
 |------|--------|
-| `src/components/editable-table/cells/EditableFTECell.tsx` | Replace `max-h-[70vh]` with dynamic height based on `--radix-popper-available-height` |
+| `src/components/editable-table/cells/EditableFTECell.tsx` | Dynamic width based on status; two-column grid layout for Shared Position |
 
 ---
 
-## Expected Behavior
+## Implementation Details
+
+1. **Dynamic popover width**: 
+   - Default: `w-80` (320px)
+   - Shared Position: `w-[560px]`
+
+2. **Grid layout for Shared Position**:
+   - Use `grid grid-cols-2 gap-4` for the form container
+   - Fields arranged in logical pairs (Status + FTE, Shared With + Shared FTE)
+   - Action buttons span full width at the bottom
+
+3. **Single-column for other statuses**:
+   - Keep existing vertical stack layout
+   - No change to current behavior
+
+4. **Remove scroll wrapper**:
+   - Since all fields fit, scrolling is no longer needed
+   - Remove the max-height constraint
+
+---
+
+## Expected Outcome
 
 | Scenario | Before | After |
 |----------|--------|-------|
-| Click Active FTE near **top** of table (popover opens downward) | Save button cut off | Scrollable area fits available space, Save button accessible |
-| Click Active FTE near **bottom** of table (popover opens upward) | Works but could still clip | Dynamically sized to available space |
-| Any screen size | Fixed 70vh constraint | Adaptive to actual available viewport space |
+| Shared Position | Tall form with clipped Save button | Compact two-column layout, all fields visible |
+| Other statuses | 3-field vertical form | Same compact vertical form |
+| Viewport space | Scrolling required | No scrolling needed |
 
