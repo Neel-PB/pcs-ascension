@@ -5,10 +5,8 @@ import { useEffect, useState } from "react";
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
 } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Collapsible,
   CollapsibleContent,
@@ -129,130 +127,144 @@ export function UserFormSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>{isEditMode ? 'Edit User' : 'Invite New User'}</SheetTitle>
-          <SheetDescription>
+      <SheetContent 
+        className="w-full sm:max-w-xl flex h-full flex-col p-0" 
+        hideCloseButton
+      >
+        <div
+          className="shrink-0 px-6 border-b border-border flex flex-col justify-center"
+          style={{ height: 'var(--header-height)' }}
+        >
+          <h2 className="text-lg font-semibold">
+            {isEditMode ? 'Edit User' : 'Invite New User'}
+          </h2>
+          <p className="text-sm text-muted-foreground">
             {isEditMode
               ? 'Update user information and roles'
               : 'Send an invitation email to create a new user account'}
-          </SheetDescription>
-        </SheetHeader>
+          </p>
+        </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 mt-6">
-            <FormField
-              control={form.control}
-              name="firstName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>First Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="John" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 min-h-0">
+            <ScrollArea className="flex-1">
+              <div className="px-6 py-6 space-y-6">
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>First Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="John" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="lastName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Last Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Doe" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Last Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Doe" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="john.doe@example.com"
-                      disabled={isEditMode}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="john.doe@example.com"
+                          disabled={isEditMode}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="roles"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Roles</FormLabel>
-                  <FormControl>
-                    <MultiSelectChips
-                      options={roleOptions}
-                      selected={field.value}
-                      onChange={field.onChange}
-                      placeholder="Search roles..."
-                      addButtonText="Add Role"
-                      emptyText="No roles selected"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="roles"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Roles</FormLabel>
+                      <FormControl>
+                        <MultiSelectChips
+                          options={roleOptions}
+                          selected={field.value}
+                          onChange={field.onChange}
+                          placeholder="Search roles..."
+                          addButtonText="Add Role"
+                          emptyText="No roles selected"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="bio"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bio (Optional)</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Tell us about this user..."
-                      className="resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="bio"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Bio (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Tell us about this user..."
+                          className="resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            {/* Organization Access Section - Only show in edit mode */}
-            {isEditMode && user && (
-              <Collapsible open={orgAccessOpen} onOpenChange={setOrgAccessOpen}>
-                <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:underline">
-                  <span>Access Scope Restrictions</span>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${orgAccessOpen ? 'rotate-180' : ''}`} />
-                </CollapsibleTrigger>
-                <CollapsibleContent className="pt-2">
-                  <AccessScopeManager userId={user.id} isEditMode={isEditMode} />
-                </CollapsibleContent>
-              </Collapsible>
-            )}
+                {/* Organization Access Section - Only show in edit mode */}
+                {isEditMode && user && (
+                  <Collapsible open={orgAccessOpen} onOpenChange={setOrgAccessOpen}>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:underline">
+                      <span>Access Scope Restrictions</span>
+                      <ChevronDown className={`h-4 w-4 transition-transform ${orgAccessOpen ? 'rotate-180' : ''}`} />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pt-2">
+                      <AccessScopeManager userId={user.id} isEditMode={isEditMode} />
+                    </CollapsibleContent>
+                  </Collapsible>
+                )}
+              </div>
+            </ScrollArea>
 
-            <div className="flex gap-3 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting} className="flex-1">
-                {isSubmitting ? 'Sending...' : isEditMode ? 'Update' : 'Send Invite'}
-              </Button>
+            <div className="shrink-0 px-6 py-4 border-t border-border bg-background">
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  disabled={isSubmitting}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmitting} className="flex-1">
+                  {isSubmitting ? 'Sending...' : isEditMode ? 'Update' : 'Send Invite'}
+                </Button>
+              </div>
             </div>
           </form>
         </Form>
