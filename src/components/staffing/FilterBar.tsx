@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectItemNoCheck, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { X, Lock, Loader2 } from "lucide-react";
 import { useFilterData } from "@/hooks/useFilterData";
@@ -359,14 +359,14 @@ export function FilterBar({
                       <SelectItem value="all-facilities">All Facilities</SelectItem>
                     )}
                     {availableFacilities.map(facility => (
-                      <SelectItem key={facility.facility_id || facility.id} value={facility.facility_id}>
+                      <SelectItemNoCheck key={facility.facility_id || facility.id} value={facility.facility_id}>
                         <div className="flex items-center justify-between w-full gap-4">
                           <span className="truncate">{facility.facility_name}</span>
                           <span className="text-xs text-muted-foreground font-mono shrink-0">
                             {facility.facility_id}
                           </span>
                         </div>
-                      </SelectItem>
+                      </SelectItemNoCheck>
                     ))}
                   </>
                 )}
@@ -406,14 +406,14 @@ export function FilterBar({
                       <SelectItem value="all-departments">All Departments</SelectItem>
                     )}
                     {availableDepartments.map(dept => (
-                      <SelectItem key={dept.department_id} value={dept.department_id}>
+                      <SelectItemNoCheck key={dept.department_id} value={dept.department_id}>
                         <div className="flex items-center justify-between w-full gap-4">
                           <span className="truncate">{dept.department_name}</span>
                           <span className="text-xs text-muted-foreground font-mono shrink-0">
                             {dept.department_id}
                           </span>
                         </div>
-                      </SelectItem>
+                      </SelectItemNoCheck>
                     ))}
                   </>
                 )}
