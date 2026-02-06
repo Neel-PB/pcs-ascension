@@ -1,75 +1,79 @@
 
 
-# Fix Two-Column Grid Layout in Dropdown Items
+# Fixed-Width Two-Column Layout for Dropdowns
 
-## Problem
-
-The CSS Grid layout inside `SelectItemNoCheck` isn't working because `SelectPrimitive.ItemText` wraps the children as an inline element, preventing the grid from expanding to full width.
-
-In the screenshot, you can see:
-- Names and IDs are on the same line but IDs are NOT right-aligned
-- The grid columns aren't being respected
-
----
-
-## Root Cause
+## What You Want
 
 ```text
-SelectPrimitive.Item (flex container)
-  └── SelectPrimitive.ItemText (inline wrapper - breaks layout!)
-        └── <div className="grid ..."> (can't expand)
-```
+CURRENT (flexible first column):
+grid-cols-[1fr_80px]  ← 1fr means "take remaining space" (not fixed!)
 
-The `ItemText` wrapper doesn't have `w-full` styling, so the grid child can't expand.
-
----
-
-## Solution
-
-Add `className="w-full"` to the `SelectPrimitive.ItemText` component inside `SelectItemNoCheck`:
-
-### File: `src/components/ui/select.tsx`
-
-**Update SelectItemNoCheck (lines 125-140):**
-
-```typescript
-const SelectItemNoCheck = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
->(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Item
-    ref={ref}
-    className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 px-2 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-accent focus:text-accent-foreground",
-      className,
-    )}
-    {...props}
-  >
-    <SelectPrimitive.ItemText className="w-full">{children}</SelectPrimitive.ItemText>
-  </SelectPrimitive.Item>
-));
-```
-
-The key change is adding `className="w-full"` to `SelectPrimitive.ItemText`.
-
----
-
-## Expected Result
-
-```text
-BEFORE (broken grid):
 ┌──────────────────────────────────────────────────┐
-│ ASH Pensacola Hospital                    26012  │  ← IDs not aligned
-│ ASH Pensacola Hospital Gulf Breeze  26017        │
-│ Sacred Heart Bay MC              26013           │
+│ ASH Pensacola Hospital           │        26012 │  
 └──────────────────────────────────────────────────┘
 
-AFTER (working grid):
-┌───────────────────────────────────┬──────────────┐
-│ ASH Pensacola Hospital            │        26012 │
-│ ASH Pensacola Hospital Gulf Breeze│        26017 │
-│ Sacred Heart Bay MC               │        26013 │
-└───────────────────────────────────┴──────────────┘
+WHAT YOU WANT (fixed widths for both):
+grid-cols-[250px_80px]  ← Both columns have fixed pixel widths
+
+┌────────────────────────────┬──────────┐
+│ ASH Pensacola Hospital     │    26012 │  ← Label: 250px, left-aligned
+│ Sacred Heart Bay MC        │    26013 │  ← ID: 80px, right-aligned
+│ Gulf Breeze Campus         │    26017 │
+└────────────────────────────┴──────────┘
+```
+
+---
+
+## Technical Changes
+
+### File: `src/components/staffing/FilterBar.tsx`
+
+**1. Update Facility dropdown (line 363)**
+
+Change from `1fr` to fixed width:
+
+```typescript
+<div className="grid grid-cols-[250px_80px] w-full">
+  <span className="truncate text-left">{facility.facility_name}</span>
+  <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right">
+    {facility.facility_id}
+  </span>
+</div>
+```
+
+**2. Update Department dropdown (line 410)**
+
+Same change:
+
+```typescript
+<div className="grid grid-cols-[250px_80px] w-full">
+  <span className="truncate text-left">{dept.department_name}</span>
+  <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right">
+    {dept.department_id}
+  </span>
+</div>
+```
+
+**3. Ensure dropdown content has minimum width**
+
+The `SelectContent` already has `min-w-[280px]` - we should increase this to accommodate `250px + 80px = 330px`:
+
+```typescript
+<SelectContent className="bg-popover border-border z-50 min-w-[340px]">
+```
+
+---
+
+## Visual Result
+
+```text
+┌────────────────────────────┬──────────┐
+│ Label (250px, left)        │ ID (80px)│
+├────────────────────────────┼──────────┤
+│ ASH Pensacola Hospital     │    26012 │
+│ Sacred Heart Bay MC        │    26013 │
+│ Very Long Facility Name... │    26017 │  ← truncates if too long
+└────────────────────────────┴──────────┘
 ```
 
 ---
@@ -78,5 +82,5 @@ AFTER (working grid):
 
 | File | Changes |
 |------|---------|
-| `src/components/ui/select.tsx` | Add `className="w-full"` to ItemText in SelectItemNoCheck |
+| `src/components/staffing/FilterBar.tsx` | Change `grid-cols-[1fr_80px]` to `grid-cols-[250px_80px]` for both Facility and Department dropdowns. Update `min-w` on SelectContent to `340px`. |
 
