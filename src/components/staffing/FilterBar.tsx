@@ -347,7 +347,7 @@ export function FilterBar({
               <SelectTrigger className={`${isCompact ? 'min-w-[160px] flex-shrink' : 'w-[250px]'} bg-background border-border ${isFacilityDisabled ? 'pr-8' : ''}`}>
                 <SelectValue placeholder="Select facility" />
               </SelectTrigger>
-              <SelectContent className="bg-popover border-border z-50 min-w-[350px]">
+              <SelectContent className="bg-popover border-border z-50 min-w-[340px]">
                 {facilitiesLoading ? (
                   <div className="py-3 px-2 flex items-center gap-2 text-muted-foreground">
                     <Loader2 className="h-3 w-3 animate-spin" />
@@ -360,8 +360,8 @@ export function FilterBar({
                     )}
                     {availableFacilities.map(facility => (
                       <SelectItemNoCheck key={facility.facility_id || facility.id} value={facility.facility_id}>
-                        <div className="grid grid-cols-[1fr_80px] w-full">
-                          <span className="truncate pr-3">{facility.facility_name}</span>
+                        <div className="grid grid-cols-[250px_80px] w-full">
+                          <span className="truncate text-left">{facility.facility_name}</span>
                           <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right">
                             {facility.facility_id}
                           </span>
@@ -394,7 +394,7 @@ export function FilterBar({
               <SelectTrigger className={`${isCompact ? 'min-w-[140px] flex-shrink' : 'w-[180px]'} bg-background border-border ${isDepartmentDisabled ? 'pr-8' : ''}`}>
                 <SelectValue placeholder="Select department" />
               </SelectTrigger>
-              <SelectContent className="bg-popover border-border z-50 min-w-[280px]">
+              <SelectContent className="bg-popover border-border z-50 min-w-[340px]">
                 {departmentsLoading ? (
                   <div className="py-3 px-2 flex items-center gap-2 text-muted-foreground">
                     <Loader2 className="h-3 w-3 animate-spin" />
@@ -407,8 +407,8 @@ export function FilterBar({
                     )}
                     {availableDepartments.map(dept => (
                       <SelectItemNoCheck key={dept.department_id} value={dept.department_id}>
-                        <div className="grid grid-cols-[1fr_80px] w-full">
-                          <span className="truncate pr-3">{dept.department_name}</span>
+                        <div className="grid grid-cols-[250px_80px] w-full">
+                          <span className="truncate text-left">{dept.department_name}</span>
                           <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right">
                             {dept.department_id}
                           </span>
