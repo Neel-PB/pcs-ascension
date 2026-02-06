@@ -362,7 +362,7 @@ export function FilterBar({
                       <SelectItemNoCheck key={facility.facility_id || facility.id} value={facility.facility_id}>
                         <div className="grid grid-cols-[1fr_80px] w-full">
                           <span className="truncate pr-3">{facility.facility_name}</span>
-                          <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border">
+                          <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right">
                             {facility.facility_id}
                           </span>
                         </div>
@@ -409,7 +409,7 @@ export function FilterBar({
                       <SelectItemNoCheck key={dept.department_id} value={dept.department_id}>
                         <div className="grid grid-cols-[1fr_80px] w-full">
                           <span className="truncate pr-3">{dept.department_name}</span>
-                          <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border">
+                          <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right">
                             {dept.department_id}
                           </span>
                         </div>
