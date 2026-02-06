@@ -268,7 +268,7 @@ export function FilterBar({
         {filterPermissions.region && (
           <div className="relative">
             <Select value={selectedRegion} onValueChange={onRegionChange} disabled={isRegionDisabled}>
-              <SelectTrigger className={`${isCompact ? 'min-w-[120px] flex-shrink' : 'w-[150px]'} bg-background border-border ${isRegionDisabled ? 'pr-8' : ''}`}>
+              <SelectTrigger className={`${isCompact ? 'w-[120px]' : 'w-[150px]'} bg-background border-border [&>span]:truncate ${isRegionDisabled ? 'pr-8' : ''}`}>
                 <SelectValue placeholder="Select region" />
               </SelectTrigger>
               <SelectContent className="bg-popover border-border z-50">
@@ -304,7 +304,7 @@ export function FilterBar({
         {filterPermissions.market && (
           <div className="relative">
             <Select value={selectedMarket} onValueChange={onMarketChange} disabled={isMarketDisabled}>
-              <SelectTrigger className={`${isCompact ? 'min-w-[120px] flex-shrink' : 'w-[150px]'} bg-background border-border ${isMarketDisabled ? 'pr-8' : ''}`}>
+              <SelectTrigger className={`${isCompact ? 'w-[120px]' : 'w-[150px]'} bg-background border-border [&>span]:truncate ${isMarketDisabled ? 'pr-8' : ''}`}>
                 <SelectValue placeholder="Select market" />
               </SelectTrigger>
               <SelectContent className="bg-popover border-border z-50">
@@ -344,7 +344,7 @@ export function FilterBar({
               onValueChange={onFacilityChange}
               disabled={isFacilityDisabled}
             >
-              <SelectTrigger className={`${isCompact ? 'min-w-[160px] flex-shrink' : 'w-[250px]'} bg-background border-border ${isFacilityDisabled ? 'pr-8' : ''}`}>
+              <SelectTrigger className={`${isCompact ? 'w-[160px]' : 'w-[250px]'} bg-background border-border [&>span]:truncate ${isFacilityDisabled ? 'pr-8' : ''}`}>
                 <SelectValue placeholder="Select facility" />
               </SelectTrigger>
               <SelectContent className="bg-popover border-border z-50 min-w-[340px]">
@@ -391,7 +391,7 @@ export function FilterBar({
               onValueChange={onDepartmentChange}
               disabled={isDepartmentDisabled}
             >
-              <SelectTrigger className={`${isCompact ? 'min-w-[140px] flex-shrink' : 'w-[180px]'} bg-background border-border ${isDepartmentDisabled ? 'pr-8' : ''}`}>
+              <SelectTrigger className={`${isCompact ? 'w-[140px]' : 'w-[180px]'} bg-background border-border [&>span]:truncate ${isDepartmentDisabled ? 'pr-8' : ''}`}>
                 <SelectValue placeholder="Select department" />
               </SelectTrigger>
               <SelectContent className="bg-popover border-border z-50 min-w-[340px]">
