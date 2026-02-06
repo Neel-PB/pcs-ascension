@@ -1,39 +1,40 @@
 
-# Override Settings - Improved Save Workflow
+
+# Staged Override Save Workflow
 
 ## Summary of Requested Changes
 
-1. **Save override volume first** - Allow saving override volume without requiring expiry date upfront
-2. **Then add expiry date** - After volume is saved, enable the expiry date field to be filled
-3. **After save, show "Revert" only** - Replace Edit (pencil) + Delete (trash) buttons with a single "Revert" button
-4. **Use override in Summary** - Ensure saved overrides are reflected in the Summary tab's Volume KPIs
+The current implementation saves the override volume to the database immediately when the user clicks Accept. You want a **two-step staged workflow** where:
+
+1. **Step 1: Accept Override Volume** → Store in memory (not DB), show "Pending" badge, enable date picker
+2. **Step 2: Set Expiration Date** → NOW save both volume AND date to database together
+3. **After full save** → Show only "Revert" button
 
 ---
 
-## Current vs. Proposed Workflow
+## Visual Flow
 
 ```text
-CURRENT (Broken):
+CURRENT (Saves immediately):
 ┌─────────────────────────────────────────────────────────────────┐
 │ Override Volume    │ Expiration Date   │ Status                │
 ├─────────────────────────────────────────────────────────────────┤
-│ [Edit] —           │ Set override first│ Not Set               │
-│                    │ (disabled)        │                       │
-│ ↓ Click edit, enter value, click ✓                             │
-│ BLOCKED! Requires expiry date to save (silent fail)            │
+│ [—] [Pencil]       │ Set override first│ Not Set               │
+│ ↓ Enter 24.5, click ✓                                          │
+│ SAVES TO DATABASE IMMEDIATELY (with default expiry)            │
+│ 24.5 [Revert]      │ Mar 15, 2026      │ Active                │
 └─────────────────────────────────────────────────────────────────┘
 
-PROPOSED (Fixed):
+PROPOSED (Staged save):
 ┌─────────────────────────────────────────────────────────────────┐
 │ Override Volume    │ Expiration Date   │ Status                │
 ├─────────────────────────────────────────────────────────────────┤
-│ [Edit] —           │ Set override first│ Not Set               │
-│ ↓ Step 1: Enter override value, click ✓                        │
-│ 24.5 [Revert]      │ [Set Date]        │ Incomplete            │
-│ ↓ Step 2: Set expiration date                                  │
+│ [—] [Pencil]       │ Set override first│ Not Set               │
+│ ↓ Step 1: Enter 24.5, click ✓                                  │
+│ 24.5 [Pending]     │ [Set Date ▼]      │ Pending               │ ← In memory only
+│ ↓ Step 2: Select expiration date                               │
+│ SAVES TO DATABASE (both volume + date together)                │
 │ 24.5 [Revert]      │ Mar 15, 2026      │ Active                │
-│ ↓ Revert clears both volume and date                           │
-│ [Edit] —           │ Set override first│ Not Set               │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -41,115 +42,193 @@ PROPOSED (Fixed):
 
 ## Technical Changes
 
+### Approach: Use Local State in SettingsTab
+
+Instead of modifying the cell component, we'll manage "pending" state at the table level in `SettingsTab.tsx`. This allows us to:
+- Track pending volumes per department
+- Conditionally enable the date picker
+- Save both values together when date is selected
+
+---
+
 ### File 1: `src/pages/staffing/SettingsTab.tsx`
 
-**Change 1: Update `handleSaveVolume` to save without requiring expiry date**
+**Change 1: Add pending state to track unsaved overrides**
 
-Remove the check that blocks saving when no expiry date exists. Use a default expiry date for initial save:
+```typescript
+// Add state for pending (unsaved) override volumes
+const [pendingOverrides, setPendingOverrides] = useState<Record<string, number>>({});
+```
+
+**Change 2: Update tableData to merge pending values**
+
+```typescript
+const tableData = useMemo((): VolumeOverrideRow[] => {
+  // ... existing logic
+  return departments.map((dept) => {
+    const override = overrides.find((o) => o.department_id === dept.department_id);
+    const pendingVolume = pendingOverrides[dept.department_id];
+    
+    return {
+      // ... existing fields
+      override_volume: override?.override_volume || null,
+      pending_volume: pendingVolume ?? null, // NEW: Track pending value
+      // ...
+    };
+  });
+}, [departments, overrides, pendingOverrides, ...]);
+```
+
+**Change 3: Update handleSaveVolume to store in memory only**
 
 ```typescript
 const handleSaveVolume = async (departmentId: string, volume: number | null) => {
   if (!canManageOverrides) return;
-  
+  if (!volume) return;
+
+  // Store in pending state (memory) - don't save to DB yet
+  setPendingOverrides(prev => ({
+    ...prev,
+    [departmentId]: volume
+  }));
+};
+```
+
+**Change 4: Update handleSaveDate to save both values together**
+
+```typescript
+const handleSaveDate = async (departmentId: string, date: string | null) => {
+  if (!canManageOverrides) return;
+  if (!date) return;
+
   const row = tableData.find((r) => r.department_id === departmentId);
   if (!row) return;
 
-  if (!volume) return;
+  // Get volume from pending state or existing override
+  const volumeToSave = pendingOverrides[departmentId] ?? row.override_volume;
+  if (!volumeToSave) return;
 
-  // Calculate default expiry date if not set (e.g., 30 days from now or fiscal year end)
-  const defaultExpiry = row.expiry_date || 
-    (row.max_allowed_expiry_date 
-      ? new Date(row.max_allowed_expiry_date).toISOString().split('T')[0]
-      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
-
+  // NOW save both to database
   await upsertMutation.mutateAsync({
     market: row.market,
     facility_id: row.facility_id,
     facility_name: row.facility_name,
     department_id: row.department_id,
     department_name: row.department_name,
-    override_volume: volume,
-    expiry_date: defaultExpiry,
+    override_volume: volumeToSave,
+    expiry_date: date,
+  });
+
+  // Clear from pending state
+  setPendingOverrides(prev => {
+    const updated = { ...prev };
+    delete updated[departmentId];
+    return updated;
   });
 };
 ```
 
 ---
 
-### File 2: `src/components/editable-table/cells/OverrideVolumeCell.tsx`
+### File 2: `src/config/volumeOverrideColumns.tsx`
 
-**Change: Replace Edit + Delete with single "Revert" button in saved state**
-
-Update the saved state UI from:
-```
-[value] [Edit pencil] [Delete trash]
-```
-
-To:
-```
-[value] [Revert rotate-ccw]
-```
+**Change 1: Add pending_volume to interface**
 
 ```typescript
-// In the 'saved' state section (lines 186-218)
-{state === 'saved' && (
-  <>
-    <span className="text-sm font-medium">{value}</span>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6 ml-1 text-muted-foreground hover:text-foreground"
-          onClick={handleDelete}
-          disabled={isLoading}
-        >
-          <RotateCcw className="h-3.5 w-3.5" />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>Revert override</TooltipContent>
-    </Tooltip>
-  </>
-)}
+export interface VolumeOverrideRow {
+  // ... existing fields
+  pending_volume?: number | null; // NEW
+}
 ```
 
-**Add import for RotateCcw icon:**
-```typescript
-import { Pencil, Check, X, RotateCcw } from 'lucide-react';
-```
-
----
-
-### File 3: `src/config/volumeOverrideColumns.tsx`
-
-**Optional: Add "Incomplete" status for overrides without expiry dates**
-
-Update the Status column to show "Incomplete" when volume exists but date is still pending:
+**Change 2: Update Override Volume column to show pending badge**
 
 ```typescript
-// In status column renderCell
-if (row.override_volume && !row.expiry_date) {
+renderCell: (row) => {
+  const hasPending = row.pending_volume != null;
+  const displayValue = row.pending_volume ?? row.override_volume;
+  
   return (
-    <div className="px-3 py-2">
-      <Badge variant="outline" className="border-amber-500 text-amber-600">
-        Incomplete
-      </Badge>
-    </div>
+    <OverrideVolumeCell
+      value={displayValue}
+      isPending={hasPending}  // NEW prop
+      onSave={(value) => onSaveVolume(row.department_id, value)}
+      onDelete={() => onDeleteOverride(row.department_id)}
+      // ... rest
+    />
   );
+}
+```
+
+**Change 3: Update Expiration Date column to enable for pending**
+
+```typescript
+renderCell: (row) => {
+  const hasOverride = row.override_volume != null;
+  const hasPending = row.pending_volume != null;
+  
+  // Enable date picker if there's a saved OR pending override
+  if (!hasOverride && !hasPending) {
+    return (
+      <div className="px-3 py-2 text-muted-foreground opacity-50">
+        <span className="text-sm italic">Set override first</span>
+      </div>
+    );
+  }
+  // ... show date picker
+}
+```
+
+**Change 4: Update Status column for Pending state**
+
+```typescript
+renderCell: (row) => {
+  // Pending state (volume set but not saved to DB yet)
+  if (row.pending_volume != null) {
+    return (
+      <div className="px-3 py-2">
+        <Badge variant="outline" className="border-amber-500 text-amber-600">
+          Pending
+        </Badge>
+      </div>
+    );
+  }
+  // ... rest of existing logic
 }
 ```
 
 ---
 
-## Summary Table Uses Override
+### File 3: `src/components/editable-table/cells/OverrideVolumeCell.tsx`
 
-The Summary tab already displays "Override Vol" as a KPI card (line 358-372 in StaffingSummary.tsx). To connect this to actual database values, the following would need to be added in future:
+**Change: Add isPending prop and show "Pending" badge**
 
-1. Fetch volume overrides in Summary based on selected facility/department
-2. Replace the hardcoded `value: "24.7"` with actual override value from database
-3. Show "—" or "Not Set" when no override exists
+```typescript
+interface OverrideVolumeCellProps {
+  // ... existing
+  isPending?: boolean; // NEW
+}
 
-This is currently using mock data but the infrastructure is in place.
+export function OverrideVolumeCell({
+  // ...
+  isPending = false,
+}: OverrideVolumeCellProps) {
+  // When pending, show value with Pending badge (no Revert button yet)
+  // Revert only shows after full save (isPending = false && value exists)
+}
+```
+
+---
+
+## Updated User Flow
+
+| Step | Action | Result |
+|------|--------|--------|
+| 1 | Click pencil on Override Volume | Input field appears |
+| 2 | Enter value (e.g., 24.5), click ✓ | Value stored in memory, "Pending" badge shown, date picker enabled |
+| 3 | Select expiration date | Both volume AND date saved to database together |
+| 4 | After save | "Active" status, "Revert" button appears |
+| 5 | Click Revert | Both volume and date cleared from database |
 
 ---
 
@@ -157,19 +236,7 @@ This is currently using mock data but the infrastructure is in place.
 
 | File | Changes |
 |------|---------|
-| `src/pages/staffing/SettingsTab.tsx` | Remove expiry date requirement when saving volume; use default expiry |
-| `src/components/editable-table/cells/OverrideVolumeCell.tsx` | Replace Edit + Delete buttons with single "Revert" button |
-| `src/config/volumeOverrideColumns.tsx` | (Optional) Add "Incomplete" status badge |
+| `src/pages/staffing/SettingsTab.tsx` | Add pendingOverrides state, update handleSaveVolume to store in memory, update handleSaveDate to save both |
+| `src/config/volumeOverrideColumns.tsx` | Add pending_volume field, update column logic for pending state |
+| `src/components/editable-table/cells/OverrideVolumeCell.tsx` | Add isPending prop, show Pending badge when applicable |
 
----
-
-## User Flow After Changes
-
-1. User clicks pencil icon on Override Volume
-2. User enters override value (e.g., 24.5)
-3. User clicks Accept (✓)
-4. Value saves immediately with auto-calculated expiry date
-5. Expiration Date field becomes enabled
-6. User can adjust the expiration date if needed
-7. A single "Revert" button appears next to the saved value
-8. Clicking "Revert" clears both the volume and date, returning to idle state
