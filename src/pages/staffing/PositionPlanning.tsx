@@ -361,7 +361,7 @@ const GroupRow = ({
   
   return (
     <TableRow 
-      className="font-semibold bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer border-t-2 border-primary/20"
+      className="font-semibold bg-muted/40 hover:bg-muted/50 transition-colors cursor-pointer border-t-2 border-muted-foreground/30"
       onClick={() => onToggle?.(id)}
     >
       <TableCell className="font-semibold whitespace-nowrap w-48 min-w-48 max-w-48">
@@ -474,7 +474,7 @@ const TotalRow = ({
   staffCategory?: 'nursing' | 'non-nursing';
 }) => {
   return (
-    <TableRow className="font-semibold bg-muted/20 border-t-2">
+    <TableRow className="font-semibold bg-muted/50 border-t-2">
       <TableCell className="font-semibold whitespace-nowrap w-48 min-w-48 max-w-48">{data.skill}</TableCell>
       {/* Target FTEs - only for Nursing */}
       {staffCategory === 'nursing' && (
