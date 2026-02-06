@@ -6,8 +6,8 @@ import {
   ShieldAlert,
   ShieldCheck
 } from 'lucide-react';
-import { BadgeWithEditableValue } from '@/components/editable-table/cells/BadgeWithEditableValue';
 import { EditableDateCell } from '@/components/editable-table/cells/EditableDateCell';
+import { OverrideVolumeCell } from '@/components/editable-table/cells/OverrideVolumeCell';
 import { differenceInDays, format } from 'date-fns';
 import { 
   getOverrideStatusBadgeColor,
@@ -51,6 +51,7 @@ export interface VolumeOverrideRow {
 export const createVolumeOverrideColumns = (
   onSaveVolume: (departmentId: string, volume: number | null) => Promise<void>,
   onSaveDate: (departmentId: string, date: string | null) => Promise<void>,
+  onDeleteOverride: (departmentId: string) => Promise<void>,
   config?: VolumeOverrideConfig
 ): ColumnDef<VolumeOverrideRow>[] => [
   {
@@ -103,20 +104,65 @@ export const createVolumeOverrideColumns = (
       const count = row.historical_months_count ?? 0;
 
       return (
-        <BadgeWithEditableValue
+        <OverrideVolumeCell
+          value={row.override_volume}
+          onSave={(value) => onSaveVolume(row.department_id, value)}
+          onDelete={() => onDeleteOverride(row.department_id)}
           badge={{
             icon: mandatory ? ShieldAlert : ShieldCheck,
             label: getOverrideStatusLabel(mandatory),
             className: getOverrideStatusBadgeColor(mandatory),
             tooltip: getOverrideStatusTooltip(mandatory, count),
           }}
-          editableValue={{
-            value: row.override_volume,
-            onSave: (value) => onSaveVolume(row.department_id, value),
-            showWarning: mandatory && !row.override_volume,
-            warningTooltip: "Override volume is required due to insufficient historical data",
-          }}
+          showWarning={mandatory && !row.override_volume}
+          warningTooltip="Override volume is required due to insufficient historical data"
         />
+      );
+    },
+  },
+  {
+    id: 'expiry_date',
+    label: 'Expiration Date',
+    type: 'custom',
+    width: 200,
+    minWidth: 150,
+    sortable: true,
+    renderCell: (row) => {
+      const hasOverride = row.override_volume != null;
+      
+      // Disabled state when no override volume set
+      if (!hasOverride) {
+        return (
+          <div className="px-3 py-2 text-muted-foreground opacity-50 cursor-not-allowed">
+            <span className="text-sm italic">Set override first</span>
+          </div>
+        );
+      }
+
+      const maxDate = row.max_allowed_expiry_date ? new Date(row.max_allowed_expiry_date) : undefined;
+      const currentExpiry = row.expiry_date ? new Date(row.expiry_date) : null;
+      const exceedsMax = maxDate && currentExpiry && currentExpiry > maxDate;
+
+      return (
+        <div className="relative px-3 py-2">
+          <EditableDateCell
+            value={row.expiry_date}
+            originalValue={null}
+            onSave={(value) => onSaveDate(row.department_id, value)}
+            minDate={new Date()}
+            maxDate={maxDate}
+          />
+          {exceedsMax && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <AlertCircle className="absolute right-5 top-1/2 -translate-y-1/2 h-4 w-4 text-destructive" />
+              </TooltipTrigger>
+              <TooltipContent>
+                Expiration date exceeds maximum allowed date of {format(maxDate, 'MMM dd, yyyy')}
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
       );
     },
   },
@@ -144,41 +190,6 @@ export const createVolumeOverrideColumns = (
         </Tooltip>
       </div>
     ),
-  },
-  {
-    id: 'expiry_date',
-    label: 'Expiration Date',
-    type: 'custom',
-    width: 200,
-    minWidth: 150,
-    sortable: true,
-    renderCell: (row) => {
-      const maxDate = row.max_allowed_expiry_date ? new Date(row.max_allowed_expiry_date) : undefined;
-      const currentExpiry = row.expiry_date ? new Date(row.expiry_date) : null;
-      const exceedsMax = maxDate && currentExpiry && currentExpiry > maxDate;
-
-      return (
-        <div className="relative px-3 py-2">
-          <EditableDateCell
-            value={row.expiry_date}
-            originalValue={null}
-            onSave={(value) => onSaveDate(row.department_id, value)}
-            minDate={new Date()}
-            maxDate={maxDate}
-          />
-          {exceedsMax && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <AlertCircle className="absolute right-5 top-1/2 -translate-y-1/2 h-4 w-4 text-destructive" />
-              </TooltipTrigger>
-              <TooltipContent>
-                Expiration date exceeds maximum allowed date of {format(maxDate, 'MMM dd, yyyy')}
-              </TooltipContent>
-            </Tooltip>
-          )}
-        </div>
-      );
-    },
   },
   {
     id: 'status',
@@ -210,7 +221,7 @@ export const createVolumeOverrideColumns = (
       if (daysUntilExpiry <= 7) {
         return (
           <div className="px-3 py-2">
-            <Badge variant="default" className="bg-yellow-500 hover:bg-yellow-600">
+            <Badge variant="outline" className="border-accent text-accent-foreground">
               Expiring Soon
             </Badge>
           </div>
@@ -219,7 +230,7 @@ export const createVolumeOverrideColumns = (
 
       return (
         <div className="px-3 py-2">
-          <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+          <Badge variant="outline" className="border-primary text-primary">
             Active
           </Badge>
         </div>
