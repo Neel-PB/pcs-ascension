@@ -14,6 +14,8 @@ interface EditableDateCellProps {
   minDate?: Date;
   maxDate?: Date;
   formatString?: string;
+  autoOpen?: boolean;
+  onAutoOpenComplete?: () => void;
 }
 
 export function EditableDateCell({
@@ -24,6 +26,8 @@ export function EditableDateCell({
   minDate = new Date(),
   maxDate,
   formatString = 'MMM d, yyyy',
+  autoOpen = false,
+  onAutoOpenComplete,
 }: EditableDateCellProps) {
   const [date, setDate] = useState<Date | undefined>(
     value ? (typeof value === 'string' ? new Date(value) : value) : undefined
@@ -33,6 +37,14 @@ export function EditableDateCell({
   useEffect(() => {
     setDate(value ? (typeof value === 'string' ? new Date(value) : value) : undefined);
   }, [value]);
+
+  // Auto-open the calendar when triggered
+  useEffect(() => {
+    if (autoOpen && !isOpen) {
+      setIsOpen(true);
+      onAutoOpenComplete?.();
+    }
+  }, [autoOpen, isOpen, onAutoOpenComplete]);
 
   const handleSelect = async (selectedDate: Date | undefined) => {
     if (selectedDate) {

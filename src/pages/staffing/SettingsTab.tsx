@@ -26,6 +26,9 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
   
   // Pending overrides stored in memory (not saved to DB until expiration date is set)
   const [pendingOverrides, setPendingOverrides] = useState<Record<string, number>>({});
+  
+  // Track which department should auto-open its date picker
+  const [autoOpenDatePicker, setAutoOpenDatePicker] = useState<string | null>(null);
 
   // Fetch departments for the selected facility
   const { data: departments = [], isLoading: isLoadingDepartments } = useQuery({
@@ -124,6 +127,14 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
       ...prev,
       [departmentId]: volume
     }));
+    
+    // Trigger auto-open for this department's date picker
+    setAutoOpenDatePicker(departmentId);
+  };
+  
+  // Clear auto-open state after the calendar has opened
+  const handleAutoOpenComplete = () => {
+    setAutoOpenDatePicker(null);
   };
 
   // Step 2: Save both volume AND date to database together
@@ -173,8 +184,15 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
   };
 
   const columns = useMemo(
-    () => createVolumeOverrideColumns(handleSaveVolume, handleSaveDate, handleDeleteOverride, config ?? undefined),
-    [tableData, config]
+    () => createVolumeOverrideColumns(
+      handleSaveVolume, 
+      handleSaveDate, 
+      handleDeleteOverride, 
+      config ?? undefined,
+      autoOpenDatePicker,
+      handleAutoOpenComplete
+    ),
+    [tableData, config, autoOpenDatePicker]
   );
 
   // Show message if no facility selected

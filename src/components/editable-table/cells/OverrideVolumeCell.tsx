@@ -208,12 +208,6 @@ export function OverrideVolumeCell({
                 <TooltipContent>Revert override</TooltipContent>
               </Tooltip>
             )}
-            {/* Show pending indicator when value is in memory only */}
-            {isPending && (
-              <Badge variant="outline" className="ml-2 border-amber-500 text-amber-600 text-xs">
-                Pending
-              </Badge>
-            )}
           </>
         )}
       </div>
