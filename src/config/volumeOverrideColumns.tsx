@@ -29,6 +29,7 @@ export interface VolumeOverrideRow {
   department_id: string;
   department_name: string;
   override_volume: number | null;
+  pending_volume?: number | null; // NEW: Volume stored in memory before DB save
   expiry_date: string | null;
   market: string;
   facility_id: string;
@@ -102,10 +103,13 @@ export const createVolumeOverrideColumns = (
     renderCell: (row) => {
       const mandatory = row.override_mandatory ?? false;
       const count = row.historical_months_count ?? 0;
+      const hasPending = row.pending_volume != null;
+      const displayValue = row.pending_volume ?? row.override_volume;
 
       return (
         <OverrideVolumeCell
-          value={row.override_volume}
+          value={displayValue}
+          isPending={hasPending}
           onSave={(value) => onSaveVolume(row.department_id, value)}
           onDelete={() => onDeleteOverride(row.department_id)}
           badge={{
@@ -114,7 +118,7 @@ export const createVolumeOverrideColumns = (
             className: getOverrideStatusBadgeColor(mandatory),
             tooltip: getOverrideStatusTooltip(mandatory, count),
           }}
-          showWarning={mandatory && !row.override_volume}
+          showWarning={mandatory && !displayValue}
           warningTooltip="Override volume is required due to insufficient historical data"
         />
       );
@@ -129,9 +133,10 @@ export const createVolumeOverrideColumns = (
     sortable: true,
     renderCell: (row) => {
       const hasOverride = row.override_volume != null;
+      const hasPending = row.pending_volume != null;
       
-      // Disabled state when no override volume set
-      if (!hasOverride) {
+      // Disabled state when no override volume set AND no pending volume
+      if (!hasOverride && !hasPending) {
         return (
           <div className="px-3 py-2 text-muted-foreground opacity-50 cursor-not-allowed">
             <span className="text-sm italic">Set override first</span>
@@ -199,6 +204,17 @@ export const createVolumeOverrideColumns = (
     minWidth: 100,
     sortable: true,
     renderCell: (row) => {
+      // Pending state: volume set in memory but not saved to DB yet
+      if (row.pending_volume != null) {
+        return (
+          <div className="px-3 py-2">
+            <Badge variant="outline" className="border-amber-500 text-amber-600">
+              Pending
+            </Badge>
+          </div>
+        );
+      }
+
       // No override volume at all
       if (!row.override_volume) {
         return (

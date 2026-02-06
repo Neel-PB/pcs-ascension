@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { EditableTable } from '@/components/editable-table/EditableTable';
@@ -23,6 +23,9 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
   const deleteMutation = useDeleteVolumeOverride();
   const { hasPermission } = useRBAC();
   const canManageOverrides = hasPermission('approvals.volume_override');
+  
+  // Pending overrides stored in memory (not saved to DB until expiration date is set)
+  const [pendingOverrides, setPendingOverrides] = useState<Record<string, number>>({});
 
   // Fetch departments for the selected facility
   const { data: departments = [], isLoading: isLoadingDepartments } = useQuery({
@@ -60,7 +63,7 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
     enabled: !!selectedFacility && selectedFacility !== 'all-facilities',
   });
 
-  // Merge departments with overrides and historical analysis
+  // Merge departments with overrides, historical analysis, and pending values
   const tableData = useMemo((): VolumeOverrideRow[] => {
     if (!departments.length) return [];
 
@@ -69,12 +72,14 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
       const analysis = volumeAnalysis.find(
         (a) => a.facility_id === selectedFacility && a.department_id === dept.department_id
       );
+      const pendingVolume = pendingOverrides[dept.department_id];
       
       return {
         id: override?.id || `dept-${dept.department_id}`,
         department_id: dept.department_id,
         department_name: dept.department_name,
         override_volume: override?.override_volume || null,
+        pending_volume: pendingVolume ?? null, // NEW: Track pending value in memory
         expiry_date: override?.expiry_date || null,
         market: selectedMarket,
         facility_id: selectedFacility,
@@ -94,7 +99,7 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
         lowest_three_months: analysis?.lowest_three_months,
       };
     });
-  }, [departments, overrides, volumeAnalysis, selectedMarket, selectedFacility, facilityData]);
+  }, [departments, overrides, volumeAnalysis, selectedMarket, selectedFacility, facilityData, pendingOverrides]);
 
   // Calculate warning stats
   const stats = useMemo(() => {
@@ -109,54 +114,46 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
     return { mandatoryCount, expiringSoonCount, usingTargetCount };
   }, [tableData]);
 
+  // Step 1: Store volume in memory only (staged save)
   const handleSaveVolume = async (departmentId: string, volume: number | null) => {
     if (!canManageOverrides) return;
-    
-    const row = tableData.find((r) => r.department_id === departmentId);
-    if (!row) return;
-
-    // If volume is null, we can't save
     if (!volume) return;
 
-    // Calculate default expiry date if not set (max allowed or 30 days from now)
-    const defaultExpiry = row.expiry_date || 
-      (row.max_allowed_expiry_date 
-        ? new Date(row.max_allowed_expiry_date).toISOString().split('T')[0]
-        : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
-
-    await upsertMutation.mutateAsync({
-      market: row.market,
-      facility_id: row.facility_id,
-      facility_name: row.facility_name,
-      department_id: row.department_id,
-      department_name: row.department_name,
-      override_volume: volume,
-      expiry_date: defaultExpiry,
-    });
+    // Store in pending state (memory) - don't save to DB yet
+    setPendingOverrides(prev => ({
+      ...prev,
+      [departmentId]: volume
+    }));
   };
 
+  // Step 2: Save both volume AND date to database together
   const handleSaveDate = async (departmentId: string, date: string | null) => {
     if (!canManageOverrides) return;
+    if (!date) return;
     
     const row = tableData.find((r) => r.department_id === departmentId);
     if (!row) return;
 
-    // If date is null or no volume, we can't save
-    if (!date) return;
+    // Get volume from pending state or existing override
+    const volumeToSave = pendingOverrides[departmentId] ?? row.override_volume;
+    if (!volumeToSave) return;
 
-    // Require volume
-    if (!row.override_volume) {
-      return;
-    }
-
+    // NOW save both to database
     await upsertMutation.mutateAsync({
       market: row.market,
       facility_id: row.facility_id,
       facility_name: row.facility_name,
       department_id: row.department_id,
       department_name: row.department_name,
-      override_volume: row.override_volume,
+      override_volume: volumeToSave,
       expiry_date: date,
+    });
+
+    // Clear from pending state after successful save
+    setPendingOverrides(prev => {
+      const updated = { ...prev };
+      delete updated[departmentId];
+      return updated;
     });
   };
 

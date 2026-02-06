@@ -17,6 +17,7 @@ interface BadgeConfig {
 
 interface OverrideVolumeCellProps {
   value: number | null | undefined;
+  isPending?: boolean; // NEW: Whether this value is pending (stored in memory, not DB)
   onSave: (value: number | null) => Promise<void>;
   onDelete: () => Promise<void>;
   badge: BadgeConfig;
@@ -26,13 +27,17 @@ interface OverrideVolumeCellProps {
 
 export function OverrideVolumeCell({
   value,
+  isPending = false,
   onSave,
   onDelete,
   badge,
   showWarning = false,
   warningTooltip,
 }: OverrideVolumeCellProps) {
-  const [state, setState] = useState<CellState>(value != null ? 'saved' : 'idle');
+  // Determine initial state: pending shows value but not as 'saved', idle shows nothing
+  const [state, setState] = useState<CellState>(
+    isPending ? 'saved' : (value != null ? 'saved' : 'idle')
+  );
   const [editValue, setEditValue] = useState(value?.toString() || '');
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -186,20 +191,29 @@ export function OverrideVolumeCell({
         {state === 'saved' && (
           <>
             <span className="text-sm font-medium">{value}</span>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 ml-1 text-muted-foreground hover:text-foreground"
-                  onClick={handleDelete}
-                  disabled={isLoading}
-                >
-                  <RotateCcw className="h-3.5 w-3.5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Revert override</TooltipContent>
-            </Tooltip>
+            {/* Only show Revert button after full save (not pending) */}
+            {!isPending && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 ml-1 text-muted-foreground hover:text-foreground"
+                    onClick={handleDelete}
+                    disabled={isLoading}
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Revert override</TooltipContent>
+              </Tooltip>
+            )}
+            {/* Show pending indicator when value is in memory only */}
+            {isPending && (
+              <Badge variant="outline" className="ml-2 border-amber-500 text-amber-600 text-xs">
+                Pending
+              </Badge>
+            )}
           </>
         )}
       </div>
