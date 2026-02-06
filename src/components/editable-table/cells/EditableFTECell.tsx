@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { format, parseISO } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Market, Facility, Department } from '@/hooks/useFilterData';
@@ -41,6 +42,7 @@ interface EditableFTECellProps {
     actual_fte_shared_with?: string | null;
     actual_fte_shared_fte?: number | null;
     actual_fte_shared_expiry?: string | null;
+    comment?: string;
   }) => void | Promise<void>;
   className?: string;
   // Performance optimization: pass filter data from parent instead of calling hook per cell
@@ -79,6 +81,9 @@ export function EditableFTECell({
     sharedExpiry ? parseISO(sharedExpiry) : undefined
   );
   const [sharedCalendarOpen, setSharedCalendarOpen] = useState(false);
+  
+  // Comment field for FTE changes
+  const [comment, setComment] = useState('');
   
   // Editing state for share selection - when false, show badge; when true, show cascading selects
   const [isEditingShare, setIsEditingShare] = useState(false);
@@ -132,6 +137,7 @@ export function EditableFTECell({
       setEditSharedFte(sharedFte?.toString() || '');
       setEditSharedExpiry(sharedExpiry ? parseISO(sharedExpiry) : undefined);
       setIsEditingShare(false); // Reset editing state when opening
+      setComment(''); // Reset comment when opening
     }
     setOpen(newOpen);
   };
@@ -179,6 +185,7 @@ export function EditableFTECell({
       actual_fte: numValue,
       actual_fte_expiry: expiryValue,
       actual_fte_status: statusValue,
+      comment: comment.trim() || undefined,
     };
 
     // Include shared position fields only if status is Shared Position
@@ -592,6 +599,34 @@ export function EditableFTECell({
                   </div>
               </motion.div>
             )}
+            </AnimatePresence>
+
+            {/* Comment field - appears after status is selected */}
+            <AnimatePresence mode="sync">
+              {editStatus && (
+                <motion.div
+                  key="comment-field"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ 
+                    opacity: { duration: 0.15 },
+                    height: { type: "spring", stiffness: 500, damping: 35 }
+                  }}
+                  className="space-y-1.5 mt-3 overflow-hidden"
+                >
+                  <Label className="text-xs font-medium">
+                    Comment <span className="text-muted-foreground font-normal">(optional)</span>
+                  </Label>
+                  <Textarea
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder="Add a note about this change..."
+                    className="min-h-[60px] text-xs resize-none"
+                    maxLength={500}
+                  />
+                </motion.div>
+              )}
             </AnimatePresence>
           </div>
           </div>
