@@ -1,39 +1,32 @@
 
-
-# Add Two-Column Layout (Name + ID) for Facility and Department Dropdowns
+# Fix Facility and Department Dropdown Layout
 
 ## Summary
 
-Update the Facility and Department filter dropdowns to display items in a two-column format:
-- **Name** aligned to the left
-- **ID** aligned to the right
-- No separator line between them
+Two issues to fix:
+1. **Width alignment** - Name and ID need to be at the left and right edges of the dropdown
+2. **Department ID** - Show actual `department_id` from the database, not the name
 
 ---
 
-## Visual Layout
+## Visual Goal
 
 ```text
-CURRENT:
-┌──────────────────────────────────────┐
-│ Ascension St. Vincent Carmel        │
-│ Ascension St. Thomas Rutherford     │
-│ Ascension Sacred Heart Bay          │
-└──────────────────────────────────────┘
+FACILITY DROPDOWN (350px wide):
+┌────────────────────────────────────────────────────┐
+│ Ascension St. Vincent Carmel              F001    │
+│ Ascension St. Thomas Rutherford           F002    │
+│ Ascension Sacred Heart Bay                F003    │
+└────────────────────────────────────────────────────┘
+ ↑                                           ↑
+ Left edge                              Right edge
 
-PROPOSED:
-┌──────────────────────────────────────┐
-│ Ascension St. Vincent Carmel   F001 │
-│ Ascension St. Thomas Rut...   F002  │
-│ Ascension Sacred Heart Bay    F003  │
-└──────────────────────────────────────┘
-
-Department (same pattern):
-┌──────────────────────────────────────┐
-│ Emergency                    D10001 │
-│ ICU                          D10002 │
-│ Cardiology                   D10003 │
-└──────────────────────────────────────┘
+DEPARTMENT DROPDOWN (280px wide):
+┌─────────────────────────────────────────────┐
+│ Emergency                           D10001 │
+│ ICU                                 D10002 │
+│ Cardiology                          D10003 │
+└─────────────────────────────────────────────┘
 ```
 
 ---
@@ -42,91 +35,82 @@ Department (same pattern):
 
 ### File: `src/components/staffing/FilterBar.tsx`
 
-**1. Update Facility SelectItem (around line 337-338)**
+**1. Fix Facility SelectItem layout (lines 338-345)**
 
-Replace the simple text with a flex container:
+Update the flex container to properly span the full width:
+
+```typescript
+<SelectItem key={facility.facility_id || facility.id} value={facility.facility_id}>
+  <div className="flex items-center justify-between w-full gap-4">
+    <span className="truncate">{facility.facility_name}</span>
+    <span className="text-xs text-muted-foreground font-mono shrink-0">
+      {facility.facility_id}
+    </span>
+  </div>
+</SelectItem>
+```
+
+The current implementation looks correct, but the Radix Select component may constrain the inner content width. We need to ensure the SelectContent has proper sizing.
+
+**2. Fix Department data to preserve actual IDs**
+
+The root issue is in `getAvailableDepartments()` (lines 145-217). When no facility is selected, it creates fake department objects where `department_id = department_name`. 
+
+We need to preserve the actual department IDs. Update the fallback cases to keep the real `department_id`:
+
+**Lines 166-171 (Facility restrictions case):**
+```typescript
+// BEFORE: Creates fake IDs
+const uniqueNames = new Set<string>();
+filteredDepts.forEach(d => uniqueNames.add(d.department_name));
+return Array.from(uniqueNames).sort().map(name => ({
+  department_id: name,
+  department_name: name
+}));
+
+// AFTER: Keep first occurrence with real ID for each unique name
+const seenNames = new Map<string, { department_id: string; department_name: string }>();
+filteredDepts.forEach(d => {
+  if (!seenNames.has(d.department_name)) {
+    seenNames.set(d.department_name, {
+      department_id: d.department_id,
+      department_name: d.department_name
+    });
+  }
+});
+return Array.from(seenNames.values()).sort((a, b) => 
+  a.department_name.localeCompare(b.department_name)
+);
+```
+
+Apply the same fix to:
+- **Lines 183-190** (Market restrictions case)
+- **Lines 202-209** (Region restrictions case)
+- **Lines 213-216** (No restrictions case) - needs to use `allDepartments` instead of `uniqueDepartmentNames`
+
+**3. Update the "No restrictions" case (lines 213-216)**
 
 ```typescript
 // BEFORE
-{availableFacilities.map(facility => (
-  <SelectItem key={facility.facility_id || facility.id} value={facility.facility_id}>
-    {facility.facility_name}
-  </SelectItem>
-))}
+return uniqueDepartmentNames.map(name => ({
+  department_id: name,
+  department_name: name
+}));
 
 // AFTER
-{availableFacilities.map(facility => (
-  <SelectItem key={facility.facility_id || facility.id} value={facility.facility_id}>
-    <div className="flex items-center justify-between w-full gap-4">
-      <span className="truncate">{facility.facility_name}</span>
-      <span className="text-xs text-muted-foreground font-mono shrink-0">
-        {facility.facility_id}
-      </span>
-    </div>
-  </SelectItem>
-))}
+const seenNames = new Map<string, { department_id: string; department_name: string }>();
+allDepartments.forEach(d => {
+  if (!seenNames.has(d.department_name)) {
+    seenNames.set(d.department_name, {
+      department_id: d.department_id,
+      department_name: d.department_name
+    });
+  }
+});
+return Array.from(seenNames.values()).sort((a, b) => 
+  a.department_name.localeCompare(b.department_name)
+);
 ```
-
-**2. Update Department SelectItem (around line 377-378)**
-
-Apply the same pattern:
-
-```typescript
-// BEFORE
-{availableDepartments.map(dept => (
-  <SelectItem key={dept.department_id} value={dept.department_id}>
-    {dept.department_name}
-  </SelectItem>
-))}
-
-// AFTER
-{availableDepartments.map(dept => (
-  <SelectItem key={dept.department_id} value={dept.department_id}>
-    <div className="flex items-center justify-between w-full gap-4">
-      <span className="truncate">{dept.department_name}</span>
-      <span className="text-xs text-muted-foreground font-mono shrink-0">
-        {dept.department_id}
-      </span>
-    </div>
-  </SelectItem>
-))}
-```
-
-**3. Update SelectContent width for better spacing**
-
-Make the dropdown content wider to accommodate the two-column layout:
-
-- **Facility SelectContent** (line 326): Add `min-w-[350px]`
-- **Department SelectContent** (line 366): Add `min-w-[280px]`
-
-```typescript
-// Facility
-<SelectContent className="bg-popover border-border z-50 min-w-[350px]">
-
-// Department  
-<SelectContent className="bg-popover border-border z-50 min-w-[280px]">
-```
-
----
-
-## Styling Details
-
-| Element | Styling |
-|---------|---------|
-| Container | `flex items-center justify-between w-full gap-4` |
-| Name (left) | `truncate` - truncates long names with ellipsis |
-| ID (right) | `text-xs text-muted-foreground font-mono shrink-0` - smaller, muted, monospace font, doesn't shrink |
-| No separator | Flexbox with gap handles spacing naturally |
-
----
-
-## Edge Cases
-
-1. **Unique department names only** (when "All Facilities" is selected) - The current code uses `department_name` as both ID and name in this case. The two-column layout will still work, but ID and name may be identical.
-
-2. **Truncation** - Long facility/department names will truncate with ellipsis to keep the ID visible.
-
-3. **Loading state** - No changes needed; the loading spinner still displays normally.
 
 ---
 
@@ -134,5 +118,4 @@ Make the dropdown content wider to accommodate the two-column layout:
 
 | File | Changes |
 |------|---------|
-| `src/components/staffing/FilterBar.tsx` | Update Facility and Department SelectItem content to use flex layout with name left, ID right |
-
+| `src/components/staffing/FilterBar.tsx` | Update `getAvailableDepartments()` to preserve real department_id values instead of using department_name as a placeholder |
