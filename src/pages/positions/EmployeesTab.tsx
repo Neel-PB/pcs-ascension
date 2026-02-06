@@ -123,6 +123,7 @@ export function EmployeesTab({
       actual_fte_shared_with?: string | null;
       actual_fte_shared_fte?: number | null;
       actual_fte_shared_expiry?: string | null;
+      comment?: string;
     }
   ) => {
     updateActualFte.mutate({ id, ...data, previousFte, previousExpiry, previousStatus });
