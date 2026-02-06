@@ -134,7 +134,7 @@ const SelectItemNoCheck = React.forwardRef<
     )}
     {...props}
   >
-    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+    <SelectPrimitive.ItemText className="w-full">{children}</SelectPrimitive.ItemText>
   </SelectPrimitive.Item>
 ));
 SelectItemNoCheck.displayName = "SelectItemNoCheck";
