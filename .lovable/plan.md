@@ -1,55 +1,75 @@
 
 
-# Right-Align ID Column in Dropdown Layout
+# Fix Two-Column Grid Layout in Dropdown Items
 
-## Summary
+## Problem
 
-Add `text-right` to the ID column so all IDs align on the right side of their fixed-width column, creating a clean table-like appearance.
+The CSS Grid layout inside `SelectItemNoCheck` isn't working because `SelectPrimitive.ItemText` wraps the children as an inline element, preventing the grid from expanding to full width.
+
+In the screenshot, you can see:
+- Names and IDs are on the same line but IDs are NOT right-aligned
+- The grid columns aren't being respected
 
 ---
 
-## Visual Goal
+## Root Cause
 
 ```text
-CURRENT (ID left-aligned in column):
-┌───────────────────────────────────┬──────────────┐
-│ Ascension St. Vincent Carmel      │ 40078        │
-│ Amita Health                      │ 40077        │
-│ St. Vincent                       │ 1            │
-└───────────────────────────────────┴──────────────┘
-
-PROPOSED (ID right-aligned in column):
-┌───────────────────────────────────┬──────────────┐
-│ Ascension St. Vincent Carmel      │        40078 │
-│ Amita Health                      │        40077 │
-│ St. Vincent                       │            1 │
-└───────────────────────────────────┴──────────────┘
+SelectPrimitive.Item (flex container)
+  └── SelectPrimitive.ItemText (inline wrapper - breaks layout!)
+        └── <div className="grid ..."> (can't expand)
 ```
+
+The `ItemText` wrapper doesn't have `w-full` styling, so the grid child can't expand.
 
 ---
 
-## Technical Changes
+## Solution
 
-### File: `src/components/staffing/FilterBar.tsx`
+Add `className="w-full"` to the `SelectPrimitive.ItemText` component inside `SelectItemNoCheck`:
 
-**1. Update Facility dropdown ID span (line 365)**
+### File: `src/components/ui/select.tsx`
 
-Add `text-right` class:
+**Update SelectItemNoCheck (lines 125-140):**
 
 ```typescript
-<span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right">
-  {facility.facility_id}
-</span>
+const SelectItemNoCheck = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
+>(({ className, children, ...props }, ref) => (
+  <SelectPrimitive.Item
+    ref={ref}
+    className={cn(
+      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 px-2 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-accent focus:text-accent-foreground",
+      className,
+    )}
+    {...props}
+  >
+    <SelectPrimitive.ItemText className="w-full">{children}</SelectPrimitive.ItemText>
+  </SelectPrimitive.Item>
+));
 ```
 
-**2. Update Department dropdown ID span (line 412)**
+The key change is adding `className="w-full"` to `SelectPrimitive.ItemText`.
 
-Same change:
+---
 
-```typescript
-<span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right">
-  {dept.department_id}
-</span>
+## Expected Result
+
+```text
+BEFORE (broken grid):
+┌──────────────────────────────────────────────────┐
+│ ASH Pensacola Hospital                    26012  │  ← IDs not aligned
+│ ASH Pensacola Hospital Gulf Breeze  26017        │
+│ Sacred Heart Bay MC              26013           │
+└──────────────────────────────────────────────────┘
+
+AFTER (working grid):
+┌───────────────────────────────────┬──────────────┐
+│ ASH Pensacola Hospital            │        26012 │
+│ ASH Pensacola Hospital Gulf Breeze│        26017 │
+│ Sacred Heart Bay MC               │        26013 │
+└───────────────────────────────────┴──────────────┘
 ```
 
 ---
@@ -58,5 +78,5 @@ Same change:
 
 | File | Changes |
 |------|---------|
-| `src/components/staffing/FilterBar.tsx` | Add `text-right` to ID column spans (2 locations) |
+| `src/components/ui/select.tsx` | Add `className="w-full"` to ItemText in SelectItemNoCheck |
 
