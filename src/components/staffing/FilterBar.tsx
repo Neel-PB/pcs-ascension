@@ -1,13 +1,15 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectItemNoCheck, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { X, Lock, Loader2 } from "lucide-react";
+import { X, Lock, Loader2, Check, ChevronsUpDown } from "lucide-react";
 import { useFilterData } from "@/hooks/useFilterData";
 import { useIsCompactScreen } from "@/hooks/use-compact-screen";
 import { CombinedOptionalFilters } from "./CombinedOptionalFilters";
 import { useRBAC } from "@/hooks/useRBAC";
 import { useOrgScopedFilters } from "@/hooks/useOrgScopedFilters";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 
 interface FilterBarProps {
   className?: string;
@@ -71,6 +73,10 @@ export function FilterBar({
 
   const isCompact = useIsCompactScreen();
   const { getFilterPermissions, getSubfilterPermissions, loading: rbacLoading } = useRBAC();
+  
+  // Popover open state for searchable dropdowns
+  const [facilityOpen, setFacilityOpen] = useState(false);
+  const [departmentOpen, setDepartmentOpen] = useState(false);
   
   // During loading, show all filters to prevent layout shift
   const filterPermissions = rbacLoading 
@@ -336,42 +342,86 @@ export function FilterBar({
           </div>
         )}
 
-        {/* Facility Filter - only show if user has permission */}
+        {/* Facility Filter - Searchable Popover + Command */}
         {filterPermissions.facility && (
           <div className="relative">
-            <Select 
-              value={selectedFacility} 
-              onValueChange={onFacilityChange}
-              disabled={isFacilityDisabled}
-            >
-              <SelectTrigger className={`${isCompact ? 'w-[160px]' : 'w-[250px]'} bg-background border-border [&>span]:truncate ${isFacilityDisabled ? 'pr-8' : ''}`}>
-                <SelectValue placeholder="Select facility" />
-              </SelectTrigger>
-              <SelectContent className="bg-popover border-border z-50 min-w-[340px]">
+            <Popover open={facilityOpen} onOpenChange={setFacilityOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={facilityOpen}
+                  disabled={isFacilityDisabled}
+                  className={`${isCompact ? 'w-[160px]' : 'w-[250px]'} justify-between bg-background border-border ${isFacilityDisabled ? 'pr-8' : ''}`}
+                >
+                  <span className="truncate">
+                    {selectedFacility === "all-facilities"
+                      ? "All Facilities"
+                      : availableFacilities.find(f => f.facility_id === selectedFacility)?.facility_name ?? "Select facility"}
+                  </span>
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[340px] p-0 bg-popover border-border z-50" align="start">
                 {facilitiesLoading ? (
-                  <div className="py-3 px-2 flex items-center gap-2 text-muted-foreground">
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    <span className="text-sm">Loading...</span>
+                  <div className="py-6 px-2 flex items-center justify-center gap-2 text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm">Loading facilities...</span>
                   </div>
                 ) : (
-                  <>
-                    {(shouldShowAllOption('facility') || selectedFacility === 'all-facilities') && (
-                      <SelectItem value="all-facilities">All Facilities</SelectItem>
-                    )}
-                    {availableFacilities.map(facility => (
-                      <SelectItemNoCheck key={facility.facility_id || facility.id} value={facility.facility_id}>
-                        <div className="grid grid-cols-[250px_80px] w-full">
-                          <span className="truncate text-left">{facility.facility_name}</span>
-                          <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right">
-                            {facility.facility_id}
-                          </span>
-                        </div>
-                      </SelectItemNoCheck>
-                    ))}
-                  </>
+                  <Command filter={(value, search) => {
+                    if (value === "all-facilities") {
+                      return "all facilities".includes(search.toLowerCase()) ? 1 : 0;
+                    }
+                    const facility = availableFacilities.find(f => f.facility_id === value);
+                    if (!facility) return 0;
+                    const searchLower = search.toLowerCase();
+                    return (
+                      facility.facility_name.toLowerCase().includes(searchLower) ||
+                      facility.facility_id.toLowerCase().includes(searchLower)
+                    ) ? 1 : 0;
+                  }}>
+                    <CommandInput placeholder="Search by name or ID..." />
+                    <CommandList>
+                      <CommandEmpty>No facility found.</CommandEmpty>
+                      <CommandGroup>
+                        {(shouldShowAllOption('facility') || selectedFacility === 'all-facilities') && (
+                          <CommandItem
+                            value="all-facilities"
+                            onSelect={() => {
+                              onFacilityChange?.("all-facilities");
+                              setFacilityOpen(false);
+                            }}
+                            className={selectedFacility === "all-facilities" ? "bg-primary/15 border border-primary/30" : ""}
+                          >
+                            <Check className={`mr-2 h-4 w-4 ${selectedFacility === "all-facilities" ? "opacity-100" : "opacity-0"}`} />
+                            All Facilities
+                          </CommandItem>
+                        )}
+                        {availableFacilities.map(facility => (
+                          <CommandItem
+                            key={facility.facility_id}
+                            value={facility.facility_id}
+                            onSelect={() => {
+                              onFacilityChange?.(facility.facility_id);
+                              setFacilityOpen(false);
+                            }}
+                            className={selectedFacility === facility.facility_id ? "bg-primary/15 border border-primary/30" : ""}
+                          >
+                            <div className="grid grid-cols-[220px_80px] w-full">
+                              <span className="truncate text-left">{facility.facility_name}</span>
+                              <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right">
+                                {facility.facility_id}
+                              </span>
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
                 )}
-              </SelectContent>
-            </Select>
+              </PopoverContent>
+            </Popover>
             {isFacilityDisabled && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -383,42 +433,86 @@ export function FilterBar({
           </div>
         )}
 
-        {/* Department Filter - only show if user has permission */}
+        {/* Department Filter - Searchable Popover + Command */}
         {filterPermissions.department && (
           <div className="relative">
-            <Select 
-              value={selectedDepartment} 
-              onValueChange={onDepartmentChange}
-              disabled={isDepartmentDisabled}
-            >
-              <SelectTrigger className={`${isCompact ? 'w-[140px]' : 'w-[180px]'} bg-background border-border [&>span]:truncate ${isDepartmentDisabled ? 'pr-8' : ''}`}>
-                <SelectValue placeholder="Select department" />
-              </SelectTrigger>
-              <SelectContent className="bg-popover border-border z-50 min-w-[340px]">
+            <Popover open={departmentOpen} onOpenChange={setDepartmentOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={departmentOpen}
+                  disabled={isDepartmentDisabled}
+                  className={`${isCompact ? 'w-[140px]' : 'w-[180px]'} justify-between bg-background border-border ${isDepartmentDisabled ? 'pr-8' : ''}`}
+                >
+                  <span className="truncate">
+                    {selectedDepartment === "all-departments"
+                      ? "All Departments"
+                      : availableDepartments.find(d => d.department_id === selectedDepartment)?.department_name ?? "Select department"}
+                  </span>
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[340px] p-0 bg-popover border-border z-50" align="start">
                 {departmentsLoading ? (
-                  <div className="py-3 px-2 flex items-center gap-2 text-muted-foreground">
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    <span className="text-sm">Loading...</span>
+                  <div className="py-6 px-2 flex items-center justify-center gap-2 text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm">Loading departments...</span>
                   </div>
                 ) : (
-                  <>
-                    {(shouldShowAllOption('department') || selectedDepartment === 'all-departments') && (
-                      <SelectItem value="all-departments">All Departments</SelectItem>
-                    )}
-                    {availableDepartments.map(dept => (
-                      <SelectItemNoCheck key={dept.department_id} value={dept.department_id}>
-                        <div className="grid grid-cols-[250px_80px] w-full">
-                          <span className="truncate text-left">{dept.department_name}</span>
-                          <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right">
-                            {dept.department_id}
-                          </span>
-                        </div>
-                      </SelectItemNoCheck>
-                    ))}
-                  </>
+                  <Command filter={(value, search) => {
+                    if (value === "all-departments") {
+                      return "all departments".includes(search.toLowerCase()) ? 1 : 0;
+                    }
+                    const dept = availableDepartments.find(d => d.department_id === value);
+                    if (!dept) return 0;
+                    const searchLower = search.toLowerCase();
+                    return (
+                      dept.department_name.toLowerCase().includes(searchLower) ||
+                      dept.department_id.toLowerCase().includes(searchLower)
+                    ) ? 1 : 0;
+                  }}>
+                    <CommandInput placeholder="Search by name or ID..." />
+                    <CommandList>
+                      <CommandEmpty>No department found.</CommandEmpty>
+                      <CommandGroup>
+                        {(shouldShowAllOption('department') || selectedDepartment === 'all-departments') && (
+                          <CommandItem
+                            value="all-departments"
+                            onSelect={() => {
+                              onDepartmentChange?.("all-departments");
+                              setDepartmentOpen(false);
+                            }}
+                            className={selectedDepartment === "all-departments" ? "bg-primary/15 border border-primary/30" : ""}
+                          >
+                            <Check className={`mr-2 h-4 w-4 ${selectedDepartment === "all-departments" ? "opacity-100" : "opacity-0"}`} />
+                            All Departments
+                          </CommandItem>
+                        )}
+                        {availableDepartments.map(dept => (
+                          <CommandItem
+                            key={dept.department_id}
+                            value={dept.department_id}
+                            onSelect={() => {
+                              onDepartmentChange?.(dept.department_id);
+                              setDepartmentOpen(false);
+                            }}
+                            className={selectedDepartment === dept.department_id ? "bg-primary/15 border border-primary/30" : ""}
+                          >
+                            <div className="grid grid-cols-[220px_80px] w-full">
+                              <span className="truncate text-left">{dept.department_name}</span>
+                              <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right">
+                                {dept.department_id}
+                              </span>
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
                 )}
-              </SelectContent>
-            </Select>
+              </PopoverContent>
+            </Popover>
             {isDepartmentDisabled && (
               <Tooltip>
                 <TooltipTrigger asChild>
