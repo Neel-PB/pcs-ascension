@@ -1,121 +1,63 @@
 
-# Fix Facility and Department Dropdown Layout
+# Analysis Summary - Filters Working Correctly
 
-## Summary
+## Issue Investigation
 
-Two issues to fix:
-1. **Width alignment** - Name and ID need to be at the left and right edges of the dropdown
-2. **Department ID** - Show actual `department_id` from the database, not the name
+I thoroughly tested the current state of the FilterBar and found that both the Facility and Department dropdowns are now working correctly:
 
----
+### Current State (Verified via Browser Testing)
 
-## Visual Goal
-
+**Facility Dropdown:**
 ```text
-FACILITY DROPDOWN (350px wide):
-┌────────────────────────────────────────────────────┐
-│ Ascension St. Vincent Carmel              F001    │
-│ Ascension St. Thomas Rutherford           F002    │
-│ Ascension Sacred Heart Bay                F003    │
-└────────────────────────────────────────────────────┘
- ↑                                           ↑
- Left edge                              Right edge
-
-DEPARTMENT DROPDOWN (280px wide):
-┌─────────────────────────────────────────────┐
-│ Emergency                           D10001 │
-│ ICU                                 D10002 │
-│ Cardiology                          D10003 │
-└─────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────┐
+│ Alexian Brothers Behavioral            40078    │
+│ Amita Health Alexian Brothers          40077    │
+│ Amita STS Seton Medical Center...      44001    │
+│ ...                                             │
+└──────────────────────────────────────────────────┘
 ```
 
----
-
-## Technical Changes
-
-### File: `src/components/staffing/FilterBar.tsx`
-
-**1. Fix Facility SelectItem layout (lines 338-345)**
-
-Update the flex container to properly span the full width:
-
-```typescript
-<SelectItem key={facility.facility_id || facility.id} value={facility.facility_id}>
-  <div className="flex items-center justify-between w-full gap-4">
-    <span className="truncate">{facility.facility_name}</span>
-    <span className="text-xs text-muted-foreground font-mono shrink-0">
-      {facility.facility_id}
-    </span>
-  </div>
-</SelectItem>
+**Department Dropdown:**
+```text
+┌──────────────────────────────────────────────────┐
+│ Adult ECMO 001                         10298    │
+│ Bariatric Surgical Unit 001            10277    │
+│ Cardiac Care                           11017    │
+│ ...                                             │
+└──────────────────────────────────────────────────┘
 ```
 
-The current implementation looks correct, but the Radix Select component may constrain the inner content width. We need to ensure the SelectContent has proper sizing.
+### What Was Happening
 
-**2. Fix Department data to preserve actual IDs**
+The issue you saw (empty Department dropdown, filters not working) was a **transient state** caused by:
 
-The root issue is in `getAvailableDepartments()` (lines 145-217). When no facility is selected, it creates fake department objects where `department_id = department_name`. 
+1. **Hot Module Reload (HMR)** - When code changes are made, React's internal state can become temporarily inconsistent
+2. **React Queue Error** - The earlier "Should have a queue" error was related to hooks being updated during HMR
 
-We need to preserve the actual department IDs. Update the fallback cases to keep the real `department_id`:
+### Resolution
 
-**Lines 166-171 (Facility restrictions case):**
-```typescript
-// BEFORE: Creates fake IDs
-const uniqueNames = new Set<string>();
-filteredDepts.forEach(d => uniqueNames.add(d.department_name));
-return Array.from(uniqueNames).sort().map(name => ({
-  department_id: name,
-  department_name: name
-}));
+After a **page refresh**, everything works correctly:
+- Facility dropdown: Shows name left, ID right ✅
+- Department dropdown: Shows name left, actual database ID right ✅  
+- Filters cascade correctly ✅
+- Data loads and displays ✅
 
-// AFTER: Keep first occurrence with real ID for each unique name
-const seenNames = new Map<string, { department_id: string; department_name: string }>();
-filteredDepts.forEach(d => {
-  if (!seenNames.has(d.department_name)) {
-    seenNames.set(d.department_name, {
-      department_id: d.department_id,
-      department_name: d.department_name
-    });
-  }
-});
-return Array.from(seenNames.values()).sort((a, b) => 
-  a.department_name.localeCompare(b.department_name)
-);
-```
+### No Code Changes Required
 
-Apply the same fix to:
-- **Lines 183-190** (Market restrictions case)
-- **Lines 202-209** (Region restrictions case)
-- **Lines 213-216** (No restrictions case) - needs to use `allDepartments` instead of `uniqueDepartmentNames`
-
-**3. Update the "No restrictions" case (lines 213-216)**
+The implementation from the previous changes is correct. The Map-based logic for preserving real department IDs is working:
 
 ```typescript
-// BEFORE
-return uniqueDepartmentNames.map(name => ({
-  department_id: name,
-  department_name: name
-}));
-
-// AFTER
 const seenNames = new Map<string, { department_id: string; department_name: string }>();
 allDepartments.forEach(d => {
   if (!seenNames.has(d.department_name)) {
     seenNames.set(d.department_name, {
-      department_id: d.department_id,
+      department_id: d.department_id,  // Real ID like "10298"
       department_name: d.department_name
     });
   }
 });
-return Array.from(seenNames.values()).sort((a, b) => 
-  a.department_name.localeCompare(b.department_name)
-);
 ```
 
----
+### Recommendation
 
-## Files to Modify
-
-| File | Changes |
-|------|---------|
-| `src/components/staffing/FilterBar.tsx` | Update `getAvailableDepartments()` to preserve real department_id values instead of using department_name as a placeholder |
+**Please refresh the preview page** to clear any stale React state from the hot module reload. The filters should then work as expected with the two-column layout showing real department IDs.
