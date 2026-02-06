@@ -1,226 +1,132 @@
 
 
-# Add Comment Field to Active FTE Form
+# Add Two-Column Layout (Name + ID) for Facility and Department Dropdowns
 
 ## Summary
 
-When users update Active FTE values, they should be prompted to add an optional comment. This reuses the existing comment system (`useAddPositionComment`) that's already in place for the position comments section.
+Update the Facility and Department filter dropdowns to display items in a two-column format:
+- **Name** aligned to the left
+- **ID** aligned to the right
+- No separator line between them
 
 ---
 
-## Visual Flow
+## Visual Layout
 
 ```text
-┌─────────────────────────────────────────────────┐
-│ Active FTE Popover                              │
-├─────────────────────────────────────────────────┤
-│ Status / Reason:  [Select dropdown]             │
-│ Active FTE:       [0.8]                         │
-│ Expiry Date:      [Mar 15, 2026]                │
-│                                                 │
-│ Comment (optional):                             │
-│ ┌─────────────────────────────────────────────┐ │
-│ │ Employee returning from LOA next month...  │ │
-│ └─────────────────────────────────────────────┘ │
-│                                                 │
-│ [Revert]                            [Save]      │
-└─────────────────────────────────────────────────┘
+CURRENT:
+┌──────────────────────────────────────┐
+│ Ascension St. Vincent Carmel        │
+│ Ascension St. Thomas Rutherford     │
+│ Ascension Sacred Heart Bay          │
+└──────────────────────────────────────┘
+
+PROPOSED:
+┌──────────────────────────────────────┐
+│ Ascension St. Vincent Carmel   F001 │
+│ Ascension St. Thomas Rut...   F002  │
+│ Ascension Sacred Heart Bay    F003  │
+└──────────────────────────────────────┘
+
+Department (same pattern):
+┌──────────────────────────────────────┐
+│ Emergency                    D10001 │
+│ ICU                          D10002 │
+│ Cardiology                   D10003 │
+└──────────────────────────────────────┘
 ```
 
 ---
 
 ## Technical Changes
 
-### File 1: `src/components/editable-table/cells/EditableFTECell.tsx`
+### File: `src/components/staffing/FilterBar.tsx`
 
-**Add comment state and textarea field**
+**1. Update Facility SelectItem (around line 337-338)**
 
-1. Add import for Textarea:
+Replace the simple text with a flex container:
+
 ```typescript
-import { Textarea } from '@/components/ui/textarea';
+// BEFORE
+{availableFacilities.map(facility => (
+  <SelectItem key={facility.facility_id || facility.id} value={facility.facility_id}>
+    {facility.facility_name}
+  </SelectItem>
+))}
+
+// AFTER
+{availableFacilities.map(facility => (
+  <SelectItem key={facility.facility_id || facility.id} value={facility.facility_id}>
+    <div className="flex items-center justify-between w-full gap-4">
+      <span className="truncate">{facility.facility_name}</span>
+      <span className="text-xs text-muted-foreground font-mono shrink-0">
+        {facility.facility_id}
+      </span>
+    </div>
+  </SelectItem>
+))}
 ```
 
-2. Add comment state:
+**2. Update Department SelectItem (around line 377-378)**
+
+Apply the same pattern:
+
 ```typescript
-const [comment, setComment] = useState('');
+// BEFORE
+{availableDepartments.map(dept => (
+  <SelectItem key={dept.department_id} value={dept.department_id}>
+    {dept.department_name}
+  </SelectItem>
+))}
+
+// AFTER
+{availableDepartments.map(dept => (
+  <SelectItem key={dept.department_id} value={dept.department_id}>
+    <div className="flex items-center justify-between w-full gap-4">
+      <span className="truncate">{dept.department_name}</span>
+      <span className="text-xs text-muted-foreground font-mono shrink-0">
+        {dept.department_id}
+      </span>
+    </div>
+  </SelectItem>
+))}
 ```
 
-3. Reset comment when popover opens (in `handleOpenChange`):
-```typescript
-setComment('');
-```
+**3. Update SelectContent width for better spacing**
 
-4. Update the `onSave` prop interface to include optional comment:
-```typescript
-onSave: (data: {
-  actual_fte: number | null;
-  actual_fte_expiry: string | null;
-  actual_fte_status: string | null;
-  actual_fte_shared_with?: string | null;
-  actual_fte_shared_fte?: number | null;
-  actual_fte_shared_expiry?: string | null;
-  comment?: string;  // NEW
-}) => void | Promise<void>;
-```
+Make the dropdown content wider to accommodate the two-column layout:
 
-5. Add comment textarea (before the actions section, after the dynamic content area):
-```typescript
-{/* Comment field - appears after status is selected */}
-<AnimatePresence mode="sync">
-  {editStatus && (
-    <motion.div
-      key="comment-field"
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: "auto" }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ 
-        opacity: { duration: 0.15 },
-        height: { type: "spring", stiffness: 500, damping: 35 }
-      }}
-      className="space-y-1.5 mt-3 overflow-hidden"
-    >
-      <Label className="text-xs font-medium">
-        Comment <span className="text-muted-foreground font-normal">(optional)</span>
-      </Label>
-      <Textarea
-        value={comment}
-        onChange={(e) => setComment(e.target.value)}
-        placeholder="Add a note about this change..."
-        className="min-h-[60px] text-xs resize-none"
-        maxLength={500}
-      />
-    </motion.div>
-  )}
-</AnimatePresence>
-```
+- **Facility SelectContent** (line 326): Add `min-w-[350px]`
+- **Department SelectContent** (line 366): Add `min-w-[280px]`
 
-6. Include comment in `handleSave`:
 ```typescript
-const saveData = {
-  // ... existing fields
-  comment: comment.trim() || undefined,
-};
-await onSave(saveData);
+// Facility
+<SelectContent className="bg-popover border-border z-50 min-w-[350px]">
+
+// Department  
+<SelectContent className="bg-popover border-border z-50 min-w-[280px]">
 ```
 
 ---
 
-### File 2: `src/pages/positions/EmployeesTab.tsx`
+## Styling Details
 
-**Update the data type in handleActualFteUpdate callback**
-
-```typescript
-const handleActualFteUpdate = useCallback((
-  id: string, 
-  previousFte: number | null, 
-  previousExpiry: string | null,
-  previousStatus: string | null,
-  data: {
-    actual_fte: number | null;
-    actual_fte_expiry: string | null;
-    actual_fte_status: string | null;
-    actual_fte_shared_with?: string | null;
-    actual_fte_shared_fte?: number | null;
-    actual_fte_shared_expiry?: string | null;
-    comment?: string;  // NEW
-  }
-) => {
-  updateActualFte.mutate({ 
-    id, 
-    ...data, 
-    previousFte, 
-    previousExpiry, 
-    previousStatus 
-  });
-}, [updateActualFte]);
-```
+| Element | Styling |
+|---------|---------|
+| Container | `flex items-center justify-between w-full gap-4` |
+| Name (left) | `truncate` - truncates long names with ellipsis |
+| ID (right) | `text-xs text-muted-foreground font-mono shrink-0` - smaller, muted, monospace font, doesn't shrink |
+| No separator | Flexbox with gap handles spacing naturally |
 
 ---
 
-### File 3: `src/pages/positions/ContractorsTab.tsx`
+## Edge Cases
 
-**Same update as EmployeesTab**
+1. **Unique department names only** (when "All Facilities" is selected) - The current code uses `department_name` as both ID and name in this case. The two-column layout will still work, but ID and name may be identical.
 
-Update `handleActualFteUpdate` data type to include optional `comment` field.
+2. **Truncation** - Long facility/department names will truncate with ellipsis to keep the ID visible.
 
----
-
-### File 4: `src/hooks/useUpdateActualFte.ts`
-
-**Accept comment param and save it after FTE update**
-
-1. Add comment to params interface:
-```typescript
-interface UpdateActualFteParams {
-  // ... existing fields
-  comment?: string;  // NEW
-}
-```
-
-2. Import the existing `useAddPositionComment` hook:
-```typescript
-import { useAddPositionComment } from '@/hooks/usePositionComments';
-```
-
-3. Add the hook inside the main hook:
-```typescript
-const addComment = useAddPositionComment();
-```
-
-4. In `onSuccess`, after the activity log, add the user comment if provided:
-```typescript
-onSuccess: (updatedData) => {
-  // ... existing cache update logic
-
-  // Log activity with structured field details
-  addActivityLog.mutate({
-    positionId: updatedData.id,
-    changeType: 'fte',
-    fteDetails: { ... },
-  });
-
-  // NEW: Add user comment if provided
-  if (updatedData.comment) {
-    addComment.mutate({
-      positionId: updatedData.id,
-      content: updatedData.comment,
-    });
-  }
-
-  toast.success('Active FTE updated successfully');
-},
-```
-
-5. Pass `comment` through the mutation:
-```typescript
-mutationFn: async ({ 
-  // ... existing params
-  comment,  // NEW
-}: UpdateActualFteParams) => {
-  // ... existing update logic
-  
-  return { 
-    ...data, 
-    previousFte,
-    previousExpiry,
-    previousStatus,
-    comment,  // NEW - pass through for onSuccess
-  };
-},
-```
-
----
-
-## User Flow After Changes
-
-| Step | Action | Result |
-|------|--------|--------|
-| 1 | Click Active FTE cell | Popover opens |
-| 2 | Select Status/Reason | FTE dropdown, expiry date, and comment field appear |
-| 3 | Fill in FTE value and dates | Form is ready to save |
-| 4 | (Optional) Type a comment | Text captured |
-| 5 | Click Save | FTE updated, activity logged, comment saved if provided |
-| 6 | View position comments panel | User comment appears alongside activity log entries |
+3. **Loading state** - No changes needed; the loading spinner still displays normally.
 
 ---
 
@@ -228,16 +134,5 @@ mutationFn: async ({
 
 | File | Changes |
 |------|---------|
-| `src/components/editable-table/cells/EditableFTECell.tsx` | Add comment state, textarea field, include in save data |
-| `src/pages/positions/EmployeesTab.tsx` | Update handleActualFteUpdate type to accept comment |
-| `src/pages/positions/ContractorsTab.tsx` | Update handleActualFteUpdate type to accept comment |
-| `src/hooks/useUpdateActualFte.ts` | Accept comment param, use existing `useAddPositionComment` to save comment on success |
-
----
-
-## Reused Existing Components
-
-- **`Textarea`** from `@/components/ui/textarea` - consistent styling
-- **`useAddPositionComment`** from `@/hooks/usePositionComments` - saves comment to `position_comments` table
-- Comments will appear in the existing `PositionCommentSection` alongside activity logs
+| `src/components/staffing/FilterBar.tsx` | Update Facility and Department SelectItem content to use flex layout with name left, ID right |
 
