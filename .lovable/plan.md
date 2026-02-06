@@ -1,79 +1,69 @@
 
 
-# Fixed-Width Two-Column Layout for Dropdowns
+# Selected Item Highlight + Fixed Filter Width
 
-## What You Want
+## Two Requirements
 
-```text
-CURRENT (flexible first column):
-grid-cols-[1fr_80px]  ← 1fr means "take remaining space" (not fixed!)
-
-┌──────────────────────────────────────────────────┐
-│ ASH Pensacola Hospital           │        26012 │  
-└──────────────────────────────────────────────────┘
-
-WHAT YOU WANT (fixed widths for both):
-grid-cols-[250px_80px]  ← Both columns have fixed pixel widths
-
-┌────────────────────────────┬──────────┐
-│ ASH Pensacola Hospital     │    26012 │  ← Label: 250px, left-aligned
-│ Sacred Heart Bay MC        │    26013 │  ← ID: 80px, right-aligned
-│ Gulf Breeze Campus         │    26017 │
-└────────────────────────────┴──────────┘
-```
+1. **Blue highlight on selected items** - When an item is selected in the dropdown, show it with a light blue/primary background
+2. **Fixed filter trigger width** - The filter button width must NEVER change when a value is selected
 
 ---
 
 ## Technical Changes
 
-### File: `src/components/staffing/FilterBar.tsx`
+### 1. Fix Filter Trigger Widths (FilterBar.tsx)
 
-**1. Update Facility dropdown (line 363)**
+The issue is using `min-w-[Xpx]` which allows the trigger to GROW. Change to fixed `w-[Xpx]` and add `overflow-hidden` with text truncation.
 
-Change from `1fr` to fixed width:
+| Filter | Current | Fixed |
+|--------|---------|-------|
+| Region | `min-w-[120px]` / `w-[150px]` | `w-[120px]` / `w-[150px]` |
+| Market | `min-w-[120px]` / `w-[150px]` | `w-[120px]` / `w-[150px]` |
+| Facility | `min-w-[160px]` / `w-[250px]` | `w-[160px]` / `w-[250px]` |
+| Department | `min-w-[140px]` / `w-[180px]` | `w-[140px]` / `w-[180px]` |
 
-```typescript
-<div className="grid grid-cols-[250px_80px] w-full">
-  <span className="truncate text-left">{facility.facility_name}</span>
-  <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right">
-    {facility.facility_id}
-  </span>
-</div>
-```
+Also ensure the SelectValue text truncates with `[&>span]:truncate`.
 
-**2. Update Department dropdown (line 410)**
+### 2. Blue Background on Selected Items (select.tsx)
 
-Same change:
+Add `data-[state=checked]` styling to show primary/blue background when selected:
 
 ```typescript
-<div className="grid grid-cols-[250px_80px] w-full">
-  <span className="truncate text-left">{dept.department_name}</span>
-  <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right">
-    {dept.department_id}
-  </span>
-</div>
+// SelectItem - add selected state styling
+"data-[state=checked]:bg-primary/15 data-[state=checked]:border data-[state=checked]:border-primary/30"
+
+// SelectItemNoCheck - same styling
+"data-[state=checked]:bg-primary/15 data-[state=checked]:border data-[state=checked]:border-primary/30"
 ```
 
-**3. Ensure dropdown content has minimum width**
-
-The `SelectContent` already has `min-w-[280px]` - we should increase this to accommodate `250px + 80px = 330px`:
-
-```typescript
-<SelectContent className="bg-popover border-border z-50 min-w-[340px]">
-```
+This uses the app's primary color at 15% opacity for a subtle blue highlight.
 
 ---
 
 ## Visual Result
 
+**Dropdown with selected item:**
 ```text
 ┌────────────────────────────┬──────────┐
-│ Label (250px, left)        │ ID (80px)│
+│ ASH Pensacola Hospital     │    26012 │  ← Normal
 ├────────────────────────────┼──────────┤
-│ ASH Pensacola Hospital     │    26012 │
-│ Sacred Heart Bay MC        │    26013 │
-│ Very Long Facility Name... │    26017 │  ← truncates if too long
+│ Sacred Heart Bay MC  ░░░░░░│░░░26013░░│  ← Selected (blue bg)
+├────────────────────────────┼──────────┤
+│ Gulf Breeze Campus         │    26017 │  ← Normal
 └────────────────────────────┴──────────┘
+```
+
+**Filter trigger (fixed width):**
+```text
+BEFORE (width grows with content):
+┌─────────────────────────────────────────────────┐
+│ Sacred Heart Bay Medical Center         ▼      │  ← Too wide!
+└─────────────────────────────────────────────────┘
+
+AFTER (fixed width, text truncates):
+┌──────────────────────┐
+│ Sacred Heart Bay...▼ │  ← Fixed width, truncated text
+└──────────────────────┘
 ```
 
 ---
@@ -82,5 +72,6 @@ The `SelectContent` already has `min-w-[280px]` - we should increase this to acc
 
 | File | Changes |
 |------|---------|
-| `src/components/staffing/FilterBar.tsx` | Change `grid-cols-[1fr_80px]` to `grid-cols-[250px_80px]` for both Facility and Department dropdowns. Update `min-w` on SelectContent to `340px`. |
+| `src/components/ui/select.tsx` | Add `data-[state=checked]:bg-primary/15` styling to SelectItem and SelectItemNoCheck |
+| `src/components/staffing/FilterBar.tsx` | Change `min-w-[Xpx]` to `w-[Xpx]` for all filter triggers on compact screens |
 
