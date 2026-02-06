@@ -115,13 +115,14 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
     const row = tableData.find((r) => r.department_id === departmentId);
     if (!row) return;
 
-    // If volume is null or no expiry date, we can't save
+    // If volume is null, we can't save
     if (!volume) return;
 
-    // Require expiry date
-    if (!row.expiry_date) {
-      return;
-    }
+    // Calculate default expiry date if not set (max allowed or 30 days from now)
+    const defaultExpiry = row.expiry_date || 
+      (row.max_allowed_expiry_date 
+        ? new Date(row.max_allowed_expiry_date).toISOString().split('T')[0]
+        : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
 
     await upsertMutation.mutateAsync({
       market: row.market,
@@ -130,7 +131,7 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
       department_id: row.department_id,
       department_name: row.department_name,
       override_volume: volume,
-      expiry_date: row.expiry_date,
+      expiry_date: defaultExpiry,
     });
   };
 

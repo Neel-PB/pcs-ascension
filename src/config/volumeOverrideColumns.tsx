@@ -199,10 +199,22 @@ export const createVolumeOverrideColumns = (
     minWidth: 100,
     sortable: true,
     renderCell: (row) => {
-      if (!row.override_volume || !row.expiry_date) {
+      // No override volume at all
+      if (!row.override_volume) {
         return (
           <div className="px-3 py-2">
             <Badge variant="secondary">Not Set</Badge>
+          </div>
+        );
+      }
+
+      // Override volume exists but no expiry date yet
+      if (!row.expiry_date) {
+        return (
+          <div className="px-3 py-2">
+            <Badge variant="outline" className="border-amber-500 text-amber-600">
+              Incomplete
+            </Badge>
           </div>
         );
       }

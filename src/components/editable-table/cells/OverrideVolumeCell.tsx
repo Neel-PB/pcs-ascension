@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Pencil, Check, X, Trash2 } from 'lucide-react';
+import { Pencil, Check, X, RotateCcw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
@@ -191,28 +191,14 @@ export function OverrideVolumeCell({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 ml-1"
-                  onClick={handleStartEdit}
-                  disabled={isLoading}
-                >
-                  <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Edit override volume</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  className="h-6 w-6 ml-1 text-muted-foreground hover:text-foreground"
                   onClick={handleDelete}
                   disabled={isLoading}
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <RotateCcw className="h-3.5 w-3.5" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Delete override</TooltipContent>
+              <TooltipContent>Revert override</TooltipContent>
             </Tooltip>
           </>
         )}
