@@ -159,18 +159,23 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
     });
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDeleteOverride = async (departmentId: string) => {
     if (!canManageOverrides) return;
-    if (id.startsWith('dept-')) return; // No override to delete
     
-    await deleteMutation.mutateAsync({ 
-      id, 
-      facilityId: selectedFacility 
-    });
+    const row = tableData.find((r) => r.department_id === departmentId);
+    if (!row) return;
+
+    // Only delete if there's an existing override (not a placeholder)
+    if (!row.id.startsWith('dept-')) {
+      await deleteMutation.mutateAsync({ 
+        id: row.id, 
+        facilityId: selectedFacility 
+      });
+    }
   };
 
   const columns = useMemo(
-    () => createVolumeOverrideColumns(handleSaveVolume, handleSaveDate, config ?? undefined),
+    () => createVolumeOverrideColumns(handleSaveVolume, handleSaveDate, handleDeleteOverride, config ?? undefined),
     [tableData, config]
   );
 
