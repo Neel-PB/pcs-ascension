@@ -1,151 +1,199 @@
 
-# Redesign UserFormSheet to Match App-Wide Sheet Layout
 
-## Problem
+# Override Volume Column Enhancement Plan
 
-The UserFormSheet (Add User / Edit User) uses the default Shadcn sheet width (`sm:max-w-sm` = 384px) and a simple layout, while all other detail sheets in the app (Employee, Contractor, Requisition, Feedback) use a consistent wider layout (`sm:max-w-xl` = 576px) with:
-- Fixed header aligned to the global header height
-- Flexible content area with ScrollArea
-- Fixed footer with action buttons
-- Hidden default close button
+## Overview
 
-## Solution
+This plan modifies the **Override Volume** column in the Volume Settings tab to provide a cleaner editing workflow:
 
-Redesign UserFormSheet to match the established pattern used throughout the application.
+1. Show **pencil icon** to initiate editing (instead of immediately showing the editable field)
+2. Once clicked, show the **input field with Accept (✓) and Delete (✗) buttons**
+3. After saving the override volume, **enable the Expiration Date column** for that row
+4. **Reorder columns**: Override Volume → Expiration Date → Max Expiration
 
 ---
 
-## Technical Changes
+## Current vs. Proposed Flow
 
-### File: `src/components/admin/UserFormSheet.tsx`
+```text
+CURRENT FLOW:
+┌──────────────────────────────────────────────────┐
+│ [Badge] Required/Optional    [Editable Field]   │
+└──────────────────────────────────────────────────┘
+  ↓ User types value, blur saves immediately
 
-#### Change 1: Update SheetContent width and layout structure
-
-```typescript
-// BEFORE (line 131-132):
-<Sheet open={open} onOpenChange={onOpenChange}>
-  <SheetContent className="overflow-y-auto">
-
-// AFTER:
-<Sheet open={open} onOpenChange={onOpenChange}>
-  <SheetContent 
-    className="w-full sm:max-w-xl flex h-full flex-col p-0" 
-    hideCloseButton
-  >
+PROPOSED FLOW:
+┌──────────────────────────────────────────────────┐
+│ [Badge] Required/Optional    [— ✏️ Pencil]      │  ← Initial state
+└──────────────────────────────────────────────────┘
+                     ↓ Click pencil
+┌──────────────────────────────────────────────────┐
+│ [Badge] Required/Optional   [____] ✓ ✗          │  ← Editing state
+└──────────────────────────────────────────────────┘
+                     ↓ Click ✓ (Accept)
+┌──────────────────────────────────────────────────┐
+│ [Badge] Required/Optional   [123]  ✏️ 🗑️        │  ← Saved state
+└──────────────────────────────────────────────────┘
+  ↓ Expiration Date column now enabled
 ```
 
-#### Change 2: Replace SheetHeader with custom fixed header
+---
 
-```typescript
-// BEFORE (lines 133-140):
-<SheetHeader>
-  <SheetTitle>{isEditMode ? 'Edit User' : 'Invite New User'}</SheetTitle>
-  <SheetDescription>
-    {isEditMode
-      ? 'Update user information and roles'
-      : 'Send an invitation email to create a new user account'}
-  </SheetDescription>
-</SheetHeader>
+## Column Order Change
 
-// AFTER:
-<div
-  className="shrink-0 px-6 border-b border-border flex flex-col justify-center"
-  style={{ height: 'var(--header-height)' }}
->
-  <h2 className="text-lg font-semibold">
-    {isEditMode ? 'Edit User' : 'Invite New User'}
-  </h2>
-  <p className="text-sm text-muted-foreground">
-    {isEditMode
-      ? 'Update user information and roles'
-      : 'Send an invitation email to create a new user account'}
-  </p>
-</div>
+| Current Order | New Order |
+|---------------|-----------|
+| 1. Department | 1. Department |
+| 2. Target Volume | 2. Target Volume |
+| 3. Override Volume | 3. Override Volume |
+| 4. **Max Expiration** | 4. **Expiration Date** |
+| 5. **Expiration Date** | 5. **Max Expiration** |
+| 6. Status | 6. Status |
+
+---
+
+## Files to Modify
+
+### 1. New Component: `OverrideVolumeCell.tsx`
+**Path**: `src/components/editable-table/cells/OverrideVolumeCell.tsx`
+
+Create a new dedicated cell component that manages the three-state workflow:
+
+```text
+States:
+- idle: Shows current value (or "—") with pencil icon
+- editing: Shows input field with Accept/Cancel buttons
+- saved: Shows value with Edit pencil and Delete trash icons
 ```
 
-#### Change 3: Wrap form content in ScrollArea for flexible scrolling
+**Component Props**:
+- `value`: Current override volume (number | null)
+- `onSave`: Callback to save the value
+- `onDelete`: Callback to delete/clear the override
+- `badgeProps`: Badge configuration (icon, label, color, tooltip)
+- `showWarning`: Whether to show warning icon
+- `warningTooltip`: Warning message
+
+### 2. Update `volumeOverrideColumns.tsx`
+**Path**: `src/config/volumeOverrideColumns.tsx`
+
+Changes:
+- Import and use the new `OverrideVolumeCell` component
+- Add `onDelete` callback prop to `createVolumeOverrideColumns`
+- Pass `hasOverrideValue` prop to Expiration Date column to control enabled state
+- **Reorder columns**: Move `expiry_date` before `max_allowed_expiry`
+
+### 3. Update `SettingsTab.tsx`
+**Path**: `src/pages/staffing/SettingsTab.tsx`
+
+Changes:
+- Pass `handleDeleteVolume` function to column creator
+- Update column creator call with delete handler
+
+---
+
+## Technical Details
+
+### New `OverrideVolumeCell` Component Logic
 
 ```typescript
-// BEFORE (lines 142-258):
-<Form {...form}>
-  <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 mt-6">
-    {/* Form fields */}
-    <div className="flex gap-3 pt-4">
-      {/* Buttons */}
-    </div>
-  </form>
-</Form>
+// Three states the cell can be in
+type CellState = 'idle' | 'editing' | 'saved';
 
-// AFTER:
-<Form {...form}>
-  <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 min-h-0">
-    {/* Scrollable Content Area */}
-    <ScrollArea className="flex-1">
-      <div className="px-6 py-6 space-y-6">
-        {/* All FormFields go here */}
-        {/* Access Scope Collapsible goes here */}
+function OverrideVolumeCell({
+  value,
+  onSave,
+  onDelete,
+  badge,
+  showWarning,
+  warningTooltip
+}) {
+  const [state, setState] = useState<CellState>(
+    value != null ? 'saved' : 'idle'
+  );
+  const [editValue, setEditValue] = useState('');
+
+  // State transitions:
+  // idle -> (click pencil) -> editing
+  // editing -> (click accept) -> saved
+  // editing -> (click cancel) -> idle
+  // saved -> (click pencil) -> editing
+  // saved -> (click delete) -> idle
+
+  // Render based on state...
+}
+```
+
+### Visual Design
+
+**Idle State** (no value set):
+```text
+┌─────────────────────────────────────────────────┐
+│ 🛡️ Required   │   —   ✏️                        │
+└─────────────────────────────────────────────────┘
+```
+
+**Editing State** (input active):
+```text
+┌─────────────────────────────────────────────────┐
+│ 🛡️ Required   │ [_______]  ✓  ✗                │
+└─────────────────────────────────────────────────┘
+```
+
+**Saved State** (value exists):
+```text
+┌─────────────────────────────────────────────────┐
+│ 🛡️ Optional   │   123   ✏️  🗑️                 │
+└─────────────────────────────────────────────────┘
+```
+
+### Expiration Date Conditional Enable
+
+The Expiration Date cell will be **disabled** (grayed out, non-clickable) until an override volume is saved:
+
+```typescript
+// In volumeOverrideColumns.tsx - expiry_date column
+renderCell: (row) => {
+  const isEnabled = row.override_volume != null;
+  
+  if (!isEnabled) {
+    return (
+      <div className="px-3 py-2 text-muted-foreground opacity-50 cursor-not-allowed">
+        <span className="text-sm">Set override first</span>
       </div>
-    </ScrollArea>
-    
-    {/* Fixed Footer */}
-    <div className="shrink-0 px-6 py-4 border-t border-border bg-background">
-      <div className="flex gap-3">
-        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting} className="flex-1">
-          Cancel
-        </Button>
-        <Button type="submit" disabled={isSubmitting} className="flex-1">
-          {isSubmitting ? 'Sending...' : isEditMode ? 'Update' : 'Send Invite'}
-        </Button>
-      </div>
-    </div>
-  </form>
-</Form>
-```
-
-#### Change 4: Add ScrollArea import
-
-```typescript
-// Add to imports:
-import { ScrollArea } from "@/components/ui/scroll-area";
-```
-
-#### Change 5: Remove unused SheetDescription import
-
-```typescript
-// BEFORE:
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-
-// AFTER:
-import {
-  Sheet,
-  SheetContent,
-} from "@/components/ui/sheet";
+    );
+  }
+  
+  // Normal EditableDateCell when enabled
+  return <EditableDateCell ... />;
+}
 ```
 
 ---
 
-## Visual Comparison
+## Implementation Sequence
 
-| Aspect | Before | After |
-|--------|--------|-------|
-| Width | 384px (sm:max-w-sm) | 576px (sm:max-w-xl) |
-| Header | Basic SheetHeader | Fixed header matching global height |
-| Scrolling | Entire sheet scrolls | Only content area scrolls |
-| Footer | Scrolls with content | Fixed at bottom |
-| Close button | Default X in corner | Integrated Cancel button |
+1. **Create `OverrideVolumeCell.tsx`** - New cell component with 3-state logic
+2. **Update `volumeOverrideColumns.tsx`**:
+   - Add `onDelete` parameter to column creator function
+   - Replace `BadgeWithEditableValue` with new `OverrideVolumeCell`
+   - Add conditional disable logic to Expiration Date column
+   - Reorder columns (swap expiry_date and max_allowed_expiry positions)
+3. **Update `SettingsTab.tsx`**:
+   - Create `handleDeleteVolume` function
+   - Pass delete handler to column creator
+4. **Test the complete workflow**
 
 ---
 
-## Consistency Benefits
+## Summary of User Experience
 
-- Matches Employee, Contractor, Requisition, and Feedback detail sheets
-- Aligns header height with global `--header-height` CSS variable
-- Provides more horizontal space for form fields and Access Scope manager
-- Fixed footer ensures action buttons are always visible
-- Consistent visual language across the admin module
+| Step | Action | Result |
+|------|--------|--------|
+| 1 | User sees row with no override | Shows "—" with pencil icon, Expiration disabled |
+| 2 | User clicks pencil icon | Input field appears with ✓ and ✗ buttons |
+| 3 | User enters value and clicks ✓ | Value saves, shows pencil + trash icons |
+| 4 | **Expiration Date now enabled** | User can select expiration date |
+| 5 | User can click pencil to edit | Returns to editing state |
+| 6 | User can click trash to delete | Clears override, disables expiration again |
+
