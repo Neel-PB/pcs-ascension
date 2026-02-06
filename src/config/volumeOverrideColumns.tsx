@@ -53,7 +53,9 @@ export const createVolumeOverrideColumns = (
   onSaveVolume: (departmentId: string, volume: number | null) => Promise<void>,
   onSaveDate: (departmentId: string, date: string | null) => Promise<void>,
   onDeleteOverride: (departmentId: string) => Promise<void>,
-  config?: VolumeOverrideConfig
+  config?: VolumeOverrideConfig,
+  autoOpenDatePickerFor?: string | null,
+  onAutoOpenComplete?: () => void
 ): ColumnDef<VolumeOverrideRow>[] => [
   {
     id: 'department_name',
@@ -156,6 +158,8 @@ export const createVolumeOverrideColumns = (
             onSave={(value) => onSaveDate(row.department_id, value)}
             minDate={new Date()}
             maxDate={maxDate}
+            autoOpen={autoOpenDatePickerFor === row.department_id}
+            onAutoOpenComplete={onAutoOpenComplete}
           />
           {exceedsMax && (
             <Tooltip>
