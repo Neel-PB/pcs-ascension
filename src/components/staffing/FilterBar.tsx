@@ -163,12 +163,18 @@ export function FilterBar({
       const filteredDepts = allDepartments.filter(d => 
         allowedFacilityIds.has(d.facility_id)
       );
-      const uniqueNames = new Set<string>();
-      filteredDepts.forEach(d => uniqueNames.add(d.department_name));
-      return Array.from(uniqueNames).sort().map(name => ({
-        department_id: name,
-        department_name: name
-      }));
+      const seenNames = new Map<string, { department_id: string; department_name: string }>();
+      filteredDepts.forEach(d => {
+        if (!seenNames.has(d.department_name)) {
+          seenNames.set(d.department_name, {
+            department_id: d.department_id,
+            department_name: d.department_name
+          });
+        }
+      });
+      return Array.from(seenNames.values()).sort((a, b) => 
+        a.department_name.localeCompare(b.department_name)
+      );
     }
     
     // PRIORITY 3: Market restrictions - show departments from facilities in those markets
@@ -180,14 +186,19 @@ export function FilterBar({
           ))
           .map(f => f.facility_id)
       );
-      const filteredNames = new Set<string>();
-      allDepartments
-        .filter(d => allowedFacilityIds.has(d.facility_id))
-        .forEach(d => filteredNames.add(d.department_name));
-      return Array.from(filteredNames).sort().map(name => ({
-        department_id: name,
-        department_name: name
-      }));
+      const filteredDepts = allDepartments.filter(d => allowedFacilityIds.has(d.facility_id));
+      const seenNames = new Map<string, { department_id: string; department_name: string }>();
+      filteredDepts.forEach(d => {
+        if (!seenNames.has(d.department_name)) {
+          seenNames.set(d.department_name, {
+            department_id: d.department_id,
+            department_name: d.department_name
+          });
+        }
+      });
+      return Array.from(seenNames.values()).sort((a, b) => 
+        a.department_name.localeCompare(b.department_name)
+      );
     }
     
     // PRIORITY 4: Region restrictions - show departments from facilities in those regions
@@ -199,21 +210,34 @@ export function FilterBar({
           ))
           .map(f => f.facility_id)
       );
-      const filteredNames = new Set<string>();
-      allDepartments
-        .filter(d => allowedFacilityIds.has(d.facility_id))
-        .forEach(d => filteredNames.add(d.department_name));
-      return Array.from(filteredNames).sort().map(name => ({
-        department_id: name,
-        department_name: name
-      }));
+      const filteredDepts = allDepartments.filter(d => allowedFacilityIds.has(d.facility_id));
+      const seenNames = new Map<string, { department_id: string; department_name: string }>();
+      filteredDepts.forEach(d => {
+        if (!seenNames.has(d.department_name)) {
+          seenNames.set(d.department_name, {
+            department_id: d.department_id,
+            department_name: d.department_name
+          });
+        }
+      });
+      return Array.from(seenNames.values()).sort((a, b) => 
+        a.department_name.localeCompare(b.department_name)
+      );
     }
     
-    // No restrictions - show all unique department names
-    return uniqueDepartmentNames.map(name => ({
-      department_id: name,
-      department_name: name
-    }));
+    // No restrictions - show all unique department names with real IDs
+    const seenNames = new Map<string, { department_id: string; department_name: string }>();
+    allDepartments.forEach(d => {
+      if (!seenNames.has(d.department_name)) {
+        seenNames.set(d.department_name, {
+          department_id: d.department_id,
+          department_name: d.department_name
+        });
+      }
+    });
+    return Array.from(seenNames.values()).sort((a, b) => 
+      a.department_name.localeCompare(b.department_name)
+    );
   };
   const availableDepartments = getAvailableDepartments();
 
