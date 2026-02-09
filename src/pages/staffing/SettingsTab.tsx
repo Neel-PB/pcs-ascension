@@ -281,7 +281,7 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
         columns={columns}
         data={tableData}
         getRowId={(row) => row.id}
-        storeNamespace="volume-override-settings-v2"
+        storeNamespace="volume-override-settings-v3"
       />
     </div>
   );

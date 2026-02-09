@@ -61,8 +61,8 @@ export const createVolumeOverrideColumns = (
     id: 'department_name',
     label: 'Department',
     type: 'text',
-    width: 200,
-    minWidth: 150,
+    width: 280,
+    minWidth: 220,
     locked: true,
     sortable: true,
     renderCell: (row) => (
@@ -75,8 +75,8 @@ export const createVolumeOverrideColumns = (
     id: 'target_volume',
     label: 'Target Volume',
     type: 'custom',
-    width: 240,
-    minWidth: 200,
+    width: 200,
+    minWidth: 160,
     sortable: true,
     renderCell: (row) => {
       return (
@@ -99,8 +99,8 @@ export const createVolumeOverrideColumns = (
     id: 'override_volume',
     label: 'Override Volume',
     type: 'custom',
-    width: 260,
-    minWidth: 220,
+    width: 220,
+    minWidth: 180,
     sortable: true,
     renderCell: (row) => {
       const mandatory = row.override_mandatory ?? false;
