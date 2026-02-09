@@ -1,38 +1,34 @@
 
+# Fix Expiration Date: Separate Date Text and Pencil Icon
 
-# Fix Expiration Date Column Layout
+## Problem
+The date text and pencil icon are clustered together because the `Popover` component wraps the trigger button, making it a single flex child alongside the text span. The `justify-between` doesn't push them apart effectively.
 
-## Changes
+## Fix
+Restructure the component so the `Popover` wraps the entire cell (not just the icon), keeping the date `span` and the trigger `Button` as direct flex children within the `justify-between` container.
 
-### 1. Replace "Set override first" with "-- [Pencil]" pattern
+### File: `src/components/editable-table/cells/EditableDateCell.tsx`
 
-**File:** `src/config/volumeOverrideColumns.tsx` (lines 141-146)
+Move `Popover` to wrap the outer container. The layout becomes:
 
-When no override volume is set, instead of showing italic "Set override first" text, show a dash on the left and a pencil icon on the right -- matching the Override Volume idle state pattern.
-
-**Current:**
 ```text
-| Set override first                    |
+<Popover>
+  <div className="flex items-center justify-between w-full h-full px-3">
+    <span>Mar 09, 2026</span>              <!-- left -->
+    <PopoverTrigger asChild>
+      <Button>[Pencil/Revert]</Button>      <!-- right -->
+    </PopoverTrigger>
+  </div>
+  <PopoverContent>...</PopoverContent>
+</Popover>
 ```
 
-**Target:**
-```text
-| --                          [Pencil]  |
-```
+This ensures the span and button are direct siblings in a `justify-between` flex container, pushing the date to the left edge and the icon to the right edge.
 
-The pencil icon will remain disabled/non-interactive (since you still need to set an override volume first), but it provides visual consistency with the other columns.
-
-### 2. Remove extra padding wrapper around EditableDateCell
-
-**File:** `src/config/volumeOverrideColumns.tsx` (lines 153-163)
-
-The `EditableDateCell` already has its own `px-3` padding, but there's an extra wrapping `div` with `px-3 py-2` causing double padding and potentially misaligning the text. Remove the redundant wrapper so the date text aligns flush left like other columns.
-
----
+The revert button logic remains: when `hasChanged()` is true, show `RotateCcw` (which reverts on click and stops propagation to prevent opening the popover); otherwise show `Pencil` (which opens the calendar).
 
 ## Files to Modify
 
-| File | Changes |
-|------|---------|
-| `src/config/volumeOverrideColumns.tsx` | Replace "Set override first" with `-- [Pencil]` layout; remove redundant padding wrapper around EditableDateCell |
-
+| File | Change |
+|------|--------|
+| `src/components/editable-table/cells/EditableDateCell.tsx` | Move Popover to wrap outer div; keep span and PopoverTrigger as direct flex siblings |
