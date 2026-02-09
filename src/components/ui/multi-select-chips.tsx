@@ -48,6 +48,14 @@ export function MultiSelectChips({
   const [search, setSearch] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Reset search when popover closes
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      setSearch("");
+    }
+  };
+
   const filteredOptions = options.filter((option) =>
     option.label.toLowerCase().includes(search.toLowerCase())
   );
@@ -98,7 +106,7 @@ export function MultiSelectChips({
           <span className="text-sm text-muted-foreground">{emptyText}</span>
         )}
 
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={open} onOpenChange={handleOpenChange}>
           <PopoverTrigger asChild>
             <Button
               type="button"
@@ -113,7 +121,11 @@ export function MultiSelectChips({
           <PopoverContent 
             className="w-72 p-0 bg-popover" 
             align="start"
-            onOpenAutoFocus={() => inputRef.current?.focus()}
+            side="bottom"
+            onOpenAutoFocus={(e) => {
+              e.preventDefault();
+              inputRef.current?.focus();
+            }}
           >
             {searchable && (
               <div className="p-2 border-b">
@@ -129,7 +141,7 @@ export function MultiSelectChips({
                 </div>
               </div>
             )}
-            <ScrollArea className="max-h-[250px]">
+            <div className="h-[250px] overflow-y-auto" onWheelCapture={(e) => e.stopPropagation()}>
               <div className="p-1">
                 {filteredOptions.length === 0 ? (
                   <div className="py-4 text-center text-sm text-muted-foreground">
@@ -175,7 +187,7 @@ export function MultiSelectChips({
                   })
                 )}
               </div>
-            </ScrollArea>
+            </div>
           </PopoverContent>
         </Popover>
       </div>
