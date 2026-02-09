@@ -1,36 +1,47 @@
 
 
-# Apply Content-Left / Action-Right Layout to NP Override Column
+# Standardize Font Styling Across Volume Settings and NP Settings
 
 ## Problem
-The **Override NP %** column in the NP Settings tab currently uses `EditableNumberCell`, which renders the value as a centered button. This is inconsistent with the Volume Settings tab, where the Override Volume column uses the `OverrideVolumeCell` component with a structured left-right layout (value on the left, pencil/revert icons on the right).
+Several cells in the Volume Settings and NP Settings tables use inconsistent font sizes, weights, and colors compared to the app's standard cell pattern.
 
-## Solution
-Update the `EditableNumberCell` component's non-editing (display) state to use a `flex justify-between` layout instead of centered text. This aligns with the pattern used throughout the settings tables.
+## App Standard (from CellButton / standard cells)
+- **Font family**: Inter (global, inherited automatically)
+- **Font size**: `text-sm` (14px)
+- **Font weight**: `font-normal` for standard text, `font-medium` for Department name
+- **Color**: `text-foreground` for primary values, `text-muted-foreground` for placeholders/secondary info
 
-### Changes to `src/components/editable-table/cells/EditableNumberCell.tsx`
+## Changes Needed
 
-**Display state (non-editing):** Change from a centered `<button>` to a `flex justify-between` layout:
-- **Left side**: The number value (or dash placeholder)
-- **Right side**: Pencil icon to enter edit mode (or RotateCcw revert icon when modified)
+### 1. Volume Settings (`src/config/volumeOverrideColumns.tsx`)
 
-The editing state (inline input) remains unchanged.
+| Column | Current | Fix |
+|--------|---------|-----|
+| Department (line 70) | `px-3 py-2 font-medium` (missing `text-sm`) | Add `text-sm` |
 
-```text
-Before:  |        10        |   (centered, no icon)
-After:   | 10          [pen]|   (value left, icon right)
-```
+### 2. NP Settings (`src/config/npOverrideColumns.tsx`)
 
-### Specific changes:
+| Column | Current | Fix |
+|--------|---------|-----|
+| Target NP % (line 48) | `px-3 py-2 text-center` (centered layout) | Change to `flex items-center justify-between w-full h-full px-3` to match the content-left / action-right pattern |
+| Target NP % value (line 49) | `text-sm font-medium` | Keep `text-sm font-medium` but ensure `text-foreground` |
+| NP Settings Status badges (lines 113, 124, 133, 142) | Hardcoded `bg-yellow-500`, `bg-green-600` | Switch to `variant="outline"` with semantic border/text colors matching Volume Settings pattern (`border-amber-500 text-amber-600`, `border-primary text-primary`, `border-accent text-accent-foreground`) |
 
-1. Replace the `<button>` wrapper with a `<div>` using `flex items-center justify-between w-full h-full px-3`
-2. Place the value `<span>` as the first flex child (left-aligned)
-3. Add a `Pencil` icon button as the second flex child (right-aligned) for the idle state
-4. When `isModified`, show `RotateCcw` instead of `Pencil` on the right
-5. Clicking the value area or pencil enters edit mode
+### 3. NP Status Badges Alignment with Volume Settings
+
+The NP Settings status badges use filled solid colors (`bg-yellow-500`, `bg-green-600`) while Volume Settings uses outlined badges with semantic colors. Aligning NP to match Volume:
+
+| Status | Volume Settings Style | NP Settings Current | Fix |
+|--------|----------------------|--------------------|----|
+| Not Set | `variant="secondary"` | `variant="secondary"` | Already matches |
+| Expired | `variant="destructive"` | `variant="destructive"` | Already matches |
+| Expiring Soon | `variant="outline" border-accent text-accent-foreground` | `bg-yellow-500` (filled) | Change to outline style |
+| Active | `variant="outline" border-primary text-primary` | `bg-green-600` (filled) | Change to outline style |
 
 ## Files to Modify
 
-| File | Change |
-|------|--------|
-| `src/components/editable-table/cells/EditableNumberCell.tsx` | Restructure display state to `justify-between` with value-left and pencil/revert icon-right |
+| File | Changes |
+|------|---------|
+| `src/config/volumeOverrideColumns.tsx` | Add `text-sm` to Department cell |
+| `src/config/npOverrideColumns.tsx` | Fix Target NP % layout; align status badge styles with Volume Settings |
+
