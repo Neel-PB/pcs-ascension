@@ -153,7 +153,7 @@ export const createVolumeOverrideColumns = (
       const exceedsMax = maxDate && currentExpiry && currentExpiry > maxDate;
 
       return (
-        <div className="relative">
+        <div className="relative w-full h-full">
           <EditableDateCell
             value={row.expiry_date}
             originalValue={null}
