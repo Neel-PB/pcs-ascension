@@ -2,6 +2,9 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useMemo } from 'react';
 
+// Stable empty Map to prevent referential instability during loading
+const EMPTY_MAP = new Map<string, number>();
+
 /**
  * Optimized hook for fetching comment counts per position
  * Uses server-side aggregation instead of fetching all comments
@@ -29,7 +32,7 @@ export function usePositionCommentCounts(positionIds: string[]) {
     );
   }, [positionIds]);
 
-  const { data: counts = new Map<string, number>() } = useQuery({
+  const { data: counts = EMPTY_MAP } = useQuery({
     queryKey: ['position-comment-counts', positionIdsKey],
     queryFn: async () => {
       if (validPositionIds.length === 0) {
