@@ -1,31 +1,33 @@
 
 
-# Fix Variance Analysis - Row Background Override Conflict
+# Fix Header Row Background Consistency
 
-## Root Cause
+## Issue
 
-The previous fix added `[&_tr:nth-child(even)]:!bg-transparent` to `TableBody`, which uses `!important` to force even rows transparent. But this **overrides** the `!bg-primary/10` and `!bg-muted/20` classes that GroupRow and TotalRow apply to their `<tr>` elements. So on even rows, the row background disappears entirely, while the sticky cell (which has its own explicit `!bg-primary/10`) keeps its color -- creating a mismatch.
+The header rows in the Variance Analysis table don't have explicit forced backgrounds on all cells, unlike the data rows which were already fixed. This can cause subtle inconsistencies:
 
-## Solution
+1. **Header Row 1** (line 608-614): The sticky cell uses `bg-card` but the skill group header cells (`TableHead colSpan={3}`) have no background class at all.
+2. **Header Row 2** (line 616-633): The `TableRow` has `bg-muted/50` and the sticky cell has `bg-muted/50`, but the Day/Night/Total sub-header cells have no explicit background.
 
-Instead of fighting specificity with `!important` on TableBody, remove the global striping override and instead apply explicit background classes to **all non-sticky `<td>` cells** within each row type so they always match the sticky cell. This is the most reliable approach since each cell controls its own background.
+The global `TableBody` striping doesn't affect `TableHeader`, but the lack of explicit backgrounds on header cells could still show inconsistencies depending on how the browser renders the sticky cell vs non-sticky cells.
+
+## Proposed Fix
 
 ### File: `src/pages/staffing/VarianceAnalysis.tsx`
 
-**Step 1** -- Remove the TableBody override (line 666):
-```tsx
-// Revert back to:
-<TableBody>
-```
+**Header Row 1 (lines 609-614)**: Add `bg-card` to all skill group `TableHead` cells so they match the sticky Regions header:
 
-**Step 2** -- Add explicit `!bg-primary/10` to all data cells in **GroupRow** (lines 446-490):
-Every `<TableCell>` in GroupRow currently has no background class. Add `!bg-primary/10` to each one so they match the sticky cell and override the even-row striping.
+| Cell | Current | After |
+|------|---------|-------|
+| CL Skill (line 610) | No bg class | `bg-card` |
+| RN Skill (line 611) | No bg class | `bg-card` |
+| PCT Skill (line 612) | No bg class | `bg-card` |
+| HUC (line 613) | No bg class | `bg-card` |
+| Overhead (line 614) | No bg class | `bg-card` |
 
-**Step 3** -- Add explicit `!bg-background` to all data cells in **SkillRow** (lines 540-580):
-Every `<TableCell>` in SkillRow needs `!bg-background` to match its sticky cell.
+**Header Row 2 (lines 618-632)**: Add `bg-muted/50` to all Day/Night/Total `TableHead` cells so they match the sticky empty header:
 
-**Step 4** -- Add explicit `!bg-muted/20` to all data cells in **TotalRow** (lines 588-630):
-Every `<TableCell>` in TotalRow needs `!bg-muted/20` to match its sticky cell.
+All 15 sub-header cells get `bg-muted/50` added to their className.
 
-This ensures every cell in every row has the same forced background, so neither the sticky column nor the data columns can be tinted differently by global striping rules. The border fix (`border-r-2 border-muted-foreground/30`) on the sticky cell remains unchanged.
+This ensures every cell in every row -- headers included -- has an explicit background, eliminating any possible rendering discrepancy between sticky and non-sticky cells.
 
