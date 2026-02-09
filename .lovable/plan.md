@@ -1,156 +1,59 @@
 
 
-# Combine Activity Logs with Associated Comments
+# Fix Comment Counts Not Displaying in Employees Table
 
-## Overview
+## Problem
 
-When a user changes FTE/Shift status and adds a comment in the popover, the comment should be displayed **inside the same activity card** rather than as a separate comment entry. Standalone comments (added via the comment composer at the bottom) will remain as separate entries.
+The comment counts column shows "-" for all rows instead of actual counts. After investigation, the issue is with how the `commentCounts` Map is handled in React's memoization:
 
----
-
-## Current vs. Proposed Behavior
-
-```text
-CURRENT (Two separate entries):
-┌───────────────────────────────────────────────────────┐
-│  FTE Change                                           │
-│  ┌────────────────────────────────┐                   │
-│  │ FTE: 0 → 0.9                   │                   │
-│  │ REASON: — → MILITARY_LEAVE     │                   │
-│  │ EXPIRY: — → Apr 17, 2026       │                   │
-│  │              by Maurizio Virone│                   │
-│  └────────────────────────────────┘                   │
-│  less than a minute ago                               │
-│                                                       │
-│  Demo Admin                          ← SEPARATE ENTRY │
-│  ┌────────────────────────────────┐                   │
-│  │ Adding FMLA to be .4           │                   │
-│  └────────────────────────────────┘                   │
-│  less than a minute ago                               │
-└───────────────────────────────────────────────────────┘
-
-PROPOSED (Comment inside activity card):
-┌───────────────────────────────────────────────────────┐
-│  FTE Change                                           │
-│  ┌────────────────────────────────┐                   │
-│  │ FTE: 0 → 0.9                   │                   │
-│  │ REASON: — → MILITARY_LEAVE     │                   │
-│  │ EXPIRY: — → Apr 17, 2026       │                   │
-│  │                                │                   │
-│  │ "Adding FMLA to be .4"         │  ← INSIDE CARD   │
-│  │              by Maurizio Virone│                   │
-│  └────────────────────────────────┘                   │
-│  less than a minute ago                               │
-│                                                       │
-│  Demo Admin                          ← STANDALONE     │
-│  ┌────────────────────────────────┐    (separate)     │
-│  │ Manual follow-up comment       │                   │
-│  └────────────────────────────────┘                   │
-└───────────────────────────────────────────────────────┘
-```
+1. **Unstable default value**: Line 32 of `usePositionCommentCounts.ts` creates a new `Map` instance on every render when data is undefined
+2. **Closure capture**: The `createEmployeeColumnsWithComments` function captures the `commentCounts` Map at column creation time, but the Map might be empty initially
 
 ---
 
-## Technical Changes
+## Root Cause Analysis
 
-### 1. Update `useAddActivityLog.ts` - Accept Optional Comment
+The data flow:
+1. `employees` query loads position data
+2. `positionIds` are extracted from `filteredAndSortedEmployees`
+3. `commentCounts` query fetches counts for those IDs
+4. `columnsWithHandlers` memoizes columns with `commentCounts`
 
-Add a `comment` field to the parameters and store it in metadata:
+The problem: When `columnsWithHandlers` is first computed, `commentCounts` is an empty Map. When the counts query completes, a new Map is returned, but the column's `renderCell` closure may still reference the old empty Map.
 
-**File:** `src/hooks/useAddActivityLog.ts`
+---
+
+## Solution
+
+### 1. Stabilize the default Map in `usePositionCommentCounts.ts`
+
+Create a stable empty Map reference outside the hook to prevent referential instability:
 
 ```typescript
-interface ActivityLogParams {
-  positionId: string;
-  changeType: 'fte' | 'shift';
-  fteDetails?: FteChangeDetails;
-  shiftDetails?: ShiftChangeDetails;
-  comment?: string;  // NEW: Optional comment to include with activity
-}
+// Add at top of file, outside the hook
+const EMPTY_MAP = new Map<string, number>();
 
-// Inside mutationFn, add comment to metadata:
-if (changeType === 'fte' && fteDetails) {
-  content = 'FTE Change';
-  metadata = {
-    type: 'fte',
-    fte_old: fteDetails.fte_old,
-    fte_new: fteDetails.fte_new,
-    reason_old: fteDetails.reason_old,
-    reason_new: fteDetails.reason_new,
-    expiry_old: fteDetails.expiry_old,
-    expiry_new: fteDetails.expiry_new,
-    comment: comment || null,  // NEW: Store comment in metadata
-  };
-}
-```
-
----
-
-### 2. Update `useUpdateActualFte.ts` - Pass Comment to Activity Log
-
-Instead of creating a separate comment entry, pass the comment to `addActivityLog`:
-
-**File:** `src/hooks/useUpdateActualFte.ts`
-
-```typescript
-// BEFORE (lines 108-114):
-if (updatedData.comment) {
-  addComment.mutate({
-    positionId: updatedData.id,
-    content: updatedData.comment,
+export function usePositionCommentCounts(positionIds: string[]) {
+  // ... existing code ...
+  
+  const { data: counts = EMPTY_MAP } = useQuery({
+    // ... existing config ...
   });
+  
+  return counts;
 }
-
-// AFTER - Pass comment to addActivityLog instead:
-addActivityLog.mutate({
-  positionId: updatedData.id,
-  changeType: 'fte',
-  fteDetails: { ... },
-  comment: updatedData.comment,  // Pass comment here
-});
-// Remove the separate addComment.mutate() call
 ```
 
----
+### 2. (Optional) Add isLoading state handling
 
-### 3. Update `FteActivityCard` Component - Display Comment
-
-Add a comment section to the FTE activity card:
-
-**File:** `src/components/positions/PositionCommentSection.tsx`
+Return loading state so the UI can show a loading indicator:
 
 ```typescript
-function FteActivityCard({ metadata, displayName }: { ... }) {
-  const fteOld = metadata.fte_old as number | null;
-  // ... existing fields
-  const comment = metadata.comment as string | null;  // NEW
-
-  return (
-    <div className="divide-y divide-border/30">
-      <ActivityFieldRow label="FTE" oldValue={fteOld} newValue={fteNew} />
-      <ActivityFieldRow label="Reason" oldValue={reasonOld} newValue={reasonNew} isMultiline />
-      <ActivityFieldRow label="Expiry" oldValue={formattedExpiryOld} newValue={formattedExpiryNew} />
-      
-      {/* NEW: Display comment if present */}
-      {comment && (
-        <div className="pt-3 pb-1">
-          <p className="text-sm text-foreground italic">"{comment}"</p>
-        </div>
-      )}
-      
-      <div className="flex justify-end pt-2">
-        <span className="text-xs text-muted-foreground">by {displayName}</span>
-      </div>
-    </div>
-  );
-}
+const { data: counts = EMPTY_MAP, isLoading } = useQuery({...});
+return { counts, isLoading };
 ```
 
----
-
-### 4. Update Shift Activity (Optional)
-
-If shift changes can also have comments, apply the same pattern to `useUpdateShiftOverride.ts` and `ShiftActivityCard`.
+Then in EmployeesTab, you could show a loading spinner in the counts cell while loading.
 
 ---
 
@@ -158,16 +61,13 @@ If shift changes can also have comments, apply the same pattern to `useUpdateShi
 
 | File | Changes |
 |------|---------|
-| `src/hooks/useAddActivityLog.ts` | Add optional `comment` parameter, store in metadata |
-| `src/hooks/useUpdateActualFte.ts` | Pass comment to `addActivityLog` instead of creating separate entry, remove `addComment` import if no longer needed |
-| `src/components/positions/PositionCommentSection.tsx` | Display comment inside `FteActivityCard` component |
+| `src/hooks/usePositionCommentCounts.ts` | Create stable `EMPTY_MAP` constant outside the hook and use it as the default value |
 
 ---
 
-## Notes
+## Technical Notes
 
-- Existing activity logs without comments will continue to work (null/undefined comment)
-- New activity logs with comments will display the comment inside the card
-- Standalone comments added via the composer remain separate entries
-- This keeps the timeline cleaner by grouping related information together
+- The `EMPTY_MAP` constant ensures React's memoization detects when the actual data Map is returned vs the empty default
+- This is a common pattern for React Query hooks that return collection types
+- No changes needed to `EmployeesTab.tsx` since the `useMemo` dependencies are already correct
 
