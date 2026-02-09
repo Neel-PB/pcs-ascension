@@ -362,7 +362,7 @@ export function FilterBar({
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[340px] p-0 bg-popover border-border z-50" align="start">
+              <PopoverContent className="w-[520px] max-w-[calc(100vw-2rem)] p-0 bg-popover border-border z-50" align="start">
                 {facilitiesLoading ? (
                   <div className="py-6 px-2 flex items-center justify-center gap-2 text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -408,9 +408,9 @@ export function FilterBar({
                             }}
                             className={selectedFacility === facility.facility_id ? "bg-primary/15 border border-primary/30" : ""}
                           >
-                            <div className="grid grid-cols-[220px_80px] w-full">
-                              <span className="truncate text-left">{facility.facility_name}</span>
-                              <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right">
+                            <div className="grid grid-cols-[minmax(0,1fr)_80px] w-full">
+                              <span className="whitespace-normal break-words text-left">{facility.facility_name}</span>
+                              <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right whitespace-nowrap">
                                 {facility.facility_id}
                               </span>
                             </div>
@@ -453,7 +453,7 @@ export function FilterBar({
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[340px] p-0 bg-popover border-border z-50" align="start">
+              <PopoverContent className="w-[520px] max-w-[calc(100vw-2rem)] p-0 bg-popover border-border z-50" align="start">
                 {departmentsLoading ? (
                   <div className="py-6 px-2 flex items-center justify-center gap-2 text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -499,9 +499,9 @@ export function FilterBar({
                             }}
                             className={selectedDepartment === dept.department_id ? "bg-primary/15 border border-primary/30" : ""}
                           >
-                            <div className="grid grid-cols-[220px_80px] w-full">
-                              <span className="truncate text-left">{dept.department_name}</span>
-                              <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right">
+                            <div className="grid grid-cols-[minmax(0,1fr)_80px] w-full">
+                              <span className="whitespace-normal break-words text-left">{dept.department_name}</span>
+                              <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right whitespace-nowrap">
                                 {dept.department_id}
                               </span>
                             </div>
