@@ -1,62 +1,51 @@
 
+# Set Target NP % to Fixed 10% for All Departments
 
-# Adjust Column Widths in Volume Settings Table
+## Overview
 
-## Current vs. Proposed Widths
+Change the Target NP % column to always display **10%** for all departments instead of pulling from historical volume analysis data.
+
+---
+
+## Current vs. Proposed
 
 ```text
 CURRENT:
-┌─────────────┬──────────────┬────────────────┬───────────────┬──────────────┬────────┐
-│ Department  │ Target Vol   │ Override Vol   │ Expiration    │ Max Expiry   │ Status │
-│   200px     │   240px      │    260px       │    200px      │   150px      │ 150px  │
-└─────────────┴──────────────┴────────────────┴───────────────┴──────────────┴────────┘
+┌──────────────────────┬─────────────┬───────────────┐
+│ Department           │ Target NP % │ Override NP % │
+├──────────────────────┼─────────────┼───────────────┤
+│ Emergency Dept       │     —       │               │  ← Pulls from analysis (may be null)
+│ ICU                  │    12       │               │  ← Dynamic value
+│ Med/Surg             │     8       │               │  ← Dynamic value
+└──────────────────────┴─────────────┴───────────────┘
 
 PROPOSED:
-┌──────────────────┬──────────────┬────────────────┬───────────────┬──────────────┬────────┐
-│ Department       │ Target Vol   │ Override Vol   │ Expiration    │ Max Expiry   │ Status │
-│   280px          │   200px      │    220px       │    200px      │   150px      │ 150px  │
-└──────────────────┴──────────────┴────────────────┴───────────────┴──────────────┴────────┘
+┌──────────────────────┬─────────────┬───────────────┐
+│ Department           │ Target NP % │ Override NP % │
+├──────────────────────┼─────────────┼───────────────┤
+│ Emergency Dept       │    10       │               │  ← Always 10%
+│ ICU                  │    10       │               │  ← Always 10%
+│ Med/Surg             │    10       │               │  ← Always 10%
+└──────────────────────┴─────────────┴───────────────┘
 ```
 
 ---
 
-## Technical Changes
+## Technical Change
 
-### File: `src/config/volumeOverrideColumns.tsx`
+### File: `src/pages/staffing/NPSettingsTab.tsx`
 
-| Column | Current | New | Change |
-|--------|---------|-----|--------|
-| **Department** | width: 200, minWidth: 150 | **width: 280, minWidth: 220** | +80px |
-| **Target Volume** | width: 240, minWidth: 200 | **width: 200, minWidth: 160** | -40px |
-| **Override Volume** | width: 260, minWidth: 220 | **width: 220, minWidth: 180** | -40px |
+**Line 92** - Change from dynamic value to fixed 10:
 
-**Line 64-65** (Department column):
 ```typescript
-width: 280,
-minWidth: 220,
+// BEFORE
+np_target_volume: analysis?.target_volume ?? null,
+
+// AFTER
+np_target_volume: 10,
 ```
 
-**Line 78-79** (Target Volume column):
-```typescript
-width: 200,
-minWidth: 160,
-```
-
-**Line 102-103** (Override Volume column):
-```typescript
-width: 220,
-minWidth: 180,
-```
-
----
-
-## Additional Step: Reset Persisted Column State
-
-Since column widths are stored in localStorage via `useColumnStore`, we need to update the store namespace to force a reset:
-
-### File: `src/pages/staffing/SettingsTab.tsx`
-
-Update the `storeNamespace` from `volume-override-settings-v2` to `volume-override-settings-v3` to ensure users get the new column widths.
+This hardcodes the target NP % to 10 for all departments, removing the dependency on the historical volume analysis data for this specific value.
 
 ---
 
@@ -64,6 +53,4 @@ Update the `storeNamespace` from `volume-override-settings-v2` to `volume-overri
 
 | File | Changes |
 |------|---------|
-| `src/config/volumeOverrideColumns.tsx` | Increase Department width to 280px, decrease Target Volume to 200px, decrease Override Volume to 220px |
-| `src/pages/staffing/SettingsTab.tsx` | Update storeNamespace to `volume-override-settings-v3` to reset cached widths |
-
+| `src/pages/staffing/NPSettingsTab.tsx` | Set `np_target_volume` to fixed value of `10` instead of pulling from analysis |
