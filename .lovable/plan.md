@@ -1,73 +1,117 @@
 
 
-# Fix Comment Counts Not Displaying in Employees Table
+# Show Full Names in Facility and Department Filter Dropdowns
 
 ## Problem
 
-The comment counts column shows "-" for all rows instead of actual counts. After investigation, the issue is with how the `commentCounts` Map is handled in React's memoization:
-
-1. **Unstable default value**: Line 32 of `usePositionCommentCounts.ts` creates a new `Map` instance on every render when data is undefined
-2. **Closure capture**: The `createEmployeeColumnsWithComments` function captures the `commentCounts` Map at column creation time, but the Map might be empty initially
+In the Facility and Department filter dropdowns, long facility/department names are being truncated (e.g., "Ascension Saint Thomas Hickm..."). The current layout uses a fixed 220px width for the name column with truncation applied.
 
 ---
 
-## Root Cause Analysis
+## Current vs. Proposed
 
-The data flow:
-1. `employees` query loads position data
-2. `positionIds` are extracted from `filteredAndSortedEmployees`
-3. `commentCounts` query fetches counts for those IDs
-4. `columnsWithHandlers` memoizes columns with `commentCounts`
+```text
+CURRENT (names cut off):
+┌────────────────────────────────────────┐
+│ Ascension Saint Thomas Hickm...  46004 │
+│ Ascension Saint Thomas Midto...  46001 │
+│ Ascension Saint Thomas River...  46005 │
+└────────────────────────────────────────┘
 
-The problem: When `columnsWithHandlers` is first computed, `commentCounts` is an empty Map. When the counts query completes, a new Map is returned, but the column's `renderCell` closure may still reference the old empty Map.
-
----
-
-## Solution
-
-### 1. Stabilize the default Map in `usePositionCommentCounts.ts`
-
-Create a stable empty Map reference outside the hook to prevent referential instability:
-
-```typescript
-// Add at top of file, outside the hook
-const EMPTY_MAP = new Map<string, number>();
-
-export function usePositionCommentCounts(positionIds: string[]) {
-  // ... existing code ...
-  
-  const { data: counts = EMPTY_MAP } = useQuery({
-    // ... existing config ...
-  });
-  
-  return counts;
-}
+PROPOSED (full names visible):
+┌─────────────────────────────────────────────────┐
+│ Ascension Saint Thomas Hickman Hospital  46004 │
+│ Ascension Saint Thomas Midtown          46001 │
+│ Ascension Saint Thomas River Park       46005 │
+└─────────────────────────────────────────────────┘
 ```
 
-### 2. (Optional) Add isLoading state handling
+---
 
-Return loading state so the UI can show a loading indicator:
+## Technical Changes
 
+### 1. Update Facility Dropdown Layout
+
+**File:** `src/components/staffing/FilterBar.tsx`
+
+**Line 365** - Increase popover width:
 ```typescript
-const { data: counts = EMPTY_MAP, isLoading } = useQuery({...});
-return { counts, isLoading };
+// FROM:
+<PopoverContent className="w-[340px] p-0 bg-popover border-border z-50" align="start">
+
+// TO:
+<PopoverContent className="w-[420px] p-0 bg-popover border-border z-50" align="start">
 ```
 
-Then in EmployeesTab, you could show a loading spinner in the counts cell while loading.
+**Lines 411-416** - Use flexible layout for facility items:
+```typescript
+// FROM:
+<div className="grid grid-cols-[220px_80px] w-full">
+  <span className="truncate text-left">{facility.facility_name}</span>
+  <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right">
+    {facility.facility_id}
+  </span>
+</div>
+
+// TO:
+<div className="flex w-full items-center justify-between gap-2">
+  <span className="text-left">{facility.facility_name}</span>
+  <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right whitespace-nowrap">
+    {facility.facility_id}
+  </span>
+</div>
+```
 
 ---
 
-## Files to Modify
+### 2. Update Department Dropdown Layout
 
-| File | Changes |
-|------|---------|
-| `src/hooks/usePositionCommentCounts.ts` | Create stable `EMPTY_MAP` constant outside the hook and use it as the default value |
+**Line 456** - Increase popover width:
+```typescript
+// FROM:
+<PopoverContent className="w-[340px] p-0 bg-popover border-border z-50" align="start">
+
+// TO:
+<PopoverContent className="w-[420px] p-0 bg-popover border-border z-50" align="start">
+```
+
+**Lines 502-507** - Use flexible layout for department items:
+```typescript
+// FROM:
+<div className="grid grid-cols-[220px_80px] w-full">
+  <span className="truncate text-left">{dept.department_name}</span>
+  <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right">
+    {dept.department_id}
+  </span>
+</div>
+
+// TO:
+<div className="flex w-full items-center justify-between gap-2">
+  <span className="text-left">{dept.department_name}</span>
+  <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right whitespace-nowrap">
+    {dept.department_id}
+  </span>
+</div>
+```
 
 ---
 
-## Technical Notes
+## Summary of Changes
 
-- The `EMPTY_MAP` constant ensures React's memoization detects when the actual data Map is returned vs the empty default
-- This is a common pattern for React Query hooks that return collection types
-- No changes needed to `EmployeesTab.tsx` since the `useMemo` dependencies are already correct
+| Location | Change |
+|----------|--------|
+| Line 365 | Facility popover width: `340px` → `420px` |
+| Lines 411-416 | Facility: Replace fixed grid with flex layout, remove `truncate` |
+| Line 456 | Department popover width: `340px` → `420px` |
+| Lines 502-507 | Department: Replace fixed grid with flex layout, remove `truncate` |
+
+---
+
+## Notes
+
+- The flex layout allows the name to use available space while keeping the ID fixed-width
+- Removing `truncate` ensures full names are always visible
+- Adding `whitespace-nowrap` to the ID ensures it stays on one line
+- The wider popover (420px) provides comfortable room for long facility names like "Ascension Saint Thomas Hickman Hospital"
+- This maintains the existing two-column visual style (name left, ID right with divider) while showing complete text
 
