@@ -1,28 +1,31 @@
 
 
-# Fix Variance Analysis - Sticky Column Background Mismatch
+# Fix Variance Analysis - Row Background Override Conflict
 
 ## Root Cause
 
-The global `TableBody` component in `src/components/ui/table.tsx` applies alternating row striping via `[&_tr:nth-child(even)]:bg-muted/30`. This means every even `<tr>` gets a subtle tint. The non-sticky cells inherit this tint from their parent `<tr>`, but the sticky first cell has its own explicit background (e.g., `!bg-background`, `!bg-primary/10`) which blocks the striping -- making it look different from the rest of the row on even rows.
+The previous fix added `[&_tr:nth-child(even)]:!bg-transparent` to `TableBody`, which uses `!important` to force even rows transparent. But this **overrides** the `!bg-primary/10` and `!bg-muted/20` classes that GroupRow and TotalRow apply to their `<tr>` elements. So on even rows, the row background disappears entirely, while the sticky cell (which has its own explicit `!bg-primary/10`) keeps its color -- creating a mismatch.
 
 ## Solution
 
-Disable the alternating row striping specifically for the Variance Analysis table by adding a custom class to the `TableBody` that removes the `nth-child` rule.
+Instead of fighting specificity with `!important` on TableBody, remove the global striping override and instead apply explicit background classes to **all non-sticky `<td>` cells** within each row type so they always match the sticky cell. This is the most reliable approach since each cell controls its own background.
 
 ### File: `src/pages/staffing/VarianceAnalysis.tsx`
 
-**Line 666** - Add a class override to `TableBody` to disable striping:
-
+**Step 1** -- Remove the TableBody override (line 666):
 ```tsx
-// Current
+// Revert back to:
 <TableBody>
-
-// After
-<TableBody className="[&_tr:nth-child(even)]:!bg-transparent">
 ```
 
-This neutralizes the global even-row striping for this table only, so every row type (GroupRow, SkillRow, TotalRow) controls its own background consistently. The sticky first cell and the rest of the row will always match because no external striping interferes.
+**Step 2** -- Add explicit `!bg-primary/10` to all data cells in **GroupRow** (lines 446-490):
+Every `<TableCell>` in GroupRow currently has no background class. Add `!bg-primary/10` to each one so they match the sticky cell and override the even-row striping.
 
-No other files need changes. The existing `!bg-primary/10`, `!bg-background`, and `!bg-muted/20` classes on the rows already define the correct backgrounds -- they just need the striping to stop overriding the non-sticky cells on even rows.
+**Step 3** -- Add explicit `!bg-background` to all data cells in **SkillRow** (lines 540-580):
+Every `<TableCell>` in SkillRow needs `!bg-background` to match its sticky cell.
+
+**Step 4** -- Add explicit `!bg-muted/20` to all data cells in **TotalRow** (lines 588-630):
+Every `<TableCell>` in TotalRow needs `!bg-muted/20` to match its sticky cell.
+
+This ensures every cell in every row has the same forced background, so neither the sticky column nor the data columns can be tinted differently by global striping rules. The border fix (`border-r-2 border-muted-foreground/30`) on the sticky cell remains unchanged.
 
