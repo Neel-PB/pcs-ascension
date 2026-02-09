@@ -1,113 +1,94 @@
 
-# Fix Access Scope Filter Selection Not Working
+## What’s actually causing the “can’t scroll / can’t search / popover jumps around” behavior
 
-## Problem
-The Region and Market dropdowns in the Edit User form's Access Scope section are not responding to selections. When clicking on items, the checkboxes remain unchecked and the "No restrictions" text persists.
+### 1) Scrolling is broken because our `ScrollArea` needs a real height (not just `max-height`)
+Your `ScrollArea` component is Radix-based and renders like this:
 
-## Root Cause Analysis
-Looking at the `MultiSelectChips` component, the issue is in how the `Checkbox` component is wrapped inside a `<label>` element:
+- Root: `overflow-hidden`
+- Viewport: `h-full w-full`
 
-```tsx
-<label className="...">
-  <Checkbox
-    checked={isSelected}
-    onCheckedChange={() => handleToggle(option.value)}
-  />
-</label>
-```
+That means **the Root must have an explicit height**.  
+Right now we’re using:
 
-The Radix UI `Checkbox` component uses an internal button element, and when wrapped in a `<label>`, there can be double-triggering or event conflicts. When clicking the label, it may:
-1. Trigger the label's click → which triggers the checkbox
-2. But the `onCheckedChange` event can get into a toggle loop or not fire correctly
+- `MultiSelectChips`: `<ScrollArea className="max-h-[250px]">`
+- `AccessScopeManager` Facility/Department: `<ScrollArea className="max-h-[300px]">`
 
-## Solution
-Change the click handling to use an explicit `onClick` on the parent container instead of relying on `<label>` + `onCheckedChange`:
+`max-h-*` alone does not give the Root a real height, so the viewport expands to content and you get **no internal overflow**, hence **no wheel scrolling**. The popover then grows/shrinks with search results, causing repositioning.
 
-### File: `src/components/ui/multi-select-chips.tsx`
+### 2) The popover “moves” because its height is changing while Radix tries to keep it in view
+When you search, the list length changes → popover height changes → Radix Popover recomputes placement/collision → it shifts (sometimes flips).
 
-**Changes:**
-1. Replace the `<label>` element with a `<div>` 
-2. Move the click handler to the parent `<div>` with `onClick={() => handleToggle(option.value)}`
-3. Make the `Checkbox` purely presentational (remove `onCheckedChange`, keep only `checked`)
-
-**Before:**
-```tsx
-<label className="flex items-start gap-2 p-2 rounded-md cursor-pointer...">
-  <Checkbox
-    checked={isSelected}
-    onCheckedChange={() => handleToggle(option.value)}
-    className="mt-0.5"
-  />
-  ...
-</label>
-```
-
-**After:**
-```tsx
-<div 
-  role="option"
-  aria-selected={isSelected}
-  onClick={() => handleToggle(option.value)}
-  className="flex items-start gap-2 p-2 rounded-md cursor-pointer..."
->
-  <Checkbox
-    checked={isSelected}
-    className="mt-0.5 pointer-events-none"
-  />
-  ...
-</div>
-```
-
-### Also Update: `src/components/admin/AccessScopeManager.tsx`
-
-Apply the same fix to the Facility and Department custom popovers (lines 466-499 and 536-569):
-
-**Before (Facility):**
-```tsx
-<label
-  key={facility.facility_id}
-  className={cn("flex items-center gap-2 p-2 rounded-md cursor-pointer...")}
->
-  <Checkbox
-    checked={isSelected}
-    onCheckedChange={() => handleFacilityToggle(facility.facility_id)}
-    className="shrink-0"
-  />
-  ...
-</label>
-```
-
-**After:**
-```tsx
-<div
-  key={facility.facility_id}
-  role="option"
-  aria-selected={isSelected}
-  onClick={() => handleFacilityToggle(facility.facility_id)}
-  className={cn("flex items-center gap-2 p-2 rounded-md cursor-pointer...")}
->
-  <Checkbox
-    checked={isSelected}
-    className="shrink-0 pointer-events-none"
-  />
-  ...
-</div>
-```
+Fixing the list to a stable height makes the popover position stable.
 
 ---
 
-## Files to Modify
+## Plan to fix (no behavior changes to your filter rules—only UX)
 
-| File | Changes |
-|------|---------|
-| `src/components/ui/multi-select-chips.tsx` | Replace `<label>` with `<div>`, use `onClick` on container, make Checkbox presentational with `pointer-events-none` |
-| `src/components/admin/AccessScopeManager.tsx` | Same fix for Facility and Department custom popovers |
+### A) Fix scrolling + stabilize layout in `MultiSelectChips` (Region + Market)
+**File:** `src/components/ui/multi-select-chips.tsx`
+
+1. Change the list container from `max-h-[250px]` to a fixed height:
+   - Replace: `className="max-h-[250px]"`
+   - With: `className="h-[250px]"`  
+   Result: Radix ScrollArea actually becomes scrollable.
+
+2. Prevent small width/layout “jumps” when scrollbar appears/disappears:
+   - Add `overflow-y-scroll` behavior to keep the gutter stable.
+   - Easiest path:
+     - either switch to a native div scroller (`div.h-[250px].overflow-y-auto`) inside the popover
+     - or keep `ScrollArea` but ensure the viewport always scrolls and we apply `overflow-y-scroll` to the viewport wrapper (details in implementation notes).
+
+3. Improve search-focus reliability:
+   - Update `onOpenAutoFocus` to call `event.preventDefault()` and then focus the input.
+   - This prevents Radix from focusing something else and helps ensure typing always goes into the search field immediately.
+
+4. Optional but recommended: reset search when popover closes
+   - When `open` becomes `false`, set `search` back to `""` so the list doesn’t stay filtered the next time.
+
+### B) Fix scrolling + stabilize layout in Facility/Department popovers
+**File:** `src/components/admin/AccessScopeManager.tsx`
+
+1. Change Facility list `ScrollArea` from `max-h-[300px]` to `h-[300px]`
+2. Change Department list `ScrollArea` from `max-h-[300px]` to `h-[300px]`
+
+This will:
+- Make wheel scrolling work
+- Keep popover height stable while searching and selecting
+
+3. Reduce “sheet scroll stealing” while you try to scroll inside the popover (common inside a side sheet):
+   - Add `onWheelCapture={(e) => e.stopPropagation()}` to the scroll container (the `ScrollArea` root or the inner scrolling element).
+   - This ensures the wheel scroll affects the list, not the underlying sheet.
+
+4. Keep popover placement consistent:
+   - Explicitly set popover content to open on bottom and align start (you already align start), plus keep collision behavior:
+     - `side="bottom"` (and keep `align="start"`)
+   - With fixed list heights, collision-driven movement should mostly stop.
+
+### C) Verify with a quick end-to-end test path (what I’ll test after the changes)
+1. Admin → Users → Edit user → Access Scope Restrictions
+2. Region → Add → type in search → scroll list
+3. Market → Add → type in search → scroll list
+4. Facility → Add → type in search → scroll list
+5. Department → Add → type in search → scroll list
+6. Confirm: popover no longer jumps when filtering results
 
 ---
 
-## Expected Outcome
+## Implementation notes (so it matches your app patterns)
+- We will keep your current selection styling (bg highlight + border, no checkmarks).
+- We will not change your cascading logic—only the dropdown mechanics and stability.
+- We will keep dropdown backgrounds solid (`bg-popover`) and z-index high.
 
-- Clicking on a Region/Market/Facility/Department item will properly toggle the selection
-- Selected items will show as chips with the remove (X) button
-- The checkbox will show the checked state (filled blue with checkmark)
-- The "No restrictions" text will be replaced with the selected chips
+---
+
+## Files to change
+1. `src/components/ui/multi-select-chips.tsx`
+2. `src/components/admin/AccessScopeManager.tsx`
+
+---
+
+## Expected outcome
+- Search inputs always accept typing immediately
+- Lists scroll properly with mouse wheel/trackpad
+- Popover height stays stable while filtering, so its position doesn’t jump around
+- Works consistently inside the Edit User sheet
