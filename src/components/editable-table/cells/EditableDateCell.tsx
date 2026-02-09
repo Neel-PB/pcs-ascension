@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { CalendarIcon, RotateCcw } from 'lucide-react';
+import { Pencil, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface EditableDateCellProps {
@@ -83,20 +83,37 @@ export function EditableDateCell({
   const displayValue = date ? format(date, formatString) : '—';
 
   return (
-    <div className="flex items-center justify-between w-full h-full px-3 group">
+    <div className="flex items-center justify-between w-full h-full px-3">
+      {/* Date text - left aligned */}
+      <span className={cn("text-sm", !date && "text-muted-foreground", className)}>
+        {displayValue}
+      </span>
+
+      {/* Action icon - right aligned */}
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            className={cn(
-              "flex-1 justify-start text-left font-normal h-full px-0 hover:bg-transparent",
-              !date && "text-muted-foreground",
-              className
-            )}
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            <span>{displayValue}</span>
-          </Button>
+          {hasChanged() && originalValue ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 text-muted-foreground hover:text-foreground"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRevert(e);
+              }}
+              title="Revert to original"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 text-muted-foreground hover:text-foreground"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
+          )}
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
@@ -113,18 +130,6 @@ export function EditableDateCell({
           />
         </PopoverContent>
       </Popover>
-      
-      {hasChanged() && originalValue && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleRevert}
-          className="opacity-0 group-hover:opacity-100 transition-opacity ml-2 h-6 w-6 p-0"
-          title="Revert to original"
-        >
-          <RotateCcw className="h-3 w-3" />
-        </Button>
-      )}
     </div>
   );
 }
