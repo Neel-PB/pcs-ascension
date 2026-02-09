@@ -76,34 +76,13 @@ export function MultiSelectChips({
 
   return (
     <div className={cn("space-y-2", className)}>
-      {label && (
-        <div className="flex items-center gap-2">
-          {icon}
-          <span className="text-sm font-medium">{label}</span>
-        </div>
-      )}
-
-      <div className="flex flex-wrap items-center gap-2">
-        {selectedOptions.length > 0 ? (
-          selectedOptions.map((option) => (
-            <Badge
-              key={option.value}
-              variant="secondary"
-              className="pl-2.5 pr-1 py-1 flex items-center gap-1.5 text-sm"
-            >
-              {option.isSystem && <Lock className="h-3 w-3 text-muted-foreground" />}
-              <span className="max-w-[150px] truncate">{option.label}</span>
-              <button
-                type="button"
-                onClick={() => handleRemove(option.value)}
-                className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </Badge>
-          ))
-        ) : (
-          <span className="text-sm text-muted-foreground">{emptyText}</span>
+      {/* Header row: label + Add button */}
+      <div className="flex items-center justify-between">
+        {label && (
+          <div className="flex items-center gap-2">
+            {icon}
+            <span className="text-sm font-medium">{label}</span>
+          </div>
         )}
 
         <Popover open={open} onOpenChange={handleOpenChange}>
@@ -190,6 +169,31 @@ export function MultiSelectChips({
             </div>
           </PopoverContent>
         </Popover>
+      </div>
+      
+      {/* Chips row (separate) */}
+      <div className="flex flex-wrap gap-2">
+        {selectedOptions.length > 0 ? (
+          selectedOptions.map((option) => (
+            <Badge
+              key={option.value}
+              variant="secondary"
+              className="pl-2.5 pr-1 py-1 flex items-center gap-1.5 text-sm"
+            >
+              {option.isSystem && <Lock className="h-3 w-3 text-muted-foreground" />}
+              <span className="max-w-[150px] truncate">{option.label}</span>
+              <button
+                type="button"
+                onClick={() => handleRemove(option.value)}
+                className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          ))
+        ) : (
+          <span className="text-sm text-muted-foreground">{emptyText}</span>
+        )}
       </div>
     </div>
   );

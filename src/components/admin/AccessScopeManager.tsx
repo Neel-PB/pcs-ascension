@@ -398,33 +398,12 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
       
       {/* Facility - Searchable Two-Column Layout */}
       <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Building2 className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">Facility</span>
-        </div>
-        
-        <div className="flex flex-wrap items-center gap-2">
-          {selectedFacilityObjects.length > 0 ? (
-            selectedFacilityObjects.map((facility) => (
-              <Badge
-                key={facility.facility_id}
-                variant="secondary"
-                className="pl-2.5 pr-1 py-1 flex items-center gap-1.5 text-sm"
-              >
-                <span className="max-w-[150px] truncate">{facility.facility_name}</span>
-                <span className="text-xs text-muted-foreground font-mono">{facility.facility_id}</span>
-                <button
-                  type="button"
-                  onClick={() => handleFacilityRemove(facility.facility_id)}
-                  className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            ))
-          ) : (
-            <span className="text-sm text-muted-foreground">No restrictions</span>
-          )}
+        {/* Header row: label + Add button */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Building2 className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">Facility</span>
+          </div>
 
           <Popover open={facilityOpen} onOpenChange={(isOpen) => {
             setFacilityOpen(isOpen);
@@ -504,28 +483,21 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
             </PopoverContent>
           </Popover>
         </div>
-      </div>
-      
-      {/* Department - Searchable Two-Column Layout */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Layers className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">Department</span>
-        </div>
         
-        <div className="flex flex-wrap items-center gap-2">
-          {selectedDepartmentObjects.length > 0 ? (
-            selectedDepartmentObjects.map((dept) => (
+        {/* Chips row (separate) */}
+        <div className="flex flex-wrap gap-2">
+          {selectedFacilityObjects.length > 0 ? (
+            selectedFacilityObjects.map((facility) => (
               <Badge
-                key={dept.department_id}
+                key={facility.facility_id}
                 variant="secondary"
                 className="pl-2.5 pr-1 py-1 flex items-center gap-1.5 text-sm"
               >
-                <span className="max-w-[150px] truncate">{dept.department_name}</span>
-                <span className="text-xs text-muted-foreground font-mono">{dept.department_id}</span>
+                <span className="max-w-[150px] truncate">{facility.facility_name}</span>
+                <span className="text-xs text-muted-foreground font-mono">{facility.facility_id}</span>
                 <button
                   type="button"
-                  onClick={() => handleDepartmentRemove(dept.department_id)}
+                  onClick={() => handleFacilityRemove(facility.facility_id)}
                   className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
                 >
                   <X className="h-3 w-3" />
@@ -535,6 +507,17 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
           ) : (
             <span className="text-sm text-muted-foreground">No restrictions</span>
           )}
+        </div>
+      </div>
+      
+      {/* Department - Searchable Two-Column Layout */}
+      <div className="space-y-2">
+        {/* Header row: label + Add button */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Layers className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">Department</span>
+          </div>
 
           <Popover open={departmentOpen} onOpenChange={(isOpen) => {
             setDepartmentOpen(isOpen);
@@ -613,6 +596,31 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
               </div>
             </PopoverContent>
           </Popover>
+        </div>
+        
+        {/* Chips row (separate) */}
+        <div className="flex flex-wrap gap-2">
+          {selectedDepartmentObjects.length > 0 ? (
+            selectedDepartmentObjects.map((dept) => (
+              <Badge
+                key={dept.department_id}
+                variant="secondary"
+                className="pl-2.5 pr-1 py-1 flex items-center gap-1.5 text-sm"
+              >
+                <span className="max-w-[150px] truncate">{dept.department_name}</span>
+                <span className="text-xs text-muted-foreground font-mono">{dept.department_id}</span>
+                <button
+                  type="button"
+                  onClick={() => handleDepartmentRemove(dept.department_id)}
+                  className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))
+          ) : (
+            <span className="text-sm text-muted-foreground">No restrictions</span>
+          )}
         </div>
       </div>
       
