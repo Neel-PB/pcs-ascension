@@ -22,6 +22,7 @@ interface ActivityLogParams {
   changeType: 'fte' | 'shift';
   fteDetails?: FteChangeDetails;
   shiftDetails?: ShiftChangeDetails;
+  comment?: string;
 }
 
 export function useAddActivityLog() {
@@ -29,7 +30,7 @@ export function useAddActivityLog() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ positionId, changeType, fteDetails, shiftDetails }: ActivityLogParams) => {
+    mutationFn: async ({ positionId, changeType, fteDetails, shiftDetails, comment }: ActivityLogParams) => {
       if (!user) throw new Error('User not authenticated');
 
       const commentType = changeType === 'fte' ? 'activity_fte' : 'activity_shift';
@@ -48,6 +49,7 @@ export function useAddActivityLog() {
           reason_new: fteDetails.reason_new,
           expiry_old: fteDetails.expiry_old,
           expiry_new: fteDetails.expiry_new,
+          comment: comment || null,
         };
       } else if (changeType === 'shift' && shiftDetails) {
         content = shiftDetails.is_revert ? 'Shift Reverted' : 'Shift Change';

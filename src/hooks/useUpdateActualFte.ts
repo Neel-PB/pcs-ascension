@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Position } from '@/types/position';
 import { useAddActivityLog } from './useAddActivityLog';
-import { useAddPositionComment } from './usePositionComments';
+
 
 interface UpdateActualFteParams {
   id: string;
@@ -24,7 +24,7 @@ interface UpdateActualFteParams {
 export function useUpdateActualFte() {
   const queryClient = useQueryClient();
   const addActivityLog = useAddActivityLog();
-  const addComment = useAddPositionComment();
+  
 
   return useMutation({
     mutationFn: async ({ 
@@ -91,7 +91,7 @@ export function useUpdateActualFte() {
         updatePositionInCache
       );
 
-      // Log activity with structured field details
+      // Log activity with structured field details (comment included in metadata)
       addActivityLog.mutate({
         positionId: updatedData.id,
         changeType: 'fte',
@@ -103,15 +103,8 @@ export function useUpdateActualFte() {
           expiry_old: updatedData.previousExpiry ?? null,
           expiry_new: updatedData.actual_fte_expiry ?? null,
         },
+        comment: updatedData.comment,
       });
-
-      // Add user comment if provided
-      if (updatedData.comment) {
-        addComment.mutate({
-          positionId: updatedData.id,
-          content: updatedData.comment,
-        });
-      }
 
       toast.success('Active FTE updated successfully');
     },

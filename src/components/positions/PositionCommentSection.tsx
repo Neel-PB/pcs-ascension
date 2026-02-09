@@ -113,6 +113,7 @@ function FteActivityCard({ metadata, displayName }: { metadata: Record<string, u
   const reasonNew = metadata.reason_new as string | null;
   const expiryOld = metadata.expiry_old as string | null;
   const expiryNew = metadata.expiry_new as string | null;
+  const comment = metadata.comment as string | null;
 
   // Format expiry dates
   const formattedExpiryOld = expiryOld ? format(new Date(expiryOld), "MMM d, yyyy") : null;
@@ -123,6 +124,11 @@ function FteActivityCard({ metadata, displayName }: { metadata: Record<string, u
       <ActivityFieldRow label="FTE" oldValue={fteOld} newValue={fteNew} />
       <ActivityFieldRow label="Reason" oldValue={reasonOld} newValue={reasonNew} isMultiline />
       <ActivityFieldRow label="Expiry" oldValue={formattedExpiryOld} newValue={formattedExpiryNew} />
+      {comment && (
+        <div className="pt-3 pb-1">
+          <p className="text-sm text-foreground italic">"{comment}"</p>
+        </div>
+      )}
       <div className="flex justify-end pt-2">
         <span className="text-xs text-muted-foreground">by {displayName}</span>
       </div>
