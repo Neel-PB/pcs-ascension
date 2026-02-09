@@ -1,36 +1,28 @@
 
 
-# Fix Row Colors in Planned/Active Resources Table
+# Fix Group Row Colors Being Overridden by Even/Odd Striping
 
 ## Problem
-- **Group rows** (Overheads, Clinical Staff, Support Staff) should have a **light blue background** to visually distinguish them as category headers
-- **Child skill rows** (Director, RN, PCT, etc.) should have the **default background** (no color), not the alternating even/odd striping
-- Currently, the global `TableBody` component applies `nth-child(even):bg-muted/30` to ALL tables, which incorrectly colors even skill rows
+The global `TableBody` applies `[&_tr:nth-child(even)]:bg-muted/30` which overrides the `bg-primary/10` on group rows that happen to land on even positions. This is why "Overheads" and "Support Staff" look the same -- one gets the blue, the other gets the stripe color depending on its position.
 
 ## Solution
 
-### 1. `src/pages/staffing/PositionPlanning.tsx`
+### File: `src/pages/staffing/PositionPlanning.tsx`
 
-**GroupRow (line 364):** Change `bg-primary/5 hover:bg-primary/10` to a more visible light blue: `bg-primary/10 hover:bg-primary/15`
-- Also update the sticky cell background on line 367 to match
+**GroupRow (line 364):** Use Tailwind's `!` modifier to force the blue background:
+- Change `bg-primary/10 hover:bg-primary/15` to `!bg-primary/10 hover:!bg-primary/15`
+- This ensures the light blue always takes priority over the even/odd striping rule
 
-**SkillRow (line 424):** Add explicit `bg-background` to override the even/odd striping inherited from TableBody
-- This ensures all child rows stay on the default background regardless of their position
+**SkillRow (line 424):** Same treatment for the default background:
+- Change `bg-background` to `!bg-background`
+- This ensures child rows never get the stripe color
 
-### 2. No changes to `src/components/ui/table.tsx`
-The global even/odd striping stays for other tables (Employees, Requisitions, etc.). We override it only in the PositionPlanning rows.
+No other files need to change. The global TableBody striping remains intact for all other tables.
 
-## Summary
+## Result
 
-| Row Type | Current | After |
-|----------|---------|-------|
-| Group (Overheads, Clinical, Support) | `bg-primary/5` (very faint blue) | `bg-primary/10` (clear light blue) |
-| Child Skill (Director, RN, etc.) | Even/odd striping (`bg-muted/30`) | `bg-background` (default, no stripe) |
-| Total Row | `bg-muted/50` | No change |
-
-## File to Modify
-
-| File | Change |
-|------|--------|
-| `src/pages/staffing/PositionPlanning.tsx` | Update GroupRow and SkillRow background classes |
+| Row Type | Fix |
+|----------|-----|
+| Group (Overheads, Clinical, Support) | Always light blue, regardless of even/odd position |
+| Child Skill (Director, RN, etc.) | Always default background, no striping |
 
