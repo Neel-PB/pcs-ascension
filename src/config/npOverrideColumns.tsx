@@ -89,7 +89,7 @@ export const createNPOverrideColumns = (
     minWidth: 180,
     sortable: true,
     renderCell: (row) => (
-      <div className="px-3 py-2">
+      <div className="relative w-full h-full">
         <EditableDateCell
           value={row.expiry_date}
           originalValue={null}
