@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { X, Plus, Search, Check, Lock } from "lucide-react";
+import { X, Plus, Search, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -168,9 +168,6 @@ export function MultiSelectChips({
                             </p>
                           )}
                         </div>
-                        {isSelected && (
-                          <Check className="h-4 w-4 text-primary shrink-0" />
-                        )}
                       </label>
                     );
                   })

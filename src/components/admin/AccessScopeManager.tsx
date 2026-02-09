@@ -1,12 +1,30 @@
-import { useState, useEffect } from "react";
-import { Globe, MapPin, Building2, Layers } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Globe, MapPin, Building2, Layers, Plus, X, Search, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { useFilterData } from "@/hooks/useFilterData";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { MultiSelectChips, type MultiSelectOption } from "@/components/ui/multi-select-chips";
+import { cn } from "@/lib/utils";
 
 interface AccessScopeManagerProps {
   userId: string;
@@ -28,8 +46,12 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
     departments: new Set(),
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [facilitySearch, setFacilitySearch] = useState("");
+  const [departmentSearch, setDepartmentSearch] = useState("");
+  const [facilityOpen, setFacilityOpen] = useState(false);
+  const [departmentOpen, setDepartmentOpen] = useState(false);
   
-  const { regions, markets, facilities, departments, isLoading: filterLoading } = useFilterData();
+  const { regions, markets, facilities, departments, isLoading: filterLoading, getMarketsByRegion, getFacilitiesByMarket, getDepartmentsByFacility } = useFilterData();
   const queryClient = useQueryClient();
   
   // Fetch existing access scope entries when editing
@@ -81,12 +103,44 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
     setSelectedAccess(prev => ({ ...prev, markets: new Set(values) }));
   };
 
-  const handleFacilitiesChange = (values: string[]) => {
-    setSelectedAccess(prev => ({ ...prev, facilities: new Set(values) }));
+  const handleFacilityToggle = (facilityId: string) => {
+    setSelectedAccess(prev => {
+      const newFacilities = new Set(prev.facilities);
+      if (newFacilities.has(facilityId)) {
+        newFacilities.delete(facilityId);
+      } else {
+        newFacilities.add(facilityId);
+      }
+      return { ...prev, facilities: newFacilities };
+    });
   };
 
-  const handleDepartmentsChange = (values: string[]) => {
-    setSelectedAccess(prev => ({ ...prev, departments: new Set(values) }));
+  const handleFacilityRemove = (facilityId: string) => {
+    setSelectedAccess(prev => {
+      const newFacilities = new Set(prev.facilities);
+      newFacilities.delete(facilityId);
+      return { ...prev, facilities: newFacilities };
+    });
+  };
+
+  const handleDepartmentToggle = (departmentId: string) => {
+    setSelectedAccess(prev => {
+      const newDepartments = new Set(prev.departments);
+      if (newDepartments.has(departmentId)) {
+        newDepartments.delete(departmentId);
+      } else {
+        newDepartments.add(departmentId);
+      }
+      return { ...prev, departments: newDepartments };
+    });
+  };
+
+  const handleDepartmentRemove = (departmentId: string) => {
+    setSelectedAccess(prev => {
+      const newDepartments = new Set(prev.departments);
+      newDepartments.delete(departmentId);
+      return { ...prev, departments: newDepartments };
+    });
   };
   
   const clearAll = () => {
@@ -201,32 +255,86 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
     };
   }, [selectedAccess, userId]);
 
-  // Build options for each level
+  // Build options for Region (no cascading needed)
   const regionOptions: MultiSelectOption[] = regions.map(r => ({
     value: r.region,
     label: r.region,
   }));
 
-  const marketOptions: MultiSelectOption[] = markets.map(m => ({
+  // Cascading: Markets filtered by selected Regions
+  const filteredMarkets = useMemo(() => {
+    if (selectedAccess.regions.size === 0) {
+      return markets;
+    }
+    return markets.filter(m => m.region && selectedAccess.regions.has(m.region));
+  }, [markets, selectedAccess.regions]);
+
+  const marketOptions: MultiSelectOption[] = filteredMarkets.map(m => ({
     value: m.market,
     label: m.market,
     description: m.region || undefined,
   }));
 
-  const facilityOptions: MultiSelectOption[] = facilities.map(f => ({
-    value: f.facility_id,
-    label: f.facility_name,
-    description: f.market,
-  }));
+  // Cascading: Facilities filtered by selected Markets (or Regions if no Markets selected)
+  const filteredFacilities = useMemo(() => {
+    if (selectedAccess.markets.size > 0) {
+      return facilities.filter(f => selectedAccess.markets.has(f.market));
+    }
+    if (selectedAccess.regions.size > 0) {
+      return facilities.filter(f => f.region && selectedAccess.regions.has(f.region));
+    }
+    return facilities;
+  }, [facilities, selectedAccess.markets, selectedAccess.regions]);
 
-  const departmentOptions: MultiSelectOption[] = departments.map(d => {
-    const facility = facilities.find(f => f.facility_id === d.facility_id);
-    return {
-      value: d.department_id,
-      label: d.department_name,
-      description: facility?.facility_name || d.facility_id,
-    };
-  });
+  // Filter facilities by search
+  const searchedFacilities = useMemo(() => {
+    if (!facilitySearch) return filteredFacilities;
+    const query = facilitySearch.toLowerCase();
+    return filteredFacilities.filter(f => 
+      f.facility_name.toLowerCase().includes(query) ||
+      f.facility_id.toLowerCase().includes(query)
+    );
+  }, [filteredFacilities, facilitySearch]);
+
+  // Cascading: Departments filtered by selected Facilities (or cascade from Markets/Regions)
+  const filteredDepartments = useMemo(() => {
+    if (selectedAccess.facilities.size > 0) {
+      return departments.filter(d => selectedAccess.facilities.has(d.facility_id));
+    }
+    if (selectedAccess.markets.size > 0) {
+      const facilityIds = facilities
+        .filter(f => selectedAccess.markets.has(f.market))
+        .map(f => f.facility_id);
+      return departments.filter(d => facilityIds.includes(d.facility_id));
+    }
+    if (selectedAccess.regions.size > 0) {
+      const facilityIds = facilities
+        .filter(f => f.region && selectedAccess.regions.has(f.region))
+        .map(f => f.facility_id);
+      return departments.filter(d => facilityIds.includes(d.facility_id));
+    }
+    return departments;
+  }, [departments, facilities, selectedAccess.facilities, selectedAccess.markets, selectedAccess.regions]);
+
+  // Filter departments by search
+  const searchedDepartments = useMemo(() => {
+    if (!departmentSearch) return filteredDepartments;
+    const query = departmentSearch.toLowerCase();
+    return filteredDepartments.filter(d => 
+      d.department_name.toLowerCase().includes(query) ||
+      d.department_id.toLowerCase().includes(query)
+    );
+  }, [filteredDepartments, departmentSearch]);
+
+  // Get selected facility objects for chips display
+  const selectedFacilityObjects = useMemo(() => {
+    return facilities.filter(f => selectedAccess.facilities.has(f.facility_id));
+  }, [facilities, selectedAccess.facilities]);
+
+  // Get selected department objects for chips display
+  const selectedDepartmentObjects = useMemo(() => {
+    return departments.filter(d => selectedAccess.departments.has(d.department_id));
+  }, [departments, selectedAccess.departments]);
   
   const totalSelected = selectedAccess.regions.size + selectedAccess.markets.size + 
                         selectedAccess.facilities.size + selectedAccess.departments.size;
@@ -276,7 +384,7 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
         emptyText="No restrictions"
       />
       
-      {/* Market */}
+      {/* Market - Cascaded by Region */}
       <MultiSelectChips
         label="Market"
         icon={<MapPin className="h-4 w-4 text-muted-foreground" />}
@@ -288,29 +396,211 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
         emptyText="No restrictions"
       />
       
-      {/* Facility */}
-      <MultiSelectChips
-        label="Facility"
-        icon={<Building2 className="h-4 w-4 text-muted-foreground" />}
-        options={facilityOptions}
-        selected={Array.from(selectedAccess.facilities)}
-        onChange={handleFacilitiesChange}
-        placeholder="Search facilities..."
-        addButtonText="Add"
-        emptyText="No restrictions"
-      />
+      {/* Facility - Searchable Two-Column Layout */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Building2 className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium">Facility</span>
+        </div>
+        
+        <div className="flex flex-wrap items-center gap-2">
+          {selectedFacilityObjects.length > 0 ? (
+            selectedFacilityObjects.map((facility) => (
+              <Badge
+                key={facility.facility_id}
+                variant="secondary"
+                className="pl-2.5 pr-1 py-1 flex items-center gap-1.5 text-sm"
+              >
+                <span className="max-w-[150px] truncate">{facility.facility_name}</span>
+                <span className="text-xs text-muted-foreground font-mono">{facility.facility_id}</span>
+                <button
+                  type="button"
+                  onClick={() => handleFacilityRemove(facility.facility_id)}
+                  className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))
+          ) : (
+            <span className="text-sm text-muted-foreground">No restrictions</span>
+          )}
+
+          <Popover open={facilityOpen} onOpenChange={setFacilityOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 px-2.5 gap-1"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Add
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent 
+              className="w-[520px] p-0 bg-popover" 
+              align="start"
+            >
+              <div className="p-2 border-b">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by name or ID..."
+                    value={facilitySearch}
+                    onChange={(e) => setFacilitySearch(e.target.value)}
+                    className="pl-8 h-8"
+                  />
+                </div>
+              </div>
+              <ScrollArea className="max-h-[300px]">
+                <div className="p-1">
+                  {searchedFacilities.length === 0 ? (
+                    <div className="py-4 text-center text-sm text-muted-foreground">
+                      No facilities found
+                    </div>
+                  ) : (
+                    searchedFacilities.map((facility) => {
+                      const isSelected = selectedAccess.facilities.has(facility.facility_id);
+                      return (
+                        <label
+                          key={facility.facility_id}
+                          className={cn(
+                            "flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors",
+                            isSelected 
+                              ? "bg-primary/15 border border-primary/30" 
+                              : "border border-transparent hover:bg-muted/50"
+                          )}
+                        >
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={() => handleFacilityToggle(facility.facility_id)}
+                            className="shrink-0"
+                          />
+                          <div className="flex-1 min-w-0 grid grid-cols-[minmax(0,1fr)_80px] gap-2 items-center">
+                            <span className="text-sm whitespace-normal break-words">
+                              {facility.facility_name}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <div className="w-px h-4 bg-border" />
+                              <span className="text-xs text-muted-foreground font-mono whitespace-nowrap">
+                                {facility.facility_id}
+                              </span>
+                            </div>
+                          </div>
+                        </label>
+                      );
+                    })
+                  )}
+                </div>
+              </ScrollArea>
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
       
-      {/* Department */}
-      <MultiSelectChips
-        label="Department"
-        icon={<Layers className="h-4 w-4 text-muted-foreground" />}
-        options={departmentOptions}
-        selected={Array.from(selectedAccess.departments)}
-        onChange={handleDepartmentsChange}
-        placeholder="Search departments..."
-        addButtonText="Add"
-        emptyText="No restrictions"
-      />
+      {/* Department - Searchable Two-Column Layout */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Layers className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium">Department</span>
+        </div>
+        
+        <div className="flex flex-wrap items-center gap-2">
+          {selectedDepartmentObjects.length > 0 ? (
+            selectedDepartmentObjects.map((dept) => (
+              <Badge
+                key={dept.department_id}
+                variant="secondary"
+                className="pl-2.5 pr-1 py-1 flex items-center gap-1.5 text-sm"
+              >
+                <span className="max-w-[150px] truncate">{dept.department_name}</span>
+                <span className="text-xs text-muted-foreground font-mono">{dept.department_id}</span>
+                <button
+                  type="button"
+                  onClick={() => handleDepartmentRemove(dept.department_id)}
+                  className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))
+          ) : (
+            <span className="text-sm text-muted-foreground">No restrictions</span>
+          )}
+
+          <Popover open={departmentOpen} onOpenChange={setDepartmentOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 px-2.5 gap-1"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Add
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent 
+              className="w-[520px] p-0 bg-popover" 
+              align="start"
+            >
+              <div className="p-2 border-b">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by name or ID..."
+                    value={departmentSearch}
+                    onChange={(e) => setDepartmentSearch(e.target.value)}
+                    className="pl-8 h-8"
+                  />
+                </div>
+              </div>
+              <ScrollArea className="max-h-[300px]">
+                <div className="p-1">
+                  {searchedDepartments.length === 0 ? (
+                    <div className="py-4 text-center text-sm text-muted-foreground">
+                      No departments found
+                    </div>
+                  ) : (
+                    searchedDepartments.map((dept) => {
+                      const isSelected = selectedAccess.departments.has(dept.department_id);
+                      return (
+                        <label
+                          key={dept.department_id}
+                          className={cn(
+                            "flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors",
+                            isSelected 
+                              ? "bg-primary/15 border border-primary/30" 
+                              : "border border-transparent hover:bg-muted/50"
+                          )}
+                        >
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={() => handleDepartmentToggle(dept.department_id)}
+                            className="shrink-0"
+                          />
+                          <div className="flex-1 min-w-0 grid grid-cols-[minmax(0,1fr)_80px] gap-2 items-center">
+                            <span className="text-sm whitespace-normal break-words">
+                              {dept.department_name}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <div className="w-px h-4 bg-border" />
+                              <span className="text-xs text-muted-foreground font-mono whitespace-nowrap">
+                                {dept.department_id}
+                              </span>
+                            </div>
+                          </div>
+                        </label>
+                      );
+                    })
+                  )}
+                </div>
+              </ScrollArea>
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
       
       <p className="text-xs text-muted-foreground">
         Select specific items to restrict user access. Leave empty for full access.
