@@ -83,14 +83,11 @@ export function EditableDateCell({
   const displayValue = date ? format(date, formatString) : '—';
 
   return (
-    <div className="flex items-center justify-between w-full h-full px-3">
-      {/* Date text - left aligned */}
-      <span className={cn("text-sm", !date && "text-muted-foreground", className)}>
-        {displayValue}
-      </span>
-
-      {/* Action icon - right aligned */}
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <div className="flex items-center justify-between w-full h-full px-3">
+        <span className={cn("text-sm", !date && "text-muted-foreground", className)}>
+          {displayValue}
+        </span>
         <PopoverTrigger asChild>
           {hasChanged() && originalValue ? (
             <Button
@@ -115,21 +112,21 @@ export function EditableDateCell({
             </Button>
           )}
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={date}
-            onSelect={handleSelect}
-            disabled={(date) => {
-              if (date < minDate) return true;
-              if (maxDate && date > maxDate) return true;
-              return false;
-            }}
-            initialFocus
-            className={cn("p-3 pointer-events-auto")}
-          />
-        </PopoverContent>
-      </Popover>
-    </div>
+      </div>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={handleSelect}
+          disabled={(date) => {
+            if (date < minDate) return true;
+            if (maxDate && date > maxDate) return true;
+            return false;
+          }}
+          initialFocus
+          className={cn("p-3 pointer-events-auto")}
+        />
+      </PopoverContent>
+    </Popover>
   );
 }
