@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { RotateCcw } from 'lucide-react';
+import { Pencil, RotateCcw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface EditableNumberCellProps {
   value: number | null | undefined;
@@ -81,26 +82,43 @@ export function EditableNumberCell({
   }
 
   return (
-    <button
-      onClick={handleClick}
+    <div
       className={cn(
-        "w-full h-full text-center px-4 py-2",
-        "text-sm font-medium",
-        "hover:bg-muted/50 transition-colors",
-        "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-        "relative",
-        isModified && "text-red-600 dark:text-red-400",
+        "flex items-center justify-between w-full h-full px-3",
+        "hover:bg-muted/50 transition-colors cursor-pointer",
         className
       )}
-      type="button"
+      onClick={handleClick}
     >
-      <span className="block">{value != null ? value : '—'}</span>
-      {isModified && (
-        <RotateCcw
-          className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
-          onClick={handleRevert}
-        />
+      <span className={cn("text-sm font-medium", isModified && "text-destructive")}>
+        {value != null ? value : '—'}
+      </span>
+      {isModified ? (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6 text-muted-foreground hover:text-foreground"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleRevert(e);
+          }}
+          title="Revert to original"
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+        </Button>
+      ) : (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6 text-muted-foreground hover:text-foreground"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleClick();
+          }}
+        >
+          <Pencil className="h-3.5 w-3.5" />
+        </Button>
       )}
-    </button>
+    </div>
   );
 }
