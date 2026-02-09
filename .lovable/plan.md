@@ -1,100 +1,98 @@
 
+# Fix Access Scope Filter Selection Not Working
 
-# Enhance Access Scope Manager with Cascading Searchable Filters
+## Problem
+The Region and Market dropdowns in the Edit User form's Access Scope section are not responding to selections. When clicking on items, the checkboxes remain unchecked and the "No restrictions" text persists.
 
-## Goal
-Update the Access Scope section in the Edit User form to use cascading, searchable filters that follow the same pattern as the global FilterBar. This means:
-- Region → Market → Facility → Department cascade (selecting a region limits markets, etc.)
-- Facility and Department dropdowns are searchable with the two-column layout (Name + ID)
-- Same selection styling (background color, no checkmarks)
+## Root Cause Analysis
+Looking at the `MultiSelectChips` component, the issue is in how the `Checkbox` component is wrapped inside a `<label>` element:
 
----
+```tsx
+<label className="...">
+  <Checkbox
+    checked={isSelected}
+    onCheckedChange={() => handleToggle(option.value)}
+  />
+</label>
+```
 
-## Current State
+The Radix UI `Checkbox` component uses an internal button element, and when wrapped in a `<label>`, there can be double-triggering or event conflicts. When clicking the label, it may:
+1. Trigger the label's click → which triggers the checkbox
+2. But the `onCheckedChange` event can get into a toggle loop or not fire correctly
 
-The `AccessScopeManager` component currently:
-- Uses `MultiSelectChips` for each level (Region, Market, Facility, Department)
-- Shows ALL options at each level independently (no cascading)
-- Uses checkbox-based multi-select in a popover
-- Selected items appear as Badge chips
-
----
-
-## Proposed Changes
-
-### 1. Add Cascading Logic
-
-Filter options at each level based on selections at parent levels:
-- **Markets**: Show only markets in selected regions (or all if no region selected)
-- **Facilities**: Show only facilities in selected markets (or cascade from regions)
-- **Departments**: Show only departments in selected facilities (or cascade from markets/regions)
-
-### 2. Update Facility Multi-Select to Searchable Two-Column Layout
-
-Replace the current `MultiSelectChips` for Facility with a custom searchable popover that:
-- Uses `Popover + Command` pattern for search
-- Shows Name + ID in a two-column grid layout (`grid-cols-[minmax(0,1fr)_80px]`)
-- Allows multi-select (checkboxes)
-- Uses `bg-primary/15` + `border-primary/30` for selected items
-- No checkmark icons in the list
-
-### 3. Update Department Multi-Select Similarly
-
-Apply the same searchable two-column pattern to Department:
-- Searchable by name and ID
-- Two-column layout with divider
-- Same selection styling
-
-### 4. Keep Region and Market as Simple Searchable Multi-Selects
-
-Region and Market don't need the two-column layout (no IDs), but should:
-- Be searchable
-- Follow the same selection styling (bg-primary/15, no checkmark icons)
-
----
-
-## Technical Implementation
-
-### File: `src/components/admin/AccessScopeManager.tsx`
-
-**Changes:**
-1. Import additional components: `Popover`, `PopoverContent`, `PopoverTrigger`, `Command`, `CommandInput`, `CommandList`, `CommandEmpty`, `CommandGroup`, `CommandItem`, `ChevronsUpDown`
-2. Add cascading logic to filter options based on parent selections
-3. Replace `MultiSelectChips` for Facility with custom searchable Popover
-4. Replace `MultiSelectChips` for Department with custom searchable Popover
-5. Update Region and Market `MultiSelectChips` to remove checkmark icons (via styling updates)
+## Solution
+Change the click handling to use an explicit `onClick` on the parent container instead of relying on `<label>` + `onCheckedChange`:
 
 ### File: `src/components/ui/multi-select-chips.tsx`
 
 **Changes:**
-1. Remove the `Check` icon from the dropdown list items
-2. Keep only the background color (`bg-primary/15`) to indicate selection
-3. This matches the global filter styling
+1. Replace the `<label>` element with a `<div>` 
+2. Move the click handler to the parent `<div>` with `onClick={() => handleToggle(option.value)}`
+3. Make the `Checkbox` purely presentational (remove `onCheckedChange`, keep only `checked`)
 
----
-
-## Cascading Logic Summary
-
-```text
-Selected Regions → Filter Markets (show only markets in those regions)
-                   ↓
-Selected Markets → Filter Facilities (show only facilities in those markets)
-                   ↓
-Selected Facilities → Filter Departments (show only departments in those facilities)
+**Before:**
+```tsx
+<label className="flex items-start gap-2 p-2 rounded-md cursor-pointer...">
+  <Checkbox
+    checked={isSelected}
+    onCheckedChange={() => handleToggle(option.value)}
+    className="mt-0.5"
+  />
+  ...
+</label>
 ```
 
-If no parent is selected, show all options at that level.
+**After:**
+```tsx
+<div 
+  role="option"
+  aria-selected={isSelected}
+  onClick={() => handleToggle(option.value)}
+  className="flex items-start gap-2 p-2 rounded-md cursor-pointer..."
+>
+  <Checkbox
+    checked={isSelected}
+    className="mt-0.5 pointer-events-none"
+  />
+  ...
+</div>
+```
 
----
+### Also Update: `src/components/admin/AccessScopeManager.tsx`
 
-## Visual Changes
+Apply the same fix to the Facility and Department custom popovers (lines 466-499 and 536-569):
 
-| Component | Before | After |
-|-----------|--------|-------|
-| Region | Multi-select chips with checkboxes | Searchable multi-select, bg highlight, no checkmarks |
-| Market | Multi-select chips with checkboxes | Filtered by Region, searchable, bg highlight |
-| Facility | Multi-select chips | Searchable two-column (Name + ID), filtered by Market |
-| Department | Multi-select chips | Searchable two-column (Name + ID), filtered by Facility |
+**Before (Facility):**
+```tsx
+<label
+  key={facility.facility_id}
+  className={cn("flex items-center gap-2 p-2 rounded-md cursor-pointer...")}
+>
+  <Checkbox
+    checked={isSelected}
+    onCheckedChange={() => handleFacilityToggle(facility.facility_id)}
+    className="shrink-0"
+  />
+  ...
+</label>
+```
+
+**After:**
+```tsx
+<div
+  key={facility.facility_id}
+  role="option"
+  aria-selected={isSelected}
+  onClick={() => handleFacilityToggle(facility.facility_id)}
+  className={cn("flex items-center gap-2 p-2 rounded-md cursor-pointer...")}
+>
+  <Checkbox
+    checked={isSelected}
+    className="shrink-0 pointer-events-none"
+  />
+  ...
+</div>
+```
 
 ---
 
@@ -102,15 +100,14 @@ If no parent is selected, show all options at that level.
 
 | File | Changes |
 |------|---------|
-| `src/components/admin/AccessScopeManager.tsx` | Add cascading logic, replace Facility/Department with searchable two-column popovers |
-| `src/components/ui/multi-select-chips.tsx` | Remove `Check` icon from list items, keep only bg highlight for selection |
+| `src/components/ui/multi-select-chips.tsx` | Replace `<label>` with `<div>`, use `onClick` on container, make Checkbox presentational with `pointer-events-none` |
+| `src/components/admin/AccessScopeManager.tsx` | Same fix for Facility and Department custom popovers |
 
 ---
 
 ## Expected Outcome
 
-- Editing a user's Access Scope now shows cascading filters where Market options are filtered by selected Regions, Facilities by Markets, and Departments by Facilities
-- Facility and Department use a searchable dropdown with two-column layout (Name + ID with divider)
-- Selection is indicated by background color only (no checkmarks)
-- Same visual styling as the global FilterBar
-
+- Clicking on a Region/Market/Facility/Department item will properly toggle the selection
+- Selected items will show as chips with the remove (X) button
+- The checkbox will show the checked state (filled blue with checkmark)
+- The "No restrictions" text will be replaced with the selected chips
