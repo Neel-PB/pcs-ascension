@@ -1,27 +1,28 @@
 
 
-# Fix Expiration Date Spacing
+# Apply Same Expiration Date Layout Fix to NP Settings
 
 ## Problem
-The wrapping `<div className="relative">` in `volumeOverrideColumns.tsx` (line 156) does not have `w-full h-full`, so the `EditableDateCell` inside it cannot stretch to fill the cell width. This causes the date and pencil icon to stay clustered together.
+The NP Settings tab has the same issue as Volume Settings: the Expiration Date column wraps `EditableDateCell` in a `<div className="px-3 py-2">` that doesn't fill the cell, causing the date and pencil icon to cluster together.
 
 ## Fix
 
-**File: `src/config/volumeOverrideColumns.tsx` (line 156)**
+**File: `src/config/npOverrideColumns.tsx` (line 92)**
 
 Change:
 ```tsx
-<div className="relative">
+<div className="px-3 py-2">
 ```
 To:
 ```tsx
 <div className="relative w-full h-full">
 ```
 
-This ensures the wrapper fills the entire table cell, allowing the inner `flex justify-between` in `EditableDateCell` to push the date to the left edge and the pencil icon to the right edge.
+This matches the fix applied to `volumeOverrideColumns.tsx`, allowing the `EditableDateCell` to stretch across the full cell width so `justify-between` pushes the date left and the pencil icon right.
 
 ## Files to Modify
 
 | File | Change |
 |------|--------|
-| `src/config/volumeOverrideColumns.tsx` | Add `w-full h-full` to the wrapper div on line 156 |
+| `src/config/npOverrideColumns.tsx` | Replace `px-3 py-2` with `relative w-full h-full` on the wrapper div (line 92) |
+
