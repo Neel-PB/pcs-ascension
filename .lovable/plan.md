@@ -1,28 +1,24 @@
 
 
-# Fix Group Row Colors Being Overridden by Even/Odd Striping
+# Fix Row Colors in Variance Analysis Table
 
 ## Problem
-The global `TableBody` applies `[&_tr:nth-child(even)]:bg-muted/30` which overrides the `bg-primary/10` on group rows that happen to land on even positions. This is why "Overheads" and "Support Staff" look the same -- one gets the blue, the other gets the stripe color depending on its position.
+Same issue as Position Planning: the global `TableBody` even/odd striping (`nth-child(even):bg-muted/30`) overrides the row backgrounds, causing inconsistent coloring on group and child rows.
 
 ## Solution
 
-### File: `src/pages/staffing/PositionPlanning.tsx`
+### File: `src/pages/staffing/VarianceAnalysis.tsx`
 
-**GroupRow (line 364):** Use Tailwind's `!` modifier to force the blue background:
-- Change `bg-primary/10 hover:bg-primary/15` to `!bg-primary/10 hover:!bg-primary/15`
-- This ensures the light blue always takes priority over the even/odd striping rule
+**GroupRow (line 432):** Force the light blue background:
+- Change `bg-primary/5 hover:bg-primary/10` to `!bg-primary/10 hover:!bg-primary/15`
+- Also update the sticky cell background on line 435 from `bg-primary/5` to `bg-primary/10`
 
-**SkillRow (line 424):** Same treatment for the default background:
-- Change `bg-background` to `!bg-background`
-- This ensures child rows never get the stripe color
+**SkillRow (line 500):** Force the default background:
+- Change `bg-primary/5` to `!bg-background`
+- Update sticky cell background on line 501 from `bg-primary/5` to `bg-background`
 
-No other files need to change. The global TableBody striping remains intact for all other tables.
-
-## Result
-
-| Row Type | Fix |
-|----------|-----|
-| Group (Overheads, Clinical, Support) | Always light blue, regardless of even/odd position |
-| Child Skill (Director, RN, etc.) | Always default background, no striping |
+| Row Type | Current | After |
+|----------|---------|-------|
+| Group (Submarket headers) | `bg-primary/5` (faint, overridden by striping) | `!bg-primary/10` (forced light blue) |
+| Child (Facility rows) | `bg-primary/5` (faint, overridden by striping) | `!bg-background` (forced default) |
 
