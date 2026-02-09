@@ -663,7 +663,7 @@ export function VarianceAnalysis({
           <TableHead className="text-center text-xs">Total</TableHead>
         </TableRow>
       </TableHeader>
-      <TableBody>
+      <TableBody className="[&_tr:nth-child(even)]:!bg-transparent">
         {data.map((row) => {
           if (row.type === 'group') {
             return <GroupRow key={row.id} row={row} />;
