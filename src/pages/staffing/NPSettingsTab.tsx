@@ -251,7 +251,7 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
         columns={columns}
         data={tableData}
         getRowId={(row) => row.id}
-        storeNamespace="np-override-settings-v2"
+        storeNamespace="np-override-settings-v3"
       />
     </div>
   );
