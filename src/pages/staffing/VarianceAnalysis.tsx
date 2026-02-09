@@ -432,7 +432,7 @@ export function VarianceAnalysis({
           className="!bg-primary/10 hover:!bg-primary/15 border-t-2 border-primary/20 cursor-pointer"
           onClick={() => toggleExpanded(row.id)}
         >
-          <TableCell className="font-semibold sticky left-0 bg-primary/10 whitespace-nowrap">
+          <TableCell className="font-semibold sticky left-0 !bg-primary/10 whitespace-nowrap">
             <div className="flex items-center gap-2">
               <motion.div
                 animate={{ rotate: expanded ? 90 : 0 }}
@@ -498,7 +498,7 @@ export function VarianceAnalysis({
 
   const SkillRow = ({ row }: { row: GroupedVarianceData }) => (
     <TableRow className="hover:bg-muted/30 !bg-background">
-      <TableCell className="font-medium sticky left-0 bg-background pl-8">
+      <TableCell className="font-medium sticky left-0 !bg-background pl-8">
         <TooltipProvider delayDuration={200}>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -581,8 +581,8 @@ export function VarianceAnalysis({
   );
 
   const TotalRow = ({ totals }: { totals: VarianceData }) => (
-    <TableRow className="bg-muted/20 border-t-2 font-bold">
-      <TableCell className="font-bold sticky left-0 bg-muted/20">
+    <TableRow className="!bg-muted/20 border-t-2 font-bold">
+      <TableCell className="font-bold sticky left-0 !bg-muted/20">
         TOTAL
       </TableCell>
       <TableCell className="text-center font-bold border-l-2 border-muted-foreground/30">
