@@ -69,6 +69,12 @@ export function useUsers() {
       lastName: string;
       roles: UserRole[];
       bio?: string;
+      accessScope?: {
+        regions: string[];
+        markets: string[];
+        facilities: { facility_id: string; facility_name: string; market?: string }[];
+        departments: { department_id: string; department_name: string; facility_id?: string; facility_name?: string; market?: string }[];
+      } | null;
     }) => {
       const { data, error } = await supabase.functions.invoke('invite-user', {
         body: {
@@ -77,6 +83,7 @@ export function useUsers() {
           lastName: userData.lastName,
           roles: userData.roles,
           bio: userData.bio,
+          accessScope: userData.accessScope,
         },
         headers: {
           'Origin': window.location.origin,

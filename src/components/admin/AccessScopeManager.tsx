@@ -26,19 +26,27 @@ import { toast } from "sonner";
 import { MultiSelectChips, type MultiSelectOption } from "@/components/ui/multi-select-chips";
 import { cn } from "@/lib/utils";
 
-interface AccessScopeManagerProps {
-  userId: string;
-  isEditMode: boolean;
-}
-
-interface SelectedAccess {
+export interface SelectedAccess {
   regions: Set<string>;
   markets: Set<string>;
   facilities: Set<string>; // facility_id
   departments: Set<string>; // department_id
 }
 
-export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerProps) {
+export interface AccessScopeData {
+  regions: string[];
+  markets: string[];
+  facilities: { facility_id: string; facility_name: string; market?: string }[];
+  departments: { department_id: string; department_name: string; facility_id?: string; facility_name?: string; market?: string }[];
+}
+
+interface AccessScopeManagerProps {
+  userId?: string;
+  isEditMode: boolean;
+  onAccessChange?: (data: AccessScopeData) => void;
+}
+
+export function AccessScopeManager({ userId, isEditMode, onAccessChange }: AccessScopeManagerProps) {
   const [selectedAccess, setSelectedAccess] = useState<SelectedAccess>({
     regions: new Set(),
     markets: new Set(),
@@ -54,12 +62,42 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
   const { regions, markets, facilities, departments, isLoading: filterLoading, getMarketsByRegion, getFacilitiesByMarket, getDepartmentsByFacility } = useFilterData();
   const queryClient = useQueryClient();
   
-  // Fetch existing access scope entries when editing
+  // Fetch existing access scope entries when editing an existing user
   useEffect(() => {
     if (isEditMode && userId) {
       fetchAccessScope();
     }
   }, [isEditMode, userId]);
+  
+  // Notify parent of changes (for create mode)
+  useEffect(() => {
+    if (onAccessChange) {
+      const accessData: AccessScopeData = {
+        regions: Array.from(selectedAccess.regions),
+        markets: Array.from(selectedAccess.markets),
+        facilities: Array.from(selectedAccess.facilities).map(facilityId => {
+          const facility = facilities.find(f => f.facility_id === facilityId);
+          return {
+            facility_id: facilityId,
+            facility_name: facility?.facility_name || '',
+            market: facility?.market,
+          };
+        }),
+        departments: Array.from(selectedAccess.departments).map(departmentId => {
+          const dept = departments.find(d => d.department_id === departmentId);
+          const facility = dept ? facilities.find(f => f.facility_id === dept.facility_id) : null;
+          return {
+            department_id: departmentId,
+            department_name: dept?.department_name || '',
+            facility_id: dept?.facility_id,
+            facility_name: facility?.facility_name,
+            market: facility?.market,
+          };
+        }),
+      };
+      onAccessChange(accessData);
+    }
+  }, [selectedAccess, facilities, departments, onAccessChange]);
   
   const fetchAccessScope = async () => {
     setIsLoading(true);
