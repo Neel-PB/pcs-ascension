@@ -1,24 +1,25 @@
 
 
-# Fix Row Colors in Variance Analysis Table
+# Fix Variance Analysis Inconsistent Row Colors
 
 ## Problem
-Same issue as Position Planning: the global `TableBody` even/odd striping (`nth-child(even):bg-muted/30`) overrides the row backgrounds, causing inconsistent coloring on group and child rows.
+The sticky first column (`TableCell`) in each row type uses regular `bg-*` classes (without `!`), while the parent `TableRow` uses `!bg-*`. On even-positioned rows, the global striping overrides the sticky cell's background, making it look different from the rest of the row.
+
+In the screenshot: FLPEN and FLJAC rows have slightly different shading on the "Facilities" column vs the data columns.
 
 ## Solution
 
 ### File: `src/pages/staffing/VarianceAnalysis.tsx`
 
-**GroupRow (line 432):** Force the light blue background:
-- Change `bg-primary/5 hover:bg-primary/10` to `!bg-primary/10 hover:!bg-primary/15`
-- Also update the sticky cell background on line 435 from `bg-primary/5` to `bg-primary/10`
+1. **GroupRow sticky cell (line 435):** Change `bg-primary/10` to `!bg-primary/10`
+2. **SkillRow sticky cell (line 501):** Change `bg-background` to `!bg-background`
+3. **TotalRow (line 584):** Change `bg-muted/20` to `!bg-muted/20` on both the TableRow and the sticky TableCell (line 585)
 
-**SkillRow (line 500):** Force the default background:
-- Change `bg-primary/5` to `!bg-background`
-- Update sticky cell background on line 501 from `bg-primary/5` to `bg-background`
+| Row | Element | Current | After |
+|-----|---------|---------|-------|
+| GroupRow | sticky TableCell | `bg-primary/10` | `!bg-primary/10` |
+| SkillRow | sticky TableCell | `bg-background` | `!bg-background` |
+| TotalRow | TableRow | `bg-muted/20` | `!bg-muted/20` |
+| TotalRow | sticky TableCell | `bg-muted/20` | `!bg-muted/20` |
 
-| Row Type | Current | After |
-|----------|---------|-------|
-| Group (Submarket headers) | `bg-primary/5` (faint, overridden by striping) | `!bg-primary/10` (forced light blue) |
-| Child (Facility rows) | `bg-primary/5` (faint, overridden by striping) | `!bg-background` (forced default) |
-
+This ensures the sticky first column always matches the rest of the row regardless of even/odd position.
