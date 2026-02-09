@@ -432,7 +432,7 @@ export function VarianceAnalysis({
           className="!bg-primary/10 hover:!bg-primary/15 border-t-2 border-primary/20 cursor-pointer"
           onClick={() => toggleExpanded(row.id)}
         >
-          <TableCell className="font-semibold sticky left-0 !bg-primary/10 whitespace-nowrap">
+          <TableCell className="font-semibold sticky left-0 !bg-primary/10 whitespace-nowrap border-r border-border">
             <div className="flex items-center gap-2">
               <motion.div
                 animate={{ rotate: expanded ? 90 : 0 }}
@@ -498,7 +498,7 @@ export function VarianceAnalysis({
 
   const SkillRow = ({ row }: { row: GroupedVarianceData }) => (
     <TableRow className="hover:bg-muted/30 !bg-background">
-      <TableCell className="font-medium sticky left-0 !bg-background pl-8">
+      <TableCell className="font-medium sticky left-0 !bg-background pl-8 border-r border-border">
         <TooltipProvider delayDuration={200}>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -582,7 +582,7 @@ export function VarianceAnalysis({
 
   const TotalRow = ({ totals }: { totals: VarianceData }) => (
     <TableRow className="!bg-muted/20 border-t-2 font-bold">
-      <TableCell className="font-bold sticky left-0 !bg-muted/20">
+      <TableCell className="font-bold sticky left-0 !bg-muted/20 border-r border-border">
         TOTAL
       </TableCell>
       <TableCell className="text-center font-bold border-l-2 border-muted-foreground/30">
@@ -637,7 +637,7 @@ export function VarianceAnalysis({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="font-semibold sticky left-0 bg-card z-10 min-w-[200px]">{columnHeader}</TableHead>
+          <TableHead className="font-semibold sticky left-0 bg-card z-10 min-w-[200px] border-r border-border">{columnHeader}</TableHead>
           <TableHead colSpan={3} className="text-center font-semibold border-l-2 border-muted-foreground/30">CL Skill</TableHead>
           <TableHead colSpan={3} className="text-center font-semibold border-l-2 border-muted-foreground/30">RN Skill</TableHead>
           <TableHead colSpan={3} className="text-center font-semibold border-l-2 border-muted-foreground/30">PCT Skill</TableHead>
@@ -645,7 +645,7 @@ export function VarianceAnalysis({
           <TableHead colSpan={3} className="text-center font-semibold border-l-2 border-muted-foreground/30">Overhead</TableHead>
         </TableRow>
         <TableRow className="bg-muted/50">
-          <TableHead className="sticky left-0 bg-muted/50 z-10"></TableHead>
+          <TableHead className="sticky left-0 bg-muted/50 z-10 border-r border-border"></TableHead>
           <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30">Day</TableHead>
           <TableHead className="text-center text-xs">Night</TableHead>
           <TableHead className="text-center text-xs">Total</TableHead>
