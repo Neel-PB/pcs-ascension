@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Sheet,
   SheetContent,
@@ -13,7 +13,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
-import { AccessScopeManager } from "./AccessScopeManager";
+import { AccessScopeManager, type AccessScopeData } from "./AccessScopeManager";
 import {
   Form,
   FormControl,
@@ -57,6 +57,12 @@ export function UserFormSheet({
   const isEditMode = !!user;
   const { manageableRoles, isLoading: rolesLoading } = useDynamicRoles();
   const [orgAccessOpen, setOrgAccessOpen] = useState(false);
+  const [pendingAccessScope, setPendingAccessScope] = useState<AccessScopeData | null>(null);
+  
+  // Handle access scope changes from AccessScopeManager
+  const handleAccessChange = useCallback((data: AccessScopeData) => {
+    setPendingAccessScope(data);
+  }, []);
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
@@ -87,6 +93,8 @@ export function UserFormSheet({
         roles: ["labor_team"],
         bio: "",
       });
+      // Reset pending access scope for new user
+      setPendingAccessScope(null);
     }
   }, [user, form]);
 
@@ -105,12 +113,14 @@ export function UserFormSheet({
         roles: data.roles,
       });
     } else {
+      // Include access scope data for new user
       onSubmit({
         email: data.email,
         firstName: data.firstName,
         lastName: data.lastName,
         bio: data.bio,
         roles: data.roles,
+        accessScope: pendingAccessScope,
       });
     }
   };
@@ -235,18 +245,20 @@ export function UserFormSheet({
                   )}
                 />
 
-                {/* Organization Access Section - Only show in edit mode */}
-                {isEditMode && user && (
-                  <Collapsible open={orgAccessOpen} onOpenChange={setOrgAccessOpen}>
-                    <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:underline">
-                      <span>Access Scope Restrictions</span>
-                      <ChevronDown className={`h-4 w-4 transition-transform ${orgAccessOpen ? 'rotate-180' : ''}`} />
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="pt-2">
-                      <AccessScopeManager userId={user.id} isEditMode={isEditMode} />
-                    </CollapsibleContent>
-                  </Collapsible>
-                )}
+                {/* Organization Access Section - Show for both create and edit modes */}
+                <Collapsible open={orgAccessOpen} onOpenChange={setOrgAccessOpen}>
+                  <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:underline">
+                    <span>Access Scope Restrictions</span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${orgAccessOpen ? 'rotate-180' : ''}`} />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pt-2">
+                    <AccessScopeManager 
+                      userId={user?.id} 
+                      isEditMode={isEditMode}
+                      onAccessChange={!isEditMode ? handleAccessChange : undefined}
+                    />
+                  </CollapsibleContent>
+                </Collapsible>
               </div>
             </ScrollArea>
 

@@ -24,9 +24,9 @@ serve(async (req) => {
       }
     );
 
-    const { email, firstName, lastName, roles, bio } = await req.json();
+    const { email, firstName, lastName, roles, bio, accessScope } = await req.json();
 
-    console.log('Inviting user:', { email, firstName, lastName, roles });
+    console.log('Inviting user:', { email, firstName, lastName, roles, hasAccessScope: !!accessScope });
 
     // Use the deployed app URL for redirect
     const appUrl = 'https://pcs-ascension.lovable.app';
@@ -84,6 +84,84 @@ serve(async (req) => {
     }
 
     console.log('Roles assigned successfully:', roles);
+
+    // Save access scope if provided
+    if (accessScope) {
+      const accessEntries: Array<{
+        user_id: string;
+        region: string | null;
+        market: string | null;
+        facility_id: string | null;
+        facility_name: string | null;
+        department_id: string | null;
+        department_name: string | null;
+      }> = [];
+
+      // Add region entries
+      (accessScope.regions || []).forEach((region: string) => {
+        accessEntries.push({
+          user_id: userData.user.id,
+          region,
+          market: null,
+          facility_id: null,
+          facility_name: null,
+          department_id: null,
+          department_name: null,
+        });
+      });
+
+      // Add market entries
+      (accessScope.markets || []).forEach((market: string) => {
+        accessEntries.push({
+          user_id: userData.user.id,
+          region: null,
+          market,
+          facility_id: null,
+          facility_name: null,
+          department_id: null,
+          department_name: null,
+        });
+      });
+
+      // Add facility entries
+      (accessScope.facilities || []).forEach((item: { facility_id: string; facility_name: string; market?: string }) => {
+        accessEntries.push({
+          user_id: userData.user.id,
+          region: null,
+          market: item.market || null,
+          facility_id: item.facility_id,
+          facility_name: item.facility_name || null,
+          department_id: null,
+          department_name: null,
+        });
+      });
+
+      // Add department entries
+      (accessScope.departments || []).forEach((item: { department_id: string; department_name: string; facility_id?: string; facility_name?: string; market?: string }) => {
+        accessEntries.push({
+          user_id: userData.user.id,
+          region: null,
+          market: item.market || null,
+          facility_id: item.facility_id || null,
+          facility_name: item.facility_name || null,
+          department_id: item.department_id,
+          department_name: item.department_name || null,
+        });
+      });
+
+      if (accessEntries.length > 0) {
+        const { error: accessError } = await supabaseAdmin
+          .from('user_organization_access')
+          .insert(accessEntries);
+
+        if (accessError) {
+          console.error('Error saving access scope:', accessError);
+          // Don't throw - user is already created, just log the error
+        } else {
+          console.log('Access scope saved successfully:', accessEntries.length, 'entries');
+        }
+      }
+    }
 
     return new Response(
       JSON.stringify({ 
