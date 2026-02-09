@@ -361,7 +361,7 @@ const GroupRow = ({
   
   return (
     <TableRow 
-      className="font-semibold bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer border-t-2 border-primary/20"
+      className="font-semibold bg-primary/10 hover:bg-primary/15 transition-colors cursor-pointer border-t-2 border-primary/20"
       onClick={() => onToggle?.(id)}
     >
       <TableCell className="font-semibold whitespace-nowrap w-48 min-w-48 max-w-48">
@@ -421,7 +421,7 @@ const SkillRow = ({
 }) => {
   return (
     <TableRow 
-      className="hover:bg-muted/30 transition-colors"
+      className="bg-background hover:bg-muted/30 transition-colors"
     >
       <TableCell className={cn(
         "font-medium whitespace-nowrap w-48 min-w-48 max-w-48",
