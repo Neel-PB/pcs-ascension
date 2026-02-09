@@ -463,8 +463,11 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
                     searchedFacilities.map((facility) => {
                       const isSelected = selectedAccess.facilities.has(facility.facility_id);
                       return (
-                        <label
+                        <div
                           key={facility.facility_id}
+                          role="option"
+                          aria-selected={isSelected}
+                          onClick={() => handleFacilityToggle(facility.facility_id)}
                           className={cn(
                             "flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors",
                             isSelected 
@@ -474,8 +477,7 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
                         >
                           <Checkbox
                             checked={isSelected}
-                            onCheckedChange={() => handleFacilityToggle(facility.facility_id)}
-                            className="shrink-0"
+                            className="shrink-0 pointer-events-none"
                           />
                           <div className="flex-1 min-w-0 grid grid-cols-[minmax(0,1fr)_80px] gap-2 items-center">
                             <span className="text-sm whitespace-normal break-words">
@@ -488,7 +490,7 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
                               </span>
                             </div>
                           </div>
-                        </label>
+                        </div>
                       );
                     })
                   )}
@@ -566,8 +568,11 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
                     searchedDepartments.map((dept) => {
                       const isSelected = selectedAccess.departments.has(dept.department_id);
                       return (
-                        <label
+                        <div
                           key={dept.department_id}
+                          role="option"
+                          aria-selected={isSelected}
+                          onClick={() => handleDepartmentToggle(dept.department_id)}
                           className={cn(
                             "flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors",
                             isSelected 
@@ -577,8 +582,7 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
                         >
                           <Checkbox
                             checked={isSelected}
-                            onCheckedChange={() => handleDepartmentToggle(dept.department_id)}
-                            className="shrink-0"
+                            className="shrink-0 pointer-events-none"
                           />
                           <div className="flex-1 min-w-0 grid grid-cols-[minmax(0,1fr)_80px] gap-2 items-center">
                             <span className="text-sm whitespace-normal break-words">
@@ -591,7 +595,7 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
                               </span>
                             </div>
                           </div>
-                        </label>
+                        </div>
                       );
                     })
                   )}

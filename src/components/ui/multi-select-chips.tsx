@@ -139,8 +139,11 @@ export function MultiSelectChips({
                   filteredOptions.map((option) => {
                     const isSelected = selected.includes(option.value);
                     return (
-                      <label
+                      <div
                         key={option.value}
+                        role="option"
+                        aria-selected={isSelected}
+                        onClick={() => handleToggle(option.value)}
                         className={cn(
                           "flex items-start gap-2 p-2 rounded-md cursor-pointer transition-colors",
                           isSelected 
@@ -150,8 +153,7 @@ export function MultiSelectChips({
                       >
                         <Checkbox
                           checked={isSelected}
-                          onCheckedChange={() => handleToggle(option.value)}
-                          className="mt-0.5"
+                          className="mt-0.5 pointer-events-none"
                         />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
@@ -168,7 +170,7 @@ export function MultiSelectChips({
                             </p>
                           )}
                         </div>
-                      </label>
+                      </div>
                     );
                   })
                 )}
