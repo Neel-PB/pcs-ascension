@@ -1,71 +1,100 @@
 
 
-# Remove Blue Focus Ring Styling Across the App
+# Enhance Access Scope Manager with Cascading Searchable Filters
 
-## Problem
-
-The blue focus ring (`focus-visible:ring-2 focus-visible:ring-ring`) appears on all interactive elements throughout the app when clicked or focused. The user finds this visually disruptive and wants to remove it.
+## Goal
+Update the Access Scope section in the Edit User form to use cascading, searchable filters that follow the same pattern as the global FilterBar. This means:
+- Region → Market → Facility → Department cascade (selecting a region limits markets, etc.)
+- Facility and Department dropdowns are searchable with the two-column layout (Name + ID)
+- Same selection styling (background color, no checkmarks)
 
 ---
 
 ## Current State
 
-The focus ring styling comes from two sources:
-
-1. **CSS Variable** in `src/index.css`:
-   - `--ring: 217 91% 60%` (blue color used by `ring-ring` class)
-
-2. **Component Classes** using patterns like:
-   - `focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2`
-   - `focus:ring-2 focus:ring-ring focus:ring-offset-2`
-
-Affected components include:
-- Button, Input, Textarea, Checkbox, Switch
-- Select triggers, Popover triggers
-- Sidebar buttons and menu items
-- Sheet close buttons
-- CellButton and other table cells
-- Many more (14+ files)
+The `AccessScopeManager` component currently:
+- Uses `MultiSelectChips` for each level (Region, Market, Facility, Department)
+- Shows ALL options at each level independently (no cascading)
+- Uses checkbox-based multi-select in a popover
+- Selected items appear as Badge chips
 
 ---
 
-## Solution
+## Proposed Changes
 
-Add a global CSS rule to hide the focus ring while preserving keyboard accessibility. This approach:
-- Is minimal (one CSS rule vs editing 14+ component files)
-- Can be easily reversed if needed
-- Keeps the underlying structure for accessibility tools
+### 1. Add Cascading Logic
 
-### File: `src/index.css`
+Filter options at each level based on selections at parent levels:
+- **Markets**: Show only markets in selected regions (or all if no region selected)
+- **Facilities**: Show only facilities in selected markets (or cascade from regions)
+- **Departments**: Show only departments in selected facilities (or cascade from markets/regions)
 
-Add a new rule in the `@layer base` section:
+### 2. Update Facility Multi-Select to Searchable Two-Column Layout
 
-```css
-@layer base {
-  /* Remove visible focus ring styling app-wide */
-  *:focus,
-  *:focus-visible {
-    outline: none !important;
-    box-shadow: none !important;
-    --tw-ring-shadow: 0 0 #0000 !important;
-  }
-  
-  /* ... existing base styles ... */
-}
+Replace the current `MultiSelectChips` for Facility with a custom searchable popover that:
+- Uses `Popover + Command` pattern for search
+- Shows Name + ID in a two-column grid layout (`grid-cols-[minmax(0,1fr)_80px]`)
+- Allows multi-select (checkboxes)
+- Uses `bg-primary/15` + `border-primary/30` for selected items
+- No checkmark icons in the list
+
+### 3. Update Department Multi-Select Similarly
+
+Apply the same searchable two-column pattern to Department:
+- Searchable by name and ID
+- Two-column layout with divider
+- Same selection styling
+
+### 4. Keep Region and Market as Simple Searchable Multi-Selects
+
+Region and Market don't need the two-column layout (no IDs), but should:
+- Be searchable
+- Follow the same selection styling (bg-primary/15, no checkmark icons)
+
+---
+
+## Technical Implementation
+
+### File: `src/components/admin/AccessScopeManager.tsx`
+
+**Changes:**
+1. Import additional components: `Popover`, `PopoverContent`, `PopoverTrigger`, `Command`, `CommandInput`, `CommandList`, `CommandEmpty`, `CommandGroup`, `CommandItem`, `ChevronsUpDown`
+2. Add cascading logic to filter options based on parent selections
+3. Replace `MultiSelectChips` for Facility with custom searchable Popover
+4. Replace `MultiSelectChips` for Department with custom searchable Popover
+5. Update Region and Market `MultiSelectChips` to remove checkmark icons (via styling updates)
+
+### File: `src/components/ui/multi-select-chips.tsx`
+
+**Changes:**
+1. Remove the `Check` icon from the dropdown list items
+2. Keep only the background color (`bg-primary/15`) to indicate selection
+3. This matches the global filter styling
+
+---
+
+## Cascading Logic Summary
+
+```text
+Selected Regions → Filter Markets (show only markets in those regions)
+                   ↓
+Selected Markets → Filter Facilities (show only facilities in those markets)
+                   ↓
+Selected Facilities → Filter Departments (show only departments in those facilities)
 ```
 
-This will:
-- Override all `focus:ring-*` and `focus-visible:ring-*` utilities
-- Remove any native browser outlines
-- Apply globally without needing to edit individual components
+If no parent is selected, show all options at that level.
 
 ---
 
-## Accessibility Note
+## Visual Changes
 
-Removing focus indicators can make keyboard navigation harder for users who rely on it. If accessibility is a concern later, we can:
-1. Replace the blue ring with a more subtle indicator (e.g., slightly darker background)
-2. Use a non-ring focus style (e.g., `focus-visible:bg-muted`)
+| Component | Before | After |
+|-----------|--------|-------|
+| Region | Multi-select chips with checkboxes | Searchable multi-select, bg highlight, no checkmarks |
+| Market | Multi-select chips with checkboxes | Filtered by Region, searchable, bg highlight |
+| Facility | Multi-select chips | Searchable two-column (Name + ID), filtered by Market |
+| Department | Multi-select chips | Searchable two-column (Name + ID), filtered by Facility |
 
 ---
 
@@ -73,15 +102,15 @@ Removing focus indicators can make keyboard navigation harder for users who rely
 
 | File | Changes |
 |------|---------|
-| `src/index.css` | Add global focus ring removal CSS in `@layer base` |
+| `src/components/admin/AccessScopeManager.tsx` | Add cascading logic, replace Facility/Department with searchable two-column popovers |
+| `src/components/ui/multi-select-chips.tsx` | Remove `Check` icon from list items, keep only bg highlight for selection |
 
 ---
 
-## Alternative Approach (More Work, Finer Control)
+## Expected Outcome
 
-If you prefer not to use `!important` or want finer control, I can instead:
-- Edit each of the 14+ UI component files
-- Remove `focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2` from each component
-
-This is more surgical but requires ~15 file edits. Let me know if you prefer this approach.
+- Editing a user's Access Scope now shows cascading filters where Market options are filtered by selected Regions, Facilities by Markets, and Departments by Facilities
+- Facility and Department use a searchable dropdown with two-column layout (Name + ID with divider)
+- Selection is indicated by background color only (no checkmarks)
+- Same visual styling as the global FilterBar
 
