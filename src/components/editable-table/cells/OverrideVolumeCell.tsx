@@ -101,8 +101,8 @@ export function OverrideVolumeCell({
   const BadgeIcon = badge.icon;
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2 w-full">
-      {/* Status Badge */}
+    <div className="flex items-center justify-between px-3 py-2 w-full">
+      {/* Status Badge - Left */}
       <Tooltip>
         <TooltipTrigger asChild>
           <Badge variant="outline" className={cn('shrink-0 gap-1', badge.className)}>
@@ -115,17 +115,25 @@ export function OverrideVolumeCell({
         </TooltipContent>
       </Tooltip>
 
-      {/* Value / Edit Area */}
-      <div className="flex items-center gap-1 flex-1 min-w-0">
+      {/* Value / Edit Area - Right */}
+      <div className="flex items-center gap-1">
         {state === 'idle' && (
           <>
             <span className="text-sm text-muted-foreground">—</span>
+            {showWarning && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-destructive">⚠</span>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">{warningTooltip}</TooltipContent>
+              </Tooltip>
+            )}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 ml-1"
+                  className="h-6 w-6"
                   onClick={handleStartEdit}
                   disabled={isLoading}
                 >
@@ -134,14 +142,6 @@ export function OverrideVolumeCell({
               </TooltipTrigger>
               <TooltipContent>Add override volume</TooltipContent>
             </Tooltip>
-            {showWarning && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="text-destructive ml-1">⚠</span>
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs">{warningTooltip}</TooltipContent>
-              </Tooltip>
-            )}
           </>
         )}
 
@@ -191,14 +191,13 @@ export function OverrideVolumeCell({
         {state === 'saved' && (
           <>
             <span className="text-sm font-medium">{value}</span>
-            {/* Only show Revert button after full save (not pending) */}
             {!isPending && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 ml-1 text-muted-foreground hover:text-foreground"
+                    className="h-6 w-6 text-muted-foreground hover:text-foreground"
                     onClick={handleDelete}
                     disabled={isLoading}
                   >
