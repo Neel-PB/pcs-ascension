@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { 
   AlertCircle, 
+  Pencil,
   ShieldAlert,
   ShieldCheck
 } from 'lucide-react';
@@ -140,8 +141,9 @@ export const createVolumeOverrideColumns = (
       // Disabled state when no override volume set AND no pending volume
       if (!hasOverride && !hasPending) {
         return (
-          <div className="px-3 py-2 text-muted-foreground opacity-50 cursor-not-allowed">
-            <span className="text-sm italic">Set override first</span>
+          <div className="flex items-center justify-between w-full px-3 py-2 opacity-50 cursor-not-allowed">
+            <span className="text-sm text-muted-foreground">—</span>
+            <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
         );
       }
@@ -151,7 +153,7 @@ export const createVolumeOverrideColumns = (
       const exceedsMax = maxDate && currentExpiry && currentExpiry > maxDate;
 
       return (
-        <div className="relative px-3 py-2">
+        <div className="relative">
           <EditableDateCell
             value={row.expiry_date}
             originalValue={null}
