@@ -9,6 +9,14 @@ Modern enterprise shell with clean aesthetics and accessibility
 */
 
 @layer base {
+  /* Remove visible focus ring styling app-wide */
+  *:focus,
+  *:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    --tw-ring-shadow: 0 0 #0000 !important;
+  }
+
   :root {
     /* Layout Dimensions */
     --sidebar-width: 5rem;
