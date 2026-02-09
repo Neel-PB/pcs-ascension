@@ -45,8 +45,8 @@ export const createNPOverrideColumns = (
     minWidth: 160,
     sortable: true,
     renderCell: (row) => (
-      <div className="px-3 py-2 text-center">
-        <span className="text-sm font-medium">
+      <div className="flex items-center justify-between w-full h-full px-3">
+        <span className="text-sm font-medium text-foreground">
           {row.np_target_volume != null ? row.np_target_volume.toLocaleString() : '—'}
         </span>
       </div>
@@ -130,7 +130,7 @@ export const createNPOverrideColumns = (
       if (daysUntilExpiry <= 7) {
         return (
           <div className="px-3 py-2">
-            <Badge variant="default" className="bg-yellow-500 hover:bg-yellow-600">
+            <Badge variant="outline" className="border-accent text-accent-foreground">
               Expiring Soon
             </Badge>
           </div>
@@ -139,7 +139,7 @@ export const createNPOverrideColumns = (
 
       return (
         <div className="px-3 py-2">
-          <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+          <Badge variant="outline" className="border-primary text-primary">
             Active
           </Badge>
         </div>

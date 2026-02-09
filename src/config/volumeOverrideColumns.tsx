@@ -67,7 +67,7 @@ export const createVolumeOverrideColumns = (
     locked: true,
     sortable: true,
     renderCell: (row) => (
-      <div className="px-3 py-2 font-medium">
+      <div className="px-3 py-2 text-sm font-medium">
         {row.department_name}
       </div>
     ),
