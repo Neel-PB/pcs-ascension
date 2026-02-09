@@ -426,7 +426,10 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
             <span className="text-sm text-muted-foreground">No restrictions</span>
           )}
 
-          <Popover open={facilityOpen} onOpenChange={setFacilityOpen}>
+          <Popover open={facilityOpen} onOpenChange={(isOpen) => {
+            setFacilityOpen(isOpen);
+            if (!isOpen) setFacilitySearch("");
+          }}>
             <PopoverTrigger asChild>
               <Button
                 type="button"
@@ -441,6 +444,7 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
             <PopoverContent 
               className="w-[520px] p-0 bg-popover" 
               align="start"
+              side="bottom"
             >
               <div className="p-2 border-b">
                 <div className="relative">
@@ -450,10 +454,11 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
                     value={facilitySearch}
                     onChange={(e) => setFacilitySearch(e.target.value)}
                     className="pl-8 h-8"
+                    autoFocus
                   />
                 </div>
               </div>
-              <ScrollArea className="max-h-[300px]">
+              <div className="h-[300px] overflow-y-auto" onWheelCapture={(e) => e.stopPropagation()}>
                 <div className="p-1">
                   {searchedFacilities.length === 0 ? (
                     <div className="py-4 text-center text-sm text-muted-foreground">
@@ -495,7 +500,7 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
                     })
                   )}
                 </div>
-              </ScrollArea>
+              </div>
             </PopoverContent>
           </Popover>
         </div>
@@ -531,7 +536,10 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
             <span className="text-sm text-muted-foreground">No restrictions</span>
           )}
 
-          <Popover open={departmentOpen} onOpenChange={setDepartmentOpen}>
+          <Popover open={departmentOpen} onOpenChange={(isOpen) => {
+            setDepartmentOpen(isOpen);
+            if (!isOpen) setDepartmentSearch("");
+          }}>
             <PopoverTrigger asChild>
               <Button
                 type="button"
@@ -546,6 +554,7 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
             <PopoverContent 
               className="w-[520px] p-0 bg-popover" 
               align="start"
+              side="bottom"
             >
               <div className="p-2 border-b">
                 <div className="relative">
@@ -555,10 +564,11 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
                     value={departmentSearch}
                     onChange={(e) => setDepartmentSearch(e.target.value)}
                     className="pl-8 h-8"
+                    autoFocus
                   />
                 </div>
               </div>
-              <ScrollArea className="max-h-[300px]">
+              <div className="h-[300px] overflow-y-auto" onWheelCapture={(e) => e.stopPropagation()}>
                 <div className="p-1">
                   {searchedDepartments.length === 0 ? (
                     <div className="py-4 text-center text-sm text-muted-foreground">
@@ -600,7 +610,7 @@ export function AccessScopeManager({ userId, isEditMode }: AccessScopeManagerPro
                     })
                   )}
                 </div>
-              </ScrollArea>
+              </div>
             </PopoverContent>
           </Popover>
         </div>
