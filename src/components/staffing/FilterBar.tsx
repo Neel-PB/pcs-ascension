@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectItemNoCheck, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { X, Lock, Loader2, Check, ChevronsUpDown } from "lucide-react";
+import { X, Lock, Loader2, ChevronsUpDown } from "lucide-react";
 import { useFilterData } from "@/hooks/useFilterData";
 import { useIsCompactScreen } from "@/hooks/use-compact-screen";
 import { CombinedOptionalFilters } from "./CombinedOptionalFilters";
@@ -394,7 +394,6 @@ export function FilterBar({
                             }}
                             className={selectedFacility === "all-facilities" ? "bg-primary/15 border border-primary/30" : ""}
                           >
-                            <Check className={`mr-2 h-4 w-4 ${selectedFacility === "all-facilities" ? "opacity-100" : "opacity-0"}`} />
                             All Facilities
                           </CommandItem>
                         )}
@@ -485,7 +484,6 @@ export function FilterBar({
                             }}
                             className={selectedDepartment === "all-departments" ? "bg-primary/15 border border-primary/30" : ""}
                           >
-                            <Check className={`mr-2 h-4 w-4 ${selectedDepartment === "all-departments" ? "opacity-100" : "opacity-0"}`} />
                             All Departments
                           </CommandItem>
                         )}
