@@ -443,49 +443,49 @@ export function VarianceAnalysis({
               {row.name}
             </div>
           </TableCell>
-          <TableCell className="text-center font-semibold border-l-2 border-muted-foreground/30">
+          <TableCell className="text-center font-semibold !bg-primary/10 border-l-2 border-muted-foreground/30">
             {formatVariance(row.clDay)}
           </TableCell>
-          <TableCell className="text-center font-semibold">
+          <TableCell className="text-center font-semibold !bg-primary/10">
             {formatVariance(row.clNight)}
           </TableCell>
-          <TableCell className="text-center font-semibold">
+          <TableCell className="text-center font-semibold !bg-primary/10">
             {formatVariance(row.clTotal)}
           </TableCell>
-          <TableCell className="text-center font-semibold border-l-2 border-muted-foreground/30">
+          <TableCell className="text-center font-semibold !bg-primary/10 border-l-2 border-muted-foreground/30">
             {formatVariance(row.rnDay)}
           </TableCell>
-          <TableCell className="text-center font-semibold">
+          <TableCell className="text-center font-semibold !bg-primary/10">
             {formatVariance(row.rnNight)}
           </TableCell>
-          <TableCell className="text-center font-semibold">
+          <TableCell className="text-center font-semibold !bg-primary/10">
             {formatVariance(row.rnTotal)}
           </TableCell>
-          <TableCell className="text-center font-semibold border-l-2 border-muted-foreground/30">
+          <TableCell className="text-center font-semibold !bg-primary/10 border-l-2 border-muted-foreground/30">
             {formatVariance(row.pctDay)}
           </TableCell>
-          <TableCell className="text-center font-semibold">
+          <TableCell className="text-center font-semibold !bg-primary/10">
             {formatVariance(row.pctNight)}
           </TableCell>
-          <TableCell className="text-center font-semibold">
+          <TableCell className="text-center font-semibold !bg-primary/10">
             {formatVariance(row.pctTotal)}
           </TableCell>
-          <TableCell className="text-center font-semibold border-l-2 border-muted-foreground/30">
+          <TableCell className="text-center font-semibold !bg-primary/10 border-l-2 border-muted-foreground/30">
             {formatVariance(row.hucDay)}
           </TableCell>
-          <TableCell className="text-center font-semibold">
+          <TableCell className="text-center font-semibold !bg-primary/10">
             {formatVariance(row.hucNight)}
           </TableCell>
-          <TableCell className="text-center font-semibold">
+          <TableCell className="text-center font-semibold !bg-primary/10">
             {formatVariance(row.hucTotal)}
           </TableCell>
-          <TableCell className="text-center font-semibold border-l-2 border-muted-foreground/30">
+          <TableCell className="text-center font-semibold !bg-primary/10 border-l-2 border-muted-foreground/30">
             {formatVariance(row.overheadDay)}
           </TableCell>
-          <TableCell className="text-center font-semibold">
+          <TableCell className="text-center font-semibold !bg-primary/10">
             {formatVariance(row.overheadNight)}
           </TableCell>
-          <TableCell className="text-center font-semibold">
+          <TableCell className="text-center font-semibold !bg-primary/10">
             {formatVariance(row.overheadTotal)}
           </TableCell>
         </TableRow>
@@ -499,82 +499,51 @@ export function VarianceAnalysis({
   const SkillRow = ({ row }: { row: GroupedVarianceData }) => (
     <TableRow className="hover:bg-muted/30 !bg-background">
       <TableCell className="font-medium sticky left-0 !bg-background pl-8 border-r-2 border-muted-foreground/30">
-        <TooltipProvider delayDuration={200}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center gap-2 cursor-default group/tooltip transition-all duration-200 hover:scale-[1.02] hover:bg-primary/5 rounded-md px-1 py-0.5 -mx-1">
-                <span className="truncate max-w-[160px] font-medium group-hover/tooltip:text-primary transition-colors duration-200">
-                  {row.name}
-                </span>
-                {row.subText && (
-                  <Badge 
-                    variant="secondary" 
-                    className="bg-primary/10 text-primary border-primary/20 text-[10px] px-1.5 py-0 shrink-0 font-mono group-hover/tooltip:bg-primary/20 transition-colors duration-200"
-                  >
-                    {row.subText}
-                  </Badge>
-                )}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="right" sideOffset={8} showArrow>
-              <div className="flex flex-col gap-1.5">
-                <p className="font-semibold text-foreground">{row.name}</p>
-                {row.subText && (
-                  <Badge 
-                    variant="secondary" 
-                    className="bg-primary/15 text-primary border-primary/25 text-xs font-mono w-fit"
-                  >
-                    {row.subText}
-                  </Badge>
-                )}
-              </div>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+...
       </TableCell>
-      <TableCell className="text-center font-semibold border-l-2 border-muted-foreground/30">
+      <TableCell className="text-center font-semibold !bg-background border-l-2 border-muted-foreground/30">
         {formatVariance(row.clDay)}
       </TableCell>
-      <TableCell className="text-center font-semibold">
+      <TableCell className="text-center font-semibold !bg-background">
         {formatVariance(row.clNight)}
       </TableCell>
-      <TableCell className="text-center font-semibold">
+      <TableCell className="text-center font-semibold !bg-background">
         {formatVariance(row.clTotal)}
       </TableCell>
-      <TableCell className="text-center font-semibold border-l-2 border-muted-foreground/30">
+      <TableCell className="text-center font-semibold !bg-background border-l-2 border-muted-foreground/30">
         {formatVariance(row.rnDay)}
       </TableCell>
-      <TableCell className="text-center font-semibold">
+      <TableCell className="text-center font-semibold !bg-background">
         {formatVariance(row.rnNight)}
       </TableCell>
-      <TableCell className="text-center font-semibold">
+      <TableCell className="text-center font-semibold !bg-background">
         {formatVariance(row.rnTotal)}
       </TableCell>
-      <TableCell className="text-center font-semibold border-l-2 border-muted-foreground/30">
+      <TableCell className="text-center font-semibold !bg-background border-l-2 border-muted-foreground/30">
         {formatVariance(row.pctDay)}
       </TableCell>
-      <TableCell className="text-center font-semibold">
+      <TableCell className="text-center font-semibold !bg-background">
         {formatVariance(row.pctNight)}
       </TableCell>
-      <TableCell className="text-center font-semibold">
+      <TableCell className="text-center font-semibold !bg-background">
         {formatVariance(row.pctTotal)}
       </TableCell>
-      <TableCell className="text-center font-semibold border-l-2 border-muted-foreground/30">
+      <TableCell className="text-center font-semibold !bg-background border-l-2 border-muted-foreground/30">
         {formatVariance(row.hucDay)}
       </TableCell>
-      <TableCell className="text-center font-semibold">
+      <TableCell className="text-center font-semibold !bg-background">
         {formatVariance(row.hucNight)}
       </TableCell>
-      <TableCell className="text-center font-semibold">
+      <TableCell className="text-center font-semibold !bg-background">
         {formatVariance(row.hucTotal)}
       </TableCell>
-      <TableCell className="text-center font-semibold border-l-2 border-muted-foreground/30">
+      <TableCell className="text-center font-semibold !bg-background border-l-2 border-muted-foreground/30">
         {formatVariance(row.overheadDay)}
       </TableCell>
-      <TableCell className="text-center font-semibold">
+      <TableCell className="text-center font-semibold !bg-background">
         {formatVariance(row.overheadNight)}
       </TableCell>
-      <TableCell className="text-center font-semibold">
+      <TableCell className="text-center font-semibold !bg-background">
         {formatVariance(row.overheadTotal)}
       </TableCell>
     </TableRow>
@@ -585,49 +554,49 @@ export function VarianceAnalysis({
       <TableCell className="font-bold sticky left-0 !bg-muted/20 border-r-2 border-muted-foreground/30">
         TOTAL
       </TableCell>
-      <TableCell className="text-center font-bold border-l-2 border-muted-foreground/30">
+      <TableCell className="text-center font-bold !bg-muted/20 border-l-2 border-muted-foreground/30">
         {formatVariance(totals.clDay)}
       </TableCell>
-      <TableCell className="text-center font-bold">
+      <TableCell className="text-center font-bold !bg-muted/20">
         {formatVariance(totals.clNight)}
       </TableCell>
-      <TableCell className="text-center font-bold">
+      <TableCell className="text-center font-bold !bg-muted/20">
         {formatVariance(totals.clTotal)}
       </TableCell>
-      <TableCell className="text-center font-bold border-l-2 border-muted-foreground/30">
+      <TableCell className="text-center font-bold !bg-muted/20 border-l-2 border-muted-foreground/30">
         {formatVariance(totals.rnDay)}
       </TableCell>
-      <TableCell className="text-center font-bold">
+      <TableCell className="text-center font-bold !bg-muted/20">
         {formatVariance(totals.rnNight)}
       </TableCell>
-      <TableCell className="text-center font-bold">
+      <TableCell className="text-center font-bold !bg-muted/20">
         {formatVariance(totals.rnTotal)}
       </TableCell>
-      <TableCell className="text-center font-bold border-l-2 border-muted-foreground/30">
+      <TableCell className="text-center font-bold !bg-muted/20 border-l-2 border-muted-foreground/30">
         {formatVariance(totals.pctDay)}
       </TableCell>
-      <TableCell className="text-center font-bold">
+      <TableCell className="text-center font-bold !bg-muted/20">
         {formatVariance(totals.pctNight)}
       </TableCell>
-      <TableCell className="text-center font-bold">
+      <TableCell className="text-center font-bold !bg-muted/20">
         {formatVariance(totals.pctTotal)}
       </TableCell>
-      <TableCell className="text-center font-bold border-l-2 border-muted-foreground/30">
+      <TableCell className="text-center font-bold !bg-muted/20 border-l-2 border-muted-foreground/30">
         {formatVariance(totals.hucDay)}
       </TableCell>
-      <TableCell className="text-center font-bold">
+      <TableCell className="text-center font-bold !bg-muted/20">
         {formatVariance(totals.hucNight)}
       </TableCell>
-      <TableCell className="text-center font-bold">
+      <TableCell className="text-center font-bold !bg-muted/20">
         {formatVariance(totals.hucTotal)}
       </TableCell>
-      <TableCell className="text-center font-bold border-l-2 border-muted-foreground/30">
+      <TableCell className="text-center font-bold !bg-muted/20 border-l-2 border-muted-foreground/30">
         {formatVariance(totals.overheadDay)}
       </TableCell>
-      <TableCell className="text-center font-bold">
+      <TableCell className="text-center font-bold !bg-muted/20">
         {formatVariance(totals.overheadNight)}
       </TableCell>
-      <TableCell className="text-center font-bold">
+      <TableCell className="text-center font-bold !bg-muted/20">
         {formatVariance(totals.overheadTotal)}
       </TableCell>
     </TableRow>
@@ -663,7 +632,7 @@ export function VarianceAnalysis({
           <TableHead className="text-center text-xs">Total</TableHead>
         </TableRow>
       </TableHeader>
-      <TableBody className="[&_tr:nth-child(even)]:!bg-transparent">
+      <TableBody>
         {data.map((row) => {
           if (row.type === 'group') {
             return <GroupRow key={row.id} row={row} />;
