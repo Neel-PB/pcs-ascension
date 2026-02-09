@@ -1,23 +1,28 @@
 
 
-# Match Regions Column Border to Skill Group Borders
+# Fix Variance Analysis - Sticky Column Background Mismatch
 
-## Problem
-The "Regions" column's right border uses `border-r border-border` (1px, subtle gray), while all skill group columns use `border-l-2 border-muted-foreground/30` (2px, darker). This mismatch makes the Regions column look visually different.
+## Root Cause
+
+The global `TableBody` component in `src/components/ui/table.tsx` applies alternating row striping via `[&_tr:nth-child(even)]:bg-muted/30`. This means every even `<tr>` gets a subtle tint. The non-sticky cells inherit this tint from their parent `<tr>`, but the sticky first cell has its own explicit background (e.g., `!bg-background`, `!bg-primary/10`) which blocks the striping -- making it look different from the rest of the row on even rows.
 
 ## Solution
 
+Disable the alternating row striping specifically for the Variance Analysis table by adding a custom class to the `TableBody` that removes the `nth-child` rule.
+
 ### File: `src/pages/staffing/VarianceAnalysis.tsx`
 
-Change all sticky first-column borders from `border-r border-border` to `border-r-2 border-muted-foreground/30` so the Regions separator matches the skill group separators exactly.
+**Line 666** - Add a class override to `TableBody` to disable striping:
 
-| Location | Current | After |
-|----------|---------|-------|
-| Header Row 1 (line 640) | `border-r border-border` | `border-r-2 border-muted-foreground/30` |
-| Header Row 2 (line 648) | `border-r border-border` | `border-r-2 border-muted-foreground/30` |
-| GroupRow sticky cell (line 435) | `border-r border-border` | `border-r-2 border-muted-foreground/30` |
-| SkillRow sticky cell (line 501) | `border-r border-border` | `border-r-2 border-muted-foreground/30` |
-| TotalRow sticky cell (line 585) | `border-r border-border` | `border-r-2 border-muted-foreground/30` |
+```tsx
+// Current
+<TableBody>
 
-This makes the Regions column separator identical in thickness and color to every skill group divider (CL Skill, RN Skill, PCT Skill, HUC, Overhead).
+// After
+<TableBody className="[&_tr:nth-child(even)]:!bg-transparent">
+```
+
+This neutralizes the global even-row striping for this table only, so every row type (GroupRow, SkillRow, TotalRow) controls its own background consistently. The sticky first cell and the rest of the row will always match because no external striping interferes.
+
+No other files need changes. The existing `!bg-primary/10`, `!bg-background`, and `!bg-muted/20` classes on the rows already define the correct backgrounds -- they just need the striping to stop overriding the non-sticky cells on even rows.
 
