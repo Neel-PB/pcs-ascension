@@ -89,7 +89,7 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
         id: override?.id || `dept-${dept.department_id}`,
         department_id: dept.department_id,
         department_name: dept.department_name,
-        np_target_volume: analysis?.target_volume ?? null,
+        np_target_volume: 10,
         np_override_volume: override?.np_override_volume ?? null,
         expiry_date: override?.expiry_date ?? null,
         max_expiry_date: fiscalYearEnd,
