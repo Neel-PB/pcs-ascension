@@ -1,34 +1,27 @@
 
-# Fix Expiration Date: Separate Date Text and Pencil Icon
+
+# Fix Expiration Date Spacing
 
 ## Problem
-The date text and pencil icon are clustered together because the `Popover` component wraps the trigger button, making it a single flex child alongside the text span. The `justify-between` doesn't push them apart effectively.
+The wrapping `<div className="relative">` in `volumeOverrideColumns.tsx` (line 156) does not have `w-full h-full`, so the `EditableDateCell` inside it cannot stretch to fill the cell width. This causes the date and pencil icon to stay clustered together.
 
 ## Fix
-Restructure the component so the `Popover` wraps the entire cell (not just the icon), keeping the date `span` and the trigger `Button` as direct flex children within the `justify-between` container.
 
-### File: `src/components/editable-table/cells/EditableDateCell.tsx`
+**File: `src/config/volumeOverrideColumns.tsx` (line 156)**
 
-Move `Popover` to wrap the outer container. The layout becomes:
-
-```text
-<Popover>
-  <div className="flex items-center justify-between w-full h-full px-3">
-    <span>Mar 09, 2026</span>              <!-- left -->
-    <PopoverTrigger asChild>
-      <Button>[Pencil/Revert]</Button>      <!-- right -->
-    </PopoverTrigger>
-  </div>
-  <PopoverContent>...</PopoverContent>
-</Popover>
+Change:
+```tsx
+<div className="relative">
+```
+To:
+```tsx
+<div className="relative w-full h-full">
 ```
 
-This ensures the span and button are direct siblings in a `justify-between` flex container, pushing the date to the left edge and the icon to the right edge.
-
-The revert button logic remains: when `hasChanged()` is true, show `RotateCcw` (which reverts on click and stops propagation to prevent opening the popover); otherwise show `Pencil` (which opens the calendar).
+This ensures the wrapper fills the entire table cell, allowing the inner `flex justify-between` in `EditableDateCell` to push the date to the left edge and the pencil icon to the right edge.
 
 ## Files to Modify
 
 | File | Change |
 |------|--------|
-| `src/components/editable-table/cells/EditableDateCell.tsx` | Move Popover to wrap outer div; keep span and PopoverTrigger as direct flex siblings |
+| `src/config/volumeOverrideColumns.tsx` | Add `w-full h-full` to the wrapper div on line 156 |
