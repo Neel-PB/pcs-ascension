@@ -607,29 +607,29 @@ export function VarianceAnalysis({
       <TableHeader>
         <TableRow>
           <TableHead className="font-semibold sticky left-0 bg-card z-10 min-w-[200px] border-r-2 border-muted-foreground/30">{columnHeader}</TableHead>
-          <TableHead colSpan={3} className="text-center font-semibold border-l-2 border-muted-foreground/30">CL Skill</TableHead>
-          <TableHead colSpan={3} className="text-center font-semibold border-l-2 border-muted-foreground/30">RN Skill</TableHead>
-          <TableHead colSpan={3} className="text-center font-semibold border-l-2 border-muted-foreground/30">PCT Skill</TableHead>
-          <TableHead colSpan={3} className="text-center font-semibold border-l-2 border-muted-foreground/30">HUC</TableHead>
-          <TableHead colSpan={3} className="text-center font-semibold border-l-2 border-muted-foreground/30">Overhead</TableHead>
+          <TableHead colSpan={3} className="text-center font-semibold bg-card border-l-2 border-muted-foreground/30">CL Skill</TableHead>
+          <TableHead colSpan={3} className="text-center font-semibold bg-card border-l-2 border-muted-foreground/30">RN Skill</TableHead>
+          <TableHead colSpan={3} className="text-center font-semibold bg-card border-l-2 border-muted-foreground/30">PCT Skill</TableHead>
+          <TableHead colSpan={3} className="text-center font-semibold bg-card border-l-2 border-muted-foreground/30">HUC</TableHead>
+          <TableHead colSpan={3} className="text-center font-semibold bg-card border-l-2 border-muted-foreground/30">Overhead</TableHead>
         </TableRow>
         <TableRow className="bg-muted/50">
           <TableHead className="sticky left-0 bg-muted/50 z-10 border-r-2 border-muted-foreground/30"></TableHead>
-          <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30">Day</TableHead>
-          <TableHead className="text-center text-xs">Night</TableHead>
-          <TableHead className="text-center text-xs">Total</TableHead>
-          <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30">Day</TableHead>
-          <TableHead className="text-center text-xs">Night</TableHead>
-          <TableHead className="text-center text-xs">Total</TableHead>
-          <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30">Day</TableHead>
-          <TableHead className="text-center text-xs">Night</TableHead>
-          <TableHead className="text-center text-xs">Total</TableHead>
-          <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30">Day</TableHead>
-          <TableHead className="text-center text-xs">Night</TableHead>
-          <TableHead className="text-center text-xs">Total</TableHead>
-          <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30">Day</TableHead>
-          <TableHead className="text-center text-xs">Night</TableHead>
-          <TableHead className="text-center text-xs">Total</TableHead>
+          <TableHead className="text-center text-xs bg-muted/50 border-l-2 border-muted-foreground/30">Day</TableHead>
+          <TableHead className="text-center text-xs bg-muted/50">Night</TableHead>
+          <TableHead className="text-center text-xs bg-muted/50">Total</TableHead>
+          <TableHead className="text-center text-xs bg-muted/50 border-l-2 border-muted-foreground/30">Day</TableHead>
+          <TableHead className="text-center text-xs bg-muted/50">Night</TableHead>
+          <TableHead className="text-center text-xs bg-muted/50">Total</TableHead>
+          <TableHead className="text-center text-xs bg-muted/50 border-l-2 border-muted-foreground/30">Day</TableHead>
+          <TableHead className="text-center text-xs bg-muted/50">Night</TableHead>
+          <TableHead className="text-center text-xs bg-muted/50">Total</TableHead>
+          <TableHead className="text-center text-xs bg-muted/50 border-l-2 border-muted-foreground/30">Day</TableHead>
+          <TableHead className="text-center text-xs bg-muted/50">Night</TableHead>
+          <TableHead className="text-center text-xs bg-muted/50">Total</TableHead>
+          <TableHead className="text-center text-xs bg-muted/50 border-l-2 border-muted-foreground/30">Day</TableHead>
+          <TableHead className="text-center text-xs bg-muted/50">Night</TableHead>
+          <TableHead className="text-center text-xs bg-muted/50">Total</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
