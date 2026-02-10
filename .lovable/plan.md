@@ -1,50 +1,30 @@
 
 
-# Improve Forecast KPI Card Selection Indicator
+# Fix KPI Card Layout Shift on Click
 
 ## Problem
 
-When clicking the Shortage or Surplus KPI card, the active state uses `ring-2 ring-destructive ring-offset-2`, which creates a thick colored outline with a white gap (ring-offset). This looks heavy and out of place compared to the rest of the app's clean visual style.
+When clicking a Shortage or Surplus card, the border changes from the default `border` (1px) to `border-2` (2px). This 1px difference causes the card content to shift slightly, creating a visible flicker.
 
-## Proposed Design
-
-Replace the ring with a more refined approach: increase the border weight and background intensity on the selected card, giving a subtle "pressed/active" feel without the bulky ring.
-
-**Active Shortage card:**
-- Border: `border-2 border-destructive/60` (stronger red border, no ring)
-- Background: `bg-destructive/10` (slightly deeper tint)
-- Shadow: `shadow-sm` (subtle lift)
-
-**Active Surplus card:**
-- Border: `border-2 border-primary/60` (stronger blue border, no ring)
-- Background: `bg-primary/10` (slightly deeper tint)
-- Shadow: `shadow-sm` (subtle lift)
-
-**Inactive cards** keep their current light styling (`border-destructive/30 bg-destructive/5`).
-
-## Technical Change
+## Fix
 
 **File:** `src/components/forecast/ForecastKPICards.tsx`
 
-**Shortage card (lines 37-40):** Replace ring styling:
+Always apply `border-2` on both active and inactive states so the card dimensions never change -- only the border color/opacity and background change:
+
+**Shortage card (lines 37-40):**
 ```tsx
-className={cn(
-  "py-2 px-4 cursor-pointer transition-all",
-  activeFilter === 'shortage' 
-    ? "border-2 border-destructive/60 bg-destructive/10 shadow-sm"
-    : "border-destructive/30 bg-destructive/5"
-)}
+activeFilter === 'shortage'
+  ? "border-2 border-destructive/60 bg-destructive/10 shadow-sm"
+  : "border-2 border-destructive/30 bg-destructive/5"
 ```
 
-**Surplus card (lines 66-69):** Replace ring styling:
+**Surplus card (lines 68-71):**
 ```tsx
-className={cn(
-  "py-2 px-4 cursor-pointer transition-all",
-  activeFilter === 'surplus' 
-    ? "border-2 border-primary/60 bg-primary/10 shadow-sm"
-    : "border-primary/30 bg-primary/5"
-)}
+activeFilter === 'surplus'
+  ? "border-2 border-primary/60 bg-primary/10 shadow-sm"
+  : "border-2 border-primary/30 bg-primary/5"
 ```
 
-This produces a cleaner, more polished selection state that fits the app's design language -- visible but not overwhelming.
+The only difference: add `border-2` to the inactive (else) branch so border width is constant. This eliminates the 1px jump entirely.
 
