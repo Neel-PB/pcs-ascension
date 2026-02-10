@@ -84,7 +84,7 @@ export function EditableDateCell({
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <div className="flex items-center justify-between w-full h-full px-3">
+      <div className="flex items-center justify-between w-full h-full px-4">
         <span className={cn("text-sm", !date && "text-muted-foreground", className)}>
           {displayValue}
         </span>
