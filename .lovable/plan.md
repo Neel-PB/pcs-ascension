@@ -1,24 +1,27 @@
 
 
-# Fix Missing Divider Between Region Rows in Variance Analysis
+# Fix Filter Bar Position Shifting Between Tabs
 
 ## Problem
 
-When viewing at the Regions level (default view), Region 1 and Region 2 are both group rows (`!bg-primary/10`) sitting directly next to each other when collapsed. The current divider (`border-t-2 border-primary/20`) is a very light blue line on a light blue background, making it nearly invisible. In the FTE Skill Shift Analysis, group rows always have child rows between them providing natural visual separation -- but in Variance Analysis, consecutive group rows touch each other.
+When switching between tabs (e.g., Summary to Forecast or Volume Settings), the filters shift slightly in position. This happens because:
+
+1. The `main` content area uses `overflow-auto`, meaning the vertical scrollbar appears/disappears based on content height
+2. The FilterBar uses `justify-center`, so when the scrollbar disappears (shorter content), the available width increases by ~15px, causing all centered filters to shift right
 
 ## Fix
 
-**File:** `src/pages/staffing/VarianceAnalysis.tsx` (line 432)
+**File:** `src/components/shell/ShellLayout.tsx` (line 43)
 
-Increase the divider opacity from `border-primary/20` to `border-primary/40` so the line is clearly visible even between two adjacent blue-tinted group rows:
+Add `overflow-y: scroll` to the main content area so the scrollbar is always present, preventing width changes:
 
 ```
-border-t-2 border-primary/20
+className="px-4 py-4 bg-shell-elevated overflow-auto"
 ```
 becomes:
 ```
-border-t-2 border-primary/40
+className="px-4 py-4 bg-shell-elevated overflow-y-scroll overflow-x-hidden"
 ```
 
-This keeps the same light-blue color family (matching the FTE Skill Shift Analysis) but makes it strong enough to be visible between consecutive group rows. When group rows have child rows between them (like in the submarket view), the divider will still look consistent since child rows have a white background providing natural contrast.
+This ensures the scrollbar gutter is always reserved, so the content width stays constant regardless of which tab is active. The filters will no longer shift when switching between tabs.
 
