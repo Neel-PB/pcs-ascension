@@ -314,7 +314,7 @@ export function EditableFTECell({
                     className="space-y-3"
                   >
                     {/* FTE + Expiry inline grid */}
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-2 items-end">
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium">Active FTE</Label>
                         <Select value={editFte} onValueChange={setEditFte}>
