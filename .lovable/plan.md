@@ -1,33 +1,53 @@
 
 
-# Fix Header Row Background Consistency
+# Fix Variance Analysis: Blank Departments + Missing Row Dividers
 
-## Issue
+## Issue 1: Departments Show "..."
 
-The header rows in the Variance Analysis table don't have explicit forced backgrounds on all cells, unlike the data rows which were already fixed. This can cause subtle inconsistencies:
+The `SkillRow` component's first `TableCell` (line 501-503) literally contains `...` instead of the actual row name. This happened during a previous edit where the name + tooltip rendering was accidentally replaced with literal ellipsis text.
 
-1. **Header Row 1** (line 608-614): The sticky cell uses `bg-card` but the skill group header cells (`TableHead colSpan={3}`) have no background class at all.
-2. **Header Row 2** (line 616-633): The `TableRow` has `bg-muted/50` and the sticky cell has `bg-muted/50`, but the Day/Night/Total sub-header cells have no explicit background.
+### Fix
 
-The global `TableBody` striping doesn't affect `TableHeader`, but the lack of explicit backgrounds on header cells could still show inconsistencies depending on how the browser renders the sticky cell vs non-sticky cells.
+Restore the proper name rendering in the SkillRow's first TableCell. The content should show:
+- `row.name` as the visible text (truncated with CSS)
+- `row.subText` as a primary-colored badge (for IDs like department ID or facility ID)
+- A tooltip showing the full name on hover
 
-## Proposed Fix
+```tsx
+<TableCell className="font-medium sticky left-0 !bg-background pl-8 border-r-2 border-muted-foreground/30">
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="flex items-center gap-2 max-w-[180px]">
+          <span className="truncate text-sm">{row.name}</span>
+          {row.subText && (
+            <Badge variant="outline" className="bg-primary/10 text-primary text-xs shrink-0">
+              {row.subText}
+            </Badge>
+          )}
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="right">
+        <p>{row.name}{row.subText ? ` (${row.subText})` : ''}</p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+</TableCell>
+```
 
-### File: `src/pages/staffing/VarianceAnalysis.tsx`
+## Issue 2: No Row Divider Between Region Rows
 
-**Header Row 1 (lines 609-614)**: Add `bg-card` to all skill group `TableHead` cells so they match the sticky Regions header:
+When viewing Regions (all filters at default), Region 1 and Region 2 are both `GroupRow` components. The current `border-t-2 border-primary/20` on GroupRow is too subtle (20% opacity primary color). 
 
-| Cell | Current | After |
-|------|---------|-------|
-| CL Skill (line 610) | No bg class | `bg-card` |
-| RN Skill (line 611) | No bg class | `bg-card` |
-| PCT Skill (line 612) | No bg class | `bg-card` |
-| HUC (line 613) | No bg class | `bg-card` |
-| Overhead (line 614) | No bg class | `bg-card` |
+### Fix
 
-**Header Row 2 (lines 618-632)**: Add `bg-muted/50` to all Day/Night/Total `TableHead` cells so they match the sticky empty header:
+Change the GroupRow's top border to a more visible divider:
+- Use `border-t border-border` instead of `border-t-2 border-primary/20` -- this gives a standard 1px solid border that matches the rest of the table's divider style and is clearly visible.
 
-All 15 sub-header cells get `bg-muted/50` added to their className.
+### File Changed
 
-This ensures every cell in every row -- headers included -- has an explicit background, eliminating any possible rendering discrepancy between sticky and non-sticky cells.
+`src/pages/staffing/VarianceAnalysis.tsx`
+
+1. **Line 502**: Replace literal `...` with proper name + badge + tooltip rendering
+2. **Line 432**: Change `border-t-2 border-primary/20` to `border-t border-border` on GroupRow
 
