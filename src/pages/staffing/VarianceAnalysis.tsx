@@ -429,7 +429,7 @@ export function VarianceAnalysis({
     return (
       <>
         <TableRow
-          className="!bg-primary/10 hover:!bg-primary/15 border-t-2 border-muted-foreground/40 cursor-pointer"
+          className="!bg-primary/10 hover:!bg-primary/15 border-t-2 border-gray-300 dark:border-gray-600 cursor-pointer"
           onClick={() => toggleExpanded(row.id)}
         >
           <TableCell className="font-semibold sticky left-0 !bg-primary/10 whitespace-nowrap border-r-2 border-muted-foreground/30">
