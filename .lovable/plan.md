@@ -1,72 +1,101 @@
 
 
-# Fix Shared Position Layout Overflow
+# Two-Column Split Layout for Shared Position
 
 ## Problem
 
-When "Shared Position" is selected, the form has too many stacked fields (Active FTE + Share With cascading selects + Shared FTE + Shared Expiry + Comment), causing the popover to overflow vertically.
+The Shared Position form stacks too many fields vertically, causing the popover to overflow. The user wants a two-column layout to spread content horizontally instead.
 
 ## Solution
 
-Make the shared layout more compact by:
+When "Shared Position" is selected, the dynamic section renders as a **two-column grid** instead of a single stacked column. The popover width increases to accommodate the extra column.
 
-1. **Inline Active FTE + Expiry on one row** (same as standard layout) -- currently Active FTE is full-width in shared mode, wasting space
-2. **Move Shared FTE + Shared Expiry into a 2-column grid inside the card** (already done, keep it)
-3. **Make the Share With cascading selects more compact** -- stack Market/Facility/Department in a tighter layout with smaller gaps
-4. **Apply inline X clear button** for Shared Expiry (same fix as standard expiry) -- currently the "Clear" text button stacks below, adding extra height
-5. **Reduce inner padding/spacing** in the shared card from `p-2.5 space-y-2.5` to `p-2 space-y-2`
+### Layout
+
+```text
++-----------------------------------------------------+
+| Status / Reason                              [v]     |
+|                                                      |
+|  LEFT COLUMN              |  RIGHT COLUMN            |
+|  Active FTE    [0.5  v]   |  Share With              |
+|  Expiry     [Jun 30   x]  |  [Dept Name badge] [x]  |
+|                            |  Shared FTE   [0.3  v]  |
+|                            |  Shared Expiry [Jun x]  |
+|                                                      |
+| Comment (optional)                                   |
+| [                                                  ] |
+|------------------------------------------------------|
+| [Revert]                                    [Save]   |
++-----------------------------------------------------+
+```
+
+- **Left column**: Active FTE + Expiry (stacked vertically)
+- **Right column**: Share With (badge or cascading selects) + Shared FTE + Shared Expiry (stacked vertically)
+- **Comment**: Full-width below both columns
+- Status/Reason and footer remain full-width
 
 ## Technical Changes
 
 **File: `src/components/editable-table/cells/EditableFTECell.tsx`**
 
-### Change 1: Replace full-width Active FTE with inline FTE + Expiry grid (lines 414-429)
-Instead of Active FTE being full-width, use the same `grid grid-cols-2 gap-2 items-end` pattern as the standard layout, putting Active FTE and Expiry Date side-by-side (not inside the shared card).
+### Change 1: Widen popover for Shared Position
 
-### Change 2: Tighten the shared card (line 432)
-Change `p-2.5 space-y-2.5` to `p-2 space-y-2` for tighter spacing.
+The PopoverContent currently has a fixed width (`w-[260px]`). When `isSharedPosition` is true, increase to `w-[440px]` to fit two columns comfortably.
 
-### Change 3: Remove Shared Expiry from the card, keep only Share With + Shared FTE inside the card (lines 509-570)
-Restructure so the card only contains:
-- Share With (badge or cascading selects)
-- Shared FTE (single select, full-width inside card)
+### Change 2: Restructure shared layout (lines 405-643)
 
-The Shared Expiry moves outside the card, displayed as a standalone field below.
+Replace the current single-column `space-y-3` layout with:
 
-### Change 4: Fix Shared Expiry inline clear (lines 559-568)
-Replace the stacked "Clear" text button with an inline X icon button (same pattern as the standard expiry fix).
+```tsx
+<motion.div key="shared-layout" ...>
+  {/* Two-column grid */}
+  <div className="grid grid-cols-2 gap-3">
+    {/* Left column: Active FTE + Expiry */}
+    <div className="space-y-2">
+      <div className="space-y-1.5">
+        <Label>Active FTE</Label>
+        <Select ...>...</Select>
+      </div>
+      <div className="space-y-1.5">
+        <Label + info tooltip>Expiry</Label>
+        <Popover + inline X clear>...</Popover>
+      </div>
+    </div>
 
-### Change 5: Reduce cascading select gaps (line 461)
-Change `space-y-1.5` to `space-y-1` for the Market/Facility/Department cascading selects.
+    {/* Right column: Share With + Shared FTE + Shared Expiry */}
+    <div className="space-y-2">
+      <div className="space-y-1.5">
+        <Label>Share With</Label>
+        {/* Badge or cascading selects - same logic */}
+      </div>
+      <div className="space-y-1.5">
+        <Label>Shared FTE</Label>
+        <Select ...>...</Select>
+      </div>
+      <div className="space-y-1.5">
+        <Label>Shared Expiry</Label>
+        <Popover + inline X clear>...</Popover>
+      </div>
+    </div>
+  </div>
 
-## Visual After
-
-```text
-+---------------------------+
-| Status / Reason    [v]    |
-|                           |
-| Active FTE   | Expiry     |
-| [  0.5  v]   | [Jun 30 x]|
-| ,.........................|
-| . Share With              |
-| . [Dept Name badge] [x]  |
-| . Shared FTE    [0.3 v]  |
-| '.........................|
-| Shared Expiry  [Jun 30 x]|
-|                           |
-| Comment (optional)        |
-| [                       ] |
-|---------------------------|
-| [Revert]     [Save]      |
-+---------------------------+
+  {/* Comment - full width below */}
+  <div className="space-y-1.5">
+    <Label>Comment (optional)</Label>
+    <Textarea .../>
+  </div>
+</motion.div>
 ```
+
+### Change 3: Remove the shared card wrapper
+
+The `bg-muted/30` card around Share With and Shared FTE is no longer needed since the right column visually groups these fields. Optionally, a subtle left border or divider can separate the two columns.
 
 ## What Stays the Same
 
-- All business logic, state management, handlers
-- Cascading Market/Facility/Department selection logic
-- Badge collapse behavior
-- Save/Revert functionality
-- Calendar lazy loading
-- Popover positioning strategy
+- All business logic, state, handlers, save/revert
+- Cascading Market/Facility/Department selection logic and badge collapse
+- Standard (non-shared) layout is completely untouched
+- Calendar lazy loading and popover positioning strategy
+- All field validation rules and expiry date constraints
 
