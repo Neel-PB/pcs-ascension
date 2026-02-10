@@ -2,7 +2,7 @@ import { ColumnDef } from '@/types/table';
 import { Badge } from '@/components/ui/badge';
 import { Pencil, ShieldCheck } from 'lucide-react';
 import { EditableDateCell } from '@/components/editable-table/cells/EditableDateCell';
-import { EditableNumberPopoverCell } from '@/components/editable-table/cells/EditableNumberPopoverCell';
+import { OverrideVolumeCell } from '@/components/editable-table/cells/OverrideVolumeCell';
 import { TruncatedTextCell } from '@/components/editable-table/cells/TruncatedTextCell';
 import { differenceInDays, format } from 'date-fns';
 
@@ -69,13 +69,11 @@ export const createNPOverrideColumns = (
       const displayValue = row.pending_volume ?? row.np_override_volume;
 
       return (
-        <EditableNumberPopoverCell
+        <OverrideVolumeCell
           value={displayValue}
           isPending={hasPending}
           onSave={(value) => onSaveVolume(row.department_id, value)}
           onDelete={() => onDeleteOverride(row.department_id)}
-          autoOpen={autoOpenDatePickerFor === row.department_id}
-          onAutoOpenComplete={onAutoOpenComplete}
         />
       );
     },
