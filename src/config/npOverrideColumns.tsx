@@ -74,12 +74,6 @@ export const createNPOverrideColumns = (
           isPending={hasPending}
           onSave={(value) => onSaveVolume(row.department_id, value)}
           onDelete={() => onDeleteOverride(row.department_id)}
-          badge={{
-            icon: ShieldCheck,
-            label: 'Optional',
-            className: 'border-primary/30 text-primary',
-            tooltip: 'NP override is optional. Set a value to override the default target.',
-          }}
         />
       );
     },
