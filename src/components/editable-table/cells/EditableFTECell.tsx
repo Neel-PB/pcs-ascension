@@ -284,9 +284,9 @@ export function EditableFTECell({
       >
         <TooltipProvider delayDuration={200}>
           <div className="flex flex-col">
-            <div className={cn("space-y-3 p-3", isSharedPosition && "p-2.5 space-y-2.5")}>
+            <div className={cn("space-y-3 p-3", isSharedPosition && "p-2 space-y-1.5")}>
               {/* Section 1: Status / Reason */}
-              <div className="space-y-1.5">
+              <div className="space-y-0.5">
                 <Label className="text-xs font-medium">Status / Reason</Label>
                 <Select value={editStatus} onValueChange={handleStatusChange}>
                   <SelectTrigger className="h-7 text-xs">
@@ -409,13 +409,13 @@ export function EditableFTECell({
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.15 }}
-                    className="space-y-2"
+                    className="space-y-1.5"
                   >
                     {/* Two-column grid */}
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-1.5">
                       {/* Left column: Active FTE + Expiry */}
-                      <div className="space-y-1.5">
-                        <div className="space-y-1">
+                      <div className="space-y-1">
+                        <div className="space-y-0.5">
                           <Label className="text-xs font-medium">Active FTE</Label>
                           <Select value={editFte} onValueChange={setEditFte}>
                             <SelectTrigger className="h-7 text-xs">
@@ -431,7 +431,7 @@ export function EditableFTECell({
                           </Select>
                         </div>
 
-                        <div className="space-y-1">
+                        <div className="space-y-0.5">
                           <div className="flex items-center gap-1">
                             <Label className="text-xs font-medium">Expiry</Label>
                             {maxExpiryDate && (
@@ -487,9 +487,9 @@ export function EditableFTECell({
                       </div>
 
                       {/* Right column: Share With + Shared FTE + Shared Expiry */}
-                      <div className="space-y-1.5 border-l border-border/40 pl-2">
+                      <div className="space-y-1 border-l border-border/40 pl-1.5">
                         {/* Share With */}
-                        <div className="space-y-1">
+                        <div className="space-y-0.5">
                           <Label className="text-xs font-medium">Share With</Label>
                           {sharedDepartment && !isEditingShare ? (
                             <div className="flex items-center gap-1.5">
@@ -565,7 +565,7 @@ export function EditableFTECell({
                         </div>
 
                         {/* Shared FTE */}
-                        <div className="space-y-1">
+                        <div className="space-y-0.5">
                           <Label className="text-xs font-medium">Shared FTE</Label>
                           <Select value={editSharedFte} onValueChange={setEditSharedFte}>
                             <SelectTrigger className="h-7 text-xs">
@@ -582,7 +582,7 @@ export function EditableFTECell({
                         </div>
 
                         {/* Shared Expiry */}
-                        <div className="space-y-1">
+                        <div className="space-y-0.5">
                           <Label className="text-xs font-medium">Shared Expiry</Label>
                           <div className="flex items-center gap-1">
                             <Popover open={sharedCalendarOpen} onOpenChange={setSharedCalendarOpen}>
@@ -631,7 +631,7 @@ export function EditableFTECell({
                     </div>
 
                     {/* Comment - full width below */}
-                    <div className="space-y-1.5">
+                    <div className="space-y-0.5">
                       <Label className="text-xs font-medium">
                         Comment <span className="text-muted-foreground font-normal">(optional)</span>
                       </Label>
@@ -649,7 +649,7 @@ export function EditableFTECell({
             </div>
 
             {/* Actions - sticky footer */}
-            <div className="flex gap-2 p-3 pt-3 border-t bg-popover sticky bottom-0">
+            <div className="flex gap-2 p-2 pt-2 border-t bg-popover sticky bottom-0">
               {isModified && (
                 <Button
                   variant="outline"
