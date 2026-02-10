@@ -20,7 +20,7 @@ interface OverrideVolumeCellProps {
   isPending?: boolean; // NEW: Whether this value is pending (stored in memory, not DB)
   onSave: (value: number | null) => Promise<void>;
   onDelete: () => Promise<void>;
-  badge: BadgeConfig;
+  badge?: BadgeConfig;
   showWarning?: boolean;
   warningTooltip?: string;
 }
@@ -103,17 +103,19 @@ export function OverrideVolumeCell({
   return (
     <div className="flex items-center justify-between px-4 py-2 w-full">
       {/* Status Badge - Left */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Badge variant="outline" className={cn('shrink-0 gap-1', badge.className)}>
-            <BadgeIcon className="h-3 w-3" />
-            <span className="text-xs">{badge.label}</span>
-          </Badge>
-        </TooltipTrigger>
-        <TooltipContent side="top" className="max-w-xs">
-          {badge.tooltip}
-        </TooltipContent>
-      </Tooltip>
+      {badge && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge variant="outline" className={cn('shrink-0 gap-1', badge.className)}>
+              <BadgeIcon className="h-3 w-3" />
+              <span className="text-xs">{badge.label}</span>
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-xs">
+            {badge.tooltip}
+          </TooltipContent>
+        </Tooltip>
+      )}
 
       {/* Value / Edit Area - Right */}
       <div className="flex items-center gap-1">
