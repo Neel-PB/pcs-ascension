@@ -1,20 +1,25 @@
 
-# Fix NP Settings Table Padding to Match Headers
+# Fix NP Settings Padding -- EditableNumberCell Still Uses px-3
 
 ## Problem
 
-The NP Settings table has the same padding inconsistency that was just fixed in Volume Settings -- row cells use `px-3` while headers use `px-4`.
+The `EditableNumberCell` component (used by the "Override NP %" column) still has `px-3` padding on line 87, while all headers and other cells now use `px-4`. This was missed in the earlier round of padding fixes.
 
 ## Fix
 
-**File:** `src/config/npOverrideColumns.tsx`
+**File:** `src/components/editable-table/cells/EditableNumberCell.tsx`
 
-Update all `px-3` instances to `px-4` across the following columns:
+Two lines need updating:
 
-1. **Target NP %** (line 48): `px-3` to `px-4`
-2. **Max Expiration** (line 77): `px-3` to `px-4`
-3. **Status** (lines 113, 124, 132, 141): all four `px-3` to `px-4`
+1. **Line 69** (editing state): `px-4` -- already correct
+2. **Line 87** (display state): Change `px-3` to `px-4`
 
-The **Expiration Date** column uses `EditableDateCell`, which was already updated to `px-4` in the previous fix. The **Override NP %** column uses `EditableNumberCell`, which was also already updated. The **Department** column uses `TruncatedTextCell` which handles its own padding.
+```tsx
+// Before (line 87)
+"flex items-center justify-between w-full h-full px-3",
 
-Total: 6 occurrences of `px-3` changed to `px-4` in one file.
+// After
+"flex items-center justify-between w-full h-full px-4",
+```
+
+This is the same one-line fix pattern used for the other cells. It affects both the NP Settings and Volume Settings Override columns since they share this component.
