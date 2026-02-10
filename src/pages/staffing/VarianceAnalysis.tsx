@@ -429,7 +429,7 @@ export function VarianceAnalysis({
     return (
       <>
         <TableRow
-          className="!bg-primary/10 hover:!bg-primary/15 border-t-2 border-primary/20 cursor-pointer"
+          className="!bg-primary/10 hover:!bg-primary/15 border-t border-border cursor-pointer"
           onClick={() => toggleExpanded(row.id)}
         >
           <TableCell className="font-semibold sticky left-0 !bg-primary/10 whitespace-nowrap border-r-2 border-muted-foreground/30">
@@ -499,7 +499,23 @@ export function VarianceAnalysis({
   const SkillRow = ({ row }: { row: GroupedVarianceData }) => (
     <TableRow className="hover:bg-muted/30 !bg-background">
       <TableCell className="font-medium sticky left-0 !bg-background pl-8 border-r-2 border-muted-foreground/30">
-...
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-2 max-w-[180px]">
+                <span className="truncate text-sm">{row.name}</span>
+                {row.subText && (
+                  <Badge variant="outline" className="bg-primary/10 text-primary text-xs shrink-0">
+                    {row.subText}
+                  </Badge>
+                )}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>{row.name}{row.subText ? ` (${row.subText})` : ''}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </TableCell>
       <TableCell className="text-center font-semibold !bg-background border-l-2 border-muted-foreground/30">
         {formatVariance(row.clDay)}
