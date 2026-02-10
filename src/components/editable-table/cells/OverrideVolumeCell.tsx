@@ -128,7 +128,7 @@ export function OverrideVolumeCell({
       )}
 
       {state === 'editing' && (
-        <>
+        <div className="flex items-center gap-1">
           <input
             ref={inputRef}
             type="number"
@@ -139,27 +139,25 @@ export function OverrideVolumeCell({
             className="w-20 text-sm font-medium bg-background border border-input rounded px-2 py-1 focus:outline-none"
             disabled={isLoading}
           />
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 text-primary hover:text-primary hover:bg-primary/10"
-              onClick={handleAccept}
-              disabled={isLoading}
-            >
-              <Check className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 text-muted-foreground hover:text-foreground"
-              onClick={handleCancel}
-              disabled={isLoading}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 text-primary hover:text-primary hover:bg-primary/10"
+            onClick={handleAccept}
+            disabled={isLoading}
+          >
+            <Check className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 text-muted-foreground hover:text-foreground"
+            onClick={handleCancel}
+            disabled={isLoading}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
       )}
 
       {state === 'saved' && (
