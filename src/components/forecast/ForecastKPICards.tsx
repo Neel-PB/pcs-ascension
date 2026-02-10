@@ -38,7 +38,7 @@ export function ForecastKPICards({
           "py-2 px-4 cursor-pointer transition-all",
           activeFilter === 'shortage' 
             ? "border-2 border-destructive/60 bg-destructive/10 shadow-sm"
-            : "border-destructive/30 bg-destructive/5"
+            : "border-2 border-destructive/30 bg-destructive/5"
         )}
         onClick={() => onFilterClick?.('shortage')}
       >
@@ -69,7 +69,7 @@ export function ForecastKPICards({
           "py-2 px-4 cursor-pointer transition-all",
           activeFilter === 'surplus' 
             ? "border-2 border-primary/60 bg-primary/10 shadow-sm"
-            : "border-primary/30 bg-primary/5"
+            : "border-2 border-primary/30 bg-primary/5"
         )}
         onClick={() => onFilterClick?.('surplus')}
       >
