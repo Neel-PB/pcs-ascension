@@ -1,30 +1,22 @@
 
-
-# Fix KPI Card Layout Shift on Click
+# Fix Expiration Date Cell Padding
 
 ## Problem
 
-When clicking a Shortage or Surplus card, the border changes from the default `border` (1px) to `border-2` (2px). This 1px difference causes the card content to shift slightly, creating a visible flicker.
+The Expiration Date column's cell content uses `px-3` padding while all other columns were updated to `px-4`, causing misalignment.
 
 ## Fix
 
-**File:** `src/components/forecast/ForecastKPICards.tsx`
+**File:** `src/components/editable-table/cells/EditableDateCell.tsx` (line 87)
 
-Always apply `border-2` on both active and inactive states so the card dimensions never change -- only the border color/opacity and background change:
+Change `px-3` to `px-4`:
 
-**Shortage card (lines 37-40):**
 ```tsx
-activeFilter === 'shortage'
-  ? "border-2 border-destructive/60 bg-destructive/10 shadow-sm"
-  : "border-2 border-destructive/30 bg-destructive/5"
+// Before
+<div className="flex items-center justify-between w-full h-full px-3">
+
+// After
+<div className="flex items-center justify-between w-full h-full px-4">
 ```
 
-**Surplus card (lines 68-71):**
-```tsx
-activeFilter === 'surplus'
-  ? "border-2 border-primary/60 bg-primary/10 shadow-sm"
-  : "border-2 border-primary/30 bg-primary/5"
-```
-
-The only difference: add `border-2` to the inactive (else) branch so border width is constant. This eliminates the 1px jump entirely.
-
+Single-line change to match the padding standard across all Volume Settings columns.
