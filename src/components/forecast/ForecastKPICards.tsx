@@ -35,8 +35,10 @@ export function ForecastKPICards({
       {/* FTE Shortage + Positions to Open Card */}
       <Card 
         className={cn(
-          "py-2 px-4 border-destructive/30 bg-destructive/5 cursor-pointer transition-all",
-          activeFilter === 'shortage' && "ring-2 ring-destructive ring-offset-2"
+          "py-2 px-4 cursor-pointer transition-all",
+          activeFilter === 'shortage' 
+            ? "border-2 border-destructive/60 bg-destructive/10 shadow-sm"
+            : "border-destructive/30 bg-destructive/5"
         )}
         onClick={() => onFilterClick?.('shortage')}
       >
@@ -64,8 +66,10 @@ export function ForecastKPICards({
       {/* FTE Surplus + Positions to Close Card */}
       <Card 
         className={cn(
-          "py-2 px-4 border-primary/30 bg-primary/5 cursor-pointer transition-all",
-          activeFilter === 'surplus' && "ring-2 ring-primary ring-offset-2"
+          "py-2 px-4 cursor-pointer transition-all",
+          activeFilter === 'surplus' 
+            ? "border-2 border-primary/60 bg-primary/10 shadow-sm"
+            : "border-primary/30 bg-primary/5"
         )}
         onClick={() => onFilterClick?.('surplus')}
       >
