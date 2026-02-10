@@ -1,26 +1,27 @@
 
 
-# Match Variance Analysis Dividers and Background to Reference Image
+# Match Variance Analysis Dividers to FTE Skill Shift Analysis
 
-## What Changes
+## Problem
 
-**File:** `src/pages/staffing/VarianceAnalysis.tsx`
+The two tables use different divider colors:
+- **FTE Skill Shift Analysis**: `border-t-2 border-primary/20` (light blue, matching the row background)
+- **Variance Analysis**: `border-t-2 border-gray-300 dark:border-gray-600` (neutral gray)
 
-### 1. Horizontal Group Dividers (line 432)
+Both reference images show the same subtle light-blue divider that blends with the blue-tinted group row background. The Variance Analysis needs to match.
 
-Change the border color from the current blue-tinted `border-muted-foreground/40` to a neutral gray that matches the reference image:
+## Fix
 
-```
-border-t-2 border-muted-foreground/40
-```
-becomes:
+**File:** `src/pages/staffing/VarianceAnalysis.tsx` (line 432)
+
+Change:
 ```
 border-t-2 border-gray-300 dark:border-gray-600
 ```
+To:
+```
+border-t-2 border-primary/20
+```
 
-This produces a clean, neutral gray horizontal rule between Overheads, Clinical Staff, Support Staff, and TOTAL -- exactly as shown in the reference image.
-
-### 2. No other changes needed
-
-The existing `!bg-primary/10` row background already matches the light blue tint visible in the reference image. The vertical separators (`border-l-2 border-muted-foreground/30`) also align with the reference. Only the horizontal divider color needs updating.
+This aligns the Variance Analysis group row dividers with the FTE Skill Shift Analysis styling, producing the same subtle light-blue horizontal rule visible in both reference images.
 
