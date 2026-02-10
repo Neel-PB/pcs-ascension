@@ -345,42 +345,44 @@ export function EditableFTECell({
                             </Tooltip>
                           )}
                         </div>
-                        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-                          <PopoverTrigger asChild>
+                        <div className="flex items-center gap-1">
+                          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "flex-1 justify-start text-left font-normal h-7 text-xs px-2",
+                                  !editExpiry && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-1.5 h-3.5 w-3.5 shrink-0" />
+                                {editExpiry ? format(editExpiry, 'MMM d') : 'Date...'}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0 z-[60]" align="start">
+                              <Suspense fallback={<div className="p-3 text-xs text-muted-foreground">Loading...</div>}>
+                                <Calendar
+                                  mode="single"
+                                  selected={editExpiry}
+                                  onSelect={handleDateSelect}
+                                  disabled={isDateDisabled}
+                                  initialFocus
+                                  className="p-3 pointer-events-auto"
+                                />
+                              </Suspense>
+                            </PopoverContent>
+                          </Popover>
+                          {editExpiry && (
                             <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full justify-start text-left font-normal h-7 text-xs px-2",
-                                !editExpiry && "text-muted-foreground"
-                              )}
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 shrink-0"
+                              onClick={handleClearExpiry}
                             >
-                              <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
-                              {editExpiry ? format(editExpiry, 'MMM d') : 'Date...'}
+                              <X className="h-3 w-3" />
                             </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0 z-[60]" align="start">
-                            <Suspense fallback={<div className="p-3 text-xs text-muted-foreground">Loading...</div>}>
-                              <Calendar
-                                mode="single"
-                                selected={editExpiry}
-                                onSelect={handleDateSelect}
-                                disabled={isDateDisabled}
-                                initialFocus
-                                className="p-3 pointer-events-auto"
-                              />
-                            </Suspense>
-                          </PopoverContent>
-                        </Popover>
-                        {editExpiry && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-5 px-1.5 text-[10px] text-muted-foreground"
-                            onClick={handleClearExpiry}
-                          >
-                            Clear
-                          </Button>
-                        )}
+                          )}
+                        </div>
                       </div>
                     </div>
 
