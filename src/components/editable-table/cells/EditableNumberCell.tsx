@@ -84,7 +84,7 @@ export function EditableNumberCell({
   return (
     <div
       className={cn(
-        "flex items-center justify-between w-full h-full px-3",
+        "flex items-center justify-between w-full h-full px-4",
         "hover:bg-muted/50 transition-colors cursor-pointer",
         className
       )}
