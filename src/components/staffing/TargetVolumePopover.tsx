@@ -89,7 +89,7 @@ export function TargetVolumePopover({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <div className="flex items-center justify-between gap-2 px-3 py-2 w-full cursor-pointer">
+        <div className="flex items-center justify-between gap-2 px-4 py-2 w-full cursor-pointer">
           {/* Left side - Badge */}
           <Badge 
             className={cn(

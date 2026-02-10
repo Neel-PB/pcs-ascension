@@ -67,7 +67,7 @@ export const createVolumeOverrideColumns = (
     locked: true,
     sortable: true,
     renderCell: (row) => (
-      <div className="px-3 py-2 text-sm font-medium">
+      <div className="px-4 py-2 text-sm font-medium">
         {row.department_name}
       </div>
     ),
@@ -141,7 +141,7 @@ export const createVolumeOverrideColumns = (
       // Disabled state when no override volume set AND no pending volume
       if (!hasOverride && !hasPending) {
         return (
-          <div className="flex items-center justify-between w-full px-3 py-2 opacity-50 cursor-not-allowed">
+          <div className="flex items-center justify-between w-full px-4 py-2 opacity-50 cursor-not-allowed">
             <span className="text-sm text-muted-foreground">—</span>
             <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
@@ -185,7 +185,7 @@ export const createVolumeOverrideColumns = (
     minWidth: 120,
     sortable: true,
     renderCell: (row) => (
-      <div className="px-3 py-2">
+      <div className="px-4 py-2">
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="text-sm text-muted-foreground">
@@ -213,7 +213,7 @@ export const createVolumeOverrideColumns = (
       // Pending state: volume set in memory but not saved to DB yet
       if (row.pending_volume != null) {
         return (
-          <div className="px-3 py-2">
+           <div className="px-4 py-2">
             <Badge variant="outline" className="border-amber-500 text-amber-600">
               Pending
             </Badge>
@@ -224,7 +224,7 @@ export const createVolumeOverrideColumns = (
       // No override volume at all
       if (!row.override_volume) {
         return (
-          <div className="px-3 py-2">
+           <div className="px-4 py-2">
             <Badge variant="secondary">Not Set</Badge>
           </div>
         );
@@ -233,7 +233,7 @@ export const createVolumeOverrideColumns = (
       // Override volume exists but no expiry date yet
       if (!row.expiry_date) {
         return (
-          <div className="px-3 py-2">
+           <div className="px-4 py-2">
             <Badge variant="outline" className="border-amber-500 text-amber-600">
               Incomplete
             </Badge>
@@ -246,7 +246,7 @@ export const createVolumeOverrideColumns = (
 
       if (daysUntilExpiry < 0) {
         return (
-          <div className="px-3 py-2">
+           <div className="px-4 py-2">
             <Badge variant="destructive">Expired</Badge>
           </div>
         );
@@ -254,7 +254,7 @@ export const createVolumeOverrideColumns = (
 
       if (daysUntilExpiry <= 7) {
         return (
-          <div className="px-3 py-2">
+           <div className="px-4 py-2">
             <Badge variant="outline" className="border-accent text-accent-foreground">
               Expiring Soon
             </Badge>
@@ -263,7 +263,7 @@ export const createVolumeOverrideColumns = (
       }
 
       return (
-        <div className="px-3 py-2">
+        <div className="px-4 py-2">
           <Badge variant="outline" className="border-primary text-primary">
             Active
           </Badge>
