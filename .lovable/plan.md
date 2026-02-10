@@ -1,35 +1,28 @@
 
 
-# Make Override NP % Match Expiration Date Cell Layout
+# Align Override NP % Cell Layout to Match Expiration Date
 
 ## Problem
 
-The "Override NP %" column currently uses `OverrideVolumeCell` which has a different interaction pattern (inline input with check/X buttons). The user wants it to match the "Expiration Date" column's clean layout from `EditableDateCell`: value on the left, single pencil icon on the right, with a popover for editing.
+The `OverrideVolumeCell` groups the dash and pencil icon together on the right side of the cell. The user wants it to match `EditableDateCell`'s layout: **dash on the left, pencil icon on the right**, with `justify-between` spacing.
 
-## Approach
+## Change
 
-Create a new cell component `EditableNumberPopoverCell` that mirrors `EditableDateCell` but uses a number input inside a Popover instead of a Calendar. This gives the same visual pattern:
+### `src/components/editable-table/cells/OverrideVolumeCell.tsx`
 
-- Idle: dash on left, pencil icon on right
-- Has value: formatted value on left, pencil (or revert) icon on right  
-- Click pencil: opens a popover with number input
-- Revert: clears the override
+Restructure the idle and saved states to use the same layout as `EditableDateCell`:
 
-## Files to Change
+**Idle state** (no value):
+- Left: dash (`—`) with optional warning icon
+- Right: Pencil button
 
-### 1. New File: `src/components/editable-table/cells/EditableNumberPopoverCell.tsx`
+**Editing state** (inline input):
+- Left: number input
+- Right: Check and X buttons
 
-Create a component matching `EditableDateCell`'s structure:
-- Same `flex items-center justify-between w-full h-full px-4` wrapper
-- Value or dash on the left
-- Pencil button on the right (opens Popover with number input)
-- RotateCcw button when value is set (to revert/delete)
-- Support `autoOpen` and `onAutoOpenComplete` props (for staged save flow)
+**Saved state** (has value):
+- Left: value text
+- Right: Revert button (when not pending)
 
-### 2. Update: `src/config/npOverrideColumns.tsx`
+The wrapper will change from the current two-section layout (badge left, value area right) to a single `flex items-center justify-between w-full h-full px-4` pattern, removing the nested `flex items-center gap-1` grouping so items spread across the full width.
 
-Replace `OverrideVolumeCell` with the new `EditableNumberPopoverCell` in the "Override NP %" column. Pass the same `onSave`, `onDelete`, `isPending`, and auto-open props.
-
-## Result
-
-The "Override NP %" and "Expiration Date" columns will have identical visual patterns: clean value-left, icon-right layout with popover-based editing.
