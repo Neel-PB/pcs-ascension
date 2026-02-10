@@ -1,7 +1,8 @@
 import { ColumnDef } from '@/types/table';
 import { Badge } from '@/components/ui/badge';
-import { EditableNumberCell } from '@/components/editable-table/cells/EditableNumberCell';
+import { Pencil, ShieldCheck } from 'lucide-react';
 import { EditableDateCell } from '@/components/editable-table/cells/EditableDateCell';
+import { OverrideVolumeCell } from '@/components/editable-table/cells/OverrideVolumeCell';
 import { TruncatedTextCell } from '@/components/editable-table/cells/TruncatedTextCell';
 import { differenceInDays, format } from 'date-fns';
 
@@ -11,6 +12,7 @@ export interface NPOverrideRow {
   department_name: string;
   np_target_volume: number | null;
   np_override_volume: number | null;
+  pending_volume?: number | null;
   expiry_date: string | null;
   max_expiry_date: Date;
   market: string;
@@ -20,7 +22,10 @@ export interface NPOverrideRow {
 
 export const createNPOverrideColumns = (
   onSaveVolume: (departmentId: string, volume: number | null) => Promise<void>,
-  onSaveDate: (departmentId: string, date: string | null) => Promise<void>
+  onSaveDate: (departmentId: string, date: string | null) => Promise<void>,
+  onDeleteOverride: (departmentId: string) => Promise<void>,
+  autoOpenDatePickerFor?: string | null,
+  onAutoOpenComplete?: () => void
 ): ColumnDef<NPOverrideRow>[] => [
   {
     id: 'department_name',
@@ -59,12 +64,25 @@ export const createNPOverrideColumns = (
     width: 200,
     minWidth: 180,
     sortable: true,
-    renderCell: (row) => (
-      <EditableNumberCell
-        value={row.np_override_volume}
-        onSave={(value) => onSaveVolume(row.department_id, value)}
-      />
-    ),
+    renderCell: (row) => {
+      const hasPending = row.pending_volume != null;
+      const displayValue = row.pending_volume ?? row.np_override_volume;
+
+      return (
+        <OverrideVolumeCell
+          value={displayValue}
+          isPending={hasPending}
+          onSave={(value) => onSaveVolume(row.department_id, value)}
+          onDelete={() => onDeleteOverride(row.department_id)}
+          badge={{
+            icon: ShieldCheck,
+            label: 'Optional',
+            className: 'border-primary/30 text-primary',
+            tooltip: 'NP override is optional. Set a value to override the default target.',
+          }}
+        />
+      );
+    },
   },
   {
     id: 'max_expiry',
@@ -88,17 +106,34 @@ export const createNPOverrideColumns = (
     width: 220,
     minWidth: 180,
     sortable: true,
-    renderCell: (row) => (
-      <div className="relative w-full h-full">
-        <EditableDateCell
-          value={row.expiry_date}
-          originalValue={null}
-          onSave={(value) => onSaveDate(row.department_id, value)}
-          minDate={new Date()}
-          maxDate={row.max_expiry_date}
-        />
-      </div>
-    ),
+    renderCell: (row) => {
+      const hasOverride = row.np_override_volume != null;
+      const hasPending = row.pending_volume != null;
+
+      // Disabled state when no override and no pending
+      if (!hasOverride && !hasPending) {
+        return (
+          <div className="flex items-center justify-between w-full px-4 py-2 opacity-50 cursor-not-allowed">
+            <span className="text-sm text-muted-foreground">—</span>
+            <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+          </div>
+        );
+      }
+
+      return (
+        <div className="relative w-full h-full">
+          <EditableDateCell
+            value={row.expiry_date}
+            originalValue={null}
+            onSave={(value) => onSaveDate(row.department_id, value)}
+            minDate={new Date()}
+            maxDate={row.max_expiry_date}
+            autoOpen={autoOpenDatePickerFor === row.department_id}
+            onAutoOpenComplete={onAutoOpenComplete}
+          />
+        </div>
+      );
+    },
   },
   {
     id: 'status',
@@ -108,10 +143,33 @@ export const createNPOverrideColumns = (
     minWidth: 100,
     sortable: true,
     renderCell: (row) => {
-      if (!row.np_override_volume || !row.expiry_date) {
+      // Pending state: volume set in memory but not saved to DB yet
+      if (row.pending_volume != null) {
+        return (
+          <div className="px-4 py-2">
+            <Badge variant="outline" className="border-amber-500 text-amber-600">
+              Pending
+            </Badge>
+          </div>
+        );
+      }
+
+      // No override volume at all
+      if (!row.np_override_volume) {
         return (
           <div className="px-4 py-2">
             <Badge variant="secondary">Not Set</Badge>
+          </div>
+        );
+      }
+
+      // Override volume exists but no expiry date yet
+      if (!row.expiry_date) {
+        return (
+          <div className="px-4 py-2">
+            <Badge variant="outline" className="border-amber-500 text-amber-600">
+              Incomplete
+            </Badge>
           </div>
         );
       }

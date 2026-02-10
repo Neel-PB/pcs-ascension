@@ -1,11 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { EditableTable } from '@/components/editable-table/EditableTable';
 import { createNPOverrideColumns, NPOverrideRow } from '@/config/npOverrideColumns';
 import { useNPOverrides, useUpsertNPOverride, useDeleteNPOverride } from '@/hooks/useNPOverrides';
 import { useHistoricalVolumeAnalysis } from '@/hooks/useHistoricalVolumeAnalysis';
-import { Database, Lock } from 'lucide-react';
+import { Database } from 'lucide-react';
 import { LogoLoader } from '@/components/ui/LogoLoader';
 import { useRBAC } from '@/hooks/useRBAC';
 
@@ -18,12 +18,10 @@ interface NPSettingsTabProps {
 function getFiscalYearEndDate(): Date {
   const today = new Date();
   const currentYear = today.getFullYear();
-  const currentMonth = today.getMonth(); // 0-indexed (January = 0)
+  const currentMonth = today.getMonth();
   
-  // If we're past June 30, the fiscal year end is next year's June 30
-  // If we're before or on June 30, it's this year's June 30
   const fiscalYearEnd = currentMonth >= 6 
-    ? new Date(currentYear + 1, 5, 30) // June is month 5 (0-indexed)
+    ? new Date(currentYear + 1, 5, 30)
     : new Date(currentYear, 5, 30);
   
   return fiscalYearEnd;
@@ -36,6 +34,12 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
   const deleteMutation = useDeleteNPOverride();
   const { hasPermission } = useRBAC();
   const canManageOverrides = hasPermission('approvals.np_override');
+
+  // Pending overrides stored in memory (not saved to DB until expiration date is set)
+  const [pendingOverrides, setPendingOverrides] = useState<Record<string, number>>({});
+  
+  // Track which department should auto-open its date picker
+  const [autoOpenDatePicker, setAutoOpenDatePicker] = useState<string | null>(null);
 
   // Fetch departments for the selected facility
   const { data: departments = [], isLoading: isLoadingDepartments } = useQuery({
@@ -75,15 +79,13 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
 
   const fiscalYearEnd = useMemo(() => getFiscalYearEndDate(), []);
 
-  // Merge departments with overrides and historical analysis (for target volume)
+  // Merge departments with overrides and pending values
   const tableData = useMemo((): NPOverrideRow[] => {
     if (!departments.length) return [];
 
     return departments.map((dept) => {
       const override = overrides.find((o) => o.department_id === dept.department_id);
-      const analysis = volumeAnalysis.find(
-        (a) => a.facility_id === selectedFacility && a.department_id === dept.department_id
-      );
+      const pendingVolume = pendingOverrides[dept.department_id];
       
       return {
         id: override?.id || `dept-${dept.department_id}`,
@@ -91,6 +93,7 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
         department_name: dept.department_name,
         np_target_volume: 10,
         np_override_volume: override?.np_override_volume ?? null,
+        pending_volume: pendingVolume ?? null,
         expiry_date: override?.expiry_date ?? null,
         max_expiry_date: fiscalYearEnd,
         market: selectedMarket,
@@ -98,7 +101,7 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
         facility_name: facilityData?.facility_name || '',
       };
     });
-  }, [departments, overrides, volumeAnalysis, selectedMarket, selectedFacility, facilityData, fiscalYearEnd]);
+  }, [departments, overrides, selectedMarket, selectedFacility, facilityData, fiscalYearEnd, pendingOverrides]);
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -114,62 +117,86 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
       return daysUntilExpiry > 0 && daysUntilExpiry <= 7;
     }).length;
     
-    const notSetCount = tableData.filter(row => !row.np_override_volume).length;
+    const notSetCount = tableData.filter(row => !row.np_override_volume && row.pending_volume == null).length;
 
     return { activeCount, expiringSoonCount, notSetCount };
   }, [tableData]);
 
+  // Step 1: Store volume in memory only (staged save)
   const handleSaveVolume = async (departmentId: string, volume: number | null) => {
     if (!canManageOverrides) return;
+    if (!volume) return;
+
+    // Store in pending state (memory) - don't save to DB yet
+    setPendingOverrides(prev => ({
+      ...prev,
+      [departmentId]: volume
+    }));
+    
+    // Trigger auto-open for this department's date picker
+    setAutoOpenDatePicker(departmentId);
+  };
+
+  // Clear auto-open state after the calendar has opened
+  const handleAutoOpenComplete = () => {
+    setAutoOpenDatePicker(null);
+  };
+
+  // Step 2: Save both volume AND date to database together
+  const handleSaveDate = async (departmentId: string, date: string | null) => {
+    if (!canManageOverrides) return;
+    if (!date) return;
     
     const row = tableData.find((r) => r.department_id === departmentId);
     if (!row) return;
 
-    if (!volume) return;
+    // Get volume from pending state or existing override
+    const volumeToSave = pendingOverrides[departmentId] ?? row.np_override_volume;
+    if (!volumeToSave) return;
 
-    // Require expiry date
-    if (!row.expiry_date) {
-      return;
-    }
-
+    // NOW save both to database
     await upsertMutation.mutateAsync({
       market: row.market,
       facility_id: row.facility_id,
       facility_name: row.facility_name,
       department_id: row.department_id,
       department_name: row.department_name,
-      np_override_volume: volume,
-      expiry_date: row.expiry_date,
+      np_override_volume: volumeToSave,
+      expiry_date: date,
+    });
+
+    // Clear from pending state after successful save
+    setPendingOverrides(prev => {
+      const updated = { ...prev };
+      delete updated[departmentId];
+      return updated;
     });
   };
 
-  const handleSaveDate = async (departmentId: string, date: string | null) => {
+  const handleDeleteOverride = async (departmentId: string) => {
     if (!canManageOverrides) return;
     
     const row = tableData.find((r) => r.department_id === departmentId);
     if (!row) return;
 
-    if (!date) return;
-
-    // Require volume
-    if (!row.np_override_volume) {
-      return;
+    // Only delete if there's an existing override (not a placeholder)
+    if (!row.id.startsWith('dept-')) {
+      await deleteMutation.mutateAsync({ 
+        id: row.id, 
+        facilityId: selectedFacility 
+      });
     }
-
-    await upsertMutation.mutateAsync({
-      market: row.market,
-      facility_id: row.facility_id,
-      facility_name: row.facility_name,
-      department_id: row.department_id,
-      department_name: row.department_name,
-      np_override_volume: row.np_override_volume,
-      expiry_date: date,
-    });
   };
 
   const columns = useMemo(
-    () => createNPOverrideColumns(handleSaveVolume, handleSaveDate),
-    [tableData]
+    () => createNPOverrideColumns(
+      handleSaveVolume, 
+      handleSaveDate, 
+      handleDeleteOverride,
+      autoOpenDatePicker,
+      handleAutoOpenComplete
+    ),
+    [tableData, autoOpenDatePicker]
   );
 
   // Show message if no facility selected
