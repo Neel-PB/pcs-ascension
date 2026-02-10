@@ -101,26 +101,10 @@ export function OverrideVolumeCell({
   const BadgeIcon = badge?.icon;
 
   return (
-    <div className="flex items-center justify-between px-4 py-2 w-full">
-      {/* Status Badge - Left */}
-      {badge && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Badge variant="outline" className={cn('shrink-0 gap-1', badge.className)}>
-              <BadgeIcon className="h-3 w-3" />
-              <span className="text-xs">{badge.label}</span>
-            </Badge>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="max-w-xs">
-            {badge.tooltip}
-          </TooltipContent>
-        </Tooltip>
-      )}
-
-      {/* Value / Edit Area - Right */}
-      <div className="flex items-center gap-1">
-        {state === 'idle' && (
-          <>
+    <div className="flex items-center justify-between w-full h-full px-4">
+      {state === 'idle' && (
+        <>
+          <div className="flex items-center gap-1">
             <span className="text-sm text-muted-foreground">—</span>
             {showWarning && (
               <Tooltip>
@@ -130,88 +114,72 @@ export function OverrideVolumeCell({
                 <TooltipContent className="max-w-xs">{warningTooltip}</TooltipContent>
               </Tooltip>
             )}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6"
-                  onClick={handleStartEdit}
-                  disabled={isLoading}
-                >
-                  <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Add override volume</TooltipContent>
-            </Tooltip>
-          </>
-        )}
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 text-muted-foreground hover:text-foreground"
+            onClick={handleStartEdit}
+            disabled={isLoading}
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </Button>
+        </>
+      )}
 
-        {state === 'editing' && (
-          <>
-            <input
-              ref={inputRef}
-              type="number"
-              step="0.01"
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="w-20 text-sm font-medium bg-background border border-input rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-ring"
+      {state === 'editing' && (
+        <>
+          <input
+            ref={inputRef}
+            type="number"
+            step="0.01"
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="w-20 text-sm font-medium bg-background border border-input rounded px-2 py-1 focus:outline-none"
+            disabled={isLoading}
+          />
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 text-primary hover:text-primary hover:bg-primary/10"
+              onClick={handleAccept}
               disabled={isLoading}
-            />
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 text-primary hover:text-primary hover:bg-primary/10"
-                  onClick={handleAccept}
-                  disabled={isLoading}
-                >
-                  <Check className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Accept</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                  onClick={handleCancel}
-                  disabled={isLoading}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Cancel</TooltipContent>
-            </Tooltip>
-          </>
-        )}
+            >
+              <Check className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 text-muted-foreground hover:text-foreground"
+              onClick={handleCancel}
+              disabled={isLoading}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </>
+      )}
 
-        {state === 'saved' && (
-          <>
-            <span className="text-sm font-medium">{value}</span>
-            {!isPending && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                    onClick={handleDelete}
-                    disabled={isLoading}
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Revert override</TooltipContent>
-              </Tooltip>
-            )}
-          </>
-        )}
-      </div>
+      {state === 'saved' && (
+        <>
+          <span className="text-sm font-medium">{value}</span>
+          {!isPending ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 text-muted-foreground hover:text-foreground"
+              onClick={handleDelete}
+              disabled={isLoading}
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+            </Button>
+          ) : (
+            <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+          )}
+        </>
+      )}
     </div>
   );
 }
