@@ -1,18 +1,18 @@
 
 
-# Increase Override NP % Input Width to Follow Row Pattern
+# Fix Input Overflow in Override NP % Editing State
 
 ## Problem
 
-The inline number input in `OverrideVolumeCell` uses a fixed `w-20` (80px) width, which looks narrow compared to the column width. The input should expand to fill available space, matching how other cells use the full row width.
+The `flex-1` on the input causes it to expand and push the accept/cancel buttons outside the visible cell area. The editing container itself also uses `flex-1` but has no width constraint, so the input grows unbounded.
 
 ## Fix
 
-In `src/components/editable-table/cells/OverrideVolumeCell.tsx`, change the input from `w-20` to `flex-1` so it stretches to fill the remaining space within the editing container, minus the check/X buttons.
+In `src/components/editable-table/cells/OverrideVolumeCell.tsx`, change the input width from `flex-1 min-w-0` to a fixed reasonable width like `w-24` (96px). This is wide enough for numeric values but leaves room for the check and X buttons within the cell.
 
-**Line ~133 change:**
-- From: `className="w-20 text-sm font-medium bg-background border border-input rounded px-2 py-1 focus:outline-none"`
-- To: `className="flex-1 min-w-0 text-sm font-medium bg-background border border-input rounded px-2 py-1 focus:outline-none"`
+**Line ~139 change:**
+- From: `className="flex-1 min-w-0 text-sm font-medium ..."`
+- To: `className="w-24 text-sm font-medium ..."`
 
-This single class change makes the input expand naturally within the `flex gap-1` container while the buttons stay their fixed size on the right.
+This keeps the input appropriately sized for percentage values while ensuring the accept/cancel buttons remain visible.
 
