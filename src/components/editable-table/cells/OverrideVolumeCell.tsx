@@ -101,7 +101,7 @@ export function OverrideVolumeCell({
   const BadgeIcon = badge.icon;
 
   return (
-    <div className="flex items-center justify-between px-3 py-2 w-full">
+    <div className="flex items-center justify-between px-4 py-2 w-full">
       {/* Status Badge - Left */}
       <Tooltip>
         <TooltipTrigger asChild>
