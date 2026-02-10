@@ -136,7 +136,7 @@ export function OverrideVolumeCell({
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="w-20 text-sm font-medium bg-background border border-input rounded px-2 py-1 focus:outline-none"
+            className="flex-1 min-w-0 text-sm font-medium bg-background border border-input rounded px-2 py-1 focus:outline-none"
             disabled={isLoading}
           />
           <Button
