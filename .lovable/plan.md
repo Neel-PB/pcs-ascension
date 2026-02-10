@@ -1,28 +1,14 @@
 
 
-# Align Override NP % Cell Layout to Match Expiration Date
+# Fix Gap Between Input and Check/Cancel Buttons in Override NP % Cell
 
 ## Problem
 
-The `OverrideVolumeCell` groups the dash and pencil icon together on the right side of the cell. The user wants it to match `EditableDateCell`'s layout: **dash on the left, pencil icon on the right**, with `justify-between` spacing.
+In editing mode, the `justify-between` layout pushes the input field to the left and the check/X buttons to the right, creating an unnatural gap between them. They should sit next to each other.
 
-## Change
+## Fix
 
-### `src/components/editable-table/cells/OverrideVolumeCell.tsx`
+In `src/components/editable-table/cells/OverrideVolumeCell.tsx`, change the editing state to group the input and buttons together using `gap-2` instead of spreading them with `justify-between`. The outer wrapper keeps `justify-between` for idle and saved states, but the editing content will be wrapped in a single group.
 
-Restructure the idle and saved states to use the same layout as `EditableDateCell`:
-
-**Idle state** (no value):
-- Left: dash (`—`) with optional warning icon
-- Right: Pencil button
-
-**Editing state** (inline input):
-- Left: number input
-- Right: Check and X buttons
-
-**Saved state** (has value):
-- Left: value text
-- Right: Revert button (when not pending)
-
-The wrapper will change from the current two-section layout (badge left, value area right) to a single `flex items-center justify-between w-full h-full px-4` pattern, removing the nested `flex items-center gap-1` grouping so items spread across the full width.
+Specifically, wrap the editing-state input and buttons in a `flex items-center gap-1` container so they sit adjacent, rather than being direct children of the `justify-between` parent.
 
