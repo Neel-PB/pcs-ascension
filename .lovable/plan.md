@@ -1,14 +1,18 @@
 
 
-# Fix Gap Between Input and Check/Cancel Buttons in Override NP % Cell
+# Increase Override NP % Input Width to Follow Row Pattern
 
 ## Problem
 
-In editing mode, the `justify-between` layout pushes the input field to the left and the check/X buttons to the right, creating an unnatural gap between them. They should sit next to each other.
+The inline number input in `OverrideVolumeCell` uses a fixed `w-20` (80px) width, which looks narrow compared to the column width. The input should expand to fill available space, matching how other cells use the full row width.
 
 ## Fix
 
-In `src/components/editable-table/cells/OverrideVolumeCell.tsx`, change the editing state to group the input and buttons together using `gap-2` instead of spreading them with `justify-between`. The outer wrapper keeps `justify-between` for idle and saved states, but the editing content will be wrapped in a single group.
+In `src/components/editable-table/cells/OverrideVolumeCell.tsx`, change the input from `w-20` to `flex-1` so it stretches to fill the remaining space within the editing container, minus the check/X buttons.
 
-Specifically, wrap the editing-state input and buttons in a `flex items-center gap-1` container so they sit adjacent, rather than being direct children of the `justify-between` parent.
+**Line ~133 change:**
+- From: `className="w-20 text-sm font-medium bg-background border border-input rounded px-2 py-1 focus:outline-none"`
+- To: `className="flex-1 min-w-0 text-sm font-medium bg-background border border-input rounded px-2 py-1 focus:outline-none"`
+
+This single class change makes the input expand naturally within the `flex gap-1` container while the buttons stay their fixed size on the right.
 
