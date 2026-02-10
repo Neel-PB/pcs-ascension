@@ -275,7 +275,7 @@ export function EditableFTECell({
         </button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-80 p-0 z-50"
+        className={cn("p-0 z-50", isSharedPosition ? "w-[440px]" : "w-80")}
         align="end"
         side="bottom"
         sideOffset={8}
@@ -411,223 +411,226 @@ export function EditableFTECell({
                     transition={{ duration: 0.15 }}
                     className="space-y-3"
                   >
-                    {/* Active FTE + Expiry inline grid (same as standard) */}
-                    <div className="grid grid-cols-2 gap-2 items-end">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Active FTE</Label>
-                        <Select value={editFte} onValueChange={setEditFte}>
-                          <SelectTrigger className="h-7 text-xs">
-                            <SelectValue placeholder="FTE..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {allowedFteValues.map((v) => (
-                              <SelectItem key={v} value={v.toString()}>
-                                {v.toFixed(1)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <div className="flex items-center gap-1">
-                          <Label className="text-xs font-medium">Expiry</Label>
-                          {maxExpiryDate && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Info className="h-3 w-3 text-muted-foreground cursor-help" />
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="text-xs">
-                                Max: {format(maxExpiryDate, 'MMM d, yyyy')}
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
+                    {/* Two-column grid */}
+                    <div className="grid grid-cols-2 gap-3">
+                      {/* Left column: Active FTE + Expiry */}
+                      <div className="space-y-2">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Active FTE</Label>
+                          <Select value={editFte} onValueChange={setEditFte}>
+                            <SelectTrigger className="h-7 text-xs">
+                              <SelectValue placeholder="FTE..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {allowedFteValues.map((v) => (
+                                <SelectItem key={v} value={v.toString()}>
+                                  {v.toFixed(1)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-                            <PopoverTrigger asChild>
+
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-1">
+                            <Label className="text-xs font-medium">Expiry</Label>
+                            {maxExpiryDate && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="text-xs">
+                                  Max: {format(maxExpiryDate, 'MMM d, yyyy')}
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "flex-1 justify-start text-left font-normal h-7 text-xs px-2",
+                                    !editExpiry && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="mr-1.5 h-3.5 w-3.5 shrink-0" />
+                                  {editExpiry ? format(editExpiry, 'MMM d') : 'Date...'}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0 z-[60]" align="start">
+                                <Suspense fallback={<div className="p-3 text-xs text-muted-foreground">Loading...</div>}>
+                                  <Calendar
+                                    mode="single"
+                                    selected={editExpiry}
+                                    onSelect={handleDateSelect}
+                                    disabled={isDateDisabled}
+                                    initialFocus
+                                    className="p-3 pointer-events-auto"
+                                  />
+                                </Suspense>
+                              </PopoverContent>
+                            </Popover>
+                            {editExpiry && (
                               <Button
-                                variant="outline"
-                                className={cn(
-                                  "flex-1 justify-start text-left font-normal h-7 text-xs px-2",
-                                  !editExpiry && "text-muted-foreground"
-                                )}
-                              >
-                                <CalendarIcon className="mr-1.5 h-3.5 w-3.5 shrink-0" />
-                                {editExpiry ? format(editExpiry, 'MMM d') : 'Date...'}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0 z-[60]" align="start">
-                              <Suspense fallback={<div className="p-3 text-xs text-muted-foreground">Loading...</div>}>
-                                <Calendar
-                                  mode="single"
-                                  selected={editExpiry}
-                                  onSelect={handleDateSelect}
-                                  disabled={isDateDisabled}
-                                  initialFocus
-                                  className="p-3 pointer-events-auto"
-                                />
-                              </Suspense>
-                            </PopoverContent>
-                          </Popover>
-                          {editExpiry && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 shrink-0"
-                              onClick={handleClearExpiry}
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Shared Position Card - Share With + Shared FTE only */}
-                    <div className="bg-muted/30 rounded-lg p-2 space-y-2 border border-border/40">
-                      {/* Share With */}
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Share With</Label>
-                        {sharedDepartment && !isEditingShare ? (
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              variant="secondary"
-                              className="text-xs py-1 px-2 flex items-center gap-1"
-                            >
-                              {sharedDepartment}
-                              <button
-                                type="button"
-                                onClick={handleClearDepartment}
-                                className="ml-1 hover:bg-muted-foreground/20 rounded-full p-0.5 transition-colors"
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 shrink-0"
+                                onClick={handleClearExpiry}
                               >
                                 <X className="h-3 w-3" />
-                              </button>
-                            </Badge>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 px-2 text-xs"
-                              onClick={() => setIsEditingShare(true)}
-                            >
-                              Change
-                            </Button>
+                              </Button>
+                            )}
                           </div>
-                        ) : (
-                          <div className="space-y-1">
-                            <Select value={sharedMarket} onValueChange={handleMarketChange}>
-                              <SelectTrigger className="h-7 text-xs">
-                                <SelectValue placeholder="Select market..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {markets.map((m) => (
-                                  <SelectItem key={m.id} value={m.market}>
-                                    {m.market}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            {sharedMarket && (
-                              <Select value={sharedFacility} onValueChange={handleFacilityChange}>
+                        </div>
+                      </div>
+
+                      {/* Right column: Share With + Shared FTE + Shared Expiry */}
+                      <div className="space-y-2 border-l border-border/40 pl-3">
+                        {/* Share With */}
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Share With</Label>
+                          {sharedDepartment && !isEditingShare ? (
+                            <div className="flex items-center gap-1.5">
+                              <Badge
+                                variant="secondary"
+                                className="text-xs py-1 px-2 flex items-center gap-1"
+                              >
+                                {sharedDepartment}
+                                <button
+                                  type="button"
+                                  onClick={handleClearDepartment}
+                                  className="ml-1 hover:bg-muted-foreground/20 rounded-full p-0.5 transition-colors"
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </Badge>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 px-2 text-xs"
+                                onClick={() => setIsEditingShare(true)}
+                              >
+                                Change
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="space-y-1">
+                              <Select value={sharedMarket} onValueChange={handleMarketChange}>
                                 <SelectTrigger className="h-7 text-xs">
-                                  <SelectValue placeholder="Select facility..." />
+                                  <SelectValue placeholder="Select market..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {sharedFacilities.map((f) => (
-                                    <SelectItem key={f.id} value={f.facility_id}>
-                                      {f.facility_name}
+                                  {markets.map((m) => (
+                                    <SelectItem key={m.id} value={m.market}>
+                                      {m.market}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
                               </Select>
-                            )}
-                            {sharedFacility && (
-                              <Select value={sharedDepartment} onValueChange={(value) => {
-                                setSharedDepartment(value);
-                                setIsEditingShare(false);
-                              }}>
-                                <SelectTrigger className="h-7 text-xs">
-                                  <SelectValue placeholder="Select department..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {sharedDepartments.map((d) => (
-                                    <SelectItem key={d.id} value={d.department_name}>
-                                      {d.department_name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Shared FTE - full width inside card */}
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Shared FTE</Label>
-                        <Select value={editSharedFte} onValueChange={setEditSharedFte}>
-                          <SelectTrigger className="h-7 text-xs">
-                            <SelectValue placeholder="FTE..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {allowedFteValues.map((v) => (
-                              <SelectItem key={v} value={v.toString()}>
-                                {v.toFixed(1)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    {/* Shared Expiry - outside the card */}
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Shared Expiry</Label>
-                      <div className="flex items-center gap-1">
-                        <Popover open={sharedCalendarOpen} onOpenChange={setSharedCalendarOpen}>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "flex-1 justify-start text-left font-normal h-7 text-xs px-2",
-                                !editSharedExpiry && "text-muted-foreground"
+                              {sharedMarket && (
+                                <Select value={sharedFacility} onValueChange={handleFacilityChange}>
+                                  <SelectTrigger className="h-7 text-xs">
+                                    <SelectValue placeholder="Select facility..." />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {sharedFacilities.map((f) => (
+                                      <SelectItem key={f.id} value={f.facility_id}>
+                                        {f.facility_name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
                               )}
-                            >
-                              <CalendarIcon className="mr-1.5 h-3.5 w-3.5 shrink-0" />
-                              {editSharedExpiry ? format(editSharedExpiry, 'MMM d') : 'Date...'}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0 z-[60]" align="start">
-                            <Suspense fallback={<div className="p-3 text-xs text-muted-foreground">Loading...</div>}>
-                              <Calendar
-                                mode="single"
-                                selected={editSharedExpiry}
-                                onSelect={handleSharedDateSelect}
-                                disabled={(date) => {
-                                  const today = new Date();
-                                  today.setHours(0, 0, 0, 0);
-                                  return date < today;
-                                }}
-                                initialFocus
-                                className="p-3 pointer-events-auto"
-                              />
-                            </Suspense>
-                          </PopoverContent>
-                        </Popover>
-                        {editSharedExpiry && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 shrink-0"
-                            onClick={handleClearSharedExpiry}
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        )}
+                              {sharedFacility && (
+                                <Select value={sharedDepartment} onValueChange={(value) => {
+                                  setSharedDepartment(value);
+                                  setIsEditingShare(false);
+                                }}>
+                                  <SelectTrigger className="h-7 text-xs">
+                                    <SelectValue placeholder="Select department..." />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {sharedDepartments.map((d) => (
+                                      <SelectItem key={d.id} value={d.department_name}>
+                                        {d.department_name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Shared FTE */}
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Shared FTE</Label>
+                          <Select value={editSharedFte} onValueChange={setEditSharedFte}>
+                            <SelectTrigger className="h-7 text-xs">
+                              <SelectValue placeholder="FTE..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {allowedFteValues.map((v) => (
+                                <SelectItem key={v} value={v.toString()}>
+                                  {v.toFixed(1)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Shared Expiry */}
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Shared Expiry</Label>
+                          <div className="flex items-center gap-1">
+                            <Popover open={sharedCalendarOpen} onOpenChange={setSharedCalendarOpen}>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "flex-1 justify-start text-left font-normal h-7 text-xs px-2",
+                                    !editSharedExpiry && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="mr-1.5 h-3.5 w-3.5 shrink-0" />
+                                  {editSharedExpiry ? format(editSharedExpiry, 'MMM d') : 'Date...'}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0 z-[60]" align="start">
+                                <Suspense fallback={<div className="p-3 text-xs text-muted-foreground">Loading...</div>}>
+                                  <Calendar
+                                    mode="single"
+                                    selected={editSharedExpiry}
+                                    onSelect={handleSharedDateSelect}
+                                    disabled={(date) => {
+                                      const today = new Date();
+                                      today.setHours(0, 0, 0, 0);
+                                      return date < today;
+                                    }}
+                                    initialFocus
+                                    className="p-3 pointer-events-auto"
+                                  />
+                                </Suspense>
+                              </PopoverContent>
+                            </Popover>
+                            {editSharedExpiry && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 shrink-0"
+                                onClick={handleClearSharedExpiry}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Comment */}
+                    {/* Comment - full width below */}
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">
                         Comment <span className="text-muted-foreground font-normal">(optional)</span>
