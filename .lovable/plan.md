@@ -1,110 +1,77 @@
 
 
-# Redesign Active FTE Popover - Cleaner Visual Layout
+# Fix Expiry Column Alignment in Standard Layout
 
-## Current Issues
+## Problem
 
-The current popover form has deeply nested `AnimatePresence` blocks, inconsistent spacing, and the Shared Position layout with its cascading Market/Facility/Department selects feels cramped and disjointed. Fields appear/disappear with animations that can feel jittery.
+In the standard (non-shared) layout, the "Active FTE" and "Expiry" fields sit in a `grid grid-cols-2` row. When a date is selected, a "Clear" button appears below the Expiry date picker (lines 374-383), making the right column taller than the left. This creates a visual misalignment between the two grid columns.
 
-## Proposed Improvements
+## Fix
 
-### 1. Structured Section Grouping
+Move the "Clear" action inline with the date button instead of stacking it below. This keeps both grid columns the same height regardless of whether a date is selected.
 
-Replace the flat field list with clearly grouped sections using subtle dividers:
+### Approach
 
-- **Section 1: Status** -- The status/reason dropdown (always visible)
-- **Section 2: FTE Settings** -- Active FTE value + Expiry Date side-by-side where possible
-- **Section 3: Shared Position** (conditional) -- Share With badge/selector, Shared FTE, Shared Expiry grouped with a subtle background card
-- **Section 4: Comment** -- Optional comment textarea
-
-### 2. Simplified Animations
-
-Replace the multiple nested `AnimatePresence` wrappers with a single content transition. Instead of animating each field individually (which causes layout jitter), the entire dynamic section below the status dropdown will use a single `AnimatePresence` that swaps between two layouts:
-
-- **Standard layout**: FTE select + Expiry date + Comment
-- **Shared Position layout**: FTE select + Share With + Shared FTE + Shared Expiry + Comment
-
-### 3. Shared Position Section Card
-
-When "Shared Position" is selected, the sharing fields (Share With, Shared FTE, Shared Expiry) will be visually grouped in a subtle `bg-muted/30 rounded-lg p-2.5` card to clearly delineate them from the main FTE fields.
-
-### 4. Inline FTE + Expiry Row
-
-For non-shared statuses, place the FTE dropdown and Expiry Date button on the same row using a 2-column grid (`grid grid-cols-2 gap-2`) to reduce vertical height and make better use of the 320px width.
-
-### 5. Max Expiry Hint as Tooltip
-
-Move the "(max: Jun 30, 2026)" text from below the label into a tooltip on an info icon, reducing label clutter.
-
-## Technical Changes
+Replace the separate "Clear" `Button` below the date picker with a small "X" icon inside the date button itself (when a date is selected). This mirrors the pattern used in the Shared Position badge (X to clear department).
 
 **File: `src/components/editable-table/cells/EditableFTECell.tsx`**
 
-- Restructure the JSX from line ~284 to ~631 (the popover content area)
-- Replace 5 separate `AnimatePresence` wrappers with a single one keyed on `isSharedPosition`
-- Add `grid grid-cols-2 gap-2` layout for FTE + Expiry in standard mode
-- Wrap shared position fields in a subtle card container
-- Keep all existing state management, handlers, and save logic unchanged
-- All functions (`handleSave`, `handleRevert`, `handleStatusChange`, cascading market/facility/department logic, date selection, FTE validation) remain identical
+**Change at lines 348-383** (the Expiry Popover + Clear button area):
 
-## Visual Before/After
+- Remove the standalone "Clear" `Button` (lines 374-383)
+- Add a small X icon inside the date `Button` that appears when `editExpiry` has a value
+- The X icon calls `handleClearExpiry` with `stopPropagation` to prevent opening the calendar
 
-**Before (Standard status):**
+**Before:**
 ```text
-+---------------------------+
-| Status / Reason    [v]    |
-| Active FTE         [v]    |
-| Expiry Date               |
-| [  Select date...      ]  |
-| Comment (optional)        |
-| [                       ] |
-| [Revert]     [Save]      |
-+---------------------------+
+| Active FTE   | Expiry       |
+| [  0.5  v]   | [Jun 30    ] |
+|              | Clear         |  <-- misalignment
 ```
 
-**After (Standard status):**
+**After:**
 ```text
-+---------------------------+
-| Status / Reason    [v]    |
-|                           |
-| Active FTE   | Expiry     |
-| [  0.5  v]   | [Jun 30 ] |
-|                           |
-| Comment (optional)        |
-| [                       ] |
-|---------------------------|
-| [Revert]     [Save]      |
-+---------------------------+
+| Active FTE   | Expiry          |
+| [  0.5  v]   | [Jun 30   x ]  |  <-- aligned
 ```
 
-**After (Shared Position):**
-```text
-+---------------------------+
-| Status / Reason    [v]    |
-|                           |
-| Active FTE         [v]    |
-| ,.........................|
-| . Share With              |
-| . [Dept Name badge] [x]  |
-| . Shared FTE  | Expiry    |
-| . [ 0.5 v]   | [Jun 30]  |
-| '.........................|
-|                           |
-| Comment (optional)        |
-| [                       ] |
-|---------------------------|
-| [Revert]     [Save]      |
-+---------------------------+
+### Code Change (lines 348-383)
+
+Replace the Popover trigger button and Clear button with:
+
+```tsx
+<div className="flex items-center gap-1">
+  <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+    <PopoverTrigger asChild>
+      <Button
+        variant="outline"
+        className={cn(
+          "flex-1 justify-start text-left font-normal h-7 text-xs px-2",
+          !editExpiry && "text-muted-foreground"
+        )}
+      >
+        <CalendarIcon className="mr-1.5 h-3.5 w-3.5 shrink-0" />
+        {editExpiry ? format(editExpiry, 'MMM d') : 'Date...'}
+      </Button>
+    </PopoverTrigger>
+    <PopoverContent className="w-auto p-0 z-[60]" align="start">
+      <Suspense fallback={...}>
+        <Calendar ... />
+      </Suspense>
+    </PopoverContent>
+  </Popover>
+  {editExpiry && (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-7 w-7 shrink-0"
+      onClick={handleClearExpiry}
+    >
+      <X className="h-3 w-3" />
+    </Button>
+  )}
+</div>
 ```
 
-## What Stays the Same
-
-- All business logic (status rules, FTE validation, max expiry calculation)
-- All state variables and handlers
-- Save/Revert functionality
-- Cascading Market/Facility/Department selection for Shared Position
-- Badge collapse behavior for selected department
-- Calendar lazy loading
-- Popover positioning strategy (avoidCollisions, sideOffset, collisionPadding)
-- Comment field with 500 char limit
+This keeps both columns at equal height, fixing the alignment issue.
 
