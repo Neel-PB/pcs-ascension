@@ -1,65 +1,79 @@
 
 
-# Ultra-Compact Shared Position Layout
+# Positions Module: Badge Color Semantics and Layout Refinement
 
 ## Problem
 
-From the screenshot, the shared position form has visible excess vertical spacing between every field, generous padding around edges, and the layout feels loose/odd. We need to squeeze out every unnecessary pixel.
+Currently, **Active FTE** values use `text-destructive` (red) when the value has been modified from the original hired FTE. Red universally signals "error" or "danger" in UI design, but a modified Active FTE is an intentional adjustment (e.g., LOA, shared position) -- not an error. This creates a false alarm effect across the table.
+
+Meanwhile, **Vacancy Age** badges correctly use red for urgent (>60 days) scenarios, which is appropriate.
 
 ## Changes
 
+### 1. Active FTE: Replace red with a neutral "modified" indicator
+
+**File: `src/components/editable-table/cells/EditableFTECell.tsx`** (line 259)
+
+- Change `isModified && "text-destructive"` to `isModified && "text-primary"` (blue)
+- Blue communicates "this value has been changed" without implying something is broken
+- The revert icon already provides the affordance to undo the change
+
+### 2. Vacancy Age badges: Keep current color logic (no change)
+
+**File: `src/config/requisitionColumns.tsx`**
+
+- `destructive` (red) for >60 days "Urgent" -- correct, stays
+- `secondary` (gray) for >30 days "Attention" -- change to a warning color using a custom amber/yellow badge class
+- `default` (primary/blue) for "On Track" -- change to a subtle green/success style
+
+### 3. Vacancy Age badge styling refinement
+
+**File: `src/config/requisitionColumns.tsx`** (lines 17-24)
+
+Update `getVacancyBadge` to return className-based styling instead of relying solely on variant:
+
+| Days | Current | Proposed |
+|------|---------|----------|
+| >60 | `destructive` (red) | Keep `destructive` (red) -- urgency is correct |
+| >30 | `secondary` (gray) | `outline` + amber/yellow background class |
+| <=30 | `default` (blue) | `outline` + green/emerald background class |
+| null | `secondary` + dash | Keep as-is |
+
+### 4. Active FTE badge-style indicator for status
+
 **File: `src/components/editable-table/cells/EditableFTECell.tsx`**
 
-### 1. Minimize top-level padding (line 287)
-- Change shared mode padding from `p-2.5 space-y-2.5` to `p-2 space-y-1.5`
+When Active FTE is modified, show a small status badge (e.g., "LOA", "FMLA") next to the value in the table cell using a subtle outline badge, replacing the plain red number. This gives context to why the FTE was changed.
 
-### 2. Remove gap between Status/Reason label and its select (line 289)
-- Change `space-y-1.5` to `space-y-0.5` for the Status/Reason wrapper (shared mode only -- or globally since it's tight enough)
+## Technical Details
 
-### 3. Reduce shared motion.div outer gap (line 412)
-- Change `space-y-2` to `space-y-1.5`
+**EditableFTECell.tsx trigger button (line ~252-275):**
+```tsx
+// Before
+isModified && "text-destructive"
 
-### 4. Reduce grid gap (line 415)
-- Change `gap-2` to `gap-1.5`
+// After  
+isModified && "text-primary"
+```
 
-### 5. Tighten left column field spacing (line 417)
-- Change `space-y-1.5` to `space-y-1`
+**requisitionColumns.tsx getVacancyBadge (lines 17-24):**
+```tsx
+const getVacancyBadge = (days: number | null) => {
+  if (!days) return { variant: 'secondary' as const, label: '---', className: '' };
+  if (days > 60)
+    return { variant: 'destructive' as const, label: `${days}d - Urgent`, className: '' };
+  if (days > 30)
+    return { variant: 'outline' as const, label: `${days}d - Attention`, className: 'border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400' };
+  return { variant: 'outline' as const, label: `${days}d - On Track`, className: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' };
+};
+```
 
-### 6. Remove label-to-input gaps (lines 418, 434, 492, 568, 585)
-- Change all remaining `space-y-1` to `space-y-0.5` -- this puts the label almost touching its input, which is the tightest readable spacing
-
-### 7. Reduce right column padding (line 490)
-- Change `pl-2` to `pl-1.5`
-
-### 8. Right column field spacing (line 490)
-- Change `space-y-1.5` to `space-y-1`
-
-### 9. Comment section (line 634)
-- Change `space-y-1.5` to `space-y-0.5`
-- Keep `min-h-[36px]` (already single-line)
-
-### 10. Footer padding (line 652)
-- Change `p-3 pt-3` to `p-2 pt-2` for the action buttons area
-
-## Summary of spacing values after changes
-
-| Element | Before | After |
-|---------|--------|-------|
-| Top-level padding | p-2.5, space-y-2.5 | p-2, space-y-1.5 |
-| Status label-to-select | space-y-1.5 | space-y-0.5 |
-| Shared outer gap | space-y-2 | space-y-1.5 |
-| Grid gap | gap-2 | gap-1.5 |
-| Left column fields | space-y-1.5 | space-y-1 |
-| Label-to-input (all) | space-y-1 | space-y-0.5 |
-| Right column fields | space-y-1.5 | space-y-1 |
-| Right column pl | pl-2 | pl-1.5 |
-| Comment section | space-y-1.5 | space-y-0.5 |
-| Footer | p-3 pt-3 | p-2 pt-2 |
+**BadgeCell update** to accept and pass through `className` to the inner Badge (already supported).
 
 ## What Stays the Same
 
-- All field controls, logic, handlers, save/revert
-- Two-column grid structure and 440px popover width
-- Standard (non-shared) layout untouched
-- All select heights (h-7) and font sizes (text-xs)
+- All popover form logic, save/revert behavior
+- Table structure and column order
+- Comment counts and other cell types
+- Shared position layout (just updated in previous changes)
 
