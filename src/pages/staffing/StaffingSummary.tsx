@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { motion, LayoutGroup } from "framer-motion";
+import { ToggleButtonGroup } from "@/components/ui/toggle-button-group";
 import { FilterBar } from "@/components/staffing/FilterBar";
 import PositionPlanning from "./PositionPlanning";
 import { VarianceAnalysis } from "./VarianceAnalysis";
@@ -542,35 +542,14 @@ This metric helps:
         />
       </div>
 
-      <LayoutGroup>
-        <div className="flex items-center gap-4 border-b border-border mb-6">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              className={`relative pb-2.5 pt-1 text-sm transition-colors whitespace-nowrap ${
-                activeTab === tab.id
-                  ? "text-primary font-semibold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              {tab.label}
-              {activeTab === tab.id && (
-                <motion.div
-                  layoutId="staffingTabIndicator"
-                  className="absolute bottom-0 left-0 right-0 h-[3px] bg-primary rounded-t-full"
-                  initial={false}
-                  transition={{
-                    type: "spring",
-                    stiffness: 500,
-                    damping: 30,
-                  }}
-                />
-              )}
-            </button>
-          ))}
-        </div>
-      </LayoutGroup>
+      <div className="mb-6">
+        <ToggleButtonGroup
+          items={tabs}
+          activeId={activeTab}
+          onSelect={setActiveTab}
+          layoutId="staffingToggle"
+        />
+      </div>
 
       <div className="space-y-6">
         {activeTab === "summary" && (

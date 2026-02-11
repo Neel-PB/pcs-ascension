@@ -1,6 +1,6 @@
-import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { ToggleButtonGroup } from "@/components/ui/toggle-button-group";
 
 interface Tab {
   readonly id: string;
@@ -19,55 +19,22 @@ export function TabNavigation({ tabs, className }: TabNavigationProps) {
 
   const activeTab = tabs.find((tab) => location.pathname === tab.path) || tabs[0];
 
-  const handleTabClick = (tab: Tab) => {
-    navigate(tab.path);
+  const handleTabClick = (id: string) => {
+    const tab = tabs.find((t) => t.id === id);
+    if (tab) navigate(tab.path);
   };
 
   return (
     <div className={cn("w-full", className)}>
-      <LayoutGroup>
-        <div className="flex items-center gap-4 border-b border-border">
-          {tabs.map((tab) => {
-            const isActive = activeTab?.id === tab.id;
-
-            return (
-              <button
-                key={tab.id}
-                onClick={() => handleTabClick(tab)}
-                className={cn(
-                  "relative pb-2.5 pt-1 text-sm transition-colors whitespace-nowrap",
-                  "focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-sm",
-                  isActive
-                    ? "text-primary font-semibold"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {tab.label}
-                <AnimatePresence>
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeTabIndicator"
-                      className="absolute bottom-0 left-0 right-0 h-[3px] bg-primary rounded-t-full"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 500,
-                        damping: 30,
-                      }}
-                    />
-                  )}
-                </AnimatePresence>
-              </button>
-            );
-          })}
-        </div>
-      </LayoutGroup>
+      <ToggleButtonGroup
+        items={tabs}
+        activeId={activeTab?.id ?? tabs[0].id}
+        onSelect={handleTabClick}
+        layoutId="navToggle"
+      />
     </div>
   );
 }
-
 // Pre-defined tab configurations for each module
 export const moduleTabConfigs = {
   staffing: [
