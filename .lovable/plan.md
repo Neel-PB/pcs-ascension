@@ -1,57 +1,68 @@
 
 
-# Align Avatar Component to Helix Avatar Spec
+# Align Dropdown Menu and User Menu to Helix Menu Spec
 
-## Helix Spec Summary (from PDF)
+## Helix Menu Spec Summary (from PDF)
 
 | Property | Helix Value | Current Implementation |
 |----------|------------|----------------------|
-| Shape | Circle | Circle (correct) |
-| Letters fallback color | Solid brand color (teal #00a791) | `bg-muted` (gray) -- wrong |
-| Letters text color | Content.Inverse (white) | Inherits foreground -- wrong |
-| Icon avatar padding | 8px (space-sm) all sides | No specific padding |
-| Image avatar | Fills entire space, clipped by shape | Correct (`aspect-square h-full w-full`) |
-| Avatar group spacing | -8px overlap, leftmost on top | Not implemented (no avatar group component) |
-| Avatar group border | 2px outside border matching background | Not implemented |
-
-## Key Issue
-
-The fallback avatar styling is inconsistent across the app:
-- `AppHeader.tsx` uses `bg-gradient-primary text-white` (close but gradient, not solid)
-- All other files use default `bg-muted` (gray background) with no white text
-- Helix spec calls for a **solid brand teal** background with **white** text
+| Width | 210px | `min-w-[8rem]` (128px) / `w-56` (224px) on user menu |
+| Corner radius | rounded-sm (8px) | `rounded-md` (10px) |
+| Top padding | 12px | `p-1` (4px all sides) |
+| Bottom padding | 4px | `p-1` (4px all sides) |
+| Left/Right padding | 0 (items provide 16px) | `p-1` (4px) + item `px-2` (8px) = 12px total |
+| Item horizontal padding | 16px | `px-2` (8px) |
+| Item vertical padding | ~8px (flush between items) | `py-1.5` (6px) |
+| Item corner radius | None (flush, rectangular) | `rounded-sm` (individual rounded corners) |
+| Separator | Full-width divider | `-mx-1` (compensates container padding) |
+| Outline variant | Optional visible border | Always has `border` |
 
 ## Plan
 
-### 1. `src/components/ui/avatar.tsx` -- Update default fallback styling
+### 1. `src/components/ui/dropdown-menu.tsx` -- Update base component styling
 
-Change the `AvatarFallback` default class from `bg-muted` to the Ascension teal color with white text:
-- Background: Use the Ascension teal (`bg-[#00a791]`) as the default fallback color
-- Text: `text-white` (Content.Inverse per spec)
-- Font: `font-medium` for clear letter rendering
+**DropdownMenuContent** (container):
+- Corner radius: `rounded-md` to `rounded-sm` (8px per Helix)
+- Padding: `p-1` to `pt-3 pb-1 px-0` (12px top, 4px bottom, no horizontal -- items handle their own 16px padding)
+- Min width: `min-w-[8rem]` to `min-w-[210px]` (210px per Helix)
+- Same changes for `DropdownMenuSubContent`
 
-This single change fixes all avatar fallbacks across the app since they all inherit from this base component.
+**DropdownMenuItem** (option items):
+- Padding: `px-2 py-1.5` to `px-4 py-2` (16px horizontal, 8px vertical)
+- Remove: `rounded-sm` (items should be flush/rectangular per Helix, no individual rounding)
 
-### 2. `src/components/shell/AppHeader.tsx` -- Simplify fallback class
+**DropdownMenuSubTrigger**:
+- Match item styling: `px-2 py-1.5` to `px-4 py-2`, remove `rounded-sm`
 
-Remove the override `bg-gradient-primary text-white text-sm font-medium` since the base component now handles the correct styling. Simplify to just `text-sm` (size override only).
+**DropdownMenuLabel** (header):
+- Padding: `px-2 py-1.5` to `px-4 py-1.5` (16px horizontal to match spec's header alignment)
 
-### 3. `src/components/ui/avatar.tsx` -- Add AvatarGroup component (optional)
+**DropdownMenuSeparator**:
+- Margin: `-mx-1 my-1` to `mx-0 my-1` (no negative margin needed since container has no horizontal padding)
 
-Add an `AvatarGroup` wrapper component for the overlap pattern:
-- Negative margin (`-space-x-2`) for -8px overlap
-- Children rendered with `ring-2 ring-background` for the 2px border
-- `flex flex-row-reverse` so leftmost avatar appears on top (z-index stacking)
+**DropdownMenuCheckboxItem / DropdownMenuRadioItem**:
+- Update horizontal padding from `pl-8 pr-2` to `pl-8 pr-4`
+- Remove `rounded-sm`
 
-This component exists in the spec but may not be actively used yet -- adding it ensures future compatibility.
+### 2. `src/components/shell/AppHeader.tsx` -- User menu refinement
+
+- Width: `w-56` (224px) to `w-[210px]` (exact Helix spec)
+- The label (name + email) and items (Profile, Log out) will inherit the new base styles automatically
+
+### 3. No changes to ContextMenu (separate component)
+
+ContextMenu is a different interaction pattern (right-click) and not the user's current focus. Can be updated in a follow-up if desired.
 
 ## Files to Edit
 
-1. **`src/components/ui/avatar.tsx`** -- Change `AvatarFallback` default from `bg-muted` to `bg-[#00a791] text-white font-medium`; optionally add `AvatarGroup`
-2. **`src/components/shell/AppHeader.tsx`** -- Remove redundant `bg-gradient-primary text-white font-medium` from fallback, keep only size override
+1. **`src/components/ui/dropdown-menu.tsx`** -- Base dropdown styling (6 sub-components updated)
+2. **`src/components/shell/AppHeader.tsx`** -- User menu width from `w-56` to `w-[210px]`
 
 ## What Changes Visually
 
-- All letter/initials avatars across the app will show a **teal circle with white text** instead of a gray circle
-- The header avatar will use the same solid teal instead of a gradient
-- Consistent brand-aligned avatar appearance everywhere (tables, comments, feeds, profile)
+- All dropdown menus will have 8px corner radius (slightly tighter), 210px minimum width, and 16px internal horizontal padding
+- Items will be flush/rectangular instead of individually rounded
+- The user menu will be exactly 210px wide
+- Header labels (user name/email) will be properly aligned with 16px left padding
+- Overall appearance matches the Helix "Menu" component spec
+
