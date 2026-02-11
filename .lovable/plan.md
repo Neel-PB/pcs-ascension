@@ -1,52 +1,84 @@
 
 
-# Align Calendar and Date Picker to Helix Design System
+# Align Toast/Snackbar to Helix Snackbar Spec
 
-## Helix Spec Summary (from the specs page)
+## Helix Snackbar Spec Summary
 
-| Property | Helix Value | Current Value |
-|----------|------------|---------------|
-| Day cell size | 40x40px | 36x36px (`h-9 w-9`) |
-| Nav buttons | 40x40px, Primary.Main color | 28x28px (`h-7 w-7`), outline + opacity |
-| Today marker | 1px border stroke (no fill) | `bg-accent` fill |
-| Selected day | Primary.Main fill, white text | Correct (`bg-primary text-primary-foreground`) |
-| Hovered day | Light primary fill + 1px border | Ghost button default |
-| Disabled day | Content.Disabled color | `opacity-50` -- close |
-| Calendar padding | L/R 16px, Top 24px, Bottom 8px | `p-3` (12px uniform) |
-| Modal elevation | `shadow-md` | None (inherits from popover) |
-| Day-of-week headers | Content.Primary | `text-muted-foreground` |
+| Property | Helix Value | Current (Sonner) | Current (Radix Toast) |
+|----------|------------|------------------|----------------------|
+| Position | Bottom center | Bottom-right (default) | Top mobile / bottom-right desktop |
+| Auto-dismiss | 2500ms | 4000ms (default) | 1000000ms (never) |
+| Animation enter | Slide up, 500ms ease-out | Default sonner | slide-in-from-bottom |
+| Animation exit | Slide down, 400ms ease-in | Default sonner | slide-out-to-right |
+| Variants | Success (green icon), Warning | No semantic styling | default, destructive |
+| Close button | X icon, always visible | Hidden by default | Hidden until hover |
+| Max concurrent | 1 | Multiple (default) | 1 (TOAST_LIMIT) |
+| Corner radius | Rounded (consistent with cards = rounded-xl) | rounded-md | rounded-md |
+| Anatomy | Leading icon + message + close button | Text only | Title + description |
+
+## Strategy: Consolidate on Sonner
+
+The project uses Sonner in 21 files and Radix Toast in only 3 files. Rather than maintaining two systems, we should:
+1. Style Sonner to match Helix Snackbar spec (the primary change)
+2. Migrate the 3 remaining Radix Toast usages to Sonner
+3. Keep Radix Toast files in place (for safety) but they will no longer be actively used
 
 ## Files to Edit
 
-### 1. `src/components/ui/calendar.tsx`
+### 1. `src/components/ui/sonner.tsx` -- Main Helix styling
 
-Update all DayPicker classNames to match Helix specs:
+Configure the Sonner `Toaster` to match Helix:
+- **Position**: Set `position="bottom-center"`
+- **Duration**: Set `duration={2500}` (2.5s auto-dismiss)
+- **Max toasts**: Set `visibleToasts={1}` (limit concurrent snackbars)
+- **Close button**: Set `closeButton={true}` (always show X)
+- **Corner radius**: Update toast class to `rounded-xl` (12px, matching cards)
+- **Shadow**: Use `shadow-md` (Helix elevation)
+- **Border**: Remove border for a cleaner look matching the solid snackbar style
+- **Icon support**: Sonner natively supports `toast.success()` and `toast.warning()` which map directly to Helix Success and Warning variants
+- **Animation**: Configure `duration` for CSS transitions to approximate 500ms enter / 400ms exit via custom CSS
 
-- **Day cells**: Change from `h-9 w-9` to `h-10 w-10` (40px) for both `cell` and `day`
-- **Head cells**: Change from `w-9` to `w-10`, update color from `text-muted-foreground` to `text-foreground` (Content.Primary)
-- **Nav buttons**: Increase from `h-7 w-7` to `h-10 w-10` (40px), change from `outline` variant to `ghost` with `text-primary` color, remove opacity
-- **Today styling**: Replace `bg-accent text-accent-foreground` with border-only: `border border-border` (1px inside stroke, no background fill)
-- **Hover styling**: Add `hover:bg-primary/10 hover:border hover:border-border` on day cells
-- **Calendar padding**: Change from `p-3` to `px-4 pt-6 pb-2` (L/R 16px, Top 24px, Bottom 8px)
-- **Row spacing**: Adjust `mt-2` to `mt-1` for tighter day grid
+### 2. `src/index.css` -- Custom animation timing
 
-### 2. `src/components/editable-table/cells/EditableDateCell.tsx`
+Add CSS overrides for Sonner animation timing:
+- Enter: 500ms ease-out (slide up)
+- Exit: 400ms ease-in (slide down)
+- These override Sonner's default animation speed to match Helix motion spec
 
-- Update PopoverContent to include `shadow-md` for modal elevation per Helix spec
-- Update the internal Calendar className from `p-3` to match the new default padding
+### 3. `src/hooks/useForecastPositions.ts` -- Migrate from Radix to Sonner
 
-### 3. `src/components/editable-table/cells/EditableFTECell.tsx`
+- Change import from `import { toast } from "@/hooks/use-toast"` to `import { toast } from "sonner"`
+- Update all `toast({ title, description, variant })` calls to `toast.success(title, { description })` or `toast.error(title, { description })` based on context (success vs error)
 
-- Same PopoverContent shadow update for consistency
+### 4. `src/components/messaging/FeedComposer.tsx` -- Migrate from Radix to Sonner
 
-## Technical Details
+- Change import from `import { useToast } from "@/hooks/use-toast"` to `import { toast } from "sonner"`
+- Remove `const { toast } = useToast()` line
+- Update toast call syntax to match Sonner API
 
-The Calendar component uses `react-day-picker` v8 with shadcn classNames mapping. All changes are CSS-only through the `classNames` prop -- no structural changes needed.
+### 5. `src/pages/support/SupportPage.tsx` -- Migrate from Radix to Sonner
 
-The key visual differences users will notice:
-- Slightly larger day cells (40px vs 36px) for better touch targets
-- Navigation arrows in brand blue instead of muted outline buttons
-- Today's date shown with a subtle border ring instead of a filled background
-- Day-of-week headers in primary text color instead of muted
-- More breathing room at top, tighter at bottom
+- Same import migration as above
+
+### 6. `src/components/ui/toast.tsx` -- Update styling (kept for backward compat)
+
+Even though we are migrating away from Radix Toast, update the styling for safety:
+- Corner radius: `rounded-md` to `rounded-xl`
+- Position: bottom-center instead of bottom-right
+- Close button: always visible (remove `opacity-0` / `group-hover:opacity-100`)
+
+### 7. `src/components/ui/toaster.tsx` -- Keep but unused
+
+No changes needed; the Radix Toaster will remain in App.tsx but with no active consumers after migration.
+
+## What Users Will See After This Change
+
+- Toast notifications appear at the **bottom center** of the screen
+- Rounded corners matching the card style (12px)
+- Success toasts show a green checkmark icon (Sonner built-in)
+- Warning/error toasts show appropriate colored icons
+- Close button (X) always visible on the right
+- Auto-dismiss after 2.5 seconds
+- Only one toast visible at a time
+- Smooth slide-up entrance and slide-down exit animation
 
