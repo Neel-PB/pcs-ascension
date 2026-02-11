@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from '@/lib/icons';
 import { PositionDetail } from '@/hooks/useForecastChecklist';
 
 interface ForecastChecklistPositionDetailProps {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Globe, MapPin, Building2, Layers, Plus, X, Search, ChevronsUpDown } from "lucide-react";
+import { Globe, MapPin, Building2, Layers, Plus, X, Search, ChevronsUpDown } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";

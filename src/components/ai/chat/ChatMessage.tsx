@@ -1,4 +1,4 @@
-import { Copy, Check, Paperclip } from 'lucide-react';
+import { Copy, Check, Paperclip } from '@/lib/icons';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { MarkdownRenderer } from './MarkdownRenderer';

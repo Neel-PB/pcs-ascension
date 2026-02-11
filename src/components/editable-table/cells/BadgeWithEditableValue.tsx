@@ -1,4 +1,4 @@
-import { LucideIcon, AlertCircle } from 'lucide-react';
+import { LucideIcon, AlertCircle } from '@/lib/icons';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { EditableNumberCell } from './EditableNumberCell';

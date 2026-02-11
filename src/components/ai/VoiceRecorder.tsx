@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { AudioWaveform, Square } from 'lucide-react';
+import { AudioWaveform, Square } from '@/lib/icons';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 

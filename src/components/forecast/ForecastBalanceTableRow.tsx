@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight } from "@/lib/icons";
 import { ForecastBalanceRow } from "@/hooks/useForecastBalance";
 import { BalanceTwoPanel } from "./BalanceTwoPanel";
 import { cn } from "@/lib/utils";

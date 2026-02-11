@@ -6,7 +6,7 @@ import {
   Pencil,
   ShieldAlert,
   ShieldCheck
-} from 'lucide-react';
+} from '@/lib/icons';
 import { EditableDateCell } from '@/components/editable-table/cells/EditableDateCell';
 import { OverrideVolumeCell } from '@/components/editable-table/cells/OverrideVolumeCell';
 import { differenceInDays, format } from 'date-fns';

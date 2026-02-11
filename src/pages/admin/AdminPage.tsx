@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, LayoutGroup } from "framer-motion";
-import { Shield, Upload, Users, Settings, MessageSquare, History } from "lucide-react";
+import { Shield, Upload, Users, Settings, MessageSquare, History } from "@/lib/icons";
 import { useRBAC } from "@/hooks/useRBAC";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";

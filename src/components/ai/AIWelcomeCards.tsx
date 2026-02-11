@@ -1,4 +1,4 @@
-import { Sparkles, TrendingUp, Users, FileBarChart } from 'lucide-react';
+import { Sparkles, TrendingUp, Users, FileBarChart } from '@/lib/icons';
 import { Card } from '@/components/ui/card';
 
 interface AIWelcomeCardsProps {

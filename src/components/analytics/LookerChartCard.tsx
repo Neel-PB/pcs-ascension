@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 
 interface LookerChartCardProps {

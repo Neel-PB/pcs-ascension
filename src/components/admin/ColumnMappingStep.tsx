@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
+import { AlertCircle, ArrowRight, CheckCircle2 } from "@/lib/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ColumnMapping {

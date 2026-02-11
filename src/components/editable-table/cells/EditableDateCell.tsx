@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { Pencil, RotateCcw } from 'lucide-react';
+import { Pencil, RotateCcw } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 
 interface EditableDateCellProps {

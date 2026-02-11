@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useFeedbackStore } from '@/stores/useFeedbackStore';
-import { MessageSquarePlus, Loader2 } from 'lucide-react';
+import { MessageSquarePlus, Loader2 } from '@/lib/icons';
 import { ScreenshotSelectionOverlay } from './ScreenshotSelectionOverlay';
 import { capturePageScreenshot } from '@/lib/capturePageScreenshot';
 import { toast } from 'sonner';

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { formatDistanceToNow, format, differenceInHours } from "date-fns";
-import { Pencil, Trash2, ArrowUp, MessageSquare, Copy, Check, ChevronRight, Loader2, ArrowRight, RotateCcw } from "lucide-react";
+import { Pencil, Trash2, ArrowUp, MessageSquare, Copy, Check, ChevronRight, Loader2, ArrowRight, RotateCcw } from "@/lib/icons";
 import { LogoLoader } from "@/components/ui/LogoLoader";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";

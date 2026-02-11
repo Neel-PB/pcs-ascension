@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MessageSquare, Send, Trash2 } from 'lucide-react';
+import { MessageSquare, Send, Trash2 } from '@/lib/icons';
 import { format, formatDistanceToNow, differenceInHours } from 'date-fns';
 import {
   Dialog,

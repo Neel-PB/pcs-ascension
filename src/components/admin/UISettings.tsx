@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Save, Eye, Camera, Navigation } from 'lucide-react';
+import { Save, Eye, Camera, Navigation } from '@/lib/icons';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const containerVariants = {

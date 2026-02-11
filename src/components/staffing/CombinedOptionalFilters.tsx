@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, Check, SlidersHorizontal } from "lucide-react";
+import { ChevronDown, ChevronRight, Check, SlidersHorizontal } from "@/lib/icons";
 import {
   DropdownMenu,
   DropdownMenuContent,

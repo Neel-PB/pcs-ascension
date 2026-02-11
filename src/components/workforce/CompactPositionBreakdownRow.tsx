@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronRight, Plus, Trash2, CheckCircle2, AlertCircle } from "lucide-react";
+import { ChevronRight, Plus, Trash2, CheckCircle2, AlertCircle } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ForecastPositionToOpenWithChildren, VALID_FTE_VALUES, useAddChildPosition, useUpdateChildFte, useDeleteChildPosition } from "@/hooks/useForecastPositions";

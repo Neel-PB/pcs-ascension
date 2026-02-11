@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Grid3X3, List, LayoutPanelLeft } from "lucide-react";
+import { Plus, Grid3X3, List, LayoutPanelLeft } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";

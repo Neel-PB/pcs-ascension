@@ -5,7 +5,7 @@ import { CommentIndicatorCell } from '@/components/editable-table/cells/CommentI
 import { ShiftCell } from '@/components/editable-table/cells/ShiftCell';
 import { TruncatedTextCell } from '@/components/editable-table/cells/TruncatedTextCell';
 import { differenceInDays } from 'date-fns';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare } from '@/lib/icons';
 
 // Helper to calculate vacancy age
 const getVacancyAge = (statusDate: string | null) => {

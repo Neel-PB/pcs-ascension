@@ -1,4 +1,4 @@
-import { LucideIcon } from "lucide-react";
+import { LucideIcon } from "@/lib/icons";
 
 interface LookerChartPlaceholderProps {
   icon: LucideIcon;

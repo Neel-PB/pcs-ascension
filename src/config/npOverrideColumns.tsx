@@ -1,6 +1,6 @@
 import { ColumnDef } from '@/types/table';
 import { Badge } from '@/components/ui/badge';
-import { Pencil, ShieldCheck } from 'lucide-react';
+import { Pencil, ShieldCheck } from '@/lib/icons';
 import { EditableDateCell } from '@/components/editable-table/cells/EditableDateCell';
 import { OverrideVolumeCell } from '@/components/editable-table/cells/OverrideVolumeCell';
 import { TruncatedTextCell } from '@/components/editable-table/cells/TruncatedTextCell';

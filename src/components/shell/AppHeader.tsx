@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Bell, Sun, Moon, Monitor } from "lucide-react";
+import { Search, Bell, Sun, Moon, Monitor } from "@/lib/icons";
 import { useTheme } from "next-themes";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";

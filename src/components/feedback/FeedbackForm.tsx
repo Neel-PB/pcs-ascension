@@ -14,7 +14,7 @@ import { ScreenshotCapture } from './ScreenshotCapture';
 import { useFeedbackStore } from '@/stores/useFeedbackStore';
 import { useFeedback, uploadScreenshot, CreateFeedbackInput } from '@/hooks/useFeedback';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Send } from 'lucide-react';
+import { Loader2, Send } from '@/lib/icons';
 
 interface FeedbackFormProps {
   onSuccess?: () => void;

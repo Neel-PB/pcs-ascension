@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ChevronRight, ChevronDown, RefreshCw } from 'lucide-react';
+import { ChevronRight, ChevronDown, RefreshCw } from '@/lib/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DepartmentSkillGroup } from '@/hooks/useForecastChecklist';
 import { ForecastChecklistPositionDetail } from './ForecastChecklistPositionDetail';

@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useWorkforceDrawerStore } from '@/stores/useWorkforceDrawerStore';
-import { UserCog } from 'lucide-react';
+import { UserCog } from '@/lib/icons';
 
 export const WorkforceDrawerTrigger: React.FC = () => {
   const { toggle } = useWorkforceDrawerStore();

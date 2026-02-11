@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Camera, Upload, X } from 'lucide-react';
+import { Camera, Upload, X } from '@/lib/icons';
 import { toast } from 'sonner';
 import { ScreenshotSelectionOverlay } from './ScreenshotSelectionOverlay';
 import { capturePageScreenshot } from '@/lib/capturePageScreenshot';

@@ -1,4 +1,4 @@
-import { Bell } from 'lucide-react';
+import { Bell } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 import {
   Tooltip,

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { KPICard, EmploymentBreakdown } from './KPICard';
-import { Info } from 'lucide-react';
+import { Info } from '@/lib/icons';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 

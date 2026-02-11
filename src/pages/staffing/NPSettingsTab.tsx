@@ -5,7 +5,7 @@ import { EditableTable } from '@/components/editable-table/EditableTable';
 import { createNPOverrideColumns, NPOverrideRow } from '@/config/npOverrideColumns';
 import { useNPOverrides, useUpsertNPOverride, useDeleteNPOverride } from '@/hooks/useNPOverrides';
 import { useHistoricalVolumeAnalysis } from '@/hooks/useHistoricalVolumeAnalysis';
-import { Database } from 'lucide-react';
+import { Database } from '@/lib/icons';
 import { LogoLoader } from '@/components/ui/LogoLoader';
 import { useRBAC } from '@/hooks/useRBAC';
 

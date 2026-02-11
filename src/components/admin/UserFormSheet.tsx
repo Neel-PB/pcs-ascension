@@ -12,7 +12,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown } from "@/lib/icons";
 import { AccessScopeManager, type AccessScopeData } from "./AccessScopeManager";
 import {
   Form,

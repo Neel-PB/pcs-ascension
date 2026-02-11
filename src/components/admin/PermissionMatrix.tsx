@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import { ChevronDown, ChevronRight, Lock, MoreVertical, Pencil, Trash2, RotateCcw, Save, X } from "lucide-react";
+import { ChevronDown, ChevronRight, Lock, MoreVertical, Pencil, Trash2, RotateCcw, Save, X } from "@/lib/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";

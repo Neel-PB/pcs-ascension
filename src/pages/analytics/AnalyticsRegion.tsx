@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, LayoutGroup } from "framer-motion";
-import { BarChart3 } from "lucide-react";
+import { BarChart3 } from "@/lib/icons";
 import { RegionVolumeTrendCharts } from "@/components/analytics/RegionVolumeTrendCharts";
 
 export default function AnalyticsRegion() {
