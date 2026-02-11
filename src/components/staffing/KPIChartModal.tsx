@@ -123,7 +123,7 @@ export function KPIChartModal({
 
           {/* Tabs for Chart and Table */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList>
               <TabsTrigger value="chart">Chart</TabsTrigger>
               <TabsTrigger value="table">Table</TabsTrigger>
             </TabsList>
