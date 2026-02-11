@@ -543,37 +543,32 @@ This metric helps:
       </div>
 
       <LayoutGroup>
-        <div className="relative bg-background rounded-lg p-1 mb-6">
-          <div className="flex">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                className={`relative flex items-center justify-center px-4 py-2 text-sm font-medium transition-all z-10 hover:scale-[1.02] active:scale-[0.98] ${
-                  activeTab === tab.id
-                    ? "text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-                onClick={() => setActiveTab(tab.id)}
-                style={{ flex: 1 }}
-              >
-                {tab.label}
-              </button>
-            ))}
-            
-            <motion.div
-              layoutId="staffingTabIndicator"
-              className="absolute inset-y-1 bg-primary rounded-sm"
-              style={{
-                left: `${(tabs.findIndex((t) => t.id === activeTab) / tabs.length) * 100}%`,
-                width: `${100 / tabs.length}%`,
-              }}
-              transition={{
-                type: "spring",
-                stiffness: 300,
-                damping: 30,
-              }}
-            />
-          </div>
+        <div className="flex items-center gap-4 border-b border-border mb-6">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`relative pb-2.5 pt-1 text-sm transition-colors whitespace-nowrap ${
+                activeTab === tab.id
+                  ? "text-primary font-semibold"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+              {activeTab === tab.id && (
+                <motion.div
+                  layoutId="staffingTabIndicator"
+                  className="absolute bottom-0 left-0 right-0 h-[3px] bg-primary rounded-t-full"
+                  initial={false}
+                  transition={{
+                    type: "spring",
+                    stiffness: 500,
+                    damping: 30,
+                  }}
+                />
+              )}
+            </button>
+          ))}
         </div>
       </LayoutGroup>
 
