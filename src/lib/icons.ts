@@ -11,7 +11,7 @@ export type LucideProps = React.SVGAttributes<SVGElement> & { size?: number | st
 // ─── Icon re-exports (Lucide name → Material Design icon) ──────────────────
 
 export {
-  MdErrorOutline as AlertCircle,
+  MdError as AlertCircle,
   MdWarning as AlertTriangle,
   MdArrowBack as ArrowLeft,
   MdArrowDownward as ArrowDown,
@@ -58,7 +58,7 @@ export {
   MdGridOn as Grid3X3,
   MdDragIndicator as GripVertical,
   MdFavorite as Heart,
-  MdHelpOutline as HelpCircle,
+  MdHelp as HelpCircle,
   MdHistory as History,
   MdImage as Image,
   MdHideImage as ImageOff,
