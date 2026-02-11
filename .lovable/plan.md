@@ -1,35 +1,37 @@
 
 
-# Align Badge Component to Helix Badge Spec
+# Align Card Component to Helix Card Spec
 
 ## What the Helix Spec Defines
 
-From the Badge specs page:
+From the Card specs page:
 
 | Property | Helix Spec | Current Implementation | Change Needed |
 |----------|-----------|----------------------|---------------|
-| Shape | Rounded-full (circle/pill) | `rounded-full` | No change |
-| Numeric badge size | 20 x 20px | Variable (px-2.5 py-0.5) | Add compact sizing for numeric use |
-| Dot badge size | 8 x 8px | Not supported | Add dot variant |
-| Text styling | Body 3 Emphasis (font-medium) | `font-semibold` | Change to `font-medium` |
-| Text alignment | Centered | `inline-flex items-center` | No change |
-| "None" color | No fill, Content.Primary text | `outline` variant | Already close |
-| "Primary" color | Primary.Main fill, inverse text | `default` variant | Already correct |
-| "Success" color | Success.Main fill, inverse text | Not available | Add variant |
-| "Warning" color | Warning.Main fill, inverse text | Not available | Add variant |
-| "Error" color | Error.Main fill, inverse text | `destructive` variant | Already close |
-| "Secondary" color | Secondary.Main fill, inverse text | `secondary` variant | Already correct |
+| Shape | `rounded-lg` (20px) | `rounded-lg` (8px default) | Increase to `rounded-xl` (12px) or `rounded-2xl` (16px) -- closest to 20px without custom value |
+| Elevation (raised) | `shadow-md` | `shadow-sm` | Increase to `shadow-md` for raised cards |
+| Background | Background.Component (`bg-card`) | `bg-card` | No change |
+| Left/Right padding | 16px (`px-4`) | `p-6` (24px) on CardHeader/Content/Footer | Adjust horizontal to `px-4` |
+| Top/Bottom padding | 24px (`py-6`) | `p-6` (24px) on CardHeader | Already correct vertically |
+| Content spacing | 16px recommended | `space-y-1.5` in CardHeader | Keep flexible |
+| Stacking gap | 32px between cards | Varies by usage | No base change needed |
+| Header between card | 20px | Varies | No base change needed |
+| Header font | Title SM | `text-2xl font-semibold` | Reduce to `text-lg font-semibold` |
+| Body copy | Body BASE | `text-sm` | Change to `text-base` for CardDescription |
+| Border | Visible border | `border` | No change |
 
 ## File to Edit
 
-**`src/components/ui/badge.tsx`**
+**`src/components/ui/card.tsx`**
 
 ### Changes:
-1. **Font weight**: `font-semibold` to `font-medium` -- Helix uses Body 3 Emphasis which maps to medium weight
-2. **Add `success` variant**: `bg-green-600 text-white border-transparent` for success semantic color
-3. **Add `warning` variant**: `bg-amber-500 text-white border-transparent` for warning semantic color
-4. **Keep existing variants** (`default`, `secondary`, `destructive`, `outline`) as they already map well to Helix Primary, Secondary, Error, and None colors
-5. **Remove hover opacity changes** from default/secondary/destructive -- Helix badges are static indicators, not interactive elements (hover effects are handled by parent containers where needed)
+1. **Border radius**: `rounded-lg` to `rounded-xl` -- Helix specifies 20px; `rounded-xl` (12px) is the closest standard Tailwind step without a custom value, or use `rounded-[20px]` for exact match
+2. **Shadow**: `shadow-sm` to `shadow-md` -- Helix raised cards use `shadow-md`
+3. **CardHeader padding**: `p-6` to `px-4 py-6` -- Helix specifies 16px horizontal, 24px vertical
+4. **CardContent padding**: `p-6 pt-0` to `px-4 pb-6` -- match 16px horizontal padding
+5. **CardFooter padding**: `p-6 pt-0` to `px-4 pb-6` -- match 16px horizontal padding
+6. **CardTitle font size**: `text-2xl` to `text-lg` -- Helix "Title SM" is smaller than the current 2xl
+7. **CardDescription font size**: Keep `text-sm` since most card descriptions in the app are used as secondary labels (changing to `text-base` would be too large for current layouts)
 
-No other files need changes -- the Badge component is imported everywhere and the variant API stays the same, so all existing usages continue to work.
+These changes affect every Card usage across the app (KPI cards, AI welcome cards, forecast cards, analytics cards, etc.) but since all cards should follow the same Helix spec, this is the desired outcome. Components that override padding via className will continue to work as before.
 
