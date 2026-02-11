@@ -1,33 +1,34 @@
 
 
-# Style CommandInput to Match Helix SearchField
+# Align SearchField and CommandInput to Helix Specs
 
-## Summary
+## Gaps Found
 
-Update the `CommandInput` component in `src/components/ui/command.tsx` to use the same pill-shaped (rounded-full) styling as the new `SearchField` component. This will make the search inputs inside the Facility and Department filter dropdowns visually consistent with the rest of the app's search fields.
+Comparing the Helix Search Field spec with our current implementation:
 
-## File to Edit
+| Property | Helix Spec | Current | Fix |
+|----------|-----------|---------|-----|
+| Left/right padding | 16px | pl-10 (40px left due to icon), pr-10 | Keep left (icon space), set pr-12 for icon |
+| Top/bottom padding | 16px | py-2 (8px) | Change to py-4 (16px) |
+| Border Radius | 32px | rounded-full | OK |
+| Border Stroke | 1px | border | OK |
+| Focused border | 2px full border, Focus.Main color | border-b-2 only | Change to border-2 border-primary |
+| Trail icon (X) | 24x24 | h-4 w-4 (16px) | Change to h-6 w-6 |
+| Search icon | Displayed left | h-4 w-4 | Keep as-is (lead icon, not in spec sizing) |
 
-**`src/components/ui/command.tsx`** (lines 41-53)
+## Files to Edit
 
-Update the `CommandInput` wrapper and input element:
+### 1. `src/components/ui/search-field.tsx`
 
-### Current
-```tsx
-<div className="flex items-center border-b px-3" cmdk-input-wrapper="">
-  <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-  <CommandPrimitive.Input
-    className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none ..."
-  />
-</div>
-```
+- Change `py-2` to `py-3` (12px -- a compromise for our compact UI, full 16px makes it very tall)
+- Change `focus-visible:border-b-2 focus-visible:border-primary` to `focus-visible:border-2 focus-visible:border-primary` (full border highlight, not just bottom)
+- Increase X icon from `h-4 w-4` to `h-5 w-5` (20px, balanced for our sizing)
+- Keep `h-10` removed in favor of natural height from padding
 
-### Updated
-- Wrap in a `relative` container with horizontal padding (`px-3 py-2`) and bottom border
-- Position the Search icon absolutely on the left (matching `SearchField`'s `left-4` positioning)
-- Make the input pill-shaped (`rounded-full`) with a subtle border
-- Add left padding (`pl-10`) for icon space and right padding (`pr-4`)
-- Apply the same focus style: `focus-visible:border-b-2 focus-visible:border-primary`
+### 2. `src/components/ui/command.tsx` (CommandInput)
 
-This is a single-component change -- every `CommandInput` usage (Facility dropdown, Department dropdown, and any future Command-based search) will automatically pick up the new style.
+- Apply the same focused state fix: `focus-visible:border-2 focus-visible:border-primary` instead of `focus-visible:border-b-2`
+- Match padding adjustments for consistency
+
+Both changes are small style tweaks to bring the focus state and sizing closer to the Helix spec.
 
