@@ -1,34 +1,33 @@
 
 
-# Align SearchField and CommandInput to Helix Specs
+# Align ToggleButtonGroup to Helix Toggle Button Spec
 
-## Gaps Found
+## What the Helix Spec Defines
 
-Comparing the Helix Search Field spec with our current implementation:
+From the Toggle Button component page (Outlined variant, which we use):
 
-| Property | Helix Spec | Current | Fix |
-|----------|-----------|---------|-----|
-| Left/right padding | 16px | pl-10 (40px left due to icon), pr-10 | Keep left (icon space), set pr-12 for icon |
-| Top/bottom padding | 16px | py-2 (8px) | Change to py-4 (16px) |
-| Border Radius | 32px | rounded-full | OK |
-| Border Stroke | 1px | border | OK |
-| Focused border | 2px full border, Focus.Main color | border-b-2 only | Change to border-2 border-primary |
-| Trail icon (X) | 24x24 | h-4 w-4 (16px) | Change to h-6 w-6 |
-| Search icon | Displayed left | h-4 w-4 | Keep as-is (lead icon, not in spec sizing) |
+| Property | Helix Spec | Current Implementation | Change Needed |
+|----------|-----------|----------------------|---------------|
+| Container border | 2px stroke, Primary.Main | `border-2 border-primary` | No change |
+| Container corners | rounded-full | `rounded-full` | No change |
+| Active fill | Primary.Main background | `bg-primary` | No change |
+| Active text | White (primary-foreground) | `text-primary-foreground` | No change |
+| Inactive text | Darker text (appears near-black in anatomy) | `text-muted-foreground` | Change to `text-foreground` |
+| Container padding | Visible internal spacing (~4px) in anatomy | `p-0.5` (2px) | Increase to `p-1` (4px) |
+| Button internal padding | Generous horizontal padding visible | `px-4 py-1.5` | Increase to `px-5 py-2` for better touch targets |
+| Button gap (icon to label) | Standard spacing | `gap-1.5` | No change |
+| Font weight | Medium weight in anatomy | `font-medium` | No change |
+| Hover on inactive | Subtle hover state | `hover:text-foreground` | Add `hover:bg-muted/50` for subtle background |
 
-## Files to Edit
+## File to Edit
 
-### 1. `src/components/ui/search-field.tsx`
+**`src/components/ui/toggle-button-group.tsx`**
 
-- Change `py-2` to `py-3` (12px -- a compromise for our compact UI, full 16px makes it very tall)
-- Change `focus-visible:border-b-2 focus-visible:border-primary` to `focus-visible:border-2 focus-visible:border-primary` (full border highlight, not just bottom)
-- Increase X icon from `h-4 w-4` to `h-5 w-5` (20px, balanced for our sizing)
-- Keep `h-10` removed in favor of natural height from padding
+### Changes:
+1. **Container padding**: `p-0.5` to `p-1` -- more breathing room between container border and buttons, matching the anatomy diagram
+2. **Container gap**: `gap-0.5` to `gap-0.5` -- keep tight gap between buttons
+3. **Button padding**: `px-4 py-1.5` to `px-5 py-2` -- slightly larger touch targets matching the anatomy proportions
+4. **Inactive text**: `text-muted-foreground` to `text-foreground` -- spec shows darker text for unselected buttons
+5. **Hover state**: Add `hover:bg-muted/50 hover:rounded-full` for a subtle background tint on hover (inactive items)
 
-### 2. `src/components/ui/command.tsx` (CommandInput)
-
-- Apply the same focused state fix: `focus-visible:border-2 focus-visible:border-primary` instead of `focus-visible:border-b-2`
-- Match padding adjustments for consistency
-
-Both changes are small style tweaks to bring the focus state and sizing closer to the Helix spec.
-
+These are small refinements to better match the Helix anatomy proportions while keeping the existing framer-motion animation and outlined variant structure intact.
