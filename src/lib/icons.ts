@@ -63,7 +63,7 @@ export {
   MdImage as Image,
   MdHideImage as ImageOff,
   MdAddPhotoAlternate as ImagePlus,
-  MdInfo as Info,
+  MdInfoOutline as Info,
   MdFormatItalic as Italic,
   MdLayers as Layers,
   MdDashboard as LayoutDashboard,
