@@ -1,25 +1,21 @@
 
 
-# Replace Outline Material Icons with Filled Variants
+# Switch Staffing Icon to Outlined People Variant
 
-## What's Changing
+## Change
 
-Only 2 icons in `src/lib/icons.ts` are using explicit outline variants. Everything else is already filled.
+Update `src/lib/icons.ts` to use `MdPeopleOutline` instead of `MdPeople` for the `Users` alias.
 
-| Current (Outline) | Replacement (Filled) | Alias |
+| Current | New | Alias |
 |---|---|---|
-| `MdErrorOutline` | `MdError` | AlertCircle |
-| `MdHelpOutline` | `MdHelp` | HelpCircle |
+| `MdPeople` (filled) | `MdPeopleOutline` (outlined) | Users |
 
 ## Technical Detail
 
-Update `src/lib/icons.ts`:
-- Line 14: Change `MdErrorOutline as AlertCircle` to `MdError as AlertCircle`
-- Line 61: Change `MdHelpOutline as HelpCircle` to `MdHelp as HelpCircle`
+In `src/lib/icons.ts`, line 89:
+- Change `MdPeople as Users` to `MdPeopleOutline as Users`
 
-No other files need changes since they all import via the alias names from `@/lib/icons`.
+No other files need changes since all components import `Users` from `@/lib/icons`.
 
-## Note
-
-The remaining ~120 icons (including all sidebar icons) are already using filled Material Design variants. If specific icons still look "outlined" after this change, that is simply the filled icon's design in Google's Material icon set -- not an outline variant.
+This affects the Staffing sidebar icon and anywhere else `Users` is referenced (e.g., `AIWelcomeCards`, `RecipientMultiSelect`).
 
