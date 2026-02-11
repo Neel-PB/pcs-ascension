@@ -126,7 +126,7 @@ export function PositionToOpenDetailsSheet({
             </ScrollArea>
           </TabsContent>
 
-          <TabsContent value="comments" className="flex-1 min-h-0 !mt-0 px-6">
+          <TabsContent value="comments" className="flex-1 min-h-0 !mt-0 px-[15px]">
             <PositionCommentSection positionId={position.id} onClose={() => onOpenChange(false)} />
           </TabsContent>
         </Tabs>
