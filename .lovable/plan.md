@@ -1,46 +1,52 @@
 
 
-# Align Icon Button to Helix Spec
+# Align Calendar and Date Picker to Helix Design System
 
-## Helix Icon Button Spec Summary
+## Helix Spec Summary (from the specs page)
 
-| Property | Helix Value | Current (`size="icon"`) |
-|----------|------------|------------------------|
-| Small size | 40x40px | `h-10 w-10` (40px) -- matches |
-| Large size | 48x48px | Not available |
-| Small padding | 8px | Implicit from size constraint |
-| Large padding | 12px | Not available |
-| Corner radius | `rounded-full` | `rounded-md` (inherited from base) |
-| Icon size | 24x24px | `[&_svg]:size-4` (16px) -- too small |
-| Styles | Outlined, Filled, Icon (ghost) | Mapped to `outline`, `default`, `ghost` variants |
-| Hover (Filled) | `shadow-sm` | No shadow on hover |
-| Disabled | Muted icon + bg | `opacity-50` -- close enough |
+| Property | Helix Value | Current Value |
+|----------|------------|---------------|
+| Day cell size | 40x40px | 36x36px (`h-9 w-9`) |
+| Nav buttons | 40x40px, Primary.Main color | 28x28px (`h-7 w-7`), outline + opacity |
+| Today marker | 1px border stroke (no fill) | `bg-accent` fill |
+| Selected day | Primary.Main fill, white text | Correct (`bg-primary text-primary-foreground`) |
+| Hovered day | Light primary fill + 1px border | Ghost button default |
+| Disabled day | Content.Disabled color | `opacity-50` -- close |
+| Calendar padding | L/R 16px, Top 24px, Bottom 8px | `p-3` (12px uniform) |
+| Modal elevation | `shadow-md` | None (inherits from popover) |
+| Day-of-week headers | Content.Primary | `text-muted-foreground` |
 
-## Changes to `src/components/ui/button.tsx`
+## Files to Edit
 
-### 1. Fix icon size override for icon buttons
-The base CVA sets `[&_svg]:size-4` (16px) globally. Icon buttons need 24px icons per Helix. Add compound-style overrides in the `icon` and new `icon-lg` sizes.
+### 1. `src/components/ui/calendar.tsx`
 
-### 2. Add `icon-lg` size variant
-- `icon`: keep at `h-10 w-10` (40px, Small touch area) but add `rounded-full` and `[&_svg]:size-6`
-- `icon-lg`: new at `h-12 w-12` (48px, Large touch area) with `rounded-full` and `[&_svg]:size-6`
+Update all DayPicker classNames to match Helix specs:
 
-### 3. Make icon sizes fully round
-Both `icon` and `icon-lg` get `rounded-full` to match the Helix "full round corner" spec.
+- **Day cells**: Change from `h-9 w-9` to `h-10 w-10` (40px) for both `cell` and `day`
+- **Head cells**: Change from `w-9` to `w-10`, update color from `text-muted-foreground` to `text-foreground` (Content.Primary)
+- **Nav buttons**: Increase from `h-7 w-7` to `h-10 w-10` (40px), change from `outline` variant to `ghost` with `text-primary` color, remove opacity
+- **Today styling**: Replace `bg-accent text-accent-foreground` with border-only: `border border-border` (1px inside stroke, no background fill)
+- **Hover styling**: Add `hover:bg-primary/10 hover:border hover:border-border` on day cells
+- **Calendar padding**: Change from `p-3` to `px-4 pt-6 pb-2` (L/R 16px, Top 24px, Bottom 8px)
+- **Row spacing**: Adjust `mt-2` to `mt-1` for tighter day grid
 
-### Resulting size variants:
-```
-size: {
-  default: "h-10 px-4 py-2",
-  sm: "h-9 px-4",
-  lg: "h-11 px-8",
-  icon: "h-10 w-10 rounded-full [&_svg]:size-6",
-  "icon-lg": "h-12 w-12 rounded-full [&_svg]:size-6",
-}
-```
+### 2. `src/components/editable-table/cells/EditableDateCell.tsx`
 
-### What stays the same:
-- All existing variant styles (default/destructive/outline/ghost/etc.) work as-is with icon buttons -- they map to Helix's Filled/Destructive/Outlined/Icon styles
-- The `ascension` variant already has `rounded-full`
-- No changes needed to any consuming components since existing `size="icon"` usage just gets the corrected shape and icon size
+- Update PopoverContent to include `shadow-md` for modal elevation per Helix spec
+- Update the internal Calendar className from `p-3` to match the new default padding
+
+### 3. `src/components/editable-table/cells/EditableFTECell.tsx`
+
+- Same PopoverContent shadow update for consistency
+
+## Technical Details
+
+The Calendar component uses `react-day-picker` v8 with shadcn classNames mapping. All changes are CSS-only through the `classNames` prop -- no structural changes needed.
+
+The key visual differences users will notice:
+- Slightly larger day cells (40px vs 36px) for better touch targets
+- Navigation arrows in brand blue instead of muted outline buttons
+- Today's date shown with a subtle border ring instead of a filled background
+- Day-of-week headers in primary text color instead of muted
+- More breathing room at top, tighter at bottom
 
