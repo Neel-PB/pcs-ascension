@@ -1,25 +1,26 @@
 
-# Remove "KPIs" Header and Data Refresh Button from Staffing Summary Tab
+
+# Replace Info Icon with Outlined Variant
 
 ## Change
 
-Remove the "KPIs" heading text and the `DataRefreshButton` component from the Summary tab in the Staffing page. The KPI sections (FTE, Volume, Productivity) and `DraggableSectionsContainer` will remain -- only the header row containing the word "KPIs" and the refresh status button will be removed.
+Swap the `Info` icon from the filled `MdInfo` to the outlined `MdInfoOutline` variant across the app. This affects the employment type breakdown pills on KPI cards and any other component importing `Info` from `@/lib/icons`.
 
-## Files to Edit
+## File to Edit
 
-### `src/pages/staffing/StaffingSummary.tsx`
+**`src/lib/icons.ts`** (line 66)
 
-**Lines 556-560** -- Remove the entire `div` containing the "KPIs" heading and `DataRefreshButton`:
-
-```tsx
-// REMOVE this block:
-<div className="flex items-center justify-between">
-  <h2 className="text-2xl font-bold">KPIs</h2>
-  <DataRefreshButton dataSources={['staffing_grid', 'labor_uos_data']} />
-</div>
+Replace:
+```ts
+MdInfo as Info,
 ```
 
-**Cleanup unused imports** (line 12):
-- Remove `import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";`
+With:
+```ts
+MdInfoOutline as Info,
+```
 
-The `DraggableSectionsContainer` with all three KPI sections (FTE, Volume, Productive Resources) remains untouched.
+Also add `MdInfoOutline` to the import from `'react-icons/md'` (it should already be available in the `react-icons/md` package).
+
+This is a single-line change in the central icon adapter -- every component that uses `Info` (including the KPICard breakdown pill) will automatically pick up the outlined variant.
+
