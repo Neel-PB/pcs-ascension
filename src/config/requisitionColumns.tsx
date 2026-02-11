@@ -92,12 +92,7 @@ export const requisitionColumns: ColumnDef<Position>[] = [
     resizable: false,
     draggable: true,
     renderCell: (row) => (
-      <BadgeCell
-        value={row.jobFamily}
-        variant="outline"
-        className="bg-primary/10"
-        maxLength={30}
-      />
+      <TruncatedTextCell value={row.jobFamily} maxLength={30} />
     ),
   },
   {
