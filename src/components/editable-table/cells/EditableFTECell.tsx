@@ -256,7 +256,7 @@ export function EditableFTECell({
             "hover:bg-muted/50 transition-colors",
             "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
             "relative group",
-            isModified && "text-destructive",
+            isModified && "text-primary",
             className
           )}
           type="button"

@@ -30,8 +30,8 @@ export function BadgeCell({
     <TooltipProvider delayDuration={200}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <CellButton onClick={onClick} className={className}>
-            <Badge variant={variant} className="truncate max-w-full">
+          <CellButton onClick={onClick}>
+            <Badge variant={variant} className={cn("truncate max-w-full", className)}>
               {value}
             </Badge>
           </CellButton>
