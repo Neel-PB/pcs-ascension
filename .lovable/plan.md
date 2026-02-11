@@ -1,21 +1,24 @@
 
 
-# Switch Staffing Icon to Outlined People Variant
+# Fix Staffing Icon — Remove Boxy/Square Body Shapes
 
-## Change
+## Problem
+The `MdPeopleOutline` icon has rectangular torso shapes built into its SVG design. These appear as unwanted "square borders" at small sizes in the sidebar.
 
-Update `src/lib/icons.ts` to use `MdPeopleOutline` instead of `MdPeople` for the `Users` alias.
+## Solution
+Switch the `Users` alias from `MdPeopleOutline` to `MdGroup` in `src/lib/icons.ts`. The `MdGroup` icon renders two people with rounder, more natural body shapes -- no rectangular/boxy elements.
 
-| Current | New | Alias |
-|---|---|---|
-| `MdPeople` (filled) | `MdPeopleOutline` (outlined) | Users |
+## What Changes
 
-## Technical Detail
+**File:** `src/lib/icons.ts`, line 121
 
-In `src/lib/icons.ts`, line 89:
-- Change `MdPeople as Users` to `MdPeopleOutline as Users`
+| Before | After |
+|---|---|
+| `MdPeopleOutline as Users` | `MdGroup as Users` |
 
-No other files need changes since all components import `Users` from `@/lib/icons`.
+Single-line change. All components importing `Users` from `@/lib/icons` will automatically use the new icon.
 
-This affects the Staffing sidebar icon and anywhere else `Users` is referenced (e.g., `AIWelcomeCards`, `RecipientMultiSelect`).
+## Impact
+- Staffing sidebar icon
+- Any other component referencing `Users` (e.g., `AIWelcomeCards`, `RecipientMultiSelect`)
 
