@@ -118,7 +118,7 @@ export {
   MdUpload as Upload,
   MdManageAccounts as UserCog,
   MdPersonAdd as UserPlus,
-  MdPeople as Users,
+  MdPeopleOutline as Users,
   MdBuild as Wrench,
   MdClose as X,
 } from 'react-icons/md';
