@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { RotateCcw, Plus, MoreVertical, Pencil, Trash2, Lock } from "lucide-react";
+import { RotateCcw, Plus, MoreVertical, Pencil, Trash2, Lock } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";

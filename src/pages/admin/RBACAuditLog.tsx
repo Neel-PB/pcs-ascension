@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { ChevronDown, ChevronRight, Filter, RefreshCw, User } from "lucide-react";
+import { ChevronDown, ChevronRight, Filter, RefreshCw, User } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";

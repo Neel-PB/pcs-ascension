@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Search, MoreVertical, Pencil, Trash2, Lock } from "lucide-react";
+import { Plus, Search, MoreVertical, Pencil, Trash2, Lock } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";

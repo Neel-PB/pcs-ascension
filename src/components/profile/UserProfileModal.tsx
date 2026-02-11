@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { AvatarUploadCrop } from "./AvatarUploadCrop";
-import { Pencil } from "lucide-react";
+import { Pencil } from "@/lib/icons";
 
 interface UserProfileModalProps {
   open: boolean;

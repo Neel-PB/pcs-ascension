@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import { Filter, Search } from "lucide-react";
+import { Filter, Search } from "@/lib/icons";
 import { differenceInDays } from "date-fns";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import { useRequisitions } from "@/hooks/useRequisitions";

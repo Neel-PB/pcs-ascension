@@ -9,7 +9,7 @@ import {
   Trash2,
   ExternalLink,
   ImageOff
-} from "lucide-react";
+} from "@/lib/icons";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";

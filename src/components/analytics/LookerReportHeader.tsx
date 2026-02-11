@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Download, Share2, Filter, Calendar } from "lucide-react";
+import { RefreshCw, Download, Share2, Filter, Calendar } from "@/lib/icons";
 
 interface LookerReportHeaderProps {
   title: string;

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Search, Play, FileText, AlertCircle, MessageSquare, ExternalLink } from "lucide-react";
+import { Search, Play, FileText, AlertCircle, MessageSquare, ExternalLink } from "@/lib/icons";
 import { useToast } from "@/hooks/use-toast";
 
 export default function SupportPage() {

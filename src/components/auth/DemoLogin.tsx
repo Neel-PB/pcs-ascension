@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShieldCheck, Users, Crown, Building2, UserCog, Briefcase, Loader2 } from "lucide-react";
+import { ShieldCheck, Users, Crown, Building2, UserCog, Briefcase, Loader2 } from "@/lib/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { MANAGEABLE_ROLES, ROLE_METADATA, type AppRole } from "@/config/rbacConfig";

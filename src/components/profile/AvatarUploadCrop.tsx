@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import { Upload, RotateCw, Trash2 } from 'lucide-react';
+import { Upload, RotateCw, Trash2 } from '@/lib/icons';
 import Cropper from 'react-easy-crop';
 import { createCroppedImage, type CropArea } from '@/lib/cropImage';
 import { useAvatarUpload } from '@/hooks/useAvatarUpload';

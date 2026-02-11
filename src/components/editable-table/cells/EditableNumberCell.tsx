@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Pencil, RotateCcw } from 'lucide-react';
+import { Pencil, RotateCcw } from '@/lib/icons';
 import { Button } from '@/components/ui/button';
 
 interface EditableNumberCellProps {
