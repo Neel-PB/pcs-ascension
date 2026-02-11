@@ -15,54 +15,47 @@ import { WorkforceDrawerTrigger } from "@/components/workforce/WorkforceDrawerTr
 import { useRBAC } from "@/hooks/useRBAC";
 import { useOrgScopedFilters } from "@/hooks/useOrgScopedFilters";
 import { LogoLoader } from "@/components/ui/LogoLoader";
+import { useFilterStore } from "@/stores/useFilterStore";
 
 export default function StaffingSummary() {
   const [activeTab, setActiveTab] = useState("summary");
   const { hasPermission, loading: rbacLoading } = useRBAC();
   const { defaultFilters, isLoading: orgScopedLoading, isReady: orgScopedReady } = useOrgScopedFilters();
   
-  // State management for filters - initialized from org-scoped defaults
-  const [selectedRegion, setSelectedRegion] = useState("all-regions");
-  const [selectedMarket, setSelectedMarket] = useState("all-markets");
-  const [selectedFacility, setSelectedFacility] = useState("all-facilities");
-  const [selectedSubmarket, setSelectedSubmarket] = useState("all-submarkets");
-  const [selectedPstat, setSelectedPstat] = useState("all-pstat");
-  const [selectedLevel2, setSelectedLevel2] = useState("all-level2");
-  const [selectedDepartment, setSelectedDepartment] = useState("all-departments");
-  const [filtersInitialized, setFiltersInitialized] = useState(false);
+  // Shared filter store
+  const {
+    selectedRegion,
+    selectedMarket,
+    selectedFacility,
+    selectedSubmarket,
+    selectedPstat,
+    selectedLevel2,
+    selectedDepartment,
+    filtersInitialized,
+    setRegion,
+    setMarket,
+    setFacility,
+    setSubmarket,
+    setPstat,
+    setLevel2,
+    setDepartment,
+    initializeFromDefaults,
+    clearFilters,
+  } = useFilterStore();
   
   // Get filter visibility permissions from RBAC
   const { getFilterPermissions } = useRBAC();
   
-  // Initialize filters from org-scoped defaults once READY (not just loading=false)
-  // For hidden filters (due to RBAC), auto-select the Access Scope default
-  // Use isReady to ensure all data is fully loaded before applying defaults
+  // Initialize filters from org-scoped defaults once READY (one-shot via store)
   useEffect(() => {
     if (orgScopedReady && !rbacLoading && !filtersInitialized && defaultFilters) {
       const filterPerms = getFilterPermissions();
-      
-      // For filters the user CAN'T see, force-apply Access Scope defaults
-      // This ensures data is filtered even when the dropdown isn't visible
-      if (!filterPerms.region && defaultFilters.region !== "all-regions") {
-        setSelectedRegion(defaultFilters.region);
-      }
-      if (!filterPerms.market && defaultFilters.market !== "all-markets") {
-        setSelectedMarket(defaultFilters.market);
-      }
-      
-      // Apply other defaults as before (for visible filters with restrictions)
-      if (defaultFilters.market !== "all-markets") {
-        setSelectedMarket(defaultFilters.market);
-      }
-      if (defaultFilters.facility !== "all-facilities") {
-        setSelectedFacility(defaultFilters.facility);
-      }
-      if (defaultFilters.department !== "all-departments") {
-        setSelectedDepartment(defaultFilters.department);
-      }
-      setFiltersInitialized(true);
+      initializeFromDefaults(defaultFilters, {
+        region: filterPerms.region,
+        market: filterPerms.market,
+      });
     }
-  }, [orgScopedReady, rbacLoading, filtersInitialized, defaultFilters, getFilterPermissions]);
+  }, [orgScopedReady, rbacLoading, filtersInitialized, defaultFilters, getFilterPermissions, initializeFromDefaults]);
 
   // Build tabs based on permissions
   const tabs = useMemo(() => {
@@ -84,57 +77,6 @@ export default function StaffingSummary() {
     return baseTabs;
   }, [hasPermission]);
 
-  const handleRegionChange = (value: string) => {
-    setSelectedRegion(value);
-    setSelectedMarket("all-markets");
-    setSelectedFacility("all-facilities");
-    setSelectedSubmarket("all-submarkets");
-    setSelectedPstat("all-pstat");
-    setSelectedLevel2("all-level2");
-    setSelectedDepartment("all-departments");
-  };
-
-  const handleMarketChange = (value: string) => {
-    setSelectedMarket(value);
-    setSelectedFacility("all-facilities");
-    setSelectedSubmarket("all-submarkets");
-    setSelectedPstat("all-pstat");
-    setSelectedLevel2("all-level2");
-    setSelectedDepartment("all-departments");
-  };
-
-  const handleFacilityChange = (value: string) => {
-    setSelectedFacility(value);
-    setSelectedPstat("all-pstat");
-    setSelectedLevel2("all-level2");
-    setSelectedDepartment("all-departments");
-  };
-
-  const handleSubmarketChange = (value: string) => {
-    setSelectedSubmarket(value);
-  };
-
-  const handlePstatChange = (value: string) => {
-    setSelectedPstat(value);
-  };
-
-  const handleLevel2Change = (value: string) => {
-    setSelectedLevel2(value);
-  };
-
-  const handleClearFilters = () => {
-    // Reset to Access Scope defaults instead of "all-*"
-    // For restricted filters, this respects assigned values
-    // For unrestricted filters, this sets them to "all-*"
-    setSelectedRegion(defaultFilters?.region ?? "all-regions");
-    setSelectedMarket(defaultFilters?.market ?? "all-markets");
-    setSelectedFacility(defaultFilters?.facility ?? "all-facilities");
-    setSelectedSubmarket("all-submarkets"); // Optional filter - always reset
-    setSelectedPstat("all-pstat"); // Optional filter - always reset
-    setSelectedLevel2("all-level2"); // Optional filter - always reset
-    setSelectedDepartment(defaultFilters?.department ?? "all-departments");
-  };
-  
   // Realistic chart data generators
   const generateGrowthTrend = (start: number, end: number, points: number = 24) => 
     Array.from({ length: points }, (_, i) => ({
@@ -196,7 +138,6 @@ Includes:
 • Full-time staff (1.0 FTE each)
 • Part-time staff (0.5, 0.8, etc.)
 • Active employees only (excludes open positions)`,
-        // Breakdown now represents combined Hired FTEs + Open Reqs split
         employmentBreakdown: { ft: 62, pt: 23, prn: 15 },
         breakdownVariant: 'red' as const,
       },
@@ -262,7 +203,6 @@ Example: If FTE Variance is 2.5 and Open Requisitions is 5:
       },
     ];
 
-    // Sort based on stored order
     return kpis.sort((a, b) => {
       const aIndex = fteOrder.indexOf(a.id);
       const bIndex = fteOrder.indexOf(b.id);
@@ -272,7 +212,6 @@ Example: If FTE Variance is 2.5 and Open Requisitions is 5:
 
   // Volume KPIs Configuration
   const volumeKPIs = useMemo(() => {
-    // Generate month labels for all Volume KPIs
     const monthLabels = generateLast12MonthLabels();
     
     const kpis = [
@@ -373,7 +312,6 @@ Used when:
       },
     ];
 
-    // Sort based on stored order
     return kpis.sort((a, b) => {
       const aIndex = volumeOrder.indexOf(a.id);
       const bIndex = volumeOrder.indexOf(b.id);
@@ -488,7 +426,6 @@ This metric helps:
       },
     ];
 
-    // Sort based on stored order
     return kpis.sort((a, b) => {
       const aIndex = productivityOrder.indexOf(a.id);
       const bIndex = productivityOrder.indexOf(b.id);
@@ -496,7 +433,7 @@ This metric helps:
     });
   }, [productivityOrder]);
 
-  // Page-level loading guard: don't render animated content until critical data is ready
+  // Page-level loading guard
   const isInitializing = rbacLoading || (orgScopedLoading && !filtersInitialized);
 
   if (isInitializing) {
@@ -524,13 +461,13 @@ This metric helps:
         {/* Filters */}
         <div className="py-2">
         <FilterBar 
-          onRegionChange={handleRegionChange}
-          onMarketChange={handleMarketChange}
-          onFacilityChange={handleFacilityChange}
-          onSubmarketChange={handleSubmarketChange}
-          onPstatChange={handlePstatChange}
-          onLevel2Change={handleLevel2Change}
-          onDepartmentChange={setSelectedDepartment}
+          onRegionChange={setRegion}
+          onMarketChange={setMarket}
+          onFacilityChange={setFacility}
+          onSubmarketChange={setSubmarket}
+          onPstatChange={setPstat}
+          onLevel2Change={setLevel2}
+          onDepartmentChange={setDepartment}
           selectedRegion={selectedRegion}
           selectedMarket={selectedMarket}
           selectedFacility={selectedFacility}
@@ -538,7 +475,7 @@ This metric helps:
           selectedPstat={selectedPstat}
           selectedLevel2={selectedLevel2}
           selectedDepartment={selectedDepartment}
-          onClearFilters={handleClearFilters}
+          onClearFilters={() => clearFilters(defaultFilters)}
         />
       </div>
 
