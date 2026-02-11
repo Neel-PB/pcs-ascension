@@ -6,7 +6,8 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { ToggleButtonGroup } from "@/components/ui/toggle-button-group";
 import { PositionCommentSection } from "@/components/positions/PositionCommentSection";
 
 interface ContractorDetailsSheetProps {
@@ -55,11 +56,13 @@ export function ContractorDetailsSheet({
 
           {/* Content Area */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "details" | "comments")} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <div className="px-6 shrink-0">
-            <TabsList>
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="comments">Comments</TabsTrigger>
-            </TabsList>
+          <div className="px-6 py-3 shrink-0">
+            <ToggleButtonGroup
+              items={[{ id: "details", label: "Details" }, { id: "comments", label: "Comments" }] as const}
+              activeId={activeTab}
+              onSelect={(id) => setActiveTab(id as "details" | "comments")}
+              layoutId="contractorSheetTab"
+            />
           </div>
 
           <TabsContent value="details" className="flex-1 min-h-0 overflow-hidden !mt-0">
