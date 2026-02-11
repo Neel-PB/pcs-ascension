@@ -565,7 +565,7 @@ export function FilterBar({
                 onValueChange={onSubmarketChange}
                 disabled={selectedMarket === "all-markets" || availableSubmarkets.length === 0}
               >
-                <SelectTrigger className="w-[150px] rounded-full border-2 border-primary bg-background text-foreground hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                <SelectTrigger className="w-[150px] rounded-sm border border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                   <SelectValue placeholder="Submarket" />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
@@ -583,7 +583,7 @@ export function FilterBar({
                 value={selectedLevel2} 
                 onValueChange={onLevel2Change}
               >
-                <SelectTrigger className="w-[200px] rounded-full border-2 border-primary bg-background text-foreground hover:bg-primary/10 transition-colors">
+                <SelectTrigger className="w-[200px] rounded-sm border border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
                   <SelectValue placeholder="Level 2" />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
@@ -601,7 +601,7 @@ export function FilterBar({
                 value={selectedPstat} 
                 onValueChange={onPstatChange}
               >
-                <SelectTrigger className="w-[200px] rounded-full border-2 border-primary bg-background text-foreground hover:bg-primary/10 transition-colors">
+                <SelectTrigger className="w-[200px] rounded-sm border border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
                   <SelectValue placeholder="PSTAT" />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
