@@ -1,24 +1,31 @@
 
 
-# Fix Staffing Icon — Remove Boxy/Square Body Shapes
+# Fix Square/Boxy Sidebar Icons — Switch to Outlined Variants
 
 ## Problem
-The `MdPeopleOutline` icon has rectangular torso shapes built into its SVG design. These appear as unwanted "square borders" at small sizes in the sidebar.
+The sidebar navigation icons use **filled** Material Design icons (`Md*`) that have solid rectangular/square background shapes built into their SVGs. At small sizes (20x20px), these appear as unwanted "square borders or lines" around the icons.
 
 ## Solution
-Switch the `Users` alias from `MdPeopleOutline` to `MdGroup` in `src/lib/icons.ts`. The `MdGroup` icon renders two people with rounder, more natural body shapes -- no rectangular/boxy elements.
+Switch all sidebar-relevant icon mappings in `src/lib/icons.ts` from filled (`Md*`) to outlined (`MdOutline*`) variants. This removes the solid background shapes while keeping the same recognizable icon designs.
 
-## What Changes
+## Changes
 
-**File:** `src/lib/icons.ts`, line 121
+**File: `src/lib/icons.ts`** — Update these 7 mappings:
 
-| Before | After |
-|---|---|
-| `MdPeopleOutline as Users` | `MdGroup as Users` |
+| Alias | Current (Filled) | New (Outlined) |
+|---|---|---|
+| `Users` | `MdGroup` | `MdOutlinePeopleOutline` or `MdOutlineGroup` |
+| `UserCog` | `MdManageAccounts` | `MdOutlineManageAccounts` |
+| `TrendingUp` | `MdTrendingUp` | `MdOutlineTrendingUp` |
+| `FileBarChart` | `MdInsertChart` | `MdOutlineInsertChart` |
+| `LifeBuoy` | `MdHelp` | `MdOutlineHelp` |
+| `ShieldCheck` | `MdVerifiedUser` | `MdOutlineVerifiedUser` |
+| `MessageSquare` | `MdChat` | `MdOutlineChat` |
 
-Single-line change. All components importing `Users` from `@/lib/icons` will automatically use the new icon.
+No other files need changes — all components import these icons via the centralized `@/lib/icons` adapter, so the update propagates automatically.
 
 ## Impact
-- Staffing sidebar icon
-- Any other component referencing `Users` (e.g., `AIWelcomeCards`, `RecipientMultiSelect`)
+- All 7 sidebar navigation icons will switch to clean outlined style
+- Any other component referencing these same aliases will also get the outlined variant
+- Consistent visual style across the entire sidebar
 
