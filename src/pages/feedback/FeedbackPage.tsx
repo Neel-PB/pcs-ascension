@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useFeedback } from '@/hooks/useFeedback';
 import { FeedbackTableRow } from '@/components/feedback/FeedbackTableRow';
-import { Input } from '@/components/ui/input';
+import { SearchField } from '@/components/ui/search-field';
 import {
   Select,
   SelectContent,
@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/table';
 
 import { LogoLoader } from '@/components/ui/LogoLoader';
-import { Search, MessageSquare } from '@/lib/icons';
+import { MessageSquare } from '@/lib/icons';
 
 export default function FeedbackPage() {
   const { feedback, isLoading, deleteFeedback } = useFeedback();
@@ -64,15 +64,12 @@ export default function FeedbackPage() {
 
         {/* Filters */}
         <div className="flex items-center gap-3">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search feedback..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
+          <SearchField
+            placeholder="Search feedback..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 max-w-sm"
+          />
           <Select value={typeFilter} onValueChange={setTypeFilter}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Type" />

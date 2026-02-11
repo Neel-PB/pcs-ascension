@@ -2,9 +2,10 @@ import { useState } from "react";
 import { ToggleButtonGroup } from "@/components/ui/toggle-button-group";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SearchField } from "@/components/ui/search-field";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Search, Play, FileText, AlertCircle, MessageSquare, ExternalLink } from "@/lib/icons";
+import { Play, FileText, AlertCircle, MessageSquare, ExternalLink } from "@/lib/icons";
 import { useToast } from "@/hooks/use-toast";
 
 export default function SupportPage() {
@@ -165,16 +166,11 @@ export default function SupportPage() {
         {activeTab === "faqs" && (
           <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
           <div className="mb-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-shell-muted" />
-              <Input
-                type="text"
-                placeholder="Search FAQs..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+            <SearchField
+              placeholder="Search FAQs..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
 
           <Accordion type="single" collapsible className="space-y-2">

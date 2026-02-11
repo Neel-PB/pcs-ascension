@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Bell, Sun, Moon, Monitor } from "@/lib/icons";
+import { Bell, Sun, Moon, Monitor } from "@/lib/icons";
 import { useTheme } from "next-themes";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -10,7 +10,7 @@ import { UserProfileModal } from "@/components/profile/UserProfileModal";
 import { NotificationPanel } from "@/components/notifications/NotificationPanel";
 import { GlobalSearchCommand } from "@/components/shell/GlobalSearchCommand";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchField } from "@/components/ui/search-field";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -85,19 +85,11 @@ export function AppHeader() {
         {/* Center Section - Search */}
         <div className="flex-1 max-w-md mx-8">
           <GlobalSearchCommand open={commandOpen} onOpenChange={setCommandOpen}>
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-shell-muted pointer-events-none z-10" />
-              <Input
-                type="text"
-                placeholder="Search..."
-                className={cn(
-                  "pl-10 pr-4 bg-shell-elevated border-shell-line cursor-pointer w-full",
-                  "hover:bg-shell hover:border-primary/20",
-                  "transition-all duration-200"
-                )}
-                readOnly
-              />
-            </div>
+            <SearchField
+              placeholder="Search..."
+              className="w-full cursor-pointer"
+              readOnly
+            />
           </GlobalSearchCommand>
         </div>
 

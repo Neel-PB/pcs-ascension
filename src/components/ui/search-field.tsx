@@ -1,0 +1,57 @@
+import * as React from "react";
+import { Search, X } from "@/lib/icons";
+import { cn } from "@/lib/utils";
+
+interface SearchFieldProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
+  onClear?: () => void;
+}
+
+const SearchField = React.forwardRef<HTMLInputElement, SearchFieldProps>(
+  ({ className, value, onChange, onClear, ...props }, ref) => {
+    const hasValue = value !== undefined && value !== "";
+
+    const handleClear = () => {
+      if (onClear) {
+        onClear();
+      } else if (onChange) {
+        const syntheticEvent = {
+          target: { value: "" },
+        } as React.ChangeEvent<HTMLInputElement>;
+        onChange(syntheticEvent);
+      }
+    };
+
+    return (
+      <div className={cn("relative", className)}>
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+        <input
+          type="text"
+          className={cn(
+            "flex h-10 w-full rounded-full border border-input bg-background pl-10 pr-10 py-2 text-base ring-offset-background",
+            "placeholder:text-muted-foreground",
+            "focus-visible:outline-none focus-visible:ring-0 focus-visible:border-b-2 focus-visible:border-primary",
+            "disabled:cursor-not-allowed disabled:opacity-50",
+            "md:text-sm transition-all"
+          )}
+          value={value}
+          onChange={onChange}
+          ref={ref}
+          {...props}
+        />
+        {hasValue && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Clear search"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+    );
+  }
+);
+SearchField.displayName = "SearchField";
+
+export { SearchField };
