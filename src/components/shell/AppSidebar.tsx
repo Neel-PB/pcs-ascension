@@ -83,7 +83,7 @@ export function AppSidebar() {
                         />
                       )}
                       <Icon className="relative z-10 h-5 w-5" />
-                      <span className="relative z-10 text-[10px] font-medium leading-tight text-center">
+                      <span className="relative z-10 text-[10px] font-medium leading-tight text-center uppercase">
                         {item.title}
                       </span>
                     </motion.div>
@@ -123,7 +123,7 @@ export function AppSidebar() {
                     />
                   )}
                   <ShieldCheck className="relative z-10 h-5 w-5" />
-                  <span className="relative z-10 text-[10px] font-medium leading-tight text-center">
+                  <span className="relative z-10 text-[10px] font-medium leading-tight text-center uppercase">
                     Admin
                   </span>
                 </motion.div>
@@ -162,7 +162,7 @@ export function AppSidebar() {
                     />
                   )}
                   <MessageSquare className="relative z-10 h-5 w-5" />
-                  <span className="relative z-10 text-[10px] font-medium leading-tight text-center">
+                  <span className="relative z-10 text-[10px] font-medium leading-tight text-center uppercase">
                     Feedback
                   </span>
                 </motion.div>
