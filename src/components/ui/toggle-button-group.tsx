@@ -44,9 +44,9 @@ export function ToggleButtonGroup({
                 className="absolute inset-0 rounded-full bg-primary"
                 initial={false}
                 transition={{
-                  type: "spring",
-                  stiffness: 500,
-                  damping: 35,
+                  type: "tween",
+                  duration: 0.2,
+                  ease: "easeOut",
                 }}
               />
             )}
