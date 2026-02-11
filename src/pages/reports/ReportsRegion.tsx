@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, LayoutGroup } from "framer-motion";
+import { ToggleButtonGroup } from "@/components/ui/toggle-button-group";
 import { ContentCard } from "@/components/shell/ContentCard";
 import { FileText, Download, Calendar, TrendingUp } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
@@ -36,34 +36,14 @@ export default function ReportsRegion() {
 
   return (
     <div className="space-y-6">
-      <LayoutGroup>
-        <div className="flex items-center gap-4 border-b border-border mb-6">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              className={`relative flex items-center justify-center px-1 pb-2.5 pt-1 text-sm transition-colors ${
-                activeTab === tab.id
-                  ? "text-primary font-semibold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              {tab.label}
-              {activeTab === tab.id && (
-                <motion.div
-                  layoutId="reportsTabIndicator"
-                  className="absolute bottom-0 left-0 right-0 h-[3px] bg-primary rounded-t-full"
-                  transition={{
-                    type: "spring",
-                    stiffness: 500,
-                    damping: 30,
-                  }}
-                />
-              )}
-            </button>
-          ))}
-        </div>
-      </LayoutGroup>
+      <div className="mb-6">
+        <ToggleButtonGroup
+          items={tabs}
+          activeId={activeTab}
+          onSelect={setActiveTab}
+          layoutId="reportsToggle"
+        />
+      </div>
 
       <div className="space-y-6">
         {activeTab === "region" && (
