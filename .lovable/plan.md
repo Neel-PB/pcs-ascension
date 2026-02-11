@@ -1,31 +1,21 @@
 
 
-# Fix Square/Boxy Sidebar Icons — Switch to Outlined Variants
+# Fix Square Borders on Sidebar Icons
 
 ## Problem
-The sidebar navigation icons use **filled** Material Design icons (`Md*`) that have solid rectangular/square background shapes built into their SVGs. At small sizes (20x20px), these appear as unwanted "square borders or lines" around the icons.
+The sidebar icons have `stroke-[1.5]` applied in their CSS class. This is a Lucide-specific style (Lucide icons use strokes to draw). Material Design icons use **fills** instead, so adding a stroke draws visible rectangular outlines around the icon shapes -- the "square borders" you see.
 
 ## Solution
-Switch all sidebar-relevant icon mappings in `src/lib/icons.ts` from filled (`Md*`) to outlined (`MdOutline*`) variants. This removes the solid background shapes while keeping the same recognizable icon designs.
+Remove `stroke-[1.5]` from the icon class in `DynamicIconOnlySidebar.tsx`.
 
-## Changes
+## What Changes
 
-**File: `src/lib/icons.ts`** — Update these 7 mappings:
+**File: `src/components/layout/DynamicIconOnlySidebar.tsx`**, line 90
 
-| Alias | Current (Filled) | New (Outlined) |
-|---|---|---|
-| `Users` | `MdGroup` | `MdOutlinePeopleOutline` or `MdOutlineGroup` |
-| `UserCog` | `MdManageAccounts` | `MdOutlineManageAccounts` |
-| `TrendingUp` | `MdTrendingUp` | `MdOutlineTrendingUp` |
-| `FileBarChart` | `MdInsertChart` | `MdOutlineInsertChart` |
-| `LifeBuoy` | `MdHelp` | `MdOutlineHelp` |
-| `ShieldCheck` | `MdVerifiedUser` | `MdOutlineVerifiedUser` |
-| `MessageSquare` | `MdChat` | `MdOutlineChat` |
+- **From:** `className="relative z-10 h-5 w-5 stroke-[1.5]"`
+- **To:** `className="relative z-10 h-5 w-5"`
 
-No other files need changes — all components import these icons via the centralized `@/lib/icons` adapter, so the update propagates automatically.
+Single class removal. No other files need changes.
 
-## Impact
-- All 7 sidebar navigation icons will switch to clean outlined style
-- Any other component referencing these same aliases will also get the outlined variant
-- Consistent visual style across the entire sidebar
+Also revert the icon mappings in `src/lib/icons.ts` back to the filled variants (`MdGroup`, `MdManageAccounts`, etc.) since the outlined variants were only tried as a workaround. The real fix is removing the stroke class. However, if you prefer the outlined style, we can keep them -- just removing `stroke-[1.5]` will fix the squares either way.
 
