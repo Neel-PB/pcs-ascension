@@ -84,13 +84,14 @@ export function AppHeader() {
 
         {/* Center Section - Search */}
         <div className="flex-1 max-w-md mx-8">
-          <GlobalSearchCommand open={commandOpen} onOpenChange={setCommandOpen}>
+          <div onClick={() => setCommandOpen(true)}>
             <SearchField
               placeholder="Search..."
               className="w-full cursor-pointer"
               readOnly
             />
-          </GlobalSearchCommand>
+          </div>
+          <GlobalSearchCommand open={commandOpen} onOpenChange={setCommandOpen} />
         </div>
 
         {/* Right Section - Utilities */}
