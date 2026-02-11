@@ -27,9 +27,9 @@ const SearchField = React.forwardRef<HTMLInputElement, SearchFieldProps>(
         <input
           type="text"
           className={cn(
-            "flex h-10 w-full rounded-full border border-input bg-background pl-10 pr-10 py-2 text-base ring-offset-background",
+            "flex w-full rounded-full border border-input bg-background pl-10 pr-10 py-3 text-base ring-offset-background",
             "placeholder:text-muted-foreground",
-            "focus-visible:outline-none focus-visible:ring-0 focus-visible:border-b-2 focus-visible:border-primary",
+            "focus-visible:outline-none focus-visible:ring-0 focus-visible:border-2 focus-visible:border-primary",
             "disabled:cursor-not-allowed disabled:opacity-50",
             "md:text-sm transition-all"
           )}
@@ -45,7 +45,7 @@ const SearchField = React.forwardRef<HTMLInputElement, SearchFieldProps>(
             className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Clear search"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5" />
           </button>
         )}
       </div>
