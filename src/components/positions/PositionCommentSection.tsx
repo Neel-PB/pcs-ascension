@@ -348,13 +348,13 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="h-7 w-7 hover:bg-accent"
+                              className="h-7 w-7 hover:bg-accent [&_svg]:size-4"
                               onClick={() => handleCopyComment(comment.id, JSON.stringify(metadata, null, 2))}
                             >
                               {copiedId === comment.id ? (
-                                <Check className="h-3.5 w-3.5 text-primary" />
+                                <Check className="text-primary" />
                               ) : (
-                                <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                                <Copy className="text-muted-foreground" />
                               )}
                             </Button>
                           </div>
@@ -373,18 +373,18 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="h-6 w-6 hover:bg-accent"
+                              className="h-6 w-6 hover:bg-accent [&_svg]:size-4"
                               onClick={() => startEditing(comment.id, comment.content)}
                             >
-                              <Pencil className="h-3 w-3 text-muted-foreground" />
+                              <Pencil className="text-muted-foreground" />
                             </Button>
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="h-6 w-6 hover:bg-destructive/10"
+                              className="h-6 w-6 hover:bg-destructive/10 [&_svg]:size-4"
                               onClick={() => handleDeleteComment(comment.id)}
                             >
-                              <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                              <Trash2 className="text-muted-foreground hover:text-destructive" />
                             </Button>
                           </div>
                         )}
