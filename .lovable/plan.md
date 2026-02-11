@@ -1,21 +1,28 @@
 
 
-# Fix Square Borders on Sidebar Icons
+# Switch All Sidebar Icons to Outlined Variants
 
 ## Problem
-The sidebar icons have `stroke-[1.5]` applied in their CSS class. This is a Lucide-specific style (Lucide icons use strokes to draw). Material Design icons use **fills** instead, so adding a stroke draws visible rectangular outlines around the icon shapes -- the "square borders" you see.
+The sidebar menu icons currently use filled Material Design variants which look heavy. You want the cleaner outlined style like `MdPeopleOutline`.
 
 ## Solution
-Remove `stroke-[1.5]` from the icon class in `DynamicIconOnlySidebar.tsx`.
+Update the 7 icon aliases in `src/lib/icons.ts` that the sidebar uses, switching each from the filled `Md*` to the outlined `MdOutline*` variant.
 
 ## What Changes
 
-**File: `src/components/layout/DynamicIconOnlySidebar.tsx`**, line 90
+**File: `src/lib/icons.ts`** -- 7 mapping updates:
 
-- **From:** `className="relative z-10 h-5 w-5 stroke-[1.5]"`
-- **To:** `className="relative z-10 h-5 w-5"`
+| Alias | Current (Filled) | New (Outlined) |
+|---|---|---|
+| Users | MdGroup | MdOutlinePeopleOutline |
+| UserCog | MdManageAccounts | MdOutlineManageAccounts |
+| TrendingUp | MdTrendingUp | MdOutlineTrendingUp |
+| FileBarChart | MdInsertChart | MdOutlineInsertChart |
+| LifeBuoy | MdHelp | MdOutlineHelpOutline |
+| ShieldCheck | MdVerifiedUser | MdOutlineVerifiedUser |
+| MessageSquare | MdChat | MdOutlineChatBubbleOutline |
 
-Single class removal. No other files need changes.
+Note: `MdOutlinePeopleOutline` matches the icon you referenced. `MdOutlineHelpOutline` and `MdOutlineChatBubbleOutline` are the true outline equivalents (cleaner than `MdOutlineHelp` / `MdOutlineChat`).
 
-Also revert the icon mappings in `src/lib/icons.ts` back to the filled variants (`MdGroup`, `MdManageAccounts`, etc.) since the outlined variants were only tried as a workaround. The real fix is removing the stroke class. However, if you prefer the outlined style, we can keep them -- just removing `stroke-[1.5]` will fix the squares either way.
+No other files change -- all components import via `@/lib/icons`.
 
