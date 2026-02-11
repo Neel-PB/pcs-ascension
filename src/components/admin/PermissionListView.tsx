@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
-import { Search, Lock, MoreVertical, Pencil, Trash2 } from "@/lib/icons";
-import { Input } from "@/components/ui/input";
+import { Lock, MoreVertical, Pencil, Trash2 } from "@/lib/icons";
+import { SearchField } from "@/components/ui/search-field";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -213,15 +213,12 @@ export function PermissionListView({ permissions }: PermissionListViewProps) {
     <div className="space-y-4">
       {/* Toolbar */}
       <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search permissions..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+        <SearchField
+          placeholder="Search permissions..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="flex-1 max-w-sm"
+        />
 
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
           <SelectTrigger className="w-48">

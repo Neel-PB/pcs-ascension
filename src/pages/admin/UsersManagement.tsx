@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { UserPlus, Search } from "@/lib/icons";
+import { SearchField } from "@/components/ui/search-field";
+import { UserPlus } from "@/lib/icons";
 import { UserManagementTable } from "@/components/admin/UserManagementTable";
 import { UserFormSheet } from "@/components/admin/UserFormSheet";
 import { useUsers, type UserWithProfile } from "@/hooks/useUsers";
@@ -68,15 +68,11 @@ export default function UsersManagement() {
         </Button>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search by name or email..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9"
-        />
-      </div>
+      <SearchField
+        placeholder="Search by name or email..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
 
       <UserManagementTable
         users={filteredUsers}

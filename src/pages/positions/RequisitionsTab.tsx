@@ -1,12 +1,12 @@
 import { useState, useMemo, useCallback } from "react";
-import { Filter, Search } from "@/lib/icons";
+import { Filter } from "@/lib/icons";
 import { differenceInDays } from "date-fns";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import { useRequisitions } from "@/hooks/useRequisitions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LogoLoader } from "@/components/ui/LogoLoader";
-import { Input } from "@/components/ui/input";
+import { SearchField } from "@/components/ui/search-field";
 import { RequisitionDetailsSheet } from "@/components/workforce/RequisitionDetailsSheet";
 import { RequisitionsFilterSheet } from "@/components/positions/RequisitionsFilterSheet";
 import { EditableTable } from "@/components/editable-table/EditableTable";
@@ -207,16 +207,12 @@ export function RequisitionsTab({
   return (
     <div className="flex flex-col h-full">
       <div className="flex justify-between items-center mb-4 gap-4 flex-shrink-0">
-        <div className="relative w-full max-w-2xl">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Search requisitions..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+        <SearchField
+          placeholder="Search requisitions..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full max-w-2xl"
+        />
         
         <div className="flex gap-2 flex-shrink-0">
           <DataRefreshButton dataSources={['positions_data']} />

@@ -1,12 +1,12 @@
 import { useState, useMemo, useCallback } from "react";
-import { Filter, Search } from "@/lib/icons";
+import { Filter } from "@/lib/icons";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import { useContractors } from "@/hooks/useContractors";
 import { useCheckExpiredFte } from "@/hooks/useCheckExpiredFte";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LogoLoader } from "@/components/ui/LogoLoader";
-import { Input } from "@/components/ui/input";
+import { SearchField } from "@/components/ui/search-field";
 import { ContractorDetailsSheet } from "@/components/workforce/ContractorDetailsSheet";
 import { ContractorsFilterSheet } from "@/components/positions/ContractorsFilterSheet";
 import { EditableTable } from "@/components/editable-table/EditableTable";
@@ -260,16 +260,12 @@ export function ContractorsTab({
   return (
     <div className="flex flex-col h-full">
       <div className="flex justify-between items-center mb-4 gap-4 flex-shrink-0">
-        <div className="relative w-full max-w-2xl">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Search contractors..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+        <SearchField
+          placeholder="Search contractors..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full max-w-2xl"
+        />
         
         <div className="flex gap-2 flex-shrink-0">
           <DataRefreshButton dataSources={['positions_data']} />
