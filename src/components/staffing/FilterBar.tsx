@@ -359,7 +359,7 @@ export function FilterBar({
                       ? "All Facilities"
                       : availableFacilities.find(f => f.facility_id === selectedFacility)?.facility_name ?? "Select facility"}
                   </span>
-                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-[#1D69D2]" />
+                   <ChevronDown className={`ml-2 h-4 w-4 shrink-0 text-[#1D69D2] transition-transform duration-200 ${facilityOpen ? 'rotate-180' : ''}`} />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[520px] max-w-[calc(100vw-2rem)] p-0 bg-popover border-border z-50" align="start">
@@ -449,7 +449,7 @@ export function FilterBar({
                       ? "All Departments"
                       : availableDepartments.find(d => d.department_id === selectedDepartment)?.department_name ?? "Select department"}
                   </span>
-                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-[#1D69D2]" />
+                  <ChevronDown className={`ml-2 h-4 w-4 shrink-0 text-[#1D69D2] transition-transform duration-200 ${departmentOpen ? 'rotate-180' : ''}`} />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[520px] max-w-[calc(100vw-2rem)] p-0 bg-popover border-border z-50" align="start">
