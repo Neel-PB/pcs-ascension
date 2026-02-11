@@ -1,35 +1,20 @@
 
+# Update Staffing Page Tabs to Underline Style
 
-# Apply Helix Design System Tab Style
+## Problem
+The Staffing Summary page (`src/pages/staffing/StaffingSummary.tsx`) still uses the old filled/pill tab style with a sliding background indicator. This was missed in the previous tab style update.
 
-## Visual Style
-The Helix tabs use an **underline indicator** style instead of the current filled/gradient background:
-- **Selected tab**: Bold text in primary color + 3px bottom underline in primary color
-- **Unselected tab**: Regular weight text in muted color
-- **Bottom border**: A subtle divider line runs across the full width of the tab group
-- **No background container**: No rounded background or fill -- clean and minimal
-- Left-aligned on desktop (tabs sized to content, not stretched)
+## Change
 
-## Files to Update
+Update lines 545-578 in `src/pages/staffing/StaffingSummary.tsx` to match the underline style already applied to the other tab components:
 
-### 1. `src/components/ui/tabs.tsx` (Radix Tabs -- shared component)
-- **TabsList**: Remove `bg-background rounded-md p-0.5`. Add a full-width bottom border (`border-b border-border`). Make it `inline-flex` with a gap.
-- **TabsTrigger**: Replace the filled `motion.div` indicator (gradient background) with a bottom-positioned underline bar (`h-[3px]` at the bottom). Selected text becomes `text-primary font-semibold`, unselected stays `text-muted-foreground`.
-
-### 2. `src/components/shell/TabNavigation.tsx` (Route-based navigation tabs)
-- Remove the `bg-background rounded-xl p-2 shadow-soft` container styling.
-- Replace the `bg-gradient-primary rounded-lg` active indicator with a 3px bottom underline.
-- Update text colors: active = `text-primary font-semibold`, inactive = `text-muted-foreground`.
-
-### 3. `src/pages/positions/PositionsPage.tsx` (Inline tabs)
-- Remove `bg-background rounded-lg p-1` container.
-- Replace `bg-primary rounded-sm` sliding indicator with a bottom underline.
-- Update text styling to match: active = `text-primary font-semibold`, inactive = `text-muted-foreground`.
-
-### 4. `src/pages/analytics/AnalyticsRegion.tsx` (Inline tabs)
-- Same treatment: remove filled background container, switch to underline indicator.
+- Remove the `bg-background rounded-lg p-1` container
+- Replace the full-width sliding `bg-primary rounded-sm` background indicator with a bottom-positioned 3px underline bar
+- Remove `flex: 1` stretching so tabs are content-sized and left-aligned
+- Update text styles: active = `text-primary font-semibold`, inactive = `text-muted-foreground`
+- Add `border-b border-border` to the container for the horizontal rule
+- Add `gap-4` between tabs for consistent spacing
 
 ## Technical Details
-- The animated `motion.div` indicator remains for smooth transitions, but repositioned to the bottom of the tab (`bottom-0, left-0, right-0, h-[3px]`) instead of covering the full area.
-- All three implementations get the same visual treatment for consistency across the app.
 
+The current implementation uses a position-calculated `motion.div` that spans the full tab width as a background. This will be replaced with a per-tab conditional `motion.div` underline (same pattern used in PositionsPage and AnalyticsRegion), using `layoutId="staffingTabIndicator"` for animated transitions.
