@@ -23,11 +23,10 @@ const SearchField = React.forwardRef<HTMLInputElement, SearchFieldProps>(
 
     return (
       <div className={cn("relative", className)}>
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <input
           type="text"
           className={cn(
-            "flex w-full rounded-full border-2 border-input bg-background pl-10 pr-10 py-3 text-base ring-offset-background",
+            "flex w-full rounded-full border-2 border-input bg-background pl-4 pr-[5.5rem] py-3 text-base ring-offset-background",
             "placeholder:text-muted-foreground",
             "focus-visible:outline-none focus-visible:ring-0 focus-visible:border-primary",
             "disabled:cursor-not-allowed disabled:opacity-50",
@@ -42,12 +41,20 @@ const SearchField = React.forwardRef<HTMLInputElement, SearchFieldProps>(
           <button
             type="button"
             onClick={handleClear}
-            className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute right-14 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Clear search"
           >
             <X className="h-5 w-5" />
           </button>
         )}
+        <button
+          type="button"
+          tabIndex={-1}
+          className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center rounded-full bg-primary text-primary-foreground"
+          aria-label="Search"
+        >
+          <Search className="h-6 w-6" />
+        </button>
       </div>
     );
   }
