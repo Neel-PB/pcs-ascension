@@ -1,36 +1,46 @@
 
 
-# Fix Search Field Focus Flicker on Positions Page
+# Align Icon Button to Helix Spec
 
-## Root Cause
+## Helix Icon Button Spec Summary
 
-The `SearchField` component in `src/components/ui/search-field.tsx` changes border width on focus:
-- Default: `border` (1px)
-- Focused: `focus-visible:border-2` (2px)
+| Property | Helix Value | Current (`size="icon"`) |
+|----------|------------|------------------------|
+| Small size | 40x40px | `h-10 w-10` (40px) -- matches |
+| Large size | 48x48px | Not available |
+| Small padding | 8px | Implicit from size constraint |
+| Large padding | 12px | Not available |
+| Corner radius | `rounded-full` | `rounded-md` (inherited from base) |
+| Icon size | 24x24px | `[&_svg]:size-4` (16px) -- too small |
+| Styles | Outlined, Filled, Icon (ghost) | Mapped to `outline`, `default`, `ghost` variants |
+| Hover (Filled) | `shadow-sm` | No shadow on hover |
+| Disabled | Muted icon + bg | `opacity-50` -- close enough |
 
-This 1px increase on all sides causes a visible layout shift (the input shrinks inward and neighboring elements adjust), producing the flicker the user sees when clicking the search on Employees, Contractors, and Open Positions tabs.
+## Changes to `src/components/ui/button.tsx`
 
-## Solution
+### 1. Fix icon size override for icon buttons
+The base CVA sets `[&_svg]:size-4` (16px) globally. Icon buttons need 24px icons per Helix. Add compound-style overrides in the `icon` and new `icon-lg` sizes.
 
-Use an inset box-shadow or outline to simulate a 2px border on focus without changing the element's box model. This keeps the input dimensions stable.
+### 2. Add `icon-lg` size variant
+- `icon`: keep at `h-10 w-10` (40px, Small touch area) but add `rounded-full` and `[&_svg]:size-6`
+- `icon-lg`: new at `h-12 w-12` (48px, Large touch area) with `rounded-full` and `[&_svg]:size-6`
 
-Replace `focus-visible:border-2 focus-visible:border-primary` with `focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset` -- or more simply, keep `border` at 1px always and use a 1px inset shadow to add the extra visual weight:
+### 3. Make icon sizes fully round
+Both `icon` and `icon-lg` get `rounded-full` to match the Helix "full round corner" spec.
 
-**Approach**: Change default border to `border-2 border-transparent` (reserve 2px space always) and on focus just swap the color to `border-primary`. This way the box size never changes.
+### Resulting size variants:
+```
+size: {
+  default: "h-10 px-4 py-2",
+  sm: "h-9 px-4",
+  lg: "h-11 px-8",
+  icon: "h-10 w-10 rounded-full [&_svg]:size-6",
+  "icon-lg": "h-12 w-12 rounded-full [&_svg]:size-6",
+}
+```
 
-## File to Edit
-
-**`src/components/ui/search-field.tsx`**
-
-### Changes:
-- Replace `border border-input` with `border-2 border-input` (always 2px, no size change on focus)
-- Replace `focus-visible:border-2 focus-visible:border-primary` with just `focus-visible:border-primary` (color change only)
-- Adjust padding by 1px if needed to compensate for the slightly thicker default border
-
-**`src/components/ui/command.tsx`** (CommandInput has the same pattern)
-
-### Changes:
-- Same fix: `border border-input` to `border-2 border-input`, remove `focus-visible:border-2`
-
-This ensures all pill-shaped search inputs across the app have a stable size on focus, eliminating the flicker.
+### What stays the same:
+- All existing variant styles (default/destructive/outline/ghost/etc.) work as-is with icon buttons -- they map to Helix's Filled/Destructive/Outlined/Icon styles
+- The `ascension` variant already has `rounded-full`
+- No changes needed to any consuming components since existing `size="icon"` usage just gets the corrected shape and icon size
 
