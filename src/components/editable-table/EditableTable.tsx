@@ -219,8 +219,8 @@ export function EditableTable<T = any>({
               </p>
             </div>
           )}
-          <div ref={containerRef} className="flex-1 flex flex-col overflow-x-auto overflow-y-hidden">
-            <div style={{ minWidth: 'max-content', width: '100%' }} className="flex flex-col flex-1">
+          <div ref={containerRef} className="flex-1 min-h-0 flex flex-col overflow-x-auto overflow-y-hidden">
+            <div style={{ minWidth: 'max-content', width: '100%' }} className="flex flex-col flex-1 min-h-0">
               {/* Header - sticky */}
               <TableHeader
                 columns={visibleColumns}
