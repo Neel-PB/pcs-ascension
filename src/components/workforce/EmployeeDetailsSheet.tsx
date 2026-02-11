@@ -47,7 +47,7 @@ export function EmployeeDetailsSheet({ open, onOpenChange, employee, defaultTab 
           onValueChange={(v) => setActiveTab(v as "details" | "comments")}
           className="flex flex-col flex-1 min-h-0 overflow-hidden"
         >
-          <div className="px-6 py-3 shrink-0">
+          <div className="px-6 pb-3 shrink-0">
             <ToggleButtonGroup
               items={[{ id: "details", label: "Details" }, { id: "comments", label: "Comments" }] as const}
               activeId={activeTab}
