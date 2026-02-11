@@ -359,7 +359,7 @@ export function EditableFTECell({
                                 {editExpiry ? format(editExpiry, 'MMM d') : 'Date...'}
                               </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0 z-[60]" align="start">
+                            <PopoverContent className="w-auto p-0 z-[60] shadow-md" align="start">
                               <Suspense fallback={<div className="p-3 text-xs text-muted-foreground">Loading...</div>}>
                                 <Calendar
                                   mode="single"
@@ -367,7 +367,7 @@ export function EditableFTECell({
                                   onSelect={handleDateSelect}
                                   disabled={isDateDisabled}
                                   initialFocus
-                                  className="p-3 pointer-events-auto"
+                                  className="pointer-events-auto"
                                 />
                               </Suspense>
                             </PopoverContent>
@@ -459,7 +459,7 @@ export function EditableFTECell({
                                   {editExpiry ? format(editExpiry, 'MMM d') : 'Date...'}
                                 </Button>
                               </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0 z-[60]" align="start">
+                              <PopoverContent className="w-auto p-0 z-[60] shadow-md" align="start">
                                 <Suspense fallback={<div className="p-3 text-xs text-muted-foreground">Loading...</div>}>
                                   <Calendar
                                     mode="single"
@@ -467,7 +467,7 @@ export function EditableFTECell({
                                     onSelect={handleDateSelect}
                                     disabled={isDateDisabled}
                                     initialFocus
-                                    className="p-3 pointer-events-auto"
+                                    className="pointer-events-auto"
                                   />
                                 </Suspense>
                               </PopoverContent>
@@ -598,7 +598,7 @@ export function EditableFTECell({
                                   {editSharedExpiry ? format(editSharedExpiry, 'MMM d') : 'Date...'}
                                 </Button>
                               </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0 z-[60]" align="start">
+                              <PopoverContent className="w-auto p-0 z-[60] shadow-md" align="start">
                                 <Suspense fallback={<div className="p-3 text-xs text-muted-foreground">Loading...</div>}>
                                   <Calendar
                                     mode="single"
@@ -610,7 +610,7 @@ export function EditableFTECell({
                                       return date < today;
                                     }}
                                     initialFocus
-                                    className="p-3 pointer-events-auto"
+                                    className="pointer-events-auto"
                                   />
                                 </Suspense>
                               </PopoverContent>
