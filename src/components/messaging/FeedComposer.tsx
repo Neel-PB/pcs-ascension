@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useCreatePost } from "@/hooks/useEmployeeFeed";
-import { Send, Paperclip, Image, FileText, FileSpreadsheet, X, Bold, Italic, Underline, List, ListOrdered, ArrowUp } from "lucide-react";
+import { Send, Paperclip, Image, FileText, FileSpreadsheet, X, Bold, Italic, Underline, List, ListOrdered, ArrowUp } from "@/lib/icons";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 

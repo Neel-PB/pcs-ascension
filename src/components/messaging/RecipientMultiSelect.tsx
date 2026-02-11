@@ -1,4 +1,4 @@
-import { Users, Check } from "lucide-react";
+import { Users, Check } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

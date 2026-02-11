@@ -3,7 +3,7 @@ import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from 'next-themes';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check } from '@/lib/icons';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 

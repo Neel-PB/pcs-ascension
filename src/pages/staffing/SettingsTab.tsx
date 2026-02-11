@@ -5,7 +5,7 @@ import { EditableTable } from '@/components/editable-table/EditableTable';
 import { createVolumeOverrideColumns, VolumeOverrideRow } from '@/config/volumeOverrideColumns';
 import { useVolumeOverrides, useUpsertVolumeOverride, useDeleteVolumeOverride } from '@/hooks/useVolumeOverrides';
 import { useHistoricalVolumeAnalysis, useVolumeOverrideConfig } from '@/hooks/useHistoricalVolumeAnalysis';
-import { Database, Lock } from 'lucide-react';
+import { Database, Lock } from '@/lib/icons';
 import { Button } from '@/components/ui/button';
 import { LogoLoader } from '@/components/ui/LogoLoader';
 import { useRBAC } from '@/hooks/useRBAC';

@@ -3,7 +3,7 @@ import { useWorkforceDrawerStore } from '@/stores/useWorkforceDrawerStore';
 import { useWorkforceResizable } from '@/hooks/useWorkforceResizable';
 import { Button } from '@/components/ui/button';
 import { WorkforceKPISection } from './WorkforceKPISection';
-import { Building2 } from 'lucide-react';
+import { Building2 } from '@/lib/icons';
 
 const MIN_WIDTH = 490;
 const MAX_WIDTH_VW = 0.7;

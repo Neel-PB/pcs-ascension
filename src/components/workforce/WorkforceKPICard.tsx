@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BarChart3, Eye } from 'lucide-react';
+import { BarChart3, Eye } from '@/lib/icons';
 import { KPIChartModal } from '@/components/staffing/KPIChartModal';
 import { KPIInfoModal } from '@/components/staffing/KPIInfoModal';
 

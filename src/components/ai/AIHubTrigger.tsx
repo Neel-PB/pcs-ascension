@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useAIHub } from '@/hooks/useAIHub';
-import { Sparkles } from 'lucide-react';
+import { Sparkles } from '@/lib/icons';
 
 export const AIHubTrigger: React.FC = () => {
   const { toggle } = useAIHub();

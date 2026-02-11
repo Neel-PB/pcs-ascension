@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from '@/lib/icons';
 import { cn } from '@/lib/utils';
-import { Pencil, Check, X, RotateCcw } from 'lucide-react';
+import { Pencil, Check, X, RotateCcw } from '@/lib/icons';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';

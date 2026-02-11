@@ -7,7 +7,7 @@ import {
   LifeBuoy,
   ShieldCheck,
   MessageSquare,
-} from "lucide-react";
+} from "@/lib/icons";
 import { motion, LayoutGroup } from "framer-motion";
 import { cn } from "@/lib/utils";
 import AscensionLogo from "@/assets/Ascension-Emblem.svg";
@@ -82,7 +82,7 @@ export function AppSidebar() {
                           }}
                         />
                       )}
-                      <Icon className="relative z-10 h-5 w-5 stroke-[1.5]" />
+                      <Icon className="relative z-10 h-5 w-5" />
                       <span className="relative z-10 text-[10px] font-medium leading-tight text-center">
                         {item.title}
                       </span>
@@ -122,7 +122,7 @@ export function AppSidebar() {
                       }}
                     />
                   )}
-                  <ShieldCheck className="relative z-10 h-5 w-5 stroke-[1.5]" />
+                  <ShieldCheck className="relative z-10 h-5 w-5" />
                   <span className="relative z-10 text-[10px] font-medium leading-tight text-center">
                     Admin
                   </span>
@@ -161,7 +161,7 @@ export function AppSidebar() {
                       }}
                     />
                   )}
-                  <MessageSquare className="relative z-10 h-5 w-5 stroke-[1.5]" />
+                  <MessageSquare className="relative z-10 h-5 w-5" />
                   <span className="relative z-10 text-[10px] font-medium leading-tight text-center">
                     Feedback
                   </span>

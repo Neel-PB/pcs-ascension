@@ -1,4 +1,4 @@
-import { Filter, X } from "lucide-react";
+import { Filter, X } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,

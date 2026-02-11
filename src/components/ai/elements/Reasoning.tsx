@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Brain, ChevronDown, ChevronRight } from 'lucide-react';
+import { Brain, ChevronDown, ChevronRight } from '@/lib/icons';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ReasoningBlock } from '@/types/contentBlock';
 

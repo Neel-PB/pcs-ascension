@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/table';
 
 import { LogoLoader } from '@/components/ui/LogoLoader';
-import { Search, MessageSquare } from 'lucide-react';
+import { Search, MessageSquare } from '@/lib/icons';
 
 export default function FeedbackPage() {
   const { feedback, isLoading, deleteFeedback } = useFeedback();

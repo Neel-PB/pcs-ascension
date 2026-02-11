@@ -5,7 +5,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 import { 
   getFTEKPIs, 

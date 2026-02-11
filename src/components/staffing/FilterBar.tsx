@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectItemNoCheck, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { X, Lock, Loader2, ChevronsUpDown } from "lucide-react";
+import { X, Lock, Loader2, ChevronsUpDown } from "@/lib/icons";
 import { useFilterData } from "@/hooks/useFilterData";
 import { useIsCompactScreen } from "@/hooks/use-compact-screen";
 import { CombinedOptionalFilters } from "./CombinedOptionalFilters";

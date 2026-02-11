@@ -9,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Columns3, RotateCcw } from 'lucide-react';
+import { Columns3, RotateCcw } from '@/lib/icons';
 import { ColumnDef, ColumnState } from '@/types/table';
 import { useColumnStore } from '@/stores/useColumnStore';
 import { ScrollArea } from '@/components/ui/scroll-area';

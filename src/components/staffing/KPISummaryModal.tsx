@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { LayoutDashboard } from "lucide-react";
+import { LayoutDashboard } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

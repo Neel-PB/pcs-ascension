@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSendMessage, roleGroups } from "@/hooks/useMessages";
-import { Send, X, Users } from "lucide-react";
+import { Send, X, Users } from "@/lib/icons";
 import TextareaAutosize from "react-textarea-autosize";
 import { Badge } from "@/components/ui/badge";
 

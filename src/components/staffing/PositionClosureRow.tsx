@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ChevronRight, FileText } from "lucide-react";
+import { ChevronRight, FileText } from "@/lib/icons";
 import { motion } from "framer-motion";
 import { differenceInDays } from "date-fns";
 import { cn } from "@/lib/utils";

@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import { Paperclip, Send, ChevronDown, X, Plus, Menu, ChevronUp, ArrowUp, Square, ChevronRight, FileText, Image, FileSpreadsheet, FileSearch } from 'lucide-react';
+import { Paperclip, Send, ChevronDown, X, Plus, Menu, ChevronUp, ArrowUp, Square, ChevronRight, FileText, Image, FileSpreadsheet, FileSearch } from '@/lib/icons';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';

@@ -19,7 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Feedback, useFeedback } from '@/hooks/useFeedback';
 import { useFeedbackComments } from '@/hooks/useFeedbackComments';
 import { format } from 'date-fns';
-import { ExternalLink, Send, Trash2, Image, Calendar, Globe, Monitor } from 'lucide-react';
+import { ExternalLink, Send, Trash2, Image, Calendar, Globe, Monitor } from '@/lib/icons';
 import { useRBAC } from '@/hooks/useRBAC';
 
 interface FeedbackDetailsSheetProps {

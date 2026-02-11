@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { ChevronRight, ChevronDown } from 'lucide-react';
+import { ChevronRight, ChevronDown } from '@/lib/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FacilityLocationGroup } from '@/hooks/useForecastChecklist';
 import { ForecastChecklistDeptSkillGroup } from './ForecastChecklistDeptSkillGroup';

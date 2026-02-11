@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useMessageHistory, roleGroups } from "@/hooks/useMessages";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronDown, ChevronUp, MessageSquare } from "lucide-react";
+import { ChevronDown, ChevronUp, MessageSquare } from "@/lib/icons";
 import { formatDistanceToNow } from "date-fns";
 import DOMPurify from "dompurify";
 

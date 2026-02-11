@@ -1,4 +1,4 @@
-import { Copy, RefreshCcw, ThumbsUp, ThumbsDown, Check } from 'lucide-react';
+import { Copy, RefreshCcw, ThumbsUp, ThumbsDown, Check } from '@/lib/icons';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { useState } from 'react';

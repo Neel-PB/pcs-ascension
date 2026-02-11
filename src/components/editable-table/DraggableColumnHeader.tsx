@@ -1,6 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ArrowUp, ArrowDown, ChevronDown, Info, Maximize2, RotateCcw, EyeOff } from 'lucide-react';
+import { ArrowUp, ArrowDown, ChevronDown, Info, Maximize2, RotateCcw, EyeOff } from '@/lib/icons';
 import { ColumnDef } from '@/types/table';
 import { ColumnResizeHandle } from './ColumnResizeHandle';
 import {

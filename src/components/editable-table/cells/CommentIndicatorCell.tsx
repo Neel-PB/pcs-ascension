@@ -1,4 +1,4 @@
-import { MessageSquareText } from 'lucide-react';
+import { MessageSquareText } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import {

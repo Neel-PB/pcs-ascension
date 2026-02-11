@@ -2,7 +2,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, TooltipArrow } from "@/components/ui/tooltip";
 import { useState } from "react";
-import { Pencil, RotateCcw } from "lucide-react";
+import { Pencil, RotateCcw } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 

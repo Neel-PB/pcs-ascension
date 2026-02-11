@@ -1,6 +1,6 @@
 import { useState, useMemo, lazy, Suspense } from 'react';
 import { cn } from '@/lib/utils';
-import { RotateCcw, CalendarIcon, Pencil, X, Info } from 'lucide-react';
+import { RotateCcw, CalendarIcon, Pencil, X, Info } from '@/lib/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';

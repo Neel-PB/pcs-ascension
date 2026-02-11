@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { UserPlus, Search } from "lucide-react";
+import { UserPlus, Search } from "@/lib/icons";
 import { UserManagementTable } from "@/components/admin/UserManagementTable";
 import { UserFormSheet } from "@/components/admin/UserFormSheet";
 import { useUsers, type UserWithProfile } from "@/hooks/useUsers";

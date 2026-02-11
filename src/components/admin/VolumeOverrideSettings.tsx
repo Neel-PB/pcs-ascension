@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Save, ChevronDown, Trash2, Edit2, Globe, Building2 } from 'lucide-react';
+import { Save, ChevronDown, Trash2, Edit2, Globe, Building2 } from '@/lib/icons';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';

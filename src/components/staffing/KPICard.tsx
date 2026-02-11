@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { BarChart3, Eye, Info } from "lucide-react";
+import { BarChart3, Eye, Info } from "@/lib/icons";
 import { KPIChartModal } from "./KPIChartModal";
 import { KPIInfoModal } from "./KPIInfoModal";
 import {

@@ -4,7 +4,7 @@ import { BadgeCell } from '@/components/editable-table/cells/BadgeCell';
 import { CommentIndicatorCell } from '@/components/editable-table/cells/CommentIndicatorCell';
 import { ShiftCell } from '@/components/editable-table/cells/ShiftCell';
 import { TruncatedTextCell } from '@/components/editable-table/cells/TruncatedTextCell';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare } from '@/lib/icons';
 
 // Type for the shift override handler
 type ShiftOverrideHandler = (positionId: string, originalShift: string | null, value: string | null) => void;
