@@ -258,7 +258,7 @@ export function ContractorsTab({
   const showEmptyState = !isFetching && (!contractors || contractors.length === 0);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden">
       <div className="flex justify-between items-center mb-4 gap-4 flex-shrink-0">
         <SearchField
           placeholder="Search contractors..."

@@ -125,7 +125,7 @@ export default function PositionsPage() {
         selectedPstat={selectedPstat === "all-pstat" ? null : selectedPstat}
       />
       
-      <div className="flex flex-col h-full space-y-6">
+      <div className="flex flex-col h-full space-y-6 overflow-hidden">
         <div className="flex-shrink-0 py-2">
           <FilterBar
             selectedRegion={selectedRegion}
