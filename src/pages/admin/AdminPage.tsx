@@ -74,7 +74,7 @@ export default function AdminPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="flex justify-center">
         <ToggleButtonGroup
           items={tabs}
           activeId={activeTab}

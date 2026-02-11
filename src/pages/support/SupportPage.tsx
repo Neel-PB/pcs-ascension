@@ -152,7 +152,7 @@ export default function SupportPage() {
       </div>
 
       {/* Tabs */}
-      <div className="mb-6">
+      <div className="mb-6 flex justify-center">
         <ToggleButtonGroup
           items={tabs}
           activeId={activeTab}

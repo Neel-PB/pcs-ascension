@@ -25,7 +25,7 @@ export function TabNavigation({ tabs, className }: TabNavigationProps) {
   };
 
   return (
-    <div className={cn("w-full", className)}>
+    <div className={cn("w-full flex justify-center", className)}>
       <ToggleButtonGroup
         items={tabs}
         activeId={activeTab?.id ?? tabs[0].id}

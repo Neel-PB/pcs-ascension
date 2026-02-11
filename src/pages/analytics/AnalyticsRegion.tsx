@@ -22,7 +22,7 @@ export default function AnalyticsRegion() {
 
   return (
     <div className="space-y-6">
-      <div className="mb-6">
+      <div className="mb-6 flex justify-center">
         <ToggleButtonGroup
           items={tabs}
           activeId={activeTab}
