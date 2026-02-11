@@ -131,7 +131,7 @@ export function AppHeader() {
                       src={avatarUrl || undefined} 
                       alt={userName} 
                     />
-                    <AvatarFallback className="bg-gradient-primary text-white text-sm font-medium">
+                    <AvatarFallback className="text-sm">
                       {userInitials}
                     </AvatarFallback>
                   </Avatar>
