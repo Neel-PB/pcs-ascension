@@ -1,40 +1,35 @@
 
 
-# Move Search Icon to a Blue Button on the Right Side
+# Use ToggleButtonGroup in Detail Sheet Tabs
 
 ## What's changing
 
-Redesign the `SearchField` component so the search icon sits inside a filled primary (blue) circular button on the **right end** of the input, matching the style shown in the reference image (similar to the Data Refresh button). The clear (X) button will sit between the input text and the search button when there's a value.
+Replace the default Radix `TabsList`/`TabsTrigger` in the Position to Open and Position to Close detail sheets with the same pill-shaped `ToggleButtonGroup` component used for main module navigation. This creates a consistent tab experience across the app.
 
-## Layout
+## Files to modify
 
-```text
-Current:  [🔍 icon]  [input text ............]  [X clear]
-New:      [input text ............]  [X clear]  [🔍 button]
-```
+### 1. `src/components/workforce/PositionToOpenDetailsSheet.tsx`
+- Remove `TabsList` and `TabsTrigger` imports (keep `Tabs` and `TabsContent`)
+- Add `ToggleButtonGroup` import
+- Replace the `<TabsList>` block with a `<ToggleButtonGroup>` that has two items: "Details" and "Comments"
+- Wire `onSelect` to update both the local `activeTab` state and the Radix `Tabs` value (switch to controlled mode using `value` + `onValueChange`)
 
-## Changes
+### 2. `src/components/workforce/PositionToCloseDetailsSheet.tsx`
+- Same changes as above: swap `TabsList`/`TabsTrigger` for `ToggleButtonGroup`
+- Wire it to the existing `activeTab` state
 
-### `src/components/ui/search-field.tsx`
-
-- **Remove** the absolute-positioned search icon from the left side
-- **Update input padding**: Change from `pl-10 pr-10` to `pl-4 pr-20` (or `pr-24` when clear is visible) to make room on the right for both buttons
-- **Add a circular blue search button** on the right end using `bg-primary text-primary-foreground rounded-full` styling (matching the "ascension" button variant look from the reference image -- 40x40px circle with a 24px icon)
-- **Reposition the clear (X) button** to sit just left of the search button (right side, offset to leave room for the search button)
-- **Order**: input text, then clear button (conditional), then search icon button (always visible)
-
-### No other files change
-
-The `SearchField` is used across Employees, Contractors, and Requisitions tabs in the Positions module. All will get this update automatically.
-
-## Technical Details
-
-The search button will be purely decorative/visual (no submit action needed since search is live/debounced). The button gets the same `h-10 w-10 rounded-full bg-primary text-primary-foreground` styling as the icon buttons in the app. The clear button shifts left to accommodate the search button on the far right.
+## Visual result
 
 ```text
-Container (relative, flex):
-  <input class="... pl-4 pr-[5.5rem] ..." />
-  {hasValue && <X button at right-14 />}
-  <Search button at right-1, bg-primary rounded-full h-10 w-10 />
+Before:  [ Details ]  [ Comments ]     (plain underline tabs)
+After:   [( Details )  Comments ]      (pill-shaped toggle with sliding blue indicator)
 ```
+
+The toggle group will sit in the same `px-6` container below the header, maintaining the current layout. No changes to tab content or footer.
+
+## Technical notes
+
+- The `Tabs` component from Radix supports controlled mode via `value` + `onValueChange`, so we can sync it with `ToggleButtonGroup`'s `onSelect`
+- The `ToggleButtonGroup` already handles the framer-motion sliding indicator, so no additional animation code is needed
+- The `layoutId` for each sheet's toggle should be unique (e.g., `"openSheetTab"` and `"closeSheetTab"`) to avoid cross-component animation conflicts
 
