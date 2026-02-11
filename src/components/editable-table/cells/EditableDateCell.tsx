@@ -113,7 +113,7 @@ export function EditableDateCell({
           )}
         </PopoverTrigger>
       </div>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto p-0 shadow-md" align="start">
         <Calendar
           mode="single"
           selected={date}
@@ -124,7 +124,7 @@ export function EditableDateCell({
             return false;
           }}
           initialFocus
-          className={cn("p-3 pointer-events-auto")}
+          className={cn("pointer-events-auto")}
         />
       </PopoverContent>
     </Popover>
