@@ -6,14 +6,14 @@ import { SearchField } from "@/components/ui/search-field";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Play, FileText, AlertCircle, MessageSquare, ExternalLink } from "@/lib/icons";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export default function SupportPage() {
   const [activeTab, setActiveTab] = useState("faqs");
   const [searchQuery, setSearchQuery] = useState("");
   const [issueTitle, setIssueTitle] = useState("");
   const [issueDescription, setIssueDescription] = useState("");
-  const { toast } = useToast();
+  
 
   const tabs = [
     { id: "faqs", label: "FAQs" },
@@ -24,8 +24,7 @@ export default function SupportPage() {
 
   const handleSubmitIssue = (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Issue Submitted",
+    toast.success("Issue Submitted", {
       description: "Your issue has been reported. Our support team will contact you soon.",
     });
     setIssueTitle("");
