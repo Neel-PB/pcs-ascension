@@ -14,7 +14,7 @@ const TabsList = React.forwardRef<
     <TabsPrimitive.List
       ref={ref}
       className={cn(
-        "inline-flex h-8 items-center justify-center rounded-md bg-background p-0.5 text-muted-foreground",
+        "inline-flex h-10 items-center gap-4 border-b border-border text-muted-foreground",
         className,
       )}
       {...props}
@@ -44,7 +44,6 @@ const TabsTrigger = React.forwardRef<
       attributeFilter: ['data-state']
     });
 
-    // Check initial state
     const state = element.getAttribute('data-state');
     setIsActive(state === 'active');
 
@@ -59,15 +58,17 @@ const TabsTrigger = React.forwardRef<
         else if (ref) ref.current = node;
       }}
       className={cn(
-        "relative inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1 text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 transition-colors",
+        "relative inline-flex items-center justify-center whitespace-nowrap pb-2.5 pt-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 transition-colors",
+        isActive ? "text-primary font-semibold" : "text-muted-foreground hover:text-foreground",
         className,
       )}
       {...props}
     >
+      {children}
       {isActive && (
         <motion.div
           layoutId="tabIndicator"
-          className="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary rounded-sm shadow-sm"
+          className="absolute bottom-0 left-0 right-0 h-[3px] bg-primary rounded-t-full"
           initial={false}
           transition={{
             type: "spring",
@@ -76,9 +77,6 @@ const TabsTrigger = React.forwardRef<
           }}
         />
       )}
-      <span className={cn("relative z-10 transition-colors", isActive ? "text-primary-foreground" : "text-muted-foreground")}>
-        {children}
-      </span>
     </TabsPrimitive.Trigger>
   );
 });

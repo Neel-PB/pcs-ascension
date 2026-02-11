@@ -25,59 +25,45 @@ export function TabNavigation({ tabs, className }: TabNavigationProps) {
 
   return (
     <div className={cn("w-full", className)}>
-      <div className="bg-background rounded-xl p-2 shadow-soft">
-        <LayoutGroup>
-          <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
-            {tabs.map((tab, index) => {
-              const isActive = activeTab?.id === tab.id;
+      <LayoutGroup>
+        <div className="flex items-center gap-4 border-b border-border">
+          {tabs.map((tab) => {
+            const isActive = activeTab?.id === tab.id;
 
-              return (
-                <motion.button
-                  key={tab.id}
-                  onClick={() => handleTabClick(tab)}
-                  className={cn(
-                    "relative px-4 py-2 text-sm font-medium transition-all duration-200",
-                    "rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20",
-                    "hover:text-foreground",
-                    isActive
-                      ? "text-white"
-                      : "text-shell-muted hover:text-foreground"
+            return (
+              <button
+                key={tab.id}
+                onClick={() => handleTabClick(tab)}
+                className={cn(
+                  "relative pb-2.5 pt-1 text-sm transition-colors whitespace-nowrap",
+                  "focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-sm",
+                  isActive
+                    ? "text-primary font-semibold"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {tab.label}
+                <AnimatePresence>
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTabIndicator"
+                      className="absolute bottom-0 left-0 right-0 h-[3px] bg-primary rounded-t-full"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 30,
+                      }}
+                    />
                   )}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    delay: index * 0.1,
-                    duration: 0.3,
-                    ease: "easeOut",
-                  }}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {/* Active indicator */}
-                  <AnimatePresence>
-                    {isActive && (
-                      <motion.div
-                        layoutId="activeTabIndicator"
-                        className="absolute inset-0 bg-gradient-primary rounded-lg shadow-medium"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 500,
-                          damping: 30,
-                        }}
-                      />
-                    )}
-                  </AnimatePresence>
-
-                  <span className="relative z-10">{tab.label}</span>
-                </motion.button>
-              );
-            })}
-          </div>
-        </LayoutGroup>
-      </div>
+                </AnimatePresence>
+              </button>
+            );
+          })}
+        </div>
+      </LayoutGroup>
     </div>
   );
 }
