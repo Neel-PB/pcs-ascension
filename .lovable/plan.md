@@ -1,29 +1,39 @@
 
+# Style "More Filters" Button to Match Toggle Button Group
 
-# Center-Align Page-Level Toggle Tabs
+## What Changes
 
-## Change
+Update the `CombinedOptionalFilters` trigger button to use the same Helix outlined toggle button styling -- rounded-full pill shape with a 2px primary border -- instead of the current dashed outline style.
 
-Wrap the `ToggleButtonGroup` in a centered container on every page where it appears, so the tab pills sit in the middle of the content area instead of left-aligned.
+## File to Edit
 
-## Files to Edit
+**`src/components/staffing/CombinedOptionalFilters.tsx`** (lines 49-61)
 
-### 1. `src/components/ui/toggle-button-group.tsx`
-- The simplest approach: the outer `<div>` already accepts a `className` prop. No changes needed here.
+Update the trigger `Button` className from:
+```
+bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground
+```
 
-### 2. Pages using `ToggleButtonGroup` directly (add `flex justify-center` wrapper or pass centered className)
+To the toggle button group style:
+```
+rounded-full border-2 border-primary bg-background text-foreground hover:bg-primary/10
+```
 
-Each page renders the toggle group inside a `<div>`. Update the parent wrapper to center it:
+The active count badge already uses `bg-primary text-primary-foreground rounded-full` which fits well with this style.
 
-- **`src/pages/staffing/StaffingSummary.tsx`** -- wrap toggle group div with `flex justify-center`
-- **`src/pages/positions/PositionsPage.tsx`** -- update the `flex-shrink-0 mb-6` div to include `flex justify-center`
-- **`src/pages/analytics/AnalyticsRegion.tsx`** -- update the `mb-6` div to include `flex justify-center`
-- **`src/pages/reports/ReportsRegion.tsx`** -- same pattern
-- **`src/pages/admin/AdminPage.tsx`** -- same pattern
-- **`src/pages/support/SupportPage.tsx`** -- same pattern
+### Also update the optional filter Select triggers on wide screens
 
-### 3. `src/components/shell/TabNavigation.tsx`
-- Update the outer `<div>` to include `flex justify-center` so route-based tab navigation is also centered
+**`src/components/staffing/FilterBar.tsx`** -- the three expanded optional filter `SelectTrigger` elements (Submarket ~line 568, Level 2 ~line 586, PSTAT ~line 604) currently use the same dashed muted style. Update them to match:
+```
+rounded-full border-2 border-primary bg-background text-foreground hover:bg-primary/10
+```
 
-All changes are adding `flex justify-center` to the existing wrapper divs around the toggle button group.
+This ensures both compact (More Filters dropdown) and expanded (individual Select dropdowns) views share the same visual language as the toggle button group.
 
+## Technical Details
+
+- **CombinedOptionalFilters.tsx line 51**: Replace button className with pill/primary-border style
+- **FilterBar.tsx line 568**: Update Submarket SelectTrigger className
+- **FilterBar.tsx line 586**: Update Level 2 SelectTrigger className  
+- **FilterBar.tsx line 604**: Update PSTAT SelectTrigger className
+- No structural or behavioral changes -- only CSS class updates
