@@ -2,9 +2,10 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useCreatePost } from "@/hooks/useEmployeeFeed";
 import { Send, Paperclip, Image, FileText, FileSpreadsheet, X, Bold, Italic, Underline, List, ListOrdered, ArrowUp } from "@/lib/icons";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
+// Define the structure for a processed file
 interface ProcessedFile {
   id: string;
   name: string;
@@ -22,7 +23,6 @@ export function FeedComposer() {
   const [isUploading, setIsUploading] = useState(false);
   const [activeFormats, setActiveFormats] = useState<Set<string>>(new Set());
   const { mutate: createPost, isPending } = useCreatePost();
-  const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<HTMLDivElement>(null);
 
@@ -36,19 +36,15 @@ export function FeedComposer() {
         const isPdf = file.type === 'application/pdf';
 
         if (!isImage && !isPdf) {
-          toast({
-            title: "Unsupported file type",
+          toast.error("Unsupported file type", {
             description: `${file.name}: Only images and PDFs are supported`,
-            variant: "destructive",
           });
           continue;
         }
 
         if (file.size > 25 * 1024 * 1024) {
-          toast({
-            title: "File too large",
+          toast.error("File too large", {
             description: `${file.name}: Maximum 25MB allowed`,
-            variant: "destructive",
           });
           continue;
         }
@@ -71,10 +67,8 @@ export function FeedComposer() {
           reader.readAsDataURL(file);
         });
       } catch (error) {
-        toast({
-          title: "Error processing file",
+        toast.error("Error processing file", {
           description: `${file.name}: Failed to process file`,
-          variant: "destructive",
         });
       }
     }
@@ -82,6 +76,7 @@ export function FeedComposer() {
     return processedFiles;
   };
 
+  // Function to handle file selection and processing
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -100,10 +95,12 @@ export function FeedComposer() {
     }
   };
 
+  // Function to remove an attachment
   const handleRemoveAttachment = (id: string) => {
     setAttachments(prev => prev.filter(f => f.id !== id));
   };
 
+  // Function to trigger the file input dialog
   const handleAttachClick = () => {
     fileInputRef.current?.click();
   };
@@ -133,13 +130,11 @@ export function FeedComposer() {
       const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      // Convert base64 to blob for images/PDFs
       let fileToUpload: Blob;
       if (file.type === 'image' || file.type === 'pdf') {
         const base64Response = await fetch(`data:${file.mimeType};base64,${file.data}`);
         fileToUpload = await base64Response.blob();
       } else {
-        // For text-based files, create blob from extracted text
         fileToUpload = new Blob([file.data], { type: file.mimeType });
       }
 
@@ -159,10 +154,8 @@ export function FeedComposer() {
       return publicUrl;
     } catch (error) {
       console.error('Upload failed:', error);
-      toast({
-        title: "Upload failed",
+      toast.error("Upload failed", {
         description: `Failed to upload ${file.name}`,
-        variant: "destructive",
       });
       return null;
     }
@@ -178,7 +171,6 @@ export function FeedComposer() {
     setIsUploading(true);
     
     try {
-      // Upload all attachments
       const uploadedUrls: string[] = [];
       for (const file of attachments) {
         const url = await uploadAttachmentToStorage(file);
@@ -198,16 +190,13 @@ export function FeedComposer() {
               editorRef.current.innerHTML = "";
             }
             setAttachments([]);
-            toast({
-              title: "Success",
+            toast.success("Success", {
               description: "Post created successfully",
             });
           },
           onError: () => {
-            toast({
-              title: "Error",
+            toast.error("Error", {
               description: "Failed to create post",
-              variant: "destructive",
             });
           },
         }
@@ -308,7 +297,6 @@ export function FeedComposer() {
         </div>
 
         <div className="flex items-center justify-between px-3 pb-3 pt-2">
-          {/* Left Side - Formatting Buttons */}
           <div className="flex items-center gap-1">
                 <Button
                   type="button"
@@ -370,7 +358,6 @@ export function FeedComposer() {
                 </Button>
           </div>
 
-          {/* Right Side - Actions */}
           <div className="flex items-center gap-2">
             <Button
               type="button"

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAuth } from "./useAuth";
 
 export type ForecastPositionStatus = 'pending' | 'approved' | 'rejected';
@@ -71,7 +71,6 @@ export function useForecastPositionsToOpenWithChildren() {
   return useQuery({
     queryKey: ['forecast-positions-to-open-with-children'],
     queryFn: async () => {
-      // Fetch parent records
       const { data: parents, error: parentsError } = await supabase
         .from('forecast_positions_to_open')
         .select('*')
@@ -80,7 +79,6 @@ export function useForecastPositionsToOpenWithChildren() {
 
       if (parentsError) throw parentsError;
 
-      // Fetch all child records
       const { data: children, error: childrenError } = await supabase
         .from('forecast_positions_to_open')
         .select('*')
@@ -88,14 +86,12 @@ export function useForecastPositionsToOpenWithChildren() {
 
       if (childrenError) throw childrenError;
 
-      // Group children by parent_id
       const childrenMap = (children || []).reduce((acc, child) => {
         if (!acc[child.parent_id!]) acc[child.parent_id!] = [];
         acc[child.parent_id!].push(child as ForecastPositionToOpen);
         return acc;
       }, {} as Record<string, ForecastPositionToOpen[]>);
 
-      // Attach children to parents
       return (parents || []).map(parent => ({
         ...(parent as ForecastPositionToOpen),
         children: childrenMap[parent.id] || [],
@@ -142,16 +138,13 @@ export function useApprovePositionToOpen() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forecast-positions-to-open'] });
-      toast({
-        title: "Position approved",
+      toast.success("Position approved", {
         description: "The position to open has been approved successfully.",
       });
     },
     onError: (error) => {
-      toast({
-        title: "Failed to approve",
+      toast.error("Failed to approve", {
         description: error.message,
-        variant: "destructive",
       });
     },
   });
@@ -179,16 +172,13 @@ export function useRejectPositionToOpen() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forecast-positions-to-open'] });
-      toast({
-        title: "Position rejected",
+      toast.success("Position rejected", {
         description: "The position to open has been rejected.",
       });
     },
     onError: (error) => {
-      toast({
-        title: "Failed to reject",
+      toast.error("Failed to reject", {
         description: error.message,
-        variant: "destructive",
       });
     },
   });
@@ -216,16 +206,13 @@ export function useApprovePositionToClose() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forecast-positions-to-close'] });
-      toast({
-        title: "Position approved",
+      toast.success("Position approved", {
         description: "The position to close has been approved successfully.",
       });
     },
     onError: (error) => {
-      toast({
-        title: "Failed to approve",
+      toast.error("Failed to approve", {
         description: error.message,
-        variant: "destructive",
       });
     },
   });
@@ -253,16 +240,13 @@ export function useRejectPositionToClose() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forecast-positions-to-close'] });
-      toast({
-        title: "Position rejected",
+      toast.success("Position rejected", {
         description: "The position to close has been rejected.",
       });
     },
     onError: (error) => {
-      toast({
-        title: "Failed to reject",
+      toast.error("Failed to reject", {
         description: error.message,
-        variant: "destructive",
       });
     },
   });
@@ -289,16 +273,13 @@ export function useRevertPositionToOpen() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forecast-positions-to-open'] });
-      toast({
-        title: "Status reverted",
+      toast.success("Status reverted", {
         description: "The position status has been reverted to pending.",
       });
     },
     onError: (error) => {
-      toast({
-        title: "Failed to revert",
+      toast.error("Failed to revert", {
         description: error.message,
-        variant: "destructive",
       });
     },
   });
@@ -325,16 +306,13 @@ export function useRevertPositionToClose() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forecast-positions-to-close'] });
-      toast({
-        title: "Status reverted",
+      toast.success("Status reverted", {
         description: "The position status has been reverted to pending.",
       });
     },
     onError: (error) => {
-      toast({
-        title: "Failed to revert",
+      toast.error("Failed to revert", {
         description: error.message,
-        variant: "destructive",
       });
     },
   });
@@ -345,7 +323,6 @@ export function useAddChildPosition() {
 
   return useMutation({
     mutationFn: async ({ parentId, fte }: { parentId: string; fte: number }) => {
-      // Fetch parent details
       const { data: parent, error: fetchError } = await supabase
         .from('forecast_positions_to_open')
         .select('*')
@@ -354,7 +331,6 @@ export function useAddChildPosition() {
 
       if (fetchError) throw fetchError;
 
-      // Create child record
       const { data, error } = await supabase
         .from('forecast_positions_to_open')
         .insert({
@@ -378,16 +354,13 @@ export function useAddChildPosition() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forecast-positions-to-open-with-children'] });
-      toast({
-        title: "Position added",
+      toast.success("Position added", {
         description: "Individual position has been added successfully.",
       });
     },
     onError: (error) => {
-      toast({
-        title: "Failed to add position",
+      toast.error("Failed to add position", {
         description: error.message,
-        variant: "destructive",
       });
     },
   });
@@ -412,10 +385,8 @@ export function useUpdateChildFte() {
       queryClient.invalidateQueries({ queryKey: ['forecast-positions-to-open-with-children'] });
     },
     onError: (error) => {
-      toast({
-        title: "Failed to update FTE",
+      toast.error("Failed to update FTE", {
         description: error.message,
-        variant: "destructive",
       });
     },
   });
@@ -435,16 +406,13 @@ export function useDeleteChildPosition() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forecast-positions-to-open-with-children'] });
-      toast({
-        title: "Position removed",
+      toast.success("Position removed", {
         description: "Individual position has been removed.",
       });
     },
     onError: (error) => {
-      toast({
-        title: "Failed to remove position",
+      toast.error("Failed to remove position", {
         description: error.message,
-        variant: "destructive",
       });
     },
   });
@@ -468,7 +436,6 @@ export function useEmployeesForClosureGap(closureRecord: ForecastPositionToClose
 
       if (error) throw error;
       
-      // Filter by skill type (match against jobFamily or jobTitle)
       return (data || []).filter(emp => 
         emp.jobFamily === closureRecord.skill_type || 
         emp.jobTitle === closureRecord.skill_type
@@ -487,9 +454,8 @@ export function useRequisitionsForClosureGap(closureRecord: ForecastPositionToCl
       let query = supabase
         .from('positions')
         .select('*')
-        .neq('positionLifecycle', 'Filled'); // Only unfilled positions
+        .neq('positionLifecycle', 'Filled');
 
-      // Match against closure criteria
       if (closureRecord.market) {
         query = query.eq('market', closureRecord.market);
       }
@@ -536,10 +502,8 @@ export function useSaveEmployeeSelection() {
       queryClient.invalidateQueries({ queryKey: ['forecast-positions-to-close'] });
     },
     onError: (error) => {
-      toast({
-        title: "Failed to save selection",
+      toast.error("Failed to save selection", {
         description: error.message,
-        variant: "destructive",
       });
     },
   });

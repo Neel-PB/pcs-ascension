@@ -364,3 +364,14 @@ Modern enterprise shell with clean aesthetics and accessibility
 .dark ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground) / 0.6);
 }
+
+/* Sonner Snackbar - Helix animation timing */
+[data-sonner-toaster] [data-sonner-toast] {
+  transition-duration: 500ms;
+  transition-timing-function: ease-out;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-removed="true"] {
+  transition-duration: 400ms;
+  transition-timing-function: ease-in;
+}
