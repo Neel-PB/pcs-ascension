@@ -69,7 +69,7 @@ export const employeeColumns: ColumnDef<Position>[] = [
     sortable: true,
     resizable: false,
     draggable: true,
-    tooltip: 'The FTE at which the employee is hired for the position.',
+    
   },
   {
     id: 'actual_fte',
@@ -80,7 +80,7 @@ export const employeeColumns: ColumnDef<Position>[] = [
     sortable: true,
     resizable: false,
     draggable: true,
-    tooltip: 'Represents the actual FTE effort the employee is currently working.',
+    
   },
   {
     id: 'shift',

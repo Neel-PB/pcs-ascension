@@ -69,7 +69,7 @@ export const contractorColumns: ColumnDef<Position>[] = [
     sortable: true,
     resizable: false,
     draggable: true,
-    tooltip: 'The FTE at which the contractor is hired for the position.',
+    
   },
   {
     id: 'actual_fte',
@@ -80,7 +80,7 @@ export const contractorColumns: ColumnDef<Position>[] = [
     sortable: true,
     resizable: false,
     draggable: true,
-    tooltip: 'Represents the actual FTE effort the contractor is currently working.',
+    
   },
   {
     id: 'shift',
