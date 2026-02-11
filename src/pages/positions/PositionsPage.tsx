@@ -144,7 +144,7 @@ export default function PositionsPage() {
           />
         </div>
 
-        <div className="flex-shrink-0 mb-6">
+        <div className="flex-shrink-0 mb-6 flex justify-center">
           <ToggleButtonGroup
             items={tabs}
             activeId={activeTab}

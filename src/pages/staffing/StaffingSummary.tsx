@@ -542,7 +542,7 @@ This metric helps:
         />
       </div>
 
-      <div className="mb-6">
+      <div className="mb-6 flex justify-center">
         <ToggleButtonGroup
           items={tabs}
           activeId={activeTab}
