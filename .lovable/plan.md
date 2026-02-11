@@ -1,34 +1,36 @@
 
 
-# Fix Search UI Flicker
+# Fix Search Field Focus Flicker on Positions Page
 
 ## Root Cause
 
-The header search (`GlobalSearchCommand`) wraps a `Command` palette inside a `Popover`. When clicked:
+The `SearchField` component in `src/components/ui/search-field.tsx` changes border width on focus:
+- Default: `border` (1px)
+- Focused: `focus-visible:border-2` (2px)
 
-1. SearchField (PopoverTrigger) gets focus
-2. Popover opens, CommandInput auto-focuses
-3. SearchField loses focus, Radix detects focus leaving the trigger
-4. This creates a rapid focus/blur cycle -- the flicker
+This 1px increase on all sides causes a visible layout shift (the input shrinks inward and neighboring elements adjust), producing the flicker the user sees when clicking the search on Employees, Contractors, and Open Positions tabs.
 
 ## Solution
 
-Replace the `Popover`-based approach with `CommandDialog` (Dialog-based), which is the standard shadcn/ui pattern for command palettes. Dialog handles focus trapping correctly without fighting with the trigger element.
+Use an inset box-shadow or outline to simulate a 2px border on focus without changing the element's box model. This keeps the input dimensions stable.
+
+Replace `focus-visible:border-2 focus-visible:border-primary` with `focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset` -- or more simply, keep `border` at 1px always and use a 1px inset shadow to add the extra visual weight:
+
+**Approach**: Change default border to `border-2 border-transparent` (reserve 2px space always) and on focus just swap the color to `border-primary`. This way the box size never changes.
 
 ## File to Edit
 
-**`src/components/shell/GlobalSearchCommand.tsx`**
+**`src/components/ui/search-field.tsx`**
 
 ### Changes:
-1. Replace `Popover` / `PopoverTrigger` / `PopoverContent` with the click-to-open pattern using `CommandDialog`
-2. The children (SearchField) become a simple `div` with `onClick` to open the dialog
-3. `CommandDialog` properly traps focus inside the dialog, no focus fight with the trigger
-4. Keep all existing navigation logic (sidebar modules, handleSelect) unchanged
+- Replace `border border-input` with `border-2 border-input` (always 2px, no size change on focus)
+- Replace `focus-visible:border-2 focus-visible:border-primary` with just `focus-visible:border-primary` (color change only)
+- Adjust padding by 1px if needed to compensate for the slightly thicker default border
 
-**`src/components/shell/AppHeader.tsx`**
+**`src/components/ui/command.tsx`** (CommandInput has the same pattern)
 
 ### Changes:
-1. Wrap the SearchField in a plain `div` with `onClick` instead of as a Popover child
-2. Pass `onClick` handler to open the command dialog
+- Same fix: `border border-input` to `border-2 border-input`, remove `focus-visible:border-2`
 
-This is a structural fix to the focus management -- no visual changes to the search UI.
+This ensures all pill-shaped search inputs across the app have a stable size on focus, eliminating the flicker.
+
