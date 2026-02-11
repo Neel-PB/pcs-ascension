@@ -75,7 +75,7 @@ export function RequisitionsTab({
   const getVacancyBadge = (days: number | null) => {
     if (!days) return { variant: "secondary" as const, label: "—", className: "" };
     if (days > 60)
-      return { variant: "destructive" as const, label: `${days}d - Urgent`, className: "" };
+      return { variant: "outline" as const, label: `${days}d - Urgent`, className: "border-orange-500/50 bg-orange-500/10 text-orange-700 dark:text-orange-400" };
     if (days > 30)
       return { variant: "outline" as const, label: `${days}d - Attention`, className: "border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400" };
     return { variant: "outline" as const, label: `${days}d - On Track`, className: "border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" };
