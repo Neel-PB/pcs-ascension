@@ -1,37 +1,34 @@
 
 
-# Align Card Component to Helix Card Spec
+# Fix Search UI Flicker
 
-## What the Helix Spec Defines
+## Root Cause
 
-From the Card specs page:
+The header search (`GlobalSearchCommand`) wraps a `Command` palette inside a `Popover`. When clicked:
 
-| Property | Helix Spec | Current Implementation | Change Needed |
-|----------|-----------|----------------------|---------------|
-| Shape | `rounded-lg` (20px) | `rounded-lg` (8px default) | Increase to `rounded-xl` (12px) or `rounded-2xl` (16px) -- closest to 20px without custom value |
-| Elevation (raised) | `shadow-md` | `shadow-sm` | Increase to `shadow-md` for raised cards |
-| Background | Background.Component (`bg-card`) | `bg-card` | No change |
-| Left/Right padding | 16px (`px-4`) | `p-6` (24px) on CardHeader/Content/Footer | Adjust horizontal to `px-4` |
-| Top/Bottom padding | 24px (`py-6`) | `p-6` (24px) on CardHeader | Already correct vertically |
-| Content spacing | 16px recommended | `space-y-1.5` in CardHeader | Keep flexible |
-| Stacking gap | 32px between cards | Varies by usage | No base change needed |
-| Header between card | 20px | Varies | No base change needed |
-| Header font | Title SM | `text-2xl font-semibold` | Reduce to `text-lg font-semibold` |
-| Body copy | Body BASE | `text-sm` | Change to `text-base` for CardDescription |
-| Border | Visible border | `border` | No change |
+1. SearchField (PopoverTrigger) gets focus
+2. Popover opens, CommandInput auto-focuses
+3. SearchField loses focus, Radix detects focus leaving the trigger
+4. This creates a rapid focus/blur cycle -- the flicker
+
+## Solution
+
+Replace the `Popover`-based approach with `CommandDialog` (Dialog-based), which is the standard shadcn/ui pattern for command palettes. Dialog handles focus trapping correctly without fighting with the trigger element.
 
 ## File to Edit
 
-**`src/components/ui/card.tsx`**
+**`src/components/shell/GlobalSearchCommand.tsx`**
 
 ### Changes:
-1. **Border radius**: `rounded-lg` to `rounded-xl` -- Helix specifies 20px; `rounded-xl` (12px) is the closest standard Tailwind step without a custom value, or use `rounded-[20px]` for exact match
-2. **Shadow**: `shadow-sm` to `shadow-md` -- Helix raised cards use `shadow-md`
-3. **CardHeader padding**: `p-6` to `px-4 py-6` -- Helix specifies 16px horizontal, 24px vertical
-4. **CardContent padding**: `p-6 pt-0` to `px-4 pb-6` -- match 16px horizontal padding
-5. **CardFooter padding**: `p-6 pt-0` to `px-4 pb-6` -- match 16px horizontal padding
-6. **CardTitle font size**: `text-2xl` to `text-lg` -- Helix "Title SM" is smaller than the current 2xl
-7. **CardDescription font size**: Keep `text-sm` since most card descriptions in the app are used as secondary labels (changing to `text-base` would be too large for current layouts)
+1. Replace `Popover` / `PopoverTrigger` / `PopoverContent` with the click-to-open pattern using `CommandDialog`
+2. The children (SearchField) become a simple `div` with `onClick` to open the dialog
+3. `CommandDialog` properly traps focus inside the dialog, no focus fight with the trigger
+4. Keep all existing navigation logic (sidebar modules, handleSelect) unchanged
 
-These changes affect every Card usage across the app (KPI cards, AI welcome cards, forecast cards, analytics cards, etc.) but since all cards should follow the same Helix spec, this is the desired outcome. Components that override padding via className will continue to work as before.
+**`src/components/shell/AppHeader.tsx`**
 
+### Changes:
+1. Wrap the SearchField in a plain `div` with `onClick` instead of as a Popover child
+2. Pass `onClick` handler to open the command dialog
+
+This is a structural fix to the focus management -- no visual changes to the search UI.
