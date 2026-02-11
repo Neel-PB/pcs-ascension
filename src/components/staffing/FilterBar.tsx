@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectItemNoCheck, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { X, Lock, Loader2, ChevronsUpDown } from "@/lib/icons";
+import { X, Lock, Loader2, ChevronDown } from "@/lib/icons";
 import { useFilterData } from "@/hooks/useFilterData";
 import { useIsCompactScreen } from "@/hooks/use-compact-screen";
 import { CombinedOptionalFilters } from "./CombinedOptionalFilters";
@@ -359,7 +359,7 @@ export function FilterBar({
                       ? "All Facilities"
                       : availableFacilities.find(f => f.facility_id === selectedFacility)?.facility_name ?? "Select facility"}
                   </span>
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[520px] max-w-[calc(100vw-2rem)] p-0 bg-popover border-border z-50" align="start">
@@ -449,7 +449,7 @@ export function FilterBar({
                       ? "All Departments"
                       : availableDepartments.find(d => d.department_id === selectedDepartment)?.department_name ?? "Select department"}
                   </span>
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[520px] max-w-[calc(100vw-2rem)] p-0 bg-popover border-border z-50" align="start">
