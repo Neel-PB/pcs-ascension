@@ -565,7 +565,7 @@ export function FilterBar({
                 onValueChange={onSubmarketChange}
                 disabled={selectedMarket === "all-markets" || availableSubmarkets.length === 0}
               >
-                <SelectTrigger className="w-[150px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                <SelectTrigger className="w-[150px] rounded-full border-2 border-primary bg-background text-foreground hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                   <SelectValue placeholder="Submarket" />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
@@ -583,7 +583,7 @@ export function FilterBar({
                 value={selectedLevel2} 
                 onValueChange={onLevel2Change}
               >
-                <SelectTrigger className="w-[200px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
+                <SelectTrigger className="w-[200px] rounded-full border-2 border-primary bg-background text-foreground hover:bg-primary/10 transition-colors">
                   <SelectValue placeholder="Level 2" />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
@@ -601,7 +601,7 @@ export function FilterBar({
                 value={selectedPstat} 
                 onValueChange={onPstatChange}
               >
-                <SelectTrigger className="w-[200px] bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
+                <SelectTrigger className="w-[200px] rounded-full border-2 border-primary bg-background text-foreground hover:bg-primary/10 transition-colors">
                   <SelectValue placeholder="PSTAT" />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
