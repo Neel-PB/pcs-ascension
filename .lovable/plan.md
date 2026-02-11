@@ -1,74 +1,57 @@
 
 
-# Fix Toast/Snackbar Styling to Match Helix Spec
+# Align Avatar Component to Helix Avatar Spec
 
-## What's Wrong
+## Helix Spec Summary (from PDF)
 
-The current toast uses a **white background** (`bg-background`) with default Sonner styling. The Helix Snackbar spec shows a distinctly different design:
+| Property | Helix Value | Current Implementation |
+|----------|------------|----------------------|
+| Shape | Circle | Circle (correct) |
+| Letters fallback color | Solid brand color (teal #00a791) | `bg-muted` (gray) -- wrong |
+| Letters text color | Content.Inverse (white) | Inherits foreground -- wrong |
+| Icon avatar padding | 8px (space-sm) all sides | No specific padding |
+| Image avatar | Fills entire space, clipped by shape | Correct (`aspect-square h-full w-full`) |
+| Avatar group spacing | -8px overlap, leftmost on top | Not implemented (no avatar group component) |
+| Avatar group border | 2px outside border matching background | Not implemented |
 
-| Property | Helix Spec (from PDF) | Current Implementation |
-|----------|----------------------|----------------------|
-| Background | Light green/mint tinted container | White (`bg-background`) |
-| Lead icon | Green checkmark circle on the left | Sonner default (small, inconsistent) |
-| Layout | Icon + Title/Secondary Text + ACTION button + X | Just text + X |
-| Action button | Outlined/bordered text button labeled "ACTION" | Solid primary fill |
-| Close button (X) | Always visible, right-aligned, 4px gap from action | Visible but default Sonner positioning |
-| Padding | 12px all sides | Default Sonner padding |
-| Progress bar | Pink/magenta bar at bottom showing countdown | None |
-| Corner radius | Rounded (consistent with cards) | Already `rounded-xl` -- correct |
+## Key Issue
+
+The fallback avatar styling is inconsistent across the app:
+- `AppHeader.tsx` uses `bg-gradient-primary text-white` (close but gradient, not solid)
+- All other files use default `bg-muted` (gray background) with no white text
+- Helix spec calls for a **solid brand teal** background with **white** text
 
 ## Plan
 
-### 1. `src/components/ui/sonner.tsx` -- Restyle to match Helix
+### 1. `src/components/ui/avatar.tsx` -- Update default fallback styling
 
-Update the Sonner Toaster classNames to match the Helix visual spec:
+Change the `AvatarFallback` default class from `bg-muted` to the Ascension teal color with white text:
+- Background: Use the Ascension teal (`bg-[#00a791]`) as the default fallback color
+- Text: `text-white` (Content.Inverse per spec)
+- Font: `font-medium` for clear letter rendering
 
-- **Success variant background**: Light green/mint tint (`bg-emerald-50 dark:bg-emerald-950/30`) instead of white
-- **Error variant background**: Light red tint (`bg-red-50 dark:bg-red-950/30`)
-- **Warning variant background**: Light amber tint (`bg-amber-50 dark:bg-amber-950/30`)
-- **Default/info background**: Keep current `bg-background`
-- **Padding**: Set to `p-3` (12px) matching the 12px spec
-- **Action button**: Change from solid primary fill to outlined style (`border border-foreground/20 bg-transparent text-foreground`)
-- **Close button**: Already visible (opacity-100), ensure proper spacing
-- **Title**: Bold weight (`font-semibold`)
-- **Description**: Muted color, smaller text
+This single change fixes all avatar fallbacks across the app since they all inherit from this base component.
 
-### 2. `src/index.css` -- Add Sonner variant background overrides
+### 2. `src/components/shell/AppHeader.tsx` -- Simplify fallback class
 
-Since Sonner applies variant-specific attributes (`data-type="success"`, `data-type="error"`, etc.), add CSS rules to target these for the correct background colors:
+Remove the override `bg-gradient-primary text-white text-sm font-medium` since the base component now handles the correct styling. Simplify to just `text-sm` (size override only).
 
-```css
-/* Helix Snackbar variant backgrounds */
-[data-sonner-toast][data-type="success"] {
-  background-color: #ecfdf5 !important; /* emerald-50 */
-}
-[data-sonner-toast][data-type="error"] {
-  background-color: #fef2f2 !important; /* red-50 */
-}
-[data-sonner-toast][data-type="warning"] {
-  background-color: #fffbeb !important; /* amber-50 */
-}
+### 3. `src/components/ui/avatar.tsx` -- Add AvatarGroup component (optional)
 
-/* Dark mode variants */
-.dark [data-sonner-toast][data-type="success"] {
-  background-color: rgba(6, 78, 59, 0.3) !important;
-}
-.dark [data-sonner-toast][data-type="error"] {
-  background-color: rgba(127, 29, 29, 0.3) !important;
-}
-.dark [data-sonner-toast][data-type="warning"] {
-  background-color: rgba(120, 53, 15, 0.3) !important;
-}
-```
+Add an `AvatarGroup` wrapper component for the overlap pattern:
+- Negative margin (`-space-x-2`) for -8px overlap
+- Children rendered with `ring-2 ring-background` for the 2px border
+- `flex flex-row-reverse` so leftmost avatar appears on top (z-index stacking)
 
-### 3. No other file changes needed
+This component exists in the spec but may not be actively used yet -- adding it ensures future compatibility.
 
-The existing toast calls already use `toast.success()`, `toast.error()`, etc. which will automatically pick up the new variant styles. Position, duration, close button, and animation timing from the previous update are already correct.
+## Files to Edit
 
-## What Users Will See After This Change
+1. **`src/components/ui/avatar.tsx`** -- Change `AvatarFallback` default from `bg-muted` to `bg-[#00a791] text-white font-medium`; optionally add `AvatarGroup`
+2. **`src/components/shell/AppHeader.tsx`** -- Remove redundant `bg-gradient-primary text-white font-medium` from fallback, keep only size override
 
-- **Success toasts**: Light green/mint background with green checkmark icon
-- **Error toasts**: Light red/pink background with red error icon
-- **Warning toasts**: Light amber/yellow background with warning icon
-- **All toasts**: Outlined action button style, 12px padding, visible close button, bottom-center position, 2.5s auto-dismiss
+## What Changes Visually
 
+- All letter/initials avatars across the app will show a **teal circle with white text** instead of a gray circle
+- The header avatar will use the same solid teal instead of a gradient
+- Consistent brand-aligned avatar appearance everywhere (tables, comments, feeds, profile)
