@@ -9,7 +9,7 @@ import { NPSettingsTab } from "./NPSettingsTab";
 import { DraggableSectionsContainer } from "@/components/staffing/DraggableSectionsContainer";
 import { useKPIOrderStore } from "@/stores/useKPIOrderStore";
 import { generateLast12MonthLabels } from "@/lib/utils";
-import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
+
 import { WorkforceDrawer } from "@/components/workforce/WorkforceDrawer";
 import { WorkforceDrawerTrigger } from "@/components/workforce/WorkforceDrawerTrigger";
 import { useRBAC } from "@/hooks/useRBAC";
@@ -554,10 +554,6 @@ This metric helps:
       <div className="space-y-6">
         {activeTab === "summary" && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold">KPIs</h2>
-                <DataRefreshButton dataSources={['staffing_grid', 'labor_uos_data']} />
-              </div>
               <DraggableSectionsContainer
                 sections={[
                   {
