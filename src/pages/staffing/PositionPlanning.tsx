@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion, LayoutGroup } from "framer-motion";
 import { useDepartmentCategory } from "@/hooks/useDepartmentCategory";
-import { Download, Maximize2, ChevronRight } from "lucide-react";
+import { Download, Maximize2, ChevronRight } from "@/lib/icons";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import {
   Table,

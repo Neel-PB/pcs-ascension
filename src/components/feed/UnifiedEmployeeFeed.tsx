@@ -22,7 +22,7 @@ import {
   Edit,
   Trash2,
   MessageSquare
-} from "lucide-react";
+} from "@/lib/icons";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";

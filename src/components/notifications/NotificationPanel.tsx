@@ -23,7 +23,7 @@ import {
 import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from "@/hooks/useNotifications";
 import { useEmployeeFeed } from "@/hooks/useEmployeeFeed";
 import { MonthlyVolumeChecklist } from "@/components/notifications/VolumeOverrideChecklist";
-import { Bell, Check, MessageCircle, Heart, Users, Megaphone, MessageSquare, X } from "lucide-react";
+import { Bell, Check, MessageCircle, Heart, Users, Megaphone, MessageSquare, X } from "@/lib/icons";
 import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useState } from "react";

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, LayoutGroup } from "framer-motion";
 import { ContentCard } from "@/components/shell/ContentCard";
-import { FileText, Download, Calendar, TrendingUp } from "lucide-react";
+import { FileText, Download, Calendar, TrendingUp } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 
 const ReportCard = ({ title, description, lastUpdated, icon: Icon }: any) => (

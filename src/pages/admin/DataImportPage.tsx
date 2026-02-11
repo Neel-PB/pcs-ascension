@@ -6,7 +6,7 @@ import { ColumnMappingStep } from "@/components/admin/ColumnMappingStep";
 import { useDataImport } from "@/hooks/useDataImport";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Download, Upload, Settings2 } from "lucide-react";
+import { Download, Upload, Settings2 } from "@/lib/icons";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 

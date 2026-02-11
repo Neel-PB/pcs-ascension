@@ -20,7 +20,7 @@ import {
   TrendingUp, 
   CheckCircle,
   Check
-} from "lucide-react";
+} from "@/lib/icons";
 import { 
   getHistoricalDataBadgeColor, 
   getHistoricalDataLabel 

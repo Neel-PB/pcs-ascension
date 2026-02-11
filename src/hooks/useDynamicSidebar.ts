@@ -7,8 +7,8 @@ import {
   LifeBuoy,
   ShieldCheck,
   MessageSquare,
-  type LucideIcon,
-} from "lucide-react";
+} from "@/lib/icons";
+import type { LucideIcon } from "@/lib/icons";
 import { useUISettings } from "./useAppSettings";
 
 export interface DynamicMenuItem {
