@@ -1,84 +1,74 @@
 
 
-# Align Toast/Snackbar to Helix Snackbar Spec
+# Fix Toast/Snackbar Styling to Match Helix Spec
 
-## Helix Snackbar Spec Summary
+## What's Wrong
 
-| Property | Helix Value | Current (Sonner) | Current (Radix Toast) |
-|----------|------------|------------------|----------------------|
-| Position | Bottom center | Bottom-right (default) | Top mobile / bottom-right desktop |
-| Auto-dismiss | 2500ms | 4000ms (default) | 1000000ms (never) |
-| Animation enter | Slide up, 500ms ease-out | Default sonner | slide-in-from-bottom |
-| Animation exit | Slide down, 400ms ease-in | Default sonner | slide-out-to-right |
-| Variants | Success (green icon), Warning | No semantic styling | default, destructive |
-| Close button | X icon, always visible | Hidden by default | Hidden until hover |
-| Max concurrent | 1 | Multiple (default) | 1 (TOAST_LIMIT) |
-| Corner radius | Rounded (consistent with cards = rounded-xl) | rounded-md | rounded-md |
-| Anatomy | Leading icon + message + close button | Text only | Title + description |
+The current toast uses a **white background** (`bg-background`) with default Sonner styling. The Helix Snackbar spec shows a distinctly different design:
 
-## Strategy: Consolidate on Sonner
+| Property | Helix Spec (from PDF) | Current Implementation |
+|----------|----------------------|----------------------|
+| Background | Light green/mint tinted container | White (`bg-background`) |
+| Lead icon | Green checkmark circle on the left | Sonner default (small, inconsistent) |
+| Layout | Icon + Title/Secondary Text + ACTION button + X | Just text + X |
+| Action button | Outlined/bordered text button labeled "ACTION" | Solid primary fill |
+| Close button (X) | Always visible, right-aligned, 4px gap from action | Visible but default Sonner positioning |
+| Padding | 12px all sides | Default Sonner padding |
+| Progress bar | Pink/magenta bar at bottom showing countdown | None |
+| Corner radius | Rounded (consistent with cards) | Already `rounded-xl` -- correct |
 
-The project uses Sonner in 21 files and Radix Toast in only 3 files. Rather than maintaining two systems, we should:
-1. Style Sonner to match Helix Snackbar spec (the primary change)
-2. Migrate the 3 remaining Radix Toast usages to Sonner
-3. Keep Radix Toast files in place (for safety) but they will no longer be actively used
+## Plan
 
-## Files to Edit
+### 1. `src/components/ui/sonner.tsx` -- Restyle to match Helix
 
-### 1. `src/components/ui/sonner.tsx` -- Main Helix styling
+Update the Sonner Toaster classNames to match the Helix visual spec:
 
-Configure the Sonner `Toaster` to match Helix:
-- **Position**: Set `position="bottom-center"`
-- **Duration**: Set `duration={2500}` (2.5s auto-dismiss)
-- **Max toasts**: Set `visibleToasts={1}` (limit concurrent snackbars)
-- **Close button**: Set `closeButton={true}` (always show X)
-- **Corner radius**: Update toast class to `rounded-xl` (12px, matching cards)
-- **Shadow**: Use `shadow-md` (Helix elevation)
-- **Border**: Remove border for a cleaner look matching the solid snackbar style
-- **Icon support**: Sonner natively supports `toast.success()` and `toast.warning()` which map directly to Helix Success and Warning variants
-- **Animation**: Configure `duration` for CSS transitions to approximate 500ms enter / 400ms exit via custom CSS
+- **Success variant background**: Light green/mint tint (`bg-emerald-50 dark:bg-emerald-950/30`) instead of white
+- **Error variant background**: Light red tint (`bg-red-50 dark:bg-red-950/30`)
+- **Warning variant background**: Light amber tint (`bg-amber-50 dark:bg-amber-950/30`)
+- **Default/info background**: Keep current `bg-background`
+- **Padding**: Set to `p-3` (12px) matching the 12px spec
+- **Action button**: Change from solid primary fill to outlined style (`border border-foreground/20 bg-transparent text-foreground`)
+- **Close button**: Already visible (opacity-100), ensure proper spacing
+- **Title**: Bold weight (`font-semibold`)
+- **Description**: Muted color, smaller text
 
-### 2. `src/index.css` -- Custom animation timing
+### 2. `src/index.css` -- Add Sonner variant background overrides
 
-Add CSS overrides for Sonner animation timing:
-- Enter: 500ms ease-out (slide up)
-- Exit: 400ms ease-in (slide down)
-- These override Sonner's default animation speed to match Helix motion spec
+Since Sonner applies variant-specific attributes (`data-type="success"`, `data-type="error"`, etc.), add CSS rules to target these for the correct background colors:
 
-### 3. `src/hooks/useForecastPositions.ts` -- Migrate from Radix to Sonner
+```css
+/* Helix Snackbar variant backgrounds */
+[data-sonner-toast][data-type="success"] {
+  background-color: #ecfdf5 !important; /* emerald-50 */
+}
+[data-sonner-toast][data-type="error"] {
+  background-color: #fef2f2 !important; /* red-50 */
+}
+[data-sonner-toast][data-type="warning"] {
+  background-color: #fffbeb !important; /* amber-50 */
+}
 
-- Change import from `import { toast } from "@/hooks/use-toast"` to `import { toast } from "sonner"`
-- Update all `toast({ title, description, variant })` calls to `toast.success(title, { description })` or `toast.error(title, { description })` based on context (success vs error)
+/* Dark mode variants */
+.dark [data-sonner-toast][data-type="success"] {
+  background-color: rgba(6, 78, 59, 0.3) !important;
+}
+.dark [data-sonner-toast][data-type="error"] {
+  background-color: rgba(127, 29, 29, 0.3) !important;
+}
+.dark [data-sonner-toast][data-type="warning"] {
+  background-color: rgba(120, 53, 15, 0.3) !important;
+}
+```
 
-### 4. `src/components/messaging/FeedComposer.tsx` -- Migrate from Radix to Sonner
+### 3. No other file changes needed
 
-- Change import from `import { useToast } from "@/hooks/use-toast"` to `import { toast } from "sonner"`
-- Remove `const { toast } = useToast()` line
-- Update toast call syntax to match Sonner API
-
-### 5. `src/pages/support/SupportPage.tsx` -- Migrate from Radix to Sonner
-
-- Same import migration as above
-
-### 6. `src/components/ui/toast.tsx` -- Update styling (kept for backward compat)
-
-Even though we are migrating away from Radix Toast, update the styling for safety:
-- Corner radius: `rounded-md` to `rounded-xl`
-- Position: bottom-center instead of bottom-right
-- Close button: always visible (remove `opacity-0` / `group-hover:opacity-100`)
-
-### 7. `src/components/ui/toaster.tsx` -- Keep but unused
-
-No changes needed; the Radix Toaster will remain in App.tsx but with no active consumers after migration.
+The existing toast calls already use `toast.success()`, `toast.error()`, etc. which will automatically pick up the new variant styles. Position, duration, close button, and animation timing from the previous update are already correct.
 
 ## What Users Will See After This Change
 
-- Toast notifications appear at the **bottom center** of the screen
-- Rounded corners matching the card style (12px)
-- Success toasts show a green checkmark icon (Sonner built-in)
-- Warning/error toasts show appropriate colored icons
-- Close button (X) always visible on the right
-- Auto-dismiss after 2.5 seconds
-- Only one toast visible at a time
-- Smooth slide-up entrance and slide-down exit animation
+- **Success toasts**: Light green/mint background with green checkmark icon
+- **Error toasts**: Light red/pink background with red error icon
+- **Warning toasts**: Light amber/yellow background with warning icon
+- **All toasts**: Outlined action button style, 12px padding, visible close button, bottom-center position, 2.5s auto-dismiss
 
