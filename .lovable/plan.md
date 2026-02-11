@@ -1,39 +1,25 @@
 
-# Style "More Filters" Button to Match Toggle Button Group
+# Remove "KPIs" Header and Data Refresh Button from Staffing Summary Tab
 
-## What Changes
+## Change
 
-Update the `CombinedOptionalFilters` trigger button to use the same Helix outlined toggle button styling -- rounded-full pill shape with a 2px primary border -- instead of the current dashed outline style.
+Remove the "KPIs" heading text and the `DataRefreshButton` component from the Summary tab in the Staffing page. The KPI sections (FTE, Volume, Productivity) and `DraggableSectionsContainer` will remain -- only the header row containing the word "KPIs" and the refresh status button will be removed.
 
-## File to Edit
+## Files to Edit
 
-**`src/components/staffing/CombinedOptionalFilters.tsx`** (lines 49-61)
+### `src/pages/staffing/StaffingSummary.tsx`
 
-Update the trigger `Button` className from:
-```
-bg-muted/30 border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground
-```
+**Lines 556-560** -- Remove the entire `div` containing the "KPIs" heading and `DataRefreshButton`:
 
-To the toggle button group style:
-```
-rounded-full border-2 border-primary bg-background text-foreground hover:bg-primary/10
-```
-
-The active count badge already uses `bg-primary text-primary-foreground rounded-full` which fits well with this style.
-
-### Also update the optional filter Select triggers on wide screens
-
-**`src/components/staffing/FilterBar.tsx`** -- the three expanded optional filter `SelectTrigger` elements (Submarket ~line 568, Level 2 ~line 586, PSTAT ~line 604) currently use the same dashed muted style. Update them to match:
-```
-rounded-full border-2 border-primary bg-background text-foreground hover:bg-primary/10
+```tsx
+// REMOVE this block:
+<div className="flex items-center justify-between">
+  <h2 className="text-2xl font-bold">KPIs</h2>
+  <DataRefreshButton dataSources={['staffing_grid', 'labor_uos_data']} />
+</div>
 ```
 
-This ensures both compact (More Filters dropdown) and expanded (individual Select dropdowns) views share the same visual language as the toggle button group.
+**Cleanup unused imports** (line 12):
+- Remove `import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";`
 
-## Technical Details
-
-- **CombinedOptionalFilters.tsx line 51**: Replace button className with pill/primary-border style
-- **FilterBar.tsx line 568**: Update Submarket SelectTrigger className
-- **FilterBar.tsx line 586**: Update Level 2 SelectTrigger className  
-- **FilterBar.tsx line 604**: Update PSTAT SelectTrigger className
-- No structural or behavioral changes -- only CSS class updates
+The `DraggableSectionsContainer` with all three KPI sections (FTE, Volume, Productive Resources) remains untouched.
