@@ -88,7 +88,7 @@ const ModuleItem = forwardRef<HTMLDivElement, ModuleItemProps>(
           />
         )}
         <module.icon className="relative z-10 h-5 w-5" />
-        <span className="relative z-10 text-[10px] font-medium leading-tight text-center">
+        <span className="relative z-10 text-[10px] font-medium leading-tight text-center uppercase">
           {module.label}
         </span>
       </motion.div>
