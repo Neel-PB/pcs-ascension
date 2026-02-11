@@ -80,6 +80,7 @@ export function RequisitionsFilterSheet({
                 min="0"
               />
             </div>
+            <p className="text-xs text-muted-foreground">Number of days since position became vacant</p>
           </div>
 
           <div className="space-y-2">
@@ -104,6 +105,7 @@ export function RequisitionsFilterSheet({
               value={filters.skillType}
               onChange={(e) => updateFilter("skillType", e.target.value)}
             />
+            <p className="text-xs text-muted-foreground">Search by job family name</p>
           </div>
 
           <div className="space-y-2">

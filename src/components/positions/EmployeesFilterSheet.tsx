@@ -99,6 +99,7 @@ export function EmployeesFilterSheet({
               value={filters.skillType}
               onChange={(e) => updateFilter("skillType", e.target.value)}
             />
+            <p className="text-xs text-muted-foreground">Search by job family name</p>
           </div>
 
           <div className="space-y-2">
@@ -140,6 +141,7 @@ export function EmployeesFilterSheet({
                 max="1"
               />
             </div>
+            <p className="text-xs text-muted-foreground">Enter values between 0 and 1</p>
           </div>
 
           <div className="flex gap-2 pt-4">
