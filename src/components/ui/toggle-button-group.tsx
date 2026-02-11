@@ -19,7 +19,7 @@ export function ToggleButtonGroup({
   return (
     <div
       className={cn(
-        "inline-flex items-center rounded-full border-2 border-primary p-0.5 gap-0.5",
+        "inline-flex items-center rounded-full border-2 border-primary p-1 gap-0.5",
         className
       )}
     >
@@ -32,10 +32,10 @@ export function ToggleButtonGroup({
             key={item.id}
             onClick={() => onSelect(item.id)}
             className={cn(
-              "relative z-10 flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-colors whitespace-nowrap",
+              "relative z-10 flex items-center gap-1.5 rounded-full px-5 py-2 text-sm font-medium transition-colors whitespace-nowrap",
               isActive
                 ? "text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
+                : "text-foreground hover:bg-muted/50"
             )}
           >
             {isActive && (
