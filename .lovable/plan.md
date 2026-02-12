@@ -1,42 +1,27 @@
 
 
-## Two Changes
+## Fix Filter Flickering on Region and Market Selects
 
-### 1. Volume Config Sub-Tabs: Make Full Width
+### Root Cause
 
-**File: `src/components/admin/VolumeOverrideSettings.tsx` (line 357-372)**
+The `SelectTrigger` component in `src/components/ui/select.tsx` has `transition-all` in its class list. When a Select opens, it changes from a 1px border to a 2px border (`data-[state=open]:border-b-2 data-[state=open]:border-primary`). The `transition-all` animates this border-width change, causing a visible flicker/jump.
 
-Remove the `max-w-md` constraint and add `flex-1` to each trigger:
+Facility and Department filters don't flicker because they use Popover + Command (combobox pattern) instead of the Select component.
 
-```tsx
-// Before
-<Tabs value={mode} onValueChange={...} className="w-full max-w-md">
-  <TabsList className="grid w-full grid-cols-2">
-    <TabsTrigger value="universal">...</TabsTrigger>
-    <TabsTrigger value="department">...</TabsTrigger>
-  </TabsList>
-</Tabs>
+### Fix
 
-// After
-<Tabs value={mode} onValueChange={...} className="w-full">
-  <TabsList className="w-full">
-    <TabsTrigger value="universal" className="flex-1">...</TabsTrigger>
-    <TabsTrigger value="department" className="flex-1">...</TabsTrigger>
-  </TabsList>
-</Tabs>
-```
+**File: `src/components/ui/select.tsx`**
 
-### 2. Fix Tab Indicator Flickering
+Replace `transition-all` with `transition-colors` on the `SelectTrigger`. This allows color transitions (like border color changes) to remain smooth while preventing the border-width change from being animated.
 
-**File: `src/components/ui/tabs.tsx`**
+Additionally, to fully eliminate the layout shift from border width changing (1px to 2px), switch to using a constant `border-2` and control visibility via border color instead:
+- Default state: `border-2 border-input` (or `border-transparent` on one side)
+- Open state: `data-[state=open]:border-primary`
 
-The root cause: every `TabsTrigger` uses the same hardcoded `layoutId="tabIndicator"`. When multiple `Tabs` groups exist on the same page (Settings sub-tabs + Volume Config sub-tabs), framer-motion confuses the indicators and animates between unrelated tabs.
+This ensures zero layout shift since the border width never changes.
 
-**Fix**: Generate a unique `layoutId` per `LayoutGroup` by passing a unique `id` prop to each `LayoutGroup`, and deriving the `layoutId` from it using React Context.
+### Summary of Change
+- Line 21 of `select.tsx`: Replace `border border-input ... transition-all data-[state=open]:border-b-2 data-[state=open]:border-primary` with `border-2 border-input ... transition-colors data-[state=open]:border-primary`
+- Also update the focus state from `focus:border-b-2 focus:border-primary` to just `focus:border-primary` since border is already 2px
 
-- Add a `TabsContext` that stores a unique ID (generated via `React.useId()`)
-- In `TabsList`, pass this ID to `LayoutGroup`
-- In `TabsTrigger`, read the context and use it to build a unique `layoutId` like `tabIndicator-{id}`
-
-This ensures each `Tabs` instance animates its indicator independently without cross-talk.
-
+This matches the existing Helix UI focus state spec (constant 2px border width to prevent layout shifts).
