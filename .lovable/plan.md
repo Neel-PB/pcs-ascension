@@ -1,27 +1,24 @@
 
 
-## Revert Primary Color to #1E69D2 Globally
+## Add Rounded Corners to Dropdown and Select Menus
 
 ### Problem
-The `--primary` CSS variable was changed to `219 82% 33%` (#0F3C97 -- shade 700), but the correct brand color is **#1E69D2** (`211 75% 47%` -- shade 500). This is a single global fix in `src/index.css`.
+The Select and Dropdown Menu content panels currently use `rounded-sm` (small border radius). The user wants visibly rounded corners on these dropdown containers.
 
-### Changes (single file: `src/index.css`)
+### Changes
 
-Revert all four variables back to `211 75% 47%`:
-- `--primary`: `219 82% 33%` --> `211 75% 47%`
-- `--ring`: `219 82% 33%` --> `211 75% 47%`
-- `--sidebar-primary`: `219 82% 33%` --> `211 75% 47%`
-- `--sidebar-ring`: `219 82% 33%` --> `211 75% 47%`
+**File: `src/components/ui/select.tsx`**
+- `SelectContent`: Change `rounded-sm` to `rounded-lg` (8px rounded corners on the dropdown panel)
 
-Revert gradient endpoints back to shade 600:
-- `--gradient-primary`: endpoint from `hsl(222 91% 21%)` --> `hsl(216 80% 39%)`
-- `--gradient-text`: same revert
+**File: `src/components/ui/dropdown-menu.tsx`**
+- `DropdownMenuContent`: Change `rounded-sm` to `rounded-lg`
+- `DropdownMenuSubContent`: Change `rounded-sm` to `rounded-lg`
 
-### Why this works globally
-Every component (buttons, tabs, sidebar, AI Hub, filters, icons, focus rings) already uses `bg-primary`, `text-primary`, or `border-primary`. Fixing the CSS variable once fixes everything -- no per-component changes needed.
+### What stays the same
+- Individual menu items remain flush/rectangular (per Helix spec)
+- Select trigger stays `rounded-sm` (per filter-trigger-consistency rule)
+- All padding, spacing, colors unchanged
 
-### No other files touched
-- Dark mode stays as-is (shade 200, already correct)
-- `DynamicIconOnlySidebar.tsx` already uses `bg-primary` so it picks up the fix automatically
-- All other components unchanged
+### Impact
+Global -- every Select and DropdownMenu across the app will automatically get rounded corners since these are the shared UI primitives.
 
