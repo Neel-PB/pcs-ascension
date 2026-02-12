@@ -135,7 +135,7 @@ export function AppHeader() {
                       {userInitials}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-sm font-medium text-[#1E69D2]">{userName}</span>
+                  <span className="text-sm font-medium text-foreground">{userName}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-[210px]" align="end" forceMount>
