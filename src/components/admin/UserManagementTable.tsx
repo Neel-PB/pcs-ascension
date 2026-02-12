@@ -55,6 +55,7 @@ export function UserManagementTable({
       sortDirection={sortDirection}
       onSort={onSort}
       storeNamespace="admin-users-columns-v1"
+      className="h-full"
     />
   );
 }
