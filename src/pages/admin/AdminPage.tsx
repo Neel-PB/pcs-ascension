@@ -71,8 +71,8 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-center">
+    <div className="flex flex-col h-full overflow-hidden gap-6">
+      <div className="flex justify-center shrink-0">
         <ToggleButtonGroup
           items={tabs}
           activeId={activeTab}
@@ -81,7 +81,7 @@ export default function AdminPage() {
         />
       </div>
 
-      <div className="space-y-6">
+      <div className="flex-1 min-h-0 overflow-hidden">
         {activeTab === "users" && <UsersManagement />}
         
         {activeTab === "feed" && (

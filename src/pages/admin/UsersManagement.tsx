@@ -92,7 +92,7 @@ export default function UsersManagement() {
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col h-full overflow-hidden gap-4">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h3 className="text-lg font-semibold">Users</h3>
@@ -116,6 +116,7 @@ export default function UsersManagement() {
         Showing {filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}
       </p>
 
+      <div className="flex-1 min-h-0">
       <UserManagementTable
         users={sortedUsers}
         onEdit={handleEditUser}
@@ -125,6 +126,7 @@ export default function UsersManagement() {
         sortDirection={sortDirection}
         onSort={handleSort}
       />
+      </div>
 
       <UserFormSheet
         open={isSheetOpen}
