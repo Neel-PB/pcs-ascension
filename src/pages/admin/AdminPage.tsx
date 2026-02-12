@@ -97,12 +97,10 @@ export default function AdminPage() {
         
         {activeTab === "settings" && (
           <Tabs defaultValue="ui-settings" className="space-y-6">
-            <div className="w-full max-w-md">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="ui-settings">UI Settings</TabsTrigger>
-                <TabsTrigger value="volume-config">Volume Config</TabsTrigger>
-              </TabsList>
-            </div>
+            <TabsList className="w-full">
+              <TabsTrigger value="ui-settings" className="flex-1">UI Settings</TabsTrigger>
+              <TabsTrigger value="volume-config" className="flex-1">Volume Config</TabsTrigger>
+            </TabsList>
             
             <TabsContent value="ui-settings" className="mt-0">
               <UISettings />
