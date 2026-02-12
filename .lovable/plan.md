@@ -1,24 +1,23 @@
 
 
-## Make Positions Checklist Tabs Full-Width
+## Revert Tab Style, Keep Full-Width
 
 ### Problem
-The Shortage/Surplus tabs in the Positions Checklist drawer are underline-style tabs that only take up partial width. Per the project's tab navigation standards, these should use the pill-shaped toggle button group, full-width with equal segments.
+The original underline-style tabs were correct -- you only wanted them stretched to full width. The last edit incorrectly replaced them with a pill-shaped ToggleButtonGroup, changing the entire visual style.
 
-### Changes
+### Fix
 
 **File: `src/components/workforce/WorkforceKPISection.tsx`**
 
-Replace the `Tabs`/`TabsList`/`TabsTrigger`/`TabsContent` implementation (lines 197-218) with:
-- A `ToggleButtonGroup` component for the tab headers (full-width, equal segments)
-- Local state (`useState`) to track the active tab (`shortage` or `surplus`)
-- Conditional rendering of `ForecastChecklistTable` based on active state
+Revert back to the original `Tabs`/`TabsList`/`TabsTrigger`/`TabsContent` implementation, but add `w-full` to the `TabsList` and `flex-1` to each `TabsTrigger` so the tabs stretch across the full width evenly.
 
-The toggle items will include the badge counts in the labels (e.g., "Shortage 2", "Surplus 2") to preserve the current information display.
+Specifically:
+- Restore imports: `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent` from `@/components/ui/tabs` and `Badge` from `@/components/ui/badge`
+- Remove `ToggleButtonGroup` import and `checklistTab` state
+- Restore the original `Tabs` markup with these additions:
+  - `TabsList`: add `w-full` class
+  - Each `TabsTrigger`: add `flex-1` class so they split the width equally
+- Keep the Shortage/Surplus badge counts as before
 
-### Technical Detail
-- Import `ToggleButtonGroup` from `@/components/ui/toggle-button-group` and `useState` from React
-- Remove `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent` imports if no longer used in this file
-- Remove `Badge` import if no longer used
-- The `ToggleButtonGroup` is already configured for full-width (`w-full`, `flex-1`) pill-shaped buttons per project standards
+This preserves the underline tab style while making them span the full container width.
 
