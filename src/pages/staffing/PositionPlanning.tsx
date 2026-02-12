@@ -760,35 +760,31 @@ export default function PositionPlanning({ selectedDepartment }: PositionPlannin
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.05 }}
           >
-            <div className="inline-flex items-center justify-center rounded-xl bg-background p-1 shadow-soft text-muted-foreground">
+            <div className="inline-flex items-center justify-center rounded-full border-2 border-primary p-1">
               <LayoutGroup>
                 <div className="flex gap-0.5">
                   {/* Hired button */}
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <motion.button
+                      <button
                         onClick={() => setViewMode('planned')}
-                        className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none"
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                        className="relative inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium transition-colors focus:outline-none"
                       >
                         {viewMode === 'planned' && (
                           <motion.div
                             layoutId="viewModeIndicator"
-                            className="absolute inset-0 bg-gradient-primary rounded-md"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                            className="absolute inset-0 bg-primary rounded-full"
+                            initial={false}
+                            transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
                           />
                         )}
                         <span className={cn(
                           "relative z-10 transition-colors",
-                          viewMode === 'planned' ? "text-white" : "text-muted-foreground"
+                          viewMode === 'planned' ? "text-primary-foreground" : "text-foreground hover:bg-muted/50"
                         )}>
                           Hired
                         </span>
-                      </motion.button>
+                      </button>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="text-sm">
@@ -801,29 +797,25 @@ export default function PositionPlanning({ selectedDepartment }: PositionPlannin
                   {/* Actual button */}
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <motion.button
+                      <button
                         onClick={() => setViewMode('active')}
-                        className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none"
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                        className="relative inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium transition-colors focus:outline-none"
                       >
                         {viewMode === 'active' && (
                           <motion.div
                             layoutId="viewModeIndicator"
-                            className="absolute inset-0 bg-gradient-primary rounded-md"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                            className="absolute inset-0 bg-primary rounded-full"
+                            initial={false}
+                            transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
                           />
                         )}
                         <span className={cn(
                           "relative z-10 transition-colors",
-                          viewMode === 'active' ? "text-white" : "text-muted-foreground"
+                          viewMode === 'active' ? "text-primary-foreground" : "text-foreground hover:bg-muted/50"
                         )}>
                           Active
                         </span>
-                      </motion.button>
+                      </button>
                     </TooltipTrigger>
                           <TooltipContent>
                             <p className="text-sm">
@@ -843,35 +835,31 @@ export default function PositionPlanning({ selectedDepartment }: PositionPlannin
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.1 }}
             >
-              <div className="inline-flex items-center justify-center rounded-xl bg-background p-1 shadow-soft text-muted-foreground">
+              <div className="inline-flex items-center justify-center rounded-full border-2 border-primary p-1">
                 <LayoutGroup>
                   <div className="flex gap-0.5">
                     {/* Nursing button */}
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <motion.button
+                        <button
                           onClick={() => setStaffCategory('nursing')}
-                          className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none"
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
+                          className="relative inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium transition-colors focus:outline-none"
                         >
                           {staffCategory === 'nursing' && (
                             <motion.div
                               layoutId="categoryIndicator"
-                              className="absolute inset-0 bg-gradient-primary rounded-md"
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              exit={{ opacity: 0 }}
-                              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                              className="absolute inset-0 bg-primary rounded-full"
+                              initial={false}
+                              transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
                             />
                           )}
                           <span className={cn(
                             "relative z-10 transition-colors",
-                            staffCategory === 'nursing' ? "text-primary-foreground" : "text-muted-foreground"
+                            staffCategory === 'nursing' ? "text-primary-foreground" : "text-foreground"
                           )}>
                             Nursing
                           </span>
-                        </motion.button>
+                        </button>
                       </TooltipTrigger>
                       <TooltipContent>
                         <p className="text-sm">
@@ -883,29 +871,25 @@ export default function PositionPlanning({ selectedDepartment }: PositionPlannin
                     {/* Non-Nursing button */}
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <motion.button
+                        <button
                           onClick={() => setStaffCategory('non-nursing')}
-                          className="relative inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors focus:outline-none"
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
+                          className="relative inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium transition-colors focus:outline-none"
                         >
                           {staffCategory === 'non-nursing' && (
                             <motion.div
                               layoutId="categoryIndicator"
-                              className="absolute inset-0 bg-gradient-primary rounded-md"
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              exit={{ opacity: 0 }}
-                              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                              className="absolute inset-0 bg-primary rounded-full"
+                              initial={false}
+                              transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
                             />
                           )}
                           <span className={cn(
                             "relative z-10 transition-colors",
-                            staffCategory === 'non-nursing' ? "text-primary-foreground" : "text-muted-foreground"
+                            staffCategory === 'non-nursing' ? "text-primary-foreground" : "text-foreground"
                           )}>
                             Non-Nursing
                           </span>
-                        </motion.button>
+                        </button>
                       </TooltipTrigger>
                       <TooltipContent>
                         <p className="text-sm">
