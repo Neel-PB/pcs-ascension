@@ -1,20 +1,16 @@
 
 
-## Replace Role Badges with Uppercase Text
+## Make Settings Sub-Tabs Full Width
 
 ### Change
 
-**File: `src/config/userColumns.tsx`**
+**File: `src/pages/admin/AdminPage.tsx`**
 
-In the `roles` column's `renderCell`, replace the `Badge` components with plain uppercase text spans:
+Remove the `max-w-md` width constraint from the TabsList wrapper so the two sub-tabs (UI Settings / Volume Config) span the full available width.
 
-- Remove `Badge` import usage for roles
-- Render each role as a simple `<span>` with `text-xs font-medium uppercase text-muted-foreground` styling
-- Separate multiple roles with a comma or middot
-- For "No Role" fallback, use a plain muted text span instead of a Badge
+- Remove the `<div className="w-full max-w-md">` wrapper around `TabsList`
+- Add `w-full` to the `TabsList` component itself
+- Ensure each `TabsTrigger` uses `flex-1` to split the width equally
 
 ### Result
-- Roles display as clean uppercase text (e.g., "ADMIN", "LABOR TEAM", "MANAGER")
-- Simpler, less cluttered appearance in the table
-- Consistent with a minimal typographic style
-
+- The "UI Settings" and "Volume Config" tabs will stretch across the full content width instead of being constrained to ~448px
