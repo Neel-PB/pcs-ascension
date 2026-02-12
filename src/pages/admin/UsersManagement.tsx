@@ -74,6 +74,10 @@ export default function UsersManagement() {
         onChange={(e) => setSearchQuery(e.target.value)}
       />
 
+      <p className="text-xs text-muted-foreground">
+        Showing {filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}
+      </p>
+
       <UserManagementTable
         users={filteredUsers}
         onEdit={handleEditUser}
