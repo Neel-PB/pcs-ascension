@@ -58,9 +58,9 @@ export function AppHeader() {
   };
 
   const getThemeIcon = () => {
-    if (theme === "dark") return <Moon className="h-5 w-5" />;
-    if (theme === "system") return <Monitor className="h-5 w-5" />;
-    return <Sun className="h-5 w-5" />;
+    if (theme === "dark") return <Moon className="h-6 w-6" />;
+    if (theme === "system") return <Monitor className="h-6 w-6" />;
+    return <Sun className="h-6 w-6" />;
   };
 
   const handleSignOut = async () => {
@@ -103,7 +103,7 @@ export function AppHeader() {
             className="relative" 
             onClick={() => setNotificationsOpen(true)}
           >
-            <Bell className="h-5 w-5" />
+            <Bell className="h-6 w-6" />
             {notifications && notifications.filter(n => !n.read).length > 0 && (
               <Badge
                 variant="destructive"
@@ -135,7 +135,7 @@ export function AppHeader() {
                       {userInitials}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-sm font-medium text-foreground">{userName}</span>
+                  <span className="text-sm font-medium text-[#1E69D2]">{userName}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-[210px]" align="end" forceMount>
