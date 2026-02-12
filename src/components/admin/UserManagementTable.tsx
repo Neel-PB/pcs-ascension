@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Pencil, Trash2 } from "@/lib/icons";
+import { MdOutlineEdit, MdOutlineDelete } from 'react-icons/md';
 import type { UserWithProfile } from "@/hooks/useUsers";
 import { format } from "date-fns";
 import {
@@ -45,7 +45,7 @@ const getRoleBadgeVariant = (role: string) => {
 
 const getRoleDisplayName = (role: string | undefined | null): string => {
   if (!role) return 'No Role';
-  return role === 'labor_team' ? 'Labor Team' : role.charAt(0).toUpperCase() + role.slice(1);
+  return role.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
 export function UserManagementTable({
@@ -75,15 +75,15 @@ export function UserManagementTable({
   }
 
   return (
-    <div className="border rounded-lg">
+    <div className="border rounded-xl overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>User</TableHead>
-            <TableHead>Email</TableHead>
+            <TableHead className="whitespace-nowrap">Email</TableHead>
             <TableHead>Roles</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead className="whitespace-nowrap">Created</TableHead>
+            <TableHead className="text-right w-[100px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -92,7 +92,7 @@ export function UserManagementTable({
             const initials = `${user?.first_name?.[0] || ''}${user?.last_name?.[0] || ''}`.toUpperCase() || 'U';
 
             return (
-              <TableRow key={user.id}>
+              <TableRow key={user.id} className="cursor-pointer" onClick={() => onEdit(user)}>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
@@ -117,27 +117,29 @@ export function UserManagementTable({
                     )}
                   </div>
                 </TableCell>
-                <TableCell className="text-muted-foreground">
+                <TableCell className="text-muted-foreground text-xs whitespace-nowrap">
                   {format(new Date(user.created_at), 'MMM d, yyyy')}
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
+                  <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                     <Button
                       variant="ghost"
                       size="icon"
+                      className="h-8 w-8"
                       onClick={() => onEdit(user)}
                       title="Edit user"
                     >
-                      <Pencil className="h-4 w-4" />
+                      <MdOutlineEdit size={16} className="text-muted-foreground" />
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
+                          className="h-8 w-8"
                           title="Delete user"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <MdOutlineDelete size={16} className="text-muted-foreground" />
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
