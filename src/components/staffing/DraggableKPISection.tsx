@@ -18,7 +18,7 @@ interface KPIData {
   useVacancyModal?: boolean;
   vacancyData?: any[];
   employmentBreakdown?: EmploymentBreakdown;
-  breakdownVariant?: 'green' | 'red';
+  breakdownVariant?: 'green' | 'red' | 'orange';
 }
 
 interface DragHandleProps {
@@ -125,30 +125,30 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
               <div className="grid grid-cols-3">
                 {/* Connector from Hired FTEs (first column) */}
                 <div className="flex justify-center">
-                  <div className="w-0.5 h-2 bg-destructive/60 dark:bg-red-400/70" />
+                  <div className="w-0.5 h-2 bg-orange-500/60 dark:bg-orange-400/70" />
                 </div>
                 {/* Empty middle column (FTE Variance) */}
                 <div />
                 {/* Connector from Open Reqs (third column) */}
                 <div className="flex justify-center">
-                  <div className="w-0.5 h-2 bg-destructive/60 dark:bg-red-400/70" />
+                  <div className="w-0.5 h-2 bg-orange-500/60 dark:bg-orange-400/70" />
                 </div>
               </div>
               {/* Horizontal line connecting the two vertical lines - h-0.5 (2px) */}
               <div className="grid grid-cols-3">
                 <div className="flex items-start">
                   <div className="w-1/2" />
-                  <div className="w-1/2 h-0.5 bg-destructive/60 dark:bg-red-400/70" />
+                  <div className="w-1/2 h-0.5 bg-orange-500/60 dark:bg-orange-400/70" />
                 </div>
-                <div className="h-0.5 bg-destructive/60 dark:bg-red-400/70" />
+                <div className="h-0.5 bg-orange-500/60 dark:bg-orange-400/70" />
                 <div className="flex items-start">
-                  <div className="w-1/2 h-0.5 bg-destructive/60 dark:bg-red-400/70" />
+                  <div className="w-1/2 h-0.5 bg-orange-500/60 dark:bg-orange-400/70" />
                   <div className="w-1/2" />
                 </div>
               </div>
               {/* Vertical line down to badge - h-1.5 (6px) */}
               <div className="flex justify-center">
-                <div className="w-0.5 h-1.5 bg-destructive/60 dark:bg-red-400/70" />
+                <div className="w-0.5 h-1.5 bg-orange-500/60 dark:bg-orange-400/70" />
               </div>
               {/* Badge */}
               <div className="flex justify-center">
@@ -157,11 +157,11 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
                   className={cn(
                     "flex items-center justify-center gap-2 px-3 py-1.5 rounded-full text-xs",
                     "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
-                    "bg-destructive/10 dark:bg-destructive/20 hover:shadow-destructive/30"
+                    "bg-orange-500/10 dark:bg-orange-500/20 hover:shadow-orange-300/40"
                   )}
                 >
-                  <Info className="h-3 w-3 shrink-0 text-destructive dark:text-red-400" />
-                  <span className="font-medium text-destructive dark:text-red-300">
+                  <Info className="h-3 w-3 shrink-0 text-orange-600 dark:text-orange-400" />
+                  <span className="font-medium text-orange-700 dark:text-orange-300">
                     Hired and Open Reqs: {sharedBreakdown.ft}% FT · {sharedBreakdown.pt}% PT · {sharedBreakdown.prn}% PRN
                   </span>
                 </div>
