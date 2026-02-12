@@ -907,7 +907,7 @@ export default function PositionPlanning({ selectedDepartment }: PositionPlannin
         <div className="flex items-center gap-4">
           {/* Legend */}
           <motion.div
-            className="flex flex-col gap-0.5 text-sm"
+            className="flex items-center gap-4 text-sm"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
