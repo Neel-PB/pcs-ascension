@@ -1,29 +1,25 @@
 
 
-## Move KPIs Into a New Tab in the Positions Checklist
+## Fix Surplus Tab Content Pushed to Bottom
 
-### What Changes
+### Problem
+When the Surplus (or Shortage) tab is active, the hidden "KPIs" `TabsContent` still has `flex-1 min-h-0`, which causes it to claim flex space in the layout even though it's not visible. This pushes the active tab's content to the bottom of the drawer.
+
+### Fix
 
 **File: `src/components/workforce/WorkforceKPISection.tsx`**
 
-Currently the layout is:
-1. Collapsible KPI section (above)
-2. Shortage / Surplus tabs (below)
+Remove `flex-1 min-h-0` from the KPIs `TabsContent` (line 140) since it only needs to scroll its own content, not stretch. Change it to just `mt-2 overflow-y-auto`.
 
-The change will restructure this into a single 3-tab layout:
-1. **KPIs** tab -- contains all the KPI cards (common + tab-specific)
-2. **Shortage** tab -- with badge count, contains the shortage checklist table
-3. **Surplus** tab -- with badge count, contains the surplus checklist table
+For the Shortage and Surplus tabs (lines 179, 182), keep `flex-1 min-h-0 flex flex-col` but also add `data-[state=inactive]:hidden` so inactive tabs are fully removed from the flex layout instead of just visually hidden.
 
-### Technical Details
+Alternatively, the simplest fix: add `data-[state=inactive]:hidden` to all three `TabsContent` elements. This ensures inactive tabs don't participate in flex layout at all.
 
-- Remove the `Collapsible` wrapper and its trigger/content -- KPIs will live inside the "KPIs" tab content instead
-- Remove the `kpisExpanded` state and collapsed summary line (no longer needed since it's a tab now)
-- Remove the separator between KPIs and tabs (no longer separate sections)
-- Remove `Collapsible`, `CollapsibleContent`, `CollapsibleTrigger`, `ChevronDown` imports if unused elsewhere
-- Add a third `TabsTrigger` with value `"kpis"` and label `"KPIs"`
-- Change `defaultValue` to `"kpis"` so the KPIs tab is shown first
-- Add a `TabsContent` for `"kpis"` containing the common KPI grid, separator, and tab-specific KPI grid (same markup currently inside CollapsibleContent)
-- The KPIs content will be scrollable within the tab content area
-- `TabsList` keeps `w-full` and all three triggers get `flex-1` for equal width
+### Technical Detail
+
+- Line 140: Add `data-[state=inactive]:hidden` to KPIs TabsContent
+- Line 179: Add `data-[state=inactive]:hidden` to Shortage TabsContent  
+- Line 182: Add `data-[state=inactive]:hidden` to Surplus TabsContent
+
+This is a one-line-per-tab className addition -- no structural changes needed.
 
