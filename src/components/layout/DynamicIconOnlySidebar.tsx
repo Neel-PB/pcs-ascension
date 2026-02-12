@@ -83,7 +83,7 @@ const ModuleItem = forwardRef<HTMLDivElement, ModuleItemProps>(
         {isActive && (
           <motion.div
             layoutId="dynamicSidebarIndicator"
-            className="absolute inset-0 rounded-xl bg-primary"
+            className="absolute inset-0 rounded-xl bg-[#0F3C97]"
             transition={{ type: "spring", stiffness: 500, damping: 30 }}
           />
         )}
