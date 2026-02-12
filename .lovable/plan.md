@@ -1,24 +1,25 @@
 
 
-## Sidebar Icon Size + Logo Navigation Fix
+## Header Icon Size and Username Color Updates
 
 ### Changes
 
-**1. Increase sidebar nav icons from 20px to 24px**
+**1. Increase notification and theme icons from 20px to 24px**
 
-In `src/components/layout/DynamicIconOnlySidebar.tsx` (line 90):
-- Change `h-5 w-5` (20px) to `h-6 w-6` (24px) on the module icon
+In `src/components/shell/AppHeader.tsx`:
+- Line 106: Bell icon `h-5 w-5` to `h-6 w-6`
+- Line 61: Moon icon `h-5 w-5` to `h-6 w-6`
+- Line 62: Monitor icon `h-5 w-5` to `h-6 w-6`
+- Line 63: Sun icon `h-5 w-5` to `h-6 w-6`
 
-**2. Make Ascension logo navigate to home page on click**
+**2. Change username text color to brand blue (#1E69D2)**
 
-In `src/components/layout/OrganizationSwitcher.tsx`:
-- Wrap the logo in a `<Link>` (or use `useNavigate`) pointing to `/staffing` (the app's home route)
-- Import `Link` from `react-router-dom`
+In `src/components/shell/AppHeader.tsx`:
+- Line 138: Change `text-foreground` to `text-[#1E69D2]` on the username span
 
 ### Files Modified
 
 | File | Change |
 |---|---|
-| `src/components/layout/DynamicIconOnlySidebar.tsx` | Icon class `h-5 w-5` to `h-6 w-6` |
-| `src/components/layout/OrganizationSwitcher.tsx` | Wrap logo in `<Link to="/staffing">` |
+| `src/components/shell/AppHeader.tsx` | Icon sizes 20px to 24px; username color to `#1E69D2` |
 
