@@ -21,6 +21,7 @@ interface DataRefreshLog {
 interface DataRefreshButtonProps {
   dataSources: string[];
   compact?: boolean;
+  className?: string;
 }
 
 const dataSourceConfig: Record<string, string> = {
@@ -30,7 +31,7 @@ const dataSourceConfig: Record<string, string> = {
   forecast_data: "Forecast Data",
 };
 
-export function DataRefreshButton({ dataSources, compact = true }: DataRefreshButtonProps) {
+export function DataRefreshButton({ dataSources, compact = true, className }: DataRefreshButtonProps) {
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ["data-refresh-status", dataSources],
     queryFn: async () => {
@@ -88,7 +89,7 @@ export function DataRefreshButton({ dataSources, compact = true }: DataRefreshBu
         <Button
           variant="ascension"
           size="icon"
-          className="relative"
+          className={cn("relative", className)}
           aria-label="Data refresh status"
           title="Data refresh status"
         >
