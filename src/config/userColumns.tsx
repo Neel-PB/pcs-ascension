@@ -89,13 +89,11 @@ export const createUserColumns = (
     renderCell: (row) => (
       <CellButton className="flex items-center gap-1 flex-wrap">
         {(row.roles || []).length > 0 ? (
-          row.roles.map((role) => (
-            <Badge key={role} variant={getRoleBadgeVariant(role)} className="text-xs px-2 py-0.5">
-              {getRoleDisplayName(role)}
-            </Badge>
-          ))
+          <span className="text-xs font-medium uppercase text-muted-foreground">
+            {row.roles.map(getRoleDisplayName).join(', ')}
+          </span>
         ) : (
-          <Badge variant="outline" className="text-xs px-2 py-0.5">No Role</Badge>
+          <span className="text-xs font-medium uppercase text-muted-foreground">No Role</span>
         )}
       </CellButton>
     ),
