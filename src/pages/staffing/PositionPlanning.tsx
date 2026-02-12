@@ -929,10 +929,11 @@ export default function PositionPlanning({ selectedDepartment }: PositionPlannin
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.15 }}
           >
-            <DataRefreshButton dataSources={['staffing_grid', 'labor_uos_data']} />
+            <DataRefreshButton dataSources={['staffing_grid', 'labor_uos_data']} className="h-8 w-8" />
             <Button
               variant="ascension"
               size="icon"
+              className="h-8 w-8"
               onClick={downloadCSV}
               aria-label="Download CSV"
               title="Download CSV"
@@ -942,6 +943,7 @@ export default function PositionPlanning({ selectedDepartment }: PositionPlannin
             <Button
               variant="ascension"
               size="icon"
+              className="h-8 w-8"
               onClick={() => setIsExpanded(true)}
               aria-label="Expand view"
               title="Expand view"
