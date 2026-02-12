@@ -1,19 +1,38 @@
 
 
-## Darken Active Sidebar Route Background
+## Apply Brand 700 (#0F3C97) as the Primary Color Everywhere
 
-### Problem
-The active route indicator in the sidebar uses `bg-primary` (#1E69D2 / shade 500), which appears too light as a solid background fill. A darker brand shade would look more intentional and provide better contrast with the white icon/text.
-
-### Solution
-Use the brand's 700 shade (#0F3C97) for the active sidebar indicator background instead of the 500 shade.
+### Overview
+Instead of updating individual components, the most efficient approach is to change the `--primary` CSS variable itself from the 500 shade (#1E69D2) to the 700 shade (#0F3C97). This single change will automatically update every element that uses `bg-primary`, `text-primary`, `border-primary` -- including buttons, tabs, search icons, the AI Hub trigger, filter badges, and all other blue UI elements.
 
 ### Changes
 
+**File: `src/index.css`** (single file)
+
+**Light Mode (:root)**
+- `--primary`: `211 75% 47%` --> `219 82% 33%` (#0F3C97 -- brand 700)
+- `--ring`: match new primary
+- `--sidebar-primary`: match new primary
+- `--sidebar-ring`: match new primary
+- Gradient start uses `var(--primary)` already, update endpoint from `hsl(216 80% 39%)` to `hsl(222 91% 21%)` (shade 900) for depth
+
 **File: `src/components/layout/DynamicIconOnlySidebar.tsx`**
-- Line 86: Change `className="absolute inset-0 rounded-xl bg-primary"` to use a custom darker blue via an inline style or a Tailwind arbitrary value: `bg-[#0F3C97]`
+- Revert `bg-[#0F3C97]` back to `bg-primary` since primary is now #0F3C97
 
-This targets only the sidebar active indicator -- buttons, tabs, badges, and all other `bg-primary` usages remain #1E69D2 (shade 500) as intended.
+### What gets updated automatically
+- Default buttons (`bg-primary`)
+- Ascension buttons (`bg-primary`)
+- Tab active indicators (`bg-primary` in ToggleButtonGroup)
+- Search field blue circle (`bg-primary`)
+- AI Hub floating trigger (`bg-primary`)
+- Filter selected badges (`bg-primary/15`, `border-primary/30`)
+- Tab border (`border-primary`)
+- Focus rings
+- All `text-primary` links and accents
 
-### Alternative
-If you'd prefer shade 600 (#1551B4) instead of 700 (#0F3C97), just let me know. Shade 700 is deeper/richer, shade 600 is a middle ground.
+### Dark mode
+No changes -- dark mode already uses shade 200 (#A4D3FA) which provides proper contrast on dark backgrounds.
+
+### Risk
+Low -- purely CSS variable change. If any element appears too dark, we can selectively override just that element afterward.
+
