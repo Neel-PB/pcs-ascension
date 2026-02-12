@@ -1,46 +1,24 @@
 
 
-## Fix Snackbar Layout, Background, and Close Button Position
+## Sidebar Icon Size + Logo Navigation Fix
 
-### Issues Found
+### Changes
 
-1. **Close button on wrong side**: Sonner renders the close button as the first child element in the DOM. Setting `position: static` causes it to appear on the LEFT. Need to use `order: 9999` to push it to the end of the flex row.
-2. **Unwanted background color**: The success/error/warning variant backgrounds (green tint, red tint, amber tint) should be removed. The Helix spec uses a neutral container background for all types.
-3. **Icon and text alignment**: The checkmark icon and text need to flow naturally in order.
+**1. Increase sidebar nav icons from 20px to 24px**
 
-### Files to Change
+In `src/components/layout/DynamicIconOnlySidebar.tsx` (line 90):
+- Change `h-5 w-5` (20px) to `h-6 w-6` (24px) on the module icon
 
-**`src/index.css`** (lines ~380-425)
+**2. Make Ascension logo navigate to home page on click**
 
-- Add `order: 9999 !important` to `[data-sonner-toast] [data-close-button]` to force it to the far right
-- **Remove** all variant background color rules (lines 405-425): the `[data-type="success"]`, `[data-type="error"]`, `[data-type="warning"]` selectors and their dark mode counterparts
+In `src/components/layout/OrganizationSwitcher.tsx`:
+- Wrap the logo in a `<Link>` (or use `useNavigate`) pointing to `/staffing` (the app's home route)
+- Import `Link` from `react-router-dom`
 
-**`src/components/ui/sonner.tsx`**
+### Files Modified
 
-- No structural changes needed; the close button class already has `!ml-auto` but needs the order fix from CSS
-
-### Technical Details
-
-CSS changes in `index.css`:
-
-```css
-/* Add to close button rule */
-[data-sonner-toast] [data-close-button] {
-  /* existing properties... */
-  order: 9999 !important; /* Force to end of flex row */
-}
-
-/* DELETE these rules entirely: */
-/* [data-sonner-toast][data-type="success"] { background-color: #ecfdf5 !important; } */
-/* [data-sonner-toast][data-type="error"] { background-color: #fef2f2 !important; } */
-/* [data-sonner-toast][data-type="warning"] { background-color: #fffbeb !important; } */
-/* .dark [data-sonner-toast][data-type="success"] { ... } */
-/* .dark [data-sonner-toast][data-type="error"] { ... } */
-/* .dark [data-sonner-toast][data-type="warning"] { ... } */
-```
-
-This will result in:
-- Close button (x) always on the far right
-- Neutral background for all toast types (no green/red/amber tint)
-- Layout order: Icon | Title/Description | Action | Close (x)
+| File | Change |
+|---|---|
+| `src/components/layout/DynamicIconOnlySidebar.tsx` | Icon class `h-5 w-5` to `h-6 w-6` |
+| `src/components/layout/OrganizationSwitcher.tsx` | Wrap logo in `<Link to="/staffing">` |
 
