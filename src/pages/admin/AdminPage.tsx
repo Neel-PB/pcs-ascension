@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { ToggleButtonGroup } from "@/components/ui/toggle-button-group";
-import { Shield, Upload, Users, Settings, MessageSquare, History } from "@/lib/icons";
+import { Shield } from "@/lib/icons";
 import { useRBAC } from "@/hooks/useRBAC";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import DataImportPage from "./DataImportPage";
 import UsersManagement from "./UsersManagement";
 import AccessControlPage from "./AccessControlPage";
 import RBACAuditLog from "./RBACAuditLog";
@@ -17,16 +16,15 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function AdminPage() {
   const { hasPermission, loading } = useRBAC();
-  const [activeTab, setActiveTab] = useState("data-import");
+  const [activeTab, setActiveTab] = useState("users");
   const [grantingAccess, setGrantingAccess] = useState(false);
 
   const tabs = [
-    { id: "data-import", label: "Data Import", icon: Upload },
-    { id: "users", label: "Users", icon: Users },
-    { id: "feed", label: "Feed", icon: MessageSquare },
-    { id: "access-control", label: "RBAC", icon: Shield },
-    { id: "audit-log", label: "Audit Log", icon: History },
-    { id: "settings", label: "Settings", icon: Settings },
+    { id: "users", label: "Users" },
+    { id: "feed", label: "Feed" },
+    { id: "access-control", label: "RBAC" },
+    { id: "audit-log", label: "Audit Log" },
+    { id: "settings", label: "Settings" },
   ];
 
   const handleGrantAdminAccess = async () => {
@@ -84,8 +82,6 @@ export default function AdminPage() {
       </div>
 
       <div className="space-y-6">
-        {activeTab === "data-import" && <DataImportPage />}
-        
         {activeTab === "users" && <UsersManagement />}
         
         {activeTab === "feed" && (
