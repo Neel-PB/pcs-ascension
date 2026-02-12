@@ -1,23 +1,29 @@
 
 
-## Revert Tab Style, Keep Full-Width
+## Move KPIs Into a New Tab in the Positions Checklist
 
-### Problem
-The original underline-style tabs were correct -- you only wanted them stretched to full width. The last edit incorrectly replaced them with a pill-shaped ToggleButtonGroup, changing the entire visual style.
-
-### Fix
+### What Changes
 
 **File: `src/components/workforce/WorkforceKPISection.tsx`**
 
-Revert back to the original `Tabs`/`TabsList`/`TabsTrigger`/`TabsContent` implementation, but add `w-full` to the `TabsList` and `flex-1` to each `TabsTrigger` so the tabs stretch across the full width evenly.
+Currently the layout is:
+1. Collapsible KPI section (above)
+2. Shortage / Surplus tabs (below)
 
-Specifically:
-- Restore imports: `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent` from `@/components/ui/tabs` and `Badge` from `@/components/ui/badge`
-- Remove `ToggleButtonGroup` import and `checklistTab` state
-- Restore the original `Tabs` markup with these additions:
-  - `TabsList`: add `w-full` class
-  - Each `TabsTrigger`: add `flex-1` class so they split the width equally
-- Keep the Shortage/Surplus badge counts as before
+The change will restructure this into a single 3-tab layout:
+1. **KPIs** tab -- contains all the KPI cards (common + tab-specific)
+2. **Shortage** tab -- with badge count, contains the shortage checklist table
+3. **Surplus** tab -- with badge count, contains the surplus checklist table
 
-This preserves the underline tab style while making them span the full container width.
+### Technical Details
+
+- Remove the `Collapsible` wrapper and its trigger/content -- KPIs will live inside the "KPIs" tab content instead
+- Remove the `kpisExpanded` state and collapsed summary line (no longer needed since it's a tab now)
+- Remove the separator between KPIs and tabs (no longer separate sections)
+- Remove `Collapsible`, `CollapsibleContent`, `CollapsibleTrigger`, `ChevronDown` imports if unused elsewhere
+- Add a third `TabsTrigger` with value `"kpis"` and label `"KPIs"`
+- Change `defaultValue` to `"kpis"` so the KPIs tab is shown first
+- Add a `TabsContent` for `"kpis"` containing the common KPI grid, separator, and tab-specific KPI grid (same markup currently inside CollapsibleContent)
+- The KPIs content will be scrollable within the tab content area
+- `TabsList` keeps `w-full` and all three triggers get `flex-1` for equal width
 
