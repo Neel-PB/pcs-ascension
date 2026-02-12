@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { WorkforceKPICard } from './WorkforceKPICard';
 import { ForecastChecklistTable } from './ForecastChecklistTable';
 import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ToggleButtonGroup } from '@/components/ui/toggle-button-group';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { ChevronDown } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 import { 
@@ -38,8 +39,7 @@ export const WorkforceKPISection = ({
   volumeType,
   volumeValue 
 }: WorkforceKPISectionProps) => {
-  const [kpisExpanded, setKpisExpanded] = useState(false);
-  const [checklistTab, setChecklistTab] = useState<'shortage' | 'surplus'>('shortage');
+  const [kpisExpanded, setKpisExpanded] = React.useState(false);
   
   // Create filters object for forecast data
   const filters: ForecastBalanceFilters = useMemo(() => ({
@@ -194,20 +194,22 @@ export const WorkforceKPISection = ({
 
       {/* Tabbed Shortage/Surplus for Positions module */}
       {showForecastTables && (
-        <div className="flex-1 flex flex-col min-h-0">
-          <ToggleButtonGroup
-            items={[
-              { id: 'shortage', label: `Shortage ${shortageCount}` },
-              { id: 'surplus', label: `Surplus ${surplusCount}` },
-            ]}
-            activeId={checklistTab}
-            onSelect={(id) => setChecklistTab(id as 'shortage' | 'surplus')}
-            layoutId="checklistToggle"
-          />
-          <div className="flex-1 min-h-0 mt-2 flex flex-col">
-            <ForecastChecklistTable type={checklistTab} filters={filters} />
-          </div>
-        </div>
+        <Tabs defaultValue="shortage" className="flex-1 flex flex-col min-h-0">
+          <TabsList className="w-full">
+            <TabsTrigger value="shortage" className="flex-1">
+              Shortage <Badge variant="secondary" className="ml-1.5">{shortageCount}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="surplus" className="flex-1">
+              Surplus <Badge variant="secondary" className="ml-1.5">{surplusCount}</Badge>
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="shortage" className="flex-1 min-h-0 mt-2 flex flex-col">
+            <ForecastChecklistTable type="shortage" filters={filters} />
+          </TabsContent>
+          <TabsContent value="surplus" className="flex-1 min-h-0 mt-2 flex flex-col">
+            <ForecastChecklistTable type="surplus" filters={filters} />
+          </TabsContent>
+        </Tabs>
       )}
       
       {/* Both tables for Staffing module (legacy behavior) */}
