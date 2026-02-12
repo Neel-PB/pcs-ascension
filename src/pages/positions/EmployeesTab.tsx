@@ -10,7 +10,7 @@ import { SearchField } from "@/components/ui/search-field";
 import { EmployeeDetailsSheet } from "@/components/workforce/EmployeeDetailsSheet";
 import { EmployeesFilterSheet } from "@/components/positions/EmployeesFilterSheet";
 import { EditableTable } from "@/components/editable-table/EditableTable";
-import { ColumnVisibilityPanel } from "@/components/editable-table/ColumnVisibilityPanel";
+
 import { employeeColumns, createEmployeeColumnsWithComments } from "@/config/employeeColumns";
 import { useUpdateActualFte } from "@/hooks/useUpdateActualFte";
 import { useUpdateShiftOverride } from "@/hooks/useUpdateShiftOverride";
@@ -275,11 +275,6 @@ export function EmployeesTab({
         
         <div className="flex gap-2 flex-shrink-0">
           <DataRefreshButton dataSources={['positions_data']} />
-          <ColumnVisibilityPanel
-            columns={employeeColumns}
-            storeNamespace="employees-columns-v2"
-            iconOnly
-          />
           
           <Button
             variant="ascension"
