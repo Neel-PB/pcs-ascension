@@ -1,40 +1,46 @@
 
 
-## Fix Sonner Toast to Match Helix Snackbar Spec Exactly
+## Fix Snackbar Layout, Background, and Close Button Position
 
-### What's Wrong
+### Issues Found
 
-Comparing the Helix Snackbar spec (from the PDF) with our current CSS, there are several spacing and styling mismatches:
-
-| Property | Helix Spec | Current Code | Fix |
-|---|---|---|---|
-| Left padding | 12px | 16px (`px-4`) | Change to `pl-3` (12px) |
-| Right padding | 4px | 16px (`px-4`) | Change to `pr-1` (4px) |
-| Top/Bottom padding | 12px | 12px (`py-3`) | Already correct |
-| Container border-radius | ~8px (rounded) | 12px (`rounded-xl`) | Change to `rounded-lg` (8px) |
-| Close button border-radius | 12px | 9999px (full circle) | Change to `12px` |
-| Close button size | Icon Button (per spec) | 24px | Keep 24px |
-| Layout order | Icon, Text, ACTION, Close X | Correct order | Already correct |
-| Gap between items | 12px | 12px (`gap-3`) | Already correct |
+1. **Close button on wrong side**: Sonner renders the close button as the first child element in the DOM. Setting `position: static` causes it to appear on the LEFT. Need to use `order: 9999` to push it to the end of the flex row.
+2. **Unwanted background color**: The success/error/warning variant backgrounds (green tint, red tint, amber tint) should be removed. The Helix spec uses a neutral container background for all types.
+3. **Icon and text alignment**: The checkmark icon and text need to flow naturally in order.
 
 ### Files to Change
 
-**`src/components/ui/sonner.tsx`**
-- Update toast className: change `px-4` to `pl-3 pr-1`, change `rounded-xl` to `rounded-lg`
-- Update close button className: change `rounded-full` to `rounded-[12px]`
+**`src/index.css`** (lines ~380-425)
 
-**`src/index.css`**
-- Update `[data-sonner-toast] [data-close-button]` rule: change `border-radius: 9999px` to `border-radius: 12px`
+- Add `order: 9999 !important` to `[data-sonner-toast] [data-close-button]` to force it to the far right
+- **Remove** all variant background color rules (lines 405-425): the `[data-type="success"]`, `[data-type="error"]`, `[data-type="warning"]` selectors and their dark mode counterparts
+
+**`src/components/ui/sonner.tsx`**
+
+- No structural changes needed; the close button class already has `!ml-auto` but needs the order fix from CSS
 
 ### Technical Details
 
-Changes in `sonner.tsx` toast classNames:
-- `group-[.toaster]:rounded-xl` becomes `group-[.toaster]:rounded-lg`
-- `group-[.toaster]:px-4` becomes `group-[.toaster]:pl-3 group-[.toaster]:pr-1`
-- Close button: `group-[.toast]:!rounded-full` becomes `group-[.toast]:!rounded-[12px]`
+CSS changes in `index.css`:
 
-Changes in `index.css`:
-- `border-radius: 9999px !important;` becomes `border-radius: 12px !important;`
+```css
+/* Add to close button rule */
+[data-sonner-toast] [data-close-button] {
+  /* existing properties... */
+  order: 9999 !important; /* Force to end of flex row */
+}
 
-These are small, surgical CSS changes -- no structural or logic changes needed.
+/* DELETE these rules entirely: */
+/* [data-sonner-toast][data-type="success"] { background-color: #ecfdf5 !important; } */
+/* [data-sonner-toast][data-type="error"] { background-color: #fef2f2 !important; } */
+/* [data-sonner-toast][data-type="warning"] { background-color: #fffbeb !important; } */
+/* .dark [data-sonner-toast][data-type="success"] { ... } */
+/* .dark [data-sonner-toast][data-type="error"] { ... } */
+/* .dark [data-sonner-toast][data-type="warning"] { ... } */
+```
+
+This will result in:
+- Close button (x) always on the far right
+- Neutral background for all toast types (no green/red/amber tint)
+- Layout order: Icon | Title/Description | Action | Close (x)
 
