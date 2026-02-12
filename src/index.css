@@ -396,30 +396,9 @@ Modern enterprise shell with clean aesthetics and accessibility
   align-items: center !important;
   justify-content: center !important;
   flex-shrink: 0 !important;
+  order: 9999 !important;
 }
 
 [data-sonner-toast] [data-close-button]:hover {
   background: hsl(var(--foreground) / 0.1) !important;
-}
-
-/* Helix Snackbar variant backgrounds */
-[data-sonner-toast][data-type="success"] {
-  background-color: #ecfdf5 !important;
-}
-[data-sonner-toast][data-type="error"] {
-  background-color: #fef2f2 !important;
-}
-[data-sonner-toast][data-type="warning"] {
-  background-color: #fffbeb !important;
-}
-
-/* Dark mode variants */
-.dark [data-sonner-toast][data-type="success"] {
-  background-color: rgba(6, 78, 59, 0.3) !important;
-}
-.dark [data-sonner-toast][data-type="error"] {
-  background-color: rgba(127, 29, 29, 0.3) !important;
-}
-.dark [data-sonner-toast][data-type="warning"] {
-  background-color: rgba(120, 53, 15, 0.3) !important;
 }
