@@ -10,7 +10,7 @@ import { SearchField } from "@/components/ui/search-field";
 import { RequisitionDetailsSheet } from "@/components/workforce/RequisitionDetailsSheet";
 import { RequisitionsFilterSheet } from "@/components/positions/RequisitionsFilterSheet";
 import { EditableTable } from "@/components/editable-table/EditableTable";
-import { ColumnVisibilityPanel } from "@/components/editable-table/ColumnVisibilityPanel";
+
 import { requisitionColumns, createRequisitionColumnsWithComments } from "@/config/requisitionColumns";
 import { usePositionCommentCounts } from "@/hooks/usePositionCommentCounts";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
@@ -216,11 +216,6 @@ export function RequisitionsTab({
         
         <div className="flex gap-2 flex-shrink-0">
           <DataRefreshButton dataSources={['positions_data']} />
-          <ColumnVisibilityPanel
-            columns={requisitionColumns}
-            storeNamespace="requisitions-columns"
-            iconOnly
-          />
           
           <Button
             variant="ascension"

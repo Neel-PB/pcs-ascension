@@ -10,7 +10,7 @@ import { SearchField } from "@/components/ui/search-field";
 import { ContractorDetailsSheet } from "@/components/workforce/ContractorDetailsSheet";
 import { ContractorsFilterSheet } from "@/components/positions/ContractorsFilterSheet";
 import { EditableTable } from "@/components/editable-table/EditableTable";
-import { ColumnVisibilityPanel } from "@/components/editable-table/ColumnVisibilityPanel";
+
 import { contractorColumns, createContractorColumnsWithComments } from "@/config/contractorColumns";
 import { useUpdateActualFte } from "@/hooks/useUpdateActualFte";
 import { useUpdateShiftOverride } from "@/hooks/useUpdateShiftOverride";
@@ -269,11 +269,6 @@ export function ContractorsTab({
         
         <div className="flex gap-2 flex-shrink-0">
           <DataRefreshButton dataSources={['positions_data']} />
-          <ColumnVisibilityPanel
-            columns={contractorColumns}
-            storeNamespace="contractors-columns-v2"
-            iconOnly
-          />
           
           <Button
             variant="ascension"
