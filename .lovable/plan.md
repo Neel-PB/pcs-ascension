@@ -1,24 +1,19 @@
 
 
-## Add Rounded Corners to Dropdown and Select Menus
+## Add Rounded Corners to Select Trigger Buttons
 
 ### Problem
-The Select and Dropdown Menu content panels currently use `rounded-sm` (small border radius). The user wants visibly rounded corners on these dropdown containers.
+The Select trigger buttons (the rectangular inputs you click to open filter dropdowns) currently use `rounded-sm` which gives them very subtle corners. The user wants visibly rounded corners on these triggers.
 
 ### Changes
 
 **File: `src/components/ui/select.tsx`**
-- `SelectContent`: Change `rounded-sm` to `rounded-lg` (8px rounded corners on the dropdown panel)
+- `SelectTrigger`: Change `rounded-sm` to `rounded-lg` in the default className
 
-**File: `src/components/ui/dropdown-menu.tsx`**
-- `DropdownMenuContent`: Change `rounded-sm` to `rounded-lg`
-- `DropdownMenuSubContent`: Change `rounded-sm` to `rounded-lg`
+This single change will update every Select trigger globally -- all filters on Staffing, Positions, and other pages.
 
 ### What stays the same
-- Individual menu items remain flush/rectangular (per Helix spec)
-- Select trigger stays `rounded-sm` (per filter-trigger-consistency rule)
-- All padding, spacing, colors unchanged
-
-### Impact
-Global -- every Select and DropdownMenu across the app will automatically get rounded corners since these are the shared UI primitives.
+- Dropdown content panels (already updated to `rounded-lg` in previous change)
+- Individual menu items remain flush/rectangular
+- All padding, sizing, colors, focus states unchanged
 
