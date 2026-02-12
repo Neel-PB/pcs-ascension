@@ -34,7 +34,7 @@ interface GroupedKPICardProps {
 interface KPICardGroupProps {
   cards: GroupedKPICardProps[];
   sharedBreakdown: EmploymentBreakdown;
-  breakdownVariant: 'green' | 'red';
+  breakdownVariant: 'green' | 'red' | 'orange';
   groupDelay?: number;
 }
 
@@ -188,13 +188,15 @@ export function KPICardGroup({
               "flex items-center gap-2 px-3 py-1.5 text-xs",
               "cursor-pointer transition-shadow duration-200 hover:shadow-md",
               breakdownVariant === 'green' && "bg-emerald-500/10 hover:shadow-emerald-300/40",
-              breakdownVariant === 'red' && "bg-destructive/10 hover:shadow-destructive/30"
+              breakdownVariant === 'red' && "bg-destructive/10 hover:shadow-destructive/30",
+              breakdownVariant === 'orange' && "bg-orange-500/10 hover:shadow-orange-300/40"
             )}
           >
             <Info className={cn(
               "h-3 w-3 shrink-0",
               breakdownVariant === 'green' && "text-emerald-600",
-              breakdownVariant === 'red' && "text-destructive"
+              breakdownVariant === 'red' && "text-destructive",
+              breakdownVariant === 'orange' && "text-orange-600"
             )} />
             {(() => {
               const sorted = [
@@ -207,7 +209,8 @@ export function KPICardGroup({
                 <span className={cn(
                   "font-medium",
                   breakdownVariant === 'green' && "text-emerald-700",
-                  breakdownVariant === 'red' && "text-destructive"
+                  breakdownVariant === 'red' && "text-destructive",
+                  breakdownVariant === 'orange' && "text-orange-700"
                 )}>
                   {sorted[0].value}% {sorted[0].label} · {sorted[1].value}% {sorted[1].label} · {sorted[2].value}% {sorted[2].label}
                 </span>
