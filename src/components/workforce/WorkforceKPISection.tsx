@@ -137,7 +137,7 @@ export const WorkforceKPISection = ({
               Surplus <Badge variant="secondary" className="ml-1.5">{surplusCount}</Badge>
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="kpis" className="flex-1 min-h-0 mt-2 overflow-y-auto">
+          <TabsContent value="kpis" className="flex-1 min-h-0 mt-2 overflow-y-auto data-[state=inactive]:hidden">
             <div className="grid grid-cols-3 gap-2">
               {commonKPIs.map((kpi) => (
                 <WorkforceKPICard
@@ -176,10 +176,10 @@ export const WorkforceKPISection = ({
               </>
             )}
           </TabsContent>
-          <TabsContent value="shortage" className="flex-1 min-h-0 mt-2 flex flex-col">
+          <TabsContent value="shortage" className="flex-1 min-h-0 mt-2 flex flex-col data-[state=inactive]:hidden">
             <ForecastChecklistTable type="shortage" filters={filters} />
           </TabsContent>
-          <TabsContent value="surplus" className="flex-1 min-h-0 mt-2 flex flex-col">
+          <TabsContent value="surplus" className="flex-1 min-h-0 mt-2 flex flex-col data-[state=inactive]:hidden">
             <ForecastChecklistTable type="surplus" filters={filters} />
           </TabsContent>
         </Tabs>
