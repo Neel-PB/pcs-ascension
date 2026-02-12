@@ -4,23 +4,39 @@ import { motion, LayoutGroup } from "framer-motion";
 
 import { cn } from "@/lib/utils";
 
-const Tabs = TabsPrimitive.Root;
+const TabsContext = React.createContext<string>("tabs");
+
+const Tabs = React.forwardRef<
+  React.ElementRef<typeof TabsPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root>
+>(({ ...props }, ref) => {
+  const id = React.useId();
+  return (
+    <TabsContext.Provider value={id}>
+      <TabsPrimitive.Root ref={ref} {...props} />
+    </TabsContext.Provider>
+  );
+});
+Tabs.displayName = TabsPrimitive.Root.displayName;
 
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({ className, ...props }, ref) => (
-  <LayoutGroup>
-    <TabsPrimitive.List
-      ref={ref}
-      className={cn(
-        "inline-flex h-10 items-center gap-4 border-b border-border text-muted-foreground",
-        className,
-      )}
-      {...props}
-    />
-  </LayoutGroup>
-));
+>(({ className, ...props }, ref) => {
+  const id = React.useContext(TabsContext);
+  return (
+    <LayoutGroup id={id}>
+      <TabsPrimitive.List
+        ref={ref}
+        className={cn(
+          "inline-flex h-10 items-center gap-4 border-b border-border text-muted-foreground",
+          className,
+        )}
+        {...props}
+      />
+    </LayoutGroup>
+  );
+});
 TabsList.displayName = TabsPrimitive.List.displayName;
 
 const TabsTrigger = React.forwardRef<
@@ -29,6 +45,7 @@ const TabsTrigger = React.forwardRef<
 >(({ className, children, ...props }, ref) => {
   const internalRef = React.useRef<HTMLButtonElement>(null);
   const [isActive, setIsActive] = React.useState(false);
+  const tabsId = React.useContext(TabsContext);
 
   React.useEffect(() => {
     const element = internalRef.current;
@@ -67,7 +84,7 @@ const TabsTrigger = React.forwardRef<
       {children}
       {isActive && (
         <motion.div
-          layoutId="tabIndicator"
+          layoutId={`tabIndicator-${tabsId}`}
           className="absolute bottom-0 left-0 right-0 h-[3px] bg-primary rounded-t-full"
           initial={false}
           transition={{
