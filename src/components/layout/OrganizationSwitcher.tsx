@@ -7,7 +7,7 @@ export function OrganizationSwitcher() {
       <img 
         src={AscensionLogo} 
         alt="Ascension" 
-        className="w-8 h-8 object-contain"
+        className="w-9 h-9 object-contain"
       />
     </Link>
   );
