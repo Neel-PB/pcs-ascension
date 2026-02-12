@@ -1,33 +1,28 @@
 
 
-## Fix: Date Picker Not Opening on Pencil Click
+## Fix Date Picker Spacing to Match Helix Spec
 
-### Root Cause
+### Problem
 
-The `PopoverTrigger asChild` requires its child to accept a `ref` (via `React.forwardRef`). The `Pencil` icon is mapped to `MdOutlineEdit` from `react-icons`, which is a plain function component that does **not** support refs. This is confirmed by the console error:
+The vertical spacing inside the date picker popover is too generous because padding stacks between sections:
 
-> "Function components cannot be given refs... Check the render method of `Primitive.button.SlotClone`"
+- Header: `py-6` = 24px top + 24px bottom
+- Calendar component: `pt-6` = 24px top padding (built into `calendar.tsx`)
 
-Because the ref fails silently, the popover never anchors and never opens.
+This creates ~48px of dead space between the header text and the calendar navigation row.
 
 ### Fix
 
-**File: `src/components/editable-table/cells/EditableDateCell.tsx`** (line 117-119)
+**File: `src/components/editable-table/cells/EditableDateCell.tsx`**
 
-Wrap the `Pencil` icon inside a `<span>` element so the `PopoverTrigger asChild` can attach its ref to the native DOM element:
+1. Reduce the header padding from `py-6` to `pt-4 pb-2` -- tighter top, minimal bottom
+2. Override the Calendar's built-in top padding by passing a className that replaces `pt-6` with `pt-2`
+3. Reduce footer padding from `py-2` to `py-1.5` for a slightly tighter bottom
 
-```tsx
-// FROM:
-<PopoverTrigger asChild>
-  <Pencil className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground cursor-pointer transition-colors" />
-</PopoverTrigger>
+Specifically:
 
-// TO:
-<PopoverTrigger asChild>
-  <span className="inline-flex cursor-pointer">
-    <Pencil className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
-  </span>
-</PopoverTrigger>
-```
+- Line 127: Change `<div className="px-4 py-6">` to `<div className="px-4 pt-4 pb-2">`
+- Line 145: Change `className={cn("pointer-events-auto")}` to `className={cn("pointer-events-auto pt-2")}` -- the `pt-2` will override the Calendar's default `pt-6` via Tailwind merge since the Calendar uses `cn()` to merge its base classes with the passed className
 
-This is a single 3-line change. No other files need updating -- the Volume Settings and NP Settings both use this same `EditableDateCell` component.
+These are small padding tweaks in a single file. The Calendar component itself stays unchanged so other usages are unaffected.
+
