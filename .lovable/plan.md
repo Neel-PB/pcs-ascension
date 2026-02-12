@@ -1,24 +1,27 @@
 
 
-## Fix Users Table Internal Scrolling
+## Fix Role Badge Readability in Users Table
 
-The page currently allows the entire content area to scroll because the height chain from the shell layout down to the table is not constrained. The fix follows the same pattern used in the Positions module: apply `overflow-hidden`, `min-h-0`, and `flex` constraints on all intermediate containers so the `VirtualizedTableBody` becomes the sole scroll container.
+### Problem
+Roles like "Manager", "Director", "Cno", and "Leadership" fall into the `default` switch case and get the `secondary` badge variant, which has very low contrast (light gray background with muted text). Only "Admin" (red) and "Labor Team" (blue) are readable.
 
-### Changes
+### Solution
+Update `getRoleBadgeVariant` in `src/config/userColumns.tsx` to assign all roles a readable, colored badge variant instead of falling back to `secondary`.
 
-**1. `src/pages/admin/AdminPage.tsx`**
-- Change the root `<div className="space-y-6">` to a flex column that fills the available height: `flex flex-col h-full overflow-hidden`
-- Change the content container (`<div className="space-y-6">` wrapping tab content) to `flex-1 min-h-0 overflow-hidden` so it gives the active tab a bounded height
+### Specific Changes
 
-**2. `src/pages/admin/UsersManagement.tsx`**
-- Change the root `<div className="space-y-6">` to `flex flex-col h-full overflow-hidden gap-4`
-- Keep the header, search, and count as fixed-height elements
-- Make the `UserManagementTable` wrapper take remaining space with `flex-1 min-h-0`
+**File: `src/config/userColumns.tsx`**
 
-**3. `src/components/admin/UserManagementTable.tsx`**
-- Add `h-full` to the `EditableTable` wrapper so it fills the flex container, allowing the virtualized body inside to scroll
+Update the `getRoleBadgeVariant` function to map each role to a visually distinct, high-contrast variant:
+
+- `admin` -- `destructive` (red background, white text) -- unchanged
+- `labor_team` -- `default` (primary blue background, white text) -- unchanged
+- `manager`, `director`, `cno`, `leadership` and any other role -- `outline` (border with foreground text) instead of `secondary`
+
+Additionally, increase the badge font size from `text-[10px]` to `text-xs` (12px) and add slightly more padding (`px-2 py-0.5`) for better readability across all roles.
 
 ### Result
-- The header, search bar, and user count remain fixed at the top
-- The table fills the remaining vertical space and scrolls internally
-- The outer page no longer scrolls when viewing the Users tab
+- All role badges will have readable text with sufficient contrast
+- Badge sizing will be consistent and large enough to read comfortably
+- Named roles get distinct styling; unknown future roles default to a clean outlined style
+
