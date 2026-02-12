@@ -114,8 +114,10 @@ export function EditableDateCell({
             }}
           />
         ) : (
-          <PopoverTrigger asChild>
-            <Pencil className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground cursor-pointer transition-colors" />
+        <PopoverTrigger asChild>
+            <span className="inline-flex cursor-pointer">
+              <Pencil className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
+            </span>
           </PopoverTrigger>
         )}
       </div>
