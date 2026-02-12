@@ -87,7 +87,7 @@ const ModuleItem = forwardRef<HTMLDivElement, ModuleItemProps>(
             transition={{ type: "spring", stiffness: 500, damping: 30 }}
           />
         )}
-        <module.icon className="relative z-10 h-5 w-5" />
+        <module.icon className="relative z-10 h-6 w-6" />
         <span className="relative z-10 text-[10px] font-medium leading-tight text-center uppercase">
           {module.label}
         </span>
