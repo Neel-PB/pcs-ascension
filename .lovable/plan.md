@@ -1,25 +1,17 @@
 
 
-## Header Icon Size and Username Color Updates
+## Change Avatar Fallback Background Color to Brand Blue
 
-### Changes
+### What Changed
+The username text color was changed to `#1E69D2` in the last edit -- that needs to be reverted back to `text-foreground`. Instead, the avatar fallback background should use `#1E69D2`.
 
-**1. Increase notification and theme icons from 20px to 24px**
+### Files to Change
 
-In `src/components/shell/AppHeader.tsx`:
-- Line 106: Bell icon `h-5 w-5` to `h-6 w-6`
-- Line 61: Moon icon `h-5 w-5` to `h-6 w-6`
-- Line 62: Monitor icon `h-5 w-5` to `h-6 w-6`
-- Line 63: Sun icon `h-5 w-5` to `h-6 w-6`
+**`src/components/shell/AppHeader.tsx`** (line 138)
+- Revert username span from `text-[#1E69D2]` back to `text-foreground`
 
-**2. Change username text color to brand blue (#1E69D2)**
+**`src/components/ui/avatar.tsx`** (line 30)
+- Change the `AvatarFallback` background from `bg-[#00a791]` to `bg-[#1E69D2]`
 
-In `src/components/shell/AppHeader.tsx`:
-- Line 138: Change `text-foreground` to `text-[#1E69D2]` on the username span
-
-### Files Modified
-
-| File | Change |
-|---|---|
-| `src/components/shell/AppHeader.tsx` | Icon sizes 20px to 24px; username color to `#1E69D2` |
+This updates the fallback avatar circle (showing initials) across the entire app -- header, profile modal, tables, etc. -- to use the brand blue instead of teal.
 
