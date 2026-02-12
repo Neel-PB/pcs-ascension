@@ -1,25 +1,28 @@
 
 
-## Fix Surplus Tab Content Pushed to Bottom
+## Admin Module Cleanup
 
-### Problem
-When the Surplus (or Shortage) tab is active, the hidden "KPIs" `TabsContent` still has `flex-1 min-h-0`, which causes it to claim flex space in the layout even though it's not visible. This pushes the active tab's content to the bottom of the drawer.
+### Changes
 
-### Fix
+**File: `src/pages/admin/AdminPage.tsx`**
 
-**File: `src/components/workforce/WorkforceKPISection.tsx`**
+1. **Remove icons from tabs** -- Remove all `icon` properties from the tabs array and remove the icon imports (`Shield`, `Upload`, `Users`, `Settings`, `MessageSquare`, `History`) that are only used for tabs (keep `Shield` since it's used in the permission-denied section).
 
-Remove `flex-1 min-h-0` from the KPIs `TabsContent` (line 140) since it only needs to scroll its own content, not stretch. Change it to just `mt-2 overflow-y-auto`.
+2. **Remove Data Import tab entirely**:
+   - Remove the `{ id: "data-import", ... }` entry from the tabs array
+   - Remove the `DataImportPage` import
+   - Remove the `{activeTab === "data-import" && <DataImportPage />}` render block
+   - Change default `activeTab` state from `"data-import"` to `"users"`
 
-For the Shortage and Surplus tabs (lines 179, 182), keep `flex-1 min-h-0 flex flex-col` but also add `data-[state=inactive]:hidden` so inactive tabs are fully removed from the flex layout instead of just visually hidden.
+3. **Resulting tabs array** (no icons):
+   - Users
+   - Feed
+   - RBAC
+   - Audit Log
+   - Settings
 
-Alternatively, the simplest fix: add `data-[state=inactive]:hidden` to all three `TabsContent` elements. This ensures inactive tabs don't participate in flex layout at all.
+### Files Affected
+- `src/pages/admin/AdminPage.tsx` -- the only file that needs changes
 
-### Technical Detail
-
-- Line 140: Add `data-[state=inactive]:hidden` to KPIs TabsContent
-- Line 179: Add `data-[state=inactive]:hidden` to Shortage TabsContent  
-- Line 182: Add `data-[state=inactive]:hidden` to Surplus TabsContent
-
-This is a one-line-per-tab className addition -- no structural changes needed.
+The `DataImportPage.tsx` and `FileUploadZone.tsx` files will be left in place (they can be cleaned up separately if desired) since removing files is a separate concern.
 
