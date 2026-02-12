@@ -94,30 +94,21 @@ export function EditableNumberCell({
         {value != null ? value : '—'}
       </span>
       {isModified ? (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6 text-muted-foreground hover:text-foreground"
+        <RotateCcw
+          className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
           onClick={(e) => {
             e.stopPropagation();
             handleRevert(e);
           }}
-          title="Revert to original"
-        >
-          <RotateCcw className="h-3.5 w-3.5" />
-        </Button>
+        />
       ) : (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6 text-muted-foreground hover:text-foreground"
+        <Pencil
+          className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
           onClick={(e) => {
             e.stopPropagation();
             handleClick();
           }}
-        >
-          <Pencil className="h-3.5 w-3.5" />
-        </Button>
+        />
       )}
     </div>
   );
