@@ -1,44 +1,24 @@
 
 
-## Align Users Table with Positions Module Pattern
+## Fix Users Table Internal Scrolling
 
-### Goal
-Replace the HTML-based `<Table>` in the Users management with the `EditableTable` component used in the Positions module, ensuring a consistent look and feel across the app.
+The page currently allows the entire content area to scroll because the height chain from the shell layout down to the table is not constrained. The fix follows the same pattern used in the Positions module: apply `overflow-hidden`, `min-h-0`, and `flex` constraints on all intermediate containers so the `VirtualizedTableBody` becomes the sole scroll container.
 
 ### Changes
 
-**1. Create User Column Definitions (`src/config/userColumns.tsx`)**
+**1. `src/pages/admin/AdminPage.tsx`**
+- Change the root `<div className="space-y-6">` to a flex column that fills the available height: `flex flex-col h-full overflow-hidden`
+- Change the content container (`<div className="space-y-6">` wrapping tab content) to `flex-1 min-h-0 overflow-hidden` so it gives the active tab a bounded height
 
-Define columns using the same `ColumnDef` pattern as `employeeColumns.tsx`:
-- **User** (width: 280px) -- custom cell with Avatar + full name, locked column
-- **Email** (width: 260px) -- text cell
-- **Roles** (width: 200px) -- custom cell rendering Badge pills
-- **Created** (width: 160px) -- date cell formatted as "MMM d, yyyy"
-- **Actions** (width: 100px) -- custom cell with Edit and Delete icon buttons (non-sortable, non-draggable)
+**2. `src/pages/admin/UsersManagement.tsx`**
+- Change the root `<div className="space-y-6">` to `flex flex-col h-full overflow-hidden gap-4`
+- Keep the header, search, and count as fixed-height elements
+- Make the `UserManagementTable` wrapper take remaining space with `flex-1 min-h-0`
 
-Each column will use appropriate cell components (`TruncatedTextCell`, `BadgeCell`, custom renders) matching the Positions pattern.
-
-**2. Refactor `UserManagementTable.tsx`**
-
-- Replace the `<Table>` / `<TableRow>` / `<TableCell>` markup with `<EditableTable>`
-- Pass the new column definitions, user data, sort state, and row click handler
-- Move the delete confirmation `AlertDialog` into the Actions column's custom `renderCell`
-- Use `storeNamespace="admin-users-columns-v1"` for column state persistence
-- Keep the existing loading and empty states
-
-**3. Update `UsersManagement.tsx`**
-
-- Add sort state (`sortColumn`, `sortDirection`) and pass to `UserManagementTable`
-- The search, count display, and sheet logic remain unchanged
+**3. `src/components/admin/UserManagementTable.tsx`**
+- Add `h-full` to the `EditableTable` wrapper so it fills the flex container, allowing the virtualized body inside to scroll
 
 ### Result
-- Users table gets the same grid layout, sticky headers, proportional column scaling, hover states, and alternating row styles as the Employees table
-- Sortable columns (User, Email, Roles, Created)
-- Consistent row height (h-12), cursor-pointer on rows, and muted hover background
-- Action icons remain in a non-sortable, non-draggable last column
-
-### Files Affected
-- **New**: `src/config/userColumns.tsx`
-- **Modified**: `src/components/admin/UserManagementTable.tsx`
-- **Modified**: `src/pages/admin/UsersManagement.tsx`
-
+- The header, search bar, and user count remain fixed at the top
+- The table fills the remaining vertical space and scrolls internally
+- The outer page no longer scrolls when viewing the Users tab
