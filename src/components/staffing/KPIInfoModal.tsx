@@ -34,9 +34,9 @@ export function KPIInfoModal({
   isNegative = false,
 }: KPIInfoModalProps) {
   const getTrendColor = () => {
-    if (isNegative) return "text-destructive";
+    if (isNegative) return "text-orange-600";
     if (trend === "up") return "text-emerald-500";
-    if (trend === "down") return "text-red-500";
+    if (trend === "down") return "text-orange-500";
     return "text-muted-foreground";
   };
 
@@ -51,7 +51,7 @@ export function KPIInfoModal({
               <span
                 className={cn(
                   "text-3xl font-bold",
-                  isNegative ? "text-destructive" : "text-foreground"
+                  isNegative ? "text-orange-600" : "text-foreground"
                 )}
               >
                 {value}

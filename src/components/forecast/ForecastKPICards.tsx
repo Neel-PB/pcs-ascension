@@ -37,26 +37,26 @@ export function ForecastKPICards({
         className={cn(
           "py-2 px-4 cursor-pointer transition-all",
           activeFilter === 'shortage' 
-            ? "border-2 border-destructive/60 bg-destructive/10 shadow-sm"
-            : "border-2 border-destructive/30 bg-destructive/5"
+            ? "border-2 border-orange-500/60 bg-orange-500/10 shadow-sm"
+            : "border-2 border-orange-500/30 bg-orange-500/5"
         )}
         onClick={() => onFilterClick?.('shortage')}
       >
         <div className="flex items-center justify-around">
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-semibold uppercase tracking-wide text-destructive">
+            <span className="text-xs font-semibold uppercase tracking-wide text-orange-600">
               FTE Shortage:
             </span>
-            <div className="text-2xl font-bold text-destructive">
+            <div className="text-2xl font-bold text-orange-600">
               +{totalShortage.toFixed(1)}
             </div>
           </div>
-          <Separator orientation="vertical" className="h-8 bg-destructive/30" />
+          <Separator orientation="vertical" className="h-8 bg-orange-500/30" />
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-semibold uppercase tracking-wide text-destructive">
+            <span className="text-xs font-semibold uppercase tracking-wide text-orange-600">
               Positions to Open:
             </span>
-            <div className="text-2xl font-bold text-destructive">
+            <div className="text-2xl font-bold text-orange-600">
               {shortageCount}
             </div>
           </div>

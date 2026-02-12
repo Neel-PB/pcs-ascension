@@ -39,15 +39,15 @@ export function KPIChartModal({
 }: KPIChartModalProps) {
   const [activeTab, setActiveTab] = useState("chart");
   const getChartColor = () => {
-    if (isNegative) return "hsl(var(--destructive))";
+    if (isNegative) return "hsl(24 95% 53%)";
     if (isHighlighted) return "hsl(142 76% 36%)";
     return "hsl(var(--primary))";
   };
 
   const getTrendColor = () => {
-    if (isNegative) return "text-destructive";
+    if (isNegative) return "text-orange-600";
     if (trend === "up") return "text-emerald-500";
-    if (trend === "down") return "text-red-500";
+    if (trend === "down") return "text-orange-500";
     return "text-muted-foreground";
   };
 
@@ -101,7 +101,7 @@ export function KPIChartModal({
               <p className="text-sm text-muted-foreground mb-1">Current Value</p>
               <p className={cn(
                 "text-4xl font-bold",
-                isNegative ? "text-destructive" : "text-foreground"
+                isNegative ? "text-orange-600" : "text-foreground"
               )}>
                 {value}
               </p>

@@ -62,9 +62,9 @@ export function KPICard({
   const [showBreakdownModal, setShowBreakdownModal] = useState(false);
 
   const getTrendColor = () => {
-    if (isNegative) return "text-destructive";
+    if (isNegative) return "text-orange-600";
     if (trend === "up") return "text-emerald-500";
-    if (trend === "down") return "text-red-500";
+    if (trend === "down") return "text-orange-500";
     return "text-muted-foreground";
   };
 
@@ -80,7 +80,7 @@ export function KPICard({
           className={cn(
             "hover:shadow-lg transition-all duration-300",
             isHighlighted && "border-emerald-500/50 bg-emerald-500/5",
-            isNegative && "border-destructive/50 bg-destructive/5",
+            isNegative && "border-orange-500/50 bg-orange-500/5",
             className
           )}
         >
@@ -114,7 +114,7 @@ export function KPICard({
             <div className="space-y-0.5">
               <div className={cn(
                 "text-2xl font-bold tracking-tight leading-none",
-                isNegative ? "text-destructive" : "text-foreground"
+                isNegative ? "text-orange-600" : "text-foreground"
               )}>
                 {value}
               </div>
@@ -237,19 +237,19 @@ export function KPICard({
                 <div className="flex items-center gap-4 text-sm">
                   <span className={cn(
                     "px-2 py-1 rounded font-medium",
-                    employmentBreakdown.ft >= 70 ? "bg-emerald-500/10 text-emerald-700" : "bg-destructive/10 text-destructive"
+                    employmentBreakdown.ft >= 70 ? "bg-emerald-500/10 text-emerald-700" : "bg-orange-500/10 text-orange-600"
                   )}>
                     {employmentBreakdown.ft}% FT
                   </span>
                   <span className={cn(
                     "px-2 py-1 rounded font-medium",
-                    employmentBreakdown.pt <= 20 ? "bg-emerald-500/10 text-emerald-700" : "bg-destructive/10 text-destructive"
+                    employmentBreakdown.pt <= 20 ? "bg-emerald-500/10 text-emerald-700" : "bg-orange-500/10 text-orange-600"
                   )}>
                     {employmentBreakdown.pt}% PT
                   </span>
                   <span className={cn(
                     "px-2 py-1 rounded font-medium",
-                    employmentBreakdown.prn <= 10 ? "bg-emerald-500/10 text-emerald-700" : "bg-destructive/10 text-destructive"
+                    employmentBreakdown.prn <= 10 ? "bg-emerald-500/10 text-emerald-700" : "bg-orange-500/10 text-orange-600"
                   )}>
                     {employmentBreakdown.prn}% PRN
                   </span>

@@ -21,7 +21,7 @@ function PercentageBar({ actual, target, label, value }: { actual: number; targe
         <span className="text-xs font-medium">{label}</span>
         <span className={cn(
           "font-semibold",
-          isBalanced ? "text-emerald-600" : isOver ? "text-amber-600" : "text-destructive"
+          isBalanced ? "text-emerald-600" : isOver ? "text-amber-600" : "text-orange-600"
         )}>
           {actual.toFixed(0)}%
         </span>
@@ -31,7 +31,7 @@ function PercentageBar({ actual, target, label, value }: { actual: number; targe
           <div 
             className={cn(
               "h-full rounded-full transition-all",
-              isBalanced ? "bg-emerald-500" : isOver ? "bg-amber-500" : "bg-destructive"
+              isBalanced ? "bg-emerald-500" : isOver ? "bg-amber-500" : "bg-orange-500"
             )}
             style={{ width: `${Math.min(actual, 100)}%` }}
           />

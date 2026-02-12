@@ -268,7 +268,7 @@ const applyActiveVariation = (data: VarianceData[]): VarianceData[] => {
 };
 
 const getVarianceColor = (value: number) => {
-  if (value < 0) return "text-red-600 font-semibold";
+  if (value < 0) return "text-orange-600 font-semibold";
   return "text-foreground font-semibold";
 };
 
@@ -917,7 +917,7 @@ export default function PositionPlanning({ selectedDepartment }: PositionPlannin
               <span className="text-muted-foreground">FTE Surplus</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xl font-light text-red-500 leading-none w-4 text-center">-</span>
+              <span className="text-xl font-light text-orange-500 leading-none w-4 text-center">-</span>
               <span className="text-muted-foreground">FTE Shortage</span>
             </div>
           </motion.div>
@@ -1047,7 +1047,7 @@ export default function PositionPlanning({ selectedDepartment }: PositionPlannin
                     <span className="text-muted-foreground">FTE Surplus</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xl font-light text-red-500 leading-none w-4 text-center">-</span>
+                    <span className="text-xl font-light text-orange-500 leading-none w-4 text-center">-</span>
                     <span className="text-muted-foreground">FTE Shortage</span>
                   </div>
                 </div>
