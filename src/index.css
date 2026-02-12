@@ -96,7 +96,7 @@ Modern enterprise shell with clean aesthetics and accessibility
     --text-subtle: 220 9% 60%;
     
     /* Brand & Status Colors */
-    --primary: 219 82% 33%;
+    --primary: 211 75% 47%;
     --primary-weak: 205 93% 95%;
     --primary-weak-2: 208 91% 90%;
     --success: 142 71% 45%;
@@ -121,21 +121,21 @@ Modern enterprise shell with clean aesthetics and accessibility
     --destructive-foreground: 0 0% 100%;
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 219 82% 33%;
+    --ring: 211 75% 47%;
     /* Sidebar System */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 220 9% 46%;
-    --sidebar-primary: 219 82% 33%;
+    --sidebar-primary: 211 75% 47%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 14% 97.6%;
     --sidebar-accent-foreground: 220 13% 18%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 219 82% 33%;
+    --sidebar-ring: 211 75% 47%;
     
     /* Custom Gradients */
     --gradient-card: linear-gradient(135deg, hsl(var(--bg)) 0%, hsl(var(--bg-elev)) 100%);
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(222 91% 21%) 100%);
-    --gradient-text: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(222 91% 21%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(216 80% 39%) 100%);
+    --gradient-text: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(216 80% 39%) 100%);
     
     /* Shadows */
     --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.05);
