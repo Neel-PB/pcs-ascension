@@ -26,7 +26,7 @@ const getRoleBadgeVariant = (role: string) => {
     case 'labor_team':
       return 'default' as const;
     default:
-      return 'secondary' as const;
+      return 'outline' as const;
   }
 };
 
@@ -90,12 +90,12 @@ export const createUserColumns = (
       <CellButton className="flex items-center gap-1 flex-wrap">
         {(row.roles || []).length > 0 ? (
           row.roles.map((role) => (
-            <Badge key={role} variant={getRoleBadgeVariant(role)} className="text-[10px] px-1.5 py-0">
+            <Badge key={role} variant={getRoleBadgeVariant(role)} className="text-xs px-2 py-0.5">
               {getRoleDisplayName(role)}
             </Badge>
           ))
         ) : (
-          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">No Role</Badge>
+          <Badge variant="outline" className="text-xs px-2 py-0.5">No Role</Badge>
         )}
       </CellButton>
     ),
