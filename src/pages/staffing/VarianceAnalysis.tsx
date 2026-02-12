@@ -622,30 +622,30 @@ export function VarianceAnalysis({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="font-semibold sticky left-0 bg-card z-10 min-w-[200px] border-r-2 border-muted-foreground/30">{columnHeader}</TableHead>
-          <TableHead colSpan={3} className="text-center font-semibold bg-card border-l-2 border-muted-foreground/30">CL Skill</TableHead>
-          <TableHead colSpan={3} className="text-center font-semibold bg-card border-l-2 border-muted-foreground/30">RN Skill</TableHead>
-          <TableHead colSpan={3} className="text-center font-semibold bg-card border-l-2 border-muted-foreground/30">PCT Skill</TableHead>
-          <TableHead colSpan={3} className="text-center font-semibold bg-card border-l-2 border-muted-foreground/30">HUC</TableHead>
-          <TableHead colSpan={3} className="text-center font-semibold bg-card border-l-2 border-muted-foreground/30">Overhead</TableHead>
+          <TableHead className="font-semibold sticky left-0 bg-muted/30 z-10 min-w-[200px] border-r-2 border-muted-foreground/30">{columnHeader}</TableHead>
+          <TableHead colSpan={3} className="text-center font-semibold bg-muted/30 border-l-2 border-muted-foreground/30">CL Skill</TableHead>
+          <TableHead colSpan={3} className="text-center font-semibold bg-muted/30 border-l-2 border-muted-foreground/30">RN Skill</TableHead>
+          <TableHead colSpan={3} className="text-center font-semibold bg-muted/30 border-l-2 border-muted-foreground/30">PCT Skill</TableHead>
+          <TableHead colSpan={3} className="text-center font-semibold bg-muted/30 border-l-2 border-muted-foreground/30">HUC</TableHead>
+          <TableHead colSpan={3} className="text-center font-semibold bg-muted/30 border-l-2 border-muted-foreground/30">Overhead</TableHead>
         </TableRow>
-        <TableRow className="bg-muted/50">
-          <TableHead className="sticky left-0 bg-muted/50 z-10 border-r-2 border-muted-foreground/30"></TableHead>
-          <TableHead className="text-center text-xs bg-muted/50 border-l-2 border-muted-foreground/30">Day</TableHead>
-          <TableHead className="text-center text-xs bg-muted/50">Night</TableHead>
-          <TableHead className="text-center text-xs bg-muted/50">Total</TableHead>
-          <TableHead className="text-center text-xs bg-muted/50 border-l-2 border-muted-foreground/30">Day</TableHead>
-          <TableHead className="text-center text-xs bg-muted/50">Night</TableHead>
-          <TableHead className="text-center text-xs bg-muted/50">Total</TableHead>
-          <TableHead className="text-center text-xs bg-muted/50 border-l-2 border-muted-foreground/30">Day</TableHead>
-          <TableHead className="text-center text-xs bg-muted/50">Night</TableHead>
-          <TableHead className="text-center text-xs bg-muted/50">Total</TableHead>
-          <TableHead className="text-center text-xs bg-muted/50 border-l-2 border-muted-foreground/30">Day</TableHead>
-          <TableHead className="text-center text-xs bg-muted/50">Night</TableHead>
-          <TableHead className="text-center text-xs bg-muted/50">Total</TableHead>
-          <TableHead className="text-center text-xs bg-muted/50 border-l-2 border-muted-foreground/30">Day</TableHead>
-          <TableHead className="text-center text-xs bg-muted/50">Night</TableHead>
-          <TableHead className="text-center text-xs bg-muted/50">Total</TableHead>
+        <TableRow>
+          <TableHead className="sticky left-0 bg-background z-10 border-r-2 border-muted-foreground/30"></TableHead>
+          <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30">Day</TableHead>
+          <TableHead className="text-center text-xs">Night</TableHead>
+          <TableHead className="text-center text-xs">Total</TableHead>
+          <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30">Day</TableHead>
+          <TableHead className="text-center text-xs">Night</TableHead>
+          <TableHead className="text-center text-xs">Total</TableHead>
+          <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30">Day</TableHead>
+          <TableHead className="text-center text-xs">Night</TableHead>
+          <TableHead className="text-center text-xs">Total</TableHead>
+          <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30">Day</TableHead>
+          <TableHead className="text-center text-xs">Night</TableHead>
+          <TableHead className="text-center text-xs">Total</TableHead>
+          <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30">Day</TableHead>
+          <TableHead className="text-center text-xs">Night</TableHead>
+          <TableHead className="text-center text-xs">Total</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -672,7 +672,7 @@ export function VarianceAnalysis({
         <h2 className="text-2xl font-bold">Variance Analysis</h2>
         <div className="flex items-center gap-4">
           {/* Legend */}
-          <div className="flex flex-col gap-0.5 text-sm">
+          <div className="flex items-center gap-4 text-sm">
             <div className="flex items-center gap-2">
               <span className="text-xl font-light text-foreground leading-none w-4 text-center">+</span>
               <span className="text-muted-foreground">FTE Shortage</span>
@@ -690,10 +690,11 @@ export function VarianceAnalysis({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.15 }}
           >
-            <DataRefreshButton dataSources={['staffing_grid', 'labor_uos_data']} />
+            <DataRefreshButton dataSources={['staffing_grid', 'labor_uos_data']} className="h-8 w-8" />
             <Button
               variant="ascension"
               size="icon"
+              className="h-8 w-8"
               onClick={downloadCSV}
               aria-label="Download CSV"
               title="Download CSV"
@@ -703,6 +704,7 @@ export function VarianceAnalysis({
             <Button
               variant="ascension"
               size="icon"
+              className="h-8 w-8"
               onClick={() => setIsExpanded(true)}
               aria-label="Expand view"
               title="Expand view"
@@ -717,7 +719,7 @@ export function VarianceAnalysis({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.1 }}
-        className="rounded-lg border bg-card overflow-x-auto"
+        className="rounded-xl border shadow-sm bg-card overflow-hidden overflow-x-auto"
       >
         <VarianceTable />
       </motion.div>
@@ -732,7 +734,7 @@ export function VarianceAnalysis({
               </DialogTitle>
               <div className="flex items-center gap-4">
                 {/* Legend */}
-                <div className="flex flex-col gap-0.5 text-sm">
+                <div className="flex items-center gap-4 text-sm">
                   <div className="flex items-center gap-2">
                     <span className="text-xl font-light text-foreground leading-none w-4 text-center">+</span>
                     <span className="text-muted-foreground">FTE Shortage</span>
