@@ -1,30 +1,44 @@
 
 
-## Fix Users Table Icons and Improve Usability
+## Align Users Table with Positions Module Pattern
+
+### Goal
+Replace the HTML-based `<Table>` in the Users management with the `EditableTable` component used in the Positions module, ensuring a consistent look and feel across the app.
 
 ### Changes
 
-**File: `src/components/admin/UserManagementTable.tsx`**
+**1. Create User Column Definitions (`src/config/userColumns.tsx`)**
 
-**1. Fix action icons**
-- The `Pencil` and `Trash2` icons are Material Design icons from `react-icons/md`. When used inside `Button size="icon"`, they can render at inconsistent sizes since react-icons uses `size` prop differently than lucide.
-- Switch action icons to use `size={16}` prop directly on the icon components for consistent 16px rendering.
-- Use `MdOutlineEdit` and `MdOutlineDeleteOutline` (outlined variants) for a cleaner look matching the app's outlined icon convention.
-- Import `MdOutlineDeleteOutline` via the icons adapter (or use Trash2 with explicit size).
+Define columns using the same `ColumnDef` pattern as `employeeColumns.tsx`:
+- **User** (width: 280px) -- custom cell with Avatar + full name, locked column
+- **Email** (width: 260px) -- text cell
+- **Roles** (width: 200px) -- custom cell rendering Badge pills
+- **Created** (width: 160px) -- date cell formatted as "MMM d, yyyy"
+- **Actions** (width: 100px) -- custom cell with Edit and Delete icon buttons (non-sortable, non-draggable)
 
-**2. Make the table more usable**
-- Add a user count summary below the search (e.g., "Showing 5 users")
-- Improve row hover interaction -- make the edit action more discoverable by showing a subtle edit cursor on row click (wire `onEdit` to row click)
-- Add `whitespace-nowrap` to the Email and Created columns to prevent wrapping
-- Make the Actions column narrower with `w-[100px]`
-- Add `text-xs` to the Created date for a more compact feel
-- Use `rounded-xl` and `overflow-hidden` on the table container to match the app's standard table styling
-- Add role display names for all roles (nurse_manager -> "Nurse Manager", etc.) using underscore-to-title-case conversion
+Each column will use appropriate cell components (`TruncatedTextCell`, `BadgeCell`, custom renders) matching the Positions pattern.
 
-**3. Improve role display helper**
-- Update `getRoleDisplayName` to properly convert snake_case to Title Case for all roles (e.g., `nurse_manager` -> `Nurse Manager`)
+**2. Refactor `UserManagementTable.tsx`**
+
+- Replace the `<Table>` / `<TableRow>` / `<TableCell>` markup with `<EditableTable>`
+- Pass the new column definitions, user data, sort state, and row click handler
+- Move the delete confirmation `AlertDialog` into the Actions column's custom `renderCell`
+- Use `storeNamespace="admin-users-columns-v1"` for column state persistence
+- Keep the existing loading and empty states
+
+**3. Update `UsersManagement.tsx`**
+
+- Add sort state (`sortColumn`, `sortDirection`) and pass to `UserManagementTable`
+- The search, count display, and sheet logic remain unchanged
+
+### Result
+- Users table gets the same grid layout, sticky headers, proportional column scaling, hover states, and alternating row styles as the Employees table
+- Sortable columns (User, Email, Roles, Created)
+- Consistent row height (h-12), cursor-pointer on rows, and muted hover background
+- Action icons remain in a non-sortable, non-draggable last column
 
 ### Files Affected
-- `src/components/admin/UserManagementTable.tsx` -- icon fixes, table styling, role display
-- `src/pages/admin/UsersManagement.tsx` -- add user count display
+- **New**: `src/config/userColumns.tsx`
+- **Modified**: `src/components/admin/UserManagementTable.tsx`
+- **Modified**: `src/pages/admin/UsersManagement.tsx`
 
