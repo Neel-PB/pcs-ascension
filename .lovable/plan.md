@@ -1,31 +1,24 @@
 
 
-## Fix: Define the Missing `--radius` CSS Variable
+## Make Positions Checklist Tabs Full-Width
 
-### Root Cause
-The Tailwind config overrides the default `borderRadius` values to use a CSS variable:
+### Problem
+The Shortage/Surplus tabs in the Positions Checklist drawer are underline-style tabs that only take up partial width. Per the project's tab navigation standards, these should use the pill-shaped toggle button group, full-width with equal segments.
 
-```
-borderRadius: {
-  lg: "var(--radius)",
-  md: "calc(var(--radius) - 2px)",
-  sm: "calc(var(--radius) - 4px)",
-}
-```
+### Changes
 
-But `--radius` is **never defined** in `src/index.css`. This means `rounded-lg`, `rounded-md`, and `rounded-sm` all resolve to empty/invalid values, producing no visible border radius on any element using these classes.
+**File: `src/components/workforce/WorkforceKPISection.tsx`**
 
-### Fix
+Replace the `Tabs`/`TabsList`/`TabsTrigger`/`TabsContent` implementation (lines 197-218) with:
+- A `ToggleButtonGroup` component for the tab headers (full-width, equal segments)
+- Local state (`useState`) to track the active tab (`shortage` or `surplus`)
+- Conditional rendering of `ForecastChecklistTable` based on active state
 
-**File: `src/index.css`** -- Add `--radius: 0.5rem;` (8px) to the `:root` block (around line 85, alongside the other CSS variables).
+The toggle items will include the badge counts in the labels (e.g., "Shortage 2", "Surplus 2") to preserve the current information display.
 
-This single addition will:
-- Make `rounded-lg` = 8px (the Helix spec value)
-- Make `rounded-md` = 6px
-- Make `rounded-sm` = 4px
-
-All existing `rounded-lg` classes already applied to SelectTrigger, FilterBar buttons, and CombinedOptionalFilters will immediately take effect.
-
-### No other changes needed
-The previous edits to FilterBar.tsx, CombinedOptionalFilters.tsx, and select.tsx were correct -- they just had no visible effect because the variable was missing.
+### Technical Detail
+- Import `ToggleButtonGroup` from `@/components/ui/toggle-button-group` and `useState` from React
+- Remove `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent` imports if no longer used in this file
+- Remove `Badge` import if no longer used
+- The `ToggleButtonGroup` is already configured for full-width (`w-full`, `flex-1`) pill-shaped buttons per project standards
 
