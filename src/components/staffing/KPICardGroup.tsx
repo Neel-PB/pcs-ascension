@@ -51,9 +51,9 @@ function SingleCardInGroup({
   const [showInfoModal, setShowInfoModal] = useState(false);
 
   const getTrendColor = () => {
-    if (card.isNegative) return "text-destructive";
+    if (card.isNegative) return "text-orange-600";
     if (card.trend === "up") return "text-emerald-500";
-    if (card.trend === "down") return "text-red-500";
+    if (card.trend === "down") return "text-orange-500";
     return "text-muted-foreground";
   };
 
@@ -63,7 +63,7 @@ function SingleCardInGroup({
         className={cn(
           "hover:shadow-lg transition-all duration-300 flex-1",
           card.isHighlighted && "border-emerald-500/50 bg-emerald-500/5",
-          card.isNegative && "border-destructive/50 bg-destructive/5",
+          card.isNegative && "border-orange-500/50 bg-orange-500/5",
           // Grouped styling - remove inner corners
           "rounded-b-none",
           isFirst && "rounded-tr-none",
@@ -98,7 +98,7 @@ function SingleCardInGroup({
           <div className="space-y-0.5">
             <div className={cn(
               "text-2xl font-bold tracking-tight leading-none",
-              card.isNegative ? "text-destructive" : "text-foreground"
+              card.isNegative ? "text-orange-600" : "text-foreground"
             )}>
               {card.value}
             </div>
@@ -250,19 +250,19 @@ export function KPICardGroup({
               <div className="flex items-center gap-4 text-sm">
                 <span className={cn(
                   "px-2 py-1 rounded font-medium",
-                  sharedBreakdown.ft >= 70 ? "bg-emerald-500/10 text-emerald-700" : "bg-destructive/10 text-destructive"
+                  sharedBreakdown.ft >= 70 ? "bg-emerald-500/10 text-emerald-700" : "bg-orange-500/10 text-orange-600"
                 )}>
                   {sharedBreakdown.ft}% FT
                 </span>
                 <span className={cn(
                   "px-2 py-1 rounded font-medium",
-                  sharedBreakdown.pt <= 20 ? "bg-emerald-500/10 text-emerald-700" : "bg-destructive/10 text-destructive"
+                  sharedBreakdown.pt <= 20 ? "bg-emerald-500/10 text-emerald-700" : "bg-orange-500/10 text-orange-600"
                 )}>
                   {sharedBreakdown.pt}% PT
                 </span>
                 <span className={cn(
                   "px-2 py-1 rounded font-medium",
-                  sharedBreakdown.prn <= 10 ? "bg-emerald-500/10 text-emerald-700" : "bg-destructive/10 text-destructive"
+                  sharedBreakdown.prn <= 10 ? "bg-emerald-500/10 text-emerald-700" : "bg-orange-500/10 text-orange-600"
                 )}>
                   {sharedBreakdown.prn}% PRN
                 </span>

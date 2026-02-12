@@ -12,7 +12,7 @@ interface ForecastBalanceRowProps {
 export function ForecastBalanceTableRow({ row, isExpanded, onToggle }: ForecastBalanceRowProps) {
   // Both shortage and surplus are red
   const gapColor = row.gapType === 'shortage' || row.gapType === 'surplus'
-    ? 'text-destructive' 
+    ? 'text-orange-600' 
     : row.gapType === 'split-imbalanced'
       ? 'text-amber-600'
       : 'text-muted-foreground';
@@ -21,7 +21,7 @@ export function ForecastBalanceTableRow({ row, isExpanded, onToggle }: ForecastB
   
   // Status badge colors - red for shortage/surplus, yellow for split issue, green for balanced
   const statusColor = row.gapType === 'shortage' || row.gapType === 'surplus'
-    ? 'text-destructive bg-destructive/10'
+    ? 'text-orange-600 bg-orange-500/10'
     : row.gapType === 'split-imbalanced'
       ? 'text-amber-600 bg-amber-500/10'
       : 'text-emerald-600 bg-emerald-500/10';

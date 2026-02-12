@@ -204,7 +204,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
                         <div className="flex items-center gap-3">
                           <span className={cn(
                             "font-medium",
-                            isOnTarget ? "text-emerald-500" : "text-red-500"
+                            isOnTarget ? "text-emerald-500" : "text-orange-500"
                           )}>
                             {current}%
                           </span>
@@ -212,7 +212,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
                           {!isOnTarget && (
                             <span className={cn(
                               "text-xs",
-                              variance > 0 ? "text-red-500" : "text-red-500"
+                              variance > 0 ? "text-orange-500" : "text-orange-500"
                             )}>
                               ({variance > 0 ? '+' : ''}{variance.toFixed(0)}%)
                             </span>
