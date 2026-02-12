@@ -354,15 +354,15 @@ export function VolumeOverrideSettings() {
         transition={{ duration: 1.5, ease: 'easeInOut' }}
         className="rounded-lg"
       >
-        <Tabs value={mode} onValueChange={(v) => setMode(v as ConfigMode)} className="w-full max-w-md">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="universal">
+        <Tabs value={mode} onValueChange={(v) => setMode(v as ConfigMode)} className="w-full">
+          <TabsList className="w-full">
+            <TabsTrigger value="universal" className="flex-1">
               <span className="flex items-center gap-2">
                 <Globe className="h-4 w-4" />
                 Universal
               </span>
             </TabsTrigger>
-            <TabsTrigger value="department">
+            <TabsTrigger value="department" className="flex-1">
               <span className="flex items-center gap-2">
                 <Building2 className="h-4 w-4" />
                 Department-Specific
