@@ -124,7 +124,7 @@ export function EditableDateCell({
       <PopoverContent className="w-auto p-0 shadow-md" align="start">
         <div className="flex flex-col">
           {/* Header */}
-          <div className="px-4 py-6">
+          <div className="px-4 pt-4 pb-2">
             <p className="text-xs text-muted-foreground">Select a date</p>
             <p className="text-sm font-medium text-foreground mt-1">
               {pendingDate ? format(pendingDate, formatString) : '—'}
@@ -142,12 +142,12 @@ export function EditableDateCell({
               return false;
             }}
             initialFocus
-            className={cn("pointer-events-auto")}
+            className={cn("pointer-events-auto pt-2")}
           />
 
           {/* Separator + Footer */}
           <Separator />
-          <div className="flex justify-end gap-6 py-2 px-3">
+          <div className="flex justify-end gap-6 py-1.5 px-3">
             <Button variant="ghost" size="sm" onClick={handleCancel}>
               CANCEL
             </Button>
