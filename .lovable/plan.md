@@ -1,33 +1,31 @@
 
 
-## Align Select Trigger to Helix Field Spec
+## Fix Rounded Corners on All Filter Triggers
 
 ### Problem
-The SelectTrigger styling doesn't fully match the Helix spec. Border radius is now correct (8px / `rounded-lg`), but padding and spacing are off.
+The filter bar uses different components for different filters, so the `rounded-lg` change to `SelectTrigger` only affected Region and Market. Facility, Department, and the optional filters still have sharp corners due to separate styling.
 
-### Current vs. Spec
+### Root Cause
 
-| Property | Current | Helix Spec |
+| Filter | Component Used | Current Radius |
 |---|---|---|
-| Border radius | `rounded-lg` (8px) | 8px -- already correct |
-| Left/Right padding | `px-3` (12px) | 16px (`px-4`) |
-| Top/Bottom padding | `py-2` (8px) | 12px (`py-3`) |
-| Height | `h-10` (40px) | Auto from padding (should be ~48px with 12px top + 12px bottom + line height) |
-| Stroke | 1px -- correct | 1px |
-| Chevron right spacing | included in px-3 | 8px gap from right edge |
+| Region, Market | `SelectTrigger` | `rounded-lg` (fixed) |
+| Facility, Department | `Button variant="outline"` (Popover trigger) | `rounded-md` (6px, from button base) |
+| Submarket, Level 2, PSTAT | `SelectTrigger` with explicit `rounded-sm` override | `rounded-sm` (overrides the base) |
+| More Filters button | `Button` with explicit `rounded-sm` override | `rounded-sm` |
 
 ### Changes
 
-**File: `src/components/ui/select.tsx`**
+**File: `src/components/staffing/FilterBar.tsx`**
+- Facility trigger (line 355): Add `rounded-lg` to the Button className
+- Department trigger (line 445): Add `rounded-lg` to the Button className
+- Submarket trigger (line 568): Change `rounded-sm` to `rounded-lg`
+- Level 2 trigger (line 586): Change `rounded-sm` to `rounded-lg`
+- PSTAT trigger (line 604): Change `rounded-sm` to `rounded-lg`
 
-Update `SelectTrigger` className:
-- Change `px-3` to `px-4` (16px horizontal padding)
-- Change `py-2` to `py-3` (12px vertical padding)
-- Remove fixed `h-10` so height is driven by padding + content (results in ~48px naturally)
-- Ensure the chevron icon has proper right spacing
+**File: `src/components/staffing/CombinedOptionalFilters.tsx`**
+- "More Filters" button (line 51): Change `rounded-sm` to `rounded-lg`
 
-### What stays the same
-- `rounded-lg`, border color, focus states, open states all unchanged
-- Dropdown content panel styling unchanged
-- All other components unaffected
+### Result
+All filter triggers in the FilterBar will consistently use 8px rounded corners (`rounded-lg`), matching the Helix field spec.
 
