@@ -6,7 +6,7 @@ import { Upload, RotateCw, Trash2 } from '@/lib/icons';
 import Cropper from 'react-easy-crop';
 import { createCroppedImage, type CropArea } from '@/lib/cropImage';
 import { useAvatarUpload } from '@/hooks/useAvatarUpload';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface AvatarUploadCropProps {
   open: boolean;
@@ -37,20 +37,16 @@ export function AvatarUploadCrop({ open, onOpenChange, userId, currentAvatarUrl 
 
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-      toast({
-        title: 'File too large',
+      toast.error('File too large', {
         description: 'Please select an image smaller than 2MB',
-        variant: 'destructive',
       });
       return;
     }
 
     // Validate file format
     if (!ACCEPTED_FORMATS.includes(file.type)) {
-      toast({
-        title: 'Invalid format',
+      toast.error('Invalid format', {
         description: 'Please select a JPEG, PNG, or WebP image',
-        variant: 'destructive',
       });
       return;
     }

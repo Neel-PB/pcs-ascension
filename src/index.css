@@ -376,6 +376,32 @@ Modern enterprise shell with clean aesthetics and accessibility
   transition-timing-function: ease-in;
 }
 
+/* Helix Snackbar - close button inline positioning */
+[data-sonner-toast] [data-close-button] {
+  position: static !important;
+  transform: none !important;
+  margin-left: auto !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  color: currentColor !important;
+  right: auto !important;
+  top: auto !important;
+  left: auto !important;
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 9999px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+[data-sonner-toast] [data-close-button]:hover {
+  background: hsl(var(--foreground) / 0.1) !important;
+}
+
 /* Helix Snackbar variant backgrounds */
 [data-sonner-toast][data-type="success"] {
   background-color: #ecfdf5 !important;
