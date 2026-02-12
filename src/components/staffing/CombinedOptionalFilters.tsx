@@ -48,7 +48,7 @@ export function CombinedOptionalFilters({
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="rounded-sm border border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground transition-colors gap-2"
+          className="rounded-lg border border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground transition-colors gap-2"
         >
           <SlidersHorizontal className="h-4 w-4" />
           More Filters
