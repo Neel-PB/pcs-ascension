@@ -2,11 +2,8 @@ import React, { useMemo } from 'react';
 import { WorkforceKPICard } from './WorkforceKPICard';
 import { ForecastChecklistTable } from './ForecastChecklistTable';
 import { Separator } from '@/components/ui/separator';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown } from '@/lib/icons';
-import { cn } from '@/lib/utils';
 import { 
   getFTEKPIs, 
   getProductivityKPIs, 
@@ -39,7 +36,6 @@ export const WorkforceKPISection = ({
   volumeType,
   volumeValue 
 }: WorkforceKPISectionProps) => {
-  const [kpisExpanded, setKpisExpanded] = React.useState(false);
   
   // Create filters object for forecast data
   const filters: ForecastBalanceFilters = useMemo(() => ({
@@ -127,75 +123,13 @@ export const WorkforceKPISection = ({
   // For Staffing module tabs, show both tables without tabs
   const showBothTables = ['summary', 'planning', 'variance', 'forecasts'].includes(activeTab);
 
-  // Get compact summary values for collapsed state
-  const hiredValue = commonKPIs.find(k => k.id === 'hired-ftes')?.value ?? '—';
-  const targetValue = commonKPIs.find(k => k.id === 'target-ftes')?.value ?? '—';
-  const varianceValue = commonKPIs.find(k => k.id === 'fte-variance')?.value ?? '—';
-
   return (
     <div className="flex-1 flex flex-col min-h-0 space-y-2">
-      {/* Collapsible KPI Section */}
-      <Collapsible open={kpisExpanded} onOpenChange={setKpisExpanded}>
-        <CollapsibleTrigger className="flex items-center justify-between w-full py-1 px-1 hover:bg-muted/50 rounded-md transition-colors">
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">KPIs</span>
-          {!kpisExpanded && (
-            <span className="text-xs text-muted-foreground flex-1 text-right mr-2">
-              Hired: {hiredValue} | Target: {targetValue} | Var: {varianceValue}
-            </span>
-          )}
-          <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", kpisExpanded && "rotate-180")} />
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          {/* Common KPIs Section */}
-          <div className="grid grid-cols-3 gap-2 mt-2">
-            {commonKPIs.map((kpi) => (
-              <WorkforceKPICard
-                key={kpi.id}
-                label={kpi.title}
-                value={kpi.value}
-                chartData={kpi.chartData}
-                chartType={kpi.chartType}
-                definition={kpi.definition}
-                calculation={kpi.calculation}
-                breakdownData={kpi.breakdownData}
-                xAxisLabels={kpi.xAxisLabels}
-                decimalPlaces={kpi.decimalPlaces}
-              />
-            ))}
-          </div>
-
-          {/* Separator and Tab-specific KPIs */}
-          {tabSpecificKPIs.length > 0 && (
-            <>
-              <Separator className="my-2" />
-              <div className="grid grid-cols-3 gap-2">
-                {tabSpecificKPIs.map((kpi) => (
-                  <WorkforceKPICard
-                    key={kpi.id}
-                    label={kpi.title}
-                    value={kpi.value}
-                    chartData={kpi.chartData}
-                    chartType={kpi.chartType}
-                    definition={kpi.definition}
-                    calculation={kpi.calculation}
-                    breakdownData={kpi.breakdownData}
-                    xAxisLabels={kpi.xAxisLabels}
-                    decimalPlaces={kpi.decimalPlaces}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-        </CollapsibleContent>
-      </Collapsible>
-
-      {/* Separator before tabs */}
-      {showForecastTables && <Separator className="my-1" />}
-
-      {/* Tabbed Shortage/Surplus for Positions module */}
+      {/* 3-tab layout for Positions module */}
       {showForecastTables && (
-        <Tabs defaultValue="shortage" className="flex-1 flex flex-col min-h-0">
+        <Tabs defaultValue="kpis" className="flex-1 flex flex-col min-h-0">
           <TabsList className="w-full">
+            <TabsTrigger value="kpis" className="flex-1">KPIs</TabsTrigger>
             <TabsTrigger value="shortage" className="flex-1">
               Shortage <Badge variant="secondary" className="ml-1.5">{shortageCount}</Badge>
             </TabsTrigger>
@@ -203,6 +137,45 @@ export const WorkforceKPISection = ({
               Surplus <Badge variant="secondary" className="ml-1.5">{surplusCount}</Badge>
             </TabsTrigger>
           </TabsList>
+          <TabsContent value="kpis" className="flex-1 min-h-0 mt-2 overflow-y-auto">
+            <div className="grid grid-cols-3 gap-2">
+              {commonKPIs.map((kpi) => (
+                <WorkforceKPICard
+                  key={kpi.id}
+                  label={kpi.title}
+                  value={kpi.value}
+                  chartData={kpi.chartData}
+                  chartType={kpi.chartType}
+                  definition={kpi.definition}
+                  calculation={kpi.calculation}
+                  breakdownData={kpi.breakdownData}
+                  xAxisLabels={kpi.xAxisLabels}
+                  decimalPlaces={kpi.decimalPlaces}
+                />
+              ))}
+            </div>
+            {tabSpecificKPIs.length > 0 && (
+              <>
+                <Separator className="my-2" />
+                <div className="grid grid-cols-3 gap-2">
+                  {tabSpecificKPIs.map((kpi) => (
+                    <WorkforceKPICard
+                      key={kpi.id}
+                      label={kpi.title}
+                      value={kpi.value}
+                      chartData={kpi.chartData}
+                      chartType={kpi.chartType}
+                      definition={kpi.definition}
+                      calculation={kpi.calculation}
+                      breakdownData={kpi.breakdownData}
+                      xAxisLabels={kpi.xAxisLabels}
+                      decimalPlaces={kpi.decimalPlaces}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </TabsContent>
           <TabsContent value="shortage" className="flex-1 min-h-0 mt-2 flex flex-col">
             <ForecastChecklistTable type="shortage" filters={filters} />
           </TabsContent>
