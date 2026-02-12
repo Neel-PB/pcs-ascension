@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { VoiceRecorder } from './VoiceRecorder';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { getAbbreviatedModelName } from '@/config/geminiModels';
 import mammoth from 'mammoth';
 import * as XLSX from 'xlsx';
@@ -71,7 +71,7 @@ export const PillChatBar: React.FC<PillChatBarProps> = ({
   showDocumentSearch = false,
   className,
 }) => {
-  const { toast } = useToast();
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -104,20 +104,16 @@ export const PillChatBar: React.FC<PillChatBarProps> = ({
 
         // Validate file type
         if (!isImage && !isPdf && !isDoc && !isExcel && !isCsv && !isText) {
-          toast({
-            title: "Unsupported file type",
+          toast.error("Unsupported file type", {
             description: `${file.name}: Only images, PDFs, Word docs, Excel files, CSV, and text files are supported`,
-            variant: "destructive",
           });
           continue;
         }
 
         // Validate file size (25MB limit)
         if (file.size > 25 * 1024 * 1024) {
-          toast({
-            title: "File too large",
+          toast.error("File too large", {
             description: `${file.name}: Maximum 25MB allowed`,
-            variant: "destructive",
           });
           continue;
         }
@@ -204,10 +200,8 @@ export const PillChatBar: React.FC<PillChatBarProps> = ({
 
         processedFiles.push(processedFile);
       } catch (error) {
-        toast({
-          title: "Error processing file",
+        toast.error("Error processing file", {
           description: `${file.name}: Failed to process file`,
-          variant: "destructive",
         });
       }
     }

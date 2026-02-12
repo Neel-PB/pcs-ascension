@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { AudioWaveform, Square } from '@/lib/icons';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface VoiceRecorderProps {
   onTranscript: (transcript: string) => void;
@@ -9,7 +9,6 @@ interface VoiceRecorderProps {
 }
 
 export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscript, disabled }) => {
-  const { toast } = useToast();
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef<any>(null);
 
@@ -37,10 +36,8 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscript, disa
         console.error('Speech recognition error:', event.error);
         setIsRecording(false);
         if (event.error !== 'aborted' && event.error !== 'no-speech') {
-          toast({
-            title: "Voice recording failed",
+          toast.error("Voice recording failed", {
             description: "Please try again or check your microphone permissions.",
-            variant: "destructive",
           });
         }
       };
@@ -55,14 +52,12 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscript, disa
         recognitionRef.current.abort();
       }
     };
-  }, [onTranscript, toast]);
+  }, [onTranscript]);
 
   const toggleRecording = () => {
     if (!recognitionRef.current) {
-      toast({
-        title: "Not supported",
+      toast.error("Not supported", {
         description: "Voice recording is not supported in your browser.",
-        variant: "destructive",
       });
       return;
     }

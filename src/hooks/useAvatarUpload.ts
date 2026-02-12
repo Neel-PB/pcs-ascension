@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export function useAvatarUpload() {
   const [isUploading, setIsUploading] = useState(false);
@@ -42,19 +42,12 @@ export function useAvatarUpload() {
       queryClient.invalidateQueries({ queryKey: ['user-profile', userId] });
       queryClient.invalidateQueries({ queryKey: ['users'] });
 
-      toast({
-        title: 'Success',
-        description: 'Avatar updated successfully',
-      });
+      toast.success('Avatar updated successfully');
 
       return avatarUrl;
     } catch (error) {
       console.error('Error uploading avatar:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to upload avatar. Please try again.',
-        variant: 'destructive',
-      });
+      toast.error('Failed to upload avatar. Please try again.');
       throw error;
     } finally {
       setIsUploading(false);
@@ -86,17 +79,10 @@ export function useAvatarUpload() {
       queryClient.invalidateQueries({ queryKey: ['user-profile', userId] });
       queryClient.invalidateQueries({ queryKey: ['users'] });
 
-      toast({
-        title: 'Success',
-        description: 'Avatar removed successfully',
-      });
+      toast.success('Avatar removed successfully');
     } catch (error) {
       console.error('Error deleting avatar:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to remove avatar. Please try again.',
-        variant: 'destructive',
-      });
+      toast.error('Failed to remove avatar. Please try again.');
       throw error;
     } finally {
       setIsUploading(false);
