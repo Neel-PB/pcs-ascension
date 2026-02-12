@@ -1,32 +1,16 @@
 
+## Add Visible Horizontal Divider Between Region Rows
 
-## Align Variance Analysis Table Colors with Planned/Active Resources
+### Problem
+Region rows (Region 1, Region 2) don't have a visible divider line between them. The current `border-t-2 border-primary/20` is too subtle against the light blue `bg-primary/10` background, making the regions blend together.
 
-### Goal
-Make the Variance Analysis table colors and dividers visually identical to the Planned/Active Resources table.
+### Fix
 
-### Differences Found
+**File: `src/pages/staffing/VarianceAnalysis.tsx`** (line 432)
 
-| Element | Variance Analysis (current) | Position Planning (target) |
-|---|---|---|
-| Group row border-top | `border-primary/40` | `border-primary/20` |
-| Total row background | `!bg-muted/20` | `bg-muted/50` |
-| Sub-header first cell | `bg-background` override | No explicit bg |
-| First column header | `bg-muted/30` with sticky | Keep sticky but match overall look |
+Change the GroupRow's border color from `border-primary/20` to `border-primary/30` for better visibility against the blue-tinted background. This makes the horizontal separator between region rows clearly visible, matching the divider strength seen between skill-level rows.
 
-### Changes
+- Current: `border-t-2 border-primary/20`
+- Updated: `border-t-2 border-primary/30`
 
-**File: `src/pages/staffing/VarianceAnalysis.tsx`**
-
-1. **Group row border color** (line 432): Change `border-primary/40` to `border-primary/20` to match Position Planning's lighter group separator
-
-2. **Total row background** (lines 569-570 and 600-616): Change `!bg-muted/20` to `bg-muted/50` on the TotalRow and all its cells to match Position Planning's total row shading
-
-3. **Sub-header first cell background** (line 633): Remove the explicit `bg-background` from the sticky sub-header cell -- let it inherit naturally like Position Planning does
-
-### Files Modified
-
-| File | Change |
-|---|---|
-| `src/pages/staffing/VarianceAnalysis.tsx` | Group border color, total row background, sub-header cell background |
-
+This is a single-line class change on line 432.
