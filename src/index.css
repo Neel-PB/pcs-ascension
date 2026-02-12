@@ -87,6 +87,7 @@ Modern enterprise shell with clean aesthetics and accessibility
     --sidebar-width: 5rem;
     --header-height: 4rem;
     --border-width: 1px;
+    --radius: 0.5rem;
     
     /* Core Shell Colors */
     --bg: 0 0% 100%;
