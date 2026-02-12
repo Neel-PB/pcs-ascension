@@ -1,12 +1,26 @@
 
 
-## Make Sidebar Logo Bigger
+## Fix Pencil and Revert Icons to Use Outlined Style
 
-### Change
+### Problem
+The pencil (edit) and revert (undo) icons in Volume Settings and NP Settings use **filled** Material Design icons (`MdEdit`, `MdUndo`), which look visually heavier than the outlined icons used elsewhere in the app (sidebar, navigation). This creates an inconsistent look.
 
-**File: `src/components/layout/OrganizationSwitcher.tsx`**
+### Fix
 
-Increase the logo image from `w-8 h-8` (32px) to `w-9 h-9` (36px) while keeping the container at `w-10 h-10` (40px). This fills more of the available space without overflowing.
+**File: `src/lib/icons.ts`**
 
-Single class change on line 9: `w-8 h-8` to `w-9 h-9`.
+Update two icon mappings from filled to outlined variants:
 
+| Icon Name | Current (Filled) | Updated (Outlined) |
+|---|---|---|
+| `Pencil` | `MdEdit` | `MdOutlineEdit` |
+| `RotateCcw` | `MdUndo` | `MdOutlineUndo` |
+
+This is a global change that affects all cells using these icons (OverrideVolumeCell, EditableDateCell, EditableNumberCell, EditableFTECell, ShiftCell, etc.), bringing them all into alignment with the outlined icon style used in the sidebar and other UI elements.
+
+### Also update related Edit aliases
+`Edit` and `Edit2` also map to `MdEdit` -- these should be updated to `MdOutlineEdit` as well for full consistency.
+
+### Scope
+- Single file change: `src/lib/icons.ts` (4 icon mappings)
+- No component changes needed -- all components import from `@/lib/icons`
