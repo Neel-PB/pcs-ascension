@@ -746,6 +746,7 @@ export default function PositionPlanning({ selectedDepartment }: PositionPlannin
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <motion.h1
+            data-tour="planning-header"
             className="text-2xl font-semibold text-foreground"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -756,6 +757,7 @@ export default function PositionPlanning({ selectedDepartment }: PositionPlannin
 
           {/* Toggle for Hired/Actual */}
           <motion.div
+            data-tour="planning-hired-toggle"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.05 }}
@@ -831,6 +833,7 @@ export default function PositionPlanning({ selectedDepartment }: PositionPlannin
           {/* Nursing/Non-Nursing Toggle - Hidden when specific department is selected */}
           {!isDepartmentSelected && (
             <motion.div
+              data-tour="planning-nursing-toggle"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.1 }}
@@ -907,6 +910,7 @@ export default function PositionPlanning({ selectedDepartment }: PositionPlannin
         <div className="flex items-center gap-4">
           {/* Legend */}
           <motion.div
+            data-tour="planning-legend"
             className="flex items-center gap-4 text-sm"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -924,6 +928,7 @@ export default function PositionPlanning({ selectedDepartment }: PositionPlannin
 
           {/* Action Buttons */}
           <motion.div
+            data-tour="planning-actions"
             className="flex items-center gap-2"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -956,6 +961,7 @@ export default function PositionPlanning({ selectedDepartment }: PositionPlannin
 
       {/* Table */}
       <motion.div
+        data-tour="planning-table"
         className="bg-card rounded-xl border shadow-sm overflow-hidden"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
