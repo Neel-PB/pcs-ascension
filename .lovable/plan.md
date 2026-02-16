@@ -1,82 +1,54 @@
 
 
-## Interactive Guided Tour System
+## Expand Staffing Tour with KPI Card Interactions
 
-### Overview
-Add a step-by-step guided tour using `react-joyride` that walks users through the Staffing page components. The "Take a Tour" option lives inside the user profile dropdown in the header. The system is designed to scale to other pages later, with role-aware tour content.
+### What Changes
+Add 3 new tour steps after the existing KPI section steps to teach users about the interactive features on each KPI card:
 
-### Tour Steps for Staffing Page (Labor Team)
-1. **Filter Bar** -- "Use these filters to narrow data by Region, Market, Facility, and Department. Filters cascade: selecting a Region updates available Markets."
-2. **Tab Navigation** -- "Switch between Summary, Planned/Active Resources, Variance Analysis, Forecasts, and Settings views."
-3. **FTE KPI Section** -- "These cards show staffing metrics like Vacancy Rate, Hired FTEs, and Target FTEs. Click any card for a detailed chart. Drag to reorder."
-4. **Volume KPI Section** -- "Volume metrics track patient encounters. The highlighted Target Volume card drives staffing calculations."
-5. **Productive Resources Section** -- "Track actual paid labor including contract staff, overtime, and PRN usage."
-6. **Workforce Drawer Trigger** -- "Click this tab to open the Workforce Drawer for detailed position breakdowns."
+**New Steps (inserted after step 5 "Productive Resources"):**
 
-### Architecture
-The tour system is built as a reusable framework so additional pages (Positions, Analytics, etc.) and role-specific steps can be added later.
+6. **KPI Chart View** -- Targets the first chart icon (BarChart3) on a KPI card. "Click the chart icon on any KPI card to view a detailed trend chart with historical data and breakdowns."
+7. **KPI Definition View** -- Targets the first eye icon (Eye) on a KPI card. "Click the eye icon to see the KPI's definition and how it's calculated."
+8. **Employment Type Split** -- Targets the green breakdown badge under Target FTEs. "This badge shows the FT/PT/PRN employment split. The target is 70/20/10. Click it to see current vs target variance."
 
-### New Files
+Then the existing Workforce Drawer step becomes step 9.
 
-#### `src/hooks/useTour.ts`
-- Manages tour state: `run`, `startTour`, `completeTour`, `resetTour`
-- Stores completion per page in `localStorage` (e.g., `helix-tour-staffing-completed`)
-- Accepts a `pageKey` parameter so each page has independent tour state
-- Auto-starts on first visit for that page
+### Technical Changes
 
-#### `src/components/tour/TourTooltip.tsx`
-- Custom tooltip component matching the app's design system
-- Uses `Card`, `Button` components for consistency
-- Shows step counter ("Step 2 of 6"), title, description
-- Back / Next / Skip buttons
-- Primary-colored accent on the Next button
+#### 1. `src/components/staffing/DraggableKPISection.tsx`
+- Add `data-tour="kpi-chart-action"` to the first KPI card's chart button
+- Add `data-tour="kpi-info-action"` to the first KPI card's info button
+- Add `data-tour="kpi-split-badge"` to the target FTEs green breakdown badge
 
-#### `src/components/tour/StaffingTour.tsx`
-- Defines the Staffing page tour steps array
-- Each step targets a `data-tour` attribute selector
-- Renders `react-joyride` with the custom tooltip, spotlight overlay, and controlled mode
-- Receives `run` and callbacks from `useTour`
+Since the chart/eye icons are inside `KPICard.tsx`, we need to pass `data-tour` attributes through.
 
-#### `src/components/tour/tourSteps.ts`
-- Centralized step definitions file; starts with `staffingSteps`
-- Easy to add `positionsSteps`, `analyticsSteps`, etc. later
-- Each step: `{ target, title, content, placement }`
+#### 2. `src/components/staffing/KPICard.tsx`
+- Accept optional `dataTourChart?: string` and `dataTourInfo?: string` props
+- Apply them to the chart button and info button respectively
 
-### Modified Files
+#### 3. `src/components/staffing/DraggableKPISection.tsx` (badge)
+- Add `data-tour="kpi-split-badge"` to the green target breakdown badge container (line ~96)
+- Pass `dataTourChart="kpi-chart-action"` and `dataTourInfo="kpi-info-action"` only to the first KPI in the list that has chart data
 
-#### `src/components/shell/AppHeader.tsx`
-- Import `useTour` hook and add a `startTour` callback
-- Add a "Take a Tour" `DropdownMenuItem` with a `HelpCircle` icon between "Profile" and "Log out" in the user dropdown menu
-- Clicking it calls `startTour('staffing')` (or whatever the current page is)
-- Pass `tourRun` and `onTourComplete` down or use a lightweight Zustand store / context so the tour component on the page can pick it up
+#### 4. `src/components/tour/tourSteps.ts`
+- Add 3 new steps between "Productive Resources" and "Workforce Drawer":
 
-#### `src/stores/useTourStore.ts` (new)
-- Small Zustand store: `{ activeTour: string | null, startTour, stopTour }`
-- AppHeader writes to it; page-level tour components read from it
-- Keeps header and page components decoupled
+```
+Step 6: KPI Chart View
+  target: '[data-tour="kpi-chart-action"]'
+  title: "KPI Trend Chart"
+  content: "Click the chart icon on any KPI card to view detailed trend data, historical charts, and breakdowns by category."
 
-#### `src/pages/staffing/StaffingSummary.tsx`
-- Add `data-tour` attributes to key wrapper elements:
-  - `data-tour="filter-bar"` on the FilterBar wrapper div (line 462)
-  - `data-tour="tab-navigation"` on the ToggleButtonGroup wrapper (line 482)
-  - `data-tour="workforce-trigger"` on WorkforceDrawerTrigger
-- Import and render `<StaffingTour />` component
+Step 7: KPI Definition
+  target: '[data-tour="kpi-info-action"]'
+  title: "KPI Definition & Calculation"
+  content: "Click the eye icon to see what this KPI measures and how it's calculated."
 
-#### `src/components/staffing/DraggableSectionsContainer.tsx`
-- Pass `data-tour` attributes to section wrapper divs based on `section.id`:
-  - `data-tour="fte-section"` for id `fte`
-  - `data-tour="volume-section"` for id `volume`
-  - `data-tour="productivity-section"` for id `productivity`
+Step 8: Employment Type Split
+  target: '[data-tour="kpi-split-badge"]'
+  title: "Employment Type Split"
+  content: "This shows the FT/PT/PRN staffing mix. The target is 70% Full-Time, 20% Part-Time, 10% PRN. Click to see current vs target variance."
+```
 
-### Dependencies
-- Install `react-joyride` (well-maintained, ~25KB gzipped, 7k+ GitHub stars)
-
-### First-Visit Behavior
-- On first load of the Staffing page, the tour auto-starts after a short delay (1s) to let the page render
-- Completion sets `localStorage` flag so it doesn't auto-start again
-- User can always re-trigger from the profile dropdown "Take a Tour"
-
-### Role Awareness (Future-Ready)
-- The `tourSteps.ts` file can accept a `permissions` object to conditionally include steps (e.g., only show "Volume Settings" step if `hasPermission("settings.volume_override")`)
-- For now, the Staffing tour shows all 6 steps for the labor team; role filtering will be added when other page tours are built
-
+### Result
+The tour will be 9 steps total, walking users through filters, navigation, each KPI section, then zooming into individual card interactions (chart, definition, split), and finally the workforce drawer.
