@@ -448,9 +448,7 @@ This metric helps:
   return (
     <>
       <StaffingTour />
-      <div data-tour="workforce-trigger">
-        <WorkforceDrawerTrigger />
-      </div>
+      <WorkforceDrawerTrigger />
       <WorkforceDrawer 
         activeTab={activeTab} 
         selectedDepartment={selectedDepartment === "all-departments" ? null : selectedDepartment}
