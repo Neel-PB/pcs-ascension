@@ -1,70 +1,55 @@
 
 
-## Add Tour Guides for Positions Checklist, AI Hub, and Feedback
+## Add Tour Guides for the Positions Module
 
 ### Overview
-These three features are global overlay panels (not page-specific tabs), so they need standalone tour components that run when their respective panels are open. Each tour will highlight key UI elements within the panel itself.
+Create a tab-aware tour system for the Positions module (Employees, Contractors, Open Positions), following the same pattern as the Staffing module's `StaffingTour` component. Since all three tabs share identical UI structure (search bar + filter button + data table + detail sheet), the tours will highlight these common elements with tab-specific descriptions.
 
-### 1. Positions Checklist Tour (4 steps)
+### Tour Steps
 
-Targets elements inside the WorkforceDrawer panel:
+#### Employees Tour (4 steps)
+1. **Filter Bar** -- `[data-tour="filter-bar"]` -- "Use these filters to narrow the employee roster by Region, Market, Facility, and Department."
+2. **Tab Navigation** -- `[data-tour="positions-tabs"]` -- "Switch between Employees, Contractors, and Open Positions views."
+3. **Search & Actions** -- `[data-tour="positions-search-bar"]` -- "Search by name, position number, job title, or department. Use the filter button for advanced filtering by status, employment type, shift, and FTE range."
+4. **Data Table** -- `[data-tour="positions-table"]` -- "Click any row to open the employee detail sheet with full position information and comments. Columns can be resized, reordered, and toggled."
 
-1. **Header & Close** -- "This is the Positions Checklist. It provides a real-time summary of FTE gaps for your selected facility. Press Ctrl+Shift+W or click the edge trigger to toggle."
-2. **KPI Tab Bar** -- "Switch between KPIs, Shortage, and Surplus tabs. KPIs show summary cards; Shortage and Surplus tabs show detailed checklist tables."
-3. **KPI Cards** -- "These cards summarize key workforce metrics like total shortages, surpluses, and open requisitions for your current filter scope."
-4. **Checklist Table** -- "The checklist groups positions by Location, then by Department/Skill/Shift. Click any group to expand and see individual position details."
+#### Contractors Tour (4 steps)
+Same targets as Employees but with contractor-specific descriptions (e.g., "contractor roster", "contractor detail sheet").
 
-### 2. AI Hub Tour (4 steps)
-
-Targets elements inside the AIHubPanel:
-
-1. **Welcome Screen** -- "This is PCS AI, your staffing assistant. Ask questions about headcount, forecasts, variance analysis, or request recommendations."
-2. **Chat Input Bar** -- "Type your question here. You can also attach files (images, PDFs, spreadsheets) for analysis. Use the microphone for voice input."
-3. **Keyboard Shortcut** -- "Press Ctrl+Shift+K to toggle the AI Hub from anywhere in the app."
-4. **Clear & Minimize** -- "Use the menu to clear the conversation history or minimize the panel back to the edge trigger."
-
-### 3. Feedback Tour (3 steps)
-
-Targets elements inside the FeedbackPanel:
-
-1. **Screenshot Capture** -- "Optionally capture a screenshot before submitting. Click the trigger button to draw a selection area on your screen."
-2. **Feedback Form** -- "Fill in the title, select a type (Bug, Feature, Improvement, Question), set priority, and provide a detailed description."
-3. **Submit & Shortcut** -- "Submit your feedback with the button below. You can also press Cmd+Shift+F to toggle this panel from anywhere."
+#### Open Positions Tour (4 steps)
+Same targets but with requisition-specific descriptions, mentioning vacancy age badges and position lifecycle.
 
 ### Technical Changes
 
 #### `src/components/tour/tourSteps.ts`
-- Add three new exported arrays:
-  - `checklistTourSteps: Step[]` (4 steps)
-  - `aiHubTourSteps: Step[]` (4 steps)
-  - `feedbackTourSteps: Step[]` (3 steps)
+- Add three new exported arrays: `employeesTourSteps`, `contractorsTourSteps`, `requisitionsTourSteps`
+- Each array has 4 steps targeting the same `data-tour` attribute names (shared UI structure)
 
-#### New: `src/components/tour/OverlayTour.tsx`
-- A generic reusable tour component for overlay panels
-- Accepts `tourKey` and `steps` props
-- Uses `useTour` hook with the given key
-- Renders Joyride with the same styling/tooltip as StaffingTour
-- The tour only runs when the parent panel is mounted (which already gates on `isOpen`)
+#### New: `src/components/tour/PositionsTour.tsx`
+- Follows the same pattern as `StaffingTour.tsx`
+- Accepts `activeTab` prop (`'employees'` | `'contractors'` | `'requisitions'`)
+- Maps each tab to its tour key (`positions-employees`, `positions-contractors`, `positions-requisitions`) and step array
+- Uses the same Joyride config, `TourTooltip`, and `useTour` hook
 
-#### `src/components/workforce/WorkforceDrawer.tsx`
-- Add `data-tour` attributes to: header row, tabs list, KPI cards section, checklist table
-- Render `<OverlayTour tourKey="checklist" steps={checklistTourSteps} />` inside the drawer (only rendered when open)
+#### `src/pages/positions/PositionsPage.tsx`
+- Import and render `<PositionsTour activeTab={activeTab} />`
+- Add `data-tour="positions-tabs"` on the `ToggleButtonGroup` wrapper div
 
-#### `src/components/ai/AIHubPanel.tsx`
-- Add `data-tour` attributes to: welcome/content area, PillChatBar wrapper, panel header area
-- Render `<OverlayTour tourKey="ai-hub" steps={aiHubTourSteps} />` inside the panel
+#### `src/pages/positions/EmployeesTab.tsx`
+- Add `data-tour="positions-search-bar"` on the search/actions row div
+- Add `data-tour="positions-table"` on the `EditableTable` wrapper
 
-#### `src/components/feedback/FeedbackPanel.tsx`
-- Add `data-tour` attributes to: screenshot section, form area, footer/submit area
-- Render `<OverlayTour tourKey="feedback" steps={feedbackTourSteps} />` inside the panel
+#### `src/pages/positions/ContractorsTab.tsx`
+- Same `data-tour` attributes as EmployeesTab
 
-#### `src/hooks/useTour.ts`
-- No changes needed -- the existing hook already supports any `pageKey` string and the "Take a Tour" trigger via `activeTour` matching
+#### `src/pages/positions/RequisitionsTab.tsx`
+- Same `data-tour` attributes as EmployeesTab
 
 ### Tour Trigger Behavior
-- Each tour auto-starts on first open of its respective panel (tracked via localStorage `helix-tour-[key]-completed`)
-- Can be re-triggered via the "Take a Tour" dropdown using keys: `checklist`, `ai-hub`, `feedback`
-- The Joyride z-index will be set to 10001 (above the panel's z-[80]) to ensure spotlight visibility
+- Each tab's tour auto-starts on first visit (tracked via localStorage keys: `helix-tour-positions-employees-completed`, etc.)
+- Re-triggerable via "Take a Tour" dropdown using the `positions` key -- the `useTour` hook's base-path matching (`activeTour === pageKey.split('-')[0]`) will trigger whichever tab is currently active
+- Uses `zIndex: 10000` (same as StaffingTour, below overlay panels)
 
-### Important Consideration
-Since these panels use `z-[80]`, the Joyride overlay must use `z-index: 10001` to appear above them. The existing `zIndex: 10000` in StaffingTour options will be bumped to `10001` in the OverlayTour component.
+### Key Pattern: Component Remounting
+Since `PositionsPage` conditionally renders only the active tab, switching tabs unmounts/remounts the `PositionsTour` with a new `tourKey`, ensuring clean state -- identical to the StaffingTour approach.
+
