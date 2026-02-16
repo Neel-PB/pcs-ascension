@@ -3,6 +3,8 @@ import { useFeedbackStore } from '@/stores/useFeedbackStore';
 import { useFeedbackResizable } from '@/hooks/useFeedbackResizable';
 import { FeedbackForm } from './FeedbackForm';
 import { Button } from '@/components/ui/button';
+import { OverlayTour } from '@/components/tour/OverlayTour';
+import { feedbackTourSteps } from '@/components/tour/tourSteps';
 
 const MIN_WIDTH = 490;
 const MAX_WIDTH_VW = 0.7;
@@ -57,6 +59,7 @@ export const FeedbackPanel: React.FC = () => {
         className="fixed right-0 top-0 h-screen bg-background border-l border-border shadow-2xl z-[80] flex flex-col max-lg:w-full transition-transform duration-300"
         style={{ width: currentWidth }}
       >
+        <OverlayTour tourKey="feedback" steps={feedbackTourSteps} />
         {/* Resize Handle (Desktop Only) */}
         <div
           className="hidden lg:block absolute left-0 top-0 bottom-0 w-1 hover:w-1.5 bg-border hover:bg-primary cursor-col-resize transition-all z-10"
@@ -78,12 +81,12 @@ export const FeedbackPanel: React.FC = () => {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto px-4 lg:px-6 py-4 flex flex-col min-h-0">
+        <div className="flex-1 overflow-y-auto px-4 lg:px-6 py-4 flex flex-col min-h-0" data-tour="feedback-form">
           <FeedbackForm onSuccess={handleClose} />
         </div>
 
         {/* Footer with Close Button */}
-        <div className="flex-shrink-0 px-6 py-3 border-t flex items-center justify-between">
+        <div className="flex-shrink-0 px-6 py-3 border-t flex items-center justify-between" data-tour="feedback-footer">
           <p className="text-xs text-muted-foreground">
             Press <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono">⌘+Shift+F</kbd> to toggle
           </p>

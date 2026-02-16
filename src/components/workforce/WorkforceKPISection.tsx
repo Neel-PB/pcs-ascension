@@ -128,7 +128,7 @@ export const WorkforceKPISection = ({
       {/* 3-tab layout for Positions module */}
       {showForecastTables && (
         <Tabs defaultValue="kpis" className="flex-1 flex flex-col min-h-0">
-          <TabsList className="w-full">
+          <TabsList className="w-full" data-tour="checklist-tabs">
             <TabsTrigger value="kpis" className="flex-1">KPIs</TabsTrigger>
             <TabsTrigger value="shortage" className="flex-1">
               Shortage <Badge variant="secondary" className="ml-1.5">{shortageCount}</Badge>
@@ -137,7 +137,7 @@ export const WorkforceKPISection = ({
               Surplus <Badge variant="secondary" className="ml-1.5">{surplusCount}</Badge>
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="kpis" className="flex-1 min-h-0 mt-2 overflow-y-auto data-[state=inactive]:hidden">
+          <TabsContent value="kpis" className="flex-1 min-h-0 mt-2 overflow-y-auto data-[state=inactive]:hidden" data-tour="checklist-kpis">
             <div className="grid grid-cols-3 gap-2">
               {commonKPIs.map((kpi) => (
                 <WorkforceKPICard
@@ -176,7 +176,7 @@ export const WorkforceKPISection = ({
               </>
             )}
           </TabsContent>
-          <TabsContent value="shortage" className="flex-1 min-h-0 mt-2 flex flex-col data-[state=inactive]:hidden">
+          <TabsContent value="shortage" className="flex-1 min-h-0 mt-2 flex flex-col data-[state=inactive]:hidden" data-tour="checklist-table">
             <ForecastChecklistTable type="shortage" filters={filters} />
           </TabsContent>
           <TabsContent value="surplus" className="flex-1 min-h-0 mt-2 flex flex-col data-[state=inactive]:hidden">

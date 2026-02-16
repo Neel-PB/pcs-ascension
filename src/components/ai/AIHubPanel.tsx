@@ -6,6 +6,8 @@ import { ContentBlock } from '@/types/contentBlock';
 import { ContentBlockRenderer } from './ContentBlockRenderer';
 import { mockComplexResponse, simpleReasoningBlocks } from '@/data/mockContentBlocks';
 import ascensionLogo from '@/assets/Ascension-Emblem.svg';
+import { OverlayTour } from '@/components/tour/OverlayTour';
+import { aiHubTourSteps } from '@/components/tour/tourSteps';
 
 interface ProcessedFile {
   id: string;
@@ -380,9 +382,11 @@ export const AIHubPanel = () => {
       {/* Panel */}
       <div
         ref={panelRef}
+        data-tour="ai-hub-panel"
         className="fixed right-0 top-0 h-screen bg-background border-l border-border shadow-2xl z-[80] flex flex-col max-lg:w-full transition-transform duration-300"
         style={{ width: currentWidth }}
       >
+        <OverlayTour tourKey="ai-hub" steps={aiHubTourSteps} />
         {/* Resize Handle (Desktop Only) */}
         <div
           className="hidden lg:block absolute left-0 top-0 bottom-0 w-1 hover:w-1.5 bg-border hover:bg-primary cursor-col-resize transition-all z-10"
@@ -396,7 +400,7 @@ export const AIHubPanel = () => {
         </div>
 
         {/* Content Area - Document Style */}
-        <div className="flex-1 overflow-y-auto px-4 lg:px-8 py-8 pb-32">
+        <div className="flex-1 overflow-y-auto px-4 lg:px-8 py-8 pb-32" data-tour="ai-hub-welcome">
           {contentBlocks.length === 0 ? (
             <div className="h-full flex items-center justify-center">
               <div className="text-center space-y-6">
@@ -433,7 +437,7 @@ export const AIHubPanel = () => {
         </div>
 
         {/* Chat Input */}
-        <div className="absolute bottom-4 left-4 right-4">
+        <div className="absolute bottom-4 left-4 right-4" data-tour="ai-hub-input">
           <PillChatBar
             value={currentInput}
             onChange={setCurrentInput}
