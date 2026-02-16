@@ -284,6 +284,20 @@ export const adminUsersTourSteps: Step[] = [
     placement: 'top',
     disableBeacon: true,
   },
+  {
+    target: '[data-tour="admin-users-actions"]',
+    title: 'Actions',
+    content: 'Use the edit (pencil) icon to open a user\'s profile, or the delete (trash) icon to permanently remove their account. Deletion requires confirmation.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="admin-users-scope"]',
+    title: 'Access Scope',
+    content: 'Expand the Access Scope Restrictions section to limit which Regions, Markets, Facilities, and Departments a user can access. Selections cascade: choosing a Region filters available Markets.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
 ];
 
 export const adminFeedTourSteps: Step[] = [

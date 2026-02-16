@@ -246,7 +246,7 @@ export function UserFormSheet({
                 />
 
                 {/* Organization Access Section - Show for both create and edit modes */}
-                <Collapsible open={orgAccessOpen} onOpenChange={setOrgAccessOpen}>
+                <Collapsible open={orgAccessOpen} onOpenChange={setOrgAccessOpen} data-tour="admin-users-scope">
                   <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:underline">
                     <span>Access Scope Restrictions</span>
                     <ChevronDown className={`h-4 w-4 transition-transform ${orgAccessOpen ? 'rotate-180' : ''}`} />

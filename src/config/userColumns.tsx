@@ -120,6 +120,7 @@ export const createUserColumns = (
     sortable: false,
     resizable: false,
     draggable: false,
+    renderHeader: () => <span data-tour="admin-users-actions">Actions</span>,
     renderCell: (row) => {
       const fullName = `${row.first_name || ''} ${row.last_name || ''}`.trim() || 'Unknown User';
       return (
