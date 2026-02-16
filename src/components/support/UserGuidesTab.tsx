@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTourStore } from "@/stores/useTourStore";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   BarChart3,
   Users,
@@ -33,26 +34,21 @@ interface Guide {
 }
 
 const guideCatalog: Guide[] = [
-  // Staffing
   { tourKey: "staffing", title: "Staffing Summary", description: "Overview of KPI cards, volume metrics, and productivity sections.", icon: BarChart3, route: "/staffing", stepCount: 8, category: "Staffing" },
   { tourKey: "staffing-planning", title: "Position Planning", description: "FTE skill-shift analysis with hired/active and nursing toggles.", icon: Layers, route: "/staffing", stepCount: 6, category: "Staffing" },
   { tourKey: "staffing-variance", title: "Variance Analysis", description: "FTE variance by skill type across your selected scope.", icon: BarChart3, route: "/staffing", stepCount: 5, category: "Staffing" },
   { tourKey: "staffing-forecast", title: "Forecast", description: "FTE shortage/surplus KPIs and expandable detail views.", icon: Navigation, route: "/staffing", stepCount: 3, category: "Staffing" },
   { tourKey: "staffing-volume-settings", title: "Volume Settings", description: "Override target volumes and manage expiration dates.", icon: Settings, route: "/staffing", stepCount: 3, category: "Staffing" },
   { tourKey: "staffing-np-settings", title: "NP Settings", description: "Configure non-productive override percentages.", icon: Settings, route: "/staffing", stepCount: 3, category: "Staffing" },
-  // Positions
   { tourKey: "positions-employees", title: "Employees", description: "Employee roster with Active FTE overrides and shift management.", icon: Users, route: "/positions", stepCount: 7, category: "Positions" },
   { tourKey: "positions-contractors", title: "Contractors", description: "Contractor roster with FTE and shift override controls.", icon: Briefcase, route: "/positions", stepCount: 7, category: "Positions" },
   { tourKey: "positions-requisitions", title: "Open Positions", description: "Open requisitions with vacancy age tracking and comments.", icon: Users, route: "/positions", stepCount: 5, category: "Positions" },
-  // Admin
   { tourKey: "admin-users", title: "Admin Users", description: "User management, roles, and access scope restrictions.", icon: Users, route: "/admin", stepCount: 6, category: "Admin" },
   { tourKey: "admin-feed", title: "Admin Feed", description: "Compose and manage announcements for all users.", icon: MessageSquare, route: "/admin", stepCount: 3, category: "Admin" },
   { tourKey: "admin-rbac", title: "RBAC", description: "Role-based access control matrix and permission management.", icon: Shield, route: "/admin", stepCount: 4, category: "Admin" },
   { tourKey: "admin-audit", title: "Audit Log", description: "Track all role and permission changes with timestamps.", icon: History, route: "/admin", stepCount: 3, category: "Admin" },
   { tourKey: "admin-settings", title: "Admin Settings", description: "UI settings, volume configuration, and system controls.", icon: Settings, route: "/admin", stepCount: 3, category: "Admin" },
-  // Feedback
   { tourKey: "feedback-page", title: "Feedback Management", description: "Search, filter, and manage feedback with dual-status workflow.", icon: MessageSquare, route: "/feedback", stepCount: 5, category: "Feedback" },
-  // Overlays
   { tourKey: "checklist", title: "Positions Checklist", description: "Real-time FTE gap summary drawer with shortage/surplus tabs.", icon: LayoutDashboard, route: "", stepCount: 4, category: "Overlays", isOverlay: true },
   { tourKey: "ai-hub", title: "AI Hub", description: "AI-powered staffing assistant for questions and analysis.", icon: Sparkles, route: "", stepCount: 4, category: "Overlays", isOverlay: true },
   { tourKey: "feedback", title: "Feedback Panel", description: "Submit feedback with screenshots from anywhere in the app.", icon: MessageSquare, route: "", stepCount: 3, category: "Overlays", isOverlay: true },
@@ -72,7 +68,6 @@ export function UserGuidesTab() {
     if (guide.route) {
       navigate(guide.route);
     }
-    // Small delay so the target page renders before the tour starts
     setTimeout(() => startTour(guide.tourKey), 300);
   };
 
@@ -82,15 +77,19 @@ export function UserGuidesTab() {
   };
 
   return (
-    <div className="space-y-8">
+    <Tabs defaultValue="Staffing">
+      <TabsList className="w-full">
+        {categories.map((cat) => (
+          <TabsTrigger key={cat} value={cat} className="flex-1">
+            {cat}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+
       {categories.map((category) => {
         const guides = guideCatalog.filter((g) => g.category === category);
-        if (guides.length === 0) return null;
         return (
-          <div key={category}>
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-              {category}
-            </h3>
+          <TabsContent key={category} value={category} className="mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {guides.map((guide) => {
                 const completed = isCompleted(guide.tourKey);
@@ -151,9 +150,9 @@ export function UserGuidesTab() {
                 );
               })}
             </div>
-          </div>
+          </TabsContent>
         );
       })}
-    </div>
+    </Tabs>
   );
 }
