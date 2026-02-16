@@ -1,47 +1,70 @@
 
 
-## Add Tour Guides for Volume Settings and NP Settings Tabs
+## Add Tour Guides for Positions Checklist, AI Hub, and Feedback
 
 ### Overview
-Add guided tours for the two settings tabs, following the same pattern used for Summary, Planning, Variance, and Forecasts. Both tabs share a similar UI structure (stats banner + editable table), so the tours will follow a consistent 3-step pattern.
+These three features are global overlay panels (not page-specific tabs), so they need standalone tour components that run when their respective panels are open. Each tour will highlight key UI elements within the panel itself.
 
-### Volume Settings Tour (3 steps)
+### 1. Positions Checklist Tour (4 steps)
 
-1. **Stats Banner** -- Targets the status summary bar. "This banner shows how many departments require an override, how many are using the calculated target volume, and how many overrides are expiring soon."
-2. **Override Table** -- Targets the editable table. "Each row represents a department. Enter an override volume to replace the calculated target, then set an expiration date. Both are saved together. Use the Revert button to clear an override."
-3. **Target Volume Popover** -- Targets the first target volume cell. "Click the target volume value to see historical analysis: the 3-month low average, N-month average, spread percentage, and a chart highlighting the lowest months."
+Targets elements inside the WorkforceDrawer panel:
 
-### NP Settings Tour (3 steps)
+1. **Header & Close** -- "This is the Positions Checklist. It provides a real-time summary of FTE gaps for your selected facility. Press Ctrl+Shift+W or click the edge trigger to toggle."
+2. **KPI Tab Bar** -- "Switch between KPIs, Shortage, and Surplus tabs. KPIs show summary cards; Shortage and Surplus tabs show detailed checklist tables."
+3. **KPI Cards** -- "These cards summarize key workforce metrics like total shortages, surpluses, and open requisitions for your current filter scope."
+4. **Checklist Table** -- "The checklist groups positions by Location, then by Department/Skill/Shift. Click any group to expand and see individual position details."
 
-1. **Stats Banner** -- Targets the status summary bar. "This banner shows how many NP overrides are active, expiring soon, or not yet set."
-2. **Override Table** -- Targets the editable table. "Each row represents a department. The target NP% is fixed at 10% for all departments. Enter an override NP% and set an expiration date to apply a custom value."
-3. **Two-Step Save** -- Targets the override column header area. "Overrides use a two-step save: enter a value (shown as Pending), then select an expiration date to commit both to the database."
+### 2. AI Hub Tour (4 steps)
+
+Targets elements inside the AIHubPanel:
+
+1. **Welcome Screen** -- "This is PCS AI, your staffing assistant. Ask questions about headcount, forecasts, variance analysis, or request recommendations."
+2. **Chat Input Bar** -- "Type your question here. You can also attach files (images, PDFs, spreadsheets) for analysis. Use the microphone for voice input."
+3. **Keyboard Shortcut** -- "Press Ctrl+Shift+K to toggle the AI Hub from anywhere in the app."
+4. **Clear & Minimize** -- "Use the menu to clear the conversation history or minimize the panel back to the edge trigger."
+
+### 3. Feedback Tour (3 steps)
+
+Targets elements inside the FeedbackPanel:
+
+1. **Screenshot Capture** -- "Optionally capture a screenshot before submitting. Click the trigger button to draw a selection area on your screen."
+2. **Feedback Form** -- "Fill in the title, select a type (Bug, Feature, Improvement, Question), set priority, and provide a detailed description."
+3. **Submit & Shortcut** -- "Submit your feedback with the button below. You can also press Cmd+Shift+F to toggle this panel from anywhere."
 
 ### Technical Changes
 
 #### `src/components/tour/tourSteps.ts`
-- Add `volumeSettingsSteps: Step[]` (3 steps) targeting:
-  - `[data-tour="volume-settings-stats"]`
-  - `[data-tour="volume-settings-table"]`
-  - `[data-tour="volume-settings-target"]`
-- Add `npSettingsSteps: Step[]` (3 steps) targeting:
-  - `[data-tour="np-settings-stats"]`
-  - `[data-tour="np-settings-table"]`
-  - `[data-tour="np-settings-override"]`
+- Add three new exported arrays:
+  - `checklistTourSteps: Step[]` (4 steps)
+  - `aiHubTourSteps: Step[]` (4 steps)
+  - `feedbackTourSteps: Step[]` (3 steps)
 
-#### `src/pages/staffing/SettingsTab.tsx`
-- Add `data-tour="volume-settings-stats"` on the stats banner div (line 240)
-- Add `data-tour="volume-settings-table"` wrapper around the EditableTable (line 280)
-- Add `data-tour="volume-settings-target"` on the first relevant table element (if accessible, otherwise on the table wrapper)
+#### New: `src/components/tour/OverlayTour.tsx`
+- A generic reusable tour component for overlay panels
+- Accepts `tourKey` and `steps` props
+- Uses `useTour` hook with the given key
+- Renders Joyride with the same styling/tooltip as StaffingTour
+- The tour only runs when the parent panel is mounted (which already gates on `isOpen`)
 
-#### `src/pages/staffing/NPSettingsTab.tsx`
-- Add `data-tour="np-settings-stats"` on the stats banner div (line 244)
-- Add `data-tour="np-settings-table"` wrapper around the EditableTable (line 277)
-- Add `data-tour="np-settings-override"` on the override column area
+#### `src/components/workforce/WorkforceDrawer.tsx`
+- Add `data-tour` attributes to: header row, tabs list, KPI cards section, checklist table
+- Render `<OverlayTour tourKey="checklist" steps={checklistTourSteps} />` inside the drawer (only rendered when open)
 
-#### `src/components/tour/StaffingTour.tsx`
-- Import `volumeSettingsSteps` and `npSettingsSteps`
-- Extend the conditional logic:
-  - `activeTab === 'volume-settings'` -> tourKey `'staffing-volume-settings'`, steps `volumeSettingsSteps`
-  - `activeTab === 'np-settings'` -> tourKey `'staffing-np-settings'`, steps `npSettingsSteps`
+#### `src/components/ai/AIHubPanel.tsx`
+- Add `data-tour` attributes to: welcome/content area, PillChatBar wrapper, panel header area
+- Render `<OverlayTour tourKey="ai-hub" steps={aiHubTourSteps} />` inside the panel
 
+#### `src/components/feedback/FeedbackPanel.tsx`
+- Add `data-tour` attributes to: screenshot section, form area, footer/submit area
+- Render `<OverlayTour tourKey="feedback" steps={feedbackTourSteps} />` inside the panel
+
+#### `src/hooks/useTour.ts`
+- No changes needed -- the existing hook already supports any `pageKey` string and the "Take a Tour" trigger via `activeTour` matching
+
+### Tour Trigger Behavior
+- Each tour auto-starts on first open of its respective panel (tracked via localStorage `helix-tour-[key]-completed`)
+- Can be re-triggered via the "Take a Tour" dropdown using keys: `checklist`, `ai-hub`, `feedback`
+- The Joyride z-index will be set to 10001 (above the panel's z-[80]) to ensure spotlight visibility
+
+### Important Consideration
+Since these panels use `z-[80]`, the Joyride overlay must use `z-index: 10001` to appear above them. The existing `zIndex: 10000` in StaffingTour options will be bumped to `10001` in the OverlayTour component.
