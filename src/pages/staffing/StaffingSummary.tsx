@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ToggleButtonGroup } from "@/components/ui/toggle-button-group";
 import { FilterBar } from "@/components/staffing/FilterBar";
 import PositionPlanning from "./PositionPlanning";
@@ -18,8 +19,21 @@ import { LogoLoader } from "@/components/ui/LogoLoader";
 import { useFilterStore } from "@/stores/useFilterStore";
 import { StaffingTour } from "@/components/tour/StaffingTour";
 
+const validTabs = ["summary", "planning", "variance", "forecasts", "volume-settings", "np-settings"];
+
 export default function StaffingSummary() {
-  const [activeTab, setActiveTab] = useState("summary");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(
+    tabParam && validTabs.includes(tabParam) ? tabParam : "summary"
+  );
+
+  // Clear the search param once consumed so it doesn't get stale
+  useEffect(() => {
+    if (tabParam) {
+      setSearchParams({}, { replace: true });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const { hasPermission, loading: rbacLoading } = useRBAC();
   const { defaultFilters, isLoading: orgScopedLoading, isReady: orgScopedReady } = useOrgScopedFilters();
   
