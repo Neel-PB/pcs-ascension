@@ -63,8 +63,13 @@ function DraggableSection({ section }: { section: SectionData }) {
     opacity: isDragging ? 0.5 : 1,
   };
 
+  const tourAttr = section.id === 'fte' ? 'fte-section'
+    : section.id === 'volume' ? 'volume-section'
+    : section.id === 'productivity' ? 'productivity-section'
+    : undefined;
+
   return (
-    <div ref={setNodeRef} style={style} className="relative">
+    <div ref={setNodeRef} style={style} className="relative" data-tour={tourAttr}>
       <DraggableKPISection
         title={section.title}
         kpis={section.kpis}
