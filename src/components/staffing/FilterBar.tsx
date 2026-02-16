@@ -352,7 +352,7 @@ export function FilterBar({
                   role="combobox"
                   aria-expanded={facilityOpen}
                   disabled={isFacilityDisabled}
-                  className={`${isCompact ? 'w-[160px]' : 'w-[250px]'} rounded-lg justify-between bg-background border-border ${isFacilityDisabled ? 'pr-8' : ''}`}
+                  className={`${isCompact ? 'w-[160px]' : 'w-[250px]'} rounded-lg justify-between bg-background border-2 border-input px-4 py-3 h-auto text-sm font-normal transition-colors ${facilityOpen ? 'border-primary' : ''} ${isFacilityDisabled ? 'pr-8' : ''}`}
                 >
                   <span className="truncate">
                     {selectedFacility === "all-facilities"
@@ -442,7 +442,7 @@ export function FilterBar({
                   role="combobox"
                   aria-expanded={departmentOpen}
                   disabled={isDepartmentDisabled}
-                  className={`${isCompact ? 'w-[140px]' : 'w-[180px]'} rounded-lg justify-between bg-background border-border ${isDepartmentDisabled ? 'pr-8' : ''}`}
+                  className={`${isCompact ? 'w-[140px]' : 'w-[180px]'} rounded-lg justify-between bg-background border-2 border-input px-4 py-3 h-auto text-sm font-normal transition-colors ${departmentOpen ? 'border-primary' : ''} ${isDepartmentDisabled ? 'pr-8' : ''}`}
                 >
                   <span className="truncate">
                     {selectedDepartment === "all-departments"
@@ -565,7 +565,7 @@ export function FilterBar({
                 onValueChange={onSubmarketChange}
                 disabled={selectedMarket === "all-markets" || availableSubmarkets.length === 0}
               >
-                <SelectTrigger className="w-[150px] rounded-lg border border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                <SelectTrigger className="w-[150px] rounded-lg bg-background disabled:opacity-50 disabled:cursor-not-allowed">
                   <SelectValue placeholder="Submarket" />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
@@ -583,7 +583,7 @@ export function FilterBar({
                 value={selectedLevel2} 
                 onValueChange={onLevel2Change}
               >
-                <SelectTrigger className="w-[200px] rounded-lg border border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
+                <SelectTrigger className="w-[200px] rounded-lg bg-background">
                   <SelectValue placeholder="Level 2" />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
@@ -601,7 +601,7 @@ export function FilterBar({
                 value={selectedPstat} 
                 onValueChange={onPstatChange}
               >
-                <SelectTrigger className="w-[200px] rounded-lg border border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
+                <SelectTrigger className="w-[200px] rounded-lg bg-background">
                   <SelectValue placeholder="PSTAT" />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border z-50 max-h-[300px]">
