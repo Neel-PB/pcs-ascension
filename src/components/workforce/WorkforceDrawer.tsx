@@ -4,6 +4,8 @@ import { useWorkforceResizable } from '@/hooks/useWorkforceResizable';
 import { Button } from '@/components/ui/button';
 import { WorkforceKPISection } from './WorkforceKPISection';
 import { Building2 } from '@/lib/icons';
+import { OverlayTour } from '@/components/tour/OverlayTour';
+import { checklistTourSteps } from '@/components/tour/tourSteps';
 
 const MIN_WIDTH = 490;
 const MAX_WIDTH_VW = 0.7;
@@ -85,8 +87,11 @@ export const WorkforceDrawer = ({
           )}
         </div>
 
+        <OverlayTour tourKey="checklist" steps={checklistTourSteps} />
+
         {/* Fixed Header Row - matching global header */}
         <div 
+          data-tour="checklist-header"
           className="flex items-center justify-between px-6 border-b border-border flex-shrink-0" 
           style={{ height: 'var(--header-height)' }}
         >

@@ -84,7 +84,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onSuccess }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
+      <div className="space-y-2" data-tour="feedback-screenshot">
         <Label>Screenshot (Optional)</Label>
         <ScreenshotCapture
           onCapture={setScreenshot}

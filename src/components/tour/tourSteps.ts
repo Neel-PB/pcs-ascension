@@ -169,6 +169,92 @@ export const npSettingsSteps: Step[] = [
   },
 ];
 
+export const checklistTourSteps: Step[] = [
+  {
+    target: '[data-tour="checklist-header"]',
+    title: 'Positions Checklist',
+    content: 'This is the Positions Checklist. It provides a real-time summary of FTE gaps for your selected facility. Press Ctrl+Shift+W or click the edge trigger to toggle.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="checklist-tabs"]',
+    title: 'KPI / Shortage / Surplus Tabs',
+    content: 'Switch between KPIs, Shortage, and Surplus tabs. KPIs show summary cards; Shortage and Surplus tabs show detailed checklist tables.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="checklist-kpis"]',
+    title: 'KPI Cards',
+    content: 'These cards summarize key workforce metrics like total shortages, surpluses, and open requisitions for your current filter scope.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="checklist-table"]',
+    title: 'Checklist Table',
+    content: 'The checklist groups positions by Location, then by Department/Skill/Shift. Click any group to expand and see individual position details.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+];
+
+export const aiHubTourSteps: Step[] = [
+  {
+    target: '[data-tour="ai-hub-welcome"]',
+    title: 'PCS AI Assistant',
+    content: 'This is PCS AI, your staffing assistant. Ask questions about headcount, forecasts, variance analysis, or request recommendations.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="ai-hub-input"]',
+    title: 'Chat Input',
+    content: 'Type your question here. You can also attach files (images, PDFs, spreadsheets) for analysis. Use the microphone for voice input.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="ai-hub-panel"]',
+    title: 'Keyboard Shortcut',
+    content: 'Press Ctrl+Shift+K to toggle the AI Hub from anywhere in the app.',
+    placement: 'left',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="ai-hub-input"]',
+    title: 'Clear & Minimize',
+    content: 'Use the menu to clear the conversation history or minimize the panel back to the edge trigger.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+];
+
+export const feedbackTourSteps: Step[] = [
+  {
+    target: '[data-tour="feedback-screenshot"]',
+    title: 'Screenshot Capture',
+    content: 'Optionally capture a screenshot before submitting. Click the trigger button to draw a selection area on your screen.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="feedback-form"]',
+    title: 'Feedback Form',
+    content: 'Fill in the title, select a type (Bug, Feature, Improvement, Question), set priority, and provide a detailed description.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="feedback-footer"]',
+    title: 'Submit & Shortcut',
+    content: 'Submit your feedback with the button below. You can also press ⌘+Shift+F to toggle this panel from anywhere.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+];
+
 export const planningSteps: Step[] = [
   {
     target: '[data-tour="planning-header"]',
