@@ -1,55 +1,45 @@
 
 
-## Add Tour Guides for the Positions Module
+## Extend Positions Tour with Active FTE, Shift, and Comments Steps
 
 ### Overview
-Create a tab-aware tour system for the Positions module (Employees, Contractors, Open Positions), following the same pattern as the Staffing module's `StaffingTour` component. Since all three tabs share identical UI structure (search bar + filter button + data table + detail sheet), the tours will highlight these common elements with tab-specific descriptions.
+Add 3 new tour steps to the Employees and Contractors tours covering the editable Active FTE cell, the Shift override cell, and the Comments column / detail sheet. Open Positions (Requisitions) only gets a Comments step since it doesn't have Active FTE or Shift editing.
 
-### Tour Steps
+### New Steps
 
-#### Employees Tour (4 steps)
-1. **Filter Bar** -- `[data-tour="filter-bar"]` -- "Use these filters to narrow the employee roster by Region, Market, Facility, and Department."
-2. **Tab Navigation** -- `[data-tour="positions-tabs"]` -- "Switch between Employees, Contractors, and Open Positions views."
-3. **Search & Actions** -- `[data-tour="positions-search-bar"]` -- "Search by name, position number, job title, or department. Use the filter button for advanced filtering by status, employment type, shift, and FTE range."
-4. **Data Table** -- `[data-tour="positions-table"]` -- "Click any row to open the employee detail sheet with full position information and comments. Columns can be resized, reordered, and toggled."
+#### Employees Tour (4 existing + 3 new = 7 steps)
 
-#### Contractors Tour (4 steps)
-Same targets as Employees but with contractor-specific descriptions (e.g., "contractor roster", "contractor detail sheet").
+5. **Active FTE** -- `[data-tour="positions-active-fte"]` -- "Click the Active FTE cell to adjust a position's working FTE. Select a status reason (LOA, Orientation, Separation, etc.), set an expiration date, and optionally add a comment. Overrides appear in blue and automatically revert when expired."
 
-#### Open Positions Tour (4 steps)
-Same targets but with requisition-specific descriptions, mentioning vacancy age badges and position lifecycle.
+6. **Shift Override** -- `[data-tour="positions-shift"]` -- "For special shifts (Rotating, Weekend Option, Evening), click the pencil icon to assign a Day or Night selection. The original shift is shown with strikethrough alongside the new value. Use the reset icon to revert."
+
+7. **Comments** -- `[data-tour="positions-comments"]` -- "The comment icon shows how many notes exist for each position. Click any row to open the detail sheet, then switch to the Comments tab to view the activity timeline and add notes."
+
+#### Contractors Tour (4 existing + 3 new = 7 steps)
+Same 3 new steps with contractor-specific wording.
+
+#### Requisitions Tour (4 existing + 1 new = 5 steps)
+5. **Comments** -- Same comment step with requisition-specific wording.
 
 ### Technical Changes
 
-#### `src/components/tour/tourSteps.ts`
-- Add three new exported arrays: `employeesTourSteps`, `contractorsTourSteps`, `requisitionsTourSteps`
-- Each array has 4 steps targeting the same `data-tour` attribute names (shared UI structure)
+#### `src/components/tour/positionsTourSteps.ts`
+- Append 3 new steps to `employeesTourSteps` (Active FTE, Shift, Comments)
+- Append 3 new steps to `contractorsTourSteps` (Active FTE, Shift, Comments)
+- Append 1 new step to `requisitionsTourSteps` (Comments only)
 
-#### New: `src/components/tour/PositionsTour.tsx`
-- Follows the same pattern as `StaffingTour.tsx`
-- Accepts `activeTab` prop (`'employees'` | `'contractors'` | `'requisitions'`)
-- Maps each tab to its tour key (`positions-employees`, `positions-contractors`, `positions-requisitions`) and step array
-- Uses the same Joyride config, `TourTooltip`, and `useTour` hook
+#### `src/config/employeeColumns.tsx`
+- Add `data-tour="positions-active-fte"` wrapper attribute on the Active FTE column's `renderCell`
+- Add `data-tour="positions-shift"` wrapper attribute on the Shift column's `renderCell`
+- Add `data-tour="positions-comments"` wrapper attribute on the Comments column's `renderCell`
 
-#### `src/pages/positions/PositionsPage.tsx`
-- Import and render `<PositionsTour activeTab={activeTab} />`
-- Add `data-tour="positions-tabs"` on the `ToggleButtonGroup` wrapper div
+#### `src/config/contractorColumns.tsx`
+- Same `data-tour` attributes on Active FTE, Shift, and Comments columns
 
-#### `src/pages/positions/EmployeesTab.tsx`
-- Add `data-tour="positions-search-bar"` on the search/actions row div
-- Add `data-tour="positions-table"` on the `EditableTable` wrapper
+#### `src/config/requisitionColumns.tsx`
+- Add `data-tour="positions-comments"` on the Comments column only
 
-#### `src/pages/positions/ContractorsTab.tsx`
-- Same `data-tour` attributes as EmployeesTab
+### Approach for data-tour on Table Cells
+Since tour steps need a visible DOM element to spotlight, each column's `renderCell` will wrap its content in a `<div data-tour="...">` on the **first row only** (using a row index check or a simple flag). This ensures the spotlight highlights a real, visible cell in the table without adding unnecessary DOM to every row. Alternatively, if the column header is more appropriate, the `renderHeader` can receive the `data-tour` attribute instead -- this avoids per-row logic entirely and clearly labels the feature area.
 
-#### `src/pages/positions/RequisitionsTab.tsx`
-- Same `data-tour` attributes as EmployeesTab
-
-### Tour Trigger Behavior
-- Each tab's tour auto-starts on first visit (tracked via localStorage keys: `helix-tour-positions-employees-completed`, etc.)
-- Re-triggerable via "Take a Tour" dropdown using the `positions` key -- the `useTour` hook's base-path matching (`activeTour === pageKey.split('-')[0]`) will trigger whichever tab is currently active
-- Uses `zIndex: 10000` (same as StaffingTour, below overlay panels)
-
-### Key Pattern: Component Remounting
-Since `PositionsPage` conditionally renders only the active tab, switching tabs unmounts/remounts the `PositionsTour` with a new `tourKey`, ensuring clean state -- identical to the StaffingTour approach.
-
+The simplest approach: add `data-tour` to the **column header** via `renderHeader` for Active FTE, Shift, and Comments. This highlights the column header during the tour, which is clean and doesn't require per-cell logic.
