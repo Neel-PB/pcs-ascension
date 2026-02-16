@@ -35,11 +35,11 @@ interface Guide {
 
 const guideCatalog: Guide[] = [
   { tourKey: "staffing", title: "Staffing Summary", description: "KPI cards, trend charts, definition views, and volume color indicators.", icon: BarChart3, route: "/staffing", stepCount: 7, category: "Staffing" },
-  { tourKey: "staffing-planning", title: "Position Planning", description: "FTE skill-shift analysis with hired/active and nursing toggles.", icon: Layers, route: "/staffing", stepCount: 6, category: "Staffing" },
-  { tourKey: "staffing-variance", title: "Variance Analysis", description: "FTE variance by skill type across your selected scope.", icon: BarChart3, route: "/staffing", stepCount: 5, category: "Staffing" },
-  { tourKey: "staffing-forecast", title: "Forecast", description: "FTE shortage/surplus KPIs and expandable detail views.", icon: Navigation, route: "/staffing", stepCount: 3, category: "Staffing" },
-  { tourKey: "staffing-volume-settings", title: "Volume Settings", description: "Override target volumes and manage expiration dates.", icon: Settings, route: "/staffing", stepCount: 3, category: "Staffing" },
-  { tourKey: "staffing-np-settings", title: "NP Settings", description: "Configure non-productive override percentages.", icon: Settings, route: "/staffing", stepCount: 3, category: "Staffing" },
+  { tourKey: "staffing-planning", title: "Position Planning", description: "FTE skill-shift analysis with hired/active and nursing toggles.", icon: Layers, route: "/staffing?tab=planning", stepCount: 6, category: "Staffing" },
+  { tourKey: "staffing-variance", title: "Variance Analysis", description: "FTE variance by skill type across your selected scope.", icon: BarChart3, route: "/staffing?tab=variance", stepCount: 5, category: "Staffing" },
+  { tourKey: "staffing-forecast", title: "Forecast", description: "FTE shortage/surplus KPIs and expandable detail views.", icon: Navigation, route: "/staffing?tab=forecasts", stepCount: 3, category: "Staffing" },
+  { tourKey: "staffing-volume-settings", title: "Volume Settings", description: "Override target volumes and manage expiration dates.", icon: Settings, route: "/staffing?tab=volume-settings", stepCount: 3, category: "Staffing" },
+  { tourKey: "staffing-np-settings", title: "NP Settings", description: "Configure non-productive override percentages.", icon: Settings, route: "/staffing?tab=np-settings", stepCount: 3, category: "Staffing" },
   { tourKey: "positions-employees", title: "Employees", description: "Employee roster with Active FTE overrides and shift management.", icon: Users, route: "/positions", stepCount: 7, category: "Positions" },
   { tourKey: "positions-contractors", title: "Contractors", description: "Contractor roster with FTE and shift override controls.", icon: Briefcase, route: "/positions", stepCount: 7, category: "Positions" },
   { tourKey: "positions-requisitions", title: "Open Positions", description: "Open requisitions with vacancy age tracking and comments.", icon: Users, route: "/positions", stepCount: 5, category: "Positions" },
