@@ -29,6 +29,27 @@ export const employeesTourSteps: Step[] = [
     placement: 'top',
     disableBeacon: true,
   },
+  {
+    target: '[data-tour="positions-active-fte"]',
+    title: 'Active FTE',
+    content: 'Click the Active FTE cell to adjust a position\'s working FTE. Select a status reason (LOA, Orientation, Separation, etc.), set an expiration date, and optionally add a comment. Overrides appear in blue and automatically revert when expired.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="positions-shift"]',
+    title: 'Shift Override',
+    content: 'For special shifts (Rotating, Weekend Option, Evening), click the pencil icon to assign a Day or Night selection. The original shift is shown with strikethrough alongside the new value. Use the reset icon to revert.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="positions-comments"]',
+    title: 'Comments',
+    content: 'The comment icon shows how many notes exist for each position. Click any row to open the detail sheet, then switch to the Comments tab to view the activity timeline and add notes.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
 ];
 
 export const contractorsTourSteps: Step[] = [
@@ -60,6 +81,27 @@ export const contractorsTourSteps: Step[] = [
     placement: 'top',
     disableBeacon: true,
   },
+  {
+    target: '[data-tour="positions-active-fte"]',
+    title: 'Active FTE',
+    content: 'Click the Active FTE cell to adjust a contractor\'s working FTE. Select a status reason (LOA, Orientation, Separation, etc.), set an expiration date, and optionally add a comment. Overrides appear in blue and automatically revert when expired.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="positions-shift"]',
+    title: 'Shift Override',
+    content: 'For special shifts (Rotating, Weekend Option, Evening), click the pencil icon to assign a Day or Night selection. The original shift is shown with strikethrough alongside the new value. Use the reset icon to revert.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="positions-comments"]',
+    title: 'Comments',
+    content: 'The comment icon shows how many notes exist for each contractor. Click any row to open the detail sheet, then switch to the Comments tab to view the activity timeline and add notes.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
 ];
 
 export const requisitionsTourSteps: Step[] = [
@@ -89,6 +131,13 @@ export const requisitionsTourSteps: Step[] = [
     title: 'Data Table',
     content: 'Click any row to open the requisition detail sheet. Vacancy age badges indicate urgency. Columns can be resized, reordered, and toggled.',
     placement: 'top',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="positions-comments"]',
+    title: 'Comments',
+    content: 'The comment icon shows how many notes exist for each open position. Click any row to open the detail sheet, then switch to the Comments tab to view the activity timeline and add notes.',
+    placement: 'bottom',
     disableBeacon: true,
   },
 ];

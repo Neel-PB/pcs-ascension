@@ -80,7 +80,7 @@ export const employeeColumns: ColumnDef<Position>[] = [
     sortable: true,
     resizable: false,
     draggable: true,
-    
+    renderHeader: () => <span data-tour="positions-active-fte">Active FTE</span>,
   },
   {
     id: 'shift',
@@ -91,6 +91,7 @@ export const employeeColumns: ColumnDef<Position>[] = [
     sortable: true,
     resizable: false,
     draggable: true,
+    renderHeader: () => <span data-tour="positions-shift">Shift</span>,
     renderCell: (row) => <ShiftCell value={row.shift} />,
   },
   {
@@ -172,7 +173,7 @@ export const createEmployeeColumnsWithComments = (
       sortable: false,
       resizable: false,
       draggable: true,
-      renderHeader: () => <MessageSquare className="h-4 w-4" />,
+      renderHeader: () => <span data-tour="positions-comments"><MessageSquare className="h-4 w-4" /></span>,
       renderCell: (row) => (
         <CommentIndicatorCell
           count={commentCounts.get(row.id) ?? 0}

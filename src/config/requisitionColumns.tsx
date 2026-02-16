@@ -136,7 +136,7 @@ export const createRequisitionColumnsWithComments = (
     sortable: false,
     resizable: false,
     draggable: true,
-    renderHeader: () => <MessageSquare className="h-4 w-4" />,
+    renderHeader: () => <span data-tour="positions-comments"><MessageSquare className="h-4 w-4" /></span>,
     renderCell: (row) => (
       <CommentIndicatorCell
         count={commentCounts.get(row.id) ?? 0}
