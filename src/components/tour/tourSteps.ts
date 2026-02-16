@@ -58,3 +58,48 @@ export const staffingSteps: Step[] = [
     disableBeacon: true,
   },
 ];
+
+export const planningSteps: Step[] = [
+  {
+    target: '[data-tour="planning-header"]',
+    title: 'FTE Skill Shift Analysis',
+    content: 'This view breaks down your staffing by skill type and shift (Day/Night), showing Target FTEs, Hired/Active FTEs, Open Requisitions, and Variance.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="planning-hired-toggle"]',
+    title: 'Hired / Active Toggle',
+    content: 'Switch between Hired (all employees including those on leave) and Active (currently available staff adjusted by department leaders).',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="planning-nursing-toggle"]',
+    title: 'Nursing / Non-Nursing Toggle',
+    content: 'Filter between Nursing (clinical departments with full Target/Variance columns) and Non-Nursing (showing only Hired and Open Reqs). When a specific department is selected, this auto-sets based on the department type.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="planning-legend"]',
+    title: 'FTE Legend',
+    content: 'Positive values indicate an FTE surplus. Orange negative values indicate an FTE shortage that needs attention.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="planning-table"]',
+    title: 'Expandable Skill Groups',
+    content: 'Skills are grouped into Overheads, Clinical Staff, and Support Staff. Click any group row to expand and see individual skill breakdowns.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="planning-actions"]',
+    title: 'Action Buttons',
+    content: 'Use these buttons to refresh data, download the table as CSV, or expand to a full-screen view.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+];
