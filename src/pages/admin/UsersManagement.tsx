@@ -100,23 +100,25 @@ export default function UsersManagement() {
             Manage user accounts and permissions
           </p>
         </div>
-        <Button onClick={handleAddUser} className="flex items-center gap-2">
+        <Button onClick={handleAddUser} className="flex items-center gap-2" data-tour="admin-users-add">
           <UserPlus className="h-4 w-4" />
           Add User
         </Button>
       </div>
 
-      <SearchField
-        placeholder="Search by name or email..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-      />
+      <div data-tour="admin-users-search">
+        <SearchField
+          placeholder="Search by name or email..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
 
       <p className="text-xs text-muted-foreground">
         Showing {filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}
       </p>
 
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0" data-tour="admin-users-table">
       <UserManagementTable
         users={sortedUsers}
         onEdit={handleEditUser}

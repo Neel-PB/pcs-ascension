@@ -113,6 +113,7 @@ export default function AccessControlPage() {
               onValueChange={(value) => value && setViewMode(value as ViewMode)}
               className="bg-muted/50 p-0.5 rounded-md border border-border"
               variant="primary"
+              data-tour="admin-rbac-views"
             >
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -162,32 +163,35 @@ export default function AccessControlPage() {
           <div className="h-6 w-px bg-border" />
 
           {/* Action Buttons */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsPermissionFormOpen(true)}
-            className="flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Permission
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => {
-              setSelectedRoleForEdit(null);
-              setIsRoleFormOpen(true);
-            }}
-            className="flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Role
-          </Button>
+          <div className="flex items-center gap-2" data-tour="admin-rbac-actions">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsPermissionFormOpen(true)}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Permission
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                setSelectedRoleForEdit(null);
+                setIsRoleFormOpen(true);
+              }}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Role
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Content */}
       <AnimatePresence mode="wait">
         <motion.div
+          data-tour="admin-rbac-content"
           key={viewMode}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}

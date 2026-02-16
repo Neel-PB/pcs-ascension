@@ -255,6 +255,140 @@ export const feedbackTourSteps: Step[] = [
   },
 ];
 
+export const adminUsersTourSteps: Step[] = [
+  {
+    target: '[data-tour="admin-tabs"]',
+    title: 'Tab Navigation',
+    content: 'Switch between Users, Feed, RBAC, Audit Log, and Settings tabs to manage different aspects of the admin panel.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="admin-users-add"]',
+    title: 'Add User',
+    content: 'Click Add User to invite a new user. Assign one or more roles, set their name and email, and they will receive a setup link.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="admin-users-search"]',
+    title: 'Search',
+    content: 'Search users by name or email to quickly find and manage specific accounts.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="admin-users-table"]',
+    title: 'User Table',
+    content: 'Click any row to edit the user\'s profile, roles, and permissions. Columns can be resized, reordered, and sorted.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+];
+
+export const adminFeedTourSteps: Step[] = [
+  {
+    target: '[data-tour="admin-tabs"]',
+    title: 'Tab Navigation',
+    content: 'Switch between Users, Feed, RBAC, Audit Log, and Settings tabs to manage different aspects of the admin panel.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="admin-feed-composer"]',
+    title: 'Feed Composer',
+    content: 'Compose announcements and updates for all users. Format text with bold, italic, and lists. Attach images, PDFs, or spreadsheets.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="admin-feed-history"]',
+    title: 'Feed History',
+    content: 'View all published posts in reverse chronological order. Admins can delete posts from the feed.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+];
+
+export const adminRbacTourSteps: Step[] = [
+  {
+    target: '[data-tour="admin-tabs"]',
+    title: 'Tab Navigation',
+    content: 'Switch between Users, Feed, RBAC, Audit Log, and Settings tabs to manage different aspects of the admin panel.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="admin-rbac-views"]',
+    title: 'View Mode Toggle',
+    content: 'Switch between Matrix (grid of all role-permission combinations), Role Detail (expandable cards per role), and Permission List (grouped by category) views.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="admin-rbac-actions"]',
+    title: 'Add Role / Permission',
+    content: 'Create new roles or permissions. Roles are assigned to users; permissions are toggled per role to control access.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="admin-rbac-content"]',
+    title: 'RBAC Content',
+    content: 'Toggle permissions on or off for each role. Changes are saved immediately and logged to the Audit Log.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+];
+
+export const adminAuditTourSteps: Step[] = [
+  {
+    target: '[data-tour="admin-tabs"]',
+    title: 'Tab Navigation',
+    content: 'Switch between Users, Feed, RBAC, Audit Log, and Settings tabs to manage different aspects of the admin panel.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="admin-audit-filters"]',
+    title: 'Audit Filters',
+    content: 'Filter audit entries by action type (Created, Updated, Deleted, Granted, Revoked) and target type (Roles, Permissions, Role Permissions).',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="admin-audit-table"]',
+    title: 'Audit Table',
+    content: 'Each row shows the timestamp, action, target, and who made the change. Click rows with a chevron to expand and see the previous and new values.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+];
+
+export const adminSettingsTourSteps: Step[] = [
+  {
+    target: '[data-tour="admin-tabs"]',
+    title: 'Tab Navigation',
+    content: 'Switch between Users, Feed, RBAC, Audit Log, and Settings tabs to manage different aspects of the admin panel.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="admin-settings-tabs"]',
+    title: 'Settings Sub-Tabs',
+    content: 'Switch between UI Settings (feedback visibility controls) and Volume Config (target volume calculation rules).',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="admin-settings-content"]',
+    title: 'Settings Content',
+    content: 'Toggle settings and adjust configuration values. Changes require clicking Save to take effect.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+];
+
 export const planningSteps: Step[] = [
   {
     target: '[data-tour="planning-header"]',
