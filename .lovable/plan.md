@@ -1,29 +1,40 @@
 
 
-## Convert User Guides to Tabbed Category Layout
+## Restructure Staffing Summary Tour Steps
 
-### Overview
-Replace the vertically scrolling category sections in the User Guides tab with inner sub-tabs (one per category: Staffing, Positions, Admin, Feedback, Overlays). This keeps everything visible without scrolling and lets users jump directly to the module they care about.
+### What Changes
+The current 8-step staffing summary tour walks through KPI sections one at a time (FTE, Volume, Productivity), then shows chart/info/split actions. The user wants a restructured flow that:
 
-### Layout
-The existing outer Support tabs remain unchanged. Inside the "User Guides" panel, the five category sections become underline-style inner tabs (using the existing `Tabs`/`TabsList`/`TabsTrigger`/`TabsContent` components, which per the project's memory are reserved for internal content sections -- exactly this use case).
+1. Introduces **all KPI cards together** (not section by section)
+2. Explains the **trend chart** action
+3. Explains the **info/definition view** action
+4. Covers the **Target Vol / Override Vol color behavior** (green highlight = target in use, orange = override active)
+5. Covers the **employment type split badge**
 
-```
-[User Guides] [FAQs] [Videos] [Troubleshooting] [Report Issue]   <-- outer toggle group (unchanged)
+### New Tour Steps (7 steps)
 
-  Staffing | Positions | Admin | Feedback | Overlays              <-- NEW inner underline tabs
-  ─────────────────────────────────────────────────────
-
-  [Card] [Card] [Card]                                            <-- filtered grid for active category
-  [Card] [Card] [Card]
-```
+| # | Target | Title | Content |
+|---|--------|-------|---------|
+| 1 | `[data-tour="filter-bar"]` | Filter Bar | Use these filters to narrow data by Region, Market, Facility, and Department. Filters cascade: selecting a Region updates the available Markets. |
+| 2 | `[data-tour="tab-navigation"]` | Tab Navigation | Switch between Summary, Planned/Active Resources, Variance Analysis, Forecasts, and Settings views. |
+| 3 | `[data-tour="fte-section"]` | KPI Cards | All staffing metrics are organized into three draggable sections: FTE, Volume, and Productive Resources. Each card shows a key metric. Drag section headers to reorder them. |
+| 4 | `[data-tour="kpi-chart-action"]` | Trend Chart | Click the chart icon on any KPI card to view a detailed trend line, historical data, and breakdowns by skill type. |
+| 5 | `[data-tour="kpi-info-action"]` | Definition and Calculation | Click the eye icon to see what this KPI measures and the exact formula used to calculate it. |
+| 6 | `[data-tour="volume-section"]` | Target and Override Volume Colors | Volume cards use color to show status: a green border means the calculated Target Volume is in use; an orange border means a manual Override Volume is active and superseding the target. |
+| 7 | `[data-tour="kpi-split-badge"]` | Employment Type Split | This badge shows the FT/PT/PRN staffing mix. The target is 70% Full-Time, 20% Part-Time, 10% PRN. Click to compare current vs target variance. |
 
 ### Technical Changes
 
+#### `src/components/tour/tourSteps.ts`
+- Replace the existing `staffingSteps` array (lines 3-60) with the 7 new steps described above
+- Steps 1-2 (Filter Bar, Tab Navigation) remain unchanged
+- Step 3 replaces the three separate section steps with one combined step targeting `fte-section` (the first section visible)
+- Step 4 (Trend Chart) and Step 5 (Definition) remain similar but with slightly updated wording
+- Step 6 is **new** -- targets `volume-section` and specifically explains the green/orange color semantics for Target Vol and Override Vol cards
+- Step 7 (Employment Split) remains similar
+
 #### `src/components/support/UserGuidesTab.tsx`
-- Import `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent` from `@/components/ui/tabs`
-- Replace the `categories.map()` scroll layout with a `<Tabs defaultValue="Staffing">` wrapper
-- Render a `<TabsList>` with one `<TabsTrigger>` per category (full-width, flex-1 per tab memory standards for underline tabs)
-- Render a `<TabsContent>` per category containing only that category's guide cards grid
-- The card markup stays identical -- just moved into the appropriate `TabsContent`
-- No other files need changes
+- Update the step count for the `staffing` tour from `8` to `7`
+
+No other files need changes -- all `data-tour` attributes already exist in the codebase.
+
