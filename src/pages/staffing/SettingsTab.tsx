@@ -237,7 +237,7 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
   return (
     <div className="space-y-4">
       {/* Consolidated Stats Banner */}
-      <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+      <div data-tour="volume-settings-stats" className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
         <div className="flex items-center gap-8">
           {/* Require Override Stat */}
           <div className="flex items-center gap-2">
@@ -277,12 +277,14 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
         )}
       </div>
 
-      <EditableTable
-        columns={columns}
-        data={tableData}
-        getRowId={(row) => row.id}
-        storeNamespace="volume-override-settings-v3"
-      />
+      <div data-tour="volume-settings-table" data-tour-target="volume-settings-target">
+        <EditableTable
+          columns={columns}
+          data={tableData}
+          getRowId={(row) => row.id}
+          storeNamespace="volume-override-settings-v3"
+        />
+      </div>
     </div>
   );
 }

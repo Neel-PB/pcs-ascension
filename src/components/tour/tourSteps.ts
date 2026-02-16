@@ -121,6 +121,54 @@ export const forecastSteps: Step[] = [
   },
 ];
 
+export const volumeSettingsSteps: Step[] = [
+  {
+    target: '[data-tour="volume-settings-stats"]',
+    title: 'Status Summary',
+    content: 'This banner shows how many departments require an override, how many are using the calculated target volume, and how many overrides are expiring soon.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="volume-settings-table"]',
+    title: 'Override Table',
+    content: 'Each row represents a department. Enter an override volume to replace the calculated target, then set an expiration date. Both are saved together. Use the Revert button to clear an override.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="volume-settings-target"]',
+    title: 'Target Volume Details',
+    content: 'Click the target volume value to see historical analysis: the 3-month low average, N-month average, spread percentage, and a chart highlighting the lowest months.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+];
+
+export const npSettingsSteps: Step[] = [
+  {
+    target: '[data-tour="np-settings-stats"]',
+    title: 'Status Summary',
+    content: 'This banner shows how many NP overrides are active, expiring soon, or not yet set.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="np-settings-table"]',
+    title: 'Override Table',
+    content: 'Each row represents a department. The target NP% is fixed at 10% for all departments. Enter an override NP% and set an expiration date to apply a custom value.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="np-settings-override"]',
+    title: 'Two-Step Save',
+    content: 'Overrides use a two-step save: enter a value (shown as Pending), then select an expiration date to commit both to the database.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+];
+
 export const planningSteps: Step[] = [
   {
     target: '[data-tour="planning-header"]',

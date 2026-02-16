@@ -241,7 +241,7 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
   return (
     <div className="space-y-4">
       {/* Stats Banner */}
-      <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+      <div data-tour="np-settings-stats" className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
         <div className="flex items-center gap-8">
           {/* Active Stat */}
           <div className="flex items-center gap-2">
@@ -274,12 +274,14 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
         </div>
       </div>
 
-      <EditableTable
-        columns={columns}
-        data={tableData}
-        getRowId={(row) => row.id}
-        storeNamespace="np-override-settings-v3"
-      />
+      <div data-tour="np-settings-table" data-tour-override="np-settings-override">
+        <EditableTable
+          columns={columns}
+          data={tableData}
+          getRowId={(row) => row.id}
+          storeNamespace="np-override-settings-v3"
+        />
+      </div>
     </div>
   );
 }
