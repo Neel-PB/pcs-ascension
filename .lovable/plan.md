@@ -1,45 +1,79 @@
 
 
-## Extend Positions Tour with Active FTE, Shift, and Comments Steps
+## Add Tour Guides for the Admin Module
 
 ### Overview
-Add 3 new tour steps to the Employees and Contractors tours covering the editable Active FTE cell, the Shift override cell, and the Comments column / detail sheet. Open Positions (Requisitions) only gets a Comments step since it doesn't have Active FTE or Shift editing.
+Create a tab-aware tour system for the Admin module (Users, Feed, RBAC, Audit Log, Settings), following the same `StaffingTour` / `PositionsTour` pattern. Each tab gets its own set of steps highlighting the key UI elements within that view.
 
-### New Steps
+### Tour Steps by Tab
 
-#### Employees Tour (4 existing + 3 new = 7 steps)
+#### Users Tour (4 steps)
+1. **Tab Navigation** -- `[data-tour="admin-tabs"]` -- "Switch between Users, Feed, RBAC, Audit Log, and Settings tabs to manage different aspects of the admin panel."
+2. **Add User** -- `[data-tour="admin-users-add"]` -- "Click Add User to invite a new user. Assign one or more roles, set their name and email, and they will receive a setup link."
+3. **Search** -- `[data-tour="admin-users-search"]` -- "Search users by name or email to quickly find and manage specific accounts."
+4. **User Table** -- `[data-tour="admin-users-table"]` -- "Click any row to edit the user's profile, roles, and permissions. Columns can be resized, reordered, and sorted."
 
-5. **Active FTE** -- `[data-tour="positions-active-fte"]` -- "Click the Active FTE cell to adjust a position's working FTE. Select a status reason (LOA, Orientation, Separation, etc.), set an expiration date, and optionally add a comment. Overrides appear in blue and automatically revert when expired."
+#### Feed Tour (3 steps)
+1. **Tab Navigation** -- `[data-tour="admin-tabs"]`
+2. **Feed Composer** -- `[data-tour="admin-feed-composer"]` -- "Compose announcements and updates for all users. Format text with bold, italic, and lists. Attach images, PDFs, or spreadsheets."
+3. **Feed History** -- `[data-tour="admin-feed-history"]` -- "View all published posts in reverse chronological order. Admins can delete posts from the feed."
 
-6. **Shift Override** -- `[data-tour="positions-shift"]` -- "For special shifts (Rotating, Weekend Option, Evening), click the pencil icon to assign a Day or Night selection. The original shift is shown with strikethrough alongside the new value. Use the reset icon to revert."
+#### RBAC Tour (4 steps)
+1. **Tab Navigation** -- `[data-tour="admin-tabs"]`
+2. **View Mode Toggle** -- `[data-tour="admin-rbac-views"]` -- "Switch between Matrix (grid of all role-permission combinations), Role Detail (expandable cards per role), and Permission List (grouped by category) views."
+3. **Add Role / Permission** -- `[data-tour="admin-rbac-actions"]` -- "Create new roles or permissions. Roles are assigned to users; permissions are toggled per role to control access."
+4. **RBAC Content** -- `[data-tour="admin-rbac-content"]` -- "Toggle permissions on or off for each role. Changes are saved immediately and logged to the Audit Log."
 
-7. **Comments** -- `[data-tour="positions-comments"]` -- "The comment icon shows how many notes exist for each position. Click any row to open the detail sheet, then switch to the Comments tab to view the activity timeline and add notes."
+#### Audit Log Tour (3 steps)
+1. **Tab Navigation** -- `[data-tour="admin-tabs"]`
+2. **Audit Filters** -- `[data-tour="admin-audit-filters"]` -- "Filter audit entries by action type (Created, Updated, Deleted, Granted, Revoked) and target type (Roles, Permissions, Role Permissions)."
+3. **Audit Table** -- `[data-tour="admin-audit-table"]` -- "Each row shows the timestamp, action, target, and who made the change. Click rows with a chevron to expand and see the previous and new values."
 
-#### Contractors Tour (4 existing + 3 new = 7 steps)
-Same 3 new steps with contractor-specific wording.
-
-#### Requisitions Tour (4 existing + 1 new = 5 steps)
-5. **Comments** -- Same comment step with requisition-specific wording.
+#### Settings Tour (3 steps)
+1. **Tab Navigation** -- `[data-tour="admin-tabs"]`
+2. **Settings Sub-Tabs** -- `[data-tour="admin-settings-tabs"]` -- "Switch between UI Settings (feedback visibility controls) and Volume Config (target volume calculation rules)."
+3. **Settings Content** -- `[data-tour="admin-settings-content"]` -- "Toggle settings and adjust configuration values. Changes require clicking Save to take effect."
 
 ### Technical Changes
 
-#### `src/components/tour/positionsTourSteps.ts`
-- Append 3 new steps to `employeesTourSteps` (Active FTE, Shift, Comments)
-- Append 3 new steps to `contractorsTourSteps` (Active FTE, Shift, Comments)
-- Append 1 new step to `requisitionsTourSteps` (Comments only)
+#### `src/components/tour/tourSteps.ts`
+- Add five new exported arrays:
+  - `adminUsersTourSteps: Step[]` (4 steps)
+  - `adminFeedTourSteps: Step[]` (3 steps)
+  - `adminRbacTourSteps: Step[]` (4 steps)
+  - `adminAuditTourSteps: Step[]` (3 steps)
+  - `adminSettingsTourSteps: Step[]` (3 steps)
 
-#### `src/config/employeeColumns.tsx`
-- Add `data-tour="positions-active-fte"` wrapper attribute on the Active FTE column's `renderCell`
-- Add `data-tour="positions-shift"` wrapper attribute on the Shift column's `renderCell`
-- Add `data-tour="positions-comments"` wrapper attribute on the Comments column's `renderCell`
+#### New: `src/components/tour/AdminTour.tsx`
+- Follows the `StaffingTour` / `PositionsTour` pattern
+- Accepts `activeTab` prop (`'users'` | `'feed'` | `'access-control'` | `'audit-log'` | `'settings'`)
+- Maps each tab to its `tourKey` (`admin-users`, `admin-feed`, `admin-access-control`, `admin-audit-log`, `admin-settings`) and step array
+- Uses the same Joyride config, `TourTooltip`, and `useTour` hook
 
-#### `src/config/contractorColumns.tsx`
-- Same `data-tour` attributes on Active FTE, Shift, and Comments columns
+#### `src/pages/admin/AdminPage.tsx`
+- Import and render `<AdminTour activeTab={activeTab} />`
+- Add `data-tour="admin-tabs"` on the `ToggleButtonGroup` wrapper div
 
-#### `src/config/requisitionColumns.tsx`
-- Add `data-tour="positions-comments"` on the Comments column only
+#### `src/pages/admin/UsersManagement.tsx`
+- Add `data-tour="admin-users-add"` on the Add User button
+- Add `data-tour="admin-users-search"` on the `SearchField`
+- Add `data-tour="admin-users-table"` wrapper on the table container
 
-### Approach for data-tour on Table Cells
-Since tour steps need a visible DOM element to spotlight, each column's `renderCell` will wrap its content in a `<div data-tour="...">` on the **first row only** (using a row index check or a simple flag). This ensures the spotlight highlights a real, visible cell in the table without adding unnecessary DOM to every row. Alternatively, if the column header is more appropriate, the `renderHeader` can receive the `data-tour` attribute instead -- this avoids per-row logic entirely and clearly labels the feature area.
+#### `src/pages/admin/AccessControlPage.tsx`
+- Add `data-tour="admin-rbac-views"` on the `ToggleGroup` wrapper
+- Add `data-tour="admin-rbac-actions"` on the action buttons container
+- Add `data-tour="admin-rbac-content"` on the `AnimatePresence` content wrapper
 
-The simplest approach: add `data-tour` to the **column header** via `renderHeader` for Active FTE, Shift, and Comments. This highlights the column header during the tour, which is clean and doesn't require per-cell logic.
+#### `src/pages/admin/RBACAuditLog.tsx`
+- Add `data-tour="admin-audit-filters"` on the filters row
+- Add `data-tour="admin-audit-table"` on the table wrapper
+
+#### Admin Settings area in `AdminPage.tsx`
+- Add `data-tour="admin-settings-tabs"` on the sub-tab `TabsList`
+- Add `data-tour="admin-settings-content"` on a wrapper around `TabsContent` elements
+
+### Tour Trigger Behavior
+- Each tab's tour auto-starts on first visit (tracked via localStorage keys like `helix-tour-admin-users-completed`)
+- Re-triggerable via "Take a Tour" dropdown using the `admin` key -- the `useTour` hook's base-path matching will trigger whichever admin tab is currently active
+- Uses `zIndex: 10000` (same as StaffingTour)
+
