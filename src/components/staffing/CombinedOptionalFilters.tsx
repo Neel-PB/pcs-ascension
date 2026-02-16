@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ChevronDown, ChevronRight, Check, SlidersHorizontal } from "@/lib/icons";
 import {
   DropdownMenu,
@@ -36,6 +37,8 @@ export function CombinedOptionalFilters({
   pstatOptions,
   submarketDisabled,
 }: CombinedOptionalFiltersProps) {
+  const [open, setOpen] = useState(false);
+
   // Count active filters
   const activeCount = [
     selectedSubmarket !== "all-submarkets",
@@ -44,7 +47,7 @@ export function CombinedOptionalFilters({
   ].filter(Boolean).length;
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
@@ -57,7 +60,7 @@ export function CombinedOptionalFilters({
               {activeCount}
             </span>
           )}
-          <ChevronDown className="h-4 w-4 ml-1" />
+          <ChevronDown className={cn("h-4 w-4 ml-1 text-[#1D69D2] transition-transform duration-200", open && "rotate-180")} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-48 bg-popover border-border z-50">
