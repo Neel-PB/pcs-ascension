@@ -168,7 +168,7 @@ export default function RBACAuditLog() {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3" data-tour="admin-audit-filters">
         <Filter className="h-4 w-4 text-muted-foreground" />
         <Select value={actionFilter} onValueChange={setActionFilter}>
           <SelectTrigger className="w-48">
@@ -215,7 +215,7 @@ export default function RBACAuditLog() {
       </div>
 
       {/* Table */}
-      <div className="border rounded-lg">
+      <div className="border rounded-lg" data-tour="admin-audit-table">
         <Table>
           <TableHeader>
             <TableRow>

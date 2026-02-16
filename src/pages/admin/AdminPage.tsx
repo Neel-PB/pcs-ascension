@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { VolumeOverrideSettings } from "@/components/admin/VolumeOverrideSettings";
 import { UISettings } from "@/components/admin/UISettings";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { AdminTour } from "@/components/tour/AdminTour";
 
 export default function AdminPage() {
   const { hasPermission, loading } = useRBAC();
@@ -72,7 +73,8 @@ export default function AdminPage() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden gap-6">
-      <div className="flex justify-center shrink-0">
+      <AdminTour activeTab={activeTab} />
+      <div className="flex justify-center shrink-0" data-tour="admin-tabs">
         <ToggleButtonGroup
           items={tabs}
           activeId={activeTab}
@@ -86,8 +88,12 @@ export default function AdminPage() {
         
         {activeTab === "feed" && (
           <div className="space-y-6">
-            <FeedComposer />
-            <FeedHistory />
+            <div data-tour="admin-feed-composer">
+              <FeedComposer />
+            </div>
+            <div data-tour="admin-feed-history">
+              <FeedHistory />
+            </div>
           </div>
         )}
         
@@ -97,18 +103,20 @@ export default function AdminPage() {
         
         {activeTab === "settings" && (
           <Tabs defaultValue="ui-settings" className="space-y-6">
-            <TabsList className="w-full">
+            <TabsList className="w-full" data-tour="admin-settings-tabs">
               <TabsTrigger value="ui-settings" className="flex-1">UI Settings</TabsTrigger>
               <TabsTrigger value="volume-config" className="flex-1">Volume Config</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="ui-settings" className="mt-0">
-              <UISettings />
-            </TabsContent>
-            
-            <TabsContent value="volume-config" className="mt-0">
-              <VolumeOverrideSettings />
-            </TabsContent>
+            <div data-tour="admin-settings-content">
+              <TabsContent value="ui-settings" className="mt-0">
+                <UISettings />
+              </TabsContent>
+              
+              <TabsContent value="volume-config" className="mt-0">
+                <VolumeOverrideSettings />
+              </TabsContent>
+            </div>
           </Tabs>
         )}
       </div>
