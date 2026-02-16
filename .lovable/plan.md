@@ -1,43 +1,82 @@
 
 
-## Unify All Filter Triggers to Match Region/Market Style
+## Interactive Guided Tour System
 
-### Problem
-Three different filter implementations produce different heights, border widths, and interaction states:
-- Region/Market: 2px border, ~48px height, blue chevron rotation, primary border on open
-- Facility/Department: 1px border, 40px height (h-10), manually styled chevron
-- Submarket/Level2/PSTAT: Override to 1px border, inconsistent with base Select
+### Overview
+Add a step-by-step guided tour using `react-joyride` that walks users through the Staffing page components. The "Take a Tour" option lives inside the user profile dropdown in the header. The system is designed to scale to other pages later, with role-aware tour content.
 
-### Solution
-Standardize all filters to match the Region/Market Select trigger style (the "source of truth" defined in `select.tsx`).
+### Tour Steps for Staffing Page (Labor Team)
+1. **Filter Bar** -- "Use these filters to narrow data by Region, Market, Facility, and Department. Filters cascade: selecting a Region updates available Markets."
+2. **Tab Navigation** -- "Switch between Summary, Planned/Active Resources, Variance Analysis, Forecasts, and Settings views."
+3. **FTE KPI Section** -- "These cards show staffing metrics like Vacancy Rate, Hired FTEs, and Target FTEs. Click any card for a detailed chart. Drag to reorder."
+4. **Volume KPI Section** -- "Volume metrics track patient encounters. The highlighted Target Volume card drives staffing calculations."
+5. **Productive Resources Section** -- "Track actual paid labor including contract staff, overtime, and PRN usage."
+6. **Workforce Drawer Trigger** -- "Click this tab to open the Workforce Drawer for detailed position breakdowns."
 
-### Technical Changes
+### Architecture
+The tour system is built as a reusable framework so additional pages (Positions, Analytics, etc.) and role-specific steps can be added later.
 
-#### 1. `src/components/staffing/FilterBar.tsx`
+### New Files
 
-**Facility trigger (line 355):** Change Button classes from `border-border` (1px, h-10 py-2) to match Select dimensions:
-- Remove the implicit `h-10 py-2` from Button's default size
-- Add `border-2 border-input px-4 py-3 text-sm` to match SelectTrigger base
-- Add `transition-colors` and conditional `border-primary` when open (matching `data-[state=open]:border-primary`)
-- Result: same 2px border, same padding/height as Region/Market
+#### `src/hooks/useTour.ts`
+- Manages tour state: `run`, `startTour`, `completeTour`, `resetTour`
+- Stores completion per page in `localStorage` (e.g., `helix-tour-staffing-completed`)
+- Accepts a `pageKey` parameter so each page has independent tour state
+- Auto-starts on first visit for that page
 
-**Department trigger (line 445):** Same changes as Facility above.
+#### `src/components/tour/TourTooltip.tsx`
+- Custom tooltip component matching the app's design system
+- Uses `Card`, `Button` components for consistency
+- Shows step counter ("Step 2 of 6"), title, description
+- Back / Next / Skip buttons
+- Primary-colored accent on the Next button
 
-**Submarket trigger (line 568):** Remove the override `border border-input` so the base SelectTrigger `border-2 border-input` is preserved. Clean up to just `w-[150px] rounded-lg bg-background disabled:opacity-50 disabled:cursor-not-allowed`.
+#### `src/components/tour/StaffingTour.tsx`
+- Defines the Staffing page tour steps array
+- Each step targets a `data-tour` attribute selector
+- Renders `react-joyride` with the custom tooltip, spotlight overlay, and controlled mode
+- Receives `run` and callbacks from `useTour`
 
-**Level 2 trigger (line 586):** Same cleanup -- remove `border border-input` override. Keep `w-[200px] rounded-lg bg-background`.
+#### `src/components/tour/tourSteps.ts`
+- Centralized step definitions file; starts with `staffingSteps`
+- Easy to add `positionsSteps`, `analyticsSteps`, etc. later
+- Each step: `{ target, title, content, placement }`
 
-**PSTAT trigger (line 604):** Same cleanup -- remove `border border-input` override. Keep `w-[200px] rounded-lg bg-background`.
+### Modified Files
 
-#### 2. No changes to `select.tsx` or `button.tsx`
-The base Select component already has the correct styling. We just need the FilterBar to stop overriding it for optional filters, and to make the Popover-based triggers (Facility/Department) match by applying equivalent classes.
+#### `src/components/shell/AppHeader.tsx`
+- Import `useTour` hook and add a `startTour` callback
+- Add a "Take a Tour" `DropdownMenuItem` with a `HelpCircle` icon between "Profile" and "Log out" in the user dropdown menu
+- Clicking it calls `startTour('staffing')` (or whatever the current page is)
+- Pass `tourRun` and `onTourComplete` down or use a lightweight Zustand store / context so the tour component on the page can pick it up
 
-### Visual Result
-All filter triggers will share:
-- 2px border (`border-2 border-input`)
-- Same height via `px-4 py-3` padding
-- Blue chevron (`text-[#1D69D2]`) with 180-degree rotation animation on open
-- Primary border color when open/focused
-- `rounded-lg` corners
-- Facility and Department retain their searchable popover dropdowns
+#### `src/stores/useTourStore.ts` (new)
+- Small Zustand store: `{ activeTour: string | null, startTour, stopTour }`
+- AppHeader writes to it; page-level tour components read from it
+- Keeps header and page components decoupled
+
+#### `src/pages/staffing/StaffingSummary.tsx`
+- Add `data-tour` attributes to key wrapper elements:
+  - `data-tour="filter-bar"` on the FilterBar wrapper div (line 462)
+  - `data-tour="tab-navigation"` on the ToggleButtonGroup wrapper (line 482)
+  - `data-tour="workforce-trigger"` on WorkforceDrawerTrigger
+- Import and render `<StaffingTour />` component
+
+#### `src/components/staffing/DraggableSectionsContainer.tsx`
+- Pass `data-tour` attributes to section wrapper divs based on `section.id`:
+  - `data-tour="fte-section"` for id `fte`
+  - `data-tour="volume-section"` for id `volume`
+  - `data-tour="productivity-section"` for id `productivity`
+
+### Dependencies
+- Install `react-joyride` (well-maintained, ~25KB gzipped, 7k+ GitHub stars)
+
+### First-Visit Behavior
+- On first load of the Staffing page, the tour auto-starts after a short delay (1s) to let the page render
+- Completion sets `localStorage` flag so it doesn't auto-start again
+- User can always re-trigger from the profile dropdown "Take a Tour"
+
+### Role Awareness (Future-Ready)
+- The `tourSteps.ts` file can accept a `permissions` object to conditionally include steps (e.g., only show "Volume Settings" step if `hasPermission("settings.volume_override")`)
+- For now, the Staffing tour shows all 6 steps for the labor team; role filtering will be added when other page tours are built
 
