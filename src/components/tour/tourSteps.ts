@@ -59,6 +59,44 @@ export const staffingSteps: Step[] = [
   },
 ];
 
+export const varianceSteps: Step[] = [
+  {
+    target: '[data-tour="variance-header"]',
+    title: 'Variance Analysis',
+    content: 'This table shows FTE variance by skill type across your selected scope. Data adapts automatically based on your filter selections (Region, Market, Facility, Department).',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="variance-legend"]',
+    title: 'FTE Legend',
+    content: 'Positive (+) values indicate an FTE Shortage. Negative (-) values indicate an FTE Surplus.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="variance-skill-headers"]',
+    title: 'Skill Column Headers',
+    content: 'Variance is broken down by skill type: CL (Clinical Lead), RN (Registered Nurse), PCT (Patient Care Tech), HUC (Health Unit Coordinator), and Overhead.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="variance-table"]',
+    title: 'Expandable Groups',
+    content: 'Rows are grouped by Region, Submarket, or Facility depending on your filter level. Click any group row to expand and see individual breakdowns.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="variance-actions"]',
+    title: 'Action Buttons',
+    content: 'Use these buttons to refresh data, download the table as CSV, or expand to a full-screen view.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+];
+
 export const planningSteps: Step[] = [
   {
     target: '[data-tour="planning-header"]',
