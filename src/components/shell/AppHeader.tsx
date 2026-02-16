@@ -23,6 +23,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { HelpCircle } from "@/lib/icons";
+import { useTourStore } from "@/stores/useTourStore";
+import { useLocation } from "react-router-dom";
 
 export function AppHeader() {
   const [commandOpen, setCommandOpen] = useState(false);
@@ -33,7 +36,14 @@ export function AppHeader() {
   const { profile } = useUserProfile(user?.id);
   const { data: notifications } = useNotifications();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
+  const { startTour } = useTourStore();
+
+  const handleTakeTour = () => {
+    const path = location.pathname.replace('/', '') || 'staffing';
+    startTour(path);
+  };
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -150,6 +160,10 @@ export function AppHeader() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={() => setProfileModalOpen(true)}>
                   <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={handleTakeTour}>
+                  <HelpCircle className="h-4 w-4 mr-2" />
+                  <span>Take a Tour</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>

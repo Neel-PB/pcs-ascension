@@ -16,6 +16,7 @@ import { useRBAC } from "@/hooks/useRBAC";
 import { useOrgScopedFilters } from "@/hooks/useOrgScopedFilters";
 import { LogoLoader } from "@/components/ui/LogoLoader";
 import { useFilterStore } from "@/stores/useFilterStore";
+import { StaffingTour } from "@/components/tour/StaffingTour";
 
 export default function StaffingSummary() {
   const [activeTab, setActiveTab] = useState("summary");
@@ -446,7 +447,10 @@ This metric helps:
 
   return (
     <>
-      <WorkforceDrawerTrigger />
+      <StaffingTour />
+      <div data-tour="workforce-trigger">
+        <WorkforceDrawerTrigger />
+      </div>
       <WorkforceDrawer 
         activeTab={activeTab} 
         selectedDepartment={selectedDepartment === "all-departments" ? null : selectedDepartment}
@@ -459,7 +463,7 @@ This metric helps:
       
       <div className="space-y-6">
         {/* Filters */}
-        <div className="py-2">
+        <div className="py-2" data-tour="filter-bar">
         <FilterBar 
           onRegionChange={setRegion}
           onMarketChange={setMarket}
@@ -479,7 +483,7 @@ This metric helps:
         />
       </div>
 
-      <div className="mb-6 flex justify-center">
+      <div className="mb-6 flex justify-center" data-tour="tab-navigation">
         <ToggleButtonGroup
           items={tabs}
           activeId={activeTab}
