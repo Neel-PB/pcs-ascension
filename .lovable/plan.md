@@ -1,26 +1,43 @@
 
 
-## Fix "More Filters" Chevron Color and Animation
+## Unify All Filter Triggers to Match Region/Market Style
 
 ### Problem
-The "More Filters" dropdown button chevron icon is missing:
-1. The blue color (`text-[#1D69D2]`) used by the Facility and Department chevrons
-2. The rotation animation (`transition-transform duration-200` with `rotate-180` when open)
+Three different filter implementations produce different heights, border widths, and interaction states:
+- Region/Market: 2px border, ~48px height, blue chevron rotation, primary border on open
+- Facility/Department: 1px border, 40px height (h-10), manually styled chevron
+- Submarket/Level2/PSTAT: Override to 1px border, inconsistent with base Select
 
-### Fix
+### Solution
+Standardize all filters to match the Region/Market Select trigger style (the "source of truth" defined in `select.tsx`).
 
-**File: `src/components/staffing/CombinedOptionalFilters.tsx`**
+### Technical Changes
 
-The DropdownMenu does not expose an `open` state by default, so we need to add state tracking.
+#### 1. `src/components/staffing/FilterBar.tsx`
 
-1. **Add state**: Import `useState` and track `open` state via the `onOpenChange` prop of `DropdownMenu`.
-2. **Update ChevronDown** (line 60): Change from `className="h-4 w-4 ml-1"` to `className="h-4 w-4 ml-1 text-[#1D69D2] transition-transform duration-200 ${open ? 'rotate-180' : ''}"` to match the Facility/Department chevron styling.
+**Facility trigger (line 355):** Change Button classes from `border-border` (1px, h-10 py-2) to match Select dimensions:
+- Remove the implicit `h-10 py-2` from Button's default size
+- Add `border-2 border-input px-4 py-3 text-sm` to match SelectTrigger base
+- Add `transition-colors` and conditional `border-primary` when open (matching `data-[state=open]:border-primary`)
+- Result: same 2px border, same padding/height as Region/Market
 
-### Technical Details
+**Department trigger (line 445):** Same changes as Facility above.
 
-- Line 1: Add `useState` import
-- Line 47: Change `<DropdownMenu>` to `<DropdownMenu open={open} onOpenChange={setOpen}>`
-- Line 60: Update `ChevronDown` className to include blue color and rotation animation
+**Submarket trigger (line 568):** Remove the override `border border-input` so the base SelectTrigger `border-2 border-input` is preserved. Clean up to just `w-[150px] rounded-lg bg-background disabled:opacity-50 disabled:cursor-not-allowed`.
 
-This ensures the "More Filters" chevron matches the visual behavior of all other filter chevrons in the FilterBar.
+**Level 2 trigger (line 586):** Same cleanup -- remove `border border-input` override. Keep `w-[200px] rounded-lg bg-background`.
+
+**PSTAT trigger (line 604):** Same cleanup -- remove `border border-input` override. Keep `w-[200px] rounded-lg bg-background`.
+
+#### 2. No changes to `select.tsx` or `button.tsx`
+The base Select component already has the correct styling. We just need the FilterBar to stop overriding it for optional filters, and to make the Popover-based triggers (Facility/Department) match by applying equivalent classes.
+
+### Visual Result
+All filter triggers will share:
+- 2px border (`border-2 border-input`)
+- Same height via `px-4 py-3` padding
+- Blue chevron (`text-[#1D69D2]`) with 180-degree rotation animation on open
+- Primary border color when open/focused
+- `rounded-lg` corners
+- Facility and Department retain their searchable popover dropdowns
 
