@@ -7,8 +7,8 @@ export function TourTooltip({
   index,
   step,
   backProps,
-  closeProps,
   primaryProps,
+  skipProps,
   tooltipProps,
   size,
 }: TooltipRenderProps) {
@@ -32,7 +32,7 @@ export function TourTooltip({
           <Button
             variant="ghost"
             size="sm"
-            {...closeProps}
+            {...skipProps}
             className="text-muted-foreground text-xs"
           >
             Skip
