@@ -7,15 +7,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Play, FileText, AlertCircle, MessageSquare, ExternalLink } from "@/lib/icons";
 import { toast } from "sonner";
+import { UserGuidesTab } from "@/components/support/UserGuidesTab";
 
 export default function SupportPage() {
-  const [activeTab, setActiveTab] = useState("faqs");
+  const [activeTab, setActiveTab] = useState("guides");
   const [searchQuery, setSearchQuery] = useState("");
   const [issueTitle, setIssueTitle] = useState("");
   const [issueDescription, setIssueDescription] = useState("");
   
 
   const tabs = [
+    { id: "guides", label: "User Guides" },
     { id: "faqs", label: "FAQs" },
     { id: "videos", label: "Training Videos" },
     { id: "troubleshooting", label: "Troubleshooting" },
@@ -162,6 +164,12 @@ export default function SupportPage() {
       </div>
 
       <div className="space-y-6">
+        {activeTab === "guides" && (
+          <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
+            <UserGuidesTab />
+          </div>
+        )}
+
         {activeTab === "faqs" && (
           <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
           <div className="mb-6">

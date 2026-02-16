@@ -165,6 +165,10 @@ export function AppHeader() {
                   <HelpCircle className="h-4 w-4 mr-2" />
                   <span>Take a Tour</span>
                 </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => navigate('/support')}>
+                  <HelpCircle className="h-4 w-4 mr-2" />
+                  <span>View All Guides</span>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
                   <span>Log out</span>
