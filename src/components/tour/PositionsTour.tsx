@@ -1,4 +1,4 @@
-import Joyride, { CallBackProps, STATUS } from 'react-joyride';
+import Joyride, { CallBackProps, EVENTS, STATUS } from 'react-joyride';
 import { useTour } from '@/hooks/useTour';
 import { employeesTourSteps, contractorsTourSteps, requisitionsTourSteps } from './positionsTourSteps';
 import { TourTooltip } from './TourTooltip';
@@ -13,7 +13,11 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
   const { run, setRun, completeTour } = useTour(tourKey);
 
   const handleCallback = (data: CallBackProps) => {
-    const { status } = data;
+    const { status, type, step } = data;
+    if (type === EVENTS.STEP_BEFORE && step?.target) {
+      const el = document.querySelector(step.target as string);
+      el?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+    }
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
       completeTour();
     }
