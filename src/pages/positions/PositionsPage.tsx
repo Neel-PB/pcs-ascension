@@ -10,6 +10,7 @@ import { useOrgScopedFilters } from "@/hooks/useOrgScopedFilters";
 import { useRBAC } from "@/hooks/useRBAC";
 import { LogoLoader } from "@/components/ui/LogoLoader";
 import { useFilterStore } from "@/stores/useFilterStore";
+import { PositionsTour } from "@/components/tour/PositionsTour";
 
 export default function PositionsPage() {
   const [activeTab, setActiveTab] = useState("employees");
@@ -95,7 +96,7 @@ export default function PositionsPage() {
           />
         </div>
 
-        <div className="flex-shrink-0 mb-6 flex justify-center">
+        <div className="flex-shrink-0 mb-6 flex justify-center" data-tour="positions-tabs">
           <ToggleButtonGroup
             items={tabs}
             activeId={activeTab}
@@ -103,6 +104,8 @@ export default function PositionsPage() {
             layoutId="positionsToggle"
           />
         </div>
+
+        <PositionsTour activeTab={activeTab} />
 
         <div className="flex-1 min-h-0 flex flex-col">
             {activeTab === "employees" && (
