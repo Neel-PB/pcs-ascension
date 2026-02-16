@@ -97,6 +97,30 @@ export const varianceSteps: Step[] = [
   },
 ];
 
+export const forecastSteps: Step[] = [
+  {
+    target: '[data-tour="forecast-kpi-cards"]',
+    title: 'Forecast KPI Cards',
+    content: 'These cards summarize FTE Shortages (positions to open) and FTE Surpluses (positions to close). Click a card to filter the table below by that gap type; click again to show all.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="forecast-table-header"]',
+    title: 'Forecast Table',
+    content: 'Each row represents a department-skill-shift combination with an FTE gap. Columns show Market, Facility, Department, Skill Type, Shift, FTE Gap, and Status.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="forecast-table-body"]',
+    title: 'Expandable Detail View',
+    content: 'Click any row to expand a two-panel detail view comparing current hired FTE against recommended changes. Recommendations prioritize canceling open requisitions before closing filled positions.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+];
+
 export const planningSteps: Step[] = [
   {
     target: '[data-tour="planning-header"]',

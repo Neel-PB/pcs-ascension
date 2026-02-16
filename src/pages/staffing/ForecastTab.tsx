@@ -47,15 +47,17 @@ export function ForecastTab({
   return (
     <div className="space-y-6">
       {/* Two Large KPIs */}
-      <ForecastKPICards
-        totalShortage={data?.totalShortage ?? 0}
-        totalSurplus={data?.totalSurplus ?? 0}
-        shortageCount={data?.shortageCount ?? 0}
-        surplusCount={data?.surplusCount ?? 0}
-        isLoading={isLoading}
-        activeFilter={activeFilter}
-        onFilterClick={handleFilterClick}
-      />
+      <div data-tour="forecast-kpi-cards">
+        <ForecastKPICards
+          totalShortage={data?.totalShortage ?? 0}
+          totalSurplus={data?.totalSurplus ?? 0}
+          shortageCount={data?.shortageCount ?? 0}
+          surplusCount={data?.surplusCount ?? 0}
+          isLoading={isLoading}
+          activeFilter={activeFilter}
+          onFilterClick={handleFilterClick}
+        />
+      </div>
 
       {/* Smart Table */}
       <ForecastBalanceTable
