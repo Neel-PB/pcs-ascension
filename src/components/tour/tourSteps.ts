@@ -403,6 +403,44 @@ export const adminSettingsTourSteps: Step[] = [
   },
 ];
 
+export const feedbackPageTourSteps: Step[] = [
+  {
+    target: '[data-tour="feedback-search"]',
+    title: 'Search',
+    content: 'Search feedback by title or description to quickly find specific submissions.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="feedback-filters"]',
+    title: 'Filters',
+    content: 'Filter feedback by Type, PCS Status, and PB Status to narrow down the list. Combine multiple filters for precise results.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="feedback-table"]',
+    title: 'Feedback Table',
+    content: 'Each row shows the title, type, description, screenshot, author, and timestamps. Click the type or priority badges to change them inline.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="feedback-pcs-status"]',
+    title: 'Status Management',
+    content: 'Manage the dual-status workflow: PCS Status (Pending, Approved, Disregard, Backlog) controls triage. Setting PCS to Disregard or Backlog automatically locks PB Status to Closed.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="feedback-comments"]',
+    title: 'Comments & Actions',
+    content: 'Click the comments icon to view or add discussion on any feedback item. Use the trash icon to delete a submission (requires confirmation).',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+];
+
 export const planningSteps: Step[] = [
   {
     target: '[data-tour="planning-header"]',
