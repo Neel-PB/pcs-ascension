@@ -36,6 +36,8 @@ export interface KPICardProps {
   employmentBreakdown?: EmploymentBreakdown;
   breakdownVariant?: 'green' | 'red' | 'orange';
   className?: string;
+  dataTourChart?: string;
+  dataTourInfo?: string;
 }
 
 export function KPICard({
@@ -56,6 +58,8 @@ export function KPICard({
   employmentBreakdown,
   breakdownVariant,
   className,
+  dataTourChart,
+  dataTourInfo,
 }: KPICardProps) {
   const [showChartModal, setShowChartModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
@@ -97,6 +101,7 @@ export function KPICard({
                   onClick={() => setShowChartModal(true)}
                   className="p-1.5 rounded hover:bg-accent transition-colors"
                   title="View detailed chart"
+                  data-tour={dataTourChart}
                 >
                   <BarChart3 className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                 </button>
@@ -105,6 +110,7 @@ export function KPICard({
                 onClick={() => setShowInfoModal(true)}
                 className="p-1.5 rounded hover:bg-accent transition-colors"
                 title="View details"
+                data-tour={dataTourInfo}
               >
                 <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
               </button>

@@ -73,14 +73,20 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
       
       {/* KPI Grid */}
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-        {kpis.map((kpi) => (
-          <KPICard 
-            key={kpi.id} 
-            {...kpi}
-            // Remove breakdown for hired-ftes and target-ftes (they use the shared badge row below)
-            employmentBreakdown={kpi.id === 'hired-ftes' || kpi.id === 'target-ftes' ? undefined : kpi.employmentBreakdown}
-          />
-        ))}
+        {kpis.map((kpi, index) => {
+          // Find the first KPI with chart data to attach tour attributes
+          const firstChartIndex = kpis.findIndex(k => k.chartData && k.chartData.length > 0);
+          const isFirstWithChart = index === firstChartIndex;
+          return (
+            <KPICard 
+              key={kpi.id} 
+              {...kpi}
+              employmentBreakdown={kpi.id === 'hired-ftes' || kpi.id === 'target-ftes' ? undefined : kpi.employmentBreakdown}
+              dataTourChart={isFirstWithChart ? "kpi-chart-action" : undefined}
+              dataTourInfo={isFirstWithChart ? "kpi-info-action" : undefined}
+            />
+          );
+        })}
       </div>
 
       {/* Badges Row - positioned under respective KPI columns with vertical connectors */}
@@ -93,7 +99,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
           
           {/* Target FTEs Badge (Green) with vertical connector - height matches Hired/Open connector total */}
           {targetBreakdown && targetIndex !== -1 && (
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center" data-tour="kpi-split-badge">
               {/* Vertical connector line - 16px to stay below KPI cards */}
               <div className="w-0.5 bg-emerald-500/60 dark:bg-emerald-400/70" style={{ height: '16px' }} />
               {/* Badge */}
