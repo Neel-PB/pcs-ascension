@@ -68,6 +68,7 @@ interface Feedback {
 interface FeedbackTableRowProps {
   feedback: Feedback;
   onDelete: (id: string) => void;
+  isFirstRow?: boolean;
 }
 
 const typeConfig: Record<string, { icon: React.ElementType; label: string; color: string }> = {
@@ -96,7 +97,7 @@ const priorityConfig: Record<string, { label: string; color: string }> = {
   high: { label: "High", color: "text-destructive" },
 };
 
-export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) {
+export function FeedbackTableRow({ feedback, onDelete, isFirstRow }: FeedbackTableRowProps) {
   const [resolvedImageUrl, setResolvedImageUrl] = useState<string | null>(feedback.screenshot_url);
   const [imageError, setImageError] = useState(false);
   const { comments } = useFeedbackComments(feedback.id);
@@ -294,7 +295,7 @@ export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) 
       </TableCell>
 
       {/* PCS Status */}
-      <TableCell className="py-3 w-[120px]">
+      <TableCell className="py-3 w-[120px]" data-tour={isFirstRow ? "feedback-pcs-status" : undefined}>
         <Select 
           value={feedback.pcs_status} 
           onValueChange={handlePcsStatusChange}
@@ -379,7 +380,7 @@ export function FeedbackTableRow({ feedback, onDelete }: FeedbackTableRowProps) 
       </TableCell>
 
       {/* Comments */}
-      <TableCell className="py-3 w-[90px]">
+      <TableCell className="py-3 w-[90px]" data-tour={isFirstRow ? "feedback-comments" : undefined}>
         <FeedbackCommentsDialog 
           feedbackId={feedback.id} 
           commentCount={comments?.length || 0} 

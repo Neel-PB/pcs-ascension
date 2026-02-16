@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Joyride, { CallBackProps, STATUS } from 'react-joyride';
 import { useFeedback } from '@/hooks/useFeedback';
 import { FeedbackTableRow } from '@/components/feedback/FeedbackTableRow';
 import { SearchField } from '@/components/ui/search-field';
@@ -19,6 +20,9 @@ import {
 
 import { LogoLoader } from '@/components/ui/LogoLoader';
 import { MessageSquare } from '@/lib/icons';
+import { useTour } from '@/hooks/useTour';
+import { TourTooltip } from '@/components/tour/TourTooltip';
+import { feedbackPageTourSteps } from '@/components/tour/tourSteps';
 
 export default function FeedbackPage() {
   const { feedback, isLoading, deleteFeedback } = useFeedback();
@@ -26,6 +30,14 @@ export default function FeedbackPage() {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [pcsStatusFilter, setPcsStatusFilter] = useState<string>('all');
   const [pbStatusFilter, setPbStatusFilter] = useState<string>('all');
+  const { run, setRun, completeTour } = useTour('feedback-page');
+
+  const handleTourCallback = (data: CallBackProps) => {
+    const { status } = data;
+    if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+      completeTour();
+    }
+  };
 
   const filteredFeedback = feedback.filter((item) => {
     const matchesSearch = 
@@ -51,6 +63,31 @@ export default function FeedbackPage() {
 
   return (
     <div className="h-full flex flex-col">
+      <Joyride
+        steps={feedbackPageTourSteps}
+        run={run}
+        continuous
+        showSkipButton
+        scrollToFirstStep
+        disableOverlayClose
+        callback={handleTourCallback}
+        tooltipComponent={TourTooltip}
+        styles={{
+          options: {
+            zIndex: 10001,
+            arrowColor: 'hsl(var(--card))',
+            backgroundColor: 'hsl(var(--card))',
+            overlayColor: 'rgba(0, 0, 0, 0.5)',
+            primaryColor: 'hsl(var(--primary))',
+          },
+          spotlight: {
+            borderRadius: 12,
+          },
+        }}
+        floaterProps={{
+          disableAnimation: true,
+        }}
+      />
       {/* Header */}
       <div className="shrink-0 px-6 py-4 border-b border-border">
         <div className="flex items-center justify-between mb-4">
@@ -64,12 +101,15 @@ export default function FeedbackPage() {
 
         {/* Filters */}
         <div className="flex items-center gap-3">
-          <SearchField
-            placeholder="Search feedback..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 max-w-sm"
-          />
+          <div data-tour="feedback-search" className="flex-1 max-w-sm">
+            <SearchField
+              placeholder="Search feedback..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full"
+            />
+          </div>
+          <div className="flex items-center gap-3" data-tour="feedback-filters">
           <Select value={typeFilter} onValueChange={setTypeFilter}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Type" />
@@ -105,6 +145,7 @@ export default function FeedbackPage() {
               <SelectItem value="closed">Closed</SelectItem>
             </SelectContent>
           </Select>
+          </div>
         </div>
       </div>
 
@@ -116,7 +157,7 @@ export default function FeedbackPage() {
             <p>No feedback found</p>
           </div>
         ) : (
-          <div className="border border-border/50 rounded-xl overflow-hidden">
+          <div className="border border-border/50 rounded-xl overflow-hidden" data-tour="feedback-table">
             <Table className="w-full table-fixed">
               <TableHeader>
                 <TableRow className="bg-muted/50 sticky top-0 z-10">
@@ -134,11 +175,12 @@ export default function FeedbackPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredFeedback.map((item) => (
+                {filteredFeedback.map((item, index) => (
                   <FeedbackTableRow
                     key={item.id}
                     feedback={item}
                     onDelete={handleDelete}
+                    isFirstRow={index === 0}
                   />
                 ))}
               </TableBody>
