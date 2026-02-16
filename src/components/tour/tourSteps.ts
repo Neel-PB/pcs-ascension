@@ -57,11 +57,4 @@ export const staffingSteps: Step[] = [
     placement: 'top',
     disableBeacon: true,
   },
-  {
-    target: '[data-tour="workforce-trigger"]',
-    title: 'Workforce Drawer',
-    content: 'Click this tab to open the Workforce Drawer for a detailed breakdown of positions.',
-    placement: 'left',
-    disableBeacon: true,
-  },
 ];
