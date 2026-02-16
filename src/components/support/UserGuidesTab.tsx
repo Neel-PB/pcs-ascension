@@ -34,7 +34,7 @@ interface Guide {
 }
 
 const guideCatalog: Guide[] = [
-  { tourKey: "staffing", title: "Staffing Summary", description: "Overview of KPI cards, volume metrics, and productivity sections.", icon: BarChart3, route: "/staffing", stepCount: 8, category: "Staffing" },
+  { tourKey: "staffing", title: "Staffing Summary", description: "KPI cards, trend charts, definition views, and volume color indicators.", icon: BarChart3, route: "/staffing", stepCount: 7, category: "Staffing" },
   { tourKey: "staffing-planning", title: "Position Planning", description: "FTE skill-shift analysis with hired/active and nursing toggles.", icon: Layers, route: "/staffing", stepCount: 6, category: "Staffing" },
   { tourKey: "staffing-variance", title: "Variance Analysis", description: "FTE variance by skill type across your selected scope.", icon: BarChart3, route: "/staffing", stepCount: 5, category: "Staffing" },
   { tourKey: "staffing-forecast", title: "Forecast", description: "FTE shortage/surplus KPIs and expandable detail views.", icon: Navigation, route: "/staffing", stepCount: 3, category: "Staffing" },
