@@ -265,7 +265,7 @@ export function EmployeesTab({
 
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-      <div className="flex justify-between items-center mb-4 gap-4 flex-shrink-0">
+      <div className="flex justify-between items-center mb-4 gap-4 flex-shrink-0" data-tour="positions-search-bar">
         <SearchField
           placeholder="Search employees..."
           value={searchQuery}
@@ -303,17 +303,19 @@ export function EmployeesTab({
           <p className="text-muted-foreground">No employees found matching the filters.</p>
         </div>
       ) : (
-        <EditableTable
-          columns={columnsWithHandlers}
-          data={filteredAndSortedEmployees}
-          getRowId={(row) => row.id}
-          sortField={sortColumn}
-          sortDirection={sortDirection}
-          onSort={handleSort}
-          onRowClick={handleRowClick}
-          storeNamespace="employees-columns-v2"
-          className="flex-1 min-h-0"
-        />
+        <div data-tour="positions-table" className="flex-1 min-h-0 flex flex-col">
+          <EditableTable
+            columns={columnsWithHandlers}
+            data={filteredAndSortedEmployees}
+            getRowId={(row) => row.id}
+            sortField={sortColumn}
+            sortDirection={sortDirection}
+            onSort={handleSort}
+            onRowClick={handleRowClick}
+            storeNamespace="employees-columns-v2"
+            className="flex-1 min-h-0"
+          />
+        </div>
       )}
 
       <EmployeeDetailsSheet

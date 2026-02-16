@@ -206,7 +206,7 @@ export function RequisitionsTab({
 
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-      <div className="flex justify-between items-center mb-4 gap-4 flex-shrink-0">
+      <div className="flex justify-between items-center mb-4 gap-4 flex-shrink-0" data-tour="positions-search-bar">
         <SearchField
           placeholder="Search requisitions..."
           value={searchQuery}
@@ -244,17 +244,19 @@ export function RequisitionsTab({
           <p className="text-muted-foreground">No open requisitions found matching the filters.</p>
         </div>
       ) : (
-        <EditableTable
-          columns={columnsWithComments}
-          data={filteredAndSortedRequisitions}
-          getRowId={(row) => row.id}
-          sortField={sortColumn}
-          sortDirection={sortDirection}
-          onSort={handleSort}
-          onRowClick={handleRowClick}
-          storeNamespace="requisitions-columns"
-          className="flex-1 min-h-0"
-        />
+        <div data-tour="positions-table" className="flex-1 min-h-0 flex flex-col">
+          <EditableTable
+            columns={columnsWithComments}
+            data={filteredAndSortedRequisitions}
+            getRowId={(row) => row.id}
+            sortField={sortColumn}
+            sortDirection={sortDirection}
+            onSort={handleSort}
+            onRowClick={handleRowClick}
+            storeNamespace="requisitions-columns"
+            className="flex-1 min-h-0"
+          />
+        </div>
       )}
 
       <RequisitionDetailsSheet
