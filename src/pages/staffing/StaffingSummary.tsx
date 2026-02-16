@@ -447,7 +447,7 @@ This metric helps:
 
   return (
     <>
-      <StaffingTour activeTab={activeTab} />
+      <StaffingTour key={activeTab} activeTab={activeTab} />
       <WorkforceDrawerTrigger />
       <WorkforceDrawer 
         activeTab={activeTab} 
