@@ -42,6 +42,7 @@ export function ForecastBalanceTable({ rows, isLoading }: ForecastBalanceTablePr
         {/* Sticky Header */}
         <div
           className="grid h-10 items-center bg-muted font-medium text-sm border-b sticky top-0 z-10"
+          data-tour="forecast-table-header"
           style={{
             gridTemplateColumns: "40px minmax(80px, 1fr) minmax(140px, 1.5fr) minmax(140px, 1.5fr) minmax(80px, 1fr) 80px 100px 120px",
           }}
@@ -56,15 +57,16 @@ export function ForecastBalanceTable({ rows, isLoading }: ForecastBalanceTablePr
           <div className="px-2">Status</div>
         </div>
         
-        {/* Rows */}
-        {rows.map((row) => (
-          <ForecastBalanceTableRow 
-            key={row.id} 
-            row={row}
-            isExpanded={expandedRowId === row.id}
-            onToggle={handleToggle}
-          />
-        ))}
+        <div data-tour="forecast-table-body">
+          {rows.map((row) => (
+            <ForecastBalanceTableRow 
+              key={row.id} 
+              row={row}
+              isExpanded={expandedRowId === row.id}
+              onToggle={handleToggle}
+            />
+          ))}
+        </div>
       </div>
     </Card>
   );
