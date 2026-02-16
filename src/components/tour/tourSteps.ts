@@ -37,6 +37,27 @@ export const staffingSteps: Step[] = [
     disableBeacon: true,
   },
   {
+    target: '[data-tour="kpi-chart-action"]',
+    title: 'KPI Trend Chart',
+    content: 'Click the chart icon on any KPI card to view detailed trend data, historical charts, and breakdowns by category.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="kpi-info-action"]',
+    title: 'KPI Definition & Calculation',
+    content: 'Click the eye icon to see what this KPI measures and how it\'s calculated.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="kpi-split-badge"]',
+    title: 'Employment Type Split',
+    content: 'This shows the FT/PT/PRN staffing mix. The target is 70% Full-Time, 20% Part-Time, 10% PRN. Click to see current vs target variance.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+  {
     target: '[data-tour="workforce-trigger"]',
     title: 'Workforce Drawer',
     content: 'Click this tab to open the Workforce Drawer for a detailed breakdown of positions.',
