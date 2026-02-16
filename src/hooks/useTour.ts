@@ -31,9 +31,9 @@ export function useTour(pageKey: string) {
     }
   }, [isCompleted]);
 
-  // Start when triggered from header dropdown
+  // Start when triggered from header dropdown (match exact key or base path)
   useEffect(() => {
-    if (activeTour === pageKey) {
+    if (activeTour === pageKey || activeTour === pageKey.split('-')[0]) {
       setRun(true);
     }
   }, [activeTour, pageKey]);
