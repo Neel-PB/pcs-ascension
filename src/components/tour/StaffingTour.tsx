@@ -1,6 +1,6 @@
 import Joyride, { CallBackProps, STATUS } from 'react-joyride';
 import { useTour } from '@/hooks/useTour';
-import { staffingSteps, planningSteps } from './tourSteps';
+import { staffingSteps, planningSteps, varianceSteps } from './tourSteps';
 import { TourTooltip } from './TourTooltip';
 
 interface StaffingTourProps {
@@ -8,8 +8,8 @@ interface StaffingTourProps {
 }
 
 export function StaffingTour({ activeTab = 'summary' }: StaffingTourProps) {
-  const tourKey = activeTab === 'planning' ? 'staffing-planning' : 'staffing';
-  const steps = activeTab === 'planning' ? planningSteps : staffingSteps;
+  const tourKey = activeTab === 'planning' ? 'staffing-planning' : activeTab === 'variance' ? 'staffing-variance' : 'staffing';
+  const steps = activeTab === 'planning' ? planningSteps : activeTab === 'variance' ? varianceSteps : staffingSteps;
   const { run, setRun, completeTour } = useTour(tourKey);
 
   const handleCallback = (data: CallBackProps) => {

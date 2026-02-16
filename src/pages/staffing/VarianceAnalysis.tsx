@@ -621,7 +621,7 @@ export function VarianceAnalysis({
   const VarianceTable = () => (
     <Table>
       <TableHeader>
-        <TableRow>
+        <TableRow data-tour="variance-skill-headers">
           <TableHead className="font-semibold bg-muted/30 min-w-[200px]">{columnHeader}</TableHead>
           <TableHead colSpan={3} className="text-center font-semibold bg-muted/30 border-l-2 border-muted-foreground/30">CL Skill</TableHead>
           <TableHead colSpan={3} className="text-center font-semibold bg-muted/30 border-l-2 border-muted-foreground/30">RN Skill</TableHead>
@@ -669,10 +669,10 @@ export function VarianceAnalysis({
         transition={{ duration: 0.3 }}
         className="flex items-center justify-between"
       >
-        <h2 className="text-2xl font-bold">Variance Analysis</h2>
+        <h2 className="text-2xl font-bold" data-tour="variance-header">Variance Analysis</h2>
         <div className="flex items-center gap-4">
           {/* Legend */}
-          <div className="flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-4 text-sm" data-tour="variance-legend">
             <div className="flex items-center gap-2">
               <span className="text-xl font-light text-foreground leading-none w-4 text-center">+</span>
               <span className="text-muted-foreground">FTE Shortage</span>
@@ -689,6 +689,7 @@ export function VarianceAnalysis({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.15 }}
+            data-tour="variance-actions"
           >
             <DataRefreshButton dataSources={['staffing_grid', 'labor_uos_data']} className="h-8 w-8" />
             <Button
@@ -720,6 +721,7 @@ export function VarianceAnalysis({
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.1 }}
         className="rounded-xl border shadow-sm bg-card overflow-hidden overflow-x-auto"
+        data-tour="variance-table"
       >
         <VarianceTable />
       </motion.div>
