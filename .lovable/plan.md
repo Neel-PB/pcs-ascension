@@ -1,39 +1,30 @@
 
 
-## Fix: Volume Settings and NP Settings Tour Tooltip Clipping
+## Fix: Volume Settings and NP Settings Tour Tooltip Visibility
 
 ### Problem
-The Volume Settings and NP Settings tours have the same issues previously fixed for Admin tours:
-1. Joyride's built-in scroll (`scrollToFirstStep`) pushes the `main` container, hiding the tab navigation bar and clipping the tooltip (Next/Skip buttons not visible).
-2. No manual scroll reset on step transitions or tour completion.
-
-### Root Cause
-`StaffingTour.tsx` uses `scrollToFirstStep` (defaults to true) and lacks the `main` container scroll reset logic that was added to `AdminTour.tsx`.
+The tour for Volume Settings and NP Settings renders its overlay but the tooltip card (with Next/Skip/Back buttons) is clipped by the `main` container's `overflow-y-scroll overflow-x-hidden`. The table fills most of the viewport, so `placement: 'top'` puts the tooltip above the visible area. With `disableOverlayClose` enabled, the UI becomes completely unresponsive.
 
 ### Solution
-Apply the same pattern from `AdminTour` to `StaffingTour`:
+Two changes across two files:
 
-### File: `src/components/tour/StaffingTour.tsx`
+### 1. `src/components/tour/tourSteps.ts`
+Change `placement` from `'top'` to `'auto'` on the table-targeting steps so Joyride can dynamically position the tooltip wherever space is available:
 
-1. **Disable Joyride's internal scroll**: Set `scrollToFirstStep={false}`.
+- `volumeSettingsSteps`: Change placement to `'auto'` for `volume-settings-table` and `volume-settings-target` steps
+- `npSettingsSteps`: Change placement to `'auto'` for `np-settings-table` and `np-settings-override` steps
 
-2. **Add manual scroll resets to `handleCallback`**:
-   - On `STEP_BEFORE`: After `scrollIntoView` on the target element, reset `main` container scroll to top (`behavior: 'instant'`).
-   - On `FINISHED` or `SKIPPED`: Reset both the `main` container and any inner `overflow-y-auto` container to top before calling `completeTour()`.
-
-This is the exact same pattern already proven in `AdminTour.tsx`, applied to the single `StaffingTour.tsx` file.
+### 2. `src/components/tour/StaffingTour.tsx`
+Remove `disableOverlayClose` so users can dismiss the tour by clicking the overlay if the tooltip is ever clipped, preventing the "stuck/unresponsive" trap. This matches a safer UX pattern while still keeping the tour functional.
 
 ### Technical Detail
-
 ```text
-Current StaffingTour handleCallback:
-  STEP_BEFORE -> scrollIntoView (target only)
-  FINISHED/SKIPPED -> completeTour()
+tourSteps.ts changes:
+  volumeSettingsSteps[1] (volume-settings-table):  placement: 'top'  -> 'auto'
+  volumeSettingsSteps[2] (volume-settings-target): placement: 'top'  -> 'auto'
+  npSettingsSteps[1] (np-settings-table):          placement: 'top'  -> 'auto'
+  npSettingsSteps[2] (np-settings-override):       placement: 'top'  -> 'auto'
 
-Updated StaffingTour handleCallback:
-  STEP_BEFORE -> scrollIntoView (target) + main.scrollTo(0) 
-  FINISHED/SKIPPED -> main.scrollTo(0) + inner scroll reset + completeTour()
-
-Also: scrollToFirstStep={false} added to Joyride props
+StaffingTour.tsx:
+  Remove disableOverlayClose prop from Joyride
 ```
-
