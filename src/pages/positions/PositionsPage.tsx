@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ToggleButtonGroup } from "@/components/ui/toggle-button-group";
 import { FilterBar } from "@/components/staffing/FilterBar";
 import { EmployeesTab } from "./EmployeesTab";
@@ -13,7 +14,12 @@ import { useFilterStore } from "@/stores/useFilterStore";
 import { PositionsTour } from "@/components/tour/PositionsTour";
 
 export default function PositionsPage() {
-  const [activeTab, setActiveTab] = useState("employees");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const validTabs = ["employees", "contractors", "requisitions"];
+  const [activeTab, setActiveTab] = useState(
+    tabParam && validTabs.includes(tabParam) ? tabParam : "employees"
+  );
   const { defaultFilters, isLoading: orgScopedLoading, isReady: orgScopedReady } = useOrgScopedFilters();
   const { getFilterPermissions, loading: rbacLoading } = useRBAC();
   
@@ -36,6 +42,11 @@ export default function PositionsPage() {
     clearFilters,
   } = useFilterStore();
   
+  // Clear tab search param after consumption
+  useEffect(() => {
+    if (tabParam) setSearchParams({}, { replace: true });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Initialize filters from org-scoped defaults once ready (one-shot via store)
   useEffect(() => {
     if (orgScopedReady && !rbacLoading && !filtersInitialized && defaultFilters) {
