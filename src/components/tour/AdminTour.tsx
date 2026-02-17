@@ -32,6 +32,10 @@ export function AdminTour({ activeTab }: AdminTourProps) {
       el?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
     }
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+      const scrollContainer = document.querySelector('[class*="overflow-y-auto"]');
+      if (scrollContainer) {
+        scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+      }
       completeTour();
     }
   };
