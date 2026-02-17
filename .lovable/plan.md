@@ -1,33 +1,31 @@
 
 
-## Navigate to Correct Staffing Tab on "Go & Start"
+## Navigate to Correct Positions Tab on "Go & Start"
 
 ### Problem
-All staffing guides (Summary, Planning, Variance, Forecast, Volume Settings, NP Settings) navigate to `/staffing` but always land on the default "summary" tab because the page uses local `useState("summary")` -- there's no way to tell it which tab to activate.
+All three Positions guides (Employees, Contractors, Open Positions) navigate to `/positions` but always land on the default "employees" tab because the page uses `useState("employees")`. Clicking "Go & Start" on the Contractors or Open Positions guide doesn't switch to the correct tab.
 
 ### Solution
-Use URL search params (`?tab=planning`, `?tab=variance`, etc.) to drive the active tab. This way, "Go & Start" can navigate to `/staffing?tab=planning` and the page opens directly on that tab.
+Apply the same pattern used for Staffing: use URL search params (`?tab=contractors`, `?tab=requisitions`) to drive the initial active tab.
 
 ### Technical Changes
 
 #### 1. `src/components/support/UserGuidesTab.tsx`
-- Update `route` values in `guideCatalog` for staffing sub-tours:
-  - `staffing` stays `/staffing` (defaults to summary)
-  - `staffing-planning` changes to `/staffing?tab=planning`
-  - `staffing-variance` changes to `/staffing?tab=variance`
-  - `staffing-forecast` changes to `/staffing?tab=forecasts`
-  - `staffing-volume-settings` changes to `/staffing?tab=volume-settings`
-  - `staffing-np-settings` changes to `/staffing?tab=np-settings`
+- Update `route` values in `guideCatalog` for positions sub-tours:
+  - `positions-employees` stays `/positions` (defaults to employees)
+  - `positions-contractors` changes to `/positions?tab=contractors`
+  - `positions-requisitions` changes to `/positions?tab=requisitions`
 
-#### 2. `src/pages/staffing/StaffingSummary.tsx`
+#### 2. `src/pages/positions/PositionsPage.tsx`
 - Import `useSearchParams` from `react-router-dom`
 - Read the `tab` search param on mount
-- If a valid `tab` param exists, use it as the initial value for `activeTab` instead of `"summary"`
-- When `activeTab` changes via the toggle group, optionally clear the search param so it doesn't get stale
+- If a valid tab param exists (`employees`, `contractors`, `requisitions`), use it as the initial value for `activeTab`
+- Add a `useEffect` to clear the search param after consumption so it doesn't get stale
 
 ### Resulting Flow
-1. User clicks "Go & Start" on "Position Planning" guide
-2. App navigates to `/staffing?tab=planning`
-3. StaffingSummary reads `tab=planning` and sets `activeTab` to `"planning"`
-4. Page renders with the Planning tab active
-5. Tour starts targeting Planning-specific elements
+1. User clicks "Go & Start" on the Contractors guide
+2. App navigates to `/positions?tab=contractors`
+3. PositionsPage reads `tab=contractors` and sets `activeTab` to `"contractors"`
+4. Page renders with the Contractors tab active
+5. Tour starts targeting Contractors-specific elements
+
