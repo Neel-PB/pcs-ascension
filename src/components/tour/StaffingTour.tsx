@@ -44,7 +44,7 @@ export function StaffingTour({ activeTab = 'summary' }: StaffingTourProps) {
       continuous
       showSkipButton
       scrollToFirstStep={false}
-      disableOverlayClose
+      disableOverlayClose={false}
       callback={handleCallback}
       tooltipComponent={TourTooltip}
       styles={{
