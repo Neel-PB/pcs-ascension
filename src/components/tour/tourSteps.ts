@@ -50,6 +50,13 @@ export const staffingSteps: Step[] = [
     placement: 'top',
     disableBeacon: true,
   },
+  {
+    target: '[data-tour="kpi-hired-split-badge"]',
+    title: 'Hired and Open Reqs Split',
+    content: 'This orange badge shows the actual FT/PT/PRN mix across your Hired FTEs and Open Requisitions combined. Click to compare the current split against the 70/20/10 target and see the variance.',
+    placement: 'top',
+    disableBeacon: true,
+  },
 ];
 
 export const varianceSteps: Step[] = [
