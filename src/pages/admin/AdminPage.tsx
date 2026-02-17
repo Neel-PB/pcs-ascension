@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ToggleButtonGroup } from "@/components/ui/toggle-button-group";
 import { Shield } from "@/lib/icons";
 import { useRBAC } from "@/hooks/useRBAC";
@@ -17,8 +18,18 @@ import { AdminTour } from "@/components/tour/AdminTour";
 
 export default function AdminPage() {
   const { hasPermission, loading } = useRBAC();
-  const [activeTab, setActiveTab] = useState("users");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const validTabs = ["users", "feed", "access-control", "audit-log", "settings"];
+
+  const [activeTab, setActiveTab] = useState(
+    tabParam && validTabs.includes(tabParam) ? tabParam : "users"
+  );
   const [grantingAccess, setGrantingAccess] = useState(false);
+
+  useEffect(() => {
+    if (tabParam) setSearchParams({}, { replace: true });
+  }, []);
 
   const tabs = [
     { id: "users", label: "Users" },
