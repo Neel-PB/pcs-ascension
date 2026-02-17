@@ -235,7 +235,7 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4 h-[calc(100vh-var(--header-height)-220px)] overflow-hidden">
       {/* Consolidated Stats Banner */}
       <div data-tour="volume-settings-stats" className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
         <div className="flex items-center gap-8">
@@ -277,7 +277,7 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
         )}
       </div>
 
-      <div data-tour="volume-settings-table" data-tour-target="volume-settings-target">
+      <div data-tour="volume-settings-table" data-tour-target="volume-settings-target" className="flex-1 min-h-0 overflow-hidden">
         <EditableTable
           columns={columns}
           data={tableData}

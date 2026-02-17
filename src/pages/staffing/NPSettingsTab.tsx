@@ -239,7 +239,7 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4 h-[calc(100vh-var(--header-height)-220px)] overflow-hidden">
       {/* Stats Banner */}
       <div data-tour="np-settings-stats" className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
         <div className="flex items-center gap-8">
@@ -274,7 +274,7 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
         </div>
       </div>
 
-      <div data-tour="np-settings-table" data-tour-override="np-settings-override">
+      <div data-tour="np-settings-table" data-tour-override="np-settings-override" className="flex-1 min-h-0 overflow-hidden">
         <EditableTable
           columns={columns}
           data={tableData}
