@@ -355,7 +355,7 @@ export function VolumeOverrideSettings() {
         className="rounded-lg"
       >
         <Tabs value={mode} onValueChange={(v) => setMode(v as ConfigMode)} className="w-full">
-          <TabsList className="w-full">
+          <TabsList className="w-full" data-tour="volume-config-mode">
             <TabsTrigger value="universal" className="flex-1">
               <span className="flex items-center gap-2">
                 <Globe className="h-4 w-4" />
@@ -465,7 +465,7 @@ export function VolumeOverrideSettings() {
       {/* Rule Matrix Preview - Collapsible, Full Width */}
       <motion.div variants={itemVariants}>
         <Collapsible open={isMatrixOpen} onOpenChange={setIsMatrixOpen}>
-          <Card className="bg-muted/30">
+          <Card className="bg-muted/30" data-tour="volume-config-matrix">
             <CollapsibleTrigger className="w-full">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
@@ -525,7 +525,7 @@ export function VolumeOverrideSettings() {
       </motion.div>
 
       {/* 2-Column Grid Layout */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-4" data-tour="volume-config-fields">
         {/* Rule Thresholds - Compact */}
         <Card>
           <CardHeader className="pb-3">
@@ -707,6 +707,7 @@ export function VolumeOverrideSettings() {
           onClick={handleSave} 
           disabled={isSaving || (mode === 'department' && !canSaveDepartment)}
           className="flex items-center gap-2"
+          data-tour="volume-config-save"
         >
           <Save className="h-4 w-4" />
           {isSaving ? "Saving..." : "Save"}

@@ -394,6 +394,34 @@ export const adminSettingsTourSteps: Step[] = [
     placement: 'top',
     disableBeacon: true,
   },
+  {
+    target: '[data-tour="volume-config-mode"]',
+    title: 'Scope Mode',
+    content: 'Choose Universal to set rules for all departments, or Department-Specific to create custom overrides for individual departments.',
+    placement: 'auto',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="volume-config-matrix"]',
+    title: 'Rule Matrix Preview',
+    content: 'Expand this card to see how your threshold settings translate into override requirements based on historical data availability.',
+    placement: 'auto',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="volume-config-fields"]',
+    title: 'Configuration Fields',
+    content: 'Left: set rule thresholds (min months, spread %). Right: configure fiscal year, volume floor, and backfill settings.',
+    placement: 'auto',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="volume-config-save"]',
+    title: 'Save Changes',
+    content: 'Click Save to commit your configuration. For Department-Specific mode, select a Market, Facility, and Department before saving.',
+    placement: 'auto',
+    disableBeacon: true,
+  },
 ];
 
 export const feedbackPageTourSteps: Step[] = [
