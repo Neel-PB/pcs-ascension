@@ -367,7 +367,7 @@ export const adminAuditTourSteps: Step[] = [
     target: '[data-tour="admin-audit-table"]',
     title: 'Audit Table',
     content: 'Each row shows the timestamp, action, target, and who made the change. Click rows with a chevron to expand and see the previous and new values.',
-    placement: 'top',
+    placement: 'auto',
     disableBeacon: true,
   },
 ];
