@@ -1,30 +1,26 @@
 
 
-## Fix: Volume Settings and NP Settings Tour Tooltip Visibility
+## Add Tour Step for Hired and Open Reqs Split Badge
 
-### Problem
-The tour for Volume Settings and NP Settings renders its overlay but the tooltip card (with Next/Skip/Back buttons) is clipped by the `main` container's `overflow-y-scroll overflow-x-hidden`. The table fills most of the viewport, so `placement: 'top'` puts the tooltip above the visible area. With `disableOverlayClose` enabled, the UI becomes completely unresponsive.
+### What Changes
+Add a second split-badge tour step in the Staffing Summary tour so users learn about both breakdown badges:
+1. The existing green **Target FTEs** split badge (70/20/10 target)
+2. A new step for the orange **Hired and Open Reqs** split badge (actual current mix)
 
-### Solution
-Two changes across two files:
+### File 1: `src/components/staffing/DraggableKPISection.tsx`
+Add a `data-tour="kpi-hired-split-badge"` attribute to the Hired/Open Reqs badge container (the `col-span-3` div at line 129).
 
-### 1. `src/components/tour/tourSteps.ts`
-Change `placement` from `'top'` to `'auto'` on the table-targeting steps so Joyride can dynamically position the tooltip wherever space is available:
+### File 2: `src/components/tour/tourSteps.ts`
+Insert a new step after the existing `kpi-split-badge` step in `staffingSteps`:
 
-- `volumeSettingsSteps`: Change placement to `'auto'` for `volume-settings-table` and `volume-settings-target` steps
-- `npSettingsSteps`: Change placement to `'auto'` for `np-settings-table` and `np-settings-override` steps
-
-### 2. `src/components/tour/StaffingTour.tsx`
-Remove `disableOverlayClose` so users can dismiss the tour by clicking the overlay if the tooltip is ever clipped, preventing the "stuck/unresponsive" trap. This matches a safer UX pattern while still keeping the tour functional.
-
-### Technical Detail
-```text
-tourSteps.ts changes:
-  volumeSettingsSteps[1] (volume-settings-table):  placement: 'top'  -> 'auto'
-  volumeSettingsSteps[2] (volume-settings-target): placement: 'top'  -> 'auto'
-  npSettingsSteps[1] (np-settings-table):          placement: 'top'  -> 'auto'
-  npSettingsSteps[2] (np-settings-override):       placement: 'top'  -> 'auto'
-
-StaffingTour.tsx:
-  Remove disableOverlayClose prop from Joyride
 ```
+{
+  target: '[data-tour="kpi-hired-split-badge"]',
+  title: 'Hired and Open Reqs Split',
+  content: 'This orange badge shows the actual FT/PT/PRN mix across your Hired FTEs and Open Requisitions combined. Click to compare the current split against the 70/20/10 target and see the variance.',
+  placement: 'top',
+  disableBeacon: true,
+}
+```
+
+This gives the tour two consecutive steps: first the green Target split badge, then the orange Hired/Open Reqs split badge.
