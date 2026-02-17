@@ -1,34 +1,54 @@
 
 
-## Add Volume Config Tour Steps to Admin Settings Guide
+## Fix Admin Tour Key Mismatches and Add UI Settings Tour Steps
 
-### Problem
-The Admin Settings tour only has 3 generic steps (Tab Navigation, Settings Sub-Tabs, Settings Content). It does not include any steps specific to the Volume Config sub-tab, so users get no guided walkthrough of the volume override configuration features.
+### Problem 1: Tour Key Mismatches (RBAC and Audit Log tours won't start from User Guides)
+The `UserGuidesTab` catalog uses `admin-rbac` and `admin-audit`, but `AdminTour` registers these tours under `admin-access-control` and `admin-audit-log`. Since `useTour` checks `activeTour === pageKey`, clicking "Go & Start" from User Guides for these two tours silently fails.
 
-### Solution
-Add Volume Config-specific tour steps to `adminSettingsTourSteps` and place corresponding `data-tour` attributes on key elements in `VolumeOverrideSettings.tsx`.
+### Problem 2: Outdated Step Count
+Admin Settings shows "3 steps" in User Guides but actually has 7 steps now.
+
+### Problem 3: Missing UI Settings Tour Steps
+The Settings tour has no steps for the default UI Settings sub-tab (feedback visibility toggles). Users land on UI Settings but the tour immediately references Volume Config elements that aren't visible.
+
+---
 
 ### Technical Changes
 
-#### 1. `src/components/admin/VolumeOverrideSettings.tsx`
-Add `data-tour` attributes to four key elements:
-- **Mode toggle** (Universal/Department tabs, ~line 357): `data-tour="volume-config-mode"`
-- **Rule Matrix Preview** (collapsible card, ~line 468): `data-tour="volume-config-matrix"`
-- **Rule Thresholds + Fiscal cards** (grid container, ~line 528): `data-tour="volume-config-fields"`
-- **Save button** (~line 705): `data-tour="volume-config-save"`
+#### 1. `src/components/support/UserGuidesTab.tsx` (line 48-50)
+Fix tour keys and step count to match `AdminTour`:
 
-#### 2. `src/components/tour/tourSteps.ts`
-Add 4 new steps to `adminSettingsTourSteps` after the existing 3 steps:
+| Current | Fixed |
+|---------|-------|
+| `tourKey: "admin-rbac"` | `tourKey: "admin-access-control"` |
+| `tourKey: "admin-audit"` | `tourKey: "admin-audit-log"` |
+| `stepCount: 3` (admin-settings) | `stepCount: 10` (after adding UI Settings steps) |
 
-| Step | Target | Title | Content |
-|------|--------|-------|---------|
-| 4 | `volume-config-mode` | Scope Mode | Choose Universal to set rules for all departments, or Department-Specific to create custom overrides for individual departments. |
-| 5 | `volume-config-matrix` | Rule Matrix Preview | Expand this card to see how your threshold settings translate into override requirements based on historical data availability. |
-| 6 | `volume-config-fields` | Configuration Fields | Left: set rule thresholds (min months, spread %). Right: configure fiscal year, volume floor, and backfill settings. |
-| 7 | `volume-config-save` | Save Changes | Click Save to commit your configuration. For Department-Specific mode, select a Market, Facility, and Department before saving. |
+#### 2. `src/components/admin/UISettings.tsx`
+Add `data-tour` attributes to key UI elements:
+- `data-tour="ui-settings-card"` on the Feedback System Visibility card
+- `data-tour="ui-settings-save"` on the Save Settings button
 
-All new steps use `placement: 'auto'` and `disableBeacon: true`.
+#### 3. `src/components/tour/tourSteps.ts`
+Insert 3 new steps into `adminSettingsTourSteps` after the existing "Settings Content" step (step 3) and before the Volume Config steps (step 4+):
 
-### Notes
-- The existing 3 steps remain unchanged; the Volume Config steps are appended after them.
-- Since the Settings tab defaults to "UI Settings", the tour will first highlight the sub-tab toggle (step 2), giving users context before the Volume Config steps appear. The tour's `step:before` scroll behavior (from the existing `handleCallback`) will scroll Volume Config elements into view as needed.
+| New Step | Target | Title | Content |
+|----------|--------|-------|---------|
+| 4 | `ui-settings-card` | Feedback Visibility | Toggle the floating feedback button, screenshot capture, and sidebar navigation link on or off for all users. |
+| 5 | `ui-settings-save` | Save UI Settings | Click Save to apply your visibility changes. The button activates when you modify a toggle. |
+| 6 | `admin-settings-tabs` | Switch to Volume Config | Click the Volume Config tab to configure target volume calculation rules. The following steps cover that section. |
+
+The existing Volume Config steps (Scope Mode, Rule Matrix, Config Fields, Save) shift to positions 7-10.
+
+### Summary of Final `adminSettingsTourSteps` (10 steps)
+1. Tab Navigation
+2. Settings Sub-Tabs
+3. Settings Content
+4. Feedback Visibility (NEW)
+5. Save UI Settings (NEW)
+6. Switch to Volume Config (NEW)
+7. Scope Mode
+8. Rule Matrix Preview
+9. Configuration Fields
+10. Save Changes
+
