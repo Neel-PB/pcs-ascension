@@ -1,32 +1,53 @@
 
 
-## Fix: Scroll to Top After Audit Log Tour Completes
-
-### Problem
-After finishing the Audit Log tour, the page remains scrolled down to the audit table (the last tour step target). The tab navigation bar at the top is out of view, so you cannot switch tabs or scroll back up easily.
+## Fix: All Admin Tabs Becoming Unusable After Tour Completion
 
 ### Root Cause
-The tour's `handleCallback` scrolls elements into view during steps (`scrollIntoView`), but when the tour finishes (`STATUS.FINISHED` or `STATUS.SKIPPED`), it only calls `completeTour()` without scrolling the content area back to the top.
+The Admin page has a **nested scroll structure**:
+1. Outer: `ShellLayout` `<main>` element with `overflow-y-scroll`
+2. Inner: AdminPage content div with `overflow-y-auto`
 
-### Fix
-In `AdminTour.tsx`, after the tour completes, scroll the content container (the `overflow-y-auto` div in AdminPage) back to the top.
+During a tour, `scrollIntoView()` on step targets scrolls **both** containers. When the tour finishes, the current fix only scrolls the inner container back to top. The outer `<main>` remains scrolled down, pushing the tab navigation bar out of view and making the entire module unusable.
 
-### Technical Change
+### Fix (2 changes in 1 file)
 
-**`src/components/tour/AdminTour.tsx`** (~line 34)
+#### `src/components/tour/AdminTour.tsx`
 
-In the `handleCallback`, after detecting `STATUS.FINISHED` or `STATUS.SKIPPED`, scroll the scrollable content container back to the top before calling `completeTour()`:
+**Change 1 — Scroll-to-top on completion (lines 34-40):**
+Also scroll the outer `<main>` element back to top:
 
-```diff
-  if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
-+   // Scroll the content area back to top so tabs are visible
-+   const scrollContainer = document.querySelector('[class*="overflow-y-auto"]');
-+   if (scrollContainer) {
-+     scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
-+   }
-    completeTour();
+```typescript
+if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+  // Scroll outer shell main container to top
+  const mainContainer = document.querySelector('main');
+  if (mainContainer) {
+    mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
   }
+  // Scroll inner content area to top
+  const scrollContainer = document.querySelector('[class*="overflow-y-auto"]');
+  if (scrollContainer) {
+    scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  completeTour();
+}
 ```
 
-This ensures that after any admin tour completes, the view resets to show the tab navigation at the top, allowing users to switch tabs or continue navigating.
+**Change 2 — Prevent outer scroll during steps (line 30-32):**
+Replace `scrollIntoView` with a scoped scroll that only scrolls within the inner content div, preventing the outer `<main>` from being pushed:
+
+```typescript
+if (type === EVENTS.STEP_BEFORE && step?.target) {
+  const el = document.querySelector(step.target as string);
+  if (el) {
+    // Use scrollIntoView but immediately reset outer main to prevent it drifting
+    el.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+    const mainEl = document.querySelector('main');
+    if (mainEl) {
+      mainEl.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+}
+```
+
+This ensures the outer shell container stays pinned at the top throughout the tour and resets properly after completion, keeping the tab navigation always accessible.
 
