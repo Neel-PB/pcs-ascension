@@ -1,19 +1,39 @@
 
 
-## Unify Checklist Layout: Use 3-Tab Design in Staffing Module Too
+## Fix: Volume Settings and NP Settings Tour Tooltip Clipping
 
-### Current Behavior
-- **Positions module** (Employees/Contractors/Requisitions tabs): Shows a clean 3-tab layout -- KPIs, Shortage, Surplus -- inside the checklist drawer.
-- **Staffing module** (Summary/Planning/Variance/Forecasts tabs): Shows both Shortage and Surplus tables stacked vertically with no KPIs tab and no tab navigation.
+### Problem
+The Volume Settings and NP Settings tours have the same issues previously fixed for Admin tours:
+1. Joyride's built-in scroll (`scrollToFirstStep`) pushes the `main` container, hiding the tab navigation bar and clipping the tooltip (Next/Skip buttons not visible).
+2. No manual scroll reset on step transitions or tour completion.
 
-### Change
-Replace the stacked-tables layout in the Staffing module with the same 3-tab layout used in the Positions module. The only difference is that Staffing tabs won't have tab-specific KPIs (since there's no employee/contractor context), so the KPIs tab will show only the common KPI cards.
+### Root Cause
+`StaffingTour.tsx` uses `scrollToFirstStep` (defaults to true) and lacks the `main` container scroll reset logic that was added to `AdminTour.tsx`.
 
-### File: `src/components/workforce/WorkforceKPISection.tsx`
+### Solution
+Apply the same pattern from `AdminTour` to `StaffingTour`:
 
-1. Remove the `showBothTables` condition and the `ForecastTableWithTitle` sub-component entirely.
-2. Change the `showForecastTables` check to always be true (or simply remove the conditional so the 3-tab layout renders for all `activeTab` values).
-3. When `activeTab` is a Staffing tab (summary, planning, variance, forecasts), `tabSpecificKPIs` will already be empty (the `default` case returns `[]`), so the separator and extra KPI row will naturally be hidden -- no other logic changes needed.
+### File: `src/components/tour/StaffingTour.tsx`
 
-This is a single-file change. The result is that both modules get the identical 3-tab (KPIs / Shortage / Surplus) experience.
+1. **Disable Joyride's internal scroll**: Set `scrollToFirstStep={false}`.
+
+2. **Add manual scroll resets to `handleCallback`**:
+   - On `STEP_BEFORE`: After `scrollIntoView` on the target element, reset `main` container scroll to top (`behavior: 'instant'`).
+   - On `FINISHED` or `SKIPPED`: Reset both the `main` container and any inner `overflow-y-auto` container to top before calling `completeTour()`.
+
+This is the exact same pattern already proven in `AdminTour.tsx`, applied to the single `StaffingTour.tsx` file.
+
+### Technical Detail
+
+```text
+Current StaffingTour handleCallback:
+  STEP_BEFORE -> scrollIntoView (target only)
+  FINISHED/SKIPPED -> completeTour()
+
+Updated StaffingTour handleCallback:
+  STEP_BEFORE -> scrollIntoView (target) + main.scrollTo(0) 
+  FINISHED/SKIPPED -> main.scrollTo(0) + inner scroll reset + completeTour()
+
+Also: scrollToFirstStep={false} added to Joyride props
+```
 
