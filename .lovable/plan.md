@@ -1,33 +1,31 @@
 
 
-## Navigate to Correct Admin Tab on "Go & Start"
+## Fix Tour Tooltip Visibility on Admin Audit Log (and other tabs)
 
-### Problem
-All five Admin guides (Users, Feed, RBAC, Audit Log, Settings) navigate to `/admin` but always land on the default "users" tab. Clicking "Go & Start" on Feed, RBAC, Audit Log, or Settings doesn't switch to the correct tab.
+### Root Cause
+In `AdminPage.tsx`, the content area wraps all tab content in:
+```
+<div className="flex-1 min-h-0 overflow-hidden">
+```
+This `overflow-hidden` clips the Joyride tooltip when it tries to position itself above or below elements inside the container. The spotlight overlay appears (as seen in the screenshot), but the tooltip card with Skip/Next buttons renders outside the visible bounds and gets clipped.
 
-### Solution
-Apply the same pattern used for Staffing and Positions: use URL search params and read them on mount.
+### Fix
+Change `overflow-hidden` to `overflow-auto` (or `overflow-y-auto`) on the content wrapper in `AdminPage.tsx`. This still enables scrolling for overflowing content but does not clip absolutely/fixed-positioned elements like the tour tooltip from rendering.
 
-### Technical Changes
+Alternatively, if `overflow-hidden` is needed to prevent layout shifts, we can scope it: only apply `overflow-hidden` when a tour is NOT running, or wrap the scrollable content inside a nested container so the Joyride tooltip floater (which uses portals) isn't clipped.
 
-#### 1. `src/components/support/UserGuidesTab.tsx`
-Update `route` values in `guideCatalog` for admin sub-tours:
-- `admin-users` stays `/admin` (defaults to users)
-- `admin-feed` changes to `/admin?tab=feed`
-- `admin-rbac` changes to `/admin?tab=access-control`
-- `admin-audit` changes to `/admin?tab=audit-log`
-- `admin-settings` changes to `/admin?tab=settings`
+However, the simplest and most reliable fix is:
 
-#### 2. `src/pages/admin/AdminPage.tsx`
-- Import `useSearchParams` from `react-router-dom`
-- Read the `tab` search param on mount
-- If a valid tab param exists (`users`, `feed`, `access-control`, `audit-log`, `settings`), use it as the initial value for `activeTab`
-- Add a `useEffect` to clear the search param after consumption
+### Technical Change
 
-### Resulting Flow
-1. User clicks "Go & Start" on the "Admin Feed" guide
-2. App navigates to `/admin?tab=feed`
-3. AdminPage reads `tab=feed` and sets `activeTab` to `"feed"`
-4. Page renders with the Feed tab active
-5. Tour starts targeting Feed-specific elements
+**`src/pages/admin/AdminPage.tsx`** (line ~101)
+- Change `overflow-hidden` to `overflow-y-auto` on the content wrapper div
+- This allows the tooltip to render without being clipped while still supporting scrollable content
+
+```diff
+- <div className="flex-1 min-h-0 overflow-hidden">
++ <div className="flex-1 min-h-0 overflow-y-auto">
+```
+
+This is a single-line change that fixes tooltip visibility across all Admin tabs (Users, Feed, RBAC, Audit Log, Settings).
 
