@@ -16,20 +16,35 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
     const { status, type, step } = data;
     if (type === EVENTS.STEP_BEFORE && step?.target) {
       const el = document.querySelector(step.target as string);
-      el?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+      if (el) {
+        el.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'instant' });
+        const mainEl = document.querySelector('main');
+        if (mainEl) {
+          mainEl.scrollTo({ top: 0, behavior: 'instant' });
+        }
+      }
     }
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+      const mainContainer = document.querySelector('main');
+      if (mainContainer) {
+        mainContainer.scrollTo({ top: 0, behavior: 'instant' });
+      }
+      const scrollContainer = document.querySelector('[class*="overflow-y-auto"]');
+      if (scrollContainer) {
+        scrollContainer.scrollTo({ top: 0, behavior: 'instant' });
+      }
       completeTour();
     }
   };
 
   return (
     <Joyride
+      key={activeTab}
       steps={steps}
       run={run}
       continuous
       showSkipButton
-      scrollToFirstStep
+      scrollToFirstStep={false}
       disableOverlayClose
       callback={handleCallback}
       tooltipComponent={TourTooltip}

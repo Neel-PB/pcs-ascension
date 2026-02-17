@@ -219,6 +219,8 @@ export function ContractorsTab({
   // Fetch comment counts
   const commentCounts = usePositionCommentCounts(positionIds);
 
+  const firstRowId = filteredAndSortedContractors[0]?.id;
+
   const columnsWithHandlers = useMemo(() => {
     const baseColumns = createContractorColumnsWithComments(
       commentCounts, 
@@ -229,31 +231,44 @@ export function ContractorsTab({
       if (col.id === 'actual_fte') {
         return {
           ...col,
-          renderCell: (row: any) => (
-            <EditableFTECell
-              value={row.actual_fte}
-              originalValue={row.FTE}
-              expiryDate={row.actual_fte_expiry}
-              status={row.actual_fte_status}
-              employmentType={row.employmentType}
-              sharedWith={row.actual_fte_shared_with}
-              sharedFte={row.actual_fte_shared_fte}
-              sharedExpiry={row.actual_fte_shared_expiry}
-              onSave={(data) => handleActualFteUpdate(
-                row.id, 
-                row.actual_fte, 
-                row.actual_fte_expiry,
-                row.actual_fte_status,
-                data
-              )}
-              filterDataProvider={filterDataProvider}
-            />
-          ),
+          renderCell: (row: any) => {
+            const cell = (
+              <EditableFTECell
+                value={row.actual_fte}
+                originalValue={row.FTE}
+                expiryDate={row.actual_fte_expiry}
+                status={row.actual_fte_status}
+                employmentType={row.employmentType}
+                sharedWith={row.actual_fte_shared_with}
+                sharedFte={row.actual_fte_shared_fte}
+                sharedExpiry={row.actual_fte_shared_expiry}
+                onSave={(data) => handleActualFteUpdate(
+                  row.id, 
+                  row.actual_fte, 
+                  row.actual_fte_expiry,
+                  row.actual_fte_status,
+                  data
+                )}
+                filterDataProvider={filterDataProvider}
+              />
+            );
+            return row.id === firstRowId ? <div data-tour="positions-active-fte-cell">{cell}</div> : cell;
+          },
+        };
+      }
+      if (col.id === 'shift') {
+        const originalRenderCell = col.renderCell;
+        return {
+          ...col,
+          renderCell: (row: any, colDef: any) => {
+            const cell = originalRenderCell ? originalRenderCell(row, colDef) : null;
+            return row.id === firstRowId ? <div data-tour="positions-shift-cell">{cell}</div> : cell;
+          },
         };
       }
       return col;
     });
-  }, [commentCounts, handleCommentClick, handleActualFteUpdate, handleShiftOverrideUpdate, filterDataProvider]);
+  }, [commentCounts, handleCommentClick, handleActualFteUpdate, handleShiftOverrideUpdate, filterDataProvider, firstRowId]);
 
   const showEmptyState = !isFetching && (!contractors || contractors.length === 0);
 
