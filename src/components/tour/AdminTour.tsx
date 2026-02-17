@@ -30,7 +30,7 @@ export function AdminTour({ activeTab }: AdminTourProps) {
     if (type === EVENTS.STEP_BEFORE && step?.target) {
       const el = document.querySelector(step.target as string);
       if (el) {
-        el.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+        el.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'instant' });
         const mainEl = document.querySelector('main');
         if (mainEl) {
           mainEl.scrollTo({ top: 0, behavior: 'instant' });
