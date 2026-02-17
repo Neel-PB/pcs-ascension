@@ -1,37 +1,35 @@
 
 
-## Show Active FTE Edit & Shift Override Cells in Positions Tour
+## Fix: Overlay Guide Tours (Checklist, AI Hub, Feedback)
 
-Currently the tour highlights the **column headers** for Active FTE and Shift. This change will make the tour spotlight the actual **first-row cells** so users can see the pencil icon, the editable cell styling, and understand what to click.
+### Problem
+The three overlay tours (Checklist, AI Hub, Feedback Panel) can't run from the Support page because their panels must be **open** for the tour targets to exist in the DOM. Currently, clicking "Start Tour" only sets the tour key in the store but never opens the corresponding panel.
 
-### Approach
+### Solution
+Update `handleStartTour` in `UserGuidesTab.tsx` to **programmatically open the overlay panel** before triggering the tour. Each overlay has its own Zustand store with a `setOpen` method:
 
-Use the existing `isFirstRow` pattern: compare each row's ID against the first item in the dataset, then conditionally wrap the cell in a `div` with a `data-tour` attribute.
+- **Checklist** -> `useWorkforceDrawerStore().setOpen(true)`
+- **AI Hub** -> `useAIHub().setOpen(true)`  
+- **Feedback** -> `useFeedbackStore().setOpen(true)`
 
-### Changes (4 files)
+### Changes (1 file)
 
-#### 1. `src/pages/positions/EmployeesTab.tsx`
-In the `columnsWithHandlers` memo, wrap the `actual_fte` and `shift` column `renderCell` outputs with a `data-tour` div when the row is the first item:
+**`src/components/support/UserGuidesTab.tsx`**
 
-- For `actual_fte`: wrap `EditableFTECell` in `<div data-tour="positions-active-fte-cell">` when `row.id === filteredAndSortedEmployees[0]?.id`
-- For `shift`: similarly wrap the `ShiftCell` in `<div data-tour="positions-shift-cell">` for the first row
+1. Import the three overlay stores:
+   - `useWorkforceDrawerStore`
+   - `useAIHub`
+   - `useFeedbackStore`
 
-#### 2. `src/pages/positions/ContractorsTab.tsx`
-Same pattern as EmployeesTab — wrap first-row Active FTE and Shift cells with `data-tour` attributes.
+2. Update `handleStartTour` to check if the guide is an overlay, and if so, open the corresponding panel before starting the tour:
 
-#### 3. `src/components/tour/positionsTourSteps.ts`
-Update the `employeesTourSteps` and `contractorsTourSteps` arrays:
+```text
+handleStartTour(guide):
+  if guide.tourKey === "checklist"  -> open WorkforceDrawer
+  if guide.tourKey === "ai-hub"    -> open AIHub
+  if guide.tourKey === "feedback"  -> open FeedbackPanel
+  then after a 300ms delay, call startTour(guide.tourKey)
+```
 
-- Change the Active FTE step target from `[data-tour="positions-active-fte"]` (header) to `[data-tour="positions-active-fte-cell"]` (first row cell)
-- Change the Shift step target from `[data-tour="positions-shift"]` (header) to `[data-tour="positions-shift-cell"]` (first row cell)
+This ensures the panel is mounted and its `data-tour` targets are in the DOM before Joyride tries to spotlight them. The existing `OverlayTour` component inside each panel already listens to `activeTour` from the tour store, so once the panel is open and the tour key is set, the tour will run normally.
 
-#### 4. `src/components/tour/PositionsTour.tsx`
-Apply the same scroll fixes as AdminTour to prevent tabs from becoming unusable after tour completion:
-
-- Set `scrollToFirstStep={false}`
-- Use `behavior: 'instant'` for `scrollIntoView` and main container reset during steps
-- Reset both outer `main` and inner scroll containers on completion
-
-### Technical Detail
-
-The `renderCell` function receives the row data object. By comparing `row.id === data[0]?.id` (where `data` is the filtered/sorted array), the `data-tour` attribute is only added to the very first visible row. This avoids redundant DOM attributes on all 7,000+ rows while ensuring the tour spotlight targets a real, interactive cell.
