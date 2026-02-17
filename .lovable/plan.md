@@ -1,20 +1,19 @@
 
 
-## Fix: Table Not Scrolling - Missing `h-full` in EditableTable
+## Fix: Forecast Table Content Being Clipped
 
 ### Problem
-The height chain is broken inside `EditableTable.tsx`. The parent containers (`SettingsTab` / `NPSettingsTab`) correctly constrain height with `flex-1 min-h-0 overflow-hidden`, but the `EditableTable` root div has no height directive -- it just uses `overflow-hidden` without `h-full`, so it collapses to content height and the virtualizer scroll area never activates.
+The Forecast Balance Table's rightmost "Status" column is being clipped because the `Card` wrapper uses `overflow-hidden`, and the grid template columns may exceed the available card width. The table needs horizontal scrolling support to show all columns fully.
 
 ### Solution
-One single change in `src/components/editable-table/EditableTable.tsx`, line 214:
 
-Add `h-full` to the root container div so it fills the height-constrained parent:
+**File: `src/components/forecast/ForecastBalanceTable.tsx`**
 
-```
-Before: "flex flex-col rounded-lg border bg-card shadow-sm overflow-hidden"
-After:  "flex flex-col h-full rounded-lg border bg-card shadow-sm overflow-hidden"
-```
+Change the Card from `overflow-hidden` to allow the inner scrollable div to handle overflow properly:
 
-This completes the height chain: page tab container (fixed height) -> table wrapper (`flex-1 min-h-0`) -> EditableTable root (`h-full flex flex-col`) -> inner scroll area (`flex-1 min-h-0`) -> VirtualizedTableBody (scroll activates).
+1. On the inner `div` (line 41), change from `max-h-[600px] overflow-y-auto` to `max-h-[600px] overflow-auto` so it can scroll both horizontally and vertically when needed.
 
-No other files need changes.
+2. Ensure the grid rows have `min-width: max-content` so they don't get compressed and clip content. Wrap the header and body in a `div` with `style={{ minWidth: 'max-content' }}` to guarantee the grid never compresses below its natural width.
+
+This allows the full Status column (and any other content) to be visible via horizontal scroll when the viewport is narrower than the total grid width, while keeping vertical scrolling for many rows.
+
