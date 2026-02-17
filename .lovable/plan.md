@@ -1,31 +1,26 @@
 
 
-## Fix Tour Tooltip Visibility on Admin Audit Log (and other tabs)
+## Fix Tour Tooltip Visibility on Audit Log Step 3
 
 ### Root Cause
-In `AdminPage.tsx`, the content area wraps all tab content in:
-```
-<div className="flex-1 min-h-0 overflow-hidden">
-```
-This `overflow-hidden` clips the Joyride tooltip when it tries to position itself above or below elements inside the container. The spotlight overlay appears (as seen in the screenshot), but the tooltip card with Skip/Next buttons renders outside the visible bounds and gets clipped.
+Step 3 of `adminAuditTourSteps` targets `[data-tour="admin-audit-table"]` with `placement: 'top'`. The audit table is a tall element near the bottom of the scrollable area. When Joyride tries to place the tooltip above it, the tooltip card (with Skip/Next buttons) renders outside the visible area and gets clipped.
 
 ### Fix
-Change `overflow-hidden` to `overflow-auto` (or `overflow-y-auto`) on the content wrapper in `AdminPage.tsx`. This still enables scrolling for overflowing content but does not clip absolutely/fixed-positioned elements like the tour tooltip from rendering.
-
-Alternatively, if `overflow-hidden` is needed to prevent layout shifts, we can scope it: only apply `overflow-hidden` when a tour is NOT running, or wrap the scrollable content inside a nested container so the Joyride tooltip floater (which uses portals) isn't clipped.
-
-However, the simplest and most reliable fix is:
+Change the `placement` of step 3 from `'top'` to `'auto'` so Joyride dynamically picks the best position based on available space. This ensures the tooltip (and its buttons) are always visible regardless of the table height or scroll position.
 
 ### Technical Change
 
-**`src/pages/admin/AdminPage.tsx`** (line ~101)
-- Change `overflow-hidden` to `overflow-y-auto` on the content wrapper div
-- This allows the tooltip to render without being clipped while still supporting scrollable content
-
+**`src/components/tour/tourSteps.ts`** (line ~371)
 ```diff
-- <div className="flex-1 min-h-0 overflow-hidden">
-+ <div className="flex-1 min-h-0 overflow-y-auto">
+  {
+    target: '[data-tour="admin-audit-table"]',
+    title: 'Audit Table',
+    content: 'Each row shows the timestamp, action, target, and who made the change. Click rows with a chevron to expand and see the previous and new values.',
+-   placement: 'top',
++   placement: 'auto',
+    disableBeacon: true,
+  },
 ```
 
-This is a single-line change that fixes tooltip visibility across all Admin tabs (Users, Feed, RBAC, Audit Log, Settings).
+Single-line change that lets Joyride auto-position the tooltip where there is enough room for the full card including Skip/Next buttons.
 
