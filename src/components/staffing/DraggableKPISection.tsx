@@ -126,7 +126,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
           
           {/* Hired and Open Reqs Badge (Red) with vertical connectors */}
           {hasConnectedKpis && sharedBreakdown && (
-            <div className="col-span-3">
+            <div className="col-span-3" data-tour="kpi-hired-split-badge">
               {/* Grid for vertical connectors from Hired FTEs and Open Reqs - h-2 (8px) */}
               <div className="grid grid-cols-3">
                 {/* Connector from Hired FTEs (first column) */}
