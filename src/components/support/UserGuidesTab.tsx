@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTourStore } from "@/stores/useTourStore";
+import { useWorkforceDrawerStore } from "@/stores/useWorkforceDrawerStore";
+import { useAIHub } from "@/hooks/useAIHub";
+import { useFeedbackStore } from "@/stores/useFeedbackStore";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -65,6 +68,11 @@ export function UserGuidesTab() {
     localStorage.getItem(`helix-tour-${tourKey}-completed`) === "true";
 
   const handleStartTour = (guide: Guide) => {
+    // For overlay tours, open the corresponding panel first
+    if (guide.tourKey === "checklist") useWorkforceDrawerStore.getState().setOpen(true);
+    if (guide.tourKey === "ai-hub") useAIHub.getState().setOpen(true);
+    if (guide.tourKey === "feedback") useFeedbackStore.getState().setOpen(true);
+
     if (guide.route) {
       navigate(guide.route);
     }
