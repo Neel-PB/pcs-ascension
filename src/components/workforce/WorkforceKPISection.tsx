@@ -117,104 +117,64 @@ export const WorkforceKPISection = ({
 
   const tabSpecificKPIs = getTabSpecificKPIs();
 
-  // Determine if we should show forecast tables (for Positions module tabs)
-  const showForecastTables = ['employees', 'contractors', 'requisitions'].includes(activeTab);
-  
-  // For Staffing module tabs, show both tables without tabs
-  const showBothTables = ['summary', 'planning', 'variance', 'forecasts'].includes(activeTab);
-
   return (
     <div className="flex-1 flex flex-col min-h-0 space-y-2">
-      {/* 3-tab layout for Positions module */}
-      {showForecastTables && (
-        <Tabs defaultValue="kpis" className="flex-1 flex flex-col min-h-0">
-          <TabsList className="w-full" data-tour="checklist-tabs">
-            <TabsTrigger value="kpis" className="flex-1">KPIs</TabsTrigger>
-            <TabsTrigger value="shortage" className="flex-1">
-              Shortage <Badge variant="secondary" className="ml-1.5">{shortageCount}</Badge>
-            </TabsTrigger>
-            <TabsTrigger value="surplus" className="flex-1">
-              Surplus <Badge variant="secondary" className="ml-1.5">{surplusCount}</Badge>
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="kpis" className="flex-1 min-h-0 mt-2 overflow-y-auto data-[state=inactive]:hidden" data-tour="checklist-kpis">
-            <div className="grid grid-cols-3 gap-2">
-              {commonKPIs.map((kpi) => (
-                <WorkforceKPICard
-                  key={kpi.id}
-                  label={kpi.title}
-                  value={kpi.value}
-                  chartData={kpi.chartData}
-                  chartType={kpi.chartType}
-                  definition={kpi.definition}
-                  calculation={kpi.calculation}
-                  breakdownData={kpi.breakdownData}
-                  xAxisLabels={kpi.xAxisLabels}
-                  decimalPlaces={kpi.decimalPlaces}
-                />
-              ))}
-            </div>
-            {tabSpecificKPIs.length > 0 && (
-              <>
-                <Separator className="my-2" />
-                <div className="grid grid-cols-3 gap-2">
-                  {tabSpecificKPIs.map((kpi) => (
-                    <WorkforceKPICard
-                      key={kpi.id}
-                      label={kpi.title}
-                      value={kpi.value}
-                      chartData={kpi.chartData}
-                      chartType={kpi.chartType}
-                      definition={kpi.definition}
-                      calculation={kpi.calculation}
-                      breakdownData={kpi.breakdownData}
-                      xAxisLabels={kpi.xAxisLabels}
-                      decimalPlaces={kpi.decimalPlaces}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-          </TabsContent>
-          <TabsContent value="shortage" className="flex-1 min-h-0 mt-2 flex flex-col data-[state=inactive]:hidden" data-tour="checklist-table">
-            <ForecastChecklistTable type="shortage" filters={filters} />
-          </TabsContent>
-          <TabsContent value="surplus" className="flex-1 min-h-0 mt-2 flex flex-col data-[state=inactive]:hidden">
-            <ForecastChecklistTable type="surplus" filters={filters} />
-          </TabsContent>
-        </Tabs>
-      )}
-      
-      {/* Both tables for Staffing module (legacy behavior) */}
-      {showBothTables && (
-        <>
-          <ForecastTableWithTitle type="shortage" filters={filters} />
-          <ForecastTableWithTitle type="surplus" filters={filters} />
-        </>
-      )}
+      <Tabs defaultValue="kpis" className="flex-1 flex flex-col min-h-0">
+        <TabsList className="w-full" data-tour="checklist-tabs">
+          <TabsTrigger value="kpis" className="flex-1">KPIs</TabsTrigger>
+          <TabsTrigger value="shortage" className="flex-1">
+            Shortage <Badge variant="secondary" className="ml-1.5">{shortageCount}</Badge>
+          </TabsTrigger>
+          <TabsTrigger value="surplus" className="flex-1">
+            Surplus <Badge variant="secondary" className="ml-1.5">{surplusCount}</Badge>
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="kpis" className="flex-1 min-h-0 mt-2 overflow-y-auto data-[state=inactive]:hidden" data-tour="checklist-kpis">
+          <div className="grid grid-cols-3 gap-2">
+            {commonKPIs.map((kpi) => (
+              <WorkforceKPICard
+                key={kpi.id}
+                label={kpi.title}
+                value={kpi.value}
+                chartData={kpi.chartData}
+                chartType={kpi.chartType}
+                definition={kpi.definition}
+                calculation={kpi.calculation}
+                breakdownData={kpi.breakdownData}
+                xAxisLabels={kpi.xAxisLabels}
+                decimalPlaces={kpi.decimalPlaces}
+              />
+            ))}
+          </div>
+          {tabSpecificKPIs.length > 0 && (
+            <>
+              <Separator className="my-2" />
+              <div className="grid grid-cols-3 gap-2">
+                {tabSpecificKPIs.map((kpi) => (
+                  <WorkforceKPICard
+                    key={kpi.id}
+                    label={kpi.title}
+                    value={kpi.value}
+                    chartData={kpi.chartData}
+                    chartType={kpi.chartType}
+                    definition={kpi.definition}
+                    calculation={kpi.calculation}
+                    breakdownData={kpi.breakdownData}
+                    xAxisLabels={kpi.xAxisLabels}
+                    decimalPlaces={kpi.decimalPlaces}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </TabsContent>
+        <TabsContent value="shortage" className="flex-1 min-h-0 mt-2 flex flex-col data-[state=inactive]:hidden" data-tour="checklist-table">
+          <ForecastChecklistTable type="shortage" filters={filters} />
+        </TabsContent>
+        <TabsContent value="surplus" className="flex-1 min-h-0 mt-2 flex flex-col data-[state=inactive]:hidden">
+          <ForecastChecklistTable type="surplus" filters={filters} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
-
-// Sub-component for Staffing module (shows both tables vertically)
-function ForecastTableWithTitle({ type, filters }: { type: 'shortage' | 'surplus'; filters?: ForecastBalanceFilters }) {
-  const { openings, closures } = useForecastChecklist(filters);
-  
-  const count = type === 'shortage' ? openings.length : closures.length;
-  const title = type === 'shortage' ? 'FTE Shortage' : 'FTE Surplus';
-
-  return (
-    <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-      {type === 'shortage' && <Separator className="my-2" />}
-      <div className="flex-1 flex flex-col min-h-0">
-        <h3 className="text-sm font-medium text-foreground mb-2 flex-shrink-0">
-          {title} <span className="text-muted-foreground">({count})</span>
-        </h3>
-        <div className="flex-1 min-h-0 flex flex-col">
-          <ForecastChecklistTable type={type} filters={filters} />
-        </div>
-      </div>
-      {type === 'shortage' && <Separator className="mt-3 mb-2" />}
-    </div>
-  );
-}
