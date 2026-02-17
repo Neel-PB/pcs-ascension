@@ -81,7 +81,7 @@ export function UISettings() {
       </motion.div>
       
       <motion.div variants={itemVariants}>
-        <Card>
+        <Card data-tour="ui-settings-card">
           <CardHeader className="pb-4">
             <CardTitle className="text-base">Feedback System Visibility</CardTitle>
             <CardDescription className="text-xs">
@@ -156,6 +156,7 @@ export function UISettings() {
       {/* Save Button */}
       <motion.div variants={itemVariants} className="flex justify-end">
         <Button 
+          data-tour="ui-settings-save"
           onClick={handleSave}
           disabled={!hasChanges || updateSettings.isPending}
           className="flex items-center gap-2"

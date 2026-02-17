@@ -395,6 +395,27 @@ export const adminSettingsTourSteps: Step[] = [
     disableBeacon: true,
   },
   {
+    target: '[data-tour="ui-settings-card"]',
+    title: 'Feedback Visibility',
+    content: 'Toggle the floating feedback button, screenshot capture, and sidebar navigation link on or off for all users.',
+    placement: 'auto',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="ui-settings-save"]',
+    title: 'Save UI Settings',
+    content: 'Click Save to apply your visibility changes. The button activates when you modify a toggle.',
+    placement: 'auto',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="admin-settings-tabs"]',
+    title: 'Switch to Volume Config',
+    content: 'Click the Volume Config tab to configure target volume calculation rules. The following steps cover that section.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
     target: '[data-tour="volume-config-mode"]',
     title: 'Scope Mode',
     content: 'Choose Universal to set rules for all departments, or Department-Specific to create custom overrides for individual departments.',
