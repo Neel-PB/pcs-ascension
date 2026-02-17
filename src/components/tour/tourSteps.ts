@@ -341,8 +341,8 @@ export const adminRbacTourSteps: Step[] = [
   },
   {
     target: '[data-tour="admin-rbac-content"]',
-    title: 'RBAC Content',
-    content: 'Toggle permissions on or off for each role. Changes are saved immediately and logged to the Audit Log.',
+    title: 'Manage Role Permissions',
+    content: 'Check or uncheck the boxes to grant or revoke specific permissions for each role. A checked box means the role has that permission; unchecking it removes access. Changes are saved immediately and logged to the Audit Log.',
     placement: 'top',
     disableBeacon: true,
   },
