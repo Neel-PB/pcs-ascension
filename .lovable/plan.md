@@ -1,53 +1,50 @@
 
 
-## Fix: All Admin Tabs Becoming Unusable After Tour Completion
+## Fix: Admin Tabs Unreachable After Tour — Scroll Reset Not Working
 
 ### Root Cause
-The Admin page has a **nested scroll structure**:
-1. Outer: `ShellLayout` `<main>` element with `overflow-y-scroll`
-2. Inner: AdminPage content div with `overflow-y-auto`
+Two issues prevent the scroll reset from working:
 
-During a tour, `scrollIntoView()` on step targets scrolls **both** containers. When the tour finishes, the current fix only scrolls the inner container back to top. The outer `<main>` remains scrolled down, pushing the tab navigation bar out of view and making the entire module unusable.
+1. **Joyride's `scrollToFirstStep` prop** triggers its own native scroll on ancestor containers (including the outer `<main>`), which we cannot control. This races with the manual `scrollTo` reset.
+2. **`behavior: 'smooth'` is asynchronous** — the scroll commands fire but don't complete before `completeTour()` unmounts Joyride and potentially interrupts the scroll animation.
 
-### Fix (2 changes in 1 file)
+### Fix (1 file)
 
 #### `src/components/tour/AdminTour.tsx`
 
-**Change 1 — Scroll-to-top on completion (lines 34-40):**
-Also scroll the outer `<main>` element back to top:
+**Change 1 — Disable Joyride's built-in scrolling (line 60):**
+Remove `scrollToFirstStep` (or set it to `false`) since the manual `STEP_BEFORE` handler already handles element scrolling. This prevents Joyride from independently scrolling the outer `<main>`.
+
+**Change 2 — Use `behavior: 'instant'` on completion (lines 43, 47):**
+Replace `'smooth'` with `'instant'` in the `STATUS.FINISHED`/`STATUS.SKIPPED` block so the scroll reset happens synchronously before `completeTour()` unmounts the component.
 
 ```typescript
 if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
-  // Scroll outer shell main container to top
   const mainContainer = document.querySelector('main');
   if (mainContainer) {
-    mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
+    mainContainer.scrollTo({ top: 0, behavior: 'instant' });
   }
-  // Scroll inner content area to top
   const scrollContainer = document.querySelector('[class*="overflow-y-auto"]');
   if (scrollContainer) {
-    scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollContainer.scrollTo({ top: 0, behavior: 'instant' });
   }
   completeTour();
 }
 ```
 
-**Change 2 — Prevent outer scroll during steps (line 30-32):**
-Replace `scrollIntoView` with a scoped scroll that only scrolls within the inner content div, preventing the outer `<main>` from being pushed:
+**Change 3 — Also use `'instant'` for the main reset during steps (line 36):**
+Keep the outer main pinned at top instantly rather than racing with smooth scroll.
 
 ```typescript
-if (type === EVENTS.STEP_BEFORE && step?.target) {
-  const el = document.querySelector(step.target as string);
-  if (el) {
-    // Use scrollIntoView but immediately reset outer main to prevent it drifting
-    el.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
-    const mainEl = document.querySelector('main');
-    if (mainEl) {
-      mainEl.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }
-}
+mainEl.scrollTo({ top: 0, behavior: 'instant' });
 ```
 
-This ensures the outer shell container stays pinned at the top throughout the tour and resets properly after completion, keeping the tab navigation always accessible.
+**Change 4 — Remove `scrollToFirstStep` from Joyride props (line 60):**
+Delete or set to `false`:
+```diff
+-      scrollToFirstStep
++      scrollToFirstStep={false}
+```
+
+These changes ensure scroll resets complete synchronously and Joyride doesn't fight the manual scroll logic.
 
