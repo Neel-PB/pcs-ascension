@@ -1,26 +1,35 @@
 
 
-## Add Tour Step for Hired and Open Reqs Split Badge
+## Fix: Volume Settings and NP Settings Table Scrolling
 
-### What Changes
-Add a second split-badge tour step in the Staffing Summary tour so users learn about both breakdown badges:
-1. The existing green **Target FTEs** split badge (70/20/10 target)
-2. A new step for the orange **Hired and Open Reqs** split badge (actual current mix)
+### Problem
+The `EditableTable` in both the Volume Settings (`SettingsTab.tsx`) and NP Settings (`NPSettingsTab.tsx`) tabs cannot scroll because the parent containers lack height constraints. The virtualized table needs a strict height chain (`overflow-hidden` + `min-h-0` on all ancestors) to establish its internal scroll context.
 
-### File 1: `src/components/staffing/DraggableKPISection.tsx`
-Add a `data-tour="kpi-hired-split-badge"` attribute to the Hired/Open Reqs badge container (the `col-span-3` div at line 129).
-
-### File 2: `src/components/tour/tourSteps.ts`
-Insert a new step after the existing `kpi-split-badge` step in `staffingSteps`:
-
+Currently both tabs return:
 ```
-{
-  target: '[data-tour="kpi-hired-split-badge"]',
-  title: 'Hired and Open Reqs Split',
-  content: 'This orange badge shows the actual FT/PT/PRN mix across your Hired FTEs and Open Requisitions combined. Click to compare the current split against the 70/20/10 target and see the variance.',
-  placement: 'top',
-  disableBeacon: true,
-}
+<div className="space-y-4">
+  <div> (stats banner) </div>
+  <div> <EditableTable /> </div>
+</div>
 ```
 
-This gives the tour two consecutive steps: first the green Target split badge, then the orange Hired/Open Reqs split badge.
+This `space-y-4` div has no height constraint, so the table renders at its natural height and the VirtualizedTableBody scroll area never activates.
+
+### Solution
+Apply the same height-constraining pattern used elsewhere: make the tab root a flex column that fills available space, with `overflow-hidden` and `min-h-0` on intermediate containers so the table can scroll internally.
+
+### File 1: `src/pages/staffing/SettingsTab.tsx` (line 238)
+Change the root wrapper from `<div className="space-y-4">` to a flex column with constrained height:
+```tsx
+<div className="flex flex-col gap-4 h-[calc(100vh-var(--header-height)-220px)] overflow-hidden">
+```
+And add `min-h-0 flex-1 overflow-hidden` to the table's wrapper div (line 280):
+```tsx
+<div data-tour="volume-settings-table" ... className="flex-1 min-h-0 overflow-hidden">
+```
+
+### File 2: `src/pages/staffing/NPSettingsTab.tsx`
+Apply the same pattern: constrained flex column root and `flex-1 min-h-0 overflow-hidden` on the table wrapper div.
+
+This ensures the height chain is unbroken from the page layout down to the VirtualizedTableBody, enabling the table's internal scroll.
+
