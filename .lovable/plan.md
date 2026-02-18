@@ -1,43 +1,43 @@
 
 
-## Fix: Table stays horizontally scrolled after tour ends
+## Fix: Joyride leaves `overflow: initial` on scroll containers after tour ends
 
-### Problem
-The tour's final steps highlight cells on the right side of the table (Active FTE, Shift, Comments columns). When the tour finishes or is skipped, the scroll reset runs immediately -- but Joyride's internal cleanup (removing overlay, spotlight, and tooltips) happens asynchronously afterward. This cleanup triggers a layout reflow that re-scrolls the container back to where the spotlight was, undoing the reset.
+### Root Cause
+This is a known React Joyride bug (GitHub issue #563). During the tour, Joyride automatically detects scroll parent elements and injects `overflow: initial` as an inline style on them to ensure the spotlight is visible. When the tour finishes, Joyride sometimes fails to remove this inline style. This overrides the table container's `overflow-x-auto` class, causing the horizontal scrollbar to disappear permanently.
+
+The previous fixes (resetting body overflow, delaying scroll resets) didn't address this because the problem isn't about scroll position -- it's about Joyride corrupting the `overflow` CSS property on the table's scroll container element itself.
 
 ### Solution
-Delay the scroll reset using `setTimeout` so it runs **after** Joyride has fully cleaned up its DOM elements. This ensures our reset is the final scroll action.
-
-### Technical Detail
 
 **File: `src/components/tour/PositionsTour.tsx`**
 
-In the completion handler (when status is FINISHED or SKIPPED):
+Two changes:
 
-1. Keep the immediate `document.body.style.overflow = ''` reset (this is fine immediately)
-2. Wrap the scroll resets in a `setTimeout` with a small delay (e.g., 100ms) so they execute after Joyride finishes its internal DOM cleanup
-3. Add a second delayed reset at ~300ms as a safety net for slower cleanup cycles
+1. Add `disableScrollParentFix={true}` to the Joyride component. This prevents Joyride from touching the `overflow` property on any scroll parent elements. Since we already handle scrolling manually in the callback, this is safe and eliminates the root cause.
 
+2. As a safety net, in the completion handler, explicitly remove any leftover inline `overflow` styles from the table's scroll container. This handles any edge case where Joyride still manages to inject styles.
+
+### Technical Detail
+
+Add prop to Joyride:
+```tsx
+<Joyride
+  disableScrollParentFix={true}
+  // ... existing props
+/>
 ```
-if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
-  document.body.style.overflow = '';
-  completeTour();
 
-  // Delay scroll resets to run AFTER Joyride finishes its internal cleanup
-  const resetScroll = () => {
-    const mainContainer = document.querySelector('main');
-    if (mainContainer) {
-      mainContainer.scrollTo({ top: 0, behavior: 'instant' });
-    }
-    const tableContainer = document.querySelector('[class*="overflow-x-auto"]');
-    if (tableContainer) {
-      tableContainer.scrollTo({ left: 0, behavior: 'instant' });
-    }
-  };
-
-  setTimeout(resetScroll, 100);
-  setTimeout(resetScroll, 300);
-}
+In the `resetScroll` function (already called with setTimeout), add cleanup:
+```tsx
+const resetScroll = () => {
+  document.querySelector('main')?.scrollTo({ top: 0, behavior: 'instant' });
+  const tableContainer = document.querySelector('[class*="overflow-x-auto"]');
+  if (tableContainer) {
+    tableContainer.scrollTo({ left: 0, behavior: 'instant' });
+    // Remove any inline overflow styles left by Joyride
+    (tableContainer as HTMLElement).style.overflow = '';
+  }
+};
 ```
 
 This is a single-file change to `src/components/tour/PositionsTour.tsx`.
