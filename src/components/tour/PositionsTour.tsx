@@ -17,10 +17,15 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
     if (type === EVENTS.STEP_BEFORE && step?.target) {
       const el = document.querySelector(step.target as string);
       if (el) {
-        el.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'instant' });
+        el.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'instant' });
         const mainEl = document.querySelector('main');
         if (mainEl) {
           mainEl.scrollTo({ top: 0, behavior: 'instant' });
+        }
+        // Reset horizontal scroll that scrollIntoView may have caused
+        const tableContainer = document.querySelector('[class*="overflow-x-auto"]');
+        if (tableContainer) {
+          tableContainer.scrollTo({ left: 0, behavior: 'instant' });
         }
       }
     }
@@ -29,9 +34,10 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
       if (mainContainer) {
         mainContainer.scrollTo({ top: 0, behavior: 'instant' });
       }
-      const scrollContainer = document.querySelector('[class*="overflow-y-auto"]');
-      if (scrollContainer) {
-        scrollContainer.scrollTo({ top: 0, behavior: 'instant' });
+      // Reset horizontal scroll on table container
+      const tableContainer = document.querySelector('[class*="overflow-x-auto"]');
+      if (tableContainer) {
+        tableContainer.scrollTo({ left: 0, behavior: 'instant' });
       }
       completeTour();
     }
