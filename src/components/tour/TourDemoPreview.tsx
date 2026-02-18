@@ -22,30 +22,94 @@ interface TourDemoPreviewProps {
   };
 }
 
-const MiniChart = () => (
-  <div className="rounded-lg border border-border bg-muted/50 p-3">
-    <svg viewBox="0 0 120 36" className="w-full h-10" aria-hidden="true">
-      <polyline
-        fill="none"
-        stroke="hsl(var(--primary))"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        points="4,28 24,14 44,24 64,8 84,18 104,12"
-      />
-      {[
-        [4, 28], [24, 14], [44, 24], [64, 8], [84, 18], [104, 12],
-      ].map(([cx, cy], i) => (
-        <circle key={i} cx={cx} cy={cy} r="3" fill="hsl(var(--primary))" />
-      ))}
-    </svg>
-    <div className="flex justify-between text-[10px] mt-1.5 text-muted-foreground font-medium">
-      <span>High: 98.2</span>
-      <span>Avg: 85.4</span>
-      <span>Low: 72.1</span>
+const MiniChart = () => {
+  // Realistic data points hovering around 565–634 range
+  const data = [588, 601, 612, 595, 620, 634, 608, 615, 599, 565, 610, 622];
+  const months = ["Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb"];
+  const high = Math.max(...data);
+  const avg = Math.round((data.reduce((a, b) => a + b, 0) / data.length) * 10) / 10;
+  const low = Math.min(...data);
+
+  // Chart area: viewBox 0 0 220 90, chart region x:28..212, y:4..72
+  const chartL = 28, chartR = 212, chartT = 4, chartB = 72;
+  const yMin = 0, yMax = 800;
+  const toX = (i: number) => chartL + (i / (data.length - 1)) * (chartR - chartL);
+  const toY = (v: number) => chartB - ((v - yMin) / (yMax - yMin)) * (chartB - chartT);
+
+  const points = data.map((v, i) => `${toX(i).toFixed(1)},${toY(v).toFixed(1)}`).join(" ");
+  const areaPath = `M${toX(0).toFixed(1)},${toY(data[0]).toFixed(1)} ${data.slice(1).map((v, i) => `L${toX(i + 1).toFixed(1)},${toY(v).toFixed(1)}`).join(" ")} L${toX(data.length - 1).toFixed(1)},${chartB} L${toX(0).toFixed(1)},${chartB} Z`;
+  const yTicks = [0, 200, 400, 600, 800];
+
+  return (
+    <div className="rounded-lg border border-border bg-card p-3 space-y-1.5">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <span className="text-xs font-semibold text-foreground">12M Average</span>
+        <div className="text-right">
+          <div className="text-[9px] text-muted-foreground">Current Value</div>
+          <div className="text-base font-bold text-foreground leading-tight">633.5</div>
+        </div>
+      </div>
+
+      {/* Tab indicators */}
+      <div className="flex gap-3 border-b border-border pb-1">
+        <span className="text-[10px] font-semibold text-primary border-b-2 border-primary pb-0.5">Chart</span>
+        <span className="text-[10px] text-muted-foreground pb-0.5">Table</span>
+      </div>
+
+      {/* SVG Area Chart */}
+      <svg viewBox="0 0 220 90" className="w-full h-28" aria-hidden="true">
+        <defs>
+          <linearGradient id="miniAreaGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {/* Y-axis gridlines + labels */}
+        {yTicks.map((tick) => (
+          <g key={tick}>
+            <line x1={chartL} x2={chartR} y1={toY(tick)} y2={toY(tick)} stroke="hsl(var(--border))" strokeWidth="0.5" strokeDasharray="2 2" />
+            <text x={chartL - 3} y={toY(tick) + 1.5} textAnchor="end" className="fill-muted-foreground" fontSize="5" fontFamily="inherit">{tick}</text>
+          </g>
+        ))}
+        {/* Area fill */}
+        <path d={areaPath} fill="url(#miniAreaGrad)" />
+        {/* Line */}
+        <polyline fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" points={points} />
+        {/* Dots */}
+        {data.map((v, i) => (
+          <circle key={i} cx={toX(i)} cy={toY(v)} r="2" fill="hsl(var(--primary))" />
+        ))}
+        {/* X-axis month labels */}
+        {months.map((m, i) => (
+          <text key={m} x={toX(i)} y={chartB + 8} textAnchor="middle" className="fill-muted-foreground" fontSize="4.5" fontFamily="inherit">{m}</text>
+        ))}
+      </svg>
+
+      {/* Legend */}
+      <div className="flex items-center justify-center gap-1 text-[9px] text-muted-foreground">
+        <div className="w-3 h-[2px] rounded bg-primary" />
+        <span>12M Average</span>
+      </div>
+
+      {/* Stats footer */}
+      <div className="grid grid-cols-3 gap-2 border-t border-border pt-2 text-center">
+        <div>
+          <div className="text-[9px] text-muted-foreground">High</div>
+          <div className="text-xs font-semibold text-foreground">{high.toFixed(1)}</div>
+        </div>
+        <div>
+          <div className="text-[9px] text-muted-foreground">Average</div>
+          <div className="text-xs font-semibold text-foreground">{avg.toFixed(1)}</div>
+        </div>
+        <div>
+          <div className="text-[9px] text-muted-foreground">Low</div>
+          <div className="text-xs font-semibold text-foreground">{low.toFixed(1)}</div>
+        </div>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const KPIInfo = ({ definition, formula }: { definition?: string; formula?: string }) => (
   <div className="rounded-lg border border-border bg-muted/50 p-3 space-y-2">
