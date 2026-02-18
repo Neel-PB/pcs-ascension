@@ -255,7 +255,7 @@ export function EditableFTECell({
             "text-sm font-medium",
             "hover:bg-muted/50 transition-colors",
             "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-            "flex items-center justify-between",
+            "flex items-center justify-between gap-2",
             isModified && "text-primary",
             className
           )}
