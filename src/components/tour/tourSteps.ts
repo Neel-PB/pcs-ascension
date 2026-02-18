@@ -1,4 +1,12 @@
 import type { Step } from 'react-joyride';
+import { createElement } from 'react';
+import { FilterDemoPreview } from './FilterDemoPreview';
+
+const filterContent = (text: string, preview: { variant: 'simple' | 'searchable' | 'labels'; items?: string[] | { name: string; id: string }[]; labels?: string[] }) =>
+  createElement('div', { className: 'space-y-3' },
+    createElement('p', null, text),
+    createElement(FilterDemoPreview, preview as any)
+  );
 
 export const staffingSteps: Step[] = [
   {
@@ -11,28 +19,48 @@ export const staffingSteps: Step[] = [
   {
     target: '[data-tour="filter-region"]',
     title: 'Region Filter',
-    content: 'Select a Region to scope all data to that geographic area. Choosing a region updates the available Markets, Facilities, and Departments below.',
+    content: filterContent(
+      'Select a Region to scope all data to that geographic area. Choosing a region updates the available Markets, Facilities, and Departments below.',
+      { variant: 'simple', items: ['All Regions', 'East', 'Gulf Coast', 'West'] }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="filter-market"]',
     title: 'Market Filter',
-    content: 'Select a Market within the chosen Region. This further narrows Facility and Department options.',
+    content: filterContent(
+      'Select a Market within the chosen Region. This further narrows Facility and Department options.',
+      { variant: 'simple', items: ['All Markets', 'Indianapolis', 'Nashville', 'Wichita'] }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="filter-facility"]',
     title: 'Facility Filter',
-    content: 'Search and select a specific Facility. This is a searchable dropdown — type a name or ID to find it quickly. Selecting a facility scopes Departments to that location.',
+    content: filterContent(
+      'Search and select a specific Facility. Type a name or ID to find it quickly. Selecting a facility scopes Departments to that location.',
+      { variant: 'searchable', items: [
+        { name: 'St. Vincent Hospital', id: 'FAC001' },
+        { name: 'Sacred Heart Medical', id: 'FAC002' },
+        { name: 'Providence Clinic', id: 'FAC003' },
+      ]}
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="filter-department"]',
     title: 'Department Filter',
-    content: 'Search and select a Department. Also searchable by name or ID. Once selected, all KPIs and tables reflect only that department\'s data.',
+    content: filterContent(
+      'Search and select a Department. Also searchable by name or ID. Once selected, all KPIs and tables reflect only that department\'s data.',
+      { variant: 'searchable', items: [
+        { name: 'ICU', id: 'DEP101' },
+        { name: 'Emergency', id: 'DEP202' },
+        { name: 'Med-Surg', id: 'DEP303' },
+      ]}
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
@@ -46,7 +74,10 @@ export const staffingSteps: Step[] = [
   {
     target: '[data-tour="filter-more"]',
     title: 'More Filters',
-    content: 'Additional filters for Submarket, Level 2, and PSTAT. Use these for finer-grained analysis without changing the primary hierarchy.',
+    content: filterContent(
+      'Additional filters for finer-grained analysis without changing the primary hierarchy.',
+      { variant: 'labels', labels: ['Submarket', 'Level 2', 'PSTAT'] }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
