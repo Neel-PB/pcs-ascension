@@ -1,10 +1,16 @@
+import { Pencil, Check, X, RotateCcw, ChevronLeft, ChevronRight } from '@/lib/icons';
+
 type SettingsDemoVariant =
   | 'volume-stats-preview'
   | 'volume-table-preview'
   | 'volume-target-preview'
   | 'np-stats-preview'
   | 'np-table-preview'
-  | 'np-two-step-preview';
+  | 'np-two-step-preview'
+  | 'volume-override-steps'
+  | 'volume-expiry-steps'
+  | 'np-override-steps'
+  | 'np-expiry-steps';
 
 interface SettingsDemoPreviewProps {
   variant: SettingsDemoVariant;
@@ -210,6 +216,189 @@ const NPTwoStepPreview = () => (
   </div>
 );
 
+/* ─── Override Cell States ─── */
+
+const CellStateRow = ({ icon, iconClass, label, children }: { icon: React.ReactNode; iconClass?: string; label: string; children: React.ReactNode }) => (
+  <div className="flex items-center gap-2">
+    <div className="flex-1 flex items-center gap-1 rounded border border-border bg-background px-2 py-1 min-h-[28px]">
+      {children}
+    </div>
+    <span className="text-[8px] text-muted-foreground flex-shrink-0 max-w-[120px]">{label}</span>
+  </div>
+);
+
+const VolumeOverrideStepsPreview = () => (
+  <div className="rounded-lg border border-border bg-card p-2.5 space-y-2 mt-1">
+    <p className="text-[9px] font-semibold text-foreground/80 uppercase tracking-wide">Override Cell States</p>
+
+    {/* State 1: Idle */}
+    <CellStateRow icon={<Pencil className="h-3 w-3" />} label="Click pencil to enter a value">
+      <span className="text-[9px] text-muted-foreground flex-1">—</span>
+      <span className="text-[7px] font-medium rounded px-1 py-0.5 bg-destructive/10 text-destructive">Mandatory</span>
+      <Pencil className="h-3 w-3 text-muted-foreground ml-1" />
+    </CellStateRow>
+
+    <div className="ml-3 w-px h-2 bg-border" />
+
+    {/* State 2: Editing */}
+    <CellStateRow icon={<Check className="h-3 w-3" />} label="Type value, press Enter or ✓">
+      <span className="text-[9px] font-mono text-foreground/80 flex-1 border-b border-primary/40">25.0</span>
+      <Check className="h-3 w-3 text-primary ml-1" />
+      <X className="h-3 w-3 text-muted-foreground ml-0.5" />
+    </CellStateRow>
+
+    <div className="ml-3 w-px h-2 bg-border" />
+
+    {/* State 3: Saved */}
+    <CellStateRow icon={<RotateCcw className="h-3 w-3" />} label="Value saved. Click ↺ to clear.">
+      <span className="text-[9px] font-mono font-medium text-foreground/80 flex-1">25.0</span>
+      <RotateCcw className="h-3 w-3 text-muted-foreground ml-1" />
+    </CellStateRow>
+  </div>
+);
+
+/* ─── Calendar Wireframe ─── */
+
+const MiniCalendarWireframe = ({ maxExpiry }: { maxExpiry?: string }) => (
+  <div className="rounded-lg border border-border bg-background shadow-md overflow-hidden">
+    {/* Header */}
+    <div className="px-2 pt-2 pb-1">
+      <p className="text-[8px] text-muted-foreground">Select a date</p>
+      {maxExpiry && (
+        <p className="text-[7px] text-amber-600 font-medium mt-0.5">Max expiry: {maxExpiry}</p>
+      )}
+    </div>
+    {/* Month nav */}
+    <div className="flex items-center justify-between px-2 py-1">
+      <ChevronLeft className="h-3 w-3 text-primary" />
+      <span className="text-[8px] font-semibold text-foreground/80">February 2026</span>
+      <ChevronRight className="h-3 w-3 text-primary" />
+    </div>
+    {/* Mini grid placeholder */}
+    <div className="px-2 py-1">
+      <div className="grid grid-cols-7 gap-[2px]">
+        {['S','M','T','W','T','F','S'].map((d, i) => (
+          <div key={i} className="text-[6px] text-center text-muted-foreground font-medium">{d}</div>
+        ))}
+        {Array.from({ length: 28 }, (_, i) => (
+          <div
+            key={i}
+            className={`text-[6px] text-center rounded-sm py-px ${i === 14 ? 'bg-primary text-primary-foreground font-bold' : 'text-foreground/50'}`}
+          >
+            {i + 1}
+          </div>
+        ))}
+      </div>
+    </div>
+    {/* Footer */}
+    <div className="flex items-center justify-end gap-3 px-2 py-1 border-t border-border">
+      <span className="text-[7px] font-medium text-muted-foreground uppercase">Cancel</span>
+      <span className="text-[7px] font-medium text-primary uppercase">OK</span>
+    </div>
+  </div>
+);
+
+const VolumeExpiryStepsPreview = () => (
+  <div className="rounded-lg border border-border bg-card p-2.5 space-y-2.5 mt-1">
+    {/* Step 1 */}
+    <div className="flex items-center gap-2">
+      <div className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/15 text-primary text-[9px] font-bold shrink-0">1</div>
+      <div className="flex-1 flex items-center gap-1.5">
+        <span className="text-[9px] text-foreground/80 font-medium">Enter Override Volume</span>
+        <div className="rounded border border-border bg-background px-1.5 py-0.5 text-[9px] font-mono text-foreground/70">25.0</div>
+        <span className="text-[9px] text-muted-foreground">→</span>
+        <span className="text-[8px] font-medium rounded px-1.5 py-0.5 border bg-amber-500/10 text-amber-600 border-amber-500/30">Pending</span>
+      </div>
+    </div>
+    <div className="ml-2.5 w-px h-3 bg-border" />
+    {/* Step 2 */}
+    <div className="flex items-start gap-2">
+      <div className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/15 text-primary text-[9px] font-bold shrink-0 mt-0.5">2</div>
+      <div className="flex-1 space-y-1.5">
+        <span className="text-[9px] text-foreground/80 font-medium">Date picker opens automatically</span>
+        <MiniCalendarWireframe />
+        <div className="flex items-center gap-1.5">
+          <span className="text-[9px] text-muted-foreground">→</span>
+          <span className="text-[8px] font-medium rounded px-1.5 py-0.5 border bg-primary/10 text-primary border-primary/30">Active</span>
+        </div>
+      </div>
+    </div>
+    <div className="ml-2.5 w-px h-3 bg-border" />
+    {/* Revert */}
+    <div className="flex items-center gap-2">
+      <div className="flex items-center justify-center w-5 h-5 rounded-full bg-destructive/15 text-destructive text-[9px] shrink-0">↺</div>
+      <span className="text-[9px] text-foreground/80 font-medium">Revert</span>
+      <span className="text-[8px] text-muted-foreground">— clears both volume and expiration</span>
+    </div>
+  </div>
+);
+
+const NPOverrideStepsPreview = () => (
+  <div className="rounded-lg border border-border bg-card p-2.5 space-y-2 mt-1">
+    <p className="text-[9px] font-semibold text-foreground/80 uppercase tracking-wide">Override NP% Cell States</p>
+
+    {/* State 1: Idle */}
+    <CellStateRow icon={<Pencil className="h-3 w-3" />} label="Click pencil to enter NP%">
+      <span className="text-[9px] text-muted-foreground flex-1">—</span>
+      <Pencil className="h-3 w-3 text-muted-foreground ml-1" />
+    </CellStateRow>
+
+    <div className="ml-3 w-px h-2 bg-border" />
+
+    {/* State 2: Editing */}
+    <CellStateRow icon={<Check className="h-3 w-3" />} label="Enter percentage value">
+      <span className="text-[9px] font-mono text-foreground/80 flex-1 border-b border-primary/40">12%</span>
+      <Check className="h-3 w-3 text-primary ml-1" />
+      <X className="h-3 w-3 text-muted-foreground ml-0.5" />
+    </CellStateRow>
+
+    <div className="ml-3 w-px h-2 bg-border" />
+
+    {/* State 3: Pending */}
+    <CellStateRow icon={<Pencil className="h-3 w-3" />} label="Pending — awaiting expiration date">
+      <span className="text-[9px] font-mono font-medium text-foreground/80 flex-1">12%</span>
+      <span className="text-[7px] font-medium rounded px-1 py-0.5 bg-amber-500/10 text-amber-600">Pending</span>
+      <Pencil className="h-3 w-3 text-muted-foreground ml-1" />
+    </CellStateRow>
+  </div>
+);
+
+const NPExpiryStepsPreview = () => (
+  <div className="rounded-lg border border-border bg-card p-2.5 space-y-2.5 mt-1">
+    {/* Step 1 */}
+    <div className="flex items-center gap-2">
+      <div className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/15 text-primary text-[9px] font-bold shrink-0">1</div>
+      <div className="flex-1 flex items-center gap-1.5">
+        <span className="text-[9px] text-foreground/80 font-medium">Enter Override NP%</span>
+        <div className="rounded border border-border bg-background px-1.5 py-0.5 text-[9px] font-mono text-foreground/70">12%</div>
+        <span className="text-[9px] text-muted-foreground">→</span>
+        <span className="text-[8px] text-muted-foreground italic">stored in memory</span>
+      </div>
+    </div>
+    <div className="ml-2.5 w-px h-3 bg-border" />
+    {/* Step 2 */}
+    <div className="flex items-start gap-2">
+      <div className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/15 text-primary text-[9px] font-bold shrink-0 mt-0.5">2</div>
+      <div className="flex-1 space-y-1.5">
+        <span className="text-[9px] text-foreground/80 font-medium">Date picker opens automatically</span>
+        <MiniCalendarWireframe maxExpiry="Jun 30, 2026" />
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[9px] text-muted-foreground">→</span>
+          <span className="text-[8px] text-muted-foreground">Both NP% and date committed</span>
+          <span className="text-[8px] font-medium rounded px-1.5 py-0.5 border bg-primary/10 text-primary border-primary/30">Active</span>
+        </div>
+      </div>
+    </div>
+    <div className="ml-2.5 w-px h-3 bg-border" />
+    {/* Revert */}
+    <div className="flex items-center gap-2">
+      <div className="flex items-center justify-center w-5 h-5 rounded-full bg-destructive/15 text-destructive text-[9px] shrink-0">↺</div>
+      <span className="text-[9px] text-foreground/80 font-medium">Revert</span>
+      <span className="text-[8px] text-muted-foreground">— clears both NP% and expiration from database</span>
+    </div>
+  </div>
+);
+
 export function SettingsDemoPreview({ variant }: SettingsDemoPreviewProps) {
   switch (variant) {
     case 'volume-stats-preview':
@@ -224,6 +413,14 @@ export function SettingsDemoPreview({ variant }: SettingsDemoPreviewProps) {
       return <NPTablePreview />;
     case 'np-two-step-preview':
       return <NPTwoStepPreview />;
+    case 'volume-override-steps':
+      return <VolumeOverrideStepsPreview />;
+    case 'volume-expiry-steps':
+      return <VolumeExpiryStepsPreview />;
+    case 'np-override-steps':
+      return <NPOverrideStepsPreview />;
+    case 'np-expiry-steps':
+      return <NPExpiryStepsPreview />;
     default:
       return null;
   }

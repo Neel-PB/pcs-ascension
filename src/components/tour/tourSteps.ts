@@ -477,6 +477,26 @@ export const volumeSettingsSteps: Step[] = [
     disableBeacon: true,
   },
   {
+    target: '[data-tour="volume-settings-table"]',
+    title: 'Override Cell Interaction',
+    content: settingsDemoContent(
+      'The override volume cell has three states. Click the pencil to start editing, type a value and confirm, or revert to clear it.',
+      'volume-override-steps'
+    ),
+    placement: 'auto',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="volume-settings-table"]',
+    title: 'Expiration Date Flow',
+    content: settingsDemoContent(
+      'After entering an override volume, a date picker opens automatically. Select an expiration date and click OK to commit both values. Cancel returns to the pending state.',
+      'volume-expiry-steps'
+    ),
+    placement: 'auto',
+    disableBeacon: true,
+  },
+  {
     target: '[data-tour="volume-settings-target"]',
     title: 'Target Volume Details',
     content: settingsDemoContent(
@@ -505,6 +525,26 @@ export const npSettingsSteps: Step[] = [
     content: settingsDemoContent(
       'Each row represents a department. The target NP% is fixed at 10% for all departments. Enter an override NP% and set an expiration date to apply a custom value.',
       'np-table-preview'
+    ),
+    placement: 'auto',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="np-settings-table"]',
+    title: 'Override NP% Interaction',
+    content: settingsDemoContent(
+      'The override NP% cell has three states: idle, editing, and pending. Unlike volume, the value is stored in memory until an expiration date is selected.',
+      'np-override-steps'
+    ),
+    placement: 'auto',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="np-settings-table"]',
+    title: 'Expiration Date Flow',
+    content: settingsDemoContent(
+      'After entering an override NP%, a date picker opens automatically. Note the max expiry constraint. Both NP% and date are committed to the database only after clicking OK.',
+      'np-expiry-steps'
     ),
     placement: 'auto',
     disableBeacon: true,
