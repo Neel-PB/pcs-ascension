@@ -251,25 +251,25 @@ export function EditableFTECell({
       <PopoverTrigger asChild>
         <button
           className={cn(
-            "w-full h-full text-center px-4 py-2",
+            "w-full h-full text-left px-4 py-2",
             "text-sm font-medium",
             "hover:bg-muted/50 transition-colors",
             "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-            "relative group",
+            "flex items-center justify-between",
             isModified && "text-primary",
             className
           )}
           type="button"
         >
-          <span className="block">{value != null ? value : '—'}</span>
+          <span>{value != null ? value : '—'}</span>
           {isModified ? (
             <RotateCcw
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
               onClick={handleRevert}
             />
           ) : (
             <Pencil
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground"
+              className="h-3.5 w-3.5 text-muted-foreground shrink-0"
             />
           )}
         </button>
