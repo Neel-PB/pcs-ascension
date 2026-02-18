@@ -258,7 +258,7 @@ export function EmployeesTab({
                 filterDataProvider={filterDataProvider}
               />
             );
-            return row.id === firstRowId ? <div data-tour="positions-active-fte-cell">{cell}</div> : cell;
+            return row.id === firstRowId ? <div data-tour="positions-active-fte-cell" className="w-full h-full">{cell}</div> : cell;
           },
         };
       }
@@ -268,7 +268,7 @@ export function EmployeesTab({
           ...col,
           renderCell: (row: any, colDef: any) => {
             const cell = originalRenderCell ? originalRenderCell(row, colDef) : null;
-            return row.id === firstRowId ? <div data-tour="positions-shift-cell">{cell}</div> : cell;
+            return row.id === firstRowId ? <div data-tour="positions-shift-cell" className="w-full h-full">{cell}</div> : cell;
           },
         };
       }
