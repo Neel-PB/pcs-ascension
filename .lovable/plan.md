@@ -1,58 +1,51 @@
 
 
-## Expand Staffing Summary Tour with Individual KPI Steps
+## Add Individual Filter Steps to Staffing Summary Tour
 
 ### Overview
 
-Break down the current "KPI Cards" overview step into granular steps: first show the full KPI sections as an overview, then walk through each individual KPI card explaining what it measures.
+Split the current single "Filter Bar" tour step into individual steps for each filter dropdown (Region, Market, Facility, Department, Clear button, and More Filters), explaining what each does without triggering any data fetches.
 
 ### Changes
 
-**1. Add `data-tour` prop to `KPICard` component (`src/components/staffing/KPICard.tsx`)**
+**1. Add `data-tour` attributes to filter elements in `src/components/staffing/FilterBar.tsx`**
 
-Add a new optional `dataTour?: string` prop and apply it as `data-tour={dataTour}` on the outer `motion.div` wrapper.
+Add `data-tour` attributes to each filter's outer wrapper `div`:
 
-**2. Pass `data-tour` attributes per KPI in `DraggableKPISection.tsx`**
+| Element | Attribute |
+|---------|-----------|
+| Region Select wrapper | `data-tour="filter-region"` |
+| Market Select wrapper | `data-tour="filter-market"` |
+| Facility Popover wrapper | `data-tour="filter-facility"` |
+| Department Popover wrapper | `data-tour="filter-department"` |
+| Clear Filters Button | `data-tour="filter-clear"` |
+| CombinedOptionalFilters / optional filters div | `data-tour="filter-more"` |
 
-Map each KPI's `id` to a `data-tour` attribute on the `KPICard`, e.g. `data-tour="kpi-vacancy-rate"`, `data-tour="kpi-hired-ftes"`, etc.
+**2. Expand `staffingSteps` in `src/components/tour/tourSteps.ts`**
 
-**3. Expand `staffingSteps` in `src/components/tour/tourSteps.ts`**
+Replace the single "Filter Bar" step (step 1) with 7 steps:
 
-After the existing "KPI Cards" overview step (step 3), insert 18 new steps -- one per KPI card:
+| # | Target | Title | Content |
+|---|--------|-------|---------|
+| 1 | `[data-tour="filter-bar"]` | Filter Bar | Use these cascading filters to narrow staffing data. Selecting a higher-level filter updates the options available in lower-level filters. |
+| 2 | `[data-tour="filter-region"]` | Region Filter | Select a Region to scope all data to that geographic area. Choosing a region updates the available Markets, Facilities, and Departments below. |
+| 3 | `[data-tour="filter-market"]` | Market Filter | Select a Market within the chosen Region. This further narrows Facility and Department options. |
+| 4 | `[data-tour="filter-facility"]` | Facility Filter | Search and select a specific Facility. This is a searchable dropdown -- type a name or ID to find it quickly. Selecting a facility scopes Departments to that location. |
+| 5 | `[data-tour="filter-department"]` | Department Filter | Search and select a Department. Also searchable by name or ID. Once selected, all KPIs and tables reflect only that department's data. |
+| 6 | `[data-tour="filter-clear"]` | Clear Filters | Click this button to reset all filters back to their defaults. It is disabled when no filters are active. |
+| 7 | `[data-tour="filter-more"]` | More Filters | Additional filters for Submarket, Level 2, and PSTAT. Use these for finer-grained analysis without changing the primary hierarchy. |
 
-| # | Target | Title | Content (brief description of the metric) |
-|---|--------|-------|----|
-| 4 | `[data-tour="kpi-vacancy-rate"]` | Vacancy Rate | Percentage of approved budgeted positions currently unfilled. |
-| 5 | `[data-tour="kpi-hired-ftes"]` | Hired FTEs | Total Full-Time, Part-Time, and PRN employees currently on staff. |
-| 6 | `[data-tour="kpi-target-ftes"]` | Target FTEs | Number of FTEs needed to meet budgeted staffing levels based on volume. |
-| 7 | `[data-tour="kpi-fte-variance"]` | FTE Variance | Gap between Target FTEs and Hired FTEs. Positive means understaffed. |
-| 8 | `[data-tour="kpi-open-reqs"]` | Open Reqs | Count of approved requisitions not yet filled. |
-| 9 | `[data-tour="kpi-req-variance"]` | Req Variance | Remaining gap after accounting for open requisitions against FTE variance. |
-| 10 | `[data-tour="kpi-12m-monthly"]` | 12M Average | Rolling 12-month average monthly volume of patient encounters or units of service. |
-| 11 | `[data-tour="kpi-12m-daily"]` | 12M Daily Average | Average daily volume over the past 12 months. |
-| 12 | `[data-tour="kpi-3m-low"]` | 3M Low | Average daily volume during the 3 lowest-volume months. Used for minimum staffing. |
-| 13 | `[data-tour="kpi-3m-high"]` | 3M High | Average daily volume during the 3 highest-volume months. Used for peak staffing. |
-| 14 | `[data-tour="kpi-target-vol"]` | Target Volume | Expected daily volume used for staffing calculations. Green border means it is active. |
-| 15 | `[data-tour="kpi-override-vol"]` | Override Volume | Manually set volume that supersedes the target. Orange border means it is active. |
-| 16 | `[data-tour="kpi-paid-ftes"]` | Paid FTEs | Total labor resources the organization pays for, productive and non-productive. |
-| 17 | `[data-tour="kpi-contract-ftes"]` | Contract FTEs | FTEs supplied by external agencies -- travel nurses, agency staff, temp contractors. |
-| 18 | `[data-tour="kpi-overtime-ftes"]` | Overtime FTEs | Hours worked above regular commitment, converted to FTE equivalent. |
-| 19 | `[data-tour="kpi-total-prn"]` | Total PRN | PRN staff hours converted to FTE equivalent. Used for flex coverage. |
-| 20 | `[data-tour="kpi-total-np"]` | Total NP% | Percentage of paid hours not spent on direct patient care (PTO, training, admin). |
-| 21 | `[data-tour="kpi-total-fullpart-ftes"]` | Employed Productive FTEs | Full-Time and Part-Time productive FTEs after excluding non-productive hours. |
+The remaining steps (Tab Navigation, KPI overview, individual KPIs, etc.) follow after these.
 
-The remaining existing steps (Trend Chart, Definition, Volume Colors, Target Split Badge, Hired Split Badge) follow after these.
+**3. Update step count in `src/components/support/UserGuidesTab.tsx`**
 
-**4. Update step count in `UserGuidesTab.tsx`**
-
-Update the staffing summary `stepCount` from 8 to 26.
+Update the staffing summary `stepCount` from 26 to 32 (added 6 new filter steps).
 
 ### Files changed
 
 | File | Change |
 |------|--------|
-| `src/components/staffing/KPICard.tsx` | Add `dataTour` prop, apply as `data-tour` on wrapper |
-| `src/components/staffing/DraggableKPISection.tsx` | Pass `dataTour={`kpi-${kpi.id}`}` to each KPICard |
-| `src/components/tour/tourSteps.ts` | Insert 18 individual KPI steps into `staffingSteps` |
-| `src/components/support/UserGuidesTab.tsx` | Update stepCount 8 -> 26 |
+| `src/components/staffing/FilterBar.tsx` | Add `data-tour` attributes to Region, Market, Facility, Department wrappers, Clear button, and optional filters wrapper |
+| `src/components/tour/tourSteps.ts` | Replace single "Filter Bar" step with 7 individual filter steps in `staffingSteps` |
+| `src/components/support/UserGuidesTab.tsx` | Update stepCount 26 -> 32 |
 
