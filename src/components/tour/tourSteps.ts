@@ -4,6 +4,8 @@ import { FilterDemoPreview } from './FilterDemoPreview';
 import { TourDemoPreview } from './TourDemoPreview';
 import { PlanningDemoPreview } from './PlanningDemoPreview';
 import { VarianceDemoPreview } from './VarianceDemoPreview';
+import { ForecastDemoPreview } from './ForecastDemoPreview';
+import { SettingsDemoPreview } from './SettingsDemoPreview';
 
 const filterContent = (text: string, preview: { variant: 'simple' | 'searchable' | 'labels'; items?: string[] | { name: string; id: string }[]; labels?: string[] }) =>
   createElement('div', { className: 'space-y-3' },
@@ -27,6 +29,18 @@ const varianceDemoContent = (text: string, variant: string) =>
   createElement('div', { className: 'space-y-3' },
     createElement('p', null, text),
     createElement(VarianceDemoPreview, { variant } as any)
+  );
+
+const forecastDemoContent = (text: string, variant: string) =>
+  createElement('div', { className: 'space-y-3' },
+    createElement('p', null, text),
+    createElement(ForecastDemoPreview, { variant } as any)
+  );
+
+const settingsDemoContent = (text: string, variant: string) =>
+  createElement('div', { className: 'space-y-3' },
+    createElement('p', null, text),
+    createElement(SettingsDemoPreview, { variant } as any)
   );
 
 export const staffingSteps: Step[] = [
@@ -412,9 +426,9 @@ export const forecastSteps: Step[] = [
   {
     target: '[data-tour="forecast-kpi-cards"]',
     title: 'Forecast KPI Cards',
-    content: demoContent(
+    content: forecastDemoContent(
       'These cards summarize FTE Shortages (positions to open) and FTE Surpluses (positions to close). Click a card to filter the table below by that gap type; click again to show all.',
-      'forecast-cards'
+      'forecast-kpi-preview'
     ),
     placement: 'bottom',
     disableBeacon: true,
@@ -422,16 +436,19 @@ export const forecastSteps: Step[] = [
   {
     target: '[data-tour="forecast-table-header"]',
     title: 'Forecast Table',
-    content: 'Each row represents a department-skill-shift combination with an FTE gap. Columns show Market, Facility, Department, Skill Type, Shift, FTE Gap, and Status.',
+    content: forecastDemoContent(
+      'Each row represents a department-skill-shift combination with an FTE gap. Columns show Market, Facility, Department, Skill Type, Shift, FTE Gap, and Status.',
+      'forecast-table-preview'
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="forecast-table-body"]',
     title: 'Expandable Detail View',
-    content: demoContent(
+    content: forecastDemoContent(
       'Click any row to expand a two-panel detail view comparing current hired FTE against recommended changes. Recommendations prioritize canceling open requisitions before closing filled positions.',
-      'expandable-row'
+      'forecast-detail-preview'
     ),
     placement: 'top',
     disableBeacon: true,
@@ -442,21 +459,30 @@ export const volumeSettingsSteps: Step[] = [
   {
     target: '[data-tour="volume-settings-stats"]',
     title: 'Status Summary',
-    content: 'This banner shows how many departments require an override, how many are using the calculated target volume, and how many overrides are expiring soon.',
+    content: settingsDemoContent(
+      'This banner shows how many departments require an override, how many are using the calculated target volume, and how many overrides are expiring soon.',
+      'volume-stats-preview'
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="volume-settings-table"]',
     title: 'Override Table',
-    content: 'Each row represents a department. Enter an override volume to replace the calculated target, then set an expiration date. Both are saved together. Use the Revert button to clear an override.',
+    content: settingsDemoContent(
+      'Each row represents a department. Enter an override volume to replace the calculated target, then set an expiration date. Both are saved together. Use the Revert button to clear an override.',
+      'volume-table-preview'
+    ),
     placement: 'auto',
     disableBeacon: true,
   },
   {
     target: '[data-tour="volume-settings-target"]',
     title: 'Target Volume Details',
-    content: 'Click the target volume value to see historical analysis: the 3-month low average, N-month average, spread percentage, and a chart highlighting the lowest months.',
+    content: settingsDemoContent(
+      'Click the target volume value to see historical analysis: the 3-month low average, N-month average, spread percentage, and a chart highlighting the lowest months.',
+      'volume-target-preview'
+    ),
     placement: 'auto',
     disableBeacon: true,
   },
@@ -466,21 +492,30 @@ export const npSettingsSteps: Step[] = [
   {
     target: '[data-tour="np-settings-stats"]',
     title: 'Status Summary',
-    content: 'This banner shows how many NP overrides are active, expiring soon, or not yet set.',
+    content: settingsDemoContent(
+      'This banner shows how many NP overrides are active, expiring soon, or not yet set.',
+      'np-stats-preview'
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="np-settings-table"]',
     title: 'Override Table',
-    content: 'Each row represents a department. The target NP% is fixed at 10% for all departments. Enter an override NP% and set an expiration date to apply a custom value.',
+    content: settingsDemoContent(
+      'Each row represents a department. The target NP% is fixed at 10% for all departments. Enter an override NP% and set an expiration date to apply a custom value.',
+      'np-table-preview'
+    ),
     placement: 'auto',
     disableBeacon: true,
   },
   {
     target: '[data-tour="np-settings-override"]',
     title: 'Two-Step Save',
-    content: 'Overrides use a two-step save: enter a value (shown as Pending), then select an expiration date to commit both to the database.',
+    content: settingsDemoContent(
+      'Overrides use a two-step save: enter a value (shown as Pending), then select an expiration date to commit both to the database.',
+      'np-two-step-preview'
+    ),
     placement: 'auto',
     disableBeacon: true,
   },
