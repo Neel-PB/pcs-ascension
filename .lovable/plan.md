@@ -1,85 +1,123 @@
 
 
-## Add Real-Data Previews to Variance Analysis Tour
+## Add Rich Previews to Forecasts, Volume Settings, and NP Settings Tours
 
-### What We're Doing
+### Overview
 
-Enhance the 5 Variance Analysis tour steps with rich visual previews using the same pattern as Position Planning. Each tooltip will include a compact visual mockup of the actual UI element being described.
+Add real-data visual previews to 3 tour sections (9 steps total) following the established pattern. All previews will be housed in a single new file `SettingsDemoPreview.tsx` (for Volume + NP) alongside updates to existing forecast steps.
 
-### Current Steps and Planned Previews
+---
+
+### Forecasts Tour (3 steps)
 
 | # | Step | Current | New Preview |
 |---|------|---------|-------------|
-| 1 | Variance Analysis (Header) | Plain text | `variance-table-preview`: Compact table wireframe with real skill columns (CL, RN, PCT, HUC, Overhead) and sample variance data |
-| 2 | FTE Legend | `legend` variant | Keep as-is -- already has a good preview |
-| 3 | Skill Column Headers | Plain text | `variance-skill-columns`: Visual breakdown showing the 5 skill groups with D/N/T sub-headers |
-| 4 | Expandable Groups | `expandable-row` | `variance-groups`: Expandable group wireframe showing Region > Market hierarchy with real region/market names |
-| 5 | Action Buttons | Plain text | Reuse existing `planning-actions` from PlanningDemoPreview (same Refresh/Download/Fullscreen pattern) |
+| 1 | Forecast KPI Cards | `forecast-cards` from TourDemoPreview | Enhanced `forecast-kpi-preview`: Two side-by-side cards matching the real layout (FTE Shortage: +5.0 / Positions to Open: 3) and (FTE Surplus: -3.2 / Positions to Close: 2) with orange/primary borders and click-to-filter hint |
+| 2 | Forecast Table Header | Plain text | `forecast-table-preview`: Compact table wireframe with the real 8 columns (Market, Facility, Department, Skill Type, Shift, FTE Gap, Status) and 3 sample rows using real data (Baltimore, RN Day +2.4 Shortage; Florida, PCT Night -1.8 Surplus; Illinois, CL Day +0.6 Split Issue) |
+| 3 | Expandable Detail | `expandable-row` | `forecast-detail-preview`: Two-panel wireframe showing "Current Hired FTE" bar chart on left vs "Recommended Changes" list on right (Cancel Req, Open Position), matching the BalanceTwoPanel pattern |
 
-### New Components in a `VarianceDemoPreview.tsx` File
+**New component**: `ForecastDemoPreview.tsx` with 3 variants.
 
-Following the same pattern as `PlanningDemoPreview.tsx`:
+#### `forecast-kpi-preview` -- Enhanced KPI Cards
+Replicates the actual `ForecastKPICards` layout with:
+- Left card: Orange border, "FTE Shortage: +5.0 | Positions to Open: 3" with vertical separator
+- Right card: Primary border, "FTE Surplus: -3.2 | Positions to Close: 2" with vertical separator
+- Small hint text: "Click a card to filter the table"
 
-#### 1. `variance-table-preview` -- Compact Variance Table
-
-A miniature replica of the actual variance table with:
-- Column groups: CL | RN | PCT | HUC | Overhead
-- Sub-headers: D | N | T under each
-- 3 sample rows using realistic region names (Region 1, Region 2, Region 3)
-- Color-coded values: emerald for surplus (positive), orange for shortage (negative)
-- TOTAL row at bottom
-- Sample data with a mix of positive and negative values
-
+#### `forecast-table-preview` -- Compact Forecast Table
+Miniature version of the real table header + 3 rows:
 ```text
-+----------+-------------+--------------+-----------+----------+----------+
-| Regions  | CL          | RN           | PCT       | HUC      | Overhead |
-|          | D    N    T | D    N    T  | D   N   T | D   N  T | D   N  T |
-+----------+-------------+--------------+-----------+----------+----------+
-| Region 1 | +1.2 +0.8   | -2.1 -1.5   | +0.5 +0.3 | ...      | ...      |
-| Region 2 | -0.4 +0.2   | +1.3 +0.9   | -0.8 -0.4 | ...      | ...      |
-+----------+-------------+--------------+-----------+----------+----------+
+|   | Market    | Facility          | Department       | Skill | Shift | Gap  | Status   |
+|---|-----------|-------------------|------------------|-------|-------|------|----------|
+| > | Baltimore | Mercy Ctr Aurora  | Cardiac Care     | RN    | Day   | +2.4 | Shortage |
+| > | Florida   | Saint Thomas Mid  | Adult ECMO 001   | PCT   | Night | -1.8 | Surplus  |
+| > | Illinois  | Alexian Brothers  | Cardiac Crit Care| CL    | Day   | +0.6 | Split    |
 ```
 
-#### 2. `variance-skill-columns` -- Skill Group Breakdown
+#### `forecast-detail-preview` -- Two-Panel Expandable Detail
+Shows what an expanded row reveals:
+- Left panel: "Current Hired FTE" with colored percentage bars (FT: 70%, PT: 15%, PRN: 5%)
+- Right panel: "Recommended Changes" with prioritized actions (1. Cancel Open Req RN-Day, 2. Open Position PCT-Night)
+- Note about priority: "Cancels open reqs before closing filled positions"
 
-Visual showing the 5 skill type columns as labeled blocks with D/N/T sub-columns:
-- CL: Clinical Lead
-- RN: Registered Nurse
-- PCT: Patient Care Technician
-- HUC: Health Unit Coordinator
-- Overhead: Management/Admin
+---
 
-Each block shows the full skill name, abbreviation badge, and D/N/T sub-header indicators.
+### Volume Settings Tour (3 steps)
 
-#### 3. `variance-groups` -- Expandable Hierarchy
+| # | Step | Current | New Preview |
+|---|------|---------|-------------|
+| 1 | Status Summary | Plain text | `volume-stats-preview`: Replica of the stats banner with colored dots (2 Require Override in red, 5 Using Target Volume in blue, 1 Expiring Soon in yellow) |
+| 2 | Override Table | Plain text | `volume-table-preview`: Compact table showing 3 sample rows with columns: Department, Target Volume, Override Volume (with Mandatory/Optional badges), Expiration Date, Status (Active/Pending/Not Set badges) |
+| 3 | Target Volume Details | Plain text | `volume-target-preview`: Mini replica of the TargetVolumePopover showing 3M Low Avg, N-Month Avg, Spread %, and a tiny bar chart highlighting the 3 lowest months |
 
-Uses real data from the app's region/market/submarket structure:
+**New component**: `SettingsDemoPreview.tsx` with 6 variants (3 Volume + 3 NP).
+
+#### `volume-stats-preview`
 ```text
-[v] Region 1                    +2.4
-    Baltimore                   +1.2
-    Florida                     +1.2
-[>] Region 2                    -1.8
-[>] Region 3                    +0.6
---- TOTAL                       +1.2
+[red dot] 2 Require Override   [blue dot] 5 Using Target Volume   [yellow dot] 1 Expiring Soon
 ```
 
-Includes interactive expand/collapse on the first group (same pattern as `PlanningGroups`).
+#### `volume-table-preview`
+```text
+| Department        | Target Vol | Override Vol      | Expiration   | Status     |
+|-------------------|-----------|-------------------|--------------|------------|
+| Cardiac Care      | 18.5      | [Mandatory] --    | --           | Not Set    |
+| Adult ECMO 001    | 22.3      | [Optional] 25.0   | Mar 15, 2026 | Active     |
+| Cardiac Crit Care | 14.8      | [Optional] 16.0   | Pending...   | Pending    |
+```
 
-### Changes to `tourSteps.ts`
+#### `volume-target-preview`
+Shows the popover content:
+- "3M Low Avg: 18.5" and "12M Avg: 21.2" side by side
+- "Spread: 12.7%" with a check mark (within 15% threshold)
+- Mini bar chart with 12 bars, 3 lowest highlighted in primary color
+- Note: "Using 3M Low (spread within 15% threshold)"
 
-Import `VarianceDemoPreview` and create a `varianceDemoContent` helper (same pattern as `planningDemoContent`). Update 3 of the 5 steps:
+---
 
-- Step 1 (header): Use `variance-table-preview`
-- Step 3 (skill headers): Use `variance-skill-columns`
-- Step 4 (table): Use `variance-groups`
-- Step 5 (actions): Reuse `planning-actions` from `PlanningDemoPreview`
+### NP Settings Tour (3 steps)
 
-Steps 2 (legend) stays as-is.
+| # | Step | Current | New Preview |
+|---|------|---------|-------------|
+| 1 | Status Summary | Plain text | `np-stats-preview`: Stats banner replica (3 Active in green, 1 Expiring Soon in yellow, 4 Not Set in gray) |
+| 2 | Override Table | Plain text | `np-table-preview`: Compact table with columns: Department, Target NP % (all 10%), Override NP %, Max Expiration, Expiration Date, Status |
+| 3 | Two-Step Save | Plain text | `np-two-step-preview`: Visual workflow showing Step 1 (enter value -> Pending badge) and Step 2 (select date -> Active badge), with a Revert button at the end |
+
+#### `np-stats-preview`
+```text
+[green dot] 3 Active   [yellow dot] 1 Expiring Soon   [gray dot] 4 Not Set
+```
+
+#### `np-table-preview`
+```text
+| Department        | Target NP% | Override NP% | Max Expiry   | Expiration   | Status  |
+|-------------------|-----------|-------------|--------------|--------------|---------|
+| Cardiac Care      | 10%       | 12%         | Jun 30, 2026 | Mar 15, 2026 | Active  |
+| Adult ECMO 001    | 10%       | --          | Jun 30, 2026 | --           | Not Set |
+| Cardiac Crit Care | 10%       | 8%          | Jun 30, 2026 | Pending...   | Pending |
+```
+
+#### `np-two-step-preview`
+Visual workflow diagram:
+```text
+Step 1: Enter Override NP%
+  [input: 12%] --> [Pending badge]
+         |
+         v
+Step 2: Select Expiration Date
+  [calendar: Mar 15] --> [Active badge]
+         |
+         v
+  [Revert button] --> Clears both values
+```
+
+---
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/tour/VarianceDemoPreview.tsx` | New file with 3 variants: `variance-table-preview`, `variance-skill-columns`, `variance-groups` |
-| `src/components/tour/tourSteps.ts` | Import VarianceDemoPreview, add `varianceDemoContent` helper, update 4 of the 5 variance steps to use rich previews |
+| `src/components/tour/ForecastDemoPreview.tsx` | New file -- 3 variants: `forecast-kpi-preview`, `forecast-table-preview`, `forecast-detail-preview` |
+| `src/components/tour/SettingsDemoPreview.tsx` | New file -- 6 variants: `volume-stats-preview`, `volume-table-preview`, `volume-target-preview`, `np-stats-preview`, `np-table-preview`, `np-two-step-preview` |
+| `src/components/tour/tourSteps.ts` | Import both new preview components, add `forecastDemoContent` and `settingsDemoContent` helpers, update all 9 steps across `forecastSteps`, `volumeSettingsSteps`, and `npSettingsSteps` to use rich previews |
 
