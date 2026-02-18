@@ -1,97 +1,85 @@
 
 
-## Add Real-Data Previews to Planned/Active Resources Tour
+## Add Real-Data Previews to Variance Analysis Tour
 
-### Goal
+### What We're Doing
 
-Replace generic placeholder text in the 6 Position Planning tour steps with rich visual previews that replicate the actual table structure and data from the app's `PositionPlanning.tsx` component.
+Enhance the 5 Variance Analysis tour steps with rich visual previews using the same pattern as Position Planning. Each tooltip will include a compact visual mockup of the actual UI element being described.
 
-### Data Source
+### Current Steps and Planned Previews
 
-The app uses hardcoded variance data in `PositionPlanning.tsx` with these skill groups and values:
+| # | Step | Current | New Preview |
+|---|------|---------|-------------|
+| 1 | Variance Analysis (Header) | Plain text | `variance-table-preview`: Compact table wireframe with real skill columns (CL, RN, PCT, HUC, Overhead) and sample variance data |
+| 2 | FTE Legend | `legend` variant | Keep as-is -- already has a good preview |
+| 3 | Skill Column Headers | Plain text | `variance-skill-columns`: Visual breakdown showing the 5 skill groups with D/N/T sub-headers |
+| 4 | Expandable Groups | `expandable-row` | `variance-groups`: Expandable group wireframe showing Region > Market hierarchy with real region/market names |
+| 5 | Action Buttons | Plain text | Reuse existing `planning-actions` from PlanningDemoPreview (same Refresh/Download/Fullscreen pattern) |
 
-**Overheads:** Director (0.0), Manager (1.0), Assistant Manager (1.0), Coordinator (0.0), SPEC (0.0)
-**Clinical Staff:** Clinical Lead (Target 4.8, Hired 3.6, Reqs 1.2), Registered Nurse (Target 28.6, Hired 27.6)
-**Support Staff:** Patient Care Technician (Target 19.2, Hired 18.4, Reqs 1.6), CLERK (Target 9.6, Hired 9.6)
-**TOTAL:** Target 64.2, Hired 61.2, Reqs 2.8, Variance -0.2
+### New Components in a `VarianceDemoPreview.tsx` File
 
-Column structure: Skills | Target FTEs (D/N/T) | Hired FTEs (D/N/T) | Open Req FTEs (D/N/T) | Variance (D/N/T)
+Following the same pattern as `PlanningDemoPreview.tsx`:
 
-### New Preview Components in `TourDemoPreview.tsx`
+#### 1. `variance-table-preview` -- Compact Variance Table
 
-#### 1. `planning-table-preview` — Compact FTE Table Wireframe
-
-A miniature replica of the actual table using real data. Shows:
-- Column group headers: Skills | Target | Hired | Reqs | Variance
-- Sub-headers: D | N | T under each group
-- 3 sample rows: Clinical Lead, RN, PCT (the rows with actual variance)
-- TOTAL row at the bottom
-- Variance cells colored orange for negative values
-- All values match real data from the component
+A miniature replica of the actual variance table with:
+- Column groups: CL | RN | PCT | HUC | Overhead
+- Sub-headers: D | N | T under each
+- 3 sample rows using realistic region names (Region 1, Region 2, Region 3)
+- Color-coded values: emerald for surplus (positive), orange for shortage (negative)
+- TOTAL row at bottom
+- Sample data with a mix of positive and negative values
 
 ```text
-+-------+---------------+--------------+-------------+-------------+
-| Skills| Target FTEs   | Hired FTEs   | Open Reqs   | Variance    |
-|       | D    N    T   | D    N    T  | D    N    T | D    N    T |
-+-------+---------------+--------------+-------------+-------------+
-| CL    | 2.4  2.4  4.8 | 1.8  1.8 3.6| 0.6 0.6 1.2| 0.6 0.6 1.2|
-| RN    |14.3 14.3 28.6 |13.8 13.8 27.6| 0   0   0  |-0.5-0.5-1.0|
-| PCT   | 9.6  9.6 19.2 | 9.2  9.2 18.4| 0.8 0.8 1.6| 0.4 0.4 0.8|
-+-------+---------------+--------------+-------------+-------------+
-| TOTAL |33.1 31.1 64.2 |31.6 29.6 61.2| 1.4 1.4 2.8|-0.1-0.1-0.2|
-+-------+---------------+--------------+-------------+-------------+
++----------+-------------+--------------+-----------+----------+----------+
+| Regions  | CL          | RN           | PCT       | HUC      | Overhead |
+|          | D    N    T | D    N    T  | D   N   T | D   N  T | D   N  T |
++----------+-------------+--------------+-----------+----------+----------+
+| Region 1 | +1.2 +0.8   | -2.1 -1.5   | +0.5 +0.3 | ...      | ...      |
+| Region 2 | -0.4 +0.2   | +1.3 +0.9   | -0.8 -0.4 | ...      | ...      |
++----------+-------------+--------------+-----------+----------+----------+
 ```
 
-#### 2. `toggle-comparison` — Side-by-Side View Differences
+#### 2. `variance-skill-columns` -- Skill Group Breakdown
 
-Accepts `config.type` = `'hired-active'` or `'nursing'`.
+Visual showing the 5 skill type columns as labeled blocks with D/N/T sub-columns:
+- CL: Clinical Lead
+- RN: Registered Nurse
+- PCT: Patient Care Technician
+- HUC: Health Unit Coordinator
+- Overhead: Management/Admin
 
-**For `hired-active`:**
-Two boxes side-by-side showing what changes:
-- Left: "Hired" — Shows "All employees including those on leave" with sample values (RN: 27.6)
-- Right: "Active" — Shows "Currently available staff" with adjusted values (RN: 26.6) and a blue "adjusted" badge
+Each block shows the full skill name, abbreviation badge, and D/N/T sub-header indicators.
 
-**For `nursing`:**
-- Left: "Nursing" — Shows 4 column groups: Target | Hired | Reqs | Variance
-- Right: "Non-Nursing" — Shows 2 column groups: Hired | Reqs (no Target/Variance)
+#### 3. `variance-groups` -- Expandable Hierarchy
 
-#### 3. `planning-groups` — Expandable Skill Group Preview
-
-Uses real group names and aggregated FTE totals from the actual data:
+Uses real data from the app's region/market/submarket structure:
 ```text
-[v] Overheads           2.0 FTEs
-    Director            0.0
-    Manager             1.0
-    Asst Manager        1.0
-[>] Clinical Staff     31.2 FTEs
-[>] Support Staff      28.0 FTEs
---- TOTAL              61.2 FTEs
+[v] Region 1                    +2.4
+    Baltimore                   +1.2
+    Florida                     +1.2
+[>] Region 2                    -1.8
+[>] Region 3                    +0.6
+--- TOTAL                       +1.2
 ```
 
-#### 4. `planning-actions` — Action Buttons Wireframe
-
-Same pattern as `kpi-actions` with icon-to-label rows:
-- Refresh icon --> "Refresh Data" / "Reload the latest staffing data from the database."
-- Download icon --> "Download CSV" / "Export the full table as a spreadsheet file."
-- Expand icon --> "Full-Screen View" / "Open the table in a full-screen dialog for easier analysis."
+Includes interactive expand/collapse on the first group (same pattern as `PlanningGroups`).
 
 ### Changes to `tourSteps.ts`
 
-Update all 6 `planningSteps` entries to use the new variants:
+Import `VarianceDemoPreview` and create a `varianceDemoContent` helper (same pattern as `planningDemoContent`). Update 3 of the 5 steps:
 
-| Step | Current | New |
-|------|---------|-----|
-| 1 - Header | Plain text | `planning-table-preview` with description |
-| 2 - Hired/Active toggle | `toggle-pair` | `toggle-comparison` with `type: 'hired-active'` |
-| 3 - Nursing toggle | `toggle-pair` | `toggle-comparison` with `type: 'nursing'` |
-| 4 - Legend | `legend` (keep as-is) | No change — already has good preview |
-| 5 - Table | `expandable-row` | `planning-groups` |
-| 6 - Actions | Plain text | `planning-actions` |
+- Step 1 (header): Use `variance-table-preview`
+- Step 3 (skill headers): Use `variance-skill-columns`
+- Step 4 (table): Use `variance-groups`
+- Step 5 (actions): Reuse `planning-actions` from `PlanningDemoPreview`
+
+Steps 2 (legend) stays as-is.
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/tour/TourDemoPreview.tsx` | Add 4 new variants: `planning-table-preview`, `toggle-comparison`, `planning-groups`, `planning-actions` with real data values |
-| `src/components/tour/tourSteps.ts` | Update 5 of the 6 `planningSteps` to use new rich preview variants (step 4 legend stays) |
+| `src/components/tour/VarianceDemoPreview.tsx` | New file with 3 variants: `variance-table-preview`, `variance-skill-columns`, `variance-groups` |
+| `src/components/tour/tourSteps.ts` | Import VarianceDemoPreview, add `varianceDemoContent` helper, update 4 of the 5 variance steps to use rich previews |
 
