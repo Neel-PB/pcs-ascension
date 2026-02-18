@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { HelpCircle } from "@/lib/icons";
 import { useTourStore } from "@/stores/useTourStore";
 import { useLocation } from "react-router-dom";
+import { HeaderTour } from "@/components/tour/HeaderTour";
 
 export function AppHeader() {
   const [commandOpen, setCommandOpen] = useState(false);
@@ -93,7 +94,7 @@ export function AppHeader() {
         </div>
 
         {/* Center Section - Search */}
-        <div className="flex-1 max-w-md mx-8">
+        <div className="flex-1 max-w-md mx-8" data-tour="header-search">
           <div onClick={() => setCommandOpen(true)}>
             <SearchField
               placeholder="Search..."
@@ -112,6 +113,7 @@ export function AppHeader() {
             size="icon" 
             className="relative" 
             onClick={() => setNotificationsOpen(true)}
+            data-tour="header-notifications"
           >
             <Bell className="h-6 w-6" />
             {notifications && notifications.filter(n => !n.read).length > 0 && (
@@ -126,7 +128,7 @@ export function AppHeader() {
           </Button>
 
           {/* Theme Selector */}
-          <Button variant="ghost" size="icon" onClick={cycleTheme}>
+          <Button variant="ghost" size="icon" onClick={cycleTheme} data-tour="header-theme">
             {getThemeIcon()}
             <span className="sr-only">Toggle theme</span>
           </Button>
@@ -135,7 +137,7 @@ export function AppHeader() {
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 h-auto px-2 py-1.5">
+                <Button variant="ghost" className="flex items-center gap-2 h-auto px-2 py-1.5" data-tour="header-user-menu">
                   <Avatar className="h-8 w-8">
                     <AvatarImage 
                       src={avatarUrl || undefined} 
@@ -194,6 +196,7 @@ export function AppHeader() {
       open={notificationsOpen}
       onOpenChange={setNotificationsOpen}
     />
+    <HeaderTour />
     </>
   );
 }

@@ -55,6 +55,7 @@ const guideCatalog: Guide[] = [
   { tourKey: "checklist", title: "Positions Checklist", description: "Real-time FTE gap summary drawer with shortage/surplus tabs.", icon: LayoutDashboard, route: "", stepCount: 4, category: "Overlays", isOverlay: true },
   { tourKey: "ai-hub", title: "AI Hub", description: "AI-powered staffing assistant for questions and analysis.", icon: Sparkles, route: "", stepCount: 4, category: "Overlays", isOverlay: true },
   { tourKey: "feedback", title: "Feedback Panel", description: "Submit feedback with screenshots from anywhere in the app.", icon: MessageSquare, route: "", stepCount: 3, category: "Overlays", isOverlay: true },
+  { tourKey: "header", title: "Header Bar", description: "Global search, notifications, theme toggle, and user menu.", icon: Navigation, route: "", stepCount: 4, category: "Overlays", isOverlay: true },
 ];
 
 const categories = ["Staffing", "Positions", "Admin", "Feedback", "Overlays"];
