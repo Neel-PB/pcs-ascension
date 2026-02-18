@@ -25,15 +25,24 @@ export function StaffingTour({ activeTab = 'summary' }: StaffingTourProps) {
       }
     }
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
-      const mainContainer = document.querySelector('main');
-      if (mainContainer) {
-        mainContainer.scrollTo({ top: 0, behavior: 'instant' });
-      }
-      const scrollContainer = document.querySelector('[class*="overflow-y-auto"]');
-      if (scrollContainer) {
-        scrollContainer.scrollTo({ top: 0, behavior: 'instant' });
-      }
+      document.body.style.overflow = '';
       completeTour();
+
+      const resetScroll = () => {
+        const mainContainer = document.querySelector('main');
+        if (mainContainer) {
+          mainContainer.scrollTo({ top: 0, behavior: 'instant' });
+          (mainContainer as HTMLElement).style.overflow = '';
+        }
+        const scrollContainers = document.querySelectorAll('[class*="overflow-y-auto"], [class*="overflow-x-auto"]');
+        scrollContainers.forEach(el => {
+          (el as HTMLElement).style.overflow = '';
+          el.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        });
+      };
+
+      setTimeout(resetScroll, 100);
+      setTimeout(resetScroll, 300);
     }
   };
 
@@ -44,6 +53,7 @@ export function StaffingTour({ activeTab = 'summary' }: StaffingTourProps) {
       continuous
       showSkipButton
       scrollToFirstStep={false}
+      disableScrollParentFix
       disableOverlayClose={false}
       callback={handleCallback}
       tooltipComponent={TourTooltip}
