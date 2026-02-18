@@ -1,17 +1,38 @@
 
+## Split "Search & Actions" into three separate tour steps
 
-## Fix: "More Filters" button height to match other filter triggers
+### What changes
 
-The "More Filters" dropdown trigger is shorter than the primary filter triggers because it uses the default Button outline styling (`border` = 1px, default padding) instead of the standardized filter trigger styling.
+**1. Tour step definitions (`src/components/tour/positionsTourSteps.ts`)**
 
-### Change
+Replace the single "Search & Actions" step in all three arrays (employees, contractors, requisitions) with three individual steps:
 
-**File: `src/components/staffing/CombinedOptionalFilters.tsx`** (line 54)
+- **Search** -- targets `[data-tour="positions-search"]`, explains the search field
+- **Refresh** -- targets `[data-tour="positions-refresh"]`, explains the data refresh button
+- **Advanced Filters** -- targets `[data-tour="positions-filter-btn"]`, explains the filter button
 
-Update the Button's className to match the filter trigger standard:
-- Change `border border-input` to `border-2 border-input` (constant 2px border)
-- Add `px-4 py-3` padding to match the ~48px height of other filter triggers
-- Keep everything else (icon, label, chevron, badge) as-is
+This increases step counts: employees 7 -> 9, contractors 7 -> 9, requisitions 5 -> 7.
 
-This aligns the "More Filters" trigger with the established filter trigger consistency rules used by Region, Market, Facility, and Department selects.
+**2. Add `data-tour` attributes to all three tab components**
 
+In each of `EmployeesTab.tsx`, `ContractorsTab.tsx`, and `RequisitionsTab.tsx`:
+
+- Add `data-tour="positions-search"` to the `SearchField` component
+- Wrap the `DataRefreshButton` in a span/div with `data-tour="positions-refresh"`
+- Add `data-tour="positions-filter-btn"` to the filter `Button`
+
+**3. Update step counts in User Guides catalog (`src/components/support/UserGuidesTab.tsx`)**
+
+- `positions-employees`: stepCount 7 -> 9
+- `positions-contractors`: stepCount 7 -> 9
+- `positions-requisitions`: stepCount 5 -> 7
+
+### Files changed
+
+| File | Change |
+|------|--------|
+| `src/components/tour/positionsTourSteps.ts` | Split "Search & Actions" step into 3 steps in all arrays |
+| `src/pages/positions/EmployeesTab.tsx` | Add data-tour attrs to search, refresh, filter |
+| `src/pages/positions/ContractorsTab.tsx` | Add data-tour attrs to search, refresh, filter |
+| `src/pages/positions/RequisitionsTab.tsx` | Add data-tour attrs to search, refresh, filter |
+| `src/components/support/UserGuidesTab.tsx` | Update stepCount values |
