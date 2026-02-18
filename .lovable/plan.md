@@ -1,19 +1,38 @@
 
 
-## Fix: Forecast Table Content Being Clipped
+## Fix: First Row Active FTE and Shift Cell Styling in Positions Module
 
 ### Problem
-The Forecast Balance Table's rightmost "Status" column is being clipped because the `Card` wrapper uses `overflow-hidden`, and the grid template columns may exceed the available card width. The table needs horizontal scrolling support to show all columns fully.
+In the Employees and Contractors tabs, the first row's "Active FTE" and "Shift" cells are wrapped in a `<div data-tour="...">` element for the guided tour system. This wrapper div has no sizing classes, so it collapses and doesn't fill the grid cell -- breaking the cell alignment and hover behavior on the first row only.
 
 ### Solution
+Add `className="w-full h-full"` to both tour wrapper divs so they stretch to fill the cell container, making the first row visually identical to all other rows.
 
-**File: `src/components/forecast/ForecastBalanceTable.tsx`**
+### Technical Details
 
-Change the Card from `overflow-hidden` to allow the inner scrollable div to handle overflow properly:
+**File 1: `src/pages/positions/EmployeesTab.tsx`**
 
-1. On the inner `div` (line 41), change from `max-h-[600px] overflow-y-auto` to `max-h-[600px] overflow-auto` so it can scroll both horizontally and vertically when needed.
+Line 261 -- change:
+```tsx
+return row.id === firstRowId ? <div data-tour="positions-active-fte-cell">{cell}</div> : cell;
+```
+to:
+```tsx
+return row.id === firstRowId ? <div data-tour="positions-active-fte-cell" className="w-full h-full">{cell}</div> : cell;
+```
 
-2. Ensure the grid rows have `min-width: max-content` so they don't get compressed and clip content. Wrap the header and body in a `div` with `style={{ minWidth: 'max-content' }}` to guarantee the grid never compresses below its natural width.
+Line 271 -- change:
+```tsx
+return row.id === firstRowId ? <div data-tour="positions-shift-cell">{cell}</div> : cell;
+```
+to:
+```tsx
+return row.id === firstRowId ? <div data-tour="positions-shift-cell" className="w-full h-full">{cell}</div> : cell;
+```
 
-This allows the full Status column (and any other content) to be visible via horizontal scroll when the viewport is narrower than the total grid width, while keeping vertical scrolling for many rows.
+**File 2: `src/pages/positions/ContractorsTab.tsx`**
+
+Same changes on lines 255 and 265.
+
+No other files affected.
 
