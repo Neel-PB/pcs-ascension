@@ -94,18 +94,18 @@ export function ShiftCell({ value, selectedDayNight, onSave, onClick }: ShiftCel
             "text-sm font-normal text-foreground",
             "hover:bg-muted/50 transition-colors",
             "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-            "flex items-center justify-between gap-2"
+            "flex items-center gap-2"
           )}
           type="button"
         >
           {isModified ? (
-            <span className="inline-flex items-center gap-1 whitespace-nowrap min-w-0">
+            <span className="flex-1 inline-flex items-center gap-1 whitespace-nowrap min-w-0">
               <span className="text-muted-foreground line-through text-xs truncate max-w-[60px]">{value}</span>
               <span className="text-muted-foreground shrink-0">→</span>
               <span className="font-medium capitalize shrink-0">{selectedDayNight}</span>
             </span>
           ) : (
-            <span className="truncate whitespace-nowrap">{value || "—"}</span>
+            <span className="flex-1 truncate whitespace-nowrap min-w-0">{value || "—"}</span>
           )}
           {isModified ? (
             <RotateCcw
