@@ -1,47 +1,51 @@
 
 
-## Reorder KPI Tour Steps to Match UI Display Order
+## Contextual KPI Walkthrough — "Drill-Down Sub-Steps"
 
-### Problem
+### What This Pattern Is Called
 
-The KPI tour steps in `tourSteps.ts` don't match the actual card order in the UI. The UI renders cards based on `useKPIOrderStore` defaults, but the tour walks through them in a different sequence.
+This is called a **"Contextual Drill-Down Walkthrough"** or **"In-Context Action Discovery"** — where the tour teaches interactions (Chart button, View button) in the context of the first KPI card rather than as separate generic steps at the end.
 
-### Current Tour Order vs Correct UI Order
+### Current Flow (Problem)
 
-**FTE Section:**
+```text
+Step 8:  [Vacancy Rate card] -> "Percentage of positions unfilled"
+Step 9:  [Target FTEs card] -> "FTEs needed for budgeted staffing"
+Step 10: [Hired FTEs card] -> ...
+...18 more KPI cards...
+Step 26: [Chart button on first card] -> "Click chart icon to see trends"
+Step 27: [Info button on first card] -> "Click eye icon to see definition"
+```
 
-| Position | Current Tour Order | Correct UI Order |
-|----------|-------------------|-----------------|
-| 1 | Vacancy Rate | Vacancy Rate |
-| 2 | **Hired FTEs** | **Target FTEs** |
-| 3 | **Target FTEs** | **Hired FTEs** |
-| 4 | FTE Variance | FTE Variance |
-| 5 | Open Reqs | Open Reqs |
-| 6 | Req Variance | Req Variance |
+The Chart and Info button steps come at the very end, disconnected from the KPI they belong to.
 
-**Volume Section:** Already correct (12M Average, 12M Daily, 3M Low, 3M High, Target Vol, Override Vol)
+### New Flow (Solution)
 
-**Productivity Section:**
+```text
+Step 8:  [Vacancy Rate card] -> "Percentage of positions unfilled"
+Step 9:  [Chart button ON Vacancy Rate] -> "Click chart icon to see trends" + mini-chart preview
+Step 10: [Info button ON Vacancy Rate] -> "Click eye icon to see definition" + info preview
+Step 11: [Target FTEs card] -> "FTEs needed for budgeted staffing"
+Step 12: [Hired FTEs card] -> ...
+...remaining KPI cards (no chart/info sub-steps needed)...
+```
 
-| Position | Current Tour Order | Correct UI Order |
-|----------|-------------------|-----------------|
-| 1 | Paid FTEs | Paid FTEs |
-| 2 | **Contract FTEs** | **Employed Productive FTEs** |
-| 3 | **Overtime FTEs** | **Contract FTEs** |
-| 4 | **Total PRN** | **Overtime FTEs** |
-| 5 | **Total NP%** | **Total PRN** |
-| 6 | **Employed Productive FTEs** | **Total NP%** |
+The user learns about Chart and Info actions **immediately after seeing the first KPI card**, making the connection intuitive. The remaining cards don't repeat these sub-steps since the user already knows how to use them.
 
 ### Changes
 
-**`src/components/tour/tourSteps.ts`** -- Reorder the step objects to match the `useKPIOrderStore` default order:
+**`src/components/tour/tourSteps.ts`**
 
-1. **FTE section**: Swap the Hired FTEs step (currently at position 2) with Target FTEs step (currently at position 3) so the order becomes: Vacancy Rate, Target FTEs, Hired FTEs, FTE Variance, Open Reqs, Req Variance
+1. Move the two existing steps (Trend Chart targeting `kpi-chart-action` and Definition targeting `kpi-info-action`) from their current position at the end of all KPI steps (lines 235-253) to directly after the Vacancy Rate step (after line 114)
+2. No content changes needed — the same `demoContent` previews (mini-chart and kpi-info) remain
+3. Total step count stays the same (steps just move position)
+4. Update the step count in UserGuidesTab if applicable
 
-2. **Productivity section**: Move the Employed Productive FTEs step from its current position (last in productivity) to position 2 (after Paid FTEs), then Contract FTEs, Overtime FTEs, Total PRN, Total NP%
+**No other files need changes** — the `data-tour` attributes on the chart/info buttons already exist on the first KPI card via `DraggableKPISection.tsx`.
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/tour/tourSteps.ts` | Reorder FTE KPI steps (swap Hired/Target) and Productivity KPI steps to match UI default order |
+| `src/components/tour/tourSteps.ts` | Move Chart and Info button steps to directly after Vacancy Rate step |
+
