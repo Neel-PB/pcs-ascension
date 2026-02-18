@@ -1,87 +1,81 @@
 
 
-## Show Demo Dropdown Previews in Filter Tour Steps
+## Add Demo Previews to KPI and Other Tour Steps
 
-### Problem
-The tour highlights each filter dropdown but doesn't show what's inside. Users can't see what the dropdown contains during the guided tour.
+### Overview
 
-### Solution
-Embed mini visual mockups of each dropdown directly inside the tour tooltip content. This gives users a "demo" view of what each filter looks like when opened, without actually opening dropdowns or fetching data.
+Extend the `FilterDemoPreview` pattern to add visual mockups inside tour tooltips for KPI-related steps and other steps across the Staffing Summary, Variance, Forecast, and Planning tours. Users will see mini demos of charts, info modals, badges, and table rows without any real data fetching.
 
-### Changes
+### New Component
 
-**1. Update `TourTooltip` to support JSX content (`src/components/tour/TourTooltip.tsx`)**
+**`src/components/tour/TourDemoPreview.tsx`** -- A new companion to `FilterDemoPreview` with these variants:
 
-Currently the tooltip renders `step.content as string` inside a `<p>` tag. Change it to render `step.content` as a React node (`React.ReactNode`) so we can pass rich JSX with styled mock dropdown previews.
+| Variant | Used In Step | What It Shows |
+|---------|-------------|---------------|
+| `mini-chart` | Trend Chart | A tiny SVG sparkline with 6 dots and connecting lines, plus "High / Avg / Low" stat row beneath |
+| `kpi-info` | Definition and Calculation | A mini card showing "Definition: ..." and "Calculation: formula..." in a styled box |
+| `volume-colors` | Target and Override Volume Colors | Two small side-by-side mock cards: one with green border labeled "Target (active)", one with orange border labeled "Override (active)" |
+| `split-badge` | Employment Type Split / Hired Split | A mock pill badge showing "70% FT . 20% PT . 10% PRN" with the correct color variant |
+| `tab-pills` | Tab Navigation | A row of small pill buttons showing "Summary / Planning / Variance / Forecasts / Settings" |
+| `legend` | FTE Legend (Variance + Planning) | Two colored rows: green "+2.0 Surplus" and orange "-3.5 Shortage" |
+| `expandable-row` | Expandable Groups / Skill Groups | A mini table with a chevron row that shows expanded child rows beneath |
+| `forecast-cards` | Forecast KPI Cards | Two mini side-by-side cards: orange "Shortage: +5.0" and blue "Surplus: -3.2" |
+| `toggle-pair` | Hired/Active, Nursing/Non-Nursing | Two toggle buttons showing the active/inactive states |
 
-Replace:
-```tsx
-<p className="text-sm text-muted-foreground leading-relaxed">
-  {step.content as string}
-</p>
-```
-With:
-```tsx
-<div className="text-sm text-muted-foreground leading-relaxed">
-  {step.content}
-</div>
-```
+### Updated Tour Steps
 
-Also widen the card slightly for filter steps (bump from `w-[340px]` to `max-w-[400px] w-auto min-w-[340px]`).
+**Staffing Summary (`staffingSteps`):**
 
-**2. Create filter demo preview components (`src/components/tour/FilterDemoPreview.tsx`)**
+| Step | Preview Added |
+|------|--------------|
+| Tab Navigation | `tab-pills` showing the 5 tab labels |
+| KPI Cards (overview) | No change (text is sufficient for the overview) |
+| Trend Chart | `mini-chart` sparkline with High/Avg/Low stats |
+| Definition and Calculation | `kpi-info` showing mock definition + formula |
+| Target and Override Volume Colors | `volume-colors` with green/orange mock cards |
+| Employment Type Split | `split-badge` green variant showing 70/20/10 |
+| Hired and Open Reqs Split | `split-badge` orange variant showing example mix |
 
-A small reusable component that renders a mock dropdown list showing 3-4 example items with the same styling as the real dropdowns (rounded border, items with hover state, search input placeholder for Facility/Department).
+**Variance (`varianceSteps`):**
 
-Variants:
-- **SimpleSelect preview** (Region, Market): Shows "All Regions" + 2-3 example region names in a bordered list
-- **Searchable preview** (Facility, Department): Shows a search input placeholder + name/ID two-column grid with 2-3 example rows
-- **More Filters preview**: Shows Submarket, Level 2, PSTAT labels
+| Step | Preview Added |
+|------|--------------|
+| FTE Legend | `legend` showing surplus/shortage color coding |
+| Expandable Groups | `expandable-row` showing a group with children |
 
-**3. Update filter tour steps in `tourSteps.ts` to use JSX content**
+**Forecast (`forecastSteps`):**
 
-Replace the plain string `content` for each filter step with JSX that includes:
-- The text description (same as before)
-- A `FilterDemoPreview` component below the text showing the mock dropdown
+| Step | Preview Added |
+|------|--------------|
+| Forecast KPI Cards | `forecast-cards` showing shortage/surplus mini cards |
+| Expandable Detail View | `expandable-row` showing expanded two-panel hint |
 
-Example for Region:
-```tsx
-content: (
-  <div className="space-y-3">
-    <p>Select a Region to scope all data to that geographic area. Choosing a region updates the available Markets, Facilities, and Departments below.</p>
-    <FilterDemoPreview variant="simple" items={['All Regions', 'East', 'Gulf Coast', 'West']} />
-  </div>
-)
-```
+**Planning (`planningSteps`):**
 
-Example for Facility (searchable):
-```tsx
-content: (
-  <div className="space-y-3">
-    <p>Search and select a specific Facility. Type a name or ID to find it quickly.</p>
-    <FilterDemoPreview variant="searchable" items={[
-      { name: 'St. Vincent Hospital', id: 'FAC001' },
-      { name: 'Sacred Heart Medical', id: 'FAC002' },
-      { name: 'Providence Clinic', id: 'FAC003' },
-    ]} />
-  </div>
-)
-```
+| Step | Preview Added |
+|------|--------------|
+| Hired / Active Toggle | `toggle-pair` showing two toggle states |
+| Nursing / Non-Nursing Toggle | `toggle-pair` with nursing labels |
+| FTE Legend | `legend` showing surplus/shortage |
+| Expandable Skill Groups | `expandable-row` |
 
-### Mock Dropdown Styling
+### Technical Details
 
-The demo preview will be a small bordered container (matching the app theme) with:
-- A light background (`bg-muted/50`) and rounded border
-- For searchable variants: a disabled search input at top with placeholder text
-- 3-4 list items with padding, the first one highlighted (like "All Regions" selected)
-- Items styled to match actual dropdown appearance
-- Max height constrained so it doesn't make the tooltip too tall
+**`src/components/tour/TourDemoPreview.tsx`**
+- New file with a single exported component accepting a `variant` prop and optional config data
+- Uses the same styling patterns as `FilterDemoPreview` (rounded borders, `bg-muted/50`, themed colors)
+- The `mini-chart` variant renders a small inline SVG (no Recharts dependency) with 6 data points connected by lines and dots
+- The `volume-colors` variant renders two small divs with `border-emerald-500` and `border-orange-500`
+- All variants are purely visual (no state, no data fetching)
 
-### Files changed
+**`src/components/tour/tourSteps.ts`**
+- Import `TourDemoPreview` alongside `FilterDemoPreview`
+- Create a `demoContent` helper (similar to `filterContent`) that wraps text + `TourDemoPreview` in a div
+- Update the 7 staffing summary steps, 2 variance steps, 2 forecast steps, and 4 planning steps listed above to use JSX content with the demo previews
+
+### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/tour/TourTooltip.tsx` | Render content as ReactNode instead of string; slightly wider card |
-| `src/components/tour/FilterDemoPreview.tsx` | New component with Simple and Searchable mock dropdown variants |
-| `src/components/tour/tourSteps.ts` | Update 6 filter steps (Region, Market, Facility, Department, Clear, More Filters) to use JSX content with demo previews |
-
+| `src/components/tour/TourDemoPreview.tsx` | New component with 9 visual variants |
+| `src/components/tour/tourSteps.ts` | Update ~15 steps across staffingSteps, varianceSteps, forecastSteps, and planningSteps to embed demo previews |
