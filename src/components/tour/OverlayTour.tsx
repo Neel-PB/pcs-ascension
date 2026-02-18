@@ -14,7 +14,28 @@ export function OverlayTour({ tourKey, steps }: OverlayTourProps) {
   const handleCallback = (data: CallBackProps) => {
     const { status } = data;
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+      document.body.style.overflow = '';
       completeTour();
+
+      const resetScroll = () => {
+        const mainContainer = document.querySelector('main');
+        if (mainContainer) {
+          (mainContainer as HTMLElement).style.overflow = '';
+          (mainContainer as HTMLElement).style.overflowX = '';
+          (mainContainer as HTMLElement).style.overflowY = '';
+        }
+        const scrollContainers = document.querySelectorAll(
+          '[class*="overflow-auto"], [class*="overflow-y-auto"], [class*="overflow-x-auto"], [class*="overflow-y-scroll"], [class*="overflow-x-scroll"]'
+        );
+        scrollContainers.forEach(el => {
+          (el as HTMLElement).style.overflow = '';
+          (el as HTMLElement).style.overflowX = '';
+          (el as HTMLElement).style.overflowY = '';
+        });
+      };
+
+      setTimeout(resetScroll, 100);
+      setTimeout(resetScroll, 300);
     }
   };
 
@@ -26,6 +47,7 @@ export function OverlayTour({ tourKey, steps }: OverlayTourProps) {
       showSkipButton
       scrollToFirstStep
       disableOverlayClose
+      disableScrollParentFix
       callback={handleCallback}
       tooltipComponent={TourTooltip}
       styles={{
