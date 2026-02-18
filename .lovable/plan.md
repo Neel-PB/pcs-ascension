@@ -1,44 +1,45 @@
 
 
-## Fix: Match cell spacing to header layout pattern
+## Fix: Tour exit causes layout shift in Positions module
 
 ### Problem
-The header uses `flex items-center gap-2` where the label has `flex-1` and icons sit naturally after it. The cells use `justify-between`, which pushes the pencil icon all the way to the right edge of the cell -- creating a large visual gap between the value and the icon that doesn't match the header spacing.
+When the Positions tour finishes or is skipped, the table appears shifted because:
 
-### Solution
-Remove `justify-between` from the cell buttons and instead give the value span `flex-1`, so the icon sits right after the value with only `gap-2` spacing -- exactly like the header does.
+1. During the tour, `scrollIntoView({ inline: 'center' })` horizontally scrolls the table container to center targets like Active FTE and Shift cells
+2. On tour completion, only vertical scroll is reset -- the horizontal scroll on the table container (`overflow-x-auto`) is never restored
+3. The selector `[class*="overflow-y-auto"]` used in cleanup doesn't match the main shell container (which uses `overflow-y-scroll`)
 
-### Technical Details
+### Changes
 
-**1. `src/components/editable-table/cells/EditableFTECell.tsx` (line 258)**
+**`src/components/tour/PositionsTour.tsx`** -- Fix the `handleCallback` cleanup logic:
 
-Change:
+1. On `STATUS.FINISHED` or `STATUS.SKIPPED`, also reset horizontal scroll on the table container by querying `[class*="overflow-x-auto"]` and setting `scrollLeft: 0`
+2. Fix the main container selector to target `main` directly (already done) instead of relying on `[class*="overflow-y-auto"]` which doesn't match `overflow-y-scroll`
+3. Also reset horizontal scroll after each `scrollIntoView` step to prevent mid-tour layout drift
+
+### Technical Detail
+
+The completion handler will become:
+
 ```
-"flex items-center justify-between gap-2"
-```
-To:
-```
-"flex items-center gap-2"
+if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+  // Reset vertical scroll
+  const mainContainer = document.querySelector('main');
+  if (mainContainer) {
+    mainContainer.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  // Reset horizontal scroll on table container
+  const tableContainer = document.querySelector('[class*="overflow-x-auto"]');
+  if (tableContainer) {
+    tableContainer.scrollTo({ left: 0, behavior: 'instant' });
+  }
+
+  completeTour();
+}
 ```
 
-And on line 264, add `flex-1` to the value span:
-```
-Before: <span>{value != null ? value : '—'}</span>
-After:  <span className="flex-1">{value != null ? value : '—'}</span>
-```
-
-**2. `src/components/editable-table/cells/ShiftCell.tsx` (line ~96)**
-
-Change the special shift button from:
-```
-"flex items-center justify-between gap-2"
-```
-To:
-```
-"flex items-center gap-2"
-```
-
-And add `flex-1 min-w-0` to both the modified and unmodified value spans so the icon sits naturally adjacent with `gap-2` spacing.
+The step handler will also be updated to avoid `inline: 'center'` which causes horizontal scroll shifts -- changing to `inline: 'nearest'` or removing the `scrollIntoView` call for cell-level targets and only scrolling the main container vertically.
 
 ### Result
-The value will left-align and take up available space via `flex-1`, while the pencil/revert icon will sit immediately after with a consistent `gap-2` (8px) -- matching the header's label-to-chevron spacing exactly.
+Exiting the tour (skip or finish) will fully restore scroll position, preventing any layout shift.
