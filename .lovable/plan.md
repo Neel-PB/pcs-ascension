@@ -1,27 +1,44 @@
 
 
-## Fix: Scroll disappears after tour finishes/skips
+## Fix: Table stays horizontally scrolled after tour ends
 
-### Root Cause
-React Joyride sets `overflow: hidden` on `document.body` during the tour to prevent background scrolling. When the tour ends, Joyride should restore the original overflow -- but it sometimes fails to clean up, leaving `overflow: hidden` on the body. Since the shell layout relies on the `main` element for scrolling (which inherits from body overflow), this breaks the scroll.
+### Problem
+The tour's final steps highlight cells on the right side of the table (Active FTE, Shift, Comments columns). When the tour finishes or is skipped, the scroll reset runs immediately -- but Joyride's internal cleanup (removing overlay, spotlight, and tooltips) happens asynchronously afterward. This cleanup triggers a layout reflow that re-scrolls the container back to where the spotlight was, undoing the reset.
 
 ### Solution
-Two changes in `src/components/tour/PositionsTour.tsx`:
-
-1. **Add `disableScrolling={false}`** to the Joyride component -- this tells Joyride not to touch `body` overflow at all, matching the pattern used in `StaffingTour` which doesn't have this issue.
-
-2. **Force-reset `document.body.style.overflow`** in the completion handler as a safety net, ensuring the body overflow is always restored to empty (`""`) when the tour finishes or is skipped.
+Delay the scroll reset using `setTimeout` so it runs **after** Joyride has fully cleaned up its DOM elements. This ensures our reset is the final scroll action.
 
 ### Technical Detail
 
-In the `handleCallback` completion block, add:
-```tsx
-document.body.style.overflow = '';
-```
+**File: `src/components/tour/PositionsTour.tsx`**
 
-On the Joyride component, add:
-```tsx
-disableScrolling={false}
+In the completion handler (when status is FINISHED or SKIPPED):
+
+1. Keep the immediate `document.body.style.overflow = ''` reset (this is fine immediately)
+2. Wrap the scroll resets in a `setTimeout` with a small delay (e.g., 100ms) so they execute after Joyride finishes its internal DOM cleanup
+3. Add a second delayed reset at ~300ms as a safety net for slower cleanup cycles
+
+```
+if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+  document.body.style.overflow = '';
+  completeTour();
+
+  // Delay scroll resets to run AFTER Joyride finishes its internal cleanup
+  const resetScroll = () => {
+    const mainContainer = document.querySelector('main');
+    if (mainContainer) {
+      mainContainer.scrollTo({ top: 0, behavior: 'instant' });
+    }
+    const tableContainer = document.querySelector('[class*="overflow-x-auto"]');
+    if (tableContainer) {
+      tableContainer.scrollTo({ left: 0, behavior: 'instant' });
+    }
+  };
+
+  setTimeout(resetScroll, 100);
+  setTimeout(resetScroll, 300);
+}
 ```
 
 This is a single-file change to `src/components/tour/PositionsTour.tsx`.
+
