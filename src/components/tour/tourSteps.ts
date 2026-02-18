@@ -114,6 +114,26 @@ export const staffingSteps: Step[] = [
     disableBeacon: true,
   },
   {
+    target: '[data-tour="kpi-chart-action"]',
+    title: 'Trend Chart',
+    content: demoContent(
+      'Click the chart icon on any KPI card to view a detailed trend line, historical data, and breakdowns by skill type.',
+      'mini-chart'
+    ),
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="kpi-info-action"]',
+    title: 'Definition and Calculation',
+    content: demoContent(
+      'Click the eye icon to see what this KPI measures and the exact formula used to calculate it.',
+      'kpi-info'
+    ),
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
     target: '[data-tour="kpi-target-ftes"]',
     title: 'Target FTEs',
     content: 'Number of FTEs needed to meet budgeted staffing levels based on volume.',
@@ -229,26 +249,6 @@ export const staffingSteps: Step[] = [
     target: '[data-tour="kpi-total-np"]',
     title: 'Total NP%',
     content: 'Percentage of paid hours not spent on direct patient care (PTO, training, admin).',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-chart-action"]',
-    title: 'Trend Chart',
-    content: demoContent(
-      'Click the chart icon on any KPI card to view a detailed trend line, historical data, and breakdowns by skill type.',
-      'mini-chart'
-    ),
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-info-action"]',
-    title: 'Definition and Calculation',
-    content: demoContent(
-      'Click the eye icon to see what this KPI measures and the exact formula used to calculate it.',
-      'kpi-info'
-    ),
     placement: 'bottom',
     disableBeacon: true,
   },
