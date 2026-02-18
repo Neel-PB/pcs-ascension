@@ -1,11 +1,18 @@
 import type { Step } from 'react-joyride';
 import { createElement } from 'react';
 import { FilterDemoPreview } from './FilterDemoPreview';
+import { TourDemoPreview } from './TourDemoPreview';
 
 const filterContent = (text: string, preview: { variant: 'simple' | 'searchable' | 'labels'; items?: string[] | { name: string; id: string }[]; labels?: string[] }) =>
   createElement('div', { className: 'space-y-3' },
     createElement('p', null, text),
     createElement(FilterDemoPreview, preview as any)
+  );
+
+const demoContent = (text: string, variant: string, config?: any) =>
+  createElement('div', { className: 'space-y-3' },
+    createElement('p', null, text),
+    createElement(TourDemoPreview, { variant, config } as any)
   );
 
 export const staffingSteps: Step[] = [
@@ -84,7 +91,10 @@ export const staffingSteps: Step[] = [
   {
     target: '[data-tour="tab-navigation"]',
     title: 'Tab Navigation',
-    content: 'Switch between Summary, Planned/Active Resources, Variance Analysis, Forecasts, and Settings views.',
+    content: demoContent(
+      'Switch between Summary, Planned/Active Resources, Variance Analysis, Forecasts, and Settings views.',
+      'tab-pills'
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
@@ -225,35 +235,52 @@ export const staffingSteps: Step[] = [
   {
     target: '[data-tour="kpi-chart-action"]',
     title: 'Trend Chart',
-    content: 'Click the chart icon on any KPI card to view a detailed trend line, historical data, and breakdowns by skill type.',
+    content: demoContent(
+      'Click the chart icon on any KPI card to view a detailed trend line, historical data, and breakdowns by skill type.',
+      'mini-chart'
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="kpi-info-action"]',
     title: 'Definition and Calculation',
-    content: 'Click the eye icon to see what this KPI measures and the exact formula used to calculate it.',
+    content: demoContent(
+      'Click the eye icon to see what this KPI measures and the exact formula used to calculate it.',
+      'kpi-info'
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="volume-section"]',
     title: 'Target and Override Volume Colors',
-    content: 'Volume cards use color to show status: a green border means the calculated Target Volume is in use; an orange border means a manual Override Volume is active and superseding the target.',
+    content: demoContent(
+      'Volume cards use color to show status: a green border means the calculated Target Volume is in use; an orange border means a manual Override Volume is active and superseding the target.',
+      'volume-colors'
+    ),
     placement: 'top',
     disableBeacon: true,
   },
   {
     target: '[data-tour="kpi-split-badge"]',
     title: 'Employment Type Split',
-    content: 'This badge shows the FT/PT/PRN staffing mix. The target is 70% Full-Time, 20% Part-Time, 10% PRN. Click to compare current vs target variance.',
+    content: demoContent(
+      'This badge shows the FT/PT/PRN staffing mix. The target is 70% Full-Time, 20% Part-Time, 10% PRN. Click to compare current vs target variance.',
+      'split-badge',
+      { color: 'green' }
+    ),
     placement: 'top',
     disableBeacon: true,
   },
   {
     target: '[data-tour="kpi-hired-split-badge"]',
     title: 'Hired and Open Reqs Split',
-    content: 'This orange badge shows the actual FT/PT/PRN mix across your Hired FTEs and Open Requisitions combined. Click to compare the current split against the 70/20/10 target and see the variance.',
+    content: demoContent(
+      'This orange badge shows the actual FT/PT/PRN mix across your Hired FTEs and Open Requisitions combined. Click to compare the current split against the 70/20/10 target and see the variance.',
+      'split-badge',
+      { color: 'orange' }
+    ),
     placement: 'top',
     disableBeacon: true,
   },
@@ -270,7 +297,10 @@ export const varianceSteps: Step[] = [
   {
     target: '[data-tour="variance-legend"]',
     title: 'FTE Legend',
-    content: 'Positive (+) values indicate an FTE Shortage. Negative (-) values indicate an FTE Surplus.',
+    content: demoContent(
+      'Positive (+) values indicate an FTE Shortage. Negative (-) values indicate an FTE Surplus.',
+      'legend'
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
@@ -284,7 +314,10 @@ export const varianceSteps: Step[] = [
   {
     target: '[data-tour="variance-table"]',
     title: 'Expandable Groups',
-    content: 'Rows are grouped by Region, Submarket, or Facility depending on your filter level. Click any group row to expand and see individual breakdowns.',
+    content: demoContent(
+      'Rows are grouped by Region, Submarket, or Facility depending on your filter level. Click any group row to expand and see individual breakdowns.',
+      'expandable-row'
+    ),
     placement: 'top',
     disableBeacon: true,
   },
@@ -301,7 +334,10 @@ export const forecastSteps: Step[] = [
   {
     target: '[data-tour="forecast-kpi-cards"]',
     title: 'Forecast KPI Cards',
-    content: 'These cards summarize FTE Shortages (positions to open) and FTE Surpluses (positions to close). Click a card to filter the table below by that gap type; click again to show all.',
+    content: demoContent(
+      'These cards summarize FTE Shortages (positions to open) and FTE Surpluses (positions to close). Click a card to filter the table below by that gap type; click again to show all.',
+      'forecast-cards'
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
@@ -315,7 +351,10 @@ export const forecastSteps: Step[] = [
   {
     target: '[data-tour="forecast-table-body"]',
     title: 'Expandable Detail View',
-    content: 'Click any row to expand a two-panel detail view comparing current hired FTE against recommended changes. Recommendations prioritize canceling open requisitions before closing filled positions.',
+    content: demoContent(
+      'Click any row to expand a two-panel detail view comparing current hired FTE against recommended changes. Recommendations prioritize canceling open requisitions before closing filled positions.',
+      'expandable-row'
+    ),
     placement: 'top',
     disableBeacon: true,
   },
@@ -701,28 +740,42 @@ export const planningSteps: Step[] = [
   {
     target: '[data-tour="planning-hired-toggle"]',
     title: 'Hired / Active Toggle',
-    content: 'Switch between Hired (all employees including those on leave) and Active (currently available staff adjusted by department leaders).',
+    content: demoContent(
+      'Switch between Hired (all employees including those on leave) and Active (currently available staff adjusted by department leaders).',
+      'toggle-pair',
+      { labels: ['Hired', 'Active'] }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="planning-nursing-toggle"]',
     title: 'Nursing / Non-Nursing Toggle',
-    content: 'Filter between Nursing (clinical departments with full Target/Variance columns) and Non-Nursing (showing only Hired and Open Reqs). When a specific department is selected, this auto-sets based on the department type.',
+    content: demoContent(
+      'Filter between Nursing (clinical departments with full Target/Variance columns) and Non-Nursing (showing only Hired and Open Reqs). When a specific department is selected, this auto-sets based on the department type.',
+      'toggle-pair',
+      { labels: ['Nursing', 'Non-Nursing'] }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="planning-legend"]',
     title: 'FTE Legend',
-    content: 'Positive values indicate an FTE surplus. Orange negative values indicate an FTE shortage that needs attention.',
+    content: demoContent(
+      'Positive values indicate an FTE surplus. Orange negative values indicate an FTE shortage that needs attention.',
+      'legend'
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="planning-table"]',
     title: 'Expandable Skill Groups',
-    content: 'Skills are grouped into Overheads, Clinical Staff, and Support Staff. Click any group row to expand and see individual skill breakdowns.',
+    content: demoContent(
+      'Skills are grouped into Overheads, Clinical Staff, and Support Staff. Click any group row to expand and see individual skill breakdowns.',
+      'expandable-row'
+    ),
     placement: 'top',
     disableBeacon: true,
   },
