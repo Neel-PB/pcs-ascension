@@ -73,18 +73,15 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
       
       {/* KPI Grid */}
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-        {kpis.map((kpi, index) => {
-          // Find the first KPI with chart data to attach tour attributes
-          const firstChartIndex = kpis.findIndex(k => k.chartData && k.chartData.length > 0);
-          const isFirstWithChart = index === firstChartIndex;
+        {kpis.map((kpi) => {
           return (
             <KPICard 
               key={kpi.id} 
               {...kpi}
               dataTour={`kpi-${kpi.id}`}
               employmentBreakdown={kpi.id === 'hired-ftes' || kpi.id === 'target-ftes' ? undefined : kpi.employmentBreakdown}
-              dataTourChart={isFirstWithChart ? "kpi-chart-action" : undefined}
-              dataTourInfo={isFirstWithChart ? "kpi-info-action" : undefined}
+              dataTourChart={kpi.chartData && kpi.chartData.length > 0 ? `kpi-${kpi.id}-chart` : undefined}
+              dataTourInfo={`kpi-${kpi.id}-info`}
             />
           );
         })}
