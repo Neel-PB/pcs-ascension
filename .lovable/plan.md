@@ -1,114 +1,134 @@
 
 
-## Add Chart and Info Sub-Steps to Every KPI Card in the Tour
+## Consolidate KPI Tour into Single "All-in-One" Steps
 
 ### What We're Doing
 
-Instead of only showing the chart and info button steps once (on Vacancy Rate), every KPI card will get its own chart button and info button highlighted as individual tour steps. This creates a consistent "Card -> Chart -> Info" drill-down pattern for all 18 KPIs.
+Replace the current 3-step pattern (Card -> Chart -> Info) with a single step per KPI that includes:
+1. The KPI description text
+2. A visual wireframe connecting the chart icon to "opens trend chart" and the eye icon to "opens definition/calculation"
 
-### Current vs New Flow
+This reduces the tour from 66 steps back to ~30, while teaching users about both buttons in context.
 
-**Current (3 steps for first KPI, 1 step for rest):**
+### Visual Concept
+
+Each KPI tour tooltip will look like:
+
 ```text
-Vacancy Rate card -> Chart button -> Info button -> Target FTEs card -> Hired FTEs card -> ...
++--------------------------------------+
+| Vacancy Rate              10 of 30   |
++--------------------------------------+
+| Percentage of approved budgeted      |
+| positions currently unfilled.        |
+|                                      |
+| +----------------------------------+ |
+| |  [chart icon] --> Trend Chart    | |
+| |  View 12-month historical trends | |
+| |  and breakdowns by skill type.   | |
+| |                                  | |
+| |  [eye icon] --> Definition       | |
+| |  See the formula and how this    | |
+| |  metric is calculated.           | |
+| +----------------------------------+ |
+|                                      |
+| [Skip]            [Back]  [Next]     |
++--------------------------------------+
 ```
 
-**New (3 steps per KPI):**
-```text
-Vacancy Rate card -> Vacancy Rate chart -> Vacancy Rate info ->
-Target FTEs card -> Target FTEs chart -> Target FTEs info ->
-Hired FTEs card -> Hired FTEs chart -> Hired FTEs info ->
-... (same pattern for all 18 KPIs)
-```
-
-### Impact on Step Count
-
-- Current total: 32 steps
-- Removing: 2 generic chart/info steps + text description from Vacancy Rate
-- Adding: 2 sub-steps (chart + info) per KPI x 18 KPIs = 36 sub-steps
-- New total: approximately 62 steps (30 existing non-KPI steps + 18 KPI cards + 18 chart steps + 18 info steps, minus the 2 old generic steps, minus the 12 steps that were already counted)
-
-Actual math: 32 current - 2 old generic chart/info steps = 30 base + 18 chart + 18 info = 66 total. But we already have 18 KPI card steps, so: 30 non-KPI steps + 18 KPI cards + 36 chart/info sub-steps = 66 steps.
+The wireframe uses the actual BarChart3 and Eye icons from the app, with arrow connectors pointing to their function labels.
 
 ### Technical Changes
 
-**1. `src/components/staffing/DraggableKPISection.tsx`** (lines 86-87)
+**1. `src/components/tour/TourDemoPreview.tsx`**
 
-Give every KPI card unique `data-tour` attributes for its chart and info buttons instead of only the first one:
+Add a new variant called `kpi-actions` that renders a compact wireframe with two rows:
+- Row 1: BarChart3 icon + arrow + "Trend Chart" label + short description
+- Row 2: Eye icon + arrow + "Definition" label + short description
+
+The component will accept an optional `config.hasChart` boolean (defaults to true) to handle KPIs without chart data (like some volume KPIs). When `hasChart` is false, only the eye/definition row shows.
 
 ```typescript
-// FROM:
-dataTourChart={isFirstWithChart ? "kpi-chart-action" : undefined}
-dataTourInfo={isFirstWithChart ? "kpi-info-action" : undefined}
-
-// TO:
-dataTourChart={kpi.chartData?.length > 0 ? `kpi-${kpi.id}-chart` : undefined}
-dataTourInfo={`kpi-${kpi.id}-info`}
+const KPIActions = ({ hasChart = true }: { hasChart?: boolean }) => (
+  <div className="rounded-lg border border-border bg-muted/50 p-3 space-y-2">
+    {hasChart && (
+      <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center w-7 h-7 rounded bg-accent">
+          <BarChart3 className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <span className="text-muted-foreground text-xs">--></span>
+        <div>
+          <div className="text-xs font-semibold text-foreground">Trend Chart</div>
+          <div className="text-[10px] text-muted-foreground">View 12-month historical trends and breakdowns.</div>
+        </div>
+      </div>
+    )}
+    <div className="flex items-center gap-2">
+      <div className="flex items-center justify-center w-7 h-7 rounded bg-accent">
+        <Eye className="h-4 w-4 text-muted-foreground" />
+      </div>
+      <span className="text-muted-foreground text-xs">--></span>
+      <div>
+        <div className="text-xs font-semibold text-foreground">Definition</div>
+        <div className="text-[10px] text-muted-foreground">See how this metric is defined and calculated.</div>
+      </div>
+    </div>
+  </div>
+);
 ```
+
+Add `'kpi-actions'` to the `TourDemoVariant` type union and the switch statement.
 
 **2. `src/components/tour/tourSteps.ts`**
 
-- Remove the 2 old generic chart/info steps (targeting `kpi-chart-action` and `kpi-info-action`)
-- Revert the Vacancy Rate content back to plain description (no emoji text)
-- After each of the 18 KPI card steps, add 2 sub-steps targeting that KPI's chart and info buttons
-- The first KPI (Vacancy Rate) chart step keeps the `mini-chart` demo preview; subsequent ones use a shorter text-only description
-- The first KPI (Vacancy Rate) info step keeps the `kpi-info` demo preview; subsequent ones use shorter text
+- Remove all 36 individual chart/info sub-steps (the `kpi-*-chart` and `kpi-*-info` steps)
+- Update each of the 18 KPI card steps to use `demoContent()` with the new `kpi-actions` variant instead of plain text descriptions
 
-Example for each KPI:
+Example for Vacancy Rate:
 ```typescript
 {
   target: '[data-tour="kpi-vacancy-rate"]',
   title: 'Vacancy Rate',
-  content: 'Percentage of approved budgeted positions currently unfilled.',
+  content: demoContent(
+    'Percentage of approved budgeted positions currently unfilled.',
+    'kpi-actions',
+    { hasChart: true }
+  ),
   placement: 'bottom',
   disableBeacon: true,
-},
-{
-  target: '[data-tour="kpi-vacancy-rate-chart"]',
-  title: 'Vacancy Rate — Trend Chart',
-  content: demoContent('Click the chart icon to view historical trends and breakdowns.', 'mini-chart'),
-  placement: 'bottom',
-  disableBeacon: true,
-},
-{
-  target: '[data-tour="kpi-vacancy-rate-info"]',
-  title: 'Vacancy Rate — Definition',
-  content: demoContent('Click the eye icon to see the definition and calculation formula.', 'kpi-info'),
-  placement: 'bottom',
-  disableBeacon: true,
-},
-// Next KPI...
-{
-  target: '[data-tour="kpi-target-ftes"]',
-  title: 'Target FTEs',
-  content: '...',
-  ...
-},
-{
-  target: '[data-tour="kpi-target-ftes-chart"]',
-  title: 'Target FTEs — Trend Chart',
-  content: 'View the historical trend for Target FTEs.',
-  ...
-},
-{
-  target: '[data-tour="kpi-target-ftes-info"]',
-  title: 'Target FTEs — Definition',
-  content: 'See how Target FTEs is defined and calculated.',
-  ...
 },
 ```
 
-Only the first chart/info steps use the rich `demoContent` preview. The rest use plain text to keep the tour moving quickly.
+Example for a volume KPI without chart data:
+```typescript
+{
+  target: '[data-tour="kpi-override-vol"]',
+  title: 'Override Volume',
+  content: demoContent(
+    'Manually set volume that supersedes the target. Orange border means it is active.',
+    'kpi-actions',
+    { hasChart: false }
+  ),
+  placement: 'bottom',
+  disableBeacon: true,
+},
+```
 
-**3. `src/components/support/UserGuidesTab.tsx`** (line 40)
+**3. `src/components/support/UserGuidesTab.tsx`**
 
-Update the `stepCount` for the staffing tour from 32 to the new total (66).
+Update the `stepCount` from 66 back to 30 (the original count minus the 2 old generic steps: 32 - 2 = 30).
+
+**4. `src/components/staffing/DraggableKPISection.tsx`**
+
+The per-KPI `dataTourChart` and `dataTourInfo` attributes can stay as-is (they don't hurt anything and the KPI card buttons still need them for accessibility). No changes needed here.
+
+### Step Count
+
+- 7 filter steps + 1 tab nav + 1 KPI sections overview + 18 KPI cards + remaining non-KPI steps = ~30 total steps
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/staffing/DraggableKPISection.tsx` | Give every KPI unique `data-tour` chart and info attributes |
-| `src/components/tour/tourSteps.ts` | Add chart and info sub-steps after each of the 18 KPI card steps |
-| `src/components/support/UserGuidesTab.tsx` | Update stepCount from 32 to 66 |
-
+| `src/components/tour/TourDemoPreview.tsx` | Add `kpi-actions` variant with chart/eye icon wireframe |
+| `src/components/tour/tourSteps.ts` | Remove 36 chart/info sub-steps, update 18 KPI steps to use `kpi-actions` demo content |
+| `src/components/support/UserGuidesTab.tsx` | Update stepCount from 66 to 30 |
