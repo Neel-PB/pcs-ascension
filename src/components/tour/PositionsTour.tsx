@@ -35,7 +35,11 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
 
       const resetScroll = () => {
         document.querySelector('main')?.scrollTo({ top: 0, behavior: 'instant' });
-        document.querySelector('[class*="overflow-x-auto"]')?.scrollTo({ left: 0, behavior: 'instant' });
+        const tableContainer = document.querySelector('[class*="overflow-x-auto"]');
+        if (tableContainer) {
+          tableContainer.scrollTo({ left: 0, behavior: 'instant' });
+          (tableContainer as HTMLElement).style.overflow = '';
+        }
       };
 
       setTimeout(resetScroll, 100);
@@ -52,6 +56,7 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
       showSkipButton
       scrollToFirstStep={false}
       disableScrolling={false}
+      disableScrollParentFix
       disableOverlayClose
       callback={handleCallback}
       tooltipComponent={TourTooltip}
