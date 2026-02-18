@@ -1,52 +1,39 @@
 
 
-## Fix: Left-align values with icons on the right for Hired FTE, Active FTE, and Shift columns
+## Fix: Align cell row spacing to match column header gap
 
 ### Problem
-Currently, Hired FTE and Active FTE values are center-aligned. The user wants all three columns to follow a consistent layout: **value on the left, icon (pencil/revert) on the right**.
+The column headers use `flex items-center gap-2` for consistent spacing between label, icons, and menu. The row cells (Active FTE and Shift) either lack `gap-2` or still use absolute positioning for icons, creating inconsistent spacing compared to the header.
 
 ### Changes
 
-**1. `src/components/editable-table/cells/NumberCell.tsx` (Hired FTE)**
-- Remove `text-center` from the CellButton className so the value renders left-aligned (CellButton already defaults to `text-left`).
+**1. `src/components/editable-table/cells/EditableFTECell.tsx`**
+- Add `gap-2` to the button's className (line 254-258) so the value and icon have the same spacing as the header.
 
-```
-Before: className={cn("text-center font-medium", className)}
-After:  className={cn("font-medium", className)}
-```
+Before: `"flex items-center justify-between"`
+After: `"flex items-center justify-between gap-2"`
 
-**2. `src/components/editable-table/cells/EditableFTECell.tsx` (Active FTE)**
-- Change the trigger button from `text-center` to `text-left` so the value sits on the left.
-- Change the value `<span>` from `block` (which centers in a text-center parent) to an inline span, and use flexbox layout to position value left and icon right without absolute positioning.
+**2. `src/components/editable-table/cells/ShiftCell.tsx` (special shifts, lines 91-119)**
+- Convert from `relative` + absolute icon positioning to `flex items-center justify-between gap-2`, matching the Active FTE layout.
+- Remove `pr-6` padding hack from the value spans since flex + gap handles spacing.
+- Remove `absolute right-2 top-1/2 -translate-y-1/2` from the icon elements and add `shrink-0`.
 
-Line 252-275 becomes:
+The special shift button becomes:
 ```tsx
 <button
   className={cn(
     "w-full h-full text-left px-4 py-2",
-    "text-sm font-medium",
+    "text-sm font-normal text-foreground",
     "hover:bg-muted/50 transition-colors",
     "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-    "flex items-center justify-between",
-    isModified && "text-primary",
-    className
+    "flex items-center justify-between gap-2"
   )}
   type="button"
 >
-  <span>{value != null ? value : '...'}</span>
-  {isModified ? (
-    <RotateCcw className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0" onClick={handleRevert} />
-  ) : (
-    <Pencil className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-  )}
+  {/* value span without pr-6 */}
+  {/* icon without absolute positioning, with shrink-0 */}
 </button>
 ```
 
-Key change: Replaced `text-center` + absolute icon positioning with `flex items-center justify-between` for a clean left-value, right-icon layout.
-
-**3. `src/components/editable-table/cells/ShiftCell.tsx` (Shift)**
-- Already uses left-aligned text with icon on the right for special shifts -- no change needed there.
-- For normal (non-special) shifts, the value is left-aligned via CellButton -- already correct.
-
 ### Summary
-Two files changed, one file unchanged. The result will be a consistent layout across all three columns matching the reference image.
+Two files changed. Both cell types will now use `flex items-center justify-between gap-2` matching the header's `gap-2` spacing pattern for visual consistency.
