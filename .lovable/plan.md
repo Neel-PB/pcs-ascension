@@ -1,55 +1,52 @@
 
 
-## Fix: Tour Leaving UI Unresponsive After Finish/Skip
+## Fix: Broaden Overflow Cleanup Selectors in StaffingTour
 
 ### Root Cause
 
-When Joyride runs, it sets `overflow: hidden` on `document.body` and sometimes on scroll parent containers to control scrolling during the tour. The `StaffingTour` component does NOT clean up these styles when the tour finishes or is skipped, leaving the page locked.
+The `resetScroll` function in `StaffingTour.tsx` only clears inline `overflow` styles on elements matching:
+- `[class*="overflow-y-auto"]`
+- `[class*="overflow-x-auto"]`
 
-The `PositionsTour` already has this fix (lines 32-47) with:
-- `document.body.style.overflow = ''`
-- Clearing inline overflow on table containers
-- Delayed resets at 100ms and 300ms to catch async Joyride cleanup
+But several scroll containers use different overflow classes that are NOT matched:
+- **`Table` component wrapper** (table.tsx line 8): uses `overflow-auto` (no `-y-` or `-x-` prefix)
+- **`main` element** (ShellLayout line 53): uses `overflow-y-scroll` (not `overflow-y-auto`)
+- **Variance table container** (VarianceAnalysis.tsx line 723): uses `overflow-hidden overflow-x-auto`
 
-The `StaffingTour` is missing all of this cleanup.
+When Joyride sets inline `overflow: hidden` on these containers during the tour, the cleanup misses them, leaving the entire page frozen and unscrollable.
 
 ### Fix
 
-Update `StaffingTour.tsx` to add the same cleanup logic from `PositionsTour`:
-
-**`src/components/tour/StaffingTour.tsx`** -- Update the `handleCallback` finish/skip block:
+Update `StaffingTour.tsx` to use a broader selector that catches ALL overflow containers:
 
 ```typescript
-if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
-  // Clear body overflow that Joyride may have set
-  document.body.style.overflow = '';
-  completeTour();
-
-  const resetScroll = () => {
-    const mainContainer = document.querySelector('main');
-    if (mainContainer) {
-      mainContainer.scrollTo({ top: 0, behavior: 'instant' });
-      (mainContainer as HTMLElement).style.overflow = '';
-    }
-    // Clear any overflow locks on scroll containers
-    const scrollContainers = document.querySelectorAll('[class*="overflow-y-auto"], [class*="overflow-x-auto"]');
-    scrollContainers.forEach(el => {
-      (el as HTMLElement).style.overflow = '';
-      el.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    });
-  };
-
-  // Delayed resets to catch Joyride's async DOM cleanup
-  setTimeout(resetScroll, 100);
-  setTimeout(resetScroll, 300);
-}
+const resetScroll = () => {
+  const mainContainer = document.querySelector('main');
+  if (mainContainer) {
+    mainContainer.scrollTo({ top: 0, behavior: 'instant' });
+    (mainContainer as HTMLElement).style.overflow = '';
+  }
+  // Match ALL overflow containers: overflow-auto, overflow-y-auto, overflow-x-auto, overflow-y-scroll, etc.
+  const scrollContainers = document.querySelectorAll(
+    '[class*="overflow-auto"], [class*="overflow-y-auto"], [class*="overflow-x-auto"], [class*="overflow-y-scroll"], [class*="overflow-x-scroll"]'
+  );
+  scrollContainers.forEach(el => {
+    (el as HTMLElement).style.overflow = '';
+    (el as HTMLElement).style.overflowX = '';
+    (el as HTMLElement).style.overflowY = '';
+  });
+};
 ```
 
-Also add `disableScrollParentFix` prop to the Joyride component (matching PositionsTour) to prevent Joyride from aggressively modifying scroll parent styles.
+Key changes:
+1. Add `[class*="overflow-auto"]` to catch the Table component wrapper
+2. Add `[class*="overflow-y-scroll"]` and `[class*="overflow-x-scroll"]` to catch the main element
+3. Clear `style.overflowX` and `style.overflowY` in addition to `style.overflow`, since Joyride may set axis-specific inline styles
+4. Remove the `scrollTo` calls from container cleanup (only reset scroll on `main`) to avoid jarring jumps on the table
 
-### Single File Changed
+### File Changed
 
 | File | Change |
 |------|--------|
-| `src/components/tour/StaffingTour.tsx` | Add body/container overflow cleanup on finish/skip, add delayed resets, add `disableScrollParentFix` prop |
+| `src/components/tour/StaffingTour.tsx` | Broaden overflow cleanup selectors, clear overflowX/overflowY inline styles |
 
