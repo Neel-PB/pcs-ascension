@@ -1,51 +1,87 @@
 
 
-## Add Individual Filter Steps to Staffing Summary Tour
+## Show Demo Dropdown Previews in Filter Tour Steps
 
-### Overview
+### Problem
+The tour highlights each filter dropdown but doesn't show what's inside. Users can't see what the dropdown contains during the guided tour.
 
-Split the current single "Filter Bar" tour step into individual steps for each filter dropdown (Region, Market, Facility, Department, Clear button, and More Filters), explaining what each does without triggering any data fetches.
+### Solution
+Embed mini visual mockups of each dropdown directly inside the tour tooltip content. This gives users a "demo" view of what each filter looks like when opened, without actually opening dropdowns or fetching data.
 
 ### Changes
 
-**1. Add `data-tour` attributes to filter elements in `src/components/staffing/FilterBar.tsx`**
+**1. Update `TourTooltip` to support JSX content (`src/components/tour/TourTooltip.tsx`)**
 
-Add `data-tour` attributes to each filter's outer wrapper `div`:
+Currently the tooltip renders `step.content as string` inside a `<p>` tag. Change it to render `step.content` as a React node (`React.ReactNode`) so we can pass rich JSX with styled mock dropdown previews.
 
-| Element | Attribute |
-|---------|-----------|
-| Region Select wrapper | `data-tour="filter-region"` |
-| Market Select wrapper | `data-tour="filter-market"` |
-| Facility Popover wrapper | `data-tour="filter-facility"` |
-| Department Popover wrapper | `data-tour="filter-department"` |
-| Clear Filters Button | `data-tour="filter-clear"` |
-| CombinedOptionalFilters / optional filters div | `data-tour="filter-more"` |
+Replace:
+```tsx
+<p className="text-sm text-muted-foreground leading-relaxed">
+  {step.content as string}
+</p>
+```
+With:
+```tsx
+<div className="text-sm text-muted-foreground leading-relaxed">
+  {step.content}
+</div>
+```
 
-**2. Expand `staffingSteps` in `src/components/tour/tourSteps.ts`**
+Also widen the card slightly for filter steps (bump from `w-[340px]` to `max-w-[400px] w-auto min-w-[340px]`).
 
-Replace the single "Filter Bar" step (step 1) with 7 steps:
+**2. Create filter demo preview components (`src/components/tour/FilterDemoPreview.tsx`)**
 
-| # | Target | Title | Content |
-|---|--------|-------|---------|
-| 1 | `[data-tour="filter-bar"]` | Filter Bar | Use these cascading filters to narrow staffing data. Selecting a higher-level filter updates the options available in lower-level filters. |
-| 2 | `[data-tour="filter-region"]` | Region Filter | Select a Region to scope all data to that geographic area. Choosing a region updates the available Markets, Facilities, and Departments below. |
-| 3 | `[data-tour="filter-market"]` | Market Filter | Select a Market within the chosen Region. This further narrows Facility and Department options. |
-| 4 | `[data-tour="filter-facility"]` | Facility Filter | Search and select a specific Facility. This is a searchable dropdown -- type a name or ID to find it quickly. Selecting a facility scopes Departments to that location. |
-| 5 | `[data-tour="filter-department"]` | Department Filter | Search and select a Department. Also searchable by name or ID. Once selected, all KPIs and tables reflect only that department's data. |
-| 6 | `[data-tour="filter-clear"]` | Clear Filters | Click this button to reset all filters back to their defaults. It is disabled when no filters are active. |
-| 7 | `[data-tour="filter-more"]` | More Filters | Additional filters for Submarket, Level 2, and PSTAT. Use these for finer-grained analysis without changing the primary hierarchy. |
+A small reusable component that renders a mock dropdown list showing 3-4 example items with the same styling as the real dropdowns (rounded border, items with hover state, search input placeholder for Facility/Department).
 
-The remaining steps (Tab Navigation, KPI overview, individual KPIs, etc.) follow after these.
+Variants:
+- **SimpleSelect preview** (Region, Market): Shows "All Regions" + 2-3 example region names in a bordered list
+- **Searchable preview** (Facility, Department): Shows a search input placeholder + name/ID two-column grid with 2-3 example rows
+- **More Filters preview**: Shows Submarket, Level 2, PSTAT labels
 
-**3. Update step count in `src/components/support/UserGuidesTab.tsx`**
+**3. Update filter tour steps in `tourSteps.ts` to use JSX content**
 
-Update the staffing summary `stepCount` from 26 to 32 (added 6 new filter steps).
+Replace the plain string `content` for each filter step with JSX that includes:
+- The text description (same as before)
+- A `FilterDemoPreview` component below the text showing the mock dropdown
+
+Example for Region:
+```tsx
+content: (
+  <div className="space-y-3">
+    <p>Select a Region to scope all data to that geographic area. Choosing a region updates the available Markets, Facilities, and Departments below.</p>
+    <FilterDemoPreview variant="simple" items={['All Regions', 'East', 'Gulf Coast', 'West']} />
+  </div>
+)
+```
+
+Example for Facility (searchable):
+```tsx
+content: (
+  <div className="space-y-3">
+    <p>Search and select a specific Facility. Type a name or ID to find it quickly.</p>
+    <FilterDemoPreview variant="searchable" items={[
+      { name: 'St. Vincent Hospital', id: 'FAC001' },
+      { name: 'Sacred Heart Medical', id: 'FAC002' },
+      { name: 'Providence Clinic', id: 'FAC003' },
+    ]} />
+  </div>
+)
+```
+
+### Mock Dropdown Styling
+
+The demo preview will be a small bordered container (matching the app theme) with:
+- A light background (`bg-muted/50`) and rounded border
+- For searchable variants: a disabled search input at top with placeholder text
+- 3-4 list items with padding, the first one highlighted (like "All Regions" selected)
+- Items styled to match actual dropdown appearance
+- Max height constrained so it doesn't make the tooltip too tall
 
 ### Files changed
 
 | File | Change |
 |------|--------|
-| `src/components/staffing/FilterBar.tsx` | Add `data-tour` attributes to Region, Market, Facility, Department wrappers, Clear button, and optional filters wrapper |
-| `src/components/tour/tourSteps.ts` | Replace single "Filter Bar" step with 7 individual filter steps in `staffingSteps` |
-| `src/components/support/UserGuidesTab.tsx` | Update stepCount 26 -> 32 |
+| `src/components/tour/TourTooltip.tsx` | Render content as ReactNode instead of string; slightly wider card |
+| `src/components/tour/FilterDemoPreview.tsx` | New component with Simple and Searchable mock dropdown variants |
+| `src/components/tour/tourSteps.ts` | Update 6 filter steps (Region, Market, Facility, Department, Clear, More Filters) to use JSX content with demo previews |
 
