@@ -1,45 +1,27 @@
 
 
-## Fix: Tour exit causes layout shift in Positions module
+## Fix: Scroll disappears after tour finishes/skips
 
-### Problem
-When the Positions tour finishes or is skipped, the table appears shifted because:
+### Root Cause
+React Joyride sets `overflow: hidden` on `document.body` during the tour to prevent background scrolling. When the tour ends, Joyride should restore the original overflow -- but it sometimes fails to clean up, leaving `overflow: hidden` on the body. Since the shell layout relies on the `main` element for scrolling (which inherits from body overflow), this breaks the scroll.
 
-1. During the tour, `scrollIntoView({ inline: 'center' })` horizontally scrolls the table container to center targets like Active FTE and Shift cells
-2. On tour completion, only vertical scroll is reset -- the horizontal scroll on the table container (`overflow-x-auto`) is never restored
-3. The selector `[class*="overflow-y-auto"]` used in cleanup doesn't match the main shell container (which uses `overflow-y-scroll`)
+### Solution
+Two changes in `src/components/tour/PositionsTour.tsx`:
 
-### Changes
+1. **Add `disableScrolling={false}`** to the Joyride component -- this tells Joyride not to touch `body` overflow at all, matching the pattern used in `StaffingTour` which doesn't have this issue.
 
-**`src/components/tour/PositionsTour.tsx`** -- Fix the `handleCallback` cleanup logic:
-
-1. On `STATUS.FINISHED` or `STATUS.SKIPPED`, also reset horizontal scroll on the table container by querying `[class*="overflow-x-auto"]` and setting `scrollLeft: 0`
-2. Fix the main container selector to target `main` directly (already done) instead of relying on `[class*="overflow-y-auto"]` which doesn't match `overflow-y-scroll`
-3. Also reset horizontal scroll after each `scrollIntoView` step to prevent mid-tour layout drift
+2. **Force-reset `document.body.style.overflow`** in the completion handler as a safety net, ensuring the body overflow is always restored to empty (`""`) when the tour finishes or is skipped.
 
 ### Technical Detail
 
-The completion handler will become:
-
-```
-if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
-  // Reset vertical scroll
-  const mainContainer = document.querySelector('main');
-  if (mainContainer) {
-    mainContainer.scrollTo({ top: 0, behavior: 'instant' });
-  }
-
-  // Reset horizontal scroll on table container
-  const tableContainer = document.querySelector('[class*="overflow-x-auto"]');
-  if (tableContainer) {
-    tableContainer.scrollTo({ left: 0, behavior: 'instant' });
-  }
-
-  completeTour();
-}
+In the `handleCallback` completion block, add:
+```tsx
+document.body.style.overflow = '';
 ```
 
-The step handler will also be updated to avoid `inline: 'center'` which causes horizontal scroll shifts -- changing to `inline: 'nearest'` or removing the `scrollIntoView` call for cell-level targets and only scrolling the main container vertically.
+On the Joyride component, add:
+```tsx
+disableScrolling={false}
+```
 
-### Result
-Exiting the tour (skip or finish) will fully restore scroll position, preventing any layout shift.
+This is a single-file change to `src/components/tour/PositionsTour.tsx`.
