@@ -272,7 +272,7 @@ export function FilterBar({
       <div className={`flex flex-wrap xl:flex-nowrap gap-2 xl:gap-3 items-center ${className}`}>
         {/* Region Filter - only show if user has permission */}
         {filterPermissions.region && (
-          <div className="relative">
+          <div className="relative" data-tour="filter-region">
             <Select value={selectedRegion} onValueChange={onRegionChange} disabled={isRegionDisabled}>
               <SelectTrigger className={`${isCompact ? 'w-[120px]' : 'w-[150px]'} bg-background border-border [&>span]:truncate ${isRegionDisabled ? 'pr-8' : ''}`}>
                 <SelectValue placeholder="Select region" />
@@ -308,7 +308,7 @@ export function FilterBar({
 
         {/* Market Filter - only show if user has permission */}
         {filterPermissions.market && (
-          <div className="relative">
+          <div className="relative" data-tour="filter-market">
             <Select value={selectedMarket} onValueChange={onMarketChange} disabled={isMarketDisabled}>
               <SelectTrigger className={`${isCompact ? 'w-[120px]' : 'w-[150px]'} bg-background border-border [&>span]:truncate ${isMarketDisabled ? 'pr-8' : ''}`}>
                 <SelectValue placeholder="Select market" />
@@ -344,7 +344,7 @@ export function FilterBar({
 
         {/* Facility Filter - Searchable Popover + Command */}
         {filterPermissions.facility && (
-          <div className="relative">
+          <div className="relative" data-tour="filter-facility">
             <Popover open={facilityOpen} onOpenChange={setFacilityOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -434,7 +434,7 @@ export function FilterBar({
 
         {/* Department Filter - Searchable Popover + Command */}
         {filterPermissions.department && (
-          <div className="relative">
+          <div className="relative" data-tour="filter-department">
             <Popover open={departmentOpen} onOpenChange={setDepartmentOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -527,6 +527,7 @@ export function FilterBar({
           variant="ascension"
           size="icon"
           onClick={onClearFilters}
+          data-tour="filter-clear"
           disabled={!hasActiveFilters}
           className="h-9 w-9 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
           title="Clear all filters"
@@ -544,7 +545,7 @@ export function FilterBar({
       {/* RIGHT GROUP: Optional Filters - only show filters user has permission for */}
       {(subfilterPermissions.submarket || subfilterPermissions.level2 || subfilterPermissions.pstat) && (
         isCompact ? (
-          <CombinedOptionalFilters
+          <div data-tour="filter-more"><CombinedOptionalFilters
             selectedSubmarket={selectedSubmarket}
             selectedLevel2={selectedLevel2}
             selectedPstat={selectedPstat}
@@ -555,9 +556,9 @@ export function FilterBar({
             level2Options={level2Options}
             pstatOptions={pstatOptions}
             submarketDisabled={selectedMarket === "all-markets" || availableSubmarkets.length === 0}
-          />
+          /></div>
         ) : (
-          <div className="flex flex-nowrap gap-3 items-center">
+          <div className="flex flex-nowrap gap-3 items-center" data-tour="filter-more">
             {/* Submarket Filter */}
             {subfilterPermissions.submarket && (
               <Select 
