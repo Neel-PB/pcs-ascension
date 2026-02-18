@@ -12,7 +12,7 @@ export function NumberCell({ value, suffix, className, onClick }: NumberCellProp
   const displayValue = value != null ? `${value}${suffix || ''}` : '—';
   
   return (
-    <CellButton onClick={onClick} className={cn("text-center font-medium", className)}>
+    <CellButton onClick={onClick} className={cn("font-medium", className)}>
       <span>{displayValue}</span>
     </CellButton>
   );
