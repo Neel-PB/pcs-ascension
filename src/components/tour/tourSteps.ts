@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { FilterDemoPreview } from './FilterDemoPreview';
 import { TourDemoPreview } from './TourDemoPreview';
 import { PlanningDemoPreview } from './PlanningDemoPreview';
+import { VarianceDemoPreview } from './VarianceDemoPreview';
 
 const filterContent = (text: string, preview: { variant: 'simple' | 'searchable' | 'labels'; items?: string[] | { name: string; id: string }[]; labels?: string[] }) =>
   createElement('div', { className: 'space-y-3' },
@@ -20,6 +21,12 @@ const planningDemoContent = (text: string, variant: string, config?: any) =>
   createElement('div', { className: 'space-y-3' },
     createElement('p', null, text),
     createElement(PlanningDemoPreview, { variant, config } as any)
+  );
+
+const varianceDemoContent = (text: string, variant: string) =>
+  createElement('div', { className: 'space-y-3' },
+    createElement('p', null, text),
+    createElement(VarianceDemoPreview, { variant } as any)
   );
 
 export const staffingSteps: Step[] = [
@@ -352,7 +359,10 @@ export const varianceSteps: Step[] = [
   {
     target: '[data-tour="variance-header"]',
     title: 'Variance Analysis',
-    content: 'This table shows FTE variance by skill type across your selected scope. Data adapts automatically based on your filter selections (Region, Market, Facility, Department).',
+    content: varianceDemoContent(
+      'This table shows FTE variance by skill type across your selected scope. Data adapts automatically based on your filter selections (Region, Market, Facility, Department).',
+      'variance-table-preview'
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
@@ -369,16 +379,19 @@ export const varianceSteps: Step[] = [
   {
     target: '[data-tour="variance-skill-headers"]',
     title: 'Skill Column Headers',
-    content: 'Variance is broken down by skill type: CL (Clinical Lead), RN (Registered Nurse), PCT (Patient Care Tech), HUC (Health Unit Coordinator), and Overhead.',
+    content: varianceDemoContent(
+      'Variance is broken down by skill type. Each skill group shows Day (D), Night (N), and Total (T) sub-columns.',
+      'variance-skill-columns'
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="variance-table"]',
     title: 'Expandable Groups',
-    content: demoContent(
+    content: varianceDemoContent(
       'Rows are grouped by Region, Submarket, or Facility depending on your filter level. Click any group row to expand and see individual breakdowns.',
-      'expandable-row'
+      'variance-groups'
     ),
     placement: 'top',
     disableBeacon: true,
@@ -386,7 +399,10 @@ export const varianceSteps: Step[] = [
   {
     target: '[data-tour="variance-actions"]',
     title: 'Action Buttons',
-    content: 'Use these buttons to refresh data, download the table as CSV, or expand to a full-screen view.',
+    content: planningDemoContent(
+      'Use these buttons to refresh data, download the table as CSV, or expand to a full-screen view.',
+      'planning-actions'
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
