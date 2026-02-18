@@ -28,7 +28,7 @@ export const staffingSteps: Step[] = [
     title: 'Region Filter',
     content: filterContent(
       'Select a Region to scope all data to that geographic area. Choosing a region updates the available Markets, Facilities, and Departments below.',
-      { variant: 'simple', items: ['All Regions', 'East', 'Gulf Coast', 'West'] }
+      { variant: 'simple', items: ['All Regions', 'Region 1', 'Region 2'] }
     ),
     placement: 'bottom',
     disableBeacon: true,
@@ -38,7 +38,7 @@ export const staffingSteps: Step[] = [
     title: 'Market Filter',
     content: filterContent(
       'Select a Market within the chosen Region. This further narrows Facility and Department options.',
-      { variant: 'simple', items: ['All Markets', 'Indianapolis', 'Nashville', 'Wichita'] }
+      { variant: 'simple', items: ['All Markets', 'Baltimore', 'Florida', 'Illinois', 'Indiana'] }
     ),
     placement: 'bottom',
     disableBeacon: true,
@@ -49,9 +49,9 @@ export const staffingSteps: Step[] = [
     content: filterContent(
       'Search and select a specific Facility. Type a name or ID to find it quickly. Selecting a facility scopes Departments to that location.',
       { variant: 'searchable', items: [
-        { name: 'St. Vincent Hospital', id: 'FAC001' },
-        { name: 'Sacred Heart Medical', id: 'FAC002' },
-        { name: 'Providence Clinic', id: 'FAC003' },
+        { name: 'Alexian Brothers Behavioral', id: '40078' },
+        { name: 'Amita Health Mercy Ctr Aurora', id: '40012' },
+        { name: 'Ascension Saint Thomas Midtown', id: '46001' },
       ]}
     ),
     placement: 'bottom',
@@ -63,9 +63,9 @@ export const staffingSteps: Step[] = [
     content: filterContent(
       'Search and select a Department. Also searchable by name or ID. Once selected, all KPIs and tables reflect only that department\'s data.',
       { variant: 'searchable', items: [
-        { name: 'ICU', id: 'DEP101' },
-        { name: 'Emergency', id: 'DEP202' },
-        { name: 'Med-Surg', id: 'DEP303' },
+        { name: 'Adult ECMO 001', id: '10298' },
+        { name: 'Cardiac Care', id: '11012' },
+        { name: 'Cardiac Critical Care Unit', id: '14454' },
       ]}
     ),
     placement: 'bottom',
