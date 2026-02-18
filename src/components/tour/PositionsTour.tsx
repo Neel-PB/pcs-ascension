@@ -31,16 +31,15 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
     }
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
       document.body.style.overflow = '';
-      const mainContainer = document.querySelector('main');
-      if (mainContainer) {
-        mainContainer.scrollTo({ top: 0, behavior: 'instant' });
-      }
-      // Reset horizontal scroll on table container
-      const tableContainer = document.querySelector('[class*="overflow-x-auto"]');
-      if (tableContainer) {
-        tableContainer.scrollTo({ left: 0, behavior: 'instant' });
-      }
       completeTour();
+
+      const resetScroll = () => {
+        document.querySelector('main')?.scrollTo({ top: 0, behavior: 'instant' });
+        document.querySelector('[class*="overflow-x-auto"]')?.scrollTo({ left: 0, behavior: 'instant' });
+      };
+
+      setTimeout(resetScroll, 100);
+      setTimeout(resetScroll, 300);
     }
   };
 
