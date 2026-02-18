@@ -1,53 +1,58 @@
 
 
-## Add Header Tour Guide
+## Expand Staffing Summary Tour with Individual KPI Steps
 
-Create a new tour for the app header bar that walks users through each element: the search bar, notifications bell, theme toggle, and user menu.
+### Overview
+
+Break down the current "KPI Cards" overview step into granular steps: first show the full KPI sections as an overview, then walk through each individual KPI card explaining what it measures.
 
 ### Changes
 
-**1. New tour steps file: `src/components/tour/headerTourSteps.ts`**
+**1. Add `data-tour` prop to `KPICard` component (`src/components/staffing/KPICard.tsx`)**
 
-Define 4 steps targeting the header elements:
+Add a new optional `dataTour?: string` prop and apply it as `data-tour={dataTour}` on the outer `motion.div` wrapper.
 
-| Step | Target | Title | Content |
-|------|--------|-------|---------|
-| 1 | `[data-tour="header-search"]` | Global Search | Click the search bar or press Ctrl+K to open the command palette. Search across all pages and navigation items. |
-| 2 | `[data-tour="header-notifications"]` | Notifications | Click the bell to open the notification panel. A red badge appears when you have unread items. |
-| 3 | `[data-tour="header-theme"]` | Theme Toggle | Click to cycle between Light, Dark, and System themes. The icon updates to reflect the current mode. |
-| 4 | `[data-tour="header-user-menu"]` | User Menu | Click your avatar to access your Profile, take a guided Tour of the current page, view all User Guides, or Log Out. |
+**2. Pass `data-tour` attributes per KPI in `DraggableKPISection.tsx`**
 
-**2. Add `data-tour` attributes to `src/components/shell/AppHeader.tsx`**
+Map each KPI's `id` to a `data-tour` attribute on the `KPICard`, e.g. `data-tour="kpi-vacancy-rate"`, `data-tour="kpi-hired-ftes"`, etc.
 
-- Wrap the search `div` with `data-tour="header-search"`
-- Add `data-tour="header-notifications"` to the notifications `Button`
-- Add `data-tour="header-theme"` to the theme `Button`
-- Add `data-tour="header-user-menu"` to the user menu `DropdownMenuTrigger` Button
+**3. Expand `staffingSteps` in `src/components/tour/tourSteps.ts`**
 
-**3. New tour component: `src/components/tour/HeaderTour.tsx`**
+After the existing "KPI Cards" overview step (step 3), insert 18 new steps -- one per KPI card:
 
-A simple `OverlayTour` wrapper with `tourKey="header"` and the header steps. Rendered inside `AppHeader` (or `ShellLayout`).
+| # | Target | Title | Content (brief description of the metric) |
+|---|--------|-------|----|
+| 4 | `[data-tour="kpi-vacancy-rate"]` | Vacancy Rate | Percentage of approved budgeted positions currently unfilled. |
+| 5 | `[data-tour="kpi-hired-ftes"]` | Hired FTEs | Total Full-Time, Part-Time, and PRN employees currently on staff. |
+| 6 | `[data-tour="kpi-target-ftes"]` | Target FTEs | Number of FTEs needed to meet budgeted staffing levels based on volume. |
+| 7 | `[data-tour="kpi-fte-variance"]` | FTE Variance | Gap between Target FTEs and Hired FTEs. Positive means understaffed. |
+| 8 | `[data-tour="kpi-open-reqs"]` | Open Reqs | Count of approved requisitions not yet filled. |
+| 9 | `[data-tour="kpi-req-variance"]` | Req Variance | Remaining gap after accounting for open requisitions against FTE variance. |
+| 10 | `[data-tour="kpi-12m-monthly"]` | 12M Average | Rolling 12-month average monthly volume of patient encounters or units of service. |
+| 11 | `[data-tour="kpi-12m-daily"]` | 12M Daily Average | Average daily volume over the past 12 months. |
+| 12 | `[data-tour="kpi-3m-low"]` | 3M Low | Average daily volume during the 3 lowest-volume months. Used for minimum staffing. |
+| 13 | `[data-tour="kpi-3m-high"]` | 3M High | Average daily volume during the 3 highest-volume months. Used for peak staffing. |
+| 14 | `[data-tour="kpi-target-vol"]` | Target Volume | Expected daily volume used for staffing calculations. Green border means it is active. |
+| 15 | `[data-tour="kpi-override-vol"]` | Override Volume | Manually set volume that supersedes the target. Orange border means it is active. |
+| 16 | `[data-tour="kpi-paid-ftes"]` | Paid FTEs | Total labor resources the organization pays for, productive and non-productive. |
+| 17 | `[data-tour="kpi-contract-ftes"]` | Contract FTEs | FTEs supplied by external agencies -- travel nurses, agency staff, temp contractors. |
+| 18 | `[data-tour="kpi-overtime-ftes"]` | Overtime FTEs | Hours worked above regular commitment, converted to FTE equivalent. |
+| 19 | `[data-tour="kpi-total-prn"]` | Total PRN | PRN staff hours converted to FTE equivalent. Used for flex coverage. |
+| 20 | `[data-tour="kpi-total-np"]` | Total NP% | Percentage of paid hours not spent on direct patient care (PTO, training, admin). |
+| 21 | `[data-tour="kpi-total-fullpart-ftes"]` | Employed Productive FTEs | Full-Time and Part-Time productive FTEs after excluding non-productive hours. |
 
-**4. Mount the tour in `src/components/shell/AppHeader.tsx`**
+The remaining existing steps (Trend Chart, Definition, Volume Colors, Target Split Badge, Hired Split Badge) follow after these.
 
-Add `<HeaderTour />` inside the header component.
+**4. Update step count in `UserGuidesTab.tsx`**
 
-**5. Register in User Guides catalog: `src/components/support/UserGuidesTab.tsx`**
-
-Add a new entry in the guide catalog:
-- tourKey: `header`
-- title: "Header Bar"
-- description: "Global search, notifications, theme toggle, and user menu."
-- stepCount: 4
-- category: "Overlays" (since it's globally available, not tied to a specific page)
-- isOverlay: true (no route navigation needed)
+Update the staffing summary `stepCount` from 8 to 26.
 
 ### Files changed
 
 | File | Change |
 |------|--------|
-| `src/components/tour/headerTourSteps.ts` | New file with 4 tour steps |
-| `src/components/tour/HeaderTour.tsx` | New OverlayTour wrapper component |
-| `src/components/shell/AppHeader.tsx` | Add data-tour attributes + mount HeaderTour |
-| `src/components/support/UserGuidesTab.tsx` | Add "Header Bar" to guide catalog |
+| `src/components/staffing/KPICard.tsx` | Add `dataTour` prop, apply as `data-tour` on wrapper |
+| `src/components/staffing/DraggableKPISection.tsx` | Pass `dataTour={`kpi-${kpi.id}`}` to each KPICard |
+| `src/components/tour/tourSteps.ts` | Insert 18 individual KPI steps into `staffingSteps` |
+| `src/components/support/UserGuidesTab.tsx` | Update stepCount 8 -> 26 |
 
