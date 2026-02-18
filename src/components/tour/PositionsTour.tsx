@@ -30,6 +30,7 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
       }
     }
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+      document.body.style.overflow = '';
       const mainContainer = document.querySelector('main');
       if (mainContainer) {
         mainContainer.scrollTo({ top: 0, behavior: 'instant' });
@@ -51,6 +52,7 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
       continuous
       showSkipButton
       scrollToFirstStep={false}
+      disableScrolling={false}
       disableOverlayClose
       callback={handleCallback}
       tooltipComponent={TourTooltip}
