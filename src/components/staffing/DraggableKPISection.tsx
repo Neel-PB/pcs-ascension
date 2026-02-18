@@ -81,6 +81,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
             <KPICard 
               key={kpi.id} 
               {...kpi}
+              dataTour={`kpi-${kpi.id}`}
               employmentBreakdown={kpi.id === 'hired-ftes' || kpi.id === 'target-ftes' ? undefined : kpi.employmentBreakdown}
               dataTourChart={isFirstWithChart ? "kpi-chart-action" : undefined}
               dataTourInfo={isFirstWithChart ? "kpi-info-action" : undefined}

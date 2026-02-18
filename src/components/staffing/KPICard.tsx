@@ -35,6 +35,7 @@ export interface KPICardProps {
   xAxisLabels?: string[];
   employmentBreakdown?: EmploymentBreakdown;
   breakdownVariant?: 'green' | 'red' | 'orange';
+  dataTour?: string;
   className?: string;
   dataTourChart?: string;
   dataTourInfo?: string;
@@ -57,6 +58,7 @@ export function KPICard({
   xAxisLabels,
   employmentBreakdown,
   breakdownVariant,
+  dataTour,
   className,
   dataTourChart,
   dataTourInfo,
@@ -79,6 +81,7 @@ export function KPICard({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay }}
         className="relative"
+        data-tour={dataTour}
       >
         <Card
           className={cn(
