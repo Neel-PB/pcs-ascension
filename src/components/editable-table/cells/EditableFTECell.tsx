@@ -255,13 +255,13 @@ export function EditableFTECell({
             "text-sm font-medium",
             "hover:bg-muted/50 transition-colors",
             "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-            "flex items-center justify-between gap-2",
+            "flex items-center gap-2",
             isModified && "text-primary",
             className
           )}
           type="button"
         >
-          <span>{value != null ? value : '—'}</span>
+          <span className="flex-1">{value != null ? value : '—'}</span>
           {isModified ? (
             <RotateCcw
               className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
