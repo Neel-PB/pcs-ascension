@@ -33,11 +33,16 @@ export function StaffingTour({ activeTab = 'summary' }: StaffingTourProps) {
         if (mainContainer) {
           mainContainer.scrollTo({ top: 0, behavior: 'instant' });
           (mainContainer as HTMLElement).style.overflow = '';
+          (mainContainer as HTMLElement).style.overflowX = '';
+          (mainContainer as HTMLElement).style.overflowY = '';
         }
-        const scrollContainers = document.querySelectorAll('[class*="overflow-y-auto"], [class*="overflow-x-auto"]');
+        const scrollContainers = document.querySelectorAll(
+          '[class*="overflow-auto"], [class*="overflow-y-auto"], [class*="overflow-x-auto"], [class*="overflow-y-scroll"], [class*="overflow-x-scroll"]'
+        );
         scrollContainers.forEach(el => {
           (el as HTMLElement).style.overflow = '';
-          el.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+          (el as HTMLElement).style.overflowX = '';
+          (el as HTMLElement).style.overflowY = '';
         });
       };
 
