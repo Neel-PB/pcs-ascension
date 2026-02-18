@@ -3,6 +3,7 @@ import { createElement } from 'react';
 type TourDemoVariant =
   | 'mini-chart'
   | 'kpi-info'
+  | 'kpi-actions'
   | 'volume-colors'
   | 'split-badge'
   | 'tab-pills'
@@ -13,12 +14,12 @@ type TourDemoVariant =
 
 interface TourDemoPreviewProps {
   variant: TourDemoVariant;
-  /** For split-badge: 'green' | 'orange'. For toggle-pair: labels [active, inactive]. */
   config?: {
     color?: 'green' | 'orange';
     labels?: [string, string];
     definition?: string;
     formula?: string;
+    hasChart?: boolean;
   };
 }
 
@@ -233,12 +234,41 @@ const TogglePair = ({ labels = ['Hired', 'Active'] }: { labels?: [string, string
   </div>
 );
 
+const KPIActions = ({ hasChart = true }: { hasChart?: boolean }) => (
+  <div className="rounded-lg border border-border bg-muted/50 p-3 space-y-2.5 mt-1">
+    {hasChart && (
+      <div className="flex items-center gap-2.5">
+        <div className="flex items-center justify-center w-7 h-7 rounded bg-accent shrink-0">
+          <svg viewBox="0 0 24 24" className="h-4 w-4 text-muted-foreground" fill="currentColor"><path d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z"/></svg>
+        </div>
+        <div className="h-px w-3 bg-border shrink-0" />
+        <div>
+          <div className="text-xs font-semibold text-foreground">Trend Chart</div>
+          <div className="text-[10px] text-muted-foreground leading-snug">View 12-month historical trends and breakdowns.</div>
+        </div>
+      </div>
+    )}
+    <div className="flex items-center gap-2.5">
+      <div className="flex items-center justify-center w-7 h-7 rounded bg-accent shrink-0">
+        <svg viewBox="0 0 24 24" className="h-4 w-4 text-muted-foreground" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+      </div>
+      <div className="h-px w-3 bg-border shrink-0" />
+      <div>
+        <div className="text-xs font-semibold text-foreground">Definition</div>
+        <div className="text-[10px] text-muted-foreground leading-snug">See the formula and how this metric is calculated.</div>
+      </div>
+    </div>
+  </div>
+);
+
 export function TourDemoPreview({ variant, config }: TourDemoPreviewProps) {
   switch (variant) {
     case 'mini-chart':
       return <MiniChart />;
     case 'kpi-info':
       return <KPIInfo definition={config?.definition} formula={config?.formula} />;
+    case 'kpi-actions':
+      return <KPIActions hasChart={config?.hasChart} />;
     case 'volume-colors':
       return <VolumeColors />;
     case 'split-badge':
