@@ -234,28 +234,75 @@ const TogglePair = ({ labels = ['Hired', 'Active'] }: { labels?: [string, string
   </div>
 );
 
+const CompactMiniChart = () => {
+  const data = [588, 601, 612, 595, 620, 634, 608, 615, 599, 565, 610, 622];
+  const chartL = 4, chartR = 196, chartT = 4, chartB = 44;
+  const yMin = 540, yMax = 660;
+  const toX = (i: number) => chartL + (i / (data.length - 1)) * (chartR - chartL);
+  const toY = (v: number) => chartB - ((v - yMin) / (yMax - yMin)) * (chartB - chartT);
+  const points = data.map((v, i) => `${toX(i).toFixed(1)},${toY(v).toFixed(1)}`).join(" ");
+  const areaPath = `M${toX(0).toFixed(1)},${toY(data[0]).toFixed(1)} ${data.slice(1).map((v, i) => `L${toX(i + 1).toFixed(1)},${toY(v).toFixed(1)}`).join(" ")} L${toX(data.length - 1).toFixed(1)},${chartB} L${toX(0).toFixed(1)},${chartB} Z`;
+
+  return (
+    <div className="rounded border border-border bg-background/50 p-1.5 mt-1.5">
+      <svg viewBox="0 0 200 48" className="w-full h-12" aria-hidden="true">
+        <defs>
+          <linearGradient id="compactAreaGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={areaPath} fill="url(#compactAreaGrad)" />
+        <polyline fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" points={points} />
+        {data.map((v, i) => (
+          <circle key={i} cx={toX(i)} cy={toY(v)} r="1.5" fill="hsl(var(--primary))" />
+        ))}
+      </svg>
+    </div>
+  );
+};
+
+const CompactDefinition = () => (
+  <div className="rounded border border-border bg-background/50 p-2 mt-1.5 space-y-1.5">
+    <div>
+      <span className="text-[9px] font-semibold text-foreground/60 uppercase tracking-wider">Definition</span>
+      <p className="text-[10px] text-foreground/70 leading-snug">Percentage of approved positions currently unfilled.</p>
+    </div>
+    <div className="border-t border-border/50 pt-1">
+      <span className="text-[9px] font-semibold text-foreground/60 uppercase tracking-wider">Calculation</span>
+      <p className="text-[10px] font-mono text-foreground/70 leading-snug bg-muted/50 rounded px-1.5 py-0.5 mt-0.5">(Target − Hired) / Target × 100</p>
+    </div>
+  </div>
+);
+
 const KPIActions = ({ hasChart = true }: { hasChart?: boolean }) => (
-  <div className="rounded-lg border border-border bg-muted/50 p-3 space-y-2.5 mt-1">
+  <div className="rounded-lg border border-border bg-muted/50 p-3 space-y-3 mt-1">
     {hasChart && (
-      <div className="flex items-center gap-2.5">
-        <div className="flex items-center justify-center w-7 h-7 rounded bg-accent shrink-0">
-          <svg viewBox="0 0 24 24" className="h-4 w-4 text-muted-foreground" fill="currentColor"><path d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z"/></svg>
+      <div className="flex gap-2.5">
+        <div className="flex flex-col items-center shrink-0 pt-1">
+          <div className="flex items-center justify-center w-7 h-7 rounded bg-accent">
+            <svg viewBox="0 0 24 24" className="h-4 w-4 text-muted-foreground" fill="currentColor"><path d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z"/></svg>
+          </div>
+          <div className="w-px flex-1 bg-border mt-1" />
         </div>
-        <div className="h-px w-3 bg-border shrink-0" />
-        <div>
+        <div className="flex-1 min-w-0">
           <div className="text-xs font-semibold text-foreground">Trend Chart</div>
           <div className="text-[10px] text-muted-foreground leading-snug">View 12-month historical trends and breakdowns.</div>
+          <CompactMiniChart />
         </div>
       </div>
     )}
-    <div className="flex items-center gap-2.5">
-      <div className="flex items-center justify-center w-7 h-7 rounded bg-accent shrink-0">
-        <svg viewBox="0 0 24 24" className="h-4 w-4 text-muted-foreground" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+    <div className="flex gap-2.5">
+      <div className="flex flex-col items-center shrink-0 pt-1">
+        <div className="flex items-center justify-center w-7 h-7 rounded bg-accent">
+          <svg viewBox="0 0 24 24" className="h-4 w-4 text-muted-foreground" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+        </div>
+        <div className="w-px flex-1 bg-border mt-1" />
       </div>
-      <div className="h-px w-3 bg-border shrink-0" />
-      <div>
+      <div className="flex-1 min-w-0">
         <div className="text-xs font-semibold text-foreground">Definition</div>
         <div className="text-[10px] text-muted-foreground leading-snug">See the formula and how this metric is calculated.</div>
+        <CompactDefinition />
       </div>
     </div>
   </div>
