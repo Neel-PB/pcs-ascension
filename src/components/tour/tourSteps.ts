@@ -109,7 +109,7 @@ export const staffingSteps: Step[] = [
   {
     target: '[data-tour="kpi-vacancy-rate"]',
     title: 'Vacancy Rate',
-    content: 'Percentage of approved budgeted positions currently unfilled.',
+    content: 'Percentage of approved budgeted positions currently unfilled.\n\nUse the 📊 chart button to view historical trends, or the 👁 eye button to see the full definition and calculation formula. Every KPI card has these actions.',
     placement: 'bottom',
     disableBeacon: true,
   },
