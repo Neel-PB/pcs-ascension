@@ -1,134 +1,63 @@
 
 
-## Consolidate KPI Tour into Single "All-in-One" Steps
+## Enhance KPI Actions Wireframe with Rich Previews
 
-### What We're Doing
+### Problem
 
-Replace the current 3-step pattern (Card -> Chart -> Info) with a single step per KPI that includes:
-1. The KPI description text
-2. A visual wireframe connecting the chart icon to "opens trend chart" and the eye icon to "opens definition/calculation"
+The current `kpi-actions` wireframe in the tour tooltip only shows small icons with text labels ("Trend Chart" and "Definition"). The user wants each row to include a visual preview of what clicking the button actually opens — a mini area chart for the chart icon, and a definition/formula box for the eye icon — connected by visual lines.
 
-This reduces the tour from 66 steps back to ~30, while teaching users about both buttons in context.
+### What Each Row Will Show
 
-### Visual Concept
+**Chart Row (when hasChart is true):**
+- Bar chart icon in a rounded box
+- A connecting line/arrow
+- "Trend Chart" label
+- Below that: a compact version of the mini area chart (smaller than the full `mini-chart` variant — just the SVG line chart with a few data points, no stats footer)
 
-Each KPI tour tooltip will look like:
+**Definition Row:**
+- Eye icon in a rounded box
+- A connecting line/arrow
+- "Definition" label
+- Below that: a compact definition + formula preview (similar to `kpi-info` variant but smaller)
+
+### Visual Layout
 
 ```text
-+--------------------------------------+
-| Vacancy Rate              10 of 30   |
-+--------------------------------------+
-| Percentage of approved budgeted      |
-| positions currently unfilled.        |
-|                                      |
-| +----------------------------------+ |
-| |  [chart icon] --> Trend Chart    | |
-| |  View 12-month historical trends | |
-| |  and breakdowns by skill type.   | |
-| |                                  | |
-| |  [eye icon] --> Definition       | |
-| |  See the formula and how this    | |
-| |  metric is calculated.           | |
-| +----------------------------------+ |
-|                                      |
-| [Skip]            [Back]  [Next]     |
-+--------------------------------------+
++--------------------------------------------+
+| [chart-icon] --- Trend Chart               |
+|                  View 12-month historical   |
+|                  trends and breakdowns.     |
+|                  +------------------------+ |
+|                  | [mini area chart SVG]  | |
+|                  +------------------------+ |
+|                                             |
+| [eye-icon]   --- Definition                |
+|                  See the formula and how    |
+|                  this metric is calculated. |
+|                  +------------------------+ |
+|                  | Definition: ...         | |
+|                  | Calculation: ...        | |
+|                  +------------------------+ |
++--------------------------------------------+
 ```
-
-The wireframe uses the actual BarChart3 and Eye icons from the app, with arrow connectors pointing to their function labels.
 
 ### Technical Changes
 
-**1. `src/components/tour/TourDemoPreview.tsx`**
+**`src/components/tour/TourDemoPreview.tsx`**
 
-Add a new variant called `kpi-actions` that renders a compact wireframe with two rows:
-- Row 1: BarChart3 icon + arrow + "Trend Chart" label + short description
-- Row 2: Eye icon + arrow + "Definition" label + short description
+Update the `KPIActions` component to embed rich visual previews:
 
-The component will accept an optional `config.hasChart` boolean (defaults to true) to handle KPIs without chart data (like some volume KPIs). When `hasChart` is false, only the eye/definition row shows.
+1. **Chart row**: After the "Trend Chart" text, add a compact inline SVG area chart (reuse the data/logic from MiniChart but render a smaller, simplified version — just the line + area fill, no axis labels, no stats footer). Approximately 4-5 lines tall.
 
-```typescript
-const KPIActions = ({ hasChart = true }: { hasChart?: boolean }) => (
-  <div className="rounded-lg border border-border bg-muted/50 p-3 space-y-2">
-    {hasChart && (
-      <div className="flex items-center gap-2">
-        <div className="flex items-center justify-center w-7 h-7 rounded bg-accent">
-          <BarChart3 className="h-4 w-4 text-muted-foreground" />
-        </div>
-        <span className="text-muted-foreground text-xs">--></span>
-        <div>
-          <div className="text-xs font-semibold text-foreground">Trend Chart</div>
-          <div className="text-[10px] text-muted-foreground">View 12-month historical trends and breakdowns.</div>
-        </div>
-      </div>
-    )}
-    <div className="flex items-center gap-2">
-      <div className="flex items-center justify-center w-7 h-7 rounded bg-accent">
-        <Eye className="h-4 w-4 text-muted-foreground" />
-      </div>
-      <span className="text-muted-foreground text-xs">--></span>
-      <div>
-        <div className="text-xs font-semibold text-foreground">Definition</div>
-        <div className="text-[10px] text-muted-foreground">See how this metric is defined and calculated.</div>
-      </div>
-    </div>
-  </div>
-);
-```
+2. **Definition row**: After the "Definition" text, add a compact version of the KPIInfo component — showing "Definition" and "Calculation" sections in a small bordered box with sample text.
 
-Add `'kpi-actions'` to the `TourDemoVariant` type union and the switch statement.
+3. Keep the connecting line (`div className="h-px w-3 bg-border"`) between the icon and the content block.
 
-**2. `src/components/tour/tourSteps.ts`**
-
-- Remove all 36 individual chart/info sub-steps (the `kpi-*-chart` and `kpi-*-info` steps)
-- Update each of the 18 KPI card steps to use `demoContent()` with the new `kpi-actions` variant instead of plain text descriptions
-
-Example for Vacancy Rate:
-```typescript
-{
-  target: '[data-tour="kpi-vacancy-rate"]',
-  title: 'Vacancy Rate',
-  content: demoContent(
-    'Percentage of approved budgeted positions currently unfilled.',
-    'kpi-actions',
-    { hasChart: true }
-  ),
-  placement: 'bottom',
-  disableBeacon: true,
-},
-```
-
-Example for a volume KPI without chart data:
-```typescript
-{
-  target: '[data-tour="kpi-override-vol"]',
-  title: 'Override Volume',
-  content: demoContent(
-    'Manually set volume that supersedes the target. Orange border means it is active.',
-    'kpi-actions',
-    { hasChart: false }
-  ),
-  placement: 'bottom',
-  disableBeacon: true,
-},
-```
-
-**3. `src/components/support/UserGuidesTab.tsx`**
-
-Update the `stepCount` from 66 back to 30 (the original count minus the 2 old generic steps: 32 - 2 = 30).
-
-**4. `src/components/staffing/DraggableKPISection.tsx`**
-
-The per-KPI `dataTourChart` and `dataTourInfo` attributes can stay as-is (they don't hurt anything and the KPI card buttons still need them for accessibility). No changes needed here.
-
-### Step Count
-
-- 7 filter steps + 1 tab nav + 1 KPI sections overview + 18 KPI cards + remaining non-KPI steps = ~30 total steps
+No other files need to change — the `tourSteps.ts` already passes the correct variant and config.
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/tour/TourDemoPreview.tsx` | Add `kpi-actions` variant with chart/eye icon wireframe |
-| `src/components/tour/tourSteps.ts` | Remove 36 chart/info sub-steps, update 18 KPI steps to use `kpi-actions` demo content |
-| `src/components/support/UserGuidesTab.tsx` | Update stepCount from 66 to 30 |
+| `src/components/tour/TourDemoPreview.tsx` | Enhance `KPIActions` component to include inline mini-chart preview and definition/formula preview within each row |
+
