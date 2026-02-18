@@ -274,16 +274,19 @@ export function ContractorsTab({
 
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-      <div className="flex justify-between items-center mb-4 gap-4 flex-shrink-0" data-tour="positions-search-bar">
+      <div className="flex justify-between items-center mb-4 gap-4 flex-shrink-0">
         <SearchField
           placeholder="Search contractors..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full max-w-2xl"
+          data-tour="positions-search"
         />
         
         <div className="flex gap-2 flex-shrink-0">
-          <DataRefreshButton dataSources={['positions_data']} />
+          <span data-tour="positions-refresh">
+            <DataRefreshButton dataSources={['positions_data']} />
+          </span>
           
           <Button
             variant="ascension"
@@ -292,6 +295,7 @@ export function ContractorsTab({
             className="relative"
             aria-label="Filters"
             title="Filters"
+            data-tour="positions-filter-btn"
           >
             <Filter className="h-4 w-4" />
             {activeFilterCount > 0 && (
