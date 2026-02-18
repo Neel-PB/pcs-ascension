@@ -1,38 +1,52 @@
 
 
-## Fix: First Row Active FTE and Shift Cell Styling in Positions Module
+## Fix: Left-align values with icons on the right for Hired FTE, Active FTE, and Shift columns
 
 ### Problem
-In the Employees and Contractors tabs, the first row's "Active FTE" and "Shift" cells are wrapped in a `<div data-tour="...">` element for the guided tour system. This wrapper div has no sizing classes, so it collapses and doesn't fill the grid cell -- breaking the cell alignment and hover behavior on the first row only.
+Currently, Hired FTE and Active FTE values are center-aligned. The user wants all three columns to follow a consistent layout: **value on the left, icon (pencil/revert) on the right**.
 
-### Solution
-Add `className="w-full h-full"` to both tour wrapper divs so they stretch to fill the cell container, making the first row visually identical to all other rows.
+### Changes
 
-### Technical Details
+**1. `src/components/editable-table/cells/NumberCell.tsx` (Hired FTE)**
+- Remove `text-center` from the CellButton className so the value renders left-aligned (CellButton already defaults to `text-left`).
 
-**File 1: `src/pages/positions/EmployeesTab.tsx`**
-
-Line 261 -- change:
-```tsx
-return row.id === firstRowId ? <div data-tour="positions-active-fte-cell">{cell}</div> : cell;
 ```
-to:
-```tsx
-return row.id === firstRowId ? <div data-tour="positions-active-fte-cell" className="w-full h-full">{cell}</div> : cell;
+Before: className={cn("text-center font-medium", className)}
+After:  className={cn("font-medium", className)}
 ```
 
-Line 271 -- change:
+**2. `src/components/editable-table/cells/EditableFTECell.tsx` (Active FTE)**
+- Change the trigger button from `text-center` to `text-left` so the value sits on the left.
+- Change the value `<span>` from `block` (which centers in a text-center parent) to an inline span, and use flexbox layout to position value left and icon right without absolute positioning.
+
+Line 252-275 becomes:
 ```tsx
-return row.id === firstRowId ? <div data-tour="positions-shift-cell">{cell}</div> : cell;
+<button
+  className={cn(
+    "w-full h-full text-left px-4 py-2",
+    "text-sm font-medium",
+    "hover:bg-muted/50 transition-colors",
+    "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+    "flex items-center justify-between",
+    isModified && "text-primary",
+    className
+  )}
+  type="button"
+>
+  <span>{value != null ? value : '...'}</span>
+  {isModified ? (
+    <RotateCcw className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0" onClick={handleRevert} />
+  ) : (
+    <Pencil className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+  )}
+</button>
 ```
-to:
-```tsx
-return row.id === firstRowId ? <div data-tour="positions-shift-cell" className="w-full h-full">{cell}</div> : cell;
-```
 
-**File 2: `src/pages/positions/ContractorsTab.tsx`**
+Key change: Replaced `text-center` + absolute icon positioning with `flex items-center justify-between` for a clean left-value, right-icon layout.
 
-Same changes on lines 255 and 265.
+**3. `src/components/editable-table/cells/ShiftCell.tsx` (Shift)**
+- Already uses left-aligned text with icon on the right for special shifts -- no change needed there.
+- For normal (non-special) shifts, the value is left-aligned via CellButton -- already correct.
 
-No other files affected.
-
+### Summary
+Two files changed, one file unchanged. The result will be a consistent layout across all three columns matching the reference image.
