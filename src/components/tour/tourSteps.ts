@@ -105,31 +105,15 @@ export const staffingSteps: Step[] = [
     placement: 'top',
     disableBeacon: true,
   },
-  // Individual KPI steps — each KPI gets Card → Chart → Info sub-steps
+  // Individual KPI steps — each KPI gets description + chart/info action wireframe
   // FTE Section
   {
     target: '[data-tour="kpi-vacancy-rate"]',
     title: 'Vacancy Rate',
-    content: 'Percentage of approved budgeted positions currently unfilled.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-vacancy-rate-chart"]',
-    title: 'Vacancy Rate — Trend Chart',
     content: demoContent(
-      'Click the chart icon to view historical trends and breakdowns by skill type.',
-      'mini-chart'
-    ),
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-vacancy-rate-info"]',
-    title: 'Vacancy Rate — Definition',
-    content: demoContent(
-      'Click the eye icon to see the definition and calculation formula.',
-      'kpi-info'
+      'Percentage of approved budgeted positions currently unfilled.',
+      'kpi-actions',
+      { hasChart: true }
     ),
     placement: 'bottom',
     disableBeacon: true,
@@ -137,105 +121,55 @@ export const staffingSteps: Step[] = [
   {
     target: '[data-tour="kpi-target-ftes"]',
     title: 'Target FTEs',
-    content: 'Number of FTEs needed to meet budgeted staffing levels based on volume.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-target-ftes-chart"]',
-    title: 'Target FTEs — Trend Chart',
-    content: 'View the historical trend for Target FTEs.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-target-ftes-info"]',
-    title: 'Target FTEs — Definition',
-    content: 'See how Target FTEs is defined and calculated.',
+    content: demoContent(
+      'Number of FTEs needed to meet budgeted staffing levels based on volume.',
+      'kpi-actions',
+      { hasChart: true }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="kpi-hired-ftes"]',
     title: 'Hired FTEs',
-    content: 'Total Full-Time, Part-Time, and PRN employees currently on staff.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-hired-ftes-chart"]',
-    title: 'Hired FTEs — Trend Chart',
-    content: 'View the historical trend for Hired FTEs.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-hired-ftes-info"]',
-    title: 'Hired FTEs — Definition',
-    content: 'See how Hired FTEs is defined and calculated.',
+    content: demoContent(
+      'Total Full-Time, Part-Time, and PRN employees currently on staff.',
+      'kpi-actions',
+      { hasChart: true }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="kpi-fte-variance"]',
     title: 'FTE Variance',
-    content: 'Gap between Target FTEs and Hired FTEs. Positive means understaffed.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-fte-variance-chart"]',
-    title: 'FTE Variance — Trend Chart',
-    content: 'View the historical trend for FTE Variance.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-fte-variance-info"]',
-    title: 'FTE Variance — Definition',
-    content: 'See how FTE Variance is defined and calculated.',
+    content: demoContent(
+      'Gap between Target FTEs and Hired FTEs. Positive means understaffed.',
+      'kpi-actions',
+      { hasChart: true }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="kpi-open-reqs"]',
     title: 'Open Reqs',
-    content: 'Count of approved requisitions not yet filled.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-open-reqs-chart"]',
-    title: 'Open Reqs — Trend Chart',
-    content: 'View the historical trend for Open Reqs.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-open-reqs-info"]',
-    title: 'Open Reqs — Definition',
-    content: 'See how Open Reqs is defined and calculated.',
+    content: demoContent(
+      'Count of approved requisitions not yet filled.',
+      'kpi-actions',
+      { hasChart: true }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="kpi-req-variance"]',
     title: 'Req Variance',
-    content: 'Remaining gap after accounting for open requisitions against FTE variance.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-req-variance-chart"]',
-    title: 'Req Variance — Trend Chart',
-    content: 'View the historical trend for Req Variance.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-req-variance-info"]',
-    title: 'Req Variance — Definition',
-    content: 'See how Req Variance is defined and calculated.',
+    content: demoContent(
+      'Remaining gap after accounting for open requisitions against FTE variance.',
+      'kpi-actions',
+      { hasChart: true }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
@@ -243,126 +177,66 @@ export const staffingSteps: Step[] = [
   {
     target: '[data-tour="kpi-12m-monthly"]',
     title: '12M Average',
-    content: 'Rolling 12-month average monthly volume of patient encounters or units of service.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-12m-monthly-chart"]',
-    title: '12M Average — Trend Chart',
-    content: 'View the historical trend for 12M Average.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-12m-monthly-info"]',
-    title: '12M Average — Definition',
-    content: 'See how 12M Average is defined and calculated.',
+    content: demoContent(
+      'Rolling 12-month average monthly volume of patient encounters or units of service.',
+      'kpi-actions',
+      { hasChart: true }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="kpi-12m-daily"]',
     title: '12M Daily Average',
-    content: 'Average daily volume over the past 12 months.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-12m-daily-chart"]',
-    title: '12M Daily Average — Trend Chart',
-    content: 'View the historical trend for 12M Daily Average.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-12m-daily-info"]',
-    title: '12M Daily Average — Definition',
-    content: 'See how 12M Daily Average is defined and calculated.',
+    content: demoContent(
+      'Average daily volume over the past 12 months.',
+      'kpi-actions',
+      { hasChart: true }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="kpi-3m-low"]',
     title: '3M Low',
-    content: 'Average daily volume during the 3 lowest-volume months. Used for minimum staffing.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-3m-low-chart"]',
-    title: '3M Low — Trend Chart',
-    content: 'View the historical trend for 3M Low.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-3m-low-info"]',
-    title: '3M Low — Definition',
-    content: 'See how 3M Low is defined and calculated.',
+    content: demoContent(
+      'Average daily volume during the 3 lowest-volume months. Used for minimum staffing.',
+      'kpi-actions',
+      { hasChart: true }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="kpi-3m-high"]',
     title: '3M High',
-    content: 'Average daily volume during the 3 highest-volume months. Used for peak staffing.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-3m-high-chart"]',
-    title: '3M High — Trend Chart',
-    content: 'View the historical trend for 3M High.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-3m-high-info"]',
-    title: '3M High — Definition',
-    content: 'See how 3M High is defined and calculated.',
+    content: demoContent(
+      'Average daily volume during the 3 highest-volume months. Used for peak staffing.',
+      'kpi-actions',
+      { hasChart: true }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="kpi-target-vol"]',
     title: 'Target Volume',
-    content: 'Expected daily volume used for staffing calculations. Green border means it is active.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-target-vol-chart"]',
-    title: 'Target Volume — Trend Chart',
-    content: 'View the historical trend for Target Volume.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-target-vol-info"]',
-    title: 'Target Volume — Definition',
-    content: 'See how Target Volume is defined and calculated.',
+    content: demoContent(
+      'Expected daily volume used for staffing calculations. Green border means it is active.',
+      'kpi-actions',
+      { hasChart: false }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="kpi-override-vol"]',
     title: 'Override Volume',
-    content: 'Manually set volume that supersedes the target. Orange border means it is active.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-override-vol-chart"]',
-    title: 'Override Volume — Trend Chart',
-    content: 'View the historical trend for Override Volume.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-override-vol-info"]',
-    title: 'Override Volume — Definition',
-    content: 'See how Override Volume is defined and calculated.',
+    content: demoContent(
+      'Manually set volume that supersedes the target. Orange border means it is active.',
+      'kpi-actions',
+      { hasChart: false }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
@@ -370,126 +244,66 @@ export const staffingSteps: Step[] = [
   {
     target: '[data-tour="kpi-paid-ftes"]',
     title: 'Paid FTEs',
-    content: 'Total labor resources the organization pays for, productive and non-productive.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-paid-ftes-chart"]',
-    title: 'Paid FTEs — Trend Chart',
-    content: 'View the historical trend for Paid FTEs.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-paid-ftes-info"]',
-    title: 'Paid FTEs — Definition',
-    content: 'See how Paid FTEs is defined and calculated.',
+    content: demoContent(
+      'Total labor resources the organization pays for, productive and non-productive.',
+      'kpi-actions',
+      { hasChart: true }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="kpi-total-fullpart-ftes"]',
     title: 'Employed Productive FTEs',
-    content: 'Full-Time and Part-Time productive FTEs after excluding non-productive hours.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-total-fullpart-ftes-chart"]',
-    title: 'Employed Productive FTEs — Trend Chart',
-    content: 'View the historical trend for Employed Productive FTEs.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-total-fullpart-ftes-info"]',
-    title: 'Employed Productive FTEs — Definition',
-    content: 'See how Employed Productive FTEs is defined and calculated.',
+    content: demoContent(
+      'Full-Time and Part-Time productive FTEs after excluding non-productive hours.',
+      'kpi-actions',
+      { hasChart: true }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="kpi-contract-ftes"]',
     title: 'Contract FTEs',
-    content: 'FTEs supplied by external agencies — travel nurses, agency staff, temp contractors.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-contract-ftes-chart"]',
-    title: 'Contract FTEs — Trend Chart',
-    content: 'View the historical trend for Contract FTEs.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-contract-ftes-info"]',
-    title: 'Contract FTEs — Definition',
-    content: 'See how Contract FTEs is defined and calculated.',
+    content: demoContent(
+      'FTEs supplied by external agencies — travel nurses, agency staff, temp contractors.',
+      'kpi-actions',
+      { hasChart: true }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="kpi-overtime-ftes"]',
     title: 'Overtime FTEs',
-    content: 'Hours worked above regular commitment, converted to FTE equivalent.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-overtime-ftes-chart"]',
-    title: 'Overtime FTEs — Trend Chart',
-    content: 'View the historical trend for Overtime FTEs.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-overtime-ftes-info"]',
-    title: 'Overtime FTEs — Definition',
-    content: 'See how Overtime FTEs is defined and calculated.',
+    content: demoContent(
+      'Hours worked above regular commitment, converted to FTE equivalent.',
+      'kpi-actions',
+      { hasChart: true }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="kpi-total-prn"]',
     title: 'Total PRN',
-    content: 'PRN staff hours converted to FTE equivalent. Used for flex coverage.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-total-prn-chart"]',
-    title: 'Total PRN — Trend Chart',
-    content: 'View the historical trend for Total PRN.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-total-prn-info"]',
-    title: 'Total PRN — Definition',
-    content: 'See how Total PRN is defined and calculated.',
+    content: demoContent(
+      'PRN staff hours converted to FTE equivalent. Used for flex coverage.',
+      'kpi-actions',
+      { hasChart: true }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="kpi-total-np"]',
     title: 'Total NP%',
-    content: 'Percentage of paid hours not spent on direct patient care (PTO, training, admin).',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-total-np-chart"]',
-    title: 'Total NP% — Trend Chart',
-    content: 'View the historical trend for Total NP%.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-total-np-info"]',
-    title: 'Total NP% — Definition',
-    content: 'See how Total NP% is defined and calculated.',
+    content: demoContent(
+      'Percentage of paid hours not spent on direct patient care (PTO, training, admin).',
+      'kpi-actions',
+      { hasChart: true }
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
