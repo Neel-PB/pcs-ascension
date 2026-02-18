@@ -14,7 +14,7 @@ export function TourTooltip({
 }: TooltipRenderProps) {
   return (
     <div {...tooltipProps} className="z-[10000]">
-      <Card className="w-[340px] shadow-xl border-primary/20">
+      <Card className="max-w-[400px] w-auto min-w-[340px] shadow-xl border-primary/20">
         <CardHeader className="pb-2 pt-4 px-5">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base">{step.title as string}</CardTitle>
@@ -24,9 +24,9 @@ export function TourTooltip({
           </div>
         </CardHeader>
         <CardContent className="px-5 pb-3">
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {step.content as string}
-          </p>
+          <div className="text-sm text-muted-foreground leading-relaxed">
+            {step.content}
+          </div>
         </CardContent>
         <CardFooter className="px-5 pb-4 flex items-center justify-between">
           <Button
