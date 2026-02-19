@@ -1,86 +1,60 @@
 
 
-## Add Demo Previews to Positions Module Tour Steps
+## Fix: Active FTE Cell Spotlight Not Highlighting During Tour
 
-### Overview
+### Problem
 
-Add visual demo previews to the Active FTE, Shift Override, and Comments tour steps for both the Employees and Contractors tours. This follows the existing pattern used in Staffing tours where `createElement` builds JSX-rich tooltip content with inline mockup previews.
+The tour tooltip for "Active FTE" (step 7 of 9) renders correctly, but the Joyride **spotlight cutout** (the bright area in the dark overlay) is not visible around the Active FTE cell. The cell exists and has the `data-tour="positions-active-fte-cell"` attribute, but Joyride fails to render the spotlight highlight around it.
 
-### New File: `src/components/tour/PositionsDemoPreview.tsx`
+### Root Cause
 
-Create a new preview component with three variants:
+The Active FTE column is positioned further right in the table (after Hired FTE, with columns before it). Inside the table's horizontally scrollable container, Joyride struggles to calculate the correct bounding rectangle for the spotlight when:
 
-1. **`active-fte-steps`** -- Shows the Active FTE popover workflow:
-   - Step 1: Default cell with hired FTE value (e.g., `1.0`) and pencil icon
-   - Step 2: Popover opened -- status dropdown showing options (LOA, Orientation, Separation, Shared Position), FTE input, expiry date, comment field
-   - Step 3: Saved state -- blue override value with status badge and expiry, revert icon
-   - Uses the same `CellStateRow`-style layout from `SettingsDemoPreview`
+1. The target element is inside a deeply nested overflow container (table body with `overflow-x-auto`)
+2. `disableScrollParentFix` is enabled -- this prevents Joyride from adjusting for scroll parents, which means the spotlight coordinates may not account for the scroll container offset
+3. The `STEP_BEFORE` handler explicitly resets horizontal scroll to `left: 0`, which can push the target out of the visible area or cause a mismatch between where Joyride measured the element and where it ended up
 
-2. **`shift-override-steps`** -- Shows the Shift Override workflow:
-   - Step 1: Special shift value (e.g., "Rotating") with pencil icon
-   - Step 2: Popover with Day/Night selector
-   - Step 3: Modified display showing `~~Rotating~~ -> Day` with revert icon
-   - Compact three-state visual walkthrough
+### Fix
 
-3. **`comments-preview`** -- Shows the comments/activity timeline:
-   - Mini mockup of the detail sheet Comments tab
-   - Activity log entry (FTE change with primary-tinted bubble)
-   - Regular comment entry
-   - Comment composer bar at the bottom
+**File: `src/components/tour/PositionsTour.tsx`**
 
-### Updated File: `src/components/tour/positionsTourSteps.ts`
+1. Remove the horizontal scroll reset (`scrollTo({ left: 0 })`) from the `STEP_BEFORE` handler for the Active FTE, Shift, and Comments steps -- the `scrollIntoView` call already handles making the element visible
+2. Add `spotlightPadding: 4` to the Joyride styles to give the spotlight a small visual buffer
+3. For the `STEP_BEFORE` handler, only reset the main vertical scroll but allow horizontal scroll to stay at the target element's position
 
-Convert from plain string `content` to JSX `content` using `createElement` (same pattern as `tourSteps.ts`) for these three steps in both `employeesTourSteps` and `contractorsTourSteps`:
+**File: `src/pages/positions/EmployeesTab.tsx`** and **`src/pages/positions/ContractorsTab.tsx`**
 
-- **Active FTE step** (index 6): Add `PositionsDemoPreview` with `active-fte-steps` variant
-- **Shift Override step** (index 7): Add `PositionsDemoPreview` with `shift-override-steps` variant
-- **Comments step** (index 8): Add `PositionsDemoPreview` with `comments-preview` variant
+4. Ensure the `data-tour` wrapper div has explicit dimensions that Joyride can measure -- add `min-h-[48px]` (matching the row's `h-12`) so the spotlight has a proper bounding box
 
-### Technical Details
-
-**`PositionsDemoPreview.tsx` structure:**
-
-```
-PositionsDemoPreview
-  |-- ActiveFteStepsPreview (3-state walkthrough)
-  |     |-- CellStateRow: Default cell [1.0] + pencil icon
-  |     |-- CellStateRow: Popover mockup (status select, FTE input, expiry)
-  |     |-- CellStateRow: Saved state [0.5 blue] + LOA badge + expiry + revert
-  |
-  |-- ShiftOverrideStepsPreview (3-state walkthrough)
-  |     |-- CellStateRow: "Rotating" + pencil icon
-  |     |-- CellStateRow: Day/Night selector mockup
-  |     |-- CellStateRow: "Rotating" strikethrough -> "Day" + revert
-  |
-  |-- CommentsPreview (timeline mockup)
-        |-- Activity entry (FTE change, primary-tinted bubble)
-        |-- Comment entry (regular comment)
-        |-- Composer bar wireframe
-```
-
-**`positionsTourSteps.ts` changes:**
+### Technical Changes
 
 ```typescript
-import { createElement } from 'react';
-import { PositionsDemoPreview } from './PositionsDemoPreview';
-
-const positionsDemoContent = (text: string, variant: string) =>
-  createElement('div', { className: 'space-y-3' },
-    createElement('p', null, text),
-    createElement(PositionsDemoPreview, { variant } as any)
-  );
-
-// Then replace content strings for Active FTE, Shift, and Comments steps:
-// content: positionsDemoContent('Click the Active FTE cell to adjust...', 'active-fte-steps'),
+// PositionsTour.tsx - Updated STEP_BEFORE handler
+if (type === EVENTS.STEP_BEFORE && step?.target) {
+  const el = document.querySelector(step.target as string);
+  if (el) {
+    el.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'instant' });
+    // Only reset vertical scroll on main, NOT horizontal scroll on table
+    const mainEl = document.querySelector('main');
+    if (mainEl) {
+      mainEl.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }
+}
 ```
 
-**Tooltip width:** The `TourTooltip` component's `max-w` will need to accommodate the wider preview content (matching the `max-w-[400px]` pattern used by other demo previews).
+```typescript
+// EmployeesTab.tsx / ContractorsTab.tsx - Explicit dimensions on wrapper
+return row.id === firstRowId 
+  ? <div data-tour="positions-active-fte-cell" className="w-full min-h-[48px] flex items-center">{cell}</div> 
+  : cell;
+```
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/tour/PositionsDemoPreview.tsx` | New file -- 3 preview variants (active-fte-steps, shift-override-steps, comments-preview) |
-| `src/components/tour/positionsTourSteps.ts` | Import PositionsDemoPreview, use `createElement` for Active FTE, Shift, and Comments steps in all 3 step arrays |
-| `src/components/tour/TourTooltip.tsx` | May need max-width adjustment if not already wide enough |
+| `src/components/tour/PositionsTour.tsx` | Remove table horizontal scroll reset in STEP_BEFORE, add spotlightPadding |
+| `src/pages/positions/EmployeesTab.tsx` | Add explicit min-height and flex alignment to data-tour wrapper |
+| `src/pages/positions/ContractorsTab.tsx` | Same wrapper fix as EmployeesTab |
 
