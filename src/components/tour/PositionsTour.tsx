@@ -23,7 +23,8 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
           mainEl.scrollTo({ top: 0, behavior: 'instant' });
         }
         // Force Joyride to recalculate spotlight after scroll settles
-        setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
+        setTimeout(() => window.dispatchEvent(new Event('resize')), 150);
+        setTimeout(() => window.dispatchEvent(new Event('resize')), 300);
       }
     }
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
@@ -52,7 +53,7 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
       continuous
       showSkipButton
       scrollToFirstStep={false}
-      disableScrolling={false}
+      disableScrolling
       disableOverlayClose
       callback={handleCallback}
       tooltipComponent={TourTooltip}
