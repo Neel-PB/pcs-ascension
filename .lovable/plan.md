@@ -1,73 +1,45 @@
 
 
-## Fix: Simplify PositionsTour — Remove Controlled Mode
+## Add KPI-Style Previews for Target Volume and Override Volume Tour Steps
 
-### Root Cause
+### What Changes
 
-The PositionsTour was switched to "controlled mode" (manual `stepIndex` state) to fix a Comments tooltip positioning issue. But this introduced multiple cascading bugs:
-- Tour doesn't start (controlled mode requires exact stepIndex management)
-- Skip/Close don't work (need manual ACTIONS handling)
-- Last step gets stuck (need manual finish handling)
-- "Tour This Page" fails (state sync issues between stepIndex and run)
+Replace the current generic chart-based previews for the **Target Vol** and **Override Vol** tour steps with dedicated KPI-card-style previews that visually match the actual cards users see in the Staffing Summary.
 
-Meanwhile, the StaffingTour works perfectly using the **simple uncontrolled** pattern — no stepIndex, no manual action handling.
+### Design
 
-### Solution
+**Target Volume Preview** -- A mini KPI card with:
+- Green left border (emerald-500) indicating system-calculated volume is active
+- Title "Target Vol" with value "20.8"
+- A small badge showing "12-Mo Avg" calculation source
+- Subtle green highlight background matching the real card's `isHighlighted` style
 
-Strip out all controlled mode complexity and match the StaffingTour pattern exactly. Keep only the `STEP_BEFORE` scroll logic for table cells and headers (which works independently of controlled mode).
+**Override Volume Preview** -- A mini KPI card with:
+- Orange left border (orange-500) indicating manual override is active
+- Title "Override Vol" with value "24.7"
+- A small badge showing "Manual" source
+- Subtle orange highlight background matching the real card's `isNegative` style
+- An expiry indicator (e.g., "Expires: Mar 15, 2026")
 
-For the Comments step positioning (the original reason for controlled mode), use a simpler approach: add a `scrollToFirstStep={false}` + dispatch resize events after scrolling in `STEP_BEFORE`, which is already in the code and works without controlled mode.
+Both cards will include the chart and info icon hints (non-interactive) to mirror the real KPI card layout, plus a brief note about what the border color means.
 
-### Changes
+### Technical Details
 
-**File: `src/components/tour/PositionsTour.tsx`**
+**File: `src/components/tour/TourDemoPreview.tsx`**
 
-1. Remove `stepIndex` state and its reset `useEffect`
-2. Remove `stepIndex` prop from Joyride (switches back to uncontrolled mode)
-3. Remove all `EVENTS.STEP_AFTER` / `ACTIONS` handling (Joyride handles this automatically)
-4. Keep `EVENTS.STEP_BEFORE` scroll logic (for Active FTE, Shift, Comments targets)
-5. Keep `STATUS.FINISHED` / `STATUS.SKIPPED` handling (for completion and section flow)
-6. Match StaffingTour props: remove `disableScrolling`, add `disableScrollParentFix`
+1. Add two new variants to the `TourDemoVariant` type: `'target-vol-preview'` and `'override-vol-preview'`
+2. Create `TargetVolPreview` component -- mini KPI card with green border, value, calculation source badge, and border color explanation
+3. Create `OverrideVolPreview` component -- mini KPI card with orange border, value, manual badge, expiry date, and border color explanation
+4. Add both cases to the `switch` in the main export
 
-The resulting component will be ~100 lines shorter and follow the same proven pattern as StaffingTour.
+**File: `src/components/tour/tourSteps.ts`**
 
-### Simplified handleCallback
-
-```text
-const handleCallback = (data: CallBackProps) => {
-  const { status, type, step } = data;
-
-  // Pre-scroll table cells/headers into view before step renders
-  if (type === EVENTS.STEP_BEFORE && step?.target) {
-    // ... existing scroll logic (unchanged) ...
-  }
-
-  // Completion handling (same as StaffingTour)
-  if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
-    document.body.style.overflow = '';
-    completeTour();
-    // ... reset scroll + section flow logic (unchanged) ...
-  }
-};
-```
-
-### What Gets Removed
-
-- `useState(0)` for stepIndex
-- `useEffect` that resets stepIndex
-- Entire `EVENTS.STEP_AFTER` block (ACTIONS.PREV, SKIP, CLOSE, last-step handling)
-- `stepIndex={stepIndex}` prop on Joyride
-
-### What Stays
-
-- `STEP_BEFORE` scroll logic for table cells and headers
-- `STATUS.FINISHED` / `STATUS.SKIPPED` completion + section flow
-- `scrollToTarget` helper function
-- `tableCellTargets` and `tableHeaderTargets` arrays
+5. Update the `target-vol` step (line 147) to use `demoContent('...', 'target-vol-preview')` instead of `demoContent('...', 'kpi-compact', { kpiId: 'target-vol' })`
+6. Update the `override-vol` step (line 148) to use `demoContent('...', 'override-vol-preview')` instead of `demoContent('...', 'kpi-compact', { kpiId: 'override-vol' })`
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/tour/PositionsTour.tsx` | Remove controlled mode; simplify to match StaffingTour pattern |
-
+| `src/components/tour/TourDemoPreview.tsx` | Add `TargetVolPreview` and `OverrideVolPreview` components with KPI card styling |
+| `src/components/tour/tourSteps.ts` | Switch target-vol and override-vol steps to use new preview variants |
