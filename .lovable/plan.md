@@ -1,54 +1,96 @@
 
 
-## Fix All Tour Placement Issues and Enrich Consistency
+## Enhance Positions Tour Demo Previews for Better Visibility
 
-### Problems Found
+### Problem
+The Active FTE, Shift Override, and Comments workflow wireframes inside tour tooltips blend into the surrounding content. They aren't visually distinct enough, making them easy to miss during the guided tour.
 
-#### 1. Positions Demo-Content Steps Clipping (7 steps)
-Steps with tall demo preview wireframes use `placement: 'bottom'`, pushing tooltips below the viewport. These target table cells on the right side of the table, so `'left'` keeps them visible.
+### Changes
 
-#### 2. AdminTour Missing Spotlight Styling
-`AdminTour.tsx` only has `borderRadius: 12` in its spotlight config -- missing the `padding: 6` and `boxShadow` glow ring that `StaffingTour`, `PositionsTour`, and `OverlayTour` all use. This makes Admin spotlights look inconsistent.
+#### 1. Enhance `PositionsDemoPreview.tsx` -- Make wireframes visually prominent
 
-#### 3. Header Tour Steps Missing Explicit Placement
-All 4 steps in `headerTourSteps.ts` have no `placement` property. Joyride defaults to `'bottom'` which works, but being explicit prevents future surprises and matches the pattern used everywhere else.
+Update the outer container styling for all three preview variants to add:
+- A stronger highlight border using the primary color (`border-primary/25` instead of `border-border`)
+- A subtle primary-tinted background (`bg-primary/[0.03]`)
+- Centered alignment for the workflow content
+- A subtle left accent bar on each state row for visual flow emphasis
+- Slightly larger connector lines between states
 
-#### 4. Positions Demo Steps Missing `wideTooltip` Flag
-The Active FTE, Shift Override, and Comments steps across Employees/Contractors/Requisitions contain demo preview content but lack `data: { wideTooltip: true }`, resulting in a narrower 480px tooltip trying to fit tall workflow wireframes.
+**Specific changes to each preview's outer `div`:**
 
----
-
-### Detailed Changes
-
-#### File: `src/components/tour/positionsTourSteps.ts`
-
-Change `placement` from `'bottom'` to `'left'` and add `data: { wideTooltip: true }` on these steps:
-
-| Tour | Step Target | Line |
-|------|-------------|------|
-| Employees | `positions-active-fte-cell` | 58 |
-| Employees | `positions-shift-cell` | 65 |
-| Employees | `positions-comments` | 72 |
-| Contractors | `positions-active-fte-cell` | 117 |
-| Contractors | `positions-shift-cell` | 124 |
-| Contractors | `positions-comments` | 131 |
-| Requisitions | `positions-comments` | 176 |
-
-#### File: `src/components/tour/headerTourSteps.ts`
-
-Add explicit `placement: 'bottom'` to all 4 steps (lines 5, 12, 18, 24).
-
-#### File: `src/components/tour/AdminTour.tsx`
-
-Add `padding: 6` and `boxShadow` to the `spotlight` style object to match Staffing/Positions/Overlay tours:
-
-```typescript
-spotlight: {
-  borderRadius: 12,
-  padding: 6,
-  boxShadow: '0 0 0 2px hsl(var(--primary) / 0.3), 0 0 15px 4px hsl(var(--primary) / 0.1)',
-},
+Current:
 ```
+className="rounded-lg border border-border bg-card p-2.5 space-y-2 mt-1"
+```
+
+New:
+```
+className="rounded-lg border border-primary/20 bg-primary/[0.02] p-3 space-y-2.5 mt-2 shadow-sm ring-1 ring-primary/10"
+```
+
+**Enhance state connector lines** (the vertical `w-px h-2 bg-border` dividers between steps):
+
+Current:
+```
+className="ml-3 w-px h-2 bg-border"
+```
+
+New:
+```
+className="ml-3 w-0.5 h-3 bg-primary/20 rounded-full"
+```
+
+**Enhance the section title** to be more prominent:
+
+Current:
+```
+className="text-[9px] font-semibold text-foreground/80 uppercase tracking-wide"
+```
+
+New:
+```
+className="text-[10px] font-semibold text-primary uppercase tracking-wider"
+```
+
+#### 2. Enhance `CellStateRow` -- Add left accent and better contrast
+
+Current row wrapper:
+```
+className="flex-1 flex items-center gap-1 rounded border border-border bg-background px-2 py-1 min-h-[28px]"
+```
+
+New:
+```
+className="flex-1 flex items-center gap-1 rounded border border-border bg-background px-2 py-1.5 min-h-[30px] border-l-2 border-l-primary/30"
+```
+
+This adds a small primary-colored left accent to each workflow state, making the 3-step progression visually distinct.
+
+#### 3. Center the description text in `positionsTourSteps.ts`
+
+Update the `positionsDemoContent` helper to center-align the text and add a subtle separator before the preview:
+
+Current:
+```typescript
+const positionsDemoContent = (text: string, variant: string) =>
+  createElement('div', { className: 'space-y-3' },
+    createElement('p', null, text),
+    createElement(PositionsDemoPreview, { variant } as any)
+  );
+```
+
+New:
+```typescript
+const positionsDemoContent = (text: string, variant: string) =>
+  createElement('div', { className: 'space-y-3 text-center' },
+    createElement('p', { className: 'text-left' }, text),
+    createElement('div', { className: 'flex justify-center' },
+      createElement(PositionsDemoPreview, { variant } as any)
+    )
+  );
+```
+
+This ensures the wireframe preview block is horizontally centered within the tooltip.
 
 ---
 
@@ -56,14 +98,11 @@ spotlight: {
 
 | File | Change |
 |------|--------|
-| `src/components/tour/positionsTourSteps.ts` | Change 7 demo-content steps from `placement: 'bottom'` to `'left'`; add `wideTooltip` flag |
-| `src/components/tour/headerTourSteps.ts` | Add explicit `placement: 'bottom'` to all 4 steps |
-| `src/components/tour/AdminTour.tsx` | Add missing spotlight `padding` and `boxShadow` to match other tours |
+| `src/components/tour/PositionsDemoPreview.tsx` | Enhance outer container with primary-tinted border/bg/ring, stronger connector lines, accent on state rows, bolder section title |
+| `src/components/tour/positionsTourSteps.ts` | Center the demo preview within the tooltip content wrapper |
 
 ### What stays unchanged
-
-- All existing scroll management, overflow restoration, and spotlight recalculation logic
-- All demo preview components (PositionsDemoPreview, etc.)
-- TourTooltip styling and animation (already refined)
-- All Staffing, Forecast, Variance, Volume Settings, NP Settings, Feedback, AI Hub, and Checklist step placements (already correct)
-
+- All step targets, placement values, and `wideTooltip` flags
+- Tour flow logic in `PositionsTour.tsx`
+- Scroll/overflow management
+- All other tour modules (Staffing, Admin, Header, Overlays)
