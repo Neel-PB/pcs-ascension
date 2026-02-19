@@ -12,9 +12,34 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
   const steps = activeTab === 'contractors' ? contractorsTourSteps : activeTab === 'requisitions' ? requisitionsTourSteps : employeesTourSteps;
   const { run, setRun, completeTour } = useTour(tourKey);
 
+  const tableCellTargets = [
+    '[data-tour="positions-active-fte-cell"]',
+    '[data-tour="positions-shift-cell"]',
+    '[data-tour="positions-comments"]',
+  ];
+
+  const restoreTableContainment = () => {
+    // Restore overflow on ancestors we modified
+    document.querySelectorAll('[data-tour-orig-overflow]').forEach(node => {
+      const htmlEl = node as HTMLElement;
+      htmlEl.style.overflow = htmlEl.getAttribute('data-tour-orig-overflow') || '';
+      htmlEl.style.overflowX = htmlEl.getAttribute('data-tour-orig-overflow-x') || '';
+      htmlEl.removeAttribute('data-tour-orig-overflow');
+      htmlEl.removeAttribute('data-tour-orig-overflow-x');
+    });
+    // Restore contain: layout on virtual body
+    const virtualBody = document.querySelector('[data-tour-virtual-body]');
+    if (virtualBody) (virtualBody as HTMLElement).style.contain = 'layout';
+  };
+
   const handleCallback = (data: CallBackProps) => {
     const { status, type, step } = data;
     if (type === EVENTS.STEP_BEFORE && step?.target) {
+      const isTableCellStep = tableCellTargets.includes(step.target as string);
+
+      // Restore containment before each step (clean slate)
+      restoreTableContainment();
+
       const el = document.querySelector(step.target as string);
       if (el) {
         el.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'instant' });
@@ -22,6 +47,27 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
         if (mainEl) {
           mainEl.scrollTo({ top: 0, behavior: 'instant' });
         }
+
+        if (isTableCellStep) {
+          // Neutralize contain: layout on VirtualizedTableBody
+          const virtualBody = el.closest('[data-tour-virtual-body]');
+          if (virtualBody) (virtualBody as HTMLElement).style.contain = 'none';
+
+          // Set overflow visible on scroll ancestors up to the table root
+          let parent = el.parentElement;
+          while (parent) {
+            const computed = getComputedStyle(parent);
+            if (computed.overflow !== 'visible' || computed.overflowX !== 'visible') {
+              parent.setAttribute('data-tour-orig-overflow', parent.style.overflow);
+              parent.setAttribute('data-tour-orig-overflow-x', parent.style.overflowX);
+              parent.style.overflow = 'visible';
+              parent.style.overflowX = 'visible';
+            }
+            if (parent.matches('[data-tour="positions-table"]')) break;
+            parent = parent.parentElement;
+          }
+        }
+
         // Force Joyride to recalculate spotlight after scroll settles
         setTimeout(() => window.dispatchEvent(new Event('resize')), 150);
         setTimeout(() => window.dispatchEvent(new Event('resize')), 300);
@@ -29,6 +75,7 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
     }
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
       document.body.style.overflow = '';
+      restoreTableContainment();
       completeTour();
 
       const resetScroll = () => {
