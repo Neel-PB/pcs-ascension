@@ -76,7 +76,11 @@ export function PositionsTour({ activeTab = 'employees', onTabChange }: Position
 
       const el = document.querySelector(step.target as string);
       if (el) {
-        el.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'instant' });
+        if (isTableCellStep) {
+          el.scrollIntoView({ inline: 'center', block: 'center', behavior: 'instant' });
+        } else {
+          el.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'instant' });
+        }
         const mainEl = document.querySelector('main');
         if (mainEl) mainEl.scrollTo({ top: 0, behavior: 'instant' });
 
