@@ -294,7 +294,7 @@ export const volumeSettingsSteps: Step[] = [
       'Each row represents a department. Enter an override volume to replace the calculated target, then set an expiration date. Both are saved together. Use the Revert button to clear an override.',
       'volume-table-preview'
     ),
-    placement: 'auto',
+    placement: 'top',
     disableBeacon: true,
   },
   {
@@ -304,7 +304,7 @@ export const volumeSettingsSteps: Step[] = [
       'The override volume cell has three states. Click the pencil to start editing, type a value and confirm, or revert to clear it.',
       'volume-override-steps'
     ),
-    placement: 'auto',
+    placement: 'top',
     disableBeacon: true,
   },
   {
@@ -314,7 +314,7 @@ export const volumeSettingsSteps: Step[] = [
       'After entering an override volume, a date picker opens automatically. Select an expiration date and click OK to commit both values. Cancel returns to the pending state.',
       'volume-expiry-steps'
     ),
-    placement: 'auto',
+    placement: 'top',
     disableBeacon: true,
   },
   {
@@ -347,7 +347,7 @@ export const npSettingsSteps: Step[] = [
       'Each row represents a department. The target NP% is fixed at 10% for all departments. Enter an override NP% and set an expiration date to apply a custom value.',
       'np-table-preview'
     ),
-    placement: 'auto',
+    placement: 'top',
     disableBeacon: true,
   },
   {
@@ -357,7 +357,7 @@ export const npSettingsSteps: Step[] = [
       'The override NP% cell has three states: idle, editing, and pending. Unlike volume, the value is stored in memory until an expiration date is selected.',
       'np-override-steps'
     ),
-    placement: 'auto',
+    placement: 'top',
     disableBeacon: true,
   },
   {
@@ -367,7 +367,7 @@ export const npSettingsSteps: Step[] = [
       'After entering an override NP%, a date picker opens automatically. Note the max expiry constraint. Both NP% and date are committed to the database only after clicking OK.',
       'np-expiry-steps'
     ),
-    placement: 'auto',
+    placement: 'top',
     disableBeacon: true,
   },
   {
@@ -587,7 +587,7 @@ export const adminAuditTourSteps: Step[] = [
     target: '[data-tour="admin-audit-table"]',
     title: 'Audit Table',
     content: 'Each row shows the timestamp, action, target, and who made the change. Click rows with a chevron to expand and see the previous and new values.',
-    placement: 'auto',
+    placement: 'top',
     disableBeacon: true,
   },
 ];
