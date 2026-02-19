@@ -95,7 +95,7 @@ export default function PositionsPage() {
       />
       
       <div className="flex flex-col h-full space-y-6 overflow-hidden">
-        <div className="flex-shrink-0 py-2">
+        <div className="flex-shrink-0 py-2" data-tour="filter-bar">
           <FilterBar
             selectedRegion={selectedRegion}
             selectedMarket={selectedMarket}
