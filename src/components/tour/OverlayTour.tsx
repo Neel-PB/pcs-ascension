@@ -13,7 +13,7 @@ interface OverlayTourProps {
 
 export function OverlayTour({ tourKey, steps }: OverlayTourProps) {
   const enrichedSteps = useMemo(() => injectSectionMetadata(steps, tourKey), [steps, tourKey]);
-  const { run, setRun, completeTour } = useTour(tourKey);
+  const { run, setRun, completeTour } = useTour(tourKey, { autoStart: false });
 
   const handleCallback = (data: CallBackProps) => {
     const { status } = data;
