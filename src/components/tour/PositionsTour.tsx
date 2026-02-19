@@ -34,6 +34,9 @@ export function PositionsTour({ activeTab = 'employees', onTabChange }: Position
   const tableCellTargets = [
     '[data-tour="positions-active-fte-cell"]',
     '[data-tour="positions-shift-cell"]',
+  ];
+
+  const tableHeaderTargets = [
     '[data-tour="positions-comments"]',
   ];
 
@@ -60,11 +63,11 @@ export function PositionsTour({ activeTab = 'employees', onTabChange }: Position
     const { status, type, step } = data;
     if (type === EVENTS.STEP_BEFORE && step?.target) {
       const isTableCellStep = tableCellTargets.includes(step.target as string);
-
+      const isTableHeaderStep = tableHeaderTargets.includes(step.target as string);
       const el = document.querySelector(step.target as string);
       if (el) {
-        if (isTableCellStep) {
-          // Horizontal: manually scroll the container to center the cell
+        if (isTableCellStep || isTableHeaderStep) {
+          // Horizontal: manually scroll the container to center the element
           const scrollContainer = el.closest('.overflow-x-auto') as HTMLElement;
           if (scrollContainer) {
             const cellRect = el.getBoundingClientRect();
@@ -74,14 +77,16 @@ export function PositionsTour({ activeTab = 'employees', onTabChange }: Position
             scrollContainer.scrollLeft = Math.max(0, centerOffset);
           }
 
-          // Vertical: scroll cell into center of the virtual body
-          const virtualBody = el.closest('[data-tour-virtual-body]') as HTMLElement;
-          if (virtualBody) {
-            const cellRect = el.getBoundingClientRect();
-            const bodyRect = virtualBody.getBoundingClientRect();
-            const cellOffsetTop = cellRect.top - bodyRect.top + virtualBody.scrollTop;
-            const centerOffset = cellOffsetTop - (bodyRect.height / 2) + (cellRect.height / 2);
-            virtualBody.scrollTop = Math.max(0, centerOffset);
+          // Vertical: scroll cell into center of the virtual body (body cells only)
+          if (isTableCellStep) {
+            const virtualBody = el.closest('[data-tour-virtual-body]') as HTMLElement;
+            if (virtualBody) {
+              const cellRect = el.getBoundingClientRect();
+              const bodyRect = virtualBody.getBoundingClientRect();
+              const cellOffsetTop = cellRect.top - bodyRect.top + virtualBody.scrollTop;
+              const centerOffset = cellOffsetTop - (bodyRect.height / 2) + (cellRect.height / 2);
+              virtualBody.scrollTop = Math.max(0, centerOffset);
+            }
           }
 
           // Let scroll settle, then force Joyride to recalculate spotlight position
