@@ -48,28 +48,30 @@ export function TourTooltip({
             Skip tour
           </Button>
           <div className="flex items-center gap-2">
-            {/* Step dots */}
-            <div className="flex items-center gap-1 mr-1">
-              {Array.from({ length: size }, (_, i) => (
-                <div
-                  key={i}
-                  className={`h-1.5 rounded-full transition-all duration-200 ${
-                    i === index
-                      ? 'w-4 bg-primary'
-                      : i < index
-                        ? 'w-1.5 bg-primary/40'
-                        : 'w-1.5 bg-muted-foreground/20'
-                  }`}
-                />
-              ))}
-            </div>
+            {/* Step dots - hide when too many steps */}
+            {size <= 10 && (
+              <div className="flex items-center gap-1 mr-1">
+                {Array.from({ length: size }, (_, i) => (
+                  <div
+                    key={i}
+                    className={`h-1.5 rounded-full transition-all duration-200 ${
+                      i === index
+                        ? 'w-4 bg-primary'
+                        : i < index
+                          ? 'w-1.5 bg-primary/40'
+                          : 'w-1.5 bg-muted-foreground/20'
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
             {index > 0 && (
-              <Button variant="outline" size="sm" {...backProps} className="transition-colors">
+              <Button variant="outline" size="sm" {...backProps} className="shrink-0 transition-colors">
                 Back
               </Button>
             )}
             {continuous && (
-              <Button size="sm" {...primaryProps} className="transition-transform hover:scale-[1.02]">
+              <Button size="sm" {...primaryProps} className="shrink-0 transition-transform hover:scale-[1.02]">
                 {index === size - 1 ? 'Finish' : 'Next'}
               </Button>
             )}
