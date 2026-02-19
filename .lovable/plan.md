@@ -1,26 +1,46 @@
 
 
-## Fix: Use Green as the Active Color for Both Scenarios
+## Make Override Vol KPI Dynamic Based on Department Selection
 
-### What's Wrong
+### Problem
 
-Currently Scenario 2 uses orange to indicate the Override Vol is active. The user wants **green** to be the universal "active" color -- whichever card is active gets the green border, and the inactive card gets the default neutral border.
+The Override Vol KPI card on the Summary tab always shows a hardcoded value of "24.7" regardless of filter selections. It should:
 
-### Change
+1. Show **"Select Dept"** when no specific department is selected (All Departments)
+2. When a department IS selected, query the `volume_overrides` table for that department
+3. If no override exists or the override is **expired**, show **"--"** (no data)
+4. If a valid, non-expired override exists, show its value
 
-**File: `src/components/tour/TourDemoPreview.tsx`**
+### Changes
 
-Update the `VolumeColors` component:
+**File: `src/pages/staffing/StaffingSummary.tsx`**
 
-1. **Scenario 2 label**: Change from `text-orange-600` to `text-emerald-600`, rename to "Scenario 2 -- Override Active"
-2. **Override Vol card in Scenario 2**: Change `active="orange"` to `active="green"` and `badgeColor="orange"` to `badgeColor="green"`
-3. **MiniVolCard**: Remove the orange active case entirely since it's no longer used. The `active` prop becomes `'green' | 'none'` only.
+1. Import `useVolumeOverrides` hook
+2. Fetch volume overrides for the selected facility
+3. In the `volumeKPIs` useMemo, make the `override-vol` entry dynamic:
+   - If `selectedDepartment === "all-departments"` -> value = "Select Dept"
+   - Else find the matching override for the selected department
+   - If found and `expiry_date` is in the future -> show the `override_volume` value
+   - If not found or expired -> value = "--"
+4. Remove hardcoded chart data when there's no valid override (pass empty array)
+5. Update the `definition` text contextually based on state
 
-Result: Both scenarios show the active card with a green border and the inactive card with a neutral border.
-
-### Files Changed
+### Technical Details
 
 | File | Change |
 |------|--------|
-| `src/components/tour/TourDemoPreview.tsx` | Replace orange active styling with green in Scenario 2; simplify `MiniVolCard` to only support green or none |
+| `src/pages/staffing/StaffingSummary.tsx` | Import `useVolumeOverrides`, add override lookup logic, make `override-vol` KPI value and highlight state dynamic based on selected department and override expiry |
+
+### Logic Summary
+
+```text
+if (no department selected)
+  -> value: "Select Dept", no chart, no highlight
+else
+  -> look up override for facility+department
+  -> if override exists AND expiry_date > today
+     -> value: override_volume, show chart, highlight green (active)
+  -> else
+     -> value: "--", no chart, no highlight
+```
 
