@@ -22,6 +22,8 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
         if (mainEl) {
           mainEl.scrollTo({ top: 0, behavior: 'instant' });
         }
+        // Force Joyride to recalculate spotlight after scroll settles
+        setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
       }
     }
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
@@ -51,7 +53,6 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
       showSkipButton
       scrollToFirstStep={false}
       disableScrolling={false}
-      disableScrollParentFix
       disableOverlayClose
       callback={handleCallback}
       tooltipComponent={TourTooltip}
@@ -65,7 +66,8 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
         },
         spotlight: {
           borderRadius: 12,
-          padding: 4,
+          padding: 6,
+          boxShadow: '0 0 0 2px hsl(var(--primary) / 0.3), 0 0 15px 4px hsl(var(--primary) / 0.1)',
         },
       }}
       floaterProps={{
