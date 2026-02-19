@@ -1,43 +1,36 @@
 
 
-## Fix: Tour Not Starting After Cross-Page Navigation
+## Fix: Make Position Planning and Variance Analysis Tables Scrollable
 
 ### Root Cause
 
-When StaffingTour finishes its last tab (NP Settings), it navigates to `/positions?tab=employees&tour=true`. But `PositionsPage.tsx` has a `useEffect` on mount (line 46-48) that immediately clears ALL search params:
+Both tables grow to their full content height because their parent containers have no height constraint. The `Table` component's wrapper (`div.overflow-auto`) only enables scrolling when there's a fixed or constrained height — without one, the content just expands infinitely.
 
-```typescript
-useEffect(() => {
-  if (tabParam) setSearchParams({}, { replace: true });  // Wipes tour=true too!
-}, []);
-```
+### The Fix
 
-This runs before the `useTour` hook's `useEffect` can read `?tour=true`, so the tour never triggers. The same issue exists in `StaffingSummary.tsx` (line 32-36).
+Add a `max-h-[600px]` constraint to the scrollable container around each table, similar to how `ForecastBalanceTable` already does it (`max-h-[600px] overflow-auto`).
 
-### Fix
+### Changes
 
-In both pages, only remove the `tab` param while preserving `tour`:
+**`src/pages/staffing/PositionPlanning.tsx`** (line 533):
+- Change the `FTESkillShiftTable` outer div from `overflow-x-auto` to `overflow-auto max-h-[600px]`
+- This constrains vertical height while preserving horizontal scroll
 
-**`src/pages/positions/PositionsPage.tsx`** (line 46-48):
-```typescript
-useEffect(() => {
-  if (tabParam) {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.delete('tab');
-      return next;
-    }, { replace: true });
-  }
-}, []);
-```
+**`src/pages/staffing/VarianceAnalysis.tsx`** (line 723):
+- Change the table container div from `overflow-hidden overflow-x-auto` to `overflow-auto max-h-[600px]`
 
-**`src/pages/staffing/StaffingSummary.tsx`** (line 32-36):
-Same change -- selectively delete `tab` instead of replacing all params with empty.
+Additionally, both tables need sticky headers so column labels remain visible while scrolling:
+
+**`src/pages/staffing/PositionPlanning.tsx`** (FTESkillShiftTable `TableHeader`):
+- Add `className="sticky top-0 z-10 bg-card"` to `TableHeader`
+
+**`src/pages/staffing/VarianceAnalysis.tsx`** (VarianceTable `TableHeader`):
+- Add `className="sticky top-0 z-10 bg-card"` to `TableHeader`
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/pages/positions/PositionsPage.tsx` | Only delete `tab` param, preserve `tour` |
-| `src/pages/staffing/StaffingSummary.tsx` | Only delete `tab` param, preserve `tour` |
+| `src/pages/staffing/PositionPlanning.tsx` | Add `max-h-[600px]` to table container, sticky header on `TableHeader` |
+| `src/pages/staffing/VarianceAnalysis.tsx` | Add `max-h-[600px]` to table container, sticky header on `TableHeader` |
 
