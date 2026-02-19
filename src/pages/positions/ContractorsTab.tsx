@@ -262,7 +262,7 @@ export function ContractorsTab({
           ...col,
           renderCell: (row: any, colDef: any) => {
             const cell = originalRenderCell ? originalRenderCell(row, colDef) : null;
-            return row.id === firstRowId ? <div data-tour="positions-shift-cell" className="w-full h-full">{cell}</div> : cell;
+            return row.id === firstRowId ? <div data-tour="positions-shift-cell" className="w-full min-h-[48px] flex items-center">{cell}</div> : cell;
           },
         };
       }
