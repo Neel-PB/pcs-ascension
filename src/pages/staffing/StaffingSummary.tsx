@@ -31,7 +31,11 @@ export default function StaffingSummary() {
   // Clear the search param once consumed so it doesn't get stale
   useEffect(() => {
     if (tabParam) {
-      setSearchParams({}, { replace: true });
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('tab');
+        return next;
+      }, { replace: true });
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const { hasPermission, loading: rbacLoading } = useRBAC();
