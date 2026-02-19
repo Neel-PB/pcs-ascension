@@ -11,7 +11,7 @@ interface PositionsDemoPreviewProps {
 
 const CellStateRow = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div className="flex items-center gap-2">
-    <div className="flex-1 flex items-center gap-1 rounded border border-border bg-background px-2 py-1 min-h-[28px]">
+    <div className="flex-1 flex items-center gap-1 rounded border border-border bg-background px-2 py-1.5 min-h-[30px] border-l-2 border-l-primary/30">
       {children}
     </div>
     <span className="text-[8px] text-muted-foreground flex-shrink-0 max-w-[120px]">{label}</span>
@@ -21,8 +21,8 @@ const CellStateRow = ({ label, children }: { label: string; children: React.Reac
 /* ─── Active FTE Steps Preview ─── */
 
 const ActiveFteStepsPreview = () => (
-  <div className="rounded-lg border border-border bg-card p-2.5 space-y-2 mt-1">
-    <p className="text-[9px] font-semibold text-foreground/80 uppercase tracking-wide">Active FTE Workflow</p>
+  <div className="rounded-lg border border-primary/20 bg-primary/[0.02] p-3 space-y-2.5 mt-2 shadow-sm ring-1 ring-primary/10">
+    <p className="text-[10px] font-semibold text-primary uppercase tracking-wider">Active FTE Workflow</p>
 
     {/* State 1: Default cell */}
     <CellStateRow label="Click cell to edit FTE">
@@ -30,7 +30,7 @@ const ActiveFteStepsPreview = () => (
       <Pencil className="h-3 w-3 text-muted-foreground ml-1" />
     </CellStateRow>
 
-    <div className="ml-3 w-px h-2 bg-border" />
+    <div className="ml-3 w-0.5 h-3 bg-primary/20 rounded-full" />
 
     {/* State 2: Popover mockup */}
     <div className="flex items-start gap-2">
@@ -64,7 +64,7 @@ const ActiveFteStepsPreview = () => (
       <span className="text-[8px] text-muted-foreground flex-shrink-0 max-w-[100px] mt-1">Select status, FTE, expiry & comment</span>
     </div>
 
-    <div className="ml-3 w-px h-2 bg-border" />
+    <div className="ml-3 w-0.5 h-3 bg-primary/20 rounded-full" />
 
     {/* State 3: Saved state */}
     <CellStateRow label="Override saved. Click ↺ to revert.">
@@ -79,8 +79,8 @@ const ActiveFteStepsPreview = () => (
 /* ─── Shift Override Steps Preview ─── */
 
 const ShiftOverrideStepsPreview = () => (
-  <div className="rounded-lg border border-border bg-card p-2.5 space-y-2 mt-1">
-    <p className="text-[9px] font-semibold text-foreground/80 uppercase tracking-wide">Shift Override Workflow</p>
+  <div className="rounded-lg border border-primary/20 bg-primary/[0.02] p-3 space-y-2.5 mt-2 shadow-sm ring-1 ring-primary/10">
+    <p className="text-[10px] font-semibold text-primary uppercase tracking-wider">Shift Override Workflow</p>
 
     {/* State 1: Special shift with pencil */}
     <CellStateRow label="Special shift — click pencil">
@@ -88,7 +88,7 @@ const ShiftOverrideStepsPreview = () => (
       <Pencil className="h-3 w-3 text-muted-foreground ml-1" />
     </CellStateRow>
 
-    <div className="ml-3 w-px h-2 bg-border" />
+    <div className="ml-3 w-0.5 h-3 bg-primary/20 rounded-full" />
 
     {/* State 2: Day/Night selector */}
     <div className="flex items-start gap-2">
@@ -108,7 +108,7 @@ const ShiftOverrideStepsPreview = () => (
       <span className="text-[8px] text-muted-foreground flex-shrink-0 max-w-[100px] mt-1">Select Day or Night</span>
     </div>
 
-    <div className="ml-3 w-px h-2 bg-border" />
+    <div className="ml-3 w-0.5 h-3 bg-primary/20 rounded-full" />
 
     {/* State 3: Modified display */}
     <CellStateRow label="Override active. Click ↺ to revert.">
@@ -125,8 +125,8 @@ const ShiftOverrideStepsPreview = () => (
 /* ─── Comments Preview ─── */
 
 const CommentsPreview = () => (
-  <div className="rounded-lg border border-border bg-card p-2.5 space-y-2 mt-1">
-    <p className="text-[9px] font-semibold text-foreground/80 uppercase tracking-wide">Activity &amp; Comments</p>
+  <div className="rounded-lg border border-primary/20 bg-primary/[0.02] p-3 space-y-2.5 mt-2 shadow-sm ring-1 ring-primary/10">
+    <p className="text-[10px] font-semibold text-primary uppercase tracking-wider">Activity &amp; Comments</p>
 
     {/* Activity log entry */}
     <div className="flex gap-2">
