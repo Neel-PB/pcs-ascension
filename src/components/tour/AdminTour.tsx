@@ -111,6 +111,8 @@ export function AdminTour({ activeTab, onTabChange }: AdminTourProps) {
         },
         spotlight: {
           borderRadius: 12,
+          padding: 6,
+          boxShadow: '0 0 0 2px hsl(var(--primary) / 0.3), 0 0 15px 4px hsl(var(--primary) / 0.1)',
         },
       }}
       floaterProps={{
