@@ -1,78 +1,58 @@
 
 
-## Fix: Simplify Table Cell Tour Scrolling (Stop Removing Overflow)
+## Fix: Comments Tour Step Scrolling + Preview Positioning
 
-### Root Cause
+### Problem 1: Comments spotlight missing
 
-The current approach has a fundamental flaw:
+The `[data-tour="positions-comments"]` target is a `<span>` inside the **column header row** (not a body cell like Active FTE and Shift). It wraps the MessageSquare icon in the last column. Since it's at the far-right edge of the table, it needs horizontal scrolling to become visible.
 
-1. Manually scroll the horizontal container to center the cell -- this works
-2. Then set `overflow: visible` on all parent containers -- this **destroys the scroll context**
+The current scroll logic in `PositionsTour.tsx` correctly finds `.overflow-x-auto` via `.closest()`, but there's a subtle issue: the Comments header target is **not inside `[data-tour-virtual-body]`** (it's in the sticky `TableHeader`). The code still works for horizontal scrolling since both header and body share the same `.overflow-x-auto` parent. However, the Comments step is being treated as a "table cell step" which applies virtual body scrolling logic that's unnecessary for a header element.
 
-Once `overflow: visible` is applied, the container is no longer scrollable. The table renders at its full natural width (2000px+), and the cell that was in view is now positioned far off-screen to the right in layout coordinates. The spotlight and tooltip appear at coordinates that are outside the viewport.
+The real issue is that the Comments column header `<span>` is very small (just an icon), and the `cellRect` measurements used for centering may be inaccurate because the element might not be rendered/visible when first queried (it's off-screen to the right).
 
-**The overflow changes are unnecessary.** Joyride's spotlight uses `position: fixed` and measures element position via `getBoundingClientRect()`. As long as the cell is scrolled into the visible area within its container, the spotlight will appear at the correct screen position without needing to modify any overflow properties.
+### Problem 2: Preview looks odd for Active FTE, Shift, and Comments
+
+The demo previews for these steps use `placement: 'left'` which positions the wide tooltip (560px) to the left of cells that are in the right portion of the table. When the cell is scrolled to center, the tooltip can overlap the table or get pushed into awkward positions. For cells that have been scrolled into the center-right of the viewport, `placement: 'left'` works well. But for the Comments header (which is now scrolled to center), the tooltip may need to use `placement: 'bottom'` or `'top'` since it's a header element.
 
 ### Fix
 
-Rewrite the table cell step handler in `PositionsTour.tsx` to:
-
-1. Scroll the horizontal container (`overflow-x-auto`) to center the target cell
-2. Scroll the virtual body vertically to center the cell
-3. Fire resize events so Joyride recalculates the spotlight position
-4. **Do NOT change overflow or contain properties at all**
-
-Also remove the `restoreTableContainment()` call at the start of each step since we're no longer modifying overflow.
-
-### Implementation
-
 **File: `src/components/tour/PositionsTour.tsx`**
 
-Replace the table cell handling block (lines 79-115) with:
+1. Differentiate between **body cell** targets (`positions-active-fte-cell`, `positions-shift-cell`) and **header** targets (`positions-comments`). Both need horizontal scrolling, but only body cells need vertical virtual body scrolling.
+2. For header targets, scroll horizontally then trigger resize events -- no vertical scroll needed.
+3. Add a small delay before measuring `cellRect` to allow the browser to complete the horizontal scroll first, ensuring the element is in the viewport when measured.
 
-```typescript
-if (isTableCellStep) {
-  // Horizontal: manually scroll the container to center the cell
-  const scrollContainer = el.closest('.overflow-x-auto') as HTMLElement;
-  if (scrollContainer) {
-    const cellRect = el.getBoundingClientRect();
-    const containerRect = scrollContainer.getBoundingClientRect();
-    const cellOffsetLeft = cellRect.left - containerRect.left + scrollContainer.scrollLeft;
-    const centerOffset = cellOffsetLeft - (containerRect.width / 2) + (cellRect.width / 2);
-    scrollContainer.scrollLeft = Math.max(0, centerOffset);
-  }
+**File: `src/components/tour/positionsTourSteps.ts`**
 
-  // Vertical: scroll cell into center of the virtual body
-  const virtualBody = el.closest('[data-tour-virtual-body]') as HTMLElement;
-  if (virtualBody) {
-    const cellRect = el.getBoundingClientRect();
-    const bodyRect = virtualBody.getBoundingClientRect();
-    const cellOffsetTop = cellRect.top - bodyRect.top + virtualBody.scrollTop;
-    const centerOffset = cellOffsetTop - (bodyRect.height / 2) + (cellRect.height / 2);
-    virtualBody.scrollTop = Math.max(0, centerOffset);
-  }
+4. Change the Comments step `placement` from `'left'` to `'bottom'` since the target is a header element (sitting at the top of the table). A `'left'` placement on a far-right header icon pushes the wide tooltip awkwardly.
+5. Keep Active FTE and Shift as `placement: 'left'` since they target body cells that are scrolled to center -- the tooltip renders nicely to their left.
 
-  // Let scroll settle, then force Joyride to recalculate spotlight position
-  requestAnimationFrame(() => {
-    window.dispatchEvent(new Event('resize'));
-    setTimeout(() => window.dispatchEvent(new Event('resize')), 150);
-    setTimeout(() => window.dispatchEvent(new Event('resize')), 300);
-  });
-}
+### Technical Details
+
+**`src/components/tour/PositionsTour.tsx`** changes:
+
+Split `tableCellTargets` into two arrays:
+
+```text
+tableCellTargets (body cells that need both horizontal + vertical scroll):
+  - [data-tour="positions-active-fte-cell"]
+  - [data-tour="positions-shift-cell"]
+
+tableHeaderTargets (header elements that need only horizontal scroll):
+  - [data-tour="positions-comments"]
 ```
 
-Also remove the `restoreTableContainment()` function and its calls since overflow/contain are no longer modified during cell steps. Keep the cleanup in the FINISHED/SKIPPED handler as a safety net.
+Update the `STEP_BEFORE` handler:
+- For body cell targets: keep existing logic (horizontal scroll + vertical scroll + resize events)
+- For header targets: horizontal scroll only + resize events (skip virtual body scroll)
+
+**`src/components/tour/positionsTourSteps.ts`** changes:
+
+For all three tab step arrays (employees, contractors, requisitions), change the Comments step placement from `'left'` to `'bottom'`.
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/tour/PositionsTour.tsx` | Simplify cell step: scroll only, no overflow changes. Remove `restoreTableContainment` from step handler. |
-
-### Why This Works
-
-- The cell is physically scrolled into the visible viewport area
-- `getBoundingClientRect()` returns correct screen coordinates because the cell is visible within its scrollable container
-- Joyride's fixed-position spotlight aligns to those coordinates
-- No DOM mutation of overflow/contain means the scroll position stays stable
-
+| `src/components/tour/PositionsTour.tsx` | Split targets into body cells vs header targets; apply appropriate scroll logic for each |
+| `src/components/tour/positionsTourSteps.ts` | Change Comments step placement to `'bottom'` for all three tabs |
