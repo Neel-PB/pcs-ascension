@@ -1,52 +1,73 @@
 
 
-## Fix: Active FTE Cell Spotlight Not Highlighting During Tour
+## Improve Joyride Tour Appearance and Fix Active FTE / Shift Highlighting
 
-### Problem
+### Problem 1: Active FTE and Shift Cells Not Highlighting
 
-The tour tooltip for "Active FTE" (step 7 of 9) renders correctly, but the Joyride **spotlight cutout** (the bright area in the dark overlay) is not visible around the Active FTE cell. The cell exists and has the `data-tour="positions-active-fte-cell"` attribute, but Joyride fails to render the spotlight highlight around it.
+The `data-tour="positions-shift-cell"` wrapper still uses `className="w-full h-full"` which gives Joyride no measurable height (since `h-full` resolves to 0 if the parent has no explicit height). The Active FTE wrapper was fixed previously but the shift was missed. Additionally, Joyride with `disableScrollParentFix` struggles to calculate spotlight coordinates for elements inside horizontally scrollable containers -- a small delay is needed between scrolling the element into view and letting Joyride measure it.
 
-### Root Cause
+**Fix in `EmployeesTab.tsx` and `ContractorsTab.tsx`:**
+- Change the shift cell wrapper from `className="w-full h-full"` to `className="w-full min-h-[48px] flex items-center"` (same as the active-fte fix)
 
-The Active FTE column is positioned further right in the table (after Hired FTE, with columns before it). Inside the table's horizontally scrollable container, Joyride struggles to calculate the correct bounding rectangle for the spotlight when:
+**Fix in `PositionsTour.tsx`:**
+- Add a forced Joyride re-render after `scrollIntoView` by dispatching a resize event after a short delay -- this forces Joyride to recalculate the spotlight position after the scroll has settled
+- Remove `disableScrollParentFix` -- this prop prevents Joyride from adjusting for scroll parents, causing incorrect spotlight positions for cells deep inside scrollable tables
 
-1. The target element is inside a deeply nested overflow container (table body with `overflow-x-auto`)
-2. `disableScrollParentFix` is enabled -- this prevents Joyride from adjusting for scroll parents, which means the spotlight coordinates may not account for the scroll container offset
-3. The `STEP_BEFORE` handler explicitly resets horizontal scroll to `left: 0`, which can push the target out of the visible area or cause a mismatch between where Joyride measured the element and where it ended up
+### Problem 2: Improve Joyride Visual Appearance
 
-### Fix
+The current tour tooltip looks plain compared to the rich demo previews inside it. Improvements to `TourTooltip.tsx`:
 
-**File: `src/components/tour/PositionsTour.tsx`**
+1. **Progress bar** instead of plain "X of Y" text -- a thin accent-colored progress bar at the top of the card showing completion
+2. **Step dots** alongside the text counter for visual progress tracking
+3. **Subtle header accent** -- a thin primary-colored top border on the card for brand consistency
+4. **Improved button styling** -- the Skip button gets a more subtle treatment, Next/Back get slightly more contrast
+5. **Better card shadow** -- upgrade from `shadow-xl` to a more layered shadow with a subtle primary glow
+6. **Spotlight glow** -- add a subtle box-shadow ring around the spotlight cutout for better visibility
 
-1. Remove the horizontal scroll reset (`scrollTo({ left: 0 })`) from the `STEP_BEFORE` handler for the Active FTE, Shift, and Comments steps -- the `scrollIntoView` call already handles making the element visible
-2. Add `spotlightPadding: 4` to the Joyride styles to give the spotlight a small visual buffer
-3. For the `STEP_BEFORE` handler, only reset the main vertical scroll but allow horizontal scroll to stay at the target element's position
+### Technical Details
 
-**File: `src/pages/positions/EmployeesTab.tsx`** and **`src/pages/positions/ContractorsTab.tsx`**
+**`src/components/tour/TourTooltip.tsx` changes:**
 
-4. Ensure the `data-tour` wrapper div has explicit dimensions that Joyride can measure -- add `min-h-[48px]` (matching the row's `h-12`) so the spotlight has a proper bounding box
+```
+Card updates:
+- Add border-t-2 border-primary for accent stripe at top
+- Replace shadow-xl with shadow-2xl shadow-primary/5 for subtle glow
+- Add a progress bar below the header: thin div with width based on (index+1)/size
+- Add step indicator dots in the footer alongside counter text
 
-### Technical Changes
+Button updates:
+- Skip: smaller, more ghost-like with hover:text-foreground
+- Back: keep outline but add hover transition
+- Next/Finish: keep primary, add slight scale on hover
+```
+
+**`src/components/tour/PositionsTour.tsx` changes:**
 
 ```typescript
-// PositionsTour.tsx - Updated STEP_BEFORE handler
-if (type === EVENTS.STEP_BEFORE && step?.target) {
-  const el = document.querySelector(step.target as string);
-  if (el) {
-    el.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'instant' });
-    // Only reset vertical scroll on main, NOT horizontal scroll on table
-    const mainEl = document.querySelector('main');
-    if (mainEl) {
-      mainEl.scrollTo({ top: 0, behavior: 'instant' });
-    }
-  }
+// Remove disableScrollParentFix
+// In STEP_BEFORE, after scrollIntoView, force recalc:
+if (el) {
+  el.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'instant' });
+  const mainEl = document.querySelector('main');
+  if (mainEl) mainEl.scrollTo({ top: 0, behavior: 'instant' });
+  // Force Joyride to recalculate after scroll settles
+  setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
+}
+
+// Add spotlightPadding via spotlight styles
+spotlight: {
+  borderRadius: 12,
+  padding: 6,
+  boxShadow: '0 0 0 2px hsl(var(--primary) / 0.3), 0 0 15px 4px hsl(var(--primary) / 0.1)',
 }
 ```
 
+**`src/pages/positions/EmployeesTab.tsx` and `ContractorsTab.tsx`:**
+
 ```typescript
-// EmployeesTab.tsx / ContractorsTab.tsx - Explicit dimensions on wrapper
+// Shift cell wrapper -- change h-full to min-h-[48px] flex items-center
 return row.id === firstRowId 
-  ? <div data-tour="positions-active-fte-cell" className="w-full min-h-[48px] flex items-center">{cell}</div> 
+  ? <div data-tour="positions-shift-cell" className="w-full min-h-[48px] flex items-center">{cell}</div> 
   : cell;
 ```
 
@@ -54,7 +75,10 @@ return row.id === firstRowId
 
 | File | Change |
 |------|--------|
-| `src/components/tour/PositionsTour.tsx` | Remove table horizontal scroll reset in STEP_BEFORE, add spotlightPadding |
-| `src/pages/positions/EmployeesTab.tsx` | Add explicit min-height and flex alignment to data-tour wrapper |
-| `src/pages/positions/ContractorsTab.tsx` | Same wrapper fix as EmployeesTab |
+| `src/components/tour/TourTooltip.tsx` | Add progress bar, accent stripe, step dots, improved shadows and button styling |
+| `src/components/tour/PositionsTour.tsx` | Remove `disableScrollParentFix`, add resize dispatch for recalc, add spotlight glow |
+| `src/components/tour/StaffingTour.tsx` | Add matching spotlight glow styles for consistency |
+| `src/components/tour/OverlayTour.tsx` | Add matching spotlight glow styles for consistency |
+| `src/pages/positions/EmployeesTab.tsx` | Fix shift cell wrapper: `h-full` to `min-h-[48px] flex items-center` |
+| `src/pages/positions/ContractorsTab.tsx` | Fix shift cell wrapper: `h-full` to `min-h-[48px] flex items-center` |
 
