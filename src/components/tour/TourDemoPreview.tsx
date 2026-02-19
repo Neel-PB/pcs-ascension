@@ -86,15 +86,13 @@ const KPICompactPreview = ({ kpiId }: { kpiId: string }) => {
 };
 
 const MiniVolCard = ({ label, value, badge, badgeColor, active }: {
-  label: string; value: string; badge: string; badgeColor: 'green' | 'orange' | 'muted'; active: 'green' | 'orange' | 'none';
+  label: string; value: string; badge: string; badgeColor: 'green' | 'muted'; active: 'green' | 'none';
 }) => {
   const borderClass = active === 'green'
     ? 'border-l-[3px] border-l-emerald-500 border-t border-r border-b border-border'
-    : active === 'orange'
-      ? 'border-l-[3px] border-l-orange-500 border-t border-r border-b border-border'
-      : 'border border-border';
-  const bgClass = active === 'green' ? 'bg-emerald-500/5' : active === 'orange' ? 'bg-orange-500/5' : 'bg-background/50';
-  const badgeBg = badgeColor === 'green' ? 'bg-emerald-500/15 text-emerald-700' : badgeColor === 'orange' ? 'bg-orange-500/15 text-orange-700' : 'bg-muted text-muted-foreground';
+    : 'border border-border';
+  const bgClass = active === 'green' ? 'bg-emerald-500/5' : 'bg-background/50';
+  const badgeBg = badgeColor === 'green' ? 'bg-emerald-500/15 text-emerald-700' : 'bg-muted text-muted-foreground';
 
   return (
     <div className={`rounded-md ${borderClass} ${bgClass} p-2 pr-6 relative`}>
@@ -119,10 +117,10 @@ const VolumeColors = () => (
       </div>
     </div>
     <div>
-      <p className="text-[9px] font-bold uppercase text-orange-600 tracking-wider mb-1">Scenario 2 — Override Active</p>
+      <p className="text-[9px] font-bold uppercase text-emerald-600 tracking-wider mb-1">Scenario 2 — Override Active</p>
       <div className="grid grid-cols-2 gap-1.5">
         <MiniVolCard label="Target Vol" value="20.8" badge="12-Mo Avg" badgeColor="muted" active="none" />
-        <MiniVolCard label="Override Vol" value="24.7" badge="Manual" badgeColor="orange" active="orange" />
+        <MiniVolCard label="Override Vol" value="24.7" badge="Manual" badgeColor="green" active="green" />
       </div>
     </div>
   </div>
