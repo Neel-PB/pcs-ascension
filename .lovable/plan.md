@@ -1,82 +1,67 @@
 
 
-## Tour Tooltip Redesign: Compact, Wide, and Beautiful
+## Make Tour More Elegant and Useful
 
-### Problems Identified
+### Changes Overview
 
-1. **Table tour steps appear below the table** -- tooltip should always be positioned above tables so the guide doesn't get hidden or push content down.
-2. **Tooltips are too tall** -- excessive vertical padding and spacing waste screen space.
-3. **Design needs polish** -- the current tooltip is functional but plain; needs a more refined, modern look.
-
-### Changes
-
----
-
-### 1. Force `placement: 'top'` on all table-targeting steps
-
-**Files:** `src/components/tour/tourSteps.ts`, `src/components/tour/positionsTourSteps.ts`
-
-Update every step that targets a table element to use `placement: 'top'` instead of `'bottom'` or `'auto'`:
-
-- `tourSteps.ts`:
-  - `planning-table` (line 750): already `'top'` -- keep
-  - `variance-table` (line 225): already `'top'` -- keep
-  - `volume-settings-table` steps (lines 291, 300, 310): change `'auto'` to `'top'`
-  - `np-settings-table` steps (lines 345, 353, 363): change `'auto'` to `'top'`
-  - `admin-users-table` (line 494): already `'top'` -- keep
-  - `admin-rbac-content` (line 563): already `'top'` -- keep
-  - `admin-audit-table` (line 587): change `'auto'` to `'top'`
-  - `forecast-table-body` (line 268): already `'top'` -- keep
-  - `feedback-table` (line 684): already `'top'` -- keep
-  - `checklist-table` (line 408): already `'top'` -- keep
-
-- `positionsTourSteps.ts`:
-  - `positions-table` (lines 48, 114, 180): already `'top'` -- keep
+1. **Remove tab preview wireframes** from all "Tab Navigation" steps -- the spotlight already highlights the real tabs, so the preview is redundant
+2. **Remove repetitive "Tab Navigation" steps** from admin sub-tours -- every admin section starts with the same "Tab Navigation" step pointing at `[data-tour="admin-tabs"]`. Keep it only in the first section (Users). Same for Positions tours.
+3. **Clean up unused components** from TourDemoPreview.tsx -- remove `TabPills`, `MiniChart`, `KPIInfo`, `KPIActions`, `CompactMiniChart`, `CompactDefinition`, `ExpandableRow`, `ForecastCards`, `TogglePair` if they are no longer referenced by any tour step
+4. **Simplify text-only steps** -- steps that are just plain text (no preview) should be concise and action-oriented rather than verbose descriptions
 
 ---
 
-### 2. Compact the TourTooltip (reduce height, increase width)
+### Detailed Changes
 
-**File:** `src/components/tour/TourTooltip.tsx`
+#### File: `src/components/tour/tourSteps.ts`
 
-Spacing reductions:
-- Progress bar: keep `h-[3px]` (already minimal)
-- CardHeader: reduce `pt-4` to `pt-3`, keep `pb-2`
-- CardContent: reduce `pb-3 space-y-3` to `pb-2 space-y-2`
-- CardFooter: reduce `pb-4` to `pb-3`
-- Section badge padding: reduce from `px-3 py-1` to `px-2.5 py-0.5`
+**Remove tab preview from "Tab Navigation" step (line 120-128):**
+- Change from `demoContent('Switch between...', 'tab-pills')` to plain text `'Switch between Summary, Planned/Active Resources, Variance Analysis, Forecasts, and Settings views.'`
+- This removes the TabPills wireframe since the spotlight already shows the real tabs
 
-Width increases:
-- Default (non-wide): increase from `max-w-[420px] min-w-[340px]` to `max-w-[480px] min-w-[380px]`
-- Wide (KPI steps): keep `max-w-[560px] min-w-[480px]`
+**Tighten verbose step descriptions across the file:**
+- Shorten multi-sentence descriptions to 1-2 concise sentences where the UI is self-explanatory
+- Example: "Use these cascading filters to narrow staffing data. Selecting a higher-level filter updates the options available in lower-level filters." becomes "Use cascading filters to narrow staffing data. Higher-level selections update lower-level options."
 
----
+#### File: `src/components/tour/positionsTourSteps.ts`
 
-### 3. Beautify the TourTooltip design
+**Remove duplicate "Tab Navigation" steps from Contractors and Requisitions tours (lines 86-91, 152-157):**
+- The Employees tour already covers the tab navigation step
+- When the tour auto-continues from Employees to Contractors, repeating "Tab Navigation" is redundant
+- Keep only in `employeesTourSteps`
 
-**File:** `src/components/tour/TourTooltip.tsx`
+#### File: `src/components/tour/tourSteps.ts` (Admin sections)
 
-Visual enhancements:
-- Replace the flat `border-t-2 border-t-primary` with a **gradient accent bar** at the top using a small div with `bg-gradient-to-r from-primary via-primary/80 to-primary/50 h-[3px]`
-- Merge the progress bar and accent bar into one element: the gradient bar width animates based on progress
-- Add a subtle **glassmorphic** feel: `backdrop-blur-sm bg-card/95` instead of solid `bg-card`
-- Improve shadow: use `shadow-xl shadow-black/10 dark:shadow-black/30` for a softer, more elevated look
-- Step counter badge: wrap in a `rounded-full bg-muted px-2 py-0.5` pill for a cleaner look
-- Primary (Next) button: add `rounded-lg` and subtle shadow `shadow-sm`
-- Back button: add `rounded-lg`
-- Skip buttons: slightly more prominent with `hover:bg-muted` background transition
-- Footer separator: add a subtle `border-t border-border/30` above the footer
+**Remove duplicate "Tab Navigation" steps from admin sub-tours:**
+- `adminFeedTourSteps` (lines 517-523): remove the admin-tabs step
+- `adminRbacTourSteps` (lines 540-547): remove the admin-tabs step
+- `adminAuditTourSteps` (lines 571-578): remove the admin-tabs step
+- `adminSettingsTourSteps` (lines 596-602): remove the admin-tabs step
+- Keep the tab navigation step only in `adminUsersTourSteps` (the first admin section)
 
----
+#### File: `src/components/tour/TourDemoPreview.tsx`
 
-### 4. Compact the KPICompactPreview
+**Remove unused components:**
+- `TabPills` (lines 227-243) -- no longer used
+- `MiniChart` (lines 93-180) -- replaced by KPICompactPreview
+- `KPIInfo` (lines 182-197) -- replaced by KPICompactPreview
+- `KPIActions` (lines 345-376) -- replaced by KPICompactPreview
+- `CompactMiniChart` (lines 304-330) -- was only used inside KPIActions
+- `CompactDefinition` (lines 332-343) -- was only used inside KPIActions
+- `ExpandableRow` (lines 260-278) -- not referenced by any tour step
+- `ForecastCards` (lines 280-291) -- not referenced by any tour step
+- `TogglePair` (lines 293-302) -- not referenced by any tour step
 
-**File:** `src/components/tour/TourDemoPreview.tsx`
+Remove corresponding switch cases from the `TourDemoPreview` function.
 
-- Reduce chart SVG height from `h-14` to `h-12`
-- Reduce stats row text sizes
-- Tighten grid gap from `gap-2` to `gap-1.5`
-- Reduce overall `mt-2` to `mt-1.5`
+Update the `TourDemoVariant` type to only include variants still in use: `'kpi-compact' | 'volume-colors' | 'split-badge' | 'legend'`
+
+#### File: `src/components/tour/TourTooltip.tsx`
+
+**Minor elegance refinements:**
+- Add a subtle entrance animation to the card: `animate-in fade-in-0 zoom-in-[0.98] duration-200`
+- Make the progress bar slightly taller on hover for interactivity feel: no change needed, current design is clean
+- Make the section badge more visually distinct with a left border accent instead of full pill background
 
 ---
 
@@ -84,8 +69,14 @@ Visual enhancements:
 
 | File | Change |
 |------|--------|
-| `src/components/tour/TourTooltip.tsx` | Compact spacing, wider default, gradient accent bar, glassmorphic card, polished buttons |
-| `src/components/tour/tourSteps.ts` | Change table-targeting steps to `placement: 'top'` |
-| `src/components/tour/positionsTourSteps.ts` | Verify table steps use `placement: 'top'` (already correct) |
-| `src/components/tour/TourDemoPreview.tsx` | Tighter KPICompactPreview spacing |
+| `src/components/tour/tourSteps.ts` | Remove tab-pills preview from Tab Navigation step; remove duplicate admin tab steps from Feed, RBAC, Audit, Settings tours |
+| `src/components/tour/positionsTourSteps.ts` | Remove duplicate Tab Navigation steps from Contractors and Requisitions tours |
+| `src/components/tour/TourDemoPreview.tsx` | Remove 9 unused components (TabPills, MiniChart, KPIInfo, KPIActions, CompactMiniChart, CompactDefinition, ExpandableRow, ForecastCards, TogglePair); clean up type and switch |
+| `src/components/tour/TourTooltip.tsx` | Add subtle entrance animation; refine section badge styling |
+
+### Impact
+
+- **Step count reduction**: Removes ~5 redundant "Tab Navigation" steps across the app
+- **File size reduction**: Removes ~280 lines of unused component code from TourDemoPreview.tsx
+- **Better UX**: No more showing a fake tab preview when the real tabs are already spotlighted; no repetitive steps when auto-continuing between sections
 
