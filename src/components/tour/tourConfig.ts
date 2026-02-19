@@ -21,6 +21,9 @@ export const APP_TOUR_SEQUENCE: TourSection[] = [
   { page: '/admin', tab: 'audit-log', tourKey: 'admin-audit-log', name: 'Audit Log' },
   { page: '/admin', tab: 'settings', tourKey: 'admin-settings', name: 'Admin Settings' },
   { page: null, tab: null, tourKey: 'header', name: 'Header' },
+  { page: null, tab: null, tourKey: 'feedback', name: 'Feedback Panel' },
+  { page: null, tab: null, tourKey: 'ai-hub', name: 'AI Assistant' },
+  { page: null, tab: null, tourKey: 'checklist', name: 'Positions Checklist' },
 ];
 
 const TOUR_PREFIX = 'helix-tour-';

@@ -102,8 +102,11 @@ export function StaffingTour({ activeTab = 'summary', onTabChange }: StaffingTou
           // Plain skip (no skip mode) — do nothing extra
         }
       } else {
-        // FINISHED — auto-continue to next section
-        handleNextSection();
+        // FINISHED — auto-continue to next section (unless single section mode)
+        const { singleSection } = useTourStore.getState();
+        if (!singleSection) {
+          handleNextSection();
+        }
       }
     }
   };

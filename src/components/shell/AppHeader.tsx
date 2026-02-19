@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Bell, Sun, Moon, Monitor } from "@/lib/icons";
 import { useTheme } from "next-themes";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -23,15 +23,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { HelpCircle } from "@/lib/icons";
+import { HelpCircle, Navigation, Play, List } from "@/lib/icons";
 import { useTourStore } from "@/stores/useTourStore";
-import { useLocation } from "react-router-dom";
+
 import { HeaderTour } from "@/components/tour/HeaderTour";
+import { TourLauncher } from "@/components/tour/TourLauncher";
+import { APP_TOUR_SEQUENCE } from "@/components/tour/tourConfig";
 
 export function AppHeader() {
   const [commandOpen, setCommandOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [tourLauncherOpen, setTourLauncherOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
   const { profile } = useUserProfile(user?.id);
@@ -39,11 +42,34 @@ export function AppHeader() {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
-  const { startTour } = useTourStore();
+  const { startSingleTour, startFullTour } = useTourStore();
+  const [searchParams] = useSearchParams();
 
-  const handleTakeTour = () => {
+  const handleTourThisPage = () => {
     const path = location.pathname.replace('/', '') || 'staffing';
-    startTour(path);
+    const tab = searchParams.get('tab');
+    // Find the matching tour key for the current page/tab
+    const match = APP_TOUR_SEQUENCE.find(s => {
+      const sPage = s.page?.replace('/', '') || '';
+      if (sPage === path) {
+        if (s.tab && tab) return s.tab === tab;
+        if (!s.tab && !tab) return true;
+        // Default to first tab on the page
+        return !tab && APP_TOUR_SEQUENCE.filter(x => x.page?.replace('/', '') === path)[0] === s;
+      }
+      return false;
+    });
+    if (match) {
+      localStorage.removeItem(`helix-tour-${match.tourKey}-completed`);
+      startSingleTour(match.tourKey);
+    } else {
+      // Fallback: start the first tour for this page
+      const firstOnPage = APP_TOUR_SEQUENCE.find(s => s.page?.replace('/', '') === path);
+      if (firstOnPage) {
+        localStorage.removeItem(`helix-tour-${firstOnPage.tourKey}-completed`);
+        startSingleTour(firstOnPage.tourKey);
+      }
+    }
   };
 
   useEffect(() => {
@@ -163,9 +189,17 @@ export function AppHeader() {
                 <DropdownMenuItem onSelect={() => setProfileModalOpen(true)}>
                   <span>Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={handleTakeTour}>
-                  <HelpCircle className="h-4 w-4 mr-2" />
-                  <span>Take a Tour</span>
+                <DropdownMenuItem onSelect={handleTourThisPage}>
+                  <Play className="h-4 w-4 mr-2" />
+                  <span>Tour This Page</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => startFullTour()}>
+                  <Navigation className="h-4 w-4 mr-2" />
+                  <span>Full Guided Tour</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setTourLauncherOpen(true)}>
+                  <List className="h-4 w-4 mr-2" />
+                  <span>All Tours</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => navigate('/support')}>
                   <HelpCircle className="h-4 w-4 mr-2" />
@@ -197,6 +231,7 @@ export function AppHeader() {
       onOpenChange={setNotificationsOpen}
     />
     <HeaderTour />
+    <TourLauncher open={tourLauncherOpen} onOpenChange={setTourLauncherOpen} />
     </>
   );
 }

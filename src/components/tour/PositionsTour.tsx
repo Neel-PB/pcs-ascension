@@ -125,7 +125,10 @@ export function PositionsTour({ activeTab = 'employees', onTabChange }: Position
           clearSkipMode();
         }
       } else {
-        handleNextSection();
+        const { singleSection } = useTourStore.getState();
+        if (!singleSection) {
+          handleNextSection();
+        }
       }
     }
   };
