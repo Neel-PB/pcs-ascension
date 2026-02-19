@@ -1,99 +1,53 @@
 
 
-## Fix Active FTE Cell Spotlight -- Root Cause and Solution
+## Fix KPI Step Tooltip Placement and Add Cross-Tab Tour Continuation
 
-### Root Cause
+### Issue 1: KPI Cards Tooltip Shown Below Instead of Top
 
-The Active FTE cell is inside a virtualized table body that uses `contain: 'layout'` (CSS containment) and `position: absolute` row positioning. This creates a layout isolation boundary that prevents Joyride from correctly computing the spotlight SVG mask cutout coordinates, even though it can find the element for tooltip placement.
+Step 9 (`[data-tour="kpi-sections"]`) targets the entire KPI sections container which spans most of the viewport. With `placement: 'top'`, Joyride tries to place it above but the element is near the top of the page, so it falls back to below and gets cut off.
 
-The DOM nesting chain causing the issue:
+**Fix**: Change placement from `'top'` to `'auto'` in `tourSteps.ts` for the KPI sections step (line 133). This lets Joyride pick the best available position. Additionally, scroll `main` to top before this step in the `StaffingTour.tsx` callback to ensure the KPI sections element is fully visible.
+
+### Issue 2: Cross-Tab Tour Continuation (Summary to Planning, etc.)
+
+When the Summary tour finishes, offer the user an option to continue to the next tab's tour. This is implemented by:
+
+1. Adding a "Continue to Next Tab" option in the `TourTooltip` when the user is on the last step
+2. Using the `useTourStore` to signal the next tour and updating the active tab in the parent page
+
+**Approach**: Instead of complex cross-component communication, add a final step to each sub-tour that asks "Continue to the next section?" with the Next button labeled accordingly. When the Staffing tour finishes (not skipped), automatically navigate to the next tab and start its tour.
+
+### Technical Details
+
+**`src/components/tour/tourSteps.ts`** (line 133):
+- Change `placement: 'top'` to `placement: 'auto'` for the KPI sections step
+
+**`src/components/tour/StaffingTour.tsx`**:
+- On `STATUS.FINISHED` (not skipped), determine the next tab in sequence
+- Use a callback prop `onTabChange` to switch the parent tab
+- Start the next tab's tour via `useTourStore.startTour()`
+- Add a 500ms delay before starting the next tour to allow tab content to render
+
+**`src/pages/staffing/StaffingSummary.tsx`**:
+- Pass `onTabChange={setActiveTab}` to `StaffingTour`
+
+**`src/components/tour/TourTooltip.tsx`**:
+- On the last step, change "Finish" label to "Finish Tour" (no other changes needed; the auto-continuation handles the cross-tab flow)
+
+### Tab Continuation Sequence
 
 ```text
-EditableTable (overflow-hidden)
-  -> Container (overflow-x-auto)
-    -> VirtualizedTableBody (overflow-y-auto, contain: 'layout')  <-- problem
-      -> Relative container
-        -> Absolute row (transform: translateY)
-          -> Grid cell (overflow-hidden)
-            -> data-tour="positions-active-fte-cell"
+Summary (30 steps) -> Planned/Active Resources -> Variance Analysis -> Forecasts -> Volume Settings -> NP Settings
 ```
 
-### Solution
-
-Temporarily neutralize `contain: 'layout'` and `overflow-hidden` on ancestor containers when Joyride is on a step targeting elements inside the virtualized table. Restore them when moving to a non-table step or when the tour ends.
-
-### Changes
-
-**File: `src/components/tour/PositionsTour.tsx`**
-
-In the `STEP_BEFORE` handler, when the current step targets a cell inside the table (Active FTE, Shift, or Comments), find and temporarily modify the VirtualizedTableBody container:
-
-1. Query the target element's closest ancestor with `contain: layout` and temporarily set `contain: 'none'`
-2. Set `overflow: visible` on the VirtualizedTableBody scroll container
-3. Store references to modified elements
-4. Restore original values when moving to a non-table step, or on tour finish/skip
-
-```typescript
-// In STEP_BEFORE handler
-const tableCellTargets = [
-  '[data-tour="positions-active-fte-cell"]',
-  '[data-tour="positions-shift-cell"]',
-  '[data-tour="positions-comments"]',
-];
-const isTableCellStep = tableCellTargets.includes(step.target as string);
-
-if (isTableCellStep && el) {
-  // Remove contain: layout from VirtualizedTableBody
-  const virtualBody = el.closest('[style*="contain"]');
-  if (virtualBody) {
-    (virtualBody as HTMLElement).style.contain = 'none';
-  }
-  // Set overflow visible on scroll ancestors
-  let parent = el.parentElement;
-  while (parent) {
-    const style = getComputedStyle(parent);
-    if (style.overflow !== 'visible' || style.overflowX !== 'visible') {
-      parent.dataset.tourOriginalOverflow = parent.style.overflow;
-      parent.dataset.tourOriginalOverflowX = parent.style.overflowX;
-      parent.style.overflow = 'visible';
-      parent.style.overflowX = 'visible';
-    }
-    if (parent.matches('[data-tour="positions-table"]')) break;
-    parent = parent.parentElement;
-  }
-}
-```
-
-On tour finish/skip (in the `STATUS.FINISHED || STATUS.SKIPPED` handler), restore all modified containers:
-
-```typescript
-// Restore contain and overflow
-document.querySelectorAll('[data-tour-original-overflow]').forEach(el => {
-  (el as HTMLElement).style.overflow = el.getAttribute('data-tour-original-overflow') || '';
-  el.removeAttribute('data-tour-original-overflow');
-});
-// Restore contain: layout
-const virtualBody = document.querySelector('.flex-1.min-h-0.overflow-y-auto');
-if (virtualBody) (virtualBody as HTMLElement).style.contain = 'layout';
-```
-
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`**
-
-Add a `data-tour-virtual-body` attribute to the scroll container so it can be reliably queried:
-
-```typescript
-<div
-  ref={parentRef}
-  data-tour-virtual-body
-  className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain"
-  style={{ contain: 'layout' }}
->
-```
+When a tour finishes (user clicks "Finish"), the next tab is activated and its tour starts automatically. When skipped, no continuation happens.
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/tour/PositionsTour.tsx` | Temporarily neutralize `contain` and `overflow` for table cell steps, restore on finish/skip |
-| `src/components/editable-table/VirtualizedTableBody.tsx` | Add `data-tour-virtual-body` attribute for reliable querying |
+| `src/components/tour/tourSteps.ts` | Change KPI sections placement from `'top'` to `'auto'` |
+| `src/components/tour/StaffingTour.tsx` | Add `onTabChange` prop, auto-navigate to next tab on finish, start next tour |
+| `src/pages/staffing/StaffingSummary.tsx` | Pass `onTabChange={setActiveTab}` to StaffingTour |
+| `src/components/tour/TourTooltip.tsx` | Update last step button label to "Finish Tour" |
 
