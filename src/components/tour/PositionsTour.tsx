@@ -85,20 +85,27 @@ export function PositionsTour({ activeTab = 'employees', onTabChange }: Position
         return;
       }
 
+      // Skip or Close -- don't advance, let STATUS.SKIPPED/FINISHED fire
+      if (action === ACTIONS.SKIP || action === ACTIONS.CLOSE) {
+        return;
+      }
+
+      // Last step -- let STATUS.FINISHED fire naturally
       const nextIndex = index + 1;
-      if (nextIndex < steps.length) {
-        const nextTarget = steps[nextIndex].target as string;
-        if (tableHeaderTargets.includes(nextTarget)) {
-          // Pre-scroll, then delay advancement so browser repaints
-          const nextEl = document.querySelector(nextTarget);
-          if (nextEl) scrollToTarget(nextEl);
-          setTimeout(() => {
-            window.dispatchEvent(new Event('resize'));
-            setStepIndex(nextIndex);
-          }, 200);
-        } else {
+      if (nextIndex >= steps.length) {
+        return;
+      }
+
+      const nextTarget = steps[nextIndex].target as string;
+      if (tableHeaderTargets.includes(nextTarget)) {
+        const nextEl = document.querySelector(nextTarget);
+        if (nextEl) scrollToTarget(nextEl);
+        setTimeout(() => {
+          window.dispatchEvent(new Event('resize'));
           setStepIndex(nextIndex);
-        }
+        }, 200);
+      } else {
+        setStepIndex(nextIndex);
       }
     }
 
