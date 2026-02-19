@@ -83,13 +83,6 @@ export const contractorsTourSteps: Step[] = [
     disableBeacon: true,
   },
   {
-    target: '[data-tour="positions-tabs"]',
-    title: 'Tab Navigation',
-    content: 'Switch between Employees, Contractors, and Open Positions views.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
     target: '[data-tour="positions-search"]',
     title: 'Search',
     content: 'Type to search by name, position number, job title, or department. Results filter as you type.',
@@ -145,13 +138,6 @@ export const requisitionsTourSteps: Step[] = [
     target: '[data-tour="filter-bar"]',
     title: 'Filter Bar',
     content: 'Use these filters to narrow open positions by Region, Market, Facility, and Department.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="positions-tabs"]',
-    title: 'Tab Navigation',
-    content: 'Switch between Employees, Contractors, and Open Positions views.',
     placement: 'bottom',
     disableBeacon: true,
   },

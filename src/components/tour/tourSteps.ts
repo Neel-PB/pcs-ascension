@@ -119,10 +119,7 @@ export const staffingSteps: Step[] = [
   {
     target: '[data-tour="tab-navigation"]',
     title: 'Tab Navigation',
-    content: demoContent(
-      'Switch between Summary, Planned/Active Resources, Variance Analysis, Forecasts, and Settings views.',
-      'tab-pills'
-    ),
+    content: 'Switch between Summary, Planned/Active Resources, Variance Analysis, Forecasts, and Settings views.',
     placement: 'bottom',
     disableBeacon: true,
   },
@@ -515,13 +512,6 @@ export const adminUsersTourSteps: Step[] = [
 
 export const adminFeedTourSteps: Step[] = [
   {
-    target: '[data-tour="admin-tabs"]',
-    title: 'Tab Navigation',
-    content: 'Switch between Users, Feed, RBAC, Audit Log, and Settings tabs to manage different aspects of the admin panel.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
     target: '[data-tour="admin-feed-composer"]',
     title: 'Feed Composer',
     content: 'Compose announcements and updates for all users. Format text with bold, italic, and lists. Attach images, PDFs, or spreadsheets.',
@@ -538,13 +528,6 @@ export const adminFeedTourSteps: Step[] = [
 ];
 
 export const adminRbacTourSteps: Step[] = [
-  {
-    target: '[data-tour="admin-tabs"]',
-    title: 'Tab Navigation',
-    content: 'Switch between Users, Feed, RBAC, Audit Log, and Settings tabs to manage different aspects of the admin panel.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
   {
     target: '[data-tour="admin-rbac-views"]',
     title: 'View Mode Toggle',
@@ -570,13 +553,6 @@ export const adminRbacTourSteps: Step[] = [
 
 export const adminAuditTourSteps: Step[] = [
   {
-    target: '[data-tour="admin-tabs"]',
-    title: 'Tab Navigation',
-    content: 'Switch between Users, Feed, RBAC, Audit Log, and Settings tabs to manage different aspects of the admin panel.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
     target: '[data-tour="admin-audit-filters"]',
     title: 'Audit Filters',
     content: 'Filter audit entries by action type (Created, Updated, Deleted, Granted, Revoked) and target type (Roles, Permissions, Role Permissions).',
@@ -593,13 +569,6 @@ export const adminAuditTourSteps: Step[] = [
 ];
 
 export const adminSettingsTourSteps: Step[] = [
-  {
-    target: '[data-tour="admin-tabs"]',
-    title: 'Tab Navigation',
-    content: 'Switch between Users, Feed, RBAC, Audit Log, and Settings tabs to manage different aspects of the admin panel.',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
   {
     target: '[data-tour="admin-settings-tabs"]',
     title: 'Settings Sub-Tabs',
