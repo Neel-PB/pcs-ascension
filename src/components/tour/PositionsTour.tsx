@@ -1,15 +1,34 @@
 import Joyride, { CallBackProps, EVENTS, STATUS } from 'react-joyride';
+import { useNavigate } from 'react-router-dom';
 import { useTour } from '@/hooks/useTour';
+import { useTourStore } from '@/stores/useTourStore';
 import { employeesTourSteps, contractorsTourSteps, requisitionsTourSteps } from './positionsTourSteps';
 import { TourTooltip } from './TourTooltip';
+import { getNextSection, injectSectionMetadata } from './tourConfig';
+import { useMemo } from 'react';
+
+const TAB_SEQUENCE = ['employees', 'contractors', 'requisitions'];
+const TOUR_KEY_MAP: Record<string, string> = {
+  employees: 'positions-employees',
+  contractors: 'positions-contractors',
+  requisitions: 'positions-requisitions',
+};
+const RAW_STEPS_MAP: Record<string, any[]> = {
+  employees: employeesTourSteps,
+  contractors: contractorsTourSteps,
+  requisitions: requisitionsTourSteps,
+};
 
 interface PositionsTourProps {
   activeTab?: string;
+  onTabChange?: (tab: string) => void;
 }
 
-export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
-  const tourKey = activeTab === 'contractors' ? 'positions-contractors' : activeTab === 'requisitions' ? 'positions-requisitions' : 'positions-employees';
-  const steps = activeTab === 'contractors' ? contractorsTourSteps : activeTab === 'requisitions' ? requisitionsTourSteps : employeesTourSteps;
+export function PositionsTour({ activeTab = 'employees', onTabChange }: PositionsTourProps) {
+  const navigate = useNavigate();
+  const tourKey = TOUR_KEY_MAP[activeTab] || 'positions-employees';
+  const rawSteps = RAW_STEPS_MAP[activeTab] || employeesTourSteps;
+  const steps = useMemo(() => injectSectionMetadata(rawSteps, tourKey), [rawSteps, tourKey]);
   const { run, setRun, completeTour } = useTour(tourKey);
 
   const tableCellTargets = [
@@ -19,7 +38,6 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
   ];
 
   const restoreTableContainment = () => {
-    // Restore overflow on ancestors we modified
     document.querySelectorAll('[data-tour-orig-overflow]').forEach(node => {
       const htmlEl = node as HTMLElement;
       htmlEl.style.overflow = htmlEl.getAttribute('data-tour-orig-overflow') || '';
@@ -27,33 +45,44 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
       htmlEl.removeAttribute('data-tour-orig-overflow');
       htmlEl.removeAttribute('data-tour-orig-overflow-x');
     });
-    // Restore contain: layout on virtual body
     const virtualBody = document.querySelector('[data-tour-virtual-body]');
     if (virtualBody) (virtualBody as HTMLElement).style.contain = 'layout';
+  };
+
+  const handleNextSection = () => {
+    const nextSection = getNextSection(tourKey);
+    if (!nextSection) return;
+
+    if (nextSection.page === '/positions' && nextSection.tab && onTabChange) {
+      onTabChange(nextSection.tab);
+      setTimeout(() => {
+        useTourStore.getState().startTour(nextSection.tourKey);
+      }, 500);
+    } else if (nextSection.page) {
+      navigate(`${nextSection.page}?tab=${nextSection.tab}&tour=true`);
+    } else if (nextSection.tourKey === 'header') {
+      // Header is an overlay tour, just start it
+      setTimeout(() => {
+        useTourStore.getState().startTour('header');
+      }, 500);
+    }
   };
 
   const handleCallback = (data: CallBackProps) => {
     const { status, type, step } = data;
     if (type === EVENTS.STEP_BEFORE && step?.target) {
       const isTableCellStep = tableCellTargets.includes(step.target as string);
-
-      // Restore containment before each step (clean slate)
       restoreTableContainment();
 
       const el = document.querySelector(step.target as string);
       if (el) {
         el.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'instant' });
         const mainEl = document.querySelector('main');
-        if (mainEl) {
-          mainEl.scrollTo({ top: 0, behavior: 'instant' });
-        }
+        if (mainEl) mainEl.scrollTo({ top: 0, behavior: 'instant' });
 
         if (isTableCellStep) {
-          // Neutralize contain: layout on VirtualizedTableBody
           const virtualBody = el.closest('[data-tour-virtual-body]');
           if (virtualBody) (virtualBody as HTMLElement).style.contain = 'none';
-
-          // Set overflow visible on scroll ancestors up to the table root
           let parent = el.parentElement;
           while (parent) {
             const computed = getComputedStyle(parent);
@@ -67,8 +96,6 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
             parent = parent.parentElement;
           }
         }
-
-        // Force Joyride to recalculate spotlight after scroll settles
         setTimeout(() => window.dispatchEvent(new Event('resize')), 150);
         setTimeout(() => window.dispatchEvent(new Event('resize')), 300);
       }
@@ -86,9 +113,20 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
           (tableContainer as HTMLElement).style.overflow = '';
         }
       };
-
       setTimeout(resetScroll, 100);
       setTimeout(resetScroll, 300);
+
+      const { skipMode, clearSkipMode } = useTourStore.getState();
+      if (status === STATUS.SKIPPED) {
+        if (skipMode === 'section') {
+          clearSkipMode();
+          handleNextSection();
+        } else if (skipMode === 'all') {
+          clearSkipMode();
+        }
+      } else {
+        handleNextSection();
+      }
     }
   };
 

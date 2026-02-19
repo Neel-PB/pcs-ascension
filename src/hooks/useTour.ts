@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTourStore } from '@/stores/useTourStore';
 
 const TOUR_PREFIX = 'helix-tour-';
@@ -6,6 +7,7 @@ const TOUR_PREFIX = 'helix-tour-';
 export function useTour(pageKey: string) {
   const { activeTour, stopTour } = useTourStore();
   const [run, setRun] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const storageKey = `${TOUR_PREFIX}${pageKey}-completed`;
 
@@ -37,6 +39,21 @@ export function useTour(pageKey: string) {
       setRun(true);
     }
   }, [activeTour, pageKey]);
+
+  // Start when navigated to with ?tour=true
+  useEffect(() => {
+    if (searchParams.get('tour') === 'true') {
+      // Clear the param to avoid re-triggering
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('tour');
+        return next;
+      }, { replace: true });
+      // Start after a short delay for tab content to render
+      const timer = setTimeout(() => setRun(true), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams, setSearchParams]);
 
   return { run, setRun, completeTour, resetTour };
 }

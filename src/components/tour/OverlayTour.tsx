@@ -1,7 +1,10 @@
 import Joyride, { CallBackProps, STATUS } from 'react-joyride';
 import type { Step } from 'react-joyride';
 import { useTour } from '@/hooks/useTour';
+import { useTourStore } from '@/stores/useTourStore';
 import { TourTooltip } from './TourTooltip';
+import { injectSectionMetadata } from './tourConfig';
+import { useMemo } from 'react';
 
 interface OverlayTourProps {
   tourKey: string;
@@ -9,6 +12,7 @@ interface OverlayTourProps {
 }
 
 export function OverlayTour({ tourKey, steps }: OverlayTourProps) {
+  const enrichedSteps = useMemo(() => injectSectionMetadata(steps, tourKey), [steps, tourKey]);
   const { run, setRun, completeTour } = useTour(tourKey);
 
   const handleCallback = (data: CallBackProps) => {
@@ -17,6 +21,9 @@ export function OverlayTour({ tourKey, steps }: OverlayTourProps) {
       document.body.style.overflow = '';
       completeTour();
 
+      const { skipMode, clearSkipMode } = useTourStore.getState();
+      if (skipMode) clearSkipMode();
+
       const resetScroll = () => {
         const mainContainer = document.querySelector('main');
         if (mainContainer) {
@@ -24,10 +31,9 @@ export function OverlayTour({ tourKey, steps }: OverlayTourProps) {
           (mainContainer as HTMLElement).style.overflowX = '';
           (mainContainer as HTMLElement).style.overflowY = '';
         }
-        const scrollContainers = document.querySelectorAll(
+        document.querySelectorAll(
           '[class*="overflow-auto"], [class*="overflow-y-auto"], [class*="overflow-x-auto"], [class*="overflow-y-scroll"], [class*="overflow-x-scroll"]'
-        );
-        scrollContainers.forEach(el => {
+        ).forEach(el => {
           (el as HTMLElement).style.overflow = '';
           (el as HTMLElement).style.overflowX = '';
           (el as HTMLElement).style.overflowY = '';
@@ -41,7 +47,7 @@ export function OverlayTour({ tourKey, steps }: OverlayTourProps) {
 
   return (
     <Joyride
-      steps={steps}
+      steps={enrichedSteps}
       run={run}
       continuous
       showSkipButton

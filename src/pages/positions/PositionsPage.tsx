@@ -116,7 +116,7 @@ export default function PositionsPage() {
           />
         </div>
 
-        <PositionsTour activeTab={activeTab} />
+        <PositionsTour activeTab={activeTab} onTabChange={setActiveTab} />
 
         <div className="flex-1 min-h-0 flex flex-col">
             {activeTab === "employees" && (
