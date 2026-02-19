@@ -52,11 +52,11 @@ const KPICompactPreview = ({ kpiId }: { kpiId: string }) => {
   const calcFirstLine = kpi.calculation.split('\n')[0];
 
   return (
-    <div className="grid grid-cols-2 gap-2 mt-2">
+    <div className="grid grid-cols-2 gap-1.5 mt-1.5">
       {/* Left: Chart */}
-      <div className="rounded border border-border bg-background/50 p-2 space-y-1.5">
+      <div className="rounded border border-border bg-background/50 p-2 space-y-1">
         <div className="text-[9px] font-semibold text-foreground/60 uppercase tracking-wider">Trend</div>
-        <svg viewBox="0 0 200 56" className="w-full h-14" aria-hidden="true">
+        <svg viewBox="0 0 200 56" className="w-full h-12" aria-hidden="true">
           <defs>
             <linearGradient id={`kpiGrad-${kpiId}`} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.25" />

@@ -23,6 +23,7 @@ export function TourTooltip({
   const nextSectionName = (step as any).data?.nextSectionName;
   const isLastSection = (step as any).data?.isLastSection;
   const hasSectionMeta = typeof sectionIndex === 'number' && totalSections;
+  const isWide = (step as any).data?.wideTooltip;
 
   const isLastStep = index === size - 1;
 
@@ -38,7 +39,6 @@ export function TourTooltip({
 
   const handleSkipSection = () => {
     setSkipMode('section');
-    // Trigger Joyride's skip by calling the skip button's onClick
     skipProps.onClick(new MouseEvent('click') as any);
   };
 
@@ -49,25 +49,25 @@ export function TourTooltip({
 
   return (
     <div {...tooltipProps} className="z-[10000]">
-      <Card className={`${(step as any).data?.wideTooltip ? 'max-w-[560px] min-w-[480px]' : 'max-w-[420px] min-w-[340px]'} w-auto shadow-2xl shadow-primary/5 border-primary/20 border-t-2 border-t-primary overflow-hidden`}>
-        {/* Progress bar */}
+      <Card className={`${isWide ? 'max-w-[560px] min-w-[480px]' : 'max-w-[480px] min-w-[380px]'} w-auto backdrop-blur-sm bg-card/95 shadow-xl shadow-black/10 dark:shadow-black/30 border-primary/20 overflow-hidden`}>
+        {/* Gradient progress bar */}
         <div className="h-[3px] w-full bg-muted">
           <div
-            className="h-full bg-primary transition-all duration-300 ease-out"
+            className="h-full bg-gradient-to-r from-primary via-primary/80 to-primary/50 transition-all duration-300 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
 
-        <CardHeader className="pb-2 pt-4 px-5">
+        <CardHeader className="pb-1.5 pt-3 px-5">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base">{step.title as string}</CardTitle>
-            <span className="text-xs text-muted-foreground font-medium tabular-nums">
+            <span className="text-[10px] text-muted-foreground font-medium tabular-nums rounded-full bg-muted px-2 py-0.5">
               {index + 1}/{size}
             </span>
           </div>
         </CardHeader>
 
-        <CardContent className="px-5 pb-3 space-y-3">
+        <CardContent className="px-5 pb-2 space-y-2">
           <div className="text-sm text-muted-foreground leading-relaxed">
             {step.content}
           </div>
@@ -75,7 +75,7 @@ export function TourTooltip({
           {/* Section badge */}
           {hasSectionMeta && (
             <div className="flex items-center gap-2">
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
                 <span>{sectionName}</span>
                 <span className="text-primary/50">·</span>
                 <span className="text-primary/70">{sectionIndex + 1} of {totalSections}</span>
@@ -84,14 +84,14 @@ export function TourTooltip({
           )}
         </CardContent>
 
-        <CardFooter className="px-5 pb-4 flex items-center justify-between gap-2">
+        <CardFooter className="px-5 pb-3 flex items-center justify-between gap-2 border-t border-border/30 pt-2.5">
           {/* Left: Skip actions */}
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleSkipAll}
-              className="text-muted-foreground/60 text-xs hover:text-destructive transition-colors px-2"
+              className="text-muted-foreground/60 text-xs hover:text-destructive hover:bg-muted transition-colors px-2 rounded-lg"
             >
               Skip All
             </Button>
@@ -100,7 +100,7 @@ export function TourTooltip({
                 variant="ghost"
                 size="sm"
                 onClick={handleSkipSection}
-                className="text-muted-foreground/80 text-xs hover:text-foreground transition-colors px-2"
+                className="text-muted-foreground/80 text-xs hover:text-foreground hover:bg-muted transition-colors px-2 rounded-lg"
               >
                 Skip Section
               </Button>
@@ -127,12 +127,12 @@ export function TourTooltip({
               </div>
             )}
             {index > 0 && (
-              <Button variant="outline" size="sm" {...backProps} className="shrink-0 transition-colors">
+              <Button variant="outline" size="sm" {...backProps} className="shrink-0 transition-colors rounded-lg">
                 Back
               </Button>
             )}
             {continuous && (
-              <Button size="sm" {...primaryProps} className="shrink-0 transition-transform hover:scale-[1.02]">
+              <Button size="sm" {...primaryProps} className="shrink-0 transition-transform hover:scale-[1.02] rounded-lg shadow-sm">
                 {primaryLabel}
               </Button>
             )}
