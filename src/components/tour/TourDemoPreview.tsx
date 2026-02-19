@@ -85,15 +85,45 @@ const KPICompactPreview = ({ kpiId }: { kpiId: string }) => {
   );
 };
 
-const VolumeColors = () => (
-  <div className="flex gap-2">
-    <div className="flex-1 rounded-lg border-2 border-emerald-500 bg-muted/50 p-2 text-center">
-      <div className="text-[10px] font-semibold text-emerald-600">Target</div>
-      <div className="text-xs text-muted-foreground">(active)</div>
+const MiniVolCard = ({ label, value, badge, badgeColor, active }: {
+  label: string; value: string; badge: string; badgeColor: 'green' | 'orange' | 'muted'; active: 'green' | 'orange' | 'none';
+}) => {
+  const borderClass = active === 'green'
+    ? 'border-l-[3px] border-l-emerald-500 border-t border-r border-b border-border'
+    : active === 'orange'
+      ? 'border-l-[3px] border-l-orange-500 border-t border-r border-b border-border'
+      : 'border border-border';
+  const bgClass = active === 'green' ? 'bg-emerald-500/5' : active === 'orange' ? 'bg-orange-500/5' : 'bg-background/50';
+  const badgeBg = badgeColor === 'green' ? 'bg-emerald-500/15 text-emerald-700' : badgeColor === 'orange' ? 'bg-orange-500/15 text-orange-700' : 'bg-muted text-muted-foreground';
+
+  return (
+    <div className={`rounded-md ${borderClass} ${bgClass} p-2 pr-6 relative`}>
+      <p className="text-[9px] text-muted-foreground uppercase tracking-wide">{label}</p>
+      <p className="text-sm font-semibold text-foreground mt-0.5">{value}</p>
+      <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col items-center gap-0.5 opacity-30">
+        <div className="h-2.5 w-2.5 rounded-sm border border-muted-foreground/40" />
+        <div className="h-2.5 w-2.5 rounded-full border border-muted-foreground/40" />
+      </div>
+      <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[8px] font-medium mt-1 ${badgeBg}`}>{badge}</span>
     </div>
-    <div className="flex-1 rounded-lg border-2 border-orange-500 bg-muted/50 p-2 text-center">
-      <div className="text-[10px] font-semibold text-orange-600">Override</div>
-      <div className="text-xs text-muted-foreground">(active)</div>
+  );
+};
+
+const VolumeColors = () => (
+  <div className="space-y-3 mt-1.5">
+    <div>
+      <p className="text-[9px] font-bold uppercase text-emerald-600 tracking-wider mb-1">Scenario 1 — Target Active</p>
+      <div className="grid grid-cols-2 gap-1.5">
+        <MiniVolCard label="Target Vol" value="20.8" badge="12-Mo Avg" badgeColor="green" active="green" />
+        <MiniVolCard label="Override Vol" value="24.7" badge="Manual" badgeColor="muted" active="none" />
+      </div>
+    </div>
+    <div>
+      <p className="text-[9px] font-bold uppercase text-orange-600 tracking-wider mb-1">Scenario 2 — Override Active</p>
+      <div className="grid grid-cols-2 gap-1.5">
+        <MiniVolCard label="Target Vol" value="20.8" badge="12-Mo Avg" badgeColor="muted" active="none" />
+        <MiniVolCard label="Override Vol" value="24.7" badge="Manual" badgeColor="orange" active="orange" />
+      </div>
     </div>
   </div>
 );
