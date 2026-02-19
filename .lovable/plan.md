@@ -1,67 +1,33 @@
 
 
-## Fix: Positions Tour Controlled Mode - Missing Action Handlers
+## Fix: Positions Tour Not Starting - Missing `data-tour="filter-bar"` Attribute
 
 ### Root Cause
 
-The switch to controlled mode (`stepIndex` state) introduced two bugs in the `STEP_AFTER` handler:
+The Positions tour's first step targets `[data-tour="filter-bar"]`, but this attribute is **missing** from the PositionsPage. On the Staffing page, the FilterBar wrapper has `data-tour="filter-bar"` (StaffingSummary.tsx line 482), but on the Positions page (PositionsPage.tsx line 98), the wrapper div has no `data-tour` attribute.
 
-1. **Last step stuck**: When clicking Next on the final step, `nextIndex >= steps.length` evaluates to false, so no code runs. In controlled mode, Joyride does NOT auto-fire `STATUS.FINISHED` -- you must explicitly handle it. The tour freezes on the last step.
-
-2. **Skip/Close broken**: When the user clicks Skip or Close, Joyride fires `STEP_AFTER` with `action === ACTIONS.SKIP` or `ACTIONS.CLOSE`. The current code only checks for `ACTIONS.PREV`, then falls through to the advance logic, which tries to go to the next step instead of allowing the skip/close to propagate.
-
-These two issues together mean the tour can get stuck at various points and never reach `STATUS.FINISHED` or `STATUS.SKIPPED`, which in turn means `completeTour()` is never called.
+Since the very first step cannot find its target element, Joyride silently fails to render anything -- making it look like the tour doesn't work at all.
 
 ### Fix
 
-**File: `src/components/tour/PositionsTour.tsx`**
+**File: `src/pages/positions/PositionsPage.tsx`** (line 98)
 
-Update the `STEP_AFTER` handler to:
-
-1. Handle `ACTIONS.PREV` (already done -- decrement stepIndex)
-2. Handle `ACTIONS.SKIP` and `ACTIONS.CLOSE` -- do NOT advance stepIndex; just return and let Joyride propagate to `STATUS.SKIPPED`/`STATUS.FINISHED`
-3. Handle last step completion -- when `nextIndex >= steps.length`, do NOT try to advance; return and let Joyride fire `STATUS.FINISHED`
-4. Otherwise advance normally (with delay for header targets)
-
-Updated handler logic:
+Add `data-tour="filter-bar"` to the FilterBar wrapper div:
 
 ```text
-if (type === EVENTS.STEP_AFTER) {
-  // Back button
-  if (action === ACTIONS.PREV) {
-    setStepIndex(Math.max(0, index - 1));
-    return;
-  }
-
-  // Skip or Close -- don't advance, let STATUS.SKIPPED/FINISHED fire
-  if (action === ACTIONS.SKIP || action === ACTIONS.CLOSE) {
-    return;
-  }
-
-  // Last step -- let STATUS.FINISHED fire naturally
-  const nextIndex = index + 1;
-  if (nextIndex >= steps.length) {
-    return;
-  }
-
-  // Advance with optional delay for header targets
-  const nextTarget = steps[nextIndex].target as string;
-  if (tableHeaderTargets.includes(nextTarget)) {
-    const nextEl = document.querySelector(nextTarget);
-    if (nextEl) scrollToTarget(nextEl);
-    setTimeout(() => {
-      window.dispatchEvent(new Event('resize'));
-      setStepIndex(nextIndex);
-    }, 200);
-  } else {
-    setStepIndex(nextIndex);
-  }
-}
+Before:  <div className="flex-shrink-0 py-2">
+After:   <div className="flex-shrink-0 py-2" data-tour="filter-bar">
 ```
+
+This is a one-line change. All other `data-tour` attributes already exist:
+- `positions-tabs` -- on line 116 of PositionsPage.tsx
+- `positions-search`, `positions-refresh`, `positions-filter-btn`, `positions-table` -- in EmployeesTab.tsx (and the other tab components)
+- `positions-active-fte-cell`, `positions-shift-cell` -- dynamically added in EmployeesTab.tsx
+- `positions-comments` -- in the column config
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/tour/PositionsTour.tsx` | Add handlers for SKIP, CLOSE, and last-step completion in STEP_AFTER |
+| `src/pages/positions/PositionsPage.tsx` | Add `data-tour="filter-bar"` to FilterBar wrapper div (line 98) |
 
