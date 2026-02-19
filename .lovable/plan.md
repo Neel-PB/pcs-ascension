@@ -1,39 +1,41 @@
 
 
-## Fix Active FTE Cell Scrolling in Positions Tour
+## Fix: Stop Main Scroll Reset from Undoing Cell Centering
 
-### Problem
+### Root Cause
 
-When the tour reaches the Active FTE step, `scrollIntoView({ inline: 'nearest', block: 'nearest' })` only scrolls if the target is completely out of view. If the cell is even partially visible, no scrolling happens -- leaving the spotlight and tooltip clipped.
+In `PositionsTour.tsx` line 84-85, after `scrollIntoView({ block: 'center' })` centers the Active FTE cell vertically, the very next line resets `main` scroll to top:
+
+```typescript
+const mainEl = document.querySelector('main');
+if (mainEl) mainEl.scrollTo({ top: 0, behavior: 'instant' });
+```
+
+This immediately undoes the vertical centering, pushing the cell back above the visible area.
 
 ### Fix
 
-In `src/components/tour/PositionsTour.tsx`, change the `scrollIntoView` call for table cell steps to use `'center'` instead of `'nearest'`, so the target cell is always brought to the center of the viewport for maximum visibility.
+Skip the `main` scroll-to-top for table cell steps. The reset is only needed for non-cell steps (filter bar, tabs, search) to keep the page header visible.
 
-**Line 79 -- current:**
+**File: `src/components/tour/PositionsTour.tsx`** (lines 84-85)
+
+Current:
 ```typescript
-el.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'instant' });
+const mainEl = document.querySelector('main');
+if (mainEl) mainEl.scrollTo({ top: 0, behavior: 'instant' });
 ```
 
-**Updated logic:**
+New:
 ```typescript
-if (isTableCellStep) {
-  el.scrollIntoView({ inline: 'center', block: 'center', behavior: 'instant' });
-} else {
-  el.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'instant' });
+if (!isTableCellStep) {
+  const mainEl = document.querySelector('main');
+  if (mainEl) mainEl.scrollTo({ top: 0, behavior: 'instant' });
 }
 ```
-
-This centers table cell targets (Active FTE, Shift, Comments) in the viewport while keeping non-cell steps (filter bar, search, etc.) using the less disruptive `nearest` behavior.
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/tour/PositionsTour.tsx` | Use `scrollIntoView` with `'center'` for table cell steps |
-
-### What stays unchanged
-- All step definitions, placements, and demo preview styling
-- Overflow/containment management logic
-- Tour flow and section transitions
+| `src/components/tour/PositionsTour.tsx` | Only reset main scroll for non-cell steps (skip for Active FTE, Shift, Comments) |
 
