@@ -22,11 +22,6 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
         if (mainEl) {
           mainEl.scrollTo({ top: 0, behavior: 'instant' });
         }
-        // Reset horizontal scroll that scrollIntoView may have caused
-        const tableContainer = document.querySelector('[class*="overflow-x-auto"]');
-        if (tableContainer) {
-          tableContainer.scrollTo({ left: 0, behavior: 'instant' });
-        }
       }
     }
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
@@ -70,6 +65,7 @@ export function PositionsTour({ activeTab = 'employees' }: PositionsTourProps) {
         },
         spotlight: {
           borderRadius: 12,
+          padding: 4,
         },
       }}
       floaterProps={{

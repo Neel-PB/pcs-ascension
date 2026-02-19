@@ -258,7 +258,7 @@ export function EmployeesTab({
                 filterDataProvider={filterDataProvider}
               />
             );
-            return row.id === firstRowId ? <div data-tour="positions-active-fte-cell" className="w-full h-full">{cell}</div> : cell;
+            return row.id === firstRowId ? <div data-tour="positions-active-fte-cell" className="w-full min-h-[48px] flex items-center">{cell}</div> : cell;
           },
         };
       }
