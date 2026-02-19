@@ -89,12 +89,12 @@ export function PositionsTour({ activeTab = 'employees', onTabChange }: Position
             }
           }
 
-          // Let scroll settle, then force Joyride to recalculate spotlight position
-          requestAnimationFrame(() => {
+          // Two-phase: wait for scroll to settle, then re-measure and trigger resize
+          setTimeout(() => {
             window.dispatchEvent(new Event('resize'));
             setTimeout(() => window.dispatchEvent(new Event('resize')), 150);
             setTimeout(() => window.dispatchEvent(new Event('resize')), 300);
-          });
+          }, 50);
         } else {
           el.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'instant' });
           const mainEl = document.querySelector('main');
