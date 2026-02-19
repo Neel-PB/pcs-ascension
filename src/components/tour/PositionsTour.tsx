@@ -60,7 +60,28 @@ export function PositionsTour({ activeTab = 'employees', onTabChange }: Position
   };
 
   const handleCallback = (data: CallBackProps) => {
-    const { status, type, step } = data;
+    const { status, type, step, index } = data;
+
+    // Pre-scroll for the NEXT step if it's a table header target
+    if (type === EVENTS.STEP_AFTER) {
+      const nextIndex = index + 1;
+      if (nextIndex < steps.length) {
+        const nextTarget = steps[nextIndex].target as string;
+        if (tableHeaderTargets.includes(nextTarget)) {
+          const nextEl = document.querySelector(nextTarget);
+          if (nextEl) {
+            const scrollContainer = nextEl.closest('.overflow-x-auto') as HTMLElement;
+            if (scrollContainer) {
+              const cellRect = nextEl.getBoundingClientRect();
+              const containerRect = scrollContainer.getBoundingClientRect();
+              const cellOffsetLeft = cellRect.left - containerRect.left + scrollContainer.scrollLeft;
+              const centerOffset = cellOffsetLeft - (containerRect.width / 2) + (cellRect.width / 2);
+              scrollContainer.scrollLeft = Math.max(0, centerOffset);
+            }
+          }
+        }
+      }
+    }
     if (type === EVENTS.STEP_BEFORE && step?.target) {
       const isTableCellStep = tableCellTargets.includes(step.target as string);
       const isTableHeaderStep = tableHeaderTargets.includes(step.target as string);
