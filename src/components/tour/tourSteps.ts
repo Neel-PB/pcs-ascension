@@ -195,7 +195,7 @@ export const varianceSteps: Step[] = [
       'This table shows FTE variance by skill type across your selected scope. Data adapts automatically based on your filter selections (Region, Market, Facility, Department).',
       'variance-table-preview'
     ),
-    placement: 'bottom',
+    placement: 'top',
     disableBeacon: true,
   },
   {
@@ -680,7 +680,7 @@ export const planningSteps: Step[] = [
       'This view breaks down your staffing by skill type and shift (Day/Night), showing Target FTEs, Hired/Active FTEs, Open Requisitions, and Variance.',
       'planning-table-preview'
     ),
-    placement: 'bottom',
+    placement: 'top',
     disableBeacon: true,
   },
   {
