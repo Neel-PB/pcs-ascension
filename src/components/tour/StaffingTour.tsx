@@ -1,14 +1,26 @@
 import Joyride, { CallBackProps, EVENTS, STATUS } from 'react-joyride';
 import { useTour } from '@/hooks/useTour';
+import { useTourStore } from '@/stores/useTourStore';
 import { staffingSteps, planningSteps, varianceSteps, forecastSteps, volumeSettingsSteps, npSettingsSteps } from './tourSteps';
 import { TourTooltip } from './TourTooltip';
 
+const TAB_SEQUENCE = ['summary', 'planning', 'variance', 'forecasts', 'volume-settings', 'np-settings'];
+const TOUR_KEY_MAP: Record<string, string> = {
+  summary: 'staffing',
+  planning: 'staffing-planning',
+  variance: 'staffing-variance',
+  forecasts: 'staffing-forecasts',
+  'volume-settings': 'staffing-volume-settings',
+  'np-settings': 'staffing-np-settings',
+};
+
 interface StaffingTourProps {
   activeTab?: string;
+  onTabChange?: (tab: string) => void;
 }
 
-export function StaffingTour({ activeTab = 'summary' }: StaffingTourProps) {
-  const tourKey = activeTab === 'planning' ? 'staffing-planning' : activeTab === 'variance' ? 'staffing-variance' : activeTab === 'forecasts' ? 'staffing-forecasts' : activeTab === 'volume-settings' ? 'staffing-volume-settings' : activeTab === 'np-settings' ? 'staffing-np-settings' : 'staffing';
+export function StaffingTour({ activeTab = 'summary', onTabChange }: StaffingTourProps) {
+  const tourKey = TOUR_KEY_MAP[activeTab] || 'staffing';
   const steps = activeTab === 'planning' ? planningSteps : activeTab === 'variance' ? varianceSteps : activeTab === 'forecasts' ? forecastSteps : activeTab === 'volume-settings' ? volumeSettingsSteps : activeTab === 'np-settings' ? npSettingsSteps : staffingSteps;
   const { run, setRun, completeTour } = useTour(tourKey);
 
@@ -48,6 +60,18 @@ export function StaffingTour({ activeTab = 'summary' }: StaffingTourProps) {
 
       setTimeout(resetScroll, 100);
       setTimeout(resetScroll, 300);
+
+      // Cross-tab continuation: only on FINISHED (not skipped)
+      if (status === STATUS.FINISHED && onTabChange) {
+        const currentIndex = TAB_SEQUENCE.indexOf(activeTab);
+        if (currentIndex >= 0 && currentIndex < TAB_SEQUENCE.length - 1) {
+          const nextTab = TAB_SEQUENCE[currentIndex + 1];
+          onTabChange(nextTab);
+          setTimeout(() => {
+            useTourStore.getState().startTour(TOUR_KEY_MAP[nextTab] || nextTab);
+          }, 500);
+        }
+      }
     }
   };
 

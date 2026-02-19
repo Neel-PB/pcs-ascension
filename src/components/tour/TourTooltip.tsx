@@ -72,7 +72,7 @@ export function TourTooltip({
             )}
             {continuous && (
               <Button size="sm" {...primaryProps} className="shrink-0 transition-transform hover:scale-[1.02]">
-                {index === size - 1 ? 'Finish' : 'Next'}
+                {index === size - 1 ? 'Finish Tour' : 'Next'}
               </Button>
             )}
           </div>

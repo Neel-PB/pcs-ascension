@@ -130,7 +130,7 @@ export const staffingSteps: Step[] = [
     target: '[data-tour="kpi-sections"]',
     title: 'KPI Cards',
     content: 'All staffing metrics are organized into three draggable sections: FTE, Volume, and Productive Resources. Each card shows a key metric. Drag section headers to reorder them.',
-    placement: 'top',
+    placement: 'auto',
     disableBeacon: true,
   },
   // Individual KPI steps — each KPI gets description + chart/info action wireframe
