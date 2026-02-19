@@ -82,7 +82,10 @@ export function AdminTour({ activeTab, onTabChange }: AdminTourProps) {
           clearSkipMode();
         }
       } else {
-        handleNextSection();
+        const { singleSection } = useTourStore.getState();
+        if (!singleSection) {
+          handleNextSection();
+        }
       }
     }
   };

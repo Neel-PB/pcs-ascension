@@ -14,7 +14,7 @@ export function TourTooltip({
   size,
 }: TooltipRenderProps) {
   const progress = ((index + 1) / size) * 100;
-  const { setSkipMode } = useTourStore();
+  const { setSkipMode, singleSection } = useTourStore();
 
   // Section metadata from step.data
   const sectionName = (step as any).data?.sectionName;
@@ -30,7 +30,9 @@ export function TourTooltip({
   // Determine primary button label
   let primaryLabel = 'Next';
   if (isLastStep) {
-    if (isLastSection || !nextSectionName) {
+    if (singleSection) {
+      primaryLabel = 'Done';
+    } else if (isLastSection || !nextSectionName) {
       primaryLabel = 'Complete Tour';
     } else {
       primaryLabel = `Continue to ${nextSectionName}`;
@@ -73,7 +75,7 @@ export function TourTooltip({
           </div>
 
           {/* Section badge */}
-          {hasSectionMeta && (
+          {hasSectionMeta && !singleSection && (
             <div className="flex items-center gap-2">
             <div className="inline-flex items-center gap-1.5 border-l-2 border-primary pl-2 py-0.5 text-xs font-medium text-primary">
                 <span>{sectionName}</span>
@@ -87,23 +89,27 @@ export function TourTooltip({
         <CardFooter className="px-5 pb-3 flex items-center justify-between gap-2 border-t border-border/30 pt-2.5">
           {/* Left: Skip actions */}
           <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSkipAll}
-              className="text-muted-foreground/60 text-xs hover:text-destructive hover:bg-muted transition-colors px-2 rounded-lg"
-            >
-              Skip All
-            </Button>
-            {hasSectionMeta && !isLastSection && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSkipSection}
-                className="text-muted-foreground/80 text-xs hover:text-foreground hover:bg-muted transition-colors px-2 rounded-lg"
-              >
-                Skip Section
-              </Button>
+            {!singleSection && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSkipAll}
+                  className="text-muted-foreground/60 text-xs hover:text-destructive hover:bg-muted transition-colors px-2 rounded-lg"
+                >
+                  Skip All
+                </Button>
+                {hasSectionMeta && !isLastSection && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleSkipSection}
+                    className="text-muted-foreground/80 text-xs hover:text-foreground hover:bg-muted transition-colors px-2 rounded-lg"
+                  >
+                    Skip Section
+                  </Button>
+                )}
+              </>
             )}
           </div>
 
