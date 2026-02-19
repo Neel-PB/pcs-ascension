@@ -1,13 +1,12 @@
-import Joyride, { ACTIONS, CallBackProps, EVENTS, STATUS } from 'react-joyride';
+import Joyride, { CallBackProps, EVENTS, STATUS } from 'react-joyride';
 import { useNavigate } from 'react-router-dom';
 import { useTour } from '@/hooks/useTour';
 import { useTourStore } from '@/stores/useTourStore';
 import { employeesTourSteps, contractorsTourSteps, requisitionsTourSteps } from './positionsTourSteps';
 import { TourTooltip } from './TourTooltip';
 import { getNextSection, injectSectionMetadata } from './tourConfig';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
-const TAB_SEQUENCE = ['employees', 'contractors', 'requisitions'];
 const TOUR_KEY_MAP: Record<string, string> = {
   employees: 'positions-employees',
   contractors: 'positions-contractors',
@@ -30,12 +29,6 @@ export function PositionsTour({ activeTab = 'employees', onTabChange }: Position
   const rawSteps = RAW_STEPS_MAP[activeTab] || employeesTourSteps;
   const steps = useMemo(() => injectSectionMetadata(rawSteps, tourKey), [rawSteps, tourKey]);
   const { run, setRun, completeTour } = useTour(tourKey);
-  const [stepIndex, setStepIndex] = useState(0);
-
-  // Reset stepIndex when tour starts or tab changes
-  useEffect(() => {
-    if (run) setStepIndex(0);
-  }, [run, activeTab]);
 
   const tableCellTargets = [
     '[data-tour="positions-active-fte-cell"]',
@@ -76,44 +69,14 @@ export function PositionsTour({ activeTab = 'employees', onTabChange }: Position
   };
 
   const handleCallback = (data: CallBackProps) => {
-    const { status, type, step, index, action } = data;
-
-    // Handle step advancement in controlled mode
-    if (type === EVENTS.STEP_AFTER) {
-      if (action === ACTIONS.PREV) {
-        setStepIndex(Math.max(0, index - 1));
-        return;
-      }
-
-      // Skip or Close -- don't advance, let STATUS.SKIPPED/FINISHED fire
-      if (action === ACTIONS.SKIP || action === ACTIONS.CLOSE) {
-        return;
-      }
-
-      // Last step -- let STATUS.FINISHED fire naturally
-      const nextIndex = index + 1;
-      if (nextIndex >= steps.length) {
-        return;
-      }
-
-      const nextTarget = steps[nextIndex].target as string;
-      if (tableHeaderTargets.includes(nextTarget)) {
-        const nextEl = document.querySelector(nextTarget);
-        if (nextEl) scrollToTarget(nextEl);
-        setTimeout(() => {
-          window.dispatchEvent(new Event('resize'));
-          setStepIndex(nextIndex);
-        }, 200);
-      } else {
-        setStepIndex(nextIndex);
-      }
-    }
+    const { status, type, step } = data;
 
     // Pre-position elements before step renders
     if (type === EVENTS.STEP_BEFORE && step?.target) {
-      const isTableCellStep = tableCellTargets.includes(step.target as string);
-      const isTableHeaderStep = tableHeaderTargets.includes(step.target as string);
-      const el = document.querySelector(step.target as string);
+      const target = step.target as string;
+      const isTableCellStep = tableCellTargets.includes(target);
+      const isTableHeaderStep = tableHeaderTargets.includes(target);
+      const el = document.querySelector(target);
       if (el) {
         if (isTableCellStep || isTableHeaderStep) {
           scrollToTarget(el);
@@ -180,12 +143,11 @@ export function PositionsTour({ activeTab = 'employees', onTabChange }: Position
     <Joyride
       key={activeTab}
       steps={steps}
-      stepIndex={stepIndex}
       run={run}
       continuous
       showSkipButton
       scrollToFirstStep={false}
-      disableScrolling
+      disableScrollParentFix
       disableOverlayClose
       callback={handleCallback}
       tooltipComponent={TourTooltip}
