@@ -81,8 +81,10 @@ export function PositionsTour({ activeTab = 'employees', onTabChange }: Position
         } else {
           el.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'instant' });
         }
-        const mainEl = document.querySelector('main');
-        if (mainEl) mainEl.scrollTo({ top: 0, behavior: 'instant' });
+        if (!isTableCellStep) {
+          const mainEl = document.querySelector('main');
+          if (mainEl) mainEl.scrollTo({ top: 0, behavior: 'instant' });
+        }
 
         if (isTableCellStep) {
           const virtualBody = el.closest('[data-tour-virtual-body]');
