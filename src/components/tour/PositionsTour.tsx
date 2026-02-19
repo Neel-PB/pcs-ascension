@@ -37,18 +37,6 @@ export function PositionsTour({ activeTab = 'employees', onTabChange }: Position
     '[data-tour="positions-comments"]',
   ];
 
-  const restoreTableContainment = () => {
-    document.querySelectorAll('[data-tour-orig-overflow]').forEach(node => {
-      const htmlEl = node as HTMLElement;
-      htmlEl.style.overflow = htmlEl.getAttribute('data-tour-orig-overflow') || '';
-      htmlEl.style.overflowX = htmlEl.getAttribute('data-tour-orig-overflow-x') || '';
-      htmlEl.removeAttribute('data-tour-orig-overflow');
-      htmlEl.removeAttribute('data-tour-orig-overflow-x');
-    });
-    const virtualBody = document.querySelector('[data-tour-virtual-body]');
-    if (virtualBody) (virtualBody as HTMLElement).style.contain = 'layout';
-  };
-
   const handleNextSection = () => {
     const nextSection = getNextSection(tourKey);
     if (!nextSection) return;
@@ -72,12 +60,11 @@ export function PositionsTour({ activeTab = 'employees', onTabChange }: Position
     const { status, type, step } = data;
     if (type === EVENTS.STEP_BEFORE && step?.target) {
       const isTableCellStep = tableCellTargets.includes(step.target as string);
-      restoreTableContainment();
 
       const el = document.querySelector(step.target as string);
       if (el) {
-      if (isTableCellStep) {
-          // Step 1: Find the horizontal scroll container and scroll the cell into view
+        if (isTableCellStep) {
+          // Horizontal: manually scroll the container to center the cell
           const scrollContainer = el.closest('.overflow-x-auto') as HTMLElement;
           if (scrollContainer) {
             const cellRect = el.getBoundingClientRect();
@@ -87,29 +74,19 @@ export function PositionsTour({ activeTab = 'employees', onTabChange }: Position
             scrollContainer.scrollLeft = Math.max(0, centerOffset);
           }
 
-          // Also center vertically within the table body
-          const virtualBody = el.closest('[data-tour-virtual-body]');
+          // Vertical: scroll cell into center of the virtual body
+          const virtualBody = el.closest('[data-tour-virtual-body]') as HTMLElement;
           if (virtualBody) {
-            el.scrollIntoView({ block: 'center', behavior: 'instant' });
+            const cellRect = el.getBoundingClientRect();
+            const bodyRect = virtualBody.getBoundingClientRect();
+            const cellOffsetTop = cellRect.top - bodyRect.top + virtualBody.scrollTop;
+            const centerOffset = cellOffsetTop - (bodyRect.height / 2) + (cellRect.height / 2);
+            virtualBody.scrollTop = Math.max(0, centerOffset);
           }
 
-          // Step 2: After scroll settles, remove overflow clipping so spotlight can highlight
+          // Let scroll settle, then force Joyride to recalculate spotlight position
           requestAnimationFrame(() => {
-            if (virtualBody) (virtualBody as HTMLElement).style.contain = 'none';
-
-            let parent = el.parentElement;
-            while (parent) {
-              const computed = getComputedStyle(parent);
-              if (computed.overflow !== 'visible' || computed.overflowX !== 'visible') {
-                parent.setAttribute('data-tour-orig-overflow', parent.style.overflow);
-                parent.setAttribute('data-tour-orig-overflow-x', parent.style.overflowX);
-                parent.style.overflow = 'visible';
-                parent.style.overflowX = 'visible';
-              }
-              if (parent.matches('[data-tour="positions-table"]')) break;
-              parent = parent.parentElement;
-            }
-
+            window.dispatchEvent(new Event('resize'));
             setTimeout(() => window.dispatchEvent(new Event('resize')), 150);
             setTimeout(() => window.dispatchEvent(new Event('resize')), 300);
           });
@@ -124,7 +101,6 @@ export function PositionsTour({ activeTab = 'employees', onTabChange }: Position
     }
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
       document.body.style.overflow = '';
-      restoreTableContainment();
       completeTour();
 
       const resetScroll = () => {
