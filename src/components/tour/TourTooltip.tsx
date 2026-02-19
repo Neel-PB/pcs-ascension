@@ -49,7 +49,7 @@ export function TourTooltip({
 
   return (
     <div {...tooltipProps} className="z-[10000]">
-      <Card className={`${isWide ? 'max-w-[560px] min-w-[480px]' : 'max-w-[480px] min-w-[380px]'} w-auto backdrop-blur-sm bg-card/95 shadow-xl shadow-black/10 dark:shadow-black/30 border-primary/20 overflow-hidden`}>
+      <Card className={`${isWide ? 'max-w-[560px] min-w-[480px]' : 'max-w-[480px] min-w-[380px]'} w-auto backdrop-blur-sm bg-card/95 shadow-xl shadow-black/10 dark:shadow-black/30 border-primary/20 overflow-hidden animate-in fade-in-0 zoom-in-[0.98] duration-200`}>
         {/* Gradient progress bar */}
         <div className="h-[3px] w-full bg-muted">
           <div
@@ -75,10 +75,10 @@ export function TourTooltip({
           {/* Section badge */}
           {hasSectionMeta && (
             <div className="flex items-center gap-2">
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+            <div className="inline-flex items-center gap-1.5 border-l-2 border-primary pl-2 py-0.5 text-xs font-medium text-primary">
                 <span>{sectionName}</span>
-                <span className="text-primary/50">·</span>
-                <span className="text-primary/70">{sectionIndex + 1} of {totalSections}</span>
+                <span className="text-primary/40">·</span>
+                <span className="text-primary/60 tabular-nums">{sectionIndex + 1} of {totalSections}</span>
               </div>
             </div>
           )}
