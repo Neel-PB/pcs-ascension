@@ -49,7 +49,7 @@ export function TourTooltip({
 
   return (
     <div {...tooltipProps} className="z-[10000]">
-      <Card className="max-w-[420px] w-auto min-w-[340px] shadow-2xl shadow-primary/5 border-primary/20 border-t-2 border-t-primary overflow-hidden">
+      <Card className={`${(step as any).data?.wideTooltip ? 'max-w-[560px] min-w-[480px]' : 'max-w-[420px] min-w-[340px]'} w-auto shadow-2xl shadow-primary/5 border-primary/20 border-t-2 border-t-primary overflow-hidden`}>
         {/* Progress bar */}
         <div className="h-[3px] w-full bg-muted">
           <div

@@ -135,206 +135,27 @@ export const staffingSteps: Step[] = [
   },
   // Individual KPI steps — each KPI gets description + chart/info action wireframe
   // FTE Section
-  {
-    target: '[data-tour="kpi-vacancy-rate"]',
-    title: 'Vacancy Rate',
-    content: demoContent(
-      'Percentage of approved budgeted positions currently unfilled.',
-      'kpi-actions',
-      { hasChart: true }
-    ),
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-target-ftes"]',
-    title: 'Target FTEs',
-    content: demoContent(
-      'Number of FTEs needed to meet budgeted staffing levels based on volume.',
-      'kpi-actions',
-      { hasChart: true }
-    ),
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-hired-ftes"]',
-    title: 'Hired FTEs',
-    content: demoContent(
-      'Total Full-Time, Part-Time, and PRN employees currently on staff.',
-      'kpi-actions',
-      { hasChart: true }
-    ),
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-fte-variance"]',
-    title: 'FTE Variance',
-    content: demoContent(
-      'Gap between Target FTEs and Hired FTEs. Positive means understaffed.',
-      'kpi-actions',
-      { hasChart: true }
-    ),
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-open-reqs"]',
-    title: 'Open Reqs',
-    content: demoContent(
-      'Count of approved requisitions not yet filled.',
-      'kpi-actions',
-      { hasChart: true }
-    ),
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-req-variance"]',
-    title: 'Req Variance',
-    content: demoContent(
-      'Remaining gap after accounting for open requisitions against FTE variance.',
-      'kpi-actions',
-      { hasChart: true }
-    ),
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  // Volume Section
-  {
-    target: '[data-tour="kpi-12m-monthly"]',
-    title: '12M Average',
-    content: demoContent(
-      'Rolling 12-month average monthly volume of patient encounters or units of service.',
-      'kpi-actions',
-      { hasChart: true }
-    ),
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-12m-daily"]',
-    title: '12M Daily Average',
-    content: demoContent(
-      'Average daily volume over the past 12 months.',
-      'kpi-actions',
-      { hasChart: true }
-    ),
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-3m-low"]',
-    title: '3M Low',
-    content: demoContent(
-      'Average daily volume during the 3 lowest-volume months. Used for minimum staffing.',
-      'kpi-actions',
-      { hasChart: true }
-    ),
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-3m-high"]',
-    title: '3M High',
-    content: demoContent(
-      'Average daily volume during the 3 highest-volume months. Used for peak staffing.',
-      'kpi-actions',
-      { hasChart: true }
-    ),
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-target-vol"]',
-    title: 'Target Volume',
-    content: demoContent(
-      'Expected daily volume used for staffing calculations. Green border means it is active.',
-      'kpi-actions',
-      { hasChart: false }
-    ),
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-override-vol"]',
-    title: 'Override Volume',
-    content: demoContent(
-      'Manually set volume that supersedes the target. Orange border means it is active.',
-      'kpi-actions',
-      { hasChart: false }
-    ),
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  // Productive Resources Section
-  {
-    target: '[data-tour="kpi-paid-ftes"]',
-    title: 'Paid FTEs',
-    content: demoContent(
-      'Total labor resources the organization pays for, productive and non-productive.',
-      'kpi-actions',
-      { hasChart: true }
-    ),
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-total-fullpart-ftes"]',
-    title: 'Employed Productive FTEs',
-    content: demoContent(
-      'Full-Time and Part-Time productive FTEs after excluding non-productive hours.',
-      'kpi-actions',
-      { hasChart: true }
-    ),
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-contract-ftes"]',
-    title: 'Contract FTEs',
-    content: demoContent(
-      'FTEs supplied by external agencies — travel nurses, agency staff, temp contractors.',
-      'kpi-actions',
-      { hasChart: true }
-    ),
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-overtime-ftes"]',
-    title: 'Overtime FTEs',
-    content: demoContent(
-      'Hours worked above regular commitment, converted to FTE equivalent.',
-      'kpi-actions',
-      { hasChart: true }
-    ),
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-total-prn"]',
-    title: 'Total PRN',
-    content: demoContent(
-      'PRN staff hours converted to FTE equivalent. Used for flex coverage.',
-      'kpi-actions',
-      { hasChart: true }
-    ),
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="kpi-total-np"]',
-    title: 'Total NP%',
-    content: demoContent(
-      'Percentage of paid hours not spent on direct patient care (PTO, training, admin).',
-      'kpi-actions',
-      { hasChart: true }
-    ),
-    placement: 'bottom',
-    disableBeacon: true,
-  },
+  // FTE KPIs
+  { target: '[data-tour="kpi-vacancy-rate"]', title: 'Vacancy Rate', content: demoContent('Percentage of approved budgeted positions currently unfilled.', 'kpi-compact', { kpiId: 'vacancy-rate' }), placement: 'bottom', disableBeacon: true, data: { wideTooltip: true } },
+  { target: '[data-tour="kpi-target-ftes"]', title: 'Target FTEs', content: demoContent('Number of FTEs needed to meet budgeted staffing levels based on volume.', 'kpi-compact', { kpiId: 'target-ftes' }), placement: 'bottom', disableBeacon: true, data: { wideTooltip: true } },
+  { target: '[data-tour="kpi-hired-ftes"]', title: 'Hired FTEs', content: demoContent('Total Full-Time, Part-Time, and PRN employees currently on staff.', 'kpi-compact', { kpiId: 'hired-ftes' }), placement: 'bottom', disableBeacon: true, data: { wideTooltip: true } },
+  { target: '[data-tour="kpi-fte-variance"]', title: 'FTE Variance', content: demoContent('Gap between Target FTEs and Hired FTEs. Positive means understaffed.', 'kpi-compact', { kpiId: 'fte-variance' }), placement: 'bottom', disableBeacon: true, data: { wideTooltip: true } },
+  { target: '[data-tour="kpi-open-reqs"]', title: 'Open Reqs', content: demoContent('Count of approved requisitions not yet filled.', 'kpi-compact', { kpiId: 'open-reqs' }), placement: 'bottom', disableBeacon: true, data: { wideTooltip: true } },
+  { target: '[data-tour="kpi-req-variance"]', title: 'Req Variance', content: demoContent('Remaining gap after accounting for open requisitions against FTE variance.', 'kpi-compact', { kpiId: 'req-variance' }), placement: 'bottom', disableBeacon: true, data: { wideTooltip: true } },
+  // Volume KPIs
+  { target: '[data-tour="kpi-12m-monthly"]', title: '12M Average', content: demoContent('Rolling 12-month average monthly volume of patient encounters or units of service.', 'kpi-compact', { kpiId: '12m-monthly' }), placement: 'bottom', disableBeacon: true, data: { wideTooltip: true } },
+  { target: '[data-tour="kpi-12m-daily"]', title: '12M Daily Average', content: demoContent('Average daily volume over the past 12 months.', 'kpi-compact', { kpiId: '12m-daily' }), placement: 'bottom', disableBeacon: true, data: { wideTooltip: true } },
+  { target: '[data-tour="kpi-3m-low"]', title: '3M Low', content: demoContent('Average daily volume during the 3 lowest-volume months. Used for minimum staffing.', 'kpi-compact', { kpiId: '3m-low' }), placement: 'bottom', disableBeacon: true, data: { wideTooltip: true } },
+  { target: '[data-tour="kpi-3m-high"]', title: '3M High', content: demoContent('Average daily volume during the 3 highest-volume months. Used for peak staffing.', 'kpi-compact', { kpiId: '3m-high' }), placement: 'bottom', disableBeacon: true, data: { wideTooltip: true } },
+  { target: '[data-tour="kpi-target-vol"]', title: 'Target Volume', content: demoContent('Expected daily volume used for staffing calculations. Green border means it is active.', 'kpi-compact', { kpiId: 'target-vol' }), placement: 'bottom', disableBeacon: true, data: { wideTooltip: true } },
+  { target: '[data-tour="kpi-override-vol"]', title: 'Override Volume', content: demoContent('Manually set volume that supersedes the target. Orange border means it is active.', 'kpi-compact', { kpiId: 'override-vol' }), placement: 'bottom', disableBeacon: true, data: { wideTooltip: true } },
+  // Productive Resources KPIs
+  { target: '[data-tour="kpi-paid-ftes"]', title: 'Paid FTEs', content: demoContent('Total labor resources the organization pays for, productive and non-productive.', 'kpi-compact', { kpiId: 'paid-ftes' }), placement: 'bottom', disableBeacon: true, data: { wideTooltip: true } },
+  { target: '[data-tour="kpi-total-fullpart-ftes"]', title: 'Employed Productive FTEs', content: demoContent('Full-Time and Part-Time productive FTEs after excluding non-productive hours.', 'kpi-compact', { kpiId: 'total-fullpart-ftes' }), placement: 'bottom', disableBeacon: true, data: { wideTooltip: true } },
+  { target: '[data-tour="kpi-contract-ftes"]', title: 'Contract FTEs', content: demoContent('FTEs supplied by external agencies — travel nurses, agency staff, temp contractors.', 'kpi-compact', { kpiId: 'contract-ftes' }), placement: 'bottom', disableBeacon: true, data: { wideTooltip: true } },
+  { target: '[data-tour="kpi-overtime-ftes"]', title: 'Overtime FTEs', content: demoContent('Hours worked above regular commitment, converted to FTE equivalent.', 'kpi-compact', { kpiId: 'overtime-ftes' }), placement: 'bottom', disableBeacon: true, data: { wideTooltip: true } },
+  { target: '[data-tour="kpi-total-prn"]', title: 'Total PRN', content: demoContent('PRN staff hours converted to FTE equivalent. Used for flex coverage.', 'kpi-compact', { kpiId: 'total-prn' }), placement: 'bottom', disableBeacon: true, data: { wideTooltip: true } },
+  { target: '[data-tour="kpi-total-np"]', title: 'Total NP%', content: demoContent('Percentage of paid hours not spent on direct patient care (PTO, training, admin).', 'kpi-compact', { kpiId: 'total-np' }), placement: 'bottom', disableBeacon: true, data: { wideTooltip: true } },
   {
     target: '[data-tour="volume-section"]',
     title: 'Target and Override Volume Colors',
