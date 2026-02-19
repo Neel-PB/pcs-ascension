@@ -18,6 +18,7 @@ import { useOrgScopedFilters } from "@/hooks/useOrgScopedFilters";
 import { LogoLoader } from "@/components/ui/LogoLoader";
 import { useFilterStore } from "@/stores/useFilterStore";
 import { StaffingTour } from "@/components/tour/StaffingTour";
+import { useVolumeOverrides } from "@/hooks/useVolumeOverrides";
 
 const validTabs = ["summary", "planning", "variance", "forecasts", "volume-settings", "np-settings"];
 
@@ -126,6 +127,31 @@ export default function StaffingSummary() {
     setOrder,
     setSectionOrder 
   } = useKPIOrderStore();
+
+  // Fetch volume overrides for the selected facility
+  const facilityForOverrides = selectedFacility === "all-facilities" ? null : selectedFacility;
+  const { data: volumeOverrides } = useVolumeOverrides(facilityForOverrides);
+
+  // Determine override KPI value based on department selection
+  const overrideKpiData = useMemo(() => {
+    if (selectedDepartment === "all-departments") {
+      return { value: "Select Dept", hasData: false, isActive: false };
+    }
+    
+    const match = volumeOverrides?.find(o => o.department_id === selectedDepartment);
+    if (!match) {
+      return { value: "--", hasData: false, isActive: false };
+    }
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const expiry = new Date(match.expiry_date);
+    if (expiry < today) {
+      return { value: "--", hasData: false, isActive: false };
+    }
+    
+    return { value: String(match.override_volume), hasData: true, isActive: true };
+  }, [selectedDepartment, volumeOverrides]);
 
   // FTE KPIs Configuration
   const fteKPIs = useMemo(() => {
@@ -315,12 +341,17 @@ Determined by:
       {
         id: 'override-vol',
         title: "Override Vol",
-        value: "24.7",
-        chartData: generateVolatileTrend(24.7, 4),
+        value: overrideKpiData.value,
+        isHighlighted: overrideKpiData.isActive,
+        chartData: overrideKpiData.hasData ? generateVolatileTrend(Number(overrideKpiData.value), 4) : [],
         chartType: "bar" as const,
         delay: 0.25,
         xAxisLabels: monthLabels,
-        definition: "Override Volume is a manually adjusted volume target that supersedes the calculated target volume. Used when managers have specific knowledge of upcoming changes or special circumstances.",
+        definition: overrideKpiData.isActive
+          ? "Override Volume is a manually adjusted volume target that supersedes the calculated target volume. This override is currently active."
+          : selectedDepartment === "all-departments"
+            ? "Select a specific department to view its override volume."
+            : "No active override volume exists for this department. Override Volume is a manually adjusted volume target that supersedes the calculated target volume.",
         calculation: `Override Volume = Manually entered volume target
 
 Used when:
@@ -336,7 +367,7 @@ Used when:
       const bIndex = volumeOrder.indexOf(b.id);
       return aIndex - bIndex;
     });
-  }, [volumeOrder]);
+  }, [volumeOrder, overrideKpiData]);
 
   // Productivity KPIs Configuration
   const productivityKPIs = useMemo(() => {
