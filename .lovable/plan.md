@@ -1,45 +1,28 @@
 
 
-## Add KPI-Style Previews for Target Volume and Override Volume Tour Steps
+## Fix: Override Vol Preview Should Use Default Card Style (Not Orange)
 
-### What Changes
+### What's Wrong
 
-Replace the current generic chart-based previews for the **Target Vol** and **Override Vol** tour steps with dedicated KPI-card-style previews that visually match the actual cards users see in the Staffing Summary.
+The Override Vol tour preview currently shows an orange border, but per the real UI (see the uploaded screenshot), the Override Vol card should appear with the **default neutral border** when it's not active. Only the Target Vol card gets the green highlight when it's the active source.
 
-### Design
+The tour should teach: "Green border = active source. No highlight = inactive." The Override Vol preview should look like a normal KPI card with no color emphasis.
 
-**Target Volume Preview** -- A mini KPI card with:
-- Green left border (emerald-500) indicating system-calculated volume is active
-- Title "Target Vol" with value "20.8"
-- A small badge showing "12-Mo Avg" calculation source
-- Subtle green highlight background matching the real card's `isHighlighted` style
-
-**Override Volume Preview** -- A mini KPI card with:
-- Orange left border (orange-500) indicating manual override is active
-- Title "Override Vol" with value "24.7"
-- A small badge showing "Manual" source
-- Subtle orange highlight background matching the real card's `isNegative` style
-- An expiry indicator (e.g., "Expires: Mar 15, 2026")
-
-Both cards will include the chart and info icon hints (non-interactive) to mirror the real KPI card layout, plus a brief note about what the border color means.
-
-### Technical Details
+### Change
 
 **File: `src/components/tour/TourDemoPreview.tsx`**
 
-1. Add two new variants to the `TourDemoVariant` type: `'target-vol-preview'` and `'override-vol-preview'`
-2. Create `TargetVolPreview` component -- mini KPI card with green border, value, calculation source badge, and border color explanation
-3. Create `OverrideVolPreview` component -- mini KPI card with orange border, value, manual badge, expiry date, and border color explanation
-4. Add both cases to the `switch` in the main export
+Update the `OverrideVolPreview` component:
+- Remove orange border styling (`border-orange-500/40`, `bg-orange-500/5`, `border-l-orange-500`)
+- Use default neutral border (`border-border`, `bg-background/50`)
+- Change the "Manual" badge from orange to neutral/muted styling
+- Update the footer text from "Orange border = manual override is active" to something like "Default border = override is not active"
 
-**File: `src/components/tour/tourSteps.ts`**
-
-5. Update the `target-vol` step (line 147) to use `demoContent('...', 'target-vol-preview')` instead of `demoContent('...', 'kpi-compact', { kpiId: 'target-vol' })`
-6. Update the `override-vol` step (line 148) to use `demoContent('...', 'override-vol-preview')` instead of `demoContent('...', 'kpi-compact', { kpiId: 'override-vol' })`
+The result will be two side-by-side previews showing the contrast: Target Vol with green (active) vs Override Vol with neutral (inactive default).
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/tour/TourDemoPreview.tsx` | Add `TargetVolPreview` and `OverrideVolPreview` components with KPI card styling |
-| `src/components/tour/tourSteps.ts` | Switch target-vol and override-vol steps to use new preview variants |
+| `src/components/tour/TourDemoPreview.tsx` | Update `OverrideVolPreview` to use neutral/default card styling instead of orange |
+
