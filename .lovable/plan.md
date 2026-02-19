@@ -1,62 +1,86 @@
 
 
-## Fix: OverlayTour Missing Overflow Cleanup
+## Add Demo Previews to Positions Module Tour Steps
 
-### Root Cause
+### Overview
 
-When a user visits the Staffing page, TWO tours run simultaneously:
-1. **HeaderTour** (via `OverlayTour`) -- targets search bar, notifications, etc.
-2. **StaffingTour** -- targets filters, tabs, table, etc.
+Add visual demo previews to the Active FTE, Shift Override, and Comments tour steps for both the Employees and Contractors tours. This follows the existing pattern used in Staffing tours where `createElement` builds JSX-rich tooltip content with inline mockup previews.
 
-The `StaffingTour` was recently fixed to clean up overflow on finish/skip. However, the `OverlayTour` has **zero cleanup logic** -- it just calls `completeTour()`. It also:
-- Does NOT have `disableScrollParentFix` (so Joyride aggressively sets `overflow: hidden` on scroll parents like `main`)
-- Does NOT clear `document.body.style.overflow`
-- Does NOT clear inline overflow styles on any containers
+### New File: `src/components/tour/PositionsDemoPreview.tsx`
 
-When the user skips the header tour, Joyride's inline `overflow: hidden` remains on `main` and other scroll containers, making the entire page unscrollable.
+Create a new preview component with three variants:
 
-### Fix
+1. **`active-fte-steps`** -- Shows the Active FTE popover workflow:
+   - Step 1: Default cell with hired FTE value (e.g., `1.0`) and pencil icon
+   - Step 2: Popover opened -- status dropdown showing options (LOA, Orientation, Separation, Shared Position), FTE input, expiry date, comment field
+   - Step 3: Saved state -- blue override value with status badge and expiry, revert icon
+   - Uses the same `CellStateRow`-style layout from `SettingsDemoPreview`
 
-**`src/components/tour/OverlayTour.tsx`**:
-- Add the same overflow cleanup logic used in `StaffingTour`
-- Clear `document.body.style.overflow` on finish/skip
-- Reset inline overflow/overflowX/overflowY on `main` and all scroll containers
-- Add `disableScrollParentFix` prop to the Joyride component
-- Add delayed resets at 100ms and 300ms for async Joyride cleanup
+2. **`shift-override-steps`** -- Shows the Shift Override workflow:
+   - Step 1: Special shift value (e.g., "Rotating") with pencil icon
+   - Step 2: Popover with Day/Night selector
+   - Step 3: Modified display showing `~~Rotating~~ -> Day` with revert icon
+   - Compact three-state visual walkthrough
+
+3. **`comments-preview`** -- Shows the comments/activity timeline:
+   - Mini mockup of the detail sheet Comments tab
+   - Activity log entry (FTE change with primary-tinted bubble)
+   - Regular comment entry
+   - Comment composer bar at the bottom
+
+### Updated File: `src/components/tour/positionsTourSteps.ts`
+
+Convert from plain string `content` to JSX `content` using `createElement` (same pattern as `tourSteps.ts`) for these three steps in both `employeesTourSteps` and `contractorsTourSteps`:
+
+- **Active FTE step** (index 6): Add `PositionsDemoPreview` with `active-fte-steps` variant
+- **Shift Override step** (index 7): Add `PositionsDemoPreview` with `shift-override-steps` variant
+- **Comments step** (index 8): Add `PositionsDemoPreview` with `comments-preview` variant
 
 ### Technical Details
 
-```typescript
-// In handleCallback, when status is FINISHED or SKIPPED:
-document.body.style.overflow = '';
-completeTour();
+**`PositionsDemoPreview.tsx` structure:**
 
-const resetScroll = () => {
-  const mainContainer = document.querySelector('main');
-  if (mainContainer) {
-    (mainContainer as HTMLElement).style.overflow = '';
-    (mainContainer as HTMLElement).style.overflowX = '';
-    (mainContainer as HTMLElement).style.overflowY = '';
-  }
-  const scrollContainers = document.querySelectorAll(
-    '[class*="overflow-auto"], [class*="overflow-y-auto"], [class*="overflow-x-auto"], [class*="overflow-y-scroll"], [class*="overflow-x-scroll"]'
-  );
-  scrollContainers.forEach(el => {
-    (el as HTMLElement).style.overflow = '';
-    (el as HTMLElement).style.overflowX = '';
-    (el as HTMLElement).style.overflowY = '';
-  });
-};
-
-setTimeout(resetScroll, 100);
-setTimeout(resetScroll, 300);
+```
+PositionsDemoPreview
+  |-- ActiveFteStepsPreview (3-state walkthrough)
+  |     |-- CellStateRow: Default cell [1.0] + pencil icon
+  |     |-- CellStateRow: Popover mockup (status select, FTE input, expiry)
+  |     |-- CellStateRow: Saved state [0.5 blue] + LOA badge + expiry + revert
+  |
+  |-- ShiftOverrideStepsPreview (3-state walkthrough)
+  |     |-- CellStateRow: "Rotating" + pencil icon
+  |     |-- CellStateRow: Day/Night selector mockup
+  |     |-- CellStateRow: "Rotating" strikethrough -> "Day" + revert
+  |
+  |-- CommentsPreview (timeline mockup)
+        |-- Activity entry (FTE change, primary-tinted bubble)
+        |-- Comment entry (regular comment)
+        |-- Composer bar wireframe
 ```
 
-Also add `disableScrollParentFix` to the Joyride component props.
+**`positionsTourSteps.ts` changes:**
 
-### File Changed
+```typescript
+import { createElement } from 'react';
+import { PositionsDemoPreview } from './PositionsDemoPreview';
+
+const positionsDemoContent = (text: string, variant: string) =>
+  createElement('div', { className: 'space-y-3' },
+    createElement('p', null, text),
+    createElement(PositionsDemoPreview, { variant } as any)
+  );
+
+// Then replace content strings for Active FTE, Shift, and Comments steps:
+// content: positionsDemoContent('Click the Active FTE cell to adjust...', 'active-fte-steps'),
+```
+
+**Tooltip width:** The `TourTooltip` component's `max-w` will need to accommodate the wider preview content (matching the `max-w-[400px]` pattern used by other demo previews).
+
+### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/tour/OverlayTour.tsx` | Add overflow cleanup on finish/skip, add `disableScrollParentFix` prop |
+| `src/components/tour/PositionsDemoPreview.tsx` | New file -- 3 preview variants (active-fte-steps, shift-override-steps, comments-preview) |
+| `src/components/tour/positionsTourSteps.ts` | Import PositionsDemoPreview, use `createElement` for Active FTE, Shift, and Comments steps in all 3 step arrays |
+| `src/components/tour/TourTooltip.tsx` | May need max-width adjustment if not already wide enough |
 
