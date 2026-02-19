@@ -1,9 +1,11 @@
 import { createElement } from 'react';
+import { getFTEKPIs, getVolumeKPIs, getProductivityKPIs, type KPIConfig } from '@/config/kpiConfigs';
 
 type TourDemoVariant =
   | 'mini-chart'
   | 'kpi-info'
   | 'kpi-actions'
+  | 'kpi-compact'
   | 'volume-colors'
   | 'split-badge'
   | 'tab-pills'
@@ -20,8 +22,73 @@ interface TourDemoPreviewProps {
     definition?: string;
     formula?: string;
     hasChart?: boolean;
+    kpiId?: string;
   };
 }
+
+const findKpiConfig = (kpiId: string): KPIConfig | undefined => {
+  const all = [...getFTEKPIs(), ...getVolumeKPIs(), ...getProductivityKPIs()];
+  return all.find(k => k.id === kpiId);
+};
+
+const KPICompactPreview = ({ kpiId }: { kpiId: string }) => {
+  const kpi = findKpiConfig(kpiId);
+  if (!kpi) return null;
+
+  const data = kpi.chartData.slice(-12).map(d => d.value);
+  const high = Math.max(...data);
+  const avg = Math.round((data.reduce((a, b) => a + b, 0) / data.length) * 10) / 10;
+  const low = Math.min(...data);
+
+  const chartL = 4, chartR = 196, chartT = 4, chartB = 52;
+  const yMin = Math.min(...data) - (Math.max(...data) - Math.min(...data)) * 0.2;
+  const yMax = Math.max(...data) + (Math.max(...data) - Math.min(...data)) * 0.2;
+  const toX = (i: number) => chartL + (i / (data.length - 1)) * (chartR - chartL);
+  const toY = (v: number) => chartB - ((v - yMin) / (yMax - yMin)) * (chartB - chartT);
+  const points = data.map((v, i) => `${toX(i).toFixed(1)},${toY(v).toFixed(1)}`).join(" ");
+  const areaPath = `M${toX(0).toFixed(1)},${toY(data[0]).toFixed(1)} ${data.slice(1).map((v, i) => `L${toX(i + 1).toFixed(1)},${toY(v).toFixed(1)}`).join(" ")} L${toX(data.length - 1).toFixed(1)},${chartB} L${toX(0).toFixed(1)},${chartB} Z`;
+
+  // Get first line of calculation only
+  const calcFirstLine = kpi.calculation.split('\n')[0];
+
+  return (
+    <div className="grid grid-cols-2 gap-2 mt-2">
+      {/* Left: Chart */}
+      <div className="rounded border border-border bg-background/50 p-2 space-y-1.5">
+        <div className="text-[9px] font-semibold text-foreground/60 uppercase tracking-wider">Trend</div>
+        <svg viewBox="0 0 200 56" className="w-full h-14" aria-hidden="true">
+          <defs>
+            <linearGradient id={`kpiGrad-${kpiId}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path d={areaPath} fill={`url(#kpiGrad-${kpiId})`} />
+          <polyline fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" points={points} />
+          {data.map((v, i) => (
+            <circle key={i} cx={toX(i)} cy={toY(v)} r="1.5" fill="hsl(var(--primary))" />
+          ))}
+        </svg>
+        <div className="grid grid-cols-3 gap-1 text-center border-t border-border/50 pt-1">
+          <div><div className="text-[8px] text-muted-foreground">High</div><div className="text-[10px] font-semibold">{high.toFixed(1)}</div></div>
+          <div><div className="text-[8px] text-muted-foreground">Avg</div><div className="text-[10px] font-semibold">{avg.toFixed(1)}</div></div>
+          <div><div className="text-[8px] text-muted-foreground">Low</div><div className="text-[10px] font-semibold">{low.toFixed(1)}</div></div>
+        </div>
+      </div>
+      {/* Right: Definition + Calculation */}
+      <div className="rounded border border-border bg-background/50 p-2 space-y-1.5">
+        <div>
+          <div className="text-[9px] font-semibold text-foreground/60 uppercase tracking-wider">Definition</div>
+          <p className="text-[10px] text-foreground/70 leading-snug mt-0.5">{kpi.definition}</p>
+        </div>
+        <div className="border-t border-border/50 pt-1">
+          <div className="text-[9px] font-semibold text-foreground/60 uppercase tracking-wider">Calculation</div>
+          <p className="text-[10px] font-mono text-foreground/70 leading-snug bg-muted/50 rounded px-1.5 py-0.5 mt-0.5">{calcFirstLine}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const MiniChart = () => {
   // Realistic data points hovering around 565–634 range
@@ -316,6 +383,8 @@ export function TourDemoPreview({ variant, config }: TourDemoPreviewProps) {
       return <KPIInfo definition={config?.definition} formula={config?.formula} />;
     case 'kpi-actions':
       return <KPIActions hasChart={config?.hasChart} />;
+    case 'kpi-compact':
+      return <KPICompactPreview kpiId={config?.kpiId || ''} />;
     case 'volume-colors':
       return <VolumeColors />;
     case 'split-badge':
