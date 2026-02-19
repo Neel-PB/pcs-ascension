@@ -530,9 +530,9 @@ const FTESkillShiftTable = ({
     : data.map(d => ({ type: 'skill' as const, id: d.skill, name: d.skill, data: d }));
   
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-auto max-h-[600px]">
       <Table className="table-fixed">
-        <TableHeader>
+        <TableHeader className="sticky top-0 z-10 bg-card">
           <TableRow>
             <TableHead className="font-semibold text-foreground w-48 min-w-48 max-w-48">Skills</TableHead>
             {/* Target FTEs - only for Nursing */}

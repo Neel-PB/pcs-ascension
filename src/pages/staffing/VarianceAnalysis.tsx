@@ -620,7 +620,7 @@ export function VarianceAnalysis({
 
   const VarianceTable = () => (
     <Table>
-      <TableHeader>
+      <TableHeader className="sticky top-0 z-10 bg-card">
         <TableRow data-tour="variance-skill-headers">
           <TableHead className="font-semibold bg-muted/30 min-w-[200px]">{columnHeader}</TableHead>
           <TableHead colSpan={3} className="text-center font-semibold bg-muted/30 border-l-2 border-muted-foreground/30">CL Skill</TableHead>
@@ -720,7 +720,7 @@ export function VarianceAnalysis({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.1 }}
-        className="rounded-xl border shadow-sm bg-card overflow-hidden overflow-x-auto"
+        className="rounded-xl border shadow-sm bg-card overflow-auto max-h-[600px]"
         data-tour="variance-table"
       >
         <VarianceTable />
