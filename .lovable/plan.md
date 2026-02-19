@@ -1,58 +1,96 @@
 
 
-## Fix: Comments Tour Step Scrolling + Preview Positioning
+## Fix: Comments Spotlight + Preview Layout for Active FTE, Shift, and Comments
 
-### Problem 1: Comments spotlight missing
+### Problem 1: Comments spotlight not appearing
 
-The `[data-tour="positions-comments"]` target is a `<span>` inside the **column header row** (not a body cell like Active FTE and Shift). It wraps the MessageSquare icon in the last column. Since it's at the far-right edge of the table, it needs horizontal scrolling to become visible.
+The Comments target (`<span data-tour="positions-comments">`) is a small icon inside the sticky header. When Joyride tries to highlight it, the element is off-screen to the right. The current code measures `getBoundingClientRect()` before scrolling completes, so the initial measurement is inaccurate. Additionally, for header elements that are off-screen, Joyride may skip the step entirely because it can't find a valid target position.
 
-The current scroll logic in `PositionsTour.tsx` correctly finds `.overflow-x-auto` via `.closest()`, but there's a subtle issue: the Comments header target is **not inside `[data-tour-virtual-body]`** (it's in the sticky `TableHeader`). The code still works for horizontal scrolling since both header and body share the same `.overflow-x-auto` parent. However, the Comments step is being treated as a "table cell step" which applies virtual body scrolling logic that's unnecessary for a header element.
+The fix: For header targets, first scroll the container to reveal the element, wait for the scroll to settle, then re-query the element and fire resize events so Joyride recalculates. We need to use a two-phase approach -- scroll first using a rough estimate, then measure accurately after a short delay.
 
-The real issue is that the Comments column header `<span>` is very small (just an icon), and the `cellRect` measurements used for centering may be inaccurate because the element might not be rendered/visible when first queried (it's off-screen to the right).
+### Problem 2: Preview text and spacing
 
-### Problem 2: Preview looks odd for Active FTE, Shift, and Comments
+The `positionsDemoContent` helper uses `space-y-3` (12px vertical gap) between the description text and the demo preview, creating too much whitespace. The wrapper also uses `text-center` which doesn't help readability. The text within the previews is very small (7-9px) and hard to read.
 
-The demo previews for these steps use `placement: 'left'` which positions the wide tooltip (560px) to the left of cells that are in the right portion of the table. When the cell is scrolled to center, the tooltip can overlap the table or get pushed into awkward positions. For cells that have been scrolled into the center-right of the viewport, `placement: 'left'` works well. But for the Comments header (which is now scrolled to center), the tooltip may need to use `placement: 'bottom'` or `'top'` since it's a header element.
-
-### Fix
+### Changes
 
 **File: `src/components/tour/PositionsTour.tsx`**
 
-1. Differentiate between **body cell** targets (`positions-active-fte-cell`, `positions-shift-cell`) and **header** targets (`positions-comments`). Both need horizontal scrolling, but only body cells need vertical virtual body scrolling.
-2. For header targets, scroll horizontally then trigger resize events -- no vertical scroll needed.
-3. Add a small delay before measuring `cellRect` to allow the browser to complete the horizontal scroll first, ensuring the element is in the viewport when measured.
+Update the scroll handler for both cell and header targets to use a two-phase scroll approach:
+1. First, scroll the container to make the target visible (using scrollWidth-based calculation for elements that are off-screen)
+2. After a short delay (50ms), re-measure the element position and fire resize events
+
+For header targets specifically, since the header `<span>` is very small and may not have `.closest('[data-tour-virtual-body]')`, skip the vertical scroll entirely and only do horizontal scrolling.
 
 **File: `src/components/tour/positionsTourSteps.ts`**
 
-4. Change the Comments step `placement` from `'left'` to `'bottom'` since the target is a header element (sitting at the top of the table). A `'left'` placement on a far-right header icon pushes the wide tooltip awkwardly.
-5. Keep Active FTE and Shift as `placement: 'left'` since they target body cells that are scrolled to center -- the tooltip renders nicely to their left.
+1. Reduce spacing in `positionsDemoContent`: change `space-y-3` to `space-y-1.5` and remove `text-center`
+2. Make the description paragraph more readable: add `text-[13px] leading-relaxed` class
+
+**File: `src/components/tour/PositionsDemoPreview.tsx`**
+
+3. Increase text sizes in all three preview variants for better readability:
+   - Bump workflow labels from `text-[8px]` to `text-[9px]`
+   - Bump field values from `text-[9px]` to `text-[10px]`
+   - Bump timestamps from `text-[7px]` to `text-[8px]`
+   - Reduce top margin on preview container from `mt-2` to `mt-1`
 
 ### Technical Details
 
-**`src/components/tour/PositionsTour.tsx`** changes:
+**`src/components/tour/PositionsTour.tsx`** -- Updated scroll logic:
 
-Split `tableCellTargets` into two arrays:
+For header targets, the element starts off-screen so `getBoundingClientRect()` returns coordinates relative to its hidden position. Instead:
+- Query the scroll container's `scrollWidth` and the element's `offsetLeft` relative to the scroll container to calculate the correct scroll position
+- Use `setTimeout` after scrolling to let the browser complete the layout, then dispatch resize events
 
 ```text
-tableCellTargets (body cells that need both horizontal + vertical scroll):
-  - [data-tour="positions-active-fte-cell"]
-  - [data-tour="positions-shift-cell"]
+if (isTableCellStep || isTableHeaderStep) {
+  const scrollContainer = el.closest('.overflow-x-auto');
+  if (scrollContainer) {
+    // Use offsetLeft relative to scrollable parent for accurate positioning
+    const tableContent = scrollContainer.querySelector('[style*="min-width"]');
+    const elRect = el.getBoundingClientRect();
+    const containerRect = scrollContainer.getBoundingClientRect();
+    const cellOffsetLeft = elRect.left - containerRect.left + scrollContainer.scrollLeft;
+    const centerOffset = cellOffsetLeft - (containerRect.width / 2) + (elRect.width / 2);
+    scrollContainer.scrollLeft = Math.max(0, centerOffset);
+  }
 
-tableHeaderTargets (header elements that need only horizontal scroll):
-  - [data-tour="positions-comments"]
+  // Vertical (body cells only)
+  if (isTableCellStep) { ... }
+
+  // Two-phase: wait for scroll to settle, then re-measure and trigger resize
+  setTimeout(() => {
+    window.dispatchEvent(new Event('resize'));
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 150);
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 300);
+  }, 50);
+}
 ```
 
-Update the `STEP_BEFORE` handler:
-- For body cell targets: keep existing logic (horizontal scroll + vertical scroll + resize events)
-- For header targets: horizontal scroll only + resize events (skip virtual body scroll)
+**`src/components/tour/positionsTourSteps.ts`** -- Tighter content layout:
 
-**`src/components/tour/positionsTourSteps.ts`** changes:
+```text
+const positionsDemoContent = (text, variant) =>
+  createElement('div', { className: 'space-y-1.5' },
+    createElement('p', { className: 'text-[13px] leading-relaxed' }, text),
+    createElement(PositionsDemoPreview, { variant })
+  );
+```
 
-For all three tab step arrays (employees, contractors, requisitions), change the Comments step placement from `'left'` to `'bottom'`.
+Remove the extra `flex justify-center` wrapper div since the preview is already full-width.
+
+**`src/components/tour/PositionsDemoPreview.tsx`** -- Slightly larger text:
+
+- All three preview components: bump font sizes by 1px across the board
+- Reduce `mt-2` to `mt-0` on the outer container (spacing now handled by parent `space-y-1.5`)
+- Reduce internal `space-y-2.5` to `space-y-2` for tighter vertical rhythm
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/tour/PositionsTour.tsx` | Split targets into body cells vs header targets; apply appropriate scroll logic for each |
-| `src/components/tour/positionsTourSteps.ts` | Change Comments step placement to `'bottom'` for all three tabs |
+| `src/components/tour/PositionsTour.tsx` | Add delay after scroll before firing resize events; ensure header targets scroll correctly |
+| `src/components/tour/positionsTourSteps.ts` | Reduce gap between text and preview; remove text-center; increase text size |
+| `src/components/tour/PositionsDemoPreview.tsx` | Bump font sizes for readability; tighten vertical spacing |
+
