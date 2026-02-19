@@ -76,34 +76,50 @@ export function PositionsTour({ activeTab = 'employees', onTabChange }: Position
 
       const el = document.querySelector(step.target as string);
       if (el) {
-        if (isTableCellStep) {
-          el.scrollIntoView({ inline: 'center', block: 'center', behavior: 'instant' });
+      if (isTableCellStep) {
+          // Step 1: Find the horizontal scroll container and scroll the cell into view
+          const scrollContainer = el.closest('.overflow-x-auto') as HTMLElement;
+          if (scrollContainer) {
+            const cellRect = el.getBoundingClientRect();
+            const containerRect = scrollContainer.getBoundingClientRect();
+            const cellOffsetLeft = cellRect.left - containerRect.left + scrollContainer.scrollLeft;
+            const centerOffset = cellOffsetLeft - (containerRect.width / 2) + (cellRect.width / 2);
+            scrollContainer.scrollLeft = Math.max(0, centerOffset);
+          }
+
+          // Also center vertically within the table body
+          const virtualBody = el.closest('[data-tour-virtual-body]');
+          if (virtualBody) {
+            el.scrollIntoView({ block: 'center', behavior: 'instant' });
+          }
+
+          // Step 2: After scroll settles, remove overflow clipping so spotlight can highlight
+          requestAnimationFrame(() => {
+            if (virtualBody) (virtualBody as HTMLElement).style.contain = 'none';
+
+            let parent = el.parentElement;
+            while (parent) {
+              const computed = getComputedStyle(parent);
+              if (computed.overflow !== 'visible' || computed.overflowX !== 'visible') {
+                parent.setAttribute('data-tour-orig-overflow', parent.style.overflow);
+                parent.setAttribute('data-tour-orig-overflow-x', parent.style.overflowX);
+                parent.style.overflow = 'visible';
+                parent.style.overflowX = 'visible';
+              }
+              if (parent.matches('[data-tour="positions-table"]')) break;
+              parent = parent.parentElement;
+            }
+
+            setTimeout(() => window.dispatchEvent(new Event('resize')), 150);
+            setTimeout(() => window.dispatchEvent(new Event('resize')), 300);
+          });
         } else {
           el.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'instant' });
-        }
-        if (!isTableCellStep) {
           const mainEl = document.querySelector('main');
           if (mainEl) mainEl.scrollTo({ top: 0, behavior: 'instant' });
+          setTimeout(() => window.dispatchEvent(new Event('resize')), 150);
+          setTimeout(() => window.dispatchEvent(new Event('resize')), 300);
         }
-
-        if (isTableCellStep) {
-          const virtualBody = el.closest('[data-tour-virtual-body]');
-          if (virtualBody) (virtualBody as HTMLElement).style.contain = 'none';
-          let parent = el.parentElement;
-          while (parent) {
-            const computed = getComputedStyle(parent);
-            if (computed.overflow !== 'visible' || computed.overflowX !== 'visible') {
-              parent.setAttribute('data-tour-orig-overflow', parent.style.overflow);
-              parent.setAttribute('data-tour-orig-overflow-x', parent.style.overflowX);
-              parent.style.overflow = 'visible';
-              parent.style.overflowX = 'visible';
-            }
-            if (parent.matches('[data-tour="positions-table"]')) break;
-            parent = parent.parentElement;
-          }
-        }
-        setTimeout(() => window.dispatchEvent(new Event('resize')), 150);
-        setTimeout(() => window.dispatchEvent(new Event('resize')), 300);
       }
     }
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
