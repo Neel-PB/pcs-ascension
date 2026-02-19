@@ -4,7 +4,8 @@ import { useTourStore } from '@/stores/useTourStore';
 
 const TOUR_PREFIX = 'helix-tour-';
 
-export function useTour(pageKey: string) {
+export function useTour(pageKey: string, options?: { autoStart?: boolean }) {
+  const autoStart = options?.autoStart ?? true;
   const { activeTour, stopTour } = useTourStore();
   const [run, setRun] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -25,13 +26,19 @@ export function useTour(pageKey: string) {
     localStorage.removeItem(storageKey);
   }, [storageKey]);
 
-  // Auto-start on first visit
+  // Auto-start on first visit (only if no other tour is running)
   useEffect(() => {
-    if (!isCompleted()) {
-      const timer = setTimeout(() => setRun(true), 1000);
+    if (autoStart && !isCompleted()) {
+      const timer = setTimeout(() => {
+        const { activeTour } = useTourStore.getState();
+        if (!activeTour) {
+          useTourStore.getState().startTour(pageKey);
+          setRun(true);
+        }
+      }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [isCompleted]);
+  }, [isCompleted, pageKey, autoStart]);
 
   // Start when triggered from header dropdown (match exact key or base path)
   useEffect(() => {
