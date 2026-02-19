@@ -44,7 +44,13 @@ export default function PositionsPage() {
   
   // Clear tab search param after consumption
   useEffect(() => {
-    if (tabParam) setSearchParams({}, { replace: true });
+    if (tabParam) {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('tab');
+        return next;
+      }, { replace: true });
+    }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Initialize filters from org-scoped defaults once ready (one-shot via store)
