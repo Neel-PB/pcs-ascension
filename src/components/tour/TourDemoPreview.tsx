@@ -5,7 +5,9 @@ type TourDemoVariant =
   | 'kpi-compact'
   | 'volume-colors'
   | 'split-badge'
-  | 'legend';
+  | 'legend'
+  | 'target-vol-preview'
+  | 'override-vol-preview';
 
 interface TourDemoPreviewProps {
   variant: TourDemoVariant;
@@ -126,6 +128,49 @@ const Legend = () => (
   </div>
 );
 
+const TargetVolPreview = () => (
+  <div className="mt-2 space-y-1.5">
+    <div className="rounded-md border border-emerald-500/40 bg-emerald-500/5 p-2.5 pr-8 relative border-l-[3px] border-l-emerald-500">
+      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Target Vol</p>
+      <p className="text-lg font-semibold text-foreground mt-0.5">20.8</p>
+      <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex flex-col items-center gap-0.5 opacity-40">
+        <div className="p-1"><div className="h-3.5 w-3.5 rounded-sm border border-muted-foreground/40" /></div>
+        <div className="p-1"><div className="h-3.5 w-3.5 rounded-full border border-muted-foreground/40" /></div>
+      </div>
+      <div className="mt-1.5">
+        <span className="inline-flex items-center rounded-full bg-emerald-500/15 text-emerald-700 px-2 py-0.5 text-[10px] font-medium">
+          12-Mo Avg
+        </span>
+      </div>
+    </div>
+    <p className="text-[10px] text-muted-foreground/70 italic text-center">
+      Green border = system-calculated target is active
+    </p>
+  </div>
+);
+
+const OverrideVolPreview = () => (
+  <div className="mt-2 space-y-1.5">
+    <div className="rounded-md border border-orange-500/40 bg-orange-500/5 p-2.5 pr-8 relative border-l-[3px] border-l-orange-500">
+      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Override Vol</p>
+      <p className="text-lg font-semibold text-foreground mt-0.5">24.7</p>
+      <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex flex-col items-center gap-0.5 opacity-40">
+        <div className="p-1"><div className="h-3.5 w-3.5 rounded-sm border border-muted-foreground/40" /></div>
+        <div className="p-1"><div className="h-3.5 w-3.5 rounded-full border border-muted-foreground/40" /></div>
+      </div>
+      <div className="flex items-center gap-2 mt-1.5">
+        <span className="inline-flex items-center rounded-full bg-orange-500/15 text-orange-700 px-2 py-0.5 text-[10px] font-medium">
+          Manual
+        </span>
+        <span className="text-[10px] text-muted-foreground">Expires: Mar 15, 2026</span>
+      </div>
+    </div>
+    <p className="text-[10px] text-muted-foreground/70 italic text-center">
+      Orange border = manual override is active
+    </p>
+  </div>
+);
+
 
 export function TourDemoPreview({ variant, config }: TourDemoPreviewProps) {
   switch (variant) {
@@ -137,6 +182,10 @@ export function TourDemoPreview({ variant, config }: TourDemoPreviewProps) {
       return <SplitBadge color={config?.color} />;
     case 'legend':
       return <Legend />;
+    case 'target-vol-preview':
+      return <TargetVolPreview />;
+    case 'override-vol-preview':
+      return <OverrideVolPreview />;
     default:
       return null;
   }
