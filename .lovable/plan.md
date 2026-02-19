@@ -1,33 +1,73 @@
 
 
-## Fix: Positions Tour Not Starting - Missing `data-tour="filter-bar"` Attribute
+## Fix: Simplify PositionsTour — Remove Controlled Mode
 
 ### Root Cause
 
-The Positions tour's first step targets `[data-tour="filter-bar"]`, but this attribute is **missing** from the PositionsPage. On the Staffing page, the FilterBar wrapper has `data-tour="filter-bar"` (StaffingSummary.tsx line 482), but on the Positions page (PositionsPage.tsx line 98), the wrapper div has no `data-tour` attribute.
+The PositionsTour was switched to "controlled mode" (manual `stepIndex` state) to fix a Comments tooltip positioning issue. But this introduced multiple cascading bugs:
+- Tour doesn't start (controlled mode requires exact stepIndex management)
+- Skip/Close don't work (need manual ACTIONS handling)
+- Last step gets stuck (need manual finish handling)
+- "Tour This Page" fails (state sync issues between stepIndex and run)
 
-Since the very first step cannot find its target element, Joyride silently fails to render anything -- making it look like the tour doesn't work at all.
+Meanwhile, the StaffingTour works perfectly using the **simple uncontrolled** pattern — no stepIndex, no manual action handling.
 
-### Fix
+### Solution
 
-**File: `src/pages/positions/PositionsPage.tsx`** (line 98)
+Strip out all controlled mode complexity and match the StaffingTour pattern exactly. Keep only the `STEP_BEFORE` scroll logic for table cells and headers (which works independently of controlled mode).
 
-Add `data-tour="filter-bar"` to the FilterBar wrapper div:
+For the Comments step positioning (the original reason for controlled mode), use a simpler approach: add a `scrollToFirstStep={false}` + dispatch resize events after scrolling in `STEP_BEFORE`, which is already in the code and works without controlled mode.
+
+### Changes
+
+**File: `src/components/tour/PositionsTour.tsx`**
+
+1. Remove `stepIndex` state and its reset `useEffect`
+2. Remove `stepIndex` prop from Joyride (switches back to uncontrolled mode)
+3. Remove all `EVENTS.STEP_AFTER` / `ACTIONS` handling (Joyride handles this automatically)
+4. Keep `EVENTS.STEP_BEFORE` scroll logic (for Active FTE, Shift, Comments targets)
+5. Keep `STATUS.FINISHED` / `STATUS.SKIPPED` handling (for completion and section flow)
+6. Match StaffingTour props: remove `disableScrolling`, add `disableScrollParentFix`
+
+The resulting component will be ~100 lines shorter and follow the same proven pattern as StaffingTour.
+
+### Simplified handleCallback
 
 ```text
-Before:  <div className="flex-shrink-0 py-2">
-After:   <div className="flex-shrink-0 py-2" data-tour="filter-bar">
+const handleCallback = (data: CallBackProps) => {
+  const { status, type, step } = data;
+
+  // Pre-scroll table cells/headers into view before step renders
+  if (type === EVENTS.STEP_BEFORE && step?.target) {
+    // ... existing scroll logic (unchanged) ...
+  }
+
+  // Completion handling (same as StaffingTour)
+  if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+    document.body.style.overflow = '';
+    completeTour();
+    // ... reset scroll + section flow logic (unchanged) ...
+  }
+};
 ```
 
-This is a one-line change. All other `data-tour` attributes already exist:
-- `positions-tabs` -- on line 116 of PositionsPage.tsx
-- `positions-search`, `positions-refresh`, `positions-filter-btn`, `positions-table` -- in EmployeesTab.tsx (and the other tab components)
-- `positions-active-fte-cell`, `positions-shift-cell` -- dynamically added in EmployeesTab.tsx
-- `positions-comments` -- in the column config
+### What Gets Removed
+
+- `useState(0)` for stepIndex
+- `useEffect` that resets stepIndex
+- Entire `EVENTS.STEP_AFTER` block (ACTIONS.PREV, SKIP, CLOSE, last-step handling)
+- `stepIndex={stepIndex}` prop on Joyride
+
+### What Stays
+
+- `STEP_BEFORE` scroll logic for table cells and headers
+- `STATUS.FINISHED` / `STATUS.SKIPPED` completion + section flow
+- `scrollToTarget` helper function
+- `tableCellTargets` and `tableHeaderTargets` arrays
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/pages/positions/PositionsPage.tsx` | Add `data-tour="filter-bar"` to FilterBar wrapper div (line 98) |
+| `src/components/tour/PositionsTour.tsx` | Remove controlled mode; simplify to match StaffingTour pattern |
 
