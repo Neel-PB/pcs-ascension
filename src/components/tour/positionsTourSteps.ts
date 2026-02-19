@@ -3,11 +3,9 @@ import { createElement } from 'react';
 import { PositionsDemoPreview } from './PositionsDemoPreview';
 
 const positionsDemoContent = (text: string, variant: string) =>
-  createElement('div', { className: 'space-y-3 text-center' },
-    createElement('p', { className: 'text-left' }, text),
-    createElement('div', { className: 'flex justify-center' },
-      createElement(PositionsDemoPreview, { variant } as any)
-    )
+  createElement('div', { className: 'space-y-1.5' },
+    createElement('p', { className: 'text-[13px] leading-relaxed' }, text),
+    createElement(PositionsDemoPreview, { variant } as any)
   );
 
 export const employeesTourSteps: Step[] = [
