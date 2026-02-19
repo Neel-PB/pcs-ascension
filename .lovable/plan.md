@@ -1,54 +1,26 @@
 
 
-## Redesign Volume Colors Preview: Two Scenarios with KPI Card Style
+## Fix: Use Green as the Active Color for Both Scenarios
 
-### What's Being Fixed
+### What's Wrong
 
-The current `volume-colors` preview shows two simple colored boxes labeled "Target (active)" and "Override (active)". The user wants **two scenarios** that demonstrate how the cards look depending on which volume source is active:
+Currently Scenario 2 uses orange to indicate the Override Vol is active. The user wants **green** to be the universal "active" color -- whichever card is active gets the green border, and the inactive card gets the default neutral border.
 
-1. **Scenario 1**: Target Vol is active (green border) and Override Vol is default (neutral border)
-2. **Scenario 2**: Override Vol is active (orange border) and Target Vol is default (neutral border)
-
-Each card should use the actual KPI card styling (matching the `WorkforceKPICard` layout) rather than generic colored boxes.
-
-### Design
-
-```text
-+--------------------------------------------------+
-| Scenario 1: Target Active                        |
-| +---------------------+  +---------------------+ |
-| | TARGET VOL     [i]  |  | OVERRIDE VOL   [i]  | |
-| | 20.8           [c]  |  | 24.7           [c]  | |
-| | [12-Mo Avg]         |  | [Manual] Exp: Mar.. | |
-| | (green border)      |  | (neutral border)    | |
-| +---------------------+  +---------------------+ |
-|                                                   |
-| Scenario 2: Override Active                       |
-| +---------------------+  +---------------------+ |
-| | TARGET VOL     [i]  |  | OVERRIDE VOL   [i]  | |
-| | 20.8           [c]  |  | 24.7           [c]  | |
-| | [12-Mo Avg]         |  | [Manual] Exp: Mar.. | |
-| | (neutral border)    |  | (orange border)     | |
-| +---------------------+  +---------------------+ |
-+--------------------------------------------------+
-```
-
-### Technical Details
+### Change
 
 **File: `src/components/tour/TourDemoPreview.tsx`**
 
-Replace the `VolumeColors` component with a new implementation that shows two rows:
+Update the `VolumeColors` component:
 
-- **Row 1 ("Target Active")**: Target Vol card with green left border + emerald badge; Override Vol card with neutral border + muted badge
-- **Row 2 ("Override Active")**: Target Vol card with neutral border + muted badge; Override Vol card with orange left border + orange badge
+1. **Scenario 2 label**: Change from `text-orange-600` to `text-emerald-600`, rename to "Scenario 2 -- Override Active"
+2. **Override Vol card in Scenario 2**: Change `active="orange"` to `active="green"` and `badgeColor="orange"` to `badgeColor="green"`
+3. **MiniVolCard**: Remove the orange active case entirely since it's no longer used. The `active` prop becomes `'green' | 'none'` only.
 
-Each mini-card mirrors the KPI card layout: label, value, icon placeholders, and source badge. A small section label above each row explains the scenario.
-
-The existing `TargetVolPreview` and `OverrideVolPreview` components (used by the individual KPI steps) remain unchanged.
+Result: Both scenarios show the active card with a green border and the inactive card with a neutral border.
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/tour/TourDemoPreview.tsx` | Rewrite `VolumeColors` component to show two scenario rows with KPI-card-styled Target and Override cards |
+| `src/components/tour/TourDemoPreview.tsx` | Replace orange active styling with green in Scenario 2; simplify `MiniVolCard` to only support green or none |
 
