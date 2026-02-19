@@ -1,91 +1,86 @@
 
 
-## Fix: Scroll Table to Active FTE Cell Before Showing Spotlight
+## Fix: Prevent Multiple Tours from Running Simultaneously
 
-### Root Cause
+### Problem
 
-The current code flow for table cell steps is:
+The `useTour` hook (lines 29-34) auto-starts any tour on first visit if it hasn't been completed. Since `HeaderTour` is always mounted in `AppHeader.tsx` and page-specific tours (StaffingTour, PositionsTour, AdminTour) are mounted on their respective pages, multiple Joyride instances start at the same time -- producing overlapping tooltips as shown in the screenshot.
 
-1. Call `scrollIntoView({ inline: 'center' })` on the cell
-2. Immediately set `overflow: visible` on all parent containers up to `[data-tour="positions-table"]`
-
-Step 2 destroys the scroll context. Once `overflow` becomes `visible`, the container is no longer scrollable -- the horizontal scroll position resets and the cell that was scrolled into view becomes invisible again. The tooltip appears pointing at a hidden element off the right edge.
+Additionally, overlay tours like Feedback, AI Hub, and Checklist could also auto-start if their panels are open.
 
 ### Fix
 
-Restructure the table cell step logic in `src/components/tour/PositionsTour.tsx` to:
+Update `useTour.ts` to only auto-start a tour when no other tour is already running. The `activeTour` state in the store isn't set during auto-start, so we need a simple guard.
 
-1. Find the horizontal scroll container (`overflow-x-auto` div inside EditableTable)
-2. Manually calculate and set its `scrollLeft` to center the target cell
-3. Wait a frame for the scroll to settle
-4. THEN set `overflow: visible` on parent containers and remove `contain: layout`
-5. Fire resize events after everything is positioned
+**File: `src/hooks/useTour.ts`**
 
-**File: `src/components/tour/PositionsTour.tsx`**
+1. On auto-start (first visit), check `useTourStore.getState().activeTour` -- if another tour is already active, don't start.
+2. When a tour starts running (either auto or triggered), set it as the active tour in the store so other hooks know not to auto-start.
+3. For overlay tours (like `header`), skip auto-start entirely -- they should only run when explicitly triggered from the tour sequence or launcher.
 
-Replace the table cell handling block (lines 79-106) with:
+**File: `src/stores/useTourStore.ts`**
+
+No changes needed -- the `activeTour` field already exists.
+
+### Implementation Details
+
+**`src/hooks/useTour.ts`** -- Updated auto-start effect:
 
 ```typescript
-if (isTableCellStep) {
-  // Step 1: Find the horizontal scroll container and scroll the cell into view
-  const scrollContainer = el.closest('.overflow-x-auto') as HTMLElement;
-  if (scrollContainer) {
-    const cellRect = el.getBoundingClientRect();
-    const containerRect = scrollContainer.getBoundingClientRect();
-    // Calculate how much to scroll so the cell is centered horizontally
-    const cellOffsetLeft = cellRect.left - containerRect.left + scrollContainer.scrollLeft;
-    const centerOffset = cellOffsetLeft - (containerRect.width / 2) + (cellRect.width / 2);
-    scrollContainer.scrollLeft = Math.max(0, centerOffset);
-  }
-
-  // Also center vertically within the table body
-  const virtualBody = el.closest('[data-tour-virtual-body]');
-  if (virtualBody) {
-    el.scrollIntoView({ block: 'center', behavior: 'instant' });
-  }
-
-  // Step 2: After scroll settles, remove overflow clipping so spotlight can highlight
-  requestAnimationFrame(() => {
-    if (virtualBody) (virtualBody as HTMLElement).style.contain = 'none';
-
-    let parent = el.parentElement;
-    while (parent) {
-      const computed = getComputedStyle(parent);
-      if (computed.overflow !== 'visible' || computed.overflowX !== 'visible') {
-        parent.setAttribute('data-tour-orig-overflow', parent.style.overflow);
-        parent.setAttribute('data-tour-orig-overflow-x', parent.style.overflowX);
-        parent.style.overflow = 'visible';
-        parent.style.overflowX = 'visible';
+// Auto-start on first visit (only if no other tour is running)
+useEffect(() => {
+  if (!isCompleted()) {
+    const timer = setTimeout(() => {
+      const { activeTour } = useTourStore.getState();
+      // Don't auto-start if another tour is already running
+      if (!activeTour) {
+        useTourStore.getState().startTour(pageKey);
+        setRun(true);
       }
-      if (parent.matches('[data-tour="positions-table"]')) break;
-      parent = parent.parentElement;
-    }
-
-    setTimeout(() => window.dispatchEvent(new Event('resize')), 150);
-    setTimeout(() => window.dispatchEvent(new Event('resize')), 300);
-  });
-} else {
-  el.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'instant' });
-  const mainEl = document.querySelector('main');
-  if (mainEl) mainEl.scrollTo({ top: 0, behavior: 'instant' });
-  setTimeout(() => window.dispatchEvent(new Event('resize')), 150);
-  setTimeout(() => window.dispatchEvent(new Event('resize')), 300);
-}
+    }, 1000);
+    return () => clearTimeout(timer);
+  }
+}, [isCompleted, pageKey]);
 ```
 
-### Why This Works
+**`src/components/tour/OverlayTour.tsx`** -- Disable auto-start for overlay tours:
 
-- The scroll container's `scrollLeft` is set manually while it still has `overflow-x: auto`, so the cell physically moves into the visible area
-- Only after the scroll is done (next animation frame) do we switch to `overflow: visible` for spotlight rendering
-- The cell is now centered in the viewport when the spotlight and tooltip appear
+The `OverlayTour` component should pass a flag to `useTour` to skip auto-starting. We'll add an `autoStart` option:
+
+```typescript
+// useTour.ts - add optional config
+export function useTour(pageKey: string, options?: { autoStart?: boolean }) {
+  const autoStart = options?.autoStart ?? true;
+  
+  // Auto-start on first visit
+  useEffect(() => {
+    if (autoStart && !isCompleted()) {
+      const timer = setTimeout(() => {
+        const { activeTour } = useTourStore.getState();
+        if (!activeTour) {
+          useTourStore.getState().startTour(pageKey);
+          setRun(true);
+        }
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [isCompleted, pageKey, autoStart]);
+```
+
+```typescript
+// OverlayTour.tsx
+const { run, setRun, completeTour } = useTour(tourKey, { autoStart: false });
+```
+
+This ensures:
+- Only one tour runs at a time
+- Page tours (Staffing, Positions, Admin) can still auto-start on first visit
+- Overlay tours (Header, Feedback, AI Hub, Checklist) only start when explicitly triggered
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/tour/PositionsTour.tsx` | Rewrite table cell scroll logic: manually scroll the horizontal container first, then set overflow visible in the next frame |
+| `src/hooks/useTour.ts` | Add `autoStart` option; guard auto-start with `activeTour` check |
+| `src/components/tour/OverlayTour.tsx` | Pass `{ autoStart: false }` to `useTour` |
 
-### What stays unchanged
-- All step definitions, demo previews, and tooltip styling
-- Non-cell step behavior (filter bar, search, tabs)
-- Tour flow, section transitions, cleanup logic
