@@ -1,4 +1,12 @@
 import type { Step } from 'react-joyride';
+import { createElement } from 'react';
+import { PositionsDemoPreview } from './PositionsDemoPreview';
+
+const positionsDemoContent = (text: string, variant: string) =>
+  createElement('div', { className: 'space-y-3' },
+    createElement('p', null, text),
+    createElement(PositionsDemoPreview, { variant } as any)
+  );
 
 export const employeesTourSteps: Step[] = [
   {
@@ -46,21 +54,21 @@ export const employeesTourSteps: Step[] = [
   {
     target: '[data-tour="positions-active-fte-cell"]',
     title: 'Active FTE',
-    content: 'Click the Active FTE cell to adjust a position\'s working FTE. Select a status reason (LOA, Orientation, Separation, etc.), set an expiration date, and optionally add a comment. Overrides appear in blue and automatically revert when expired.',
+    content: positionsDemoContent('Click the Active FTE cell to adjust a position\'s working FTE. Select a status reason (LOA, Orientation, Separation, etc.), set an expiration date, and optionally add a comment. Overrides appear in blue and automatically revert when expired.', 'active-fte-steps'),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="positions-shift-cell"]',
     title: 'Shift Override',
-    content: 'For special shifts (Rotating, Weekend Option, Evening), click the pencil icon to assign a Day or Night selection. The original shift is shown with strikethrough alongside the new value. Use the reset icon to revert.',
+    content: positionsDemoContent('For special shifts (Rotating, Weekend Option, Evening), click the pencil icon to assign a Day or Night selection. The original shift is shown with strikethrough alongside the new value. Use the reset icon to revert.', 'shift-override-steps'),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="positions-comments"]',
     title: 'Comments',
-    content: 'The comment icon shows how many notes exist for each position. Click any row to open the detail sheet, then switch to the Comments tab to view the activity timeline and add notes.',
+    content: positionsDemoContent('The comment icon shows how many notes exist for each position. Click any row to open the detail sheet, then switch to the Comments tab to view the activity timeline and add notes.', 'comments-preview'),
     placement: 'bottom',
     disableBeacon: true,
   },
@@ -112,21 +120,21 @@ export const contractorsTourSteps: Step[] = [
   {
     target: '[data-tour="positions-active-fte-cell"]',
     title: 'Active FTE',
-    content: 'Click the Active FTE cell to adjust a contractor\'s working FTE. Select a status reason (LOA, Orientation, Separation, etc.), set an expiration date, and optionally add a comment. Overrides appear in blue and automatically revert when expired.',
+    content: positionsDemoContent('Click the Active FTE cell to adjust a contractor\'s working FTE. Select a status reason (LOA, Orientation, Separation, etc.), set an expiration date, and optionally add a comment. Overrides appear in blue and automatically revert when expired.', 'active-fte-steps'),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="positions-shift-cell"]',
     title: 'Shift Override',
-    content: 'For special shifts (Rotating, Weekend Option, Evening), click the pencil icon to assign a Day or Night selection. The original shift is shown with strikethrough alongside the new value. Use the reset icon to revert.',
+    content: positionsDemoContent('For special shifts (Rotating, Weekend Option, Evening), click the pencil icon to assign a Day or Night selection. The original shift is shown with strikethrough alongside the new value. Use the reset icon to revert.', 'shift-override-steps'),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="positions-comments"]',
     title: 'Comments',
-    content: 'The comment icon shows how many notes exist for each contractor. Click any row to open the detail sheet, then switch to the Comments tab to view the activity timeline and add notes.',
+    content: positionsDemoContent('The comment icon shows how many notes exist for each contractor. Click any row to open the detail sheet, then switch to the Comments tab to view the activity timeline and add notes.', 'comments-preview'),
     placement: 'bottom',
     disableBeacon: true,
   },
