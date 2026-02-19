@@ -1,36 +1,40 @@
 
 
-## Fix: Make Position Planning and Variance Analysis Tables Scrollable
+## Fix: Sticky Headers Not Working on Planning and Variance Tables
 
 ### Root Cause
 
-Both tables grow to their full content height because their parent containers have no height constraint. The `Table` component's wrapper (`div.overflow-auto`) only enables scrolling when there's a fixed or constrained height — without one, the content just expands infinitely.
+The `Table` UI component wraps `<table>` inside its own `<div className="relative w-full overflow-auto">`. This creates two nested scroll containers:
 
-### The Fix
+```text
+<div class="overflow-auto max-h-[600px]">         <-- outer (has height limit)
+  <div class="relative w-full overflow-auto">      <-- Table's inner wrapper (no height limit, expands fully)
+    <table>
+      <thead class="sticky top-0">                 <-- sticks to inner div, which never scrolls
+```
 
-Add a `max-h-[600px]` constraint to the scrollable container around each table, similar to how `ForecastBalanceTable` already does it (`max-h-[600px] overflow-auto`).
+The `sticky` header binds to its nearest scrolling ancestor — the inner div — which has no height constraint and expands to full content height. So the outer div scrolls, but the header isn't sticky relative to it.
 
-### Changes
+### Fix
+
+Override the inner div's overflow on the outer wrapper using a Tailwind child selector so there's only ONE scroll container:
 
 **`src/pages/staffing/PositionPlanning.tsx`** (line 533):
-- Change the `FTESkillShiftTable` outer div from `overflow-x-auto` to `overflow-auto max-h-[600px]`
-- This constrains vertical height while preserving horizontal scroll
+```
+<div className="overflow-auto max-h-[600px] [&>div]:overflow-visible">
+```
 
 **`src/pages/staffing/VarianceAnalysis.tsx`** (line 723):
-- Change the table container div from `overflow-hidden overflow-x-auto` to `overflow-auto max-h-[600px]`
+```
+className="rounded-xl border shadow-sm bg-card overflow-auto max-h-[600px] [&>div]:overflow-visible"
+```
 
-Additionally, both tables need sticky headers so column labels remain visible while scrolling:
-
-**`src/pages/staffing/PositionPlanning.tsx`** (FTESkillShiftTable `TableHeader`):
-- Add `className="sticky top-0 z-10 bg-card"` to `TableHeader`
-
-**`src/pages/staffing/VarianceAnalysis.tsx`** (VarianceTable `TableHeader`):
-- Add `className="sticky top-0 z-10 bg-card"` to `TableHeader`
+The `[&>div]:overflow-visible` neutralizes the Table component's inner wrapper, making the outer div the single scroll context. The sticky header then works correctly.
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/pages/staffing/PositionPlanning.tsx` | Add `max-h-[600px]` to table container, sticky header on `TableHeader` |
-| `src/pages/staffing/VarianceAnalysis.tsx` | Add `max-h-[600px]` to table container, sticky header on `TableHeader` |
+| `src/pages/staffing/PositionPlanning.tsx` | Add `[&>div]:overflow-visible` to table container |
+| `src/pages/staffing/VarianceAnalysis.tsx` | Add `[&>div]:overflow-visible` to table container |
 
