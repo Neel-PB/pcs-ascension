@@ -1,79 +1,91 @@
 
 
-## Compact KPI-Specific Tour Previews
+## Tour Tooltip Redesign: Compact, Wide, and Beautiful
 
-### What Changes
+### Problems Identified
 
-Replace the generic "kpi-actions" wireframe (which shows the same placeholder chart and definition for every KPI) with a **KPI-specific compact preview** that displays each KPI's own data from `kpiConfigs.ts` -- its own chart shape, definition, and calculation.
+1. **Table tour steps appear below the table** -- tooltip should always be positioned above tables so the guide doesn't get hidden or push content down.
+2. **Tooltips are too tall** -- excessive vertical padding and spacing waste screen space.
+3. **Design needs polish** -- the current tooltip is functional but plain; needs a more refined, modern look.
 
-### Layout: Wide and Compact
+### Changes
 
-Instead of the current tall vertical layout (icon + trend chart stacked above icon + definition), use a **horizontal two-column layout** inside a wider tooltip:
+---
 
-```text
-+--------------------------------------------------------------+
-| Vacancy Rate                                           10/30 |
-| Percentage of approved budgeted positions currently unfilled. |
-|                                                              |
-| +---------------------------+  +---------------------------+ |
-| | Trend Chart               |  | Definition                | |
-| | [actual vacancy rate      |  | Percentage of approved    | |
-| |  area chart using         |  | positions unfilled.       | |
-| |  KPI's own data points]   |  |                           | |
-| |                           |  | Calculation               | |
-| | High: 16.0  Avg: 14.9    |  | (Target - Hired) /       | |
-| | Low: 13.9                 |  |  Target x 100            | |
-| +---------------------------+  +---------------------------+ |
-|                                                              |
-| Summary . 1 of 15      Skip All  Skip Section  Back  [Next] |
-+--------------------------------------------------------------+
-```
+### 1. Force `placement: 'top'` on all table-targeting steps
 
-- Tooltip width increases from `max-w-[420px]` to `max-w-[560px]` (only for KPI steps via a data flag)
-- Chart and Definition sit side by side, each taking ~50% width
-- Chart uses the KPI's actual data points from `kpiConfigs.ts`
-- Definition shows the real definition + calculation text
+**Files:** `src/components/tour/tourSteps.ts`, `src/components/tour/positionsTourSteps.ts`
 
-### Files to Change
+Update every step that targets a table element to use `placement: 'top'` instead of `'bottom'` or `'auto'`:
+
+- `tourSteps.ts`:
+  - `planning-table` (line 750): already `'top'` -- keep
+  - `variance-table` (line 225): already `'top'` -- keep
+  - `volume-settings-table` steps (lines 291, 300, 310): change `'auto'` to `'top'`
+  - `np-settings-table` steps (lines 345, 353, 363): change `'auto'` to `'top'`
+  - `admin-users-table` (line 494): already `'top'` -- keep
+  - `admin-rbac-content` (line 563): already `'top'` -- keep
+  - `admin-audit-table` (line 587): change `'auto'` to `'top'`
+  - `forecast-table-body` (line 268): already `'top'` -- keep
+  - `feedback-table` (line 684): already `'top'` -- keep
+  - `checklist-table` (line 408): already `'top'` -- keep
+
+- `positionsTourSteps.ts`:
+  - `positions-table` (lines 48, 114, 180): already `'top'` -- keep
+
+---
+
+### 2. Compact the TourTooltip (reduce height, increase width)
+
+**File:** `src/components/tour/TourTooltip.tsx`
+
+Spacing reductions:
+- Progress bar: keep `h-[3px]` (already minimal)
+- CardHeader: reduce `pt-4` to `pt-3`, keep `pb-2`
+- CardContent: reduce `pb-3 space-y-3` to `pb-2 space-y-2`
+- CardFooter: reduce `pb-4` to `pb-3`
+- Section badge padding: reduce from `px-3 py-1` to `px-2.5 py-0.5`
+
+Width increases:
+- Default (non-wide): increase from `max-w-[420px] min-w-[340px]` to `max-w-[480px] min-w-[380px]`
+- Wide (KPI steps): keep `max-w-[560px] min-w-[480px]`
+
+---
+
+### 3. Beautify the TourTooltip design
+
+**File:** `src/components/tour/TourTooltip.tsx`
+
+Visual enhancements:
+- Replace the flat `border-t-2 border-t-primary` with a **gradient accent bar** at the top using a small div with `bg-gradient-to-r from-primary via-primary/80 to-primary/50 h-[3px]`
+- Merge the progress bar and accent bar into one element: the gradient bar width animates based on progress
+- Add a subtle **glassmorphic** feel: `backdrop-blur-sm bg-card/95` instead of solid `bg-card`
+- Improve shadow: use `shadow-xl shadow-black/10 dark:shadow-black/30` for a softer, more elevated look
+- Step counter badge: wrap in a `rounded-full bg-muted px-2 py-0.5` pill for a cleaner look
+- Primary (Next) button: add `rounded-lg` and subtle shadow `shadow-sm`
+- Back button: add `rounded-lg`
+- Skip buttons: slightly more prominent with `hover:bg-muted` background transition
+- Footer separator: add a subtle `border-t border-border/30` above the footer
+
+---
+
+### 4. Compact the KPICompactPreview
+
+**File:** `src/components/tour/TourDemoPreview.tsx`
+
+- Reduce chart SVG height from `h-14` to `h-12`
+- Reduce stats row text sizes
+- Tighten grid gap from `gap-2` to `gap-1.5`
+- Reduce overall `mt-2` to `mt-1.5`
+
+---
+
+### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/tour/TourDemoPreview.tsx` | Add new `KPICompactPreview` component that accepts `kpiId` prop, looks up real data from `kpiConfigs.ts`, renders a two-column layout with the KPI's own mini chart (left) and definition+calculation (right) |
-| `src/components/tour/tourSteps.ts` | Update all 18 KPI steps to use new `'kpi-compact'` variant with `{ kpiId: 'vacancy-rate' }` etc., passing each KPI's actual ID |
-| `src/components/tour/TourTooltip.tsx` | Add conditional wider width when step has `data.wideTooltip: true` -- change card class from `max-w-[420px]` to `max-w-[560px]` for those steps |
+| `src/components/tour/TourTooltip.tsx` | Compact spacing, wider default, gradient accent bar, glassmorphic card, polished buttons |
+| `src/components/tour/tourSteps.ts` | Change table-targeting steps to `placement: 'top'` |
+| `src/components/tour/positionsTourSteps.ts` | Verify table steps use `placement: 'top'` (already correct) |
+| `src/components/tour/TourDemoPreview.tsx` | Tighter KPICompactPreview spacing |
 
-### Technical Details
-
-**KPICompactPreview component:**
-- Imports `getFTEKPIs`, `getVolumeKPIs`, `getProductivityKPIs` from `kpiConfigs.ts`
-- Looks up the matching KPI config by `kpiId`
-- Left column: SVG area chart rendered from the KPI's own `chartData` array (last 12 points), with High/Avg/Low stats below
-- Right column: Definition text + Calculation in a mono code block
-- Both columns are compact with `text-[10px]` sizing
-
-**Tour step changes (example):**
-```typescript
-// Before
-{
-  target: '[data-tour="kpi-vacancy-rate"]',
-  title: 'Vacancy Rate',
-  content: demoContent('Percentage of approved...', 'kpi-actions', { hasChart: true }),
-}
-
-// After
-{
-  target: '[data-tour="kpi-vacancy-rate"]',
-  title: 'Vacancy Rate',
-  content: demoContent('Percentage of approved...', 'kpi-compact', { kpiId: 'vacancy-rate' }),
-  data: { wideTooltip: true },
-}
-```
-
-**Tooltip width logic:**
-```typescript
-const isWide = (step as any).data?.wideTooltip;
-// Card className changes to:
-className={`${isWide ? 'max-w-[560px] min-w-[480px]' : 'max-w-[420px] min-w-[340px]'} ...`}
-```
-
-This approach reuses all existing KPI config data, keeps the tooltip compact by going horizontal, and gives each KPI its own unique preview matching what users see when they click the chart/info icons on the actual cards.
