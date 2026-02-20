@@ -60,7 +60,7 @@ export function ForecastTab({
       </div>
 
       {/* Smart Table */}
-      <div className="flex-1 min-h-0">
+      <div className="min-h-0 max-h-full">
         <ForecastBalanceTable
           rows={filteredRows}
           isLoading={isLoading}
