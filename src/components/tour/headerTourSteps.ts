@@ -2,6 +2,20 @@ import type { Step } from 'react-joyride';
 
 export const headerTourSteps: Step[] = [
   {
+    target: '[data-tour="org-switcher"]',
+    title: 'Organization Logo',
+    content: 'Click the organization logo to navigate back to the Staffing Summary — the home page of the application.',
+    placement: 'right',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="sidebar-nav"]',
+    title: 'Sidebar Navigation',
+    content: 'The sidebar provides quick access to all modules: Staffing, Positions, Analytics, Reports, Admin, Feedback, and Support. Click any icon to navigate. The active module is highlighted with a primary-colored background.',
+    placement: 'right',
+    disableBeacon: true,
+  },
+  {
     target: '[data-tour="header-search"]',
     title: 'Global Search',
     content: 'Click the search bar or press Ctrl+K to open the command palette. Search across all pages and navigation items.',

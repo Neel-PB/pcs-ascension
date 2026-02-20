@@ -5,6 +5,7 @@ import {
   adminUsersTourSteps, adminFeedTourSteps, adminRbacTourSteps,
   adminAuditTourSteps, adminSettingsTourSteps,
   feedbackTourSteps, aiHubTourSteps, checklistTourSteps,
+  feedbackPageTourSteps, analyticsTourSteps, reportsTourSteps,
 } from './tourSteps';
 import { employeesTourSteps, contractorsTourSteps, requisitionsTourSteps, openRequisitionTourSteps, contractorRequisitionTourSteps } from './positionsTourSteps';
 import { headerTourSteps } from './headerTourSteps';
@@ -18,8 +19,8 @@ export const TOUR_STEP_REGISTRY: Record<string, Step[]> = {
   'staffing-np-settings': npSettingsSteps,
   'positions-employees': employeesTourSteps,
   'positions-open-requisition': openRequisitionTourSteps,
-  'positions-contractors': contractorsTourSteps,
   'positions-requisitions': requisitionsTourSteps,
+  'positions-contractors': contractorsTourSteps,
   'positions-contractor-requisition': contractorRequisitionTourSteps,
   'admin-users': adminUsersTourSteps,
   'admin-feed': adminFeedTourSteps,
@@ -28,8 +29,11 @@ export const TOUR_STEP_REGISTRY: Record<string, Step[]> = {
   'admin-settings': adminSettingsTourSteps,
   'header': headerTourSteps,
   'feedback': feedbackTourSteps,
+  'feedback-page': feedbackPageTourSteps,
   'ai-hub': aiHubTourSteps,
   'checklist': checklistTourSteps,
+  'analytics': analyticsTourSteps,
+  'reports': reportsTourSteps,
 };
 
 export function getStepTitle(step: Step): string {

@@ -2,6 +2,8 @@ import { useState } from "react";
 import { ToggleButtonGroup } from "@/components/ui/toggle-button-group";
 import { BarChart3 } from "@/lib/icons";
 import { RegionVolumeTrendCharts } from "@/components/analytics/RegionVolumeTrendCharts";
+import { OverlayTour } from "@/components/tour/OverlayTour";
+import { analyticsTourSteps } from "@/components/tour/tourSteps";
 
 export default function AnalyticsRegion() {
   const [activeTab, setActiveTab] = useState("region");
@@ -21,8 +23,9 @@ export default function AnalyticsRegion() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="mb-6 flex justify-center">
+    <div className="space-y-6" data-tour="analytics-page">
+      <OverlayTour tourKey="analytics" steps={analyticsTourSteps} />
+      <div className="mb-6 flex justify-center" data-tour="analytics-tabs">
         <ToggleButtonGroup
           items={tabs}
           activeId={activeTab}
@@ -31,7 +34,7 @@ export default function AnalyticsRegion() {
         />
       </div>
 
-      <div>
+      <div data-tour="analytics-content">
         {activeTab === "region" ? (
           <RegionVolumeTrendCharts />
         ) : (

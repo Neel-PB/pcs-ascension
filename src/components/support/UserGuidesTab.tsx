@@ -63,13 +63,15 @@ const guideCatalog: Guide[] = [
   { tourKey: "admin-audit-log", title: "Audit Log", description: "Track all role and permission changes with timestamps.", icon: History, route: "/admin?tab=audit-log", category: "Admin" },
   { tourKey: "admin-settings", title: "Admin Settings", description: "UI settings, volume configuration, and system controls.", icon: Settings, route: "/admin?tab=settings", category: "Admin" },
   { tourKey: "feedback-page", title: "Feedback Management", description: "Search, filter, and manage feedback with dual-status workflow.", icon: MessageSquare, route: "/feedback", category: "Feedback" },
+  { tourKey: "analytics", title: "Analytics", description: "Regional volume trend charts and multi-level analytics views.", icon: BarChart3, route: "/analytics", category: "Analytics" },
+  { tourKey: "reports", title: "Reports", description: "Report cards with export, activity logs, and multi-level views.", icon: BarChart3, route: "/reports", category: "Reports" },
   { tourKey: "checklist", title: "Positions Checklist", description: "Real-time FTE gap summary drawer with shortage/surplus tabs.", icon: BarChart3, route: "", category: "Overlays", isOverlay: true },
   { tourKey: "ai-hub", title: "AI Hub", description: "AI-powered staffing assistant for questions and analysis.", icon: Sparkles, route: "", category: "Overlays", isOverlay: true },
   { tourKey: "feedback", title: "Feedback Panel", description: "Submit feedback with screenshots from anywhere in the app.", icon: MessageSquare, route: "", category: "Overlays", isOverlay: true },
   { tourKey: "header", title: "Header Bar", description: "Global search, notifications, theme toggle, and user menu.", icon: Navigation, route: "", category: "Overlays", isOverlay: true },
 ];
 
-const categories = ["Staffing", "Positions", "Admin", "Feedback", "Overlays"];
+const categories = ["Staffing", "Positions", "Admin", "Feedback", "Analytics", "Reports", "Overlays"];
 
 export function UserGuidesTab() {
   const navigate = useNavigate();
