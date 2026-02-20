@@ -1,34 +1,19 @@
 
 
-## Fix Black Vertical Line Artifacts in Forecast Two-Panel
+## Fix Forecast Tour Tooltip Placement
 
 ### Problem
-
-In the expanded Forecast detail panel (right side - "Recommended Target FTE"), each position change row displays text like `1 FTE × 1` and `= 1.0`. The multiplication sign (`×`) renders as a thin black vertical bar at the small `text-xs` font size, creating visual artifacts that look like stray pipe characters.
-
-### Solution
-
-Replace the `×` character with a more readable separator and clean up the row format for better readability at small sizes.
+The tour tooltips in the Forecast section appear below (bottom) the KPI cards and table header, which can push content off-screen or feel awkward. The user wants all Forecast tour tooltips to consistently appear on top.
 
 ### File to Change
 
 | File | Change |
 |------|--------|
-| `src/components/forecast/BalanceTwoPanel.tsx` | Update the display format in both `PositionChangeList` (line 63) and `ClosureChangeList` (line 105) components |
+| `src/components/tour/tourSteps.ts` | Change `placement` from `'bottom'` to `'top'` for the first two forecast steps (lines 251 and 261). The third step already uses `'top'`. |
 
 ### Specific Changes
 
-**Line 63** (PositionChangeList):
-```
-Before: <span>{change.fteValue} FTE × {change.count}</span>
-After:  <span>{change.fteValue} FTE x {change.count}</span>
-```
-
-**Line 105** (ClosureChangeList):
-```
-Before: <span>{change.fteValue} FTE × {change.count}</span>
-After:  <span>{change.fteValue} FTE x {change.count}</span>
-```
-
-Replace the Unicode multiplication sign (`×`) with a lowercase letter `x` which renders clearly at small font sizes without looking like a vertical bar.
+- **Line 251** (Forecast KPI Cards step): `placement: 'bottom'` to `placement: 'top'`
+- **Line 261** (Forecast Table step): `placement: 'bottom'` to `placement: 'top'`
+- **Line 271** (Expandable Detail View step): Already `'top'` -- no change needed
 
