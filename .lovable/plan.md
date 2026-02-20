@@ -1,52 +1,52 @@
 
 
-## Restructure Positions Module to 5 Tabs
+## Add "Position Details" Tour Step to Positions Tour
 
-### Current State
-- 3 tabs: Employees, Contractors, Open Positions (requisitions)
-- All pull from the `positions` table with different filters
+### What Changes
 
-### Changes
+Add a new Joyride step to the Employees, Contractors, and Open Position (requisitions) tours that highlights clicking a table row to open the Position Details sheet. The step will include a demo preview wireframe showing the detail sheet layout.
 
-**1. Update tab definitions in PositionsPage.tsx**
+### Implementation
 
-Replace the 3-tab array with 5 tabs:
-1. **Employees** -- same as today (filled, non-contingent)
-2. **Open Requisition** -- placeholder/dummy data tab (new)
-3. **Open Position** -- current requisitions tab renamed (unfilled positions from `positions` table)
-4. **Contractor** -- same as today (filled, contingent)
-5. **Contractor Requisition** -- placeholder/dummy data tab (new)
+**1. Add `data-tour="positions-row"` to the first table row**
 
-Update `validTabs` array and conditional rendering accordingly.
+In `src/components/editable-table/VirtualizedTableBody.tsx`, add a `data-tour` attribute to the first row's wrapper div (when `virtualRow.index === 0`).
 
-**2. Create two new placeholder tab components**
+**2. Add a demo preview variant for the detail sheet**
 
-- `src/pages/positions/OpenRequisitionTab.tsx` -- shows a table with dummy requisition data (hardcoded array of ~5 sample rows) with columns: Requisition #, Job Title, Shift, Employment Type, Status, Comments
-- `src/pages/positions/ContractorRequisitionTab.tsx` -- same structure with dummy contractor requisition data
+In `src/components/tour/PositionsDemoPreview.tsx`:
+- Add a new variant `'position-details'` to the type
+- Create a `PositionDetailsPreview` component showing a mini wireframe of the detail sheet (Position Information section with fields like Position Number, Job Title, FTE, Shift, plus the Details/Comments tab switcher)
 
-Both will use the existing `EditableTable` component with a simplified column set (no Job Family, no Staff Type).
+**3. Add the new step to all three tour step arrays**
 
-**3. Remove "Job Family" and "Staff Type" columns from all tabs**
+In `src/components/tour/positionsTourSteps.ts`, insert a new step after the "Data Table" step (index 5 for employees, index 4 for contractors, index 4 for requisitions):
 
-- `src/config/employeeColumns.tsx` -- remove `jobFamily` (id: `'jobFamily'`) and `employmentFlag` (id: `'employmentFlag'`, label: "Staff Type") columns
-- `src/config/contractorColumns.tsx` -- remove `jobFamily` and `employmentFlag` columns
-- `src/config/requisitionColumns.tsx` -- remove `jobFamily` column (no Staff Type column exists here)
+```
+{
+  target: '[data-tour="positions-row"]',
+  title: 'Position Details',
+  content: <demo content showing detail sheet wireframe>,
+  placement: 'bottom',
+  disableBeacon: true,
+  data: { wideTooltip: true },
+}
+```
 
-**4. Update related references**
+**4. Update PositionsTour scroll handling**
 
-- `src/components/shell/TabNavigation.tsx` -- update `moduleTabConfigs.positions` to reflect 5 tabs
-- `src/components/support/UserGuidesTab.tsx` -- add guide entries for the 2 new tabs if needed
-- Tour step references for positions may need updating but can remain functional
+In `src/components/tour/PositionsTour.tsx`, the new `positions-row` target doesn't need special horizontal scrolling (it's in the visible area), but ensure it scrolls vertically into view if needed.
 
-### Technical Details
+**5. Update tab navigation text**
+
+Also update the "Tab Navigation" step content from "Employees, Contractors, and Open Positions" to reflect the new 5-tab structure.
+
+### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/pages/positions/PositionsPage.tsx` | Update tabs array to 5 items, add imports for new tab components, add conditional renders |
-| `src/pages/positions/OpenRequisitionTab.tsx` | New file -- placeholder tab with dummy data table |
-| `src/pages/positions/ContractorRequisitionTab.tsx` | New file -- placeholder tab with dummy data table |
-| `src/config/employeeColumns.tsx` | Remove `jobFamily` and `employmentFlag` column definitions |
-| `src/config/contractorColumns.tsx` | Remove `jobFamily` and `employmentFlag` column definitions |
-| `src/config/requisitionColumns.tsx` | Remove `jobFamily` column definition |
-| `src/components/shell/TabNavigation.tsx` | Update `moduleTabConfigs.positions` to list 5 tabs |
+| `src/components/editable-table/VirtualizedTableBody.tsx` | Add `data-tour="positions-row"` to the first row wrapper div |
+| `src/components/tour/PositionsDemoPreview.tsx` | Add `position-details` variant with detail sheet wireframe |
+| `src/components/tour/positionsTourSteps.ts` | Insert "Position Details" step after "Data Table" in all three arrays; update Tab Navigation text |
+| `src/components/tour/PositionsTour.tsx` | No changes needed (existing scroll logic handles non-table-cell targets) |
 
