@@ -1,39 +1,23 @@
 
 
-## Fix Screen Zooming During Forecast Tour
+## Fix Table Height to Prevent Page Scroll
 
 ### Problem
-When the Forecast tour guide runs, the screen appears to "zoom" or shift. Two issues cause this:
+The Planned/Active Resources, Variance Analysis, and Forecast tables all use a fixed `max-h-[600px]` constraint. When the viewport isn't tall enough to fit the filters + tabs + KPI cards + 600px table, the outer page scrolls as well, instead of only the table scrolling internally.
 
-1. The `disableFlip: true` fix was applied to `OverlayTour.tsx`, but the Forecast tour actually runs through `StaffingTour.tsx` -- so tooltips can still flip to the bottom.
-2. In StaffingTour's `STEP_BEFORE` callback, `scrollIntoView({ inline: 'center' })` causes horizontal scrolling that creates a zooming effect.
+### Solution
+Replace the fixed `max-h-[600px]` with a viewport-relative calculation that accounts for the space consumed by elements above the table (header, filters, tab bar, section headers/KPIs).
 
-### File to Change
+### Files to Change
 
-| File | Change |
-|------|--------|
-| `src/components/tour/StaffingTour.tsx` | Add `disableFlip: true` to `floaterProps` and change `inline: 'center'` to `inline: 'nearest'` in the scrollIntoView call |
+| File | Current | New |
+|------|---------|-----|
+| `src/components/forecast/ForecastBalanceTable.tsx` (line 36) | `max-h-[600px]` | `max-h-[calc(100vh-var(--header-height)-300px)]` |
+| `src/pages/staffing/VarianceAnalysis.tsx` (line 723) | `max-h-[600px]` | `max-h-[calc(100vh-var(--header-height)-240px)]` |
+| `src/pages/staffing/PositionPlanning.tsx` (line 533) | `max-h-[600px]` | `max-h-[calc(100vh-var(--header-height)-240px)]` |
 
-### Specific Changes
+### Why Different Values
+- **Forecast** uses 300px offset because it has taller KPI cards above the table.
+- **Variance and Planning** use 240px offset because they have a simpler section header above the table.
 
-**Line 85** -- Fix the scroll behavior that causes the zoom effect:
-```
-Before: el.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'instant' });
-After:  el.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'instant' });
-```
-
-**Lines 149-151** -- Add disableFlip to prevent tooltip flipping:
-```
-Before:
-  floaterProps={{
-    disableAnimation: true,
-  }}
-
-After:
-  floaterProps={{
-    disableAnimation: true,
-    disableFlip: true,
-  }}
-```
-
-These two changes will stop the horizontal shift (zoom effect) and keep tooltips positioned on top as intended.
+The `var(--header-height)` CSS variable is already defined in the shell layout, so the calculation automatically adapts to the header size. This ensures the table fills the remaining viewport space and scrolls internally, while the page itself never scrolls.
