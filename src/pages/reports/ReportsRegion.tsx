@@ -3,6 +3,8 @@ import { ToggleButtonGroup } from "@/components/ui/toggle-button-group";
 import { ContentCard } from "@/components/shell/ContentCard";
 import { FileText, Download, Calendar, TrendingUp } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
+import { OverlayTour } from "@/components/tour/OverlayTour";
+import { reportsTourSteps } from "@/components/tour/tourSteps";
 
 const ReportCard = ({ title, description, lastUpdated, icon: Icon }: any) => (
   <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
@@ -35,8 +37,9 @@ export default function ReportsRegion() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="mb-6 flex justify-center">
+    <div className="space-y-6" data-tour="reports-page">
+      <OverlayTour tourKey="reports" steps={reportsTourSteps} />
+      <div className="mb-6 flex justify-center" data-tour="reports-tabs">
         <ToggleButtonGroup
           items={tabs}
           activeId={activeTab}
@@ -45,7 +48,7 @@ export default function ReportsRegion() {
         />
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-6" data-tour="reports-content">
         {activeTab === "region" && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

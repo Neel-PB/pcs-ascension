@@ -42,7 +42,7 @@ export function RegionVolumeTrendCharts() {
   const hasData = combinedData.some((d) => d.region1 > 0 || d.region2 > 0);
 
   return (
-    <Card>
+    <Card data-tour="analytics-chart">
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-medium">
           Regional Volume Trends – Last 12 Months

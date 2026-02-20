@@ -736,3 +736,44 @@ export const planningSteps: Step[] = [
     disableBeacon: true,
   },
 ];
+
+export const analyticsTourSteps: Step[] = [
+  {
+    target: '[data-tour="analytics-tabs"]',
+    title: 'Analytics Tabs',
+    content: 'Switch between Region, Market, Facility, and Department views. Each tab shows volume trend charts scoped to that organizational level.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="analytics-chart"]',
+    title: 'Volume Trend Chart',
+    content: 'This area chart shows regional volume trends over the last 12 months. Hover over data points to see exact values. The legend below identifies each region by color.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="analytics-content"]',
+    title: 'Analytics Content Area',
+    content: 'The content area updates based on the selected tab. Region shows interactive charts; other tabs will display dashboards as they become available.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+];
+
+export const reportsTourSteps: Step[] = [
+  {
+    target: '[data-tour="reports-tabs"]',
+    title: 'Report Tabs',
+    content: 'Switch between Region, Market, Facility, and Department report views. Each tab shows relevant reports and activity for that scope.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="reports-content"]',
+    title: 'Report Cards',
+    content: 'Each card represents a report with a title, description, and last-updated timestamp. Click the Export button to download the report.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+];

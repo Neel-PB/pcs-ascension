@@ -3,7 +3,7 @@ import AscensionLogo from "@/assets/Ascension-Emblem.svg";
 
 export function OrganizationSwitcher() {
   return (
-    <Link to="/staffing" className="flex items-center justify-center w-10 h-10 rounded-lg transition-colors cursor-pointer">
+    <Link to="/staffing" data-tour="org-switcher" className="flex items-center justify-center w-10 h-10 rounded-lg transition-colors cursor-pointer">
       <img 
         src={AscensionLogo} 
         alt="Ascension" 
