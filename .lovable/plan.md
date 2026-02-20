@@ -1,19 +1,33 @@
 
 
-## Fix Forecast Tour Tooltip Placement
+## Force Forecast Tour Tooltips to Stay on Top
 
 ### Problem
-The tour tooltips in the Forecast section appear below (bottom) the KPI cards and table header, which can push content off-screen or feel awkward. The user wants all Forecast tour tooltips to consistently appear on top.
+Even though the Forecast tour steps have `placement: 'top'`, Joyride's underlying floater library (react-floater) automatically flips the tooltip to the bottom when it thinks there isn't enough space above the target. This is why the "Expandable Detail View" tooltip (step 3/3) appears below the table body instead of above it.
+
+### Solution
+Add `disableFlipping: true` to the `floaterProps` in `OverlayTour.tsx`. This prevents the floater from overriding the explicit `placement` set on each step.
 
 ### File to Change
 
 | File | Change |
 |------|--------|
-| `src/components/tour/tourSteps.ts` | Change `placement` from `'bottom'` to `'top'` for the first two forecast steps (lines 251 and 261). The third step already uses `'top'`. |
+| `src/components/tour/OverlayTour.tsx` | Add `disableFlipping: true` to the existing `floaterProps` object (line 81) |
 
-### Specific Changes
+### Specific Change (line 80-82)
 
-- **Line 251** (Forecast KPI Cards step): `placement: 'bottom'` to `placement: 'top'`
-- **Line 261** (Forecast Table step): `placement: 'bottom'` to `placement: 'top'`
-- **Line 271** (Expandable Detail View step): Already `'top'` -- no change needed
+```
+Before:
+  floaterProps={{
+    disableAnimation: true,
+  }}
+
+After:
+  floaterProps={{
+    disableAnimation: true,
+    disableFlipping: true,
+  }}
+```
+
+This is a single-line addition that ensures all tour tooltips respect their configured `placement` and never auto-flip to the opposite side.
 
