@@ -1,21 +1,28 @@
 
 
-## Force Forecast Tour Tooltips to Stay on Top
+## Fix Screen Zooming During Forecast Tour
 
 ### Problem
-Even though the Forecast tour steps have `placement: 'top'`, Joyride's underlying floater library (react-floater) automatically flips the tooltip to the bottom when it thinks there isn't enough space above the target. This is why the "Expandable Detail View" tooltip (step 3/3) appears below the table body instead of above it.
+When the Forecast tour guide runs, the screen appears to "zoom" or shift. Two issues cause this:
 
-### Solution
-Add `disableFlipping: true` to the `floaterProps` in `OverlayTour.tsx`. This prevents the floater from overriding the explicit `placement` set on each step.
+1. The `disableFlip: true` fix was applied to `OverlayTour.tsx`, but the Forecast tour actually runs through `StaffingTour.tsx` -- so tooltips can still flip to the bottom.
+2. In StaffingTour's `STEP_BEFORE` callback, `scrollIntoView({ inline: 'center' })` causes horizontal scrolling that creates a zooming effect.
 
 ### File to Change
 
 | File | Change |
 |------|--------|
-| `src/components/tour/OverlayTour.tsx` | Add `disableFlipping: true` to the existing `floaterProps` object (line 81) |
+| `src/components/tour/StaffingTour.tsx` | Add `disableFlip: true` to `floaterProps` and change `inline: 'center'` to `inline: 'nearest'` in the scrollIntoView call |
 
-### Specific Change (line 80-82)
+### Specific Changes
 
+**Line 85** -- Fix the scroll behavior that causes the zoom effect:
+```
+Before: el.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'instant' });
+After:  el.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'instant' });
+```
+
+**Lines 149-151** -- Add disableFlip to prevent tooltip flipping:
 ```
 Before:
   floaterProps={{
@@ -25,9 +32,8 @@ Before:
 After:
   floaterProps={{
     disableAnimation: true,
-    disableFlipping: true,
+    disableFlip: true,
   }}
 ```
 
-This is a single-line addition that ensures all tour tooltips respect their configured `placement` and never auto-flip to the opposite side.
-
+These two changes will stop the horizontal shift (zoom effect) and keep tooltips positioned on top as intended.
