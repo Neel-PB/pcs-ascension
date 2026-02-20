@@ -1,18 +1,42 @@
+# Helix Design System – Project Standards
 
+## Section 1: Viewport Height Chain (Flexbox, no manual calc)
 
-## Add Helix UI Design System Specs to Project Memory
+```text
+ShellLayout (<main>)
+  height: calc(100vh - var(--header-height))   <-- only calc in the system
+  overflow-y: auto
+  padding: py-4 px-4 (16px)
 
-### What This Does
+  PageRoot (outer div)
+    h-full                <-- fills parent
+    flex flex-col
+    gap-4                 <-- uniform 16px between all children
+    overflow-hidden       <-- prevents double scrollbar
 
-Append the complete Helix UI component specifications to `.lovable/plan.md` so every future session automatically follows these standards without relying on separate system memory.
+    FilterBar / KPIs      <-- flex-shrink-0 (natural height)
+    Tabs / Toggle         <-- flex-shrink-0 (natural height)
+    Content Area          <-- min-h-0 max-h-full (shrink-wrap / cap)
 
-### Content to Add (after existing layout section)
+      Toolbar (search, buttons)  <-- flex-shrink-0
+      Table / Card               <-- min-h-0 max-h-full
+```
 
-The following sections will be appended:
+## Section 2: Layout Key Rules
 
----
+- Use `gap-4` for vertical spacing between sibling sections. Never `space-y-6`, `mb-6`, or manual margins.
+- Use `min-h-0 max-h-full` on content areas, never `flex-1` (which forces stretching).
+- Fixed-height elements (filters, tabs, toolbars) get `flex-shrink-0`.
+- Table containers get `min-h-0 max-h-full overflow-hidden` so they shrink-wrap with few rows and scroll internally with many rows.
+- No hardcoded pixel offsets or extra `calc()` expressions inside page components.
 
-**Section 4: Helix UI Component Standards**
+## Section 3: Layout Behavior
+
+- Few rows: table card is short, page background visible below.
+- Many rows: table fills available space and scrolls internally.
+- Consistent 16px vertical rhythm across all modules.
+
+## Section 4: Helix UI Component Standards
 
 **Cards**
 - Border radius: `rounded-xl` (12px)
@@ -54,7 +78,7 @@ The following sections will be appended:
 - Selection: `bg-primary/15` + `border-primary/30` background tint only -- no checkmarks
 - All visible focus rings suppressed globally via CSS
 
-**Section 5: Spacing and Padding Defaults**
+## Section 5: Spacing and Padding Defaults
 
 - Page padding: `py-4 px-4` (16px, set by ShellLayout)
 - Section gaps: `gap-4` (16px) between siblings
@@ -63,14 +87,3 @@ The following sections will be appended:
 - Filter bar height: natural (~48px)
 - Tab toggle height: natural (~44px)
 - No manual margins between sections -- gap handles everything
-
----
-
-### File Changed
-
-**`.lovable/plan.md`** -- Append sections 4 and 5 after existing content
-
-### Result
-
-The complete Helix design system (component specs + layout rules) will be in one reference file, applied automatically to all future work.
-
