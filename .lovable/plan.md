@@ -1,18 +1,6 @@
+# Layout and Spacing Standards
 
-
-## Save Layout and Spacing Standards to Project Memory
-
-### What This Does
-
-Replace the current contents of `.lovable/plan.md` (which holds the old completed plan) with a permanent **Layout and Spacing Standards** reference document. This ensures every future page, module, or component follows the same pattern by default.
-
-### File: `.lovable/plan.md`
-
-The new content will document these standards:
-
----
-
-**1. Viewport Height Chain (Flexbox, no manual calc)**
+## 1. Viewport Height Chain (Flexbox, no manual calc)
 
 ```text
 ShellLayout (<main>)
@@ -34,7 +22,7 @@ ShellLayout (<main>)
       Table / Card               <-- min-h-0 max-h-full
 ```
 
-**2. Key Rules**
+## 2. Key Rules
 
 - Use `gap-4` for vertical spacing between sibling sections. Never `space-y-6`, `mb-6`, or manual margins.
 - Use `min-h-0 max-h-full` on content areas, never `flex-1` (which forces stretching).
@@ -42,14 +30,8 @@ ShellLayout (<main>)
 - Table containers get `min-h-0 max-h-full overflow-hidden` so they shrink-wrap with few rows and scroll internally with many rows.
 - No hardcoded pixel offsets or extra `calc()` expressions inside page components.
 
-**3. Behavior**
+## 3. Behavior
 
 - Few rows: table card is short, page background visible below.
 - Many rows: table fills available space and scrolls internally.
 - Consistent 16px vertical rhythm across all modules.
-
----
-
-### Result
-
-This file will serve as the default reference for all future layout work, so the shrink-wrap pattern, gap-4 spacing, and flexbox height chain are always applied automatically.
