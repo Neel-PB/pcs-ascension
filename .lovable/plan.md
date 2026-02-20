@@ -1,32 +1,34 @@
 
 
-## Add Skip Button to Single-Section Tours
+## Fix Black Vertical Line Artifacts in Forecast Two-Panel
 
 ### Problem
 
-When a user launches "Tour This Page" from the user menu and it was accidental, there is no way to dismiss it — the skip buttons are only shown during the full guided tour (`singleSection === false`).
+In the expanded Forecast detail panel (right side - "Recommended Target FTE"), each position change row displays text like `1 FTE × 1` and `= 1.0`. The multiplication sign (`×`) renders as a thin black vertical bar at the small `text-xs` font size, creating visual artifacts that look like stray pipe characters.
 
 ### Solution
 
-Show a "Skip" button in the `TourTooltip` footer when `singleSection` is `true`. This gives users an escape hatch for any accidentally launched tour.
+Replace the `×` character with a more readable separator and clean up the row format for better readability at small sizes.
 
 ### File to Change
 
 | File | Change |
 |------|--------|
-| `src/components/tour/TourTooltip.tsx` | On line 92, update the conditional so that when `singleSection` is true, a single "Skip" button is rendered (using `handleSkipAll`). When `singleSection` is false, the existing "Skip All" and "Skip Section" buttons continue to show as before. |
+| `src/components/forecast/BalanceTwoPanel.tsx` | Update the display format in both `PositionChangeList` (line 63) and `ClosureChangeList` (line 105) components |
 
-### Updated Footer Logic (lines 91-114)
+### Specific Changes
 
-```text
-<div className="flex items-center gap-1">
-  if singleSection:
-    Show a "Skip" button that calls handleSkipAll
-  else:
-    Show "Skip All" button (existing)
-    Show "Skip Section" button if not last section (existing)
-</div>
+**Line 63** (PositionChangeList):
+```
+Before: <span>{change.fteValue} FTE × {change.count}</span>
+After:  <span>{change.fteValue} FTE x {change.count}</span>
 ```
 
-This is a one-line conditional addition — no other files or logic need to change.
+**Line 105** (ClosureChangeList):
+```
+Before: <span>{change.fteValue} FTE × {change.count}</span>
+After:  <span>{change.fteValue} FTE x {change.count}</span>
+```
+
+Replace the Unicode multiplication sign (`×`) with a lowercase letter `x` which renders clearly at small font sizes without looking like a vertical bar.
 
