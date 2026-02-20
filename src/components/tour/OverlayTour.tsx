@@ -1,9 +1,10 @@
 import Joyride, { CallBackProps, STATUS } from 'react-joyride';
 import type { Step } from 'react-joyride';
+import { useNavigate } from 'react-router-dom';
 import { useTour } from '@/hooks/useTour';
 import { useTourStore } from '@/stores/useTourStore';
 import { TourTooltip } from './TourTooltip';
-import { injectSectionMetadata } from './tourConfig';
+import { injectSectionMetadata, getNextSection } from './tourConfig';
 import { useMemo } from 'react';
 
 interface OverlayTourProps {
@@ -12,6 +13,7 @@ interface OverlayTourProps {
 }
 
 export function OverlayTour({ tourKey, steps }: OverlayTourProps) {
+  const navigate = useNavigate();
   const microTourStep = useTourStore(s => s.microTourStep);
   const clearMicroTour = useTourStore(s => s.clearMicroTour);
   const isMicro = microTourStep && microTourStep.tourKey === tourKey;
@@ -21,6 +23,24 @@ export function OverlayTour({ tourKey, steps }: OverlayTourProps) {
   }, [steps, tourKey, isMicro, microTourStep?.stepIndex]);
   const { run, setRun, completeTour } = useTour(tourKey, { autoStart: false });
 
+  const handleNextSection = () => {
+    const { singleSection } = useTourStore.getState();
+    if (isMicro || singleSection) return;
+
+    const nextSection = getNextSection(tourKey);
+    if (!nextSection) return;
+
+    if (!nextSection.page) {
+      setTimeout(() => {
+        useTourStore.getState().startTour(nextSection.tourKey);
+      }, 500);
+    } else {
+      navigate(
+        `${nextSection.page}${nextSection.tab ? `?tab=${nextSection.tab}&tour=true` : '?tour=true'}`
+      );
+    }
+  };
+
   const handleCallback = (data: CallBackProps) => {
     const { status } = data;
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
@@ -29,6 +49,13 @@ export function OverlayTour({ tourKey, steps }: OverlayTourProps) {
 
       if (isMicro) clearMicroTour();
       const { skipMode, clearSkipMode } = useTourStore.getState();
+
+      if (status === STATUS.FINISHED) {
+        handleNextSection();
+      } else if (skipMode === 'section') {
+        handleNextSection();
+      }
+
       if (skipMode) clearSkipMode();
 
       const resetScroll = () => {
