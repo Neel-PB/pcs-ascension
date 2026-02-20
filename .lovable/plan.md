@@ -1,97 +1,63 @@
 
 
-## Expandable TourLauncher with Individual Step Selection
+## Add Searchable Micro-Tour Browser to Support Page
 
-### Concept
+### What Changes
 
-Transform the existing TourLauncher sheet so each section row is **expandable**. When a user clicks the expand arrow, it reveals the individual steps within that section. Clicking any individual step launches a **single-step Joyride** that spotlights just that one element with its full tooltip content (including the demo previews).
+Replace the current card-based `UserGuidesTab` with an enhanced version that includes:
 
-This keeps the micro-tour capability entirely within the tour system -- no changes to app components, no help icons, no context menus.
+1. **A search field** at the top to filter across all tour sections and their individual steps
+2. **Expandable section rows** (like the TourLauncher) so users can browse and launch individual steps directly
+3. Keep the existing category tabs (Staffing, Positions, Admin, Feedback, Overlays) for organization
 
 ### How It Works
 
-```text
-TourLauncher Sheet
--------------------
-Staffing
-  [>] Summary (22 steps)             <-- click row = run full section tour (existing)
-      [>] expands to:
-          - Filter Bar                <-- click = single-step Joyride for just this
-          - Region Filter
-          - Market Filter
-          - ...
-          - FTE Variance              <-- user clicks this
-          - ...
-          - Employment Type Split
-  [>] Planned Resources (6 steps)
-  [>] Variance Analysis (5 steps)
-  ...
-```
+- User types in the search field (e.g., "FTE Variance")
+- The list filters to show only sections containing matching steps, with matched steps visible
+- Clicking a section name launches the full section tour (existing behavior)
+- Clicking an individual step name launches a single-step micro-tour using `startMicroTour`
+- Completed tours still show the "Done" badge and "Reset" button
 
-### User Flow
-
-1. User opens "All Tours" from the header menu (existing)
-2. Sees the grouped sections (Staffing, Positions, Admin, Overlays) -- unchanged
-3. Clicks the **expand chevron** on a section row to see individual steps listed underneath
-4. Clicks a step name (e.g., "FTE Variance") -- the launcher closes, navigates to the correct page/tab, and launches a **1-step Joyride** targeting just that element
-5. Clicking the section name itself (not the chevron) still runs the full section tour as before
-
-### Technical Plan
-
-#### 1. Create a Step Registry (`src/components/tour/tourStepRegistry.ts`)
-
-A centralized map of `tourKey -> Step[]` so the TourLauncher can look up individual steps for any section without importing every step array directly.
+### Layout
 
 ```text
-tourKey "staffing" -> staffingSteps[]
-tourKey "staffing-planning" -> planningSteps[]
-...etc
+[Search tours and steps...          ]
+
+Tabs: [Staffing] [Positions] [Admin] [Feedback] [Overlays]
+
+> Staffing Summary (30 steps)                    [Done] [Go & Start]
+    - Filter Bar
+    - Region Filter
+    - FTE Variance    <-- click to launch single step
+    - ...
+> Position Planning (6 steps)                          [Go & Start]
+    - ...
 ```
 
-Each step's `title` field becomes the display name in the expandable list.
+When searching, tabs auto-filter to only show categories with matches, and sections auto-expand to reveal matched steps (highlighted).
 
-#### 2. Add `startMicroTour` to `useTourStore`
+### Technical Details
 
-New store action that stores both the tour key AND a specific step index:
+**File: `src/components/support/UserGuidesTab.tsx`** -- Full refactor
 
-- `microTourStep: { tourKey: string; stepIndex: number } | null`
-- `startMicroTour(tourKey, stepIndex)` -- sets this state
-
-The Joyride components (StaffingTour, PositionsTour, OverlayTour) will check for `microTourStep` and, if set, run Joyride with only that single step instead of the full array.
-
-#### 3. Update TourLauncher UI
-
-- Add an expand/collapse chevron to each section row
-- When expanded, render a sub-list of step titles pulled from the registry
-- Each sub-item is clickable and triggers `startMicroTour(tourKey, stepIndex)`
-- The launch logic reuses the existing navigation (page + tab + overlay open) before starting
-
-#### 4. Update Joyride Components
-
-StaffingTour, PositionsTour, AdminTour, and OverlayTour will check `useTourStore.microTourStep`:
-- If `microTourStep` is set and matches their tour key, they pass `[steps[stepIndex]]` to Joyride instead of the full array
-- On completion, they clear `microTourStep` (no auto-continue to next section)
+- Import `TOUR_STEP_REGISTRY`, `getStepTitle` from `tourStepRegistry`
+- Import `APP_TOUR_SEQUENCE` from `tourConfig`
+- Import `Collapsible` components
+- Import `SearchField` component
+- Import `startMicroTour` from `useTourStore`
+- Add search state using `useDebouncedSearch` hook
+- For each guide in `guideCatalog`, look up its steps from `TOUR_STEP_REGISTRY[guide.tourKey]`
+- Render each guide as a `Collapsible` row with:
+  - Chevron to expand/collapse individual steps
+  - Section title + step count + completion badge (existing)
+  - "Go & Start" button for full tour (existing)
+  - Expandable sub-list of individual step titles (new)
+- Filter logic: match search query against section title, description, AND individual step titles
+- When search is active, auto-expand sections that have matching steps and highlight matched step names
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/tour/tourStepRegistry.ts` | **New** -- centralized map of tourKey to steps array |
-| `src/stores/useTourStore.ts` | Add `microTourStep` state, `startMicroTour()` and `clearMicroTour()` actions |
-| `src/components/tour/TourLauncher.tsx` | Add expandable rows showing individual step titles; clicking a step calls `startMicroTour` then navigates |
-| `src/components/tour/StaffingTour.tsx` | Check `microTourStep`; if matching, run single-step Joyride |
-| `src/components/tour/PositionsTour.tsx` | Same micro-tour check |
-| `src/components/tour/AdminTour.tsx` | Same micro-tour check |
-| `src/components/tour/OverlayTour.tsx` | Same micro-tour check |
-
-### Example: User Wants "FTE Variance" Only
-
-1. Opens TourLauncher -> expands "Summary" section
-2. Sees list: Filter Bar, Region Filter, ..., **FTE Variance**, ..., Employment Type Split
-3. Clicks "FTE Variance"
-4. Launcher closes, navigates to `/staffing?tab=summary`
-5. After 600ms delay, `startMicroTour('staffing', 13)` fires
-6. StaffingTour detects `microTourStep = { tourKey: 'staffing', stepIndex: 13 }`
-7. Runs Joyride with only `[staffingSteps[13]]` -- spotlights the FTE Variance KPI with its full demo preview tooltip
-8. User clicks "Done" -> tour ends, no auto-continue
+| `src/components/support/UserGuidesTab.tsx` | Add search field, expandable section rows with individual step sub-lists, micro-tour launch capability |
 
