@@ -741,7 +741,7 @@ export default function PositionPlanning({ selectedDepartment }: PositionPlannin
 
   return (
     <TooltipProvider delayDuration={300} skipDelayDuration={300}>
-    <div className="flex flex-col gap-6 h-full">
+    <div className="flex flex-col gap-4 h-full">
       {/* Header with Legend */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

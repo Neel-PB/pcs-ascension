@@ -45,7 +45,7 @@ export function ForecastTab({
   });
 
   return (
-    <div className="flex flex-col gap-6 h-full">
+    <div className="flex flex-col gap-4 h-full">
       {/* Two Large KPIs */}
       <div data-tour="forecast-kpi-cards">
         <ForecastKPICards
