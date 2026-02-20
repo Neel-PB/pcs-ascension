@@ -121,12 +121,20 @@ export function KPICard({
 
             {/* Value and Trend Section */}
             <div className="space-y-0.5">
-              <div className={cn(
-                "text-2xl font-bold tracking-tight leading-none",
-                isNegative ? "text-orange-600" : "text-foreground"
-              )}>
-                {value}
-              </div>
+              {(() => {
+                const isPlaceholder = typeof value === 'string' && isNaN(Number(String(value).replace('%', '')));
+                return (
+                  <div className={cn(
+                    isPlaceholder
+                      ? "text-sm text-muted-foreground font-medium"
+                      : "text-2xl font-bold tracking-tight leading-none",
+                    !isPlaceholder && isNegative && "text-orange-600",
+                    !isPlaceholder && !isNegative && "text-foreground"
+                  )}>
+                    {value}
+                  </div>
+                );
+              })()}
               {trend && trendValue && (
                 <div className="flex items-center">
                   <span className={cn("text-xs font-semibold", getTrendColor())}>
