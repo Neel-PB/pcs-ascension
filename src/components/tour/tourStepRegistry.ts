@@ -6,7 +6,7 @@ import {
   adminAuditTourSteps, adminSettingsTourSteps,
   feedbackTourSteps, aiHubTourSteps, checklistTourSteps,
 } from './tourSteps';
-import { employeesTourSteps, contractorsTourSteps, requisitionsTourSteps } from './positionsTourSteps';
+import { employeesTourSteps, contractorsTourSteps, requisitionsTourSteps, openRequisitionTourSteps, contractorRequisitionTourSteps } from './positionsTourSteps';
 import { headerTourSteps } from './headerTourSteps';
 
 export const TOUR_STEP_REGISTRY: Record<string, Step[]> = {
@@ -17,8 +17,10 @@ export const TOUR_STEP_REGISTRY: Record<string, Step[]> = {
   'staffing-volume-settings': volumeSettingsSteps,
   'staffing-np-settings': npSettingsSteps,
   'positions-employees': employeesTourSteps,
+  'positions-open-requisition': openRequisitionTourSteps,
   'positions-contractors': contractorsTourSteps,
   'positions-requisitions': requisitionsTourSteps,
+  'positions-contractor-requisition': contractorRequisitionTourSteps,
   'admin-users': adminUsersTourSteps,
   'admin-feed': adminFeedTourSteps,
   'admin-access-control': adminRbacTourSteps,
