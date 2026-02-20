@@ -6,6 +6,8 @@ import { useRBAC } from "@/hooks/useRBAC";
 import { OrganizationSwitcher } from "@/components/layout/OrganizationSwitcher";
 import { useDynamicSidebar, type DynamicMenuGroup } from "@/hooks/useDynamicSidebar";
 import { LogoLoader } from "@/components/ui/LogoLoader";
+import { OverlayTour } from "@/components/tour/OverlayTour";
+import { sidebarTourSteps } from "@/components/tour/sidebarTourSteps";
 
 // Route prefetch map for instant navigation
 const routePrefetch: Record<string, () => Promise<unknown>> = {
@@ -161,6 +163,7 @@ export function DynamicIconOnlySidebar() {
                   <div
                     key={module.label}
                     className="relative"
+                    data-tour={`sidebar-${module.label.toLowerCase()}`}
                   >
                     <ModuleItem
                       module={module}
@@ -185,6 +188,7 @@ export function DynamicIconOnlySidebar() {
                     <div
                       key={module.label}
                       className="relative"
+                      data-tour={`sidebar-${module.label.toLowerCase()}`}
                     >
                       <ModuleItem
                         module={module}
@@ -199,6 +203,7 @@ export function DynamicIconOnlySidebar() {
           </div>
         )}
       </div>
+      <OverlayTour tourKey="sidebar" steps={sidebarTourSteps} />
     </div>
   );
 }

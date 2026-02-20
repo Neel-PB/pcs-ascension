@@ -9,6 +9,7 @@ import {
 } from './tourSteps';
 import { employeesTourSteps, contractorsTourSteps, requisitionsTourSteps, openRequisitionTourSteps, contractorRequisitionTourSteps } from './positionsTourSteps';
 import { headerTourSteps } from './headerTourSteps';
+import { sidebarTourSteps } from './sidebarTourSteps';
 
 export const TOUR_STEP_REGISTRY: Record<string, Step[]> = {
   'staffing': staffingSteps,
@@ -28,6 +29,7 @@ export const TOUR_STEP_REGISTRY: Record<string, Step[]> = {
   'admin-audit-log': adminAuditTourSteps,
   'admin-settings': adminSettingsTourSteps,
   'header': headerTourSteps,
+  'sidebar': sidebarTourSteps,
   'feedback': feedbackTourSteps,
   'feedback-page': feedbackPageTourSteps,
   'ai-hub': aiHubTourSteps,
