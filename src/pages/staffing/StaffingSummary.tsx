@@ -324,7 +324,7 @@ Calculated by:
         id: 'target-vol',
         title: "Target Vol",
         value: "20.8",
-        isHighlighted: true,
+        isHighlighted: !overrideKpiData.isActive,
         chartData: generateSeasonalTrend(20.8, 3),
         chartType: "area" as const,
         delay: 0.2,
