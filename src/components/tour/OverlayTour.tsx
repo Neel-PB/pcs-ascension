@@ -79,6 +79,7 @@ export function OverlayTour({ tourKey, steps }: OverlayTourProps) {
       }}
       floaterProps={{
         disableAnimation: true,
+        disableFlip: true,
       }}
     />
   );
