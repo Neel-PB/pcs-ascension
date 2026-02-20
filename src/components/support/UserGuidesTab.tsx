@@ -68,6 +68,7 @@ const guideCatalog: Guide[] = [
   { tourKey: "ai-hub", title: "AI Hub", description: "AI-powered staffing assistant for questions and analysis.", icon: Sparkles, route: "", category: "Overlays", isOverlay: true },
   { tourKey: "feedback", title: "Feedback Panel", description: "Submit feedback with screenshots from anywhere in the app.", icon: MessageSquare, route: "", category: "Overlays", isOverlay: true },
   { tourKey: "header", title: "Header Bar", description: "Global search, notifications, theme toggle, and user menu.", icon: Navigation, route: "", category: "Overlays", isOverlay: true },
+  { tourKey: "sidebar", title: "Sidebar Navigation", description: "Icon-only module switcher with active-state indicator and prefetch.", icon: Navigation, route: "", category: "Overlays", isOverlay: true },
 ];
 
 const categories = ["Staffing", "Positions", "Admin", "Feedback", "Analytics", "Reports", "Overlays"];
