@@ -1,31 +1,27 @@
 
 
-## Make Table Cards Shrink-Wrap Content (Not Force Full Height)
+## Make Volume Settings and NP Settings Table Cards Shrink-Wrap Content
 
 ### Problem
-Currently, the table cards stretch to fill all remaining viewport space even when they have very few rows. The user wants the card to only be as tall as its content -- short when there are few rows, and capped/scrollable when content exceeds available space.
-
-### Solution
-Replace `flex-1 min-h-0` (which forces growth) with `max-h-full overflow-auto` (which caps height but doesn't force it) on the table card wrappers. The tab content area should also stop forcing children to stretch.
+Same issue as the other tabs: the table cards in Volume Settings and NP Settings stretch to fill remaining viewport space even with few rows. They should shrink-wrap to content height instead.
 
 ### Files to Change
 
-**1. StaffingSummary.tsx (line 542)**
-- Change the tab content wrapper from `flex-1 min-h-0` to `flex-1 min-h-0 overflow-auto`
-- This allows the content area to scroll if needed but doesn't force children to fill it
+**1. SettingsTab.tsx (line 238)**
+- Outer wrapper: change `h-[calc(100vh-var(--header-height)-220px)] overflow-hidden` to `h-full overflow-hidden`
+- This lets the parent (StaffingSummary's `overflow-auto` content area) control max height naturally
 
-**2. PositionPlanning.tsx (line 965)**
-- Change table card from `flex-1 min-h-0 flex flex-col` to `min-h-0 max-h-full flex flex-col`
+**2. SettingsTab.tsx (line 280)**
+- Table wrapper: change `flex-1 min-h-0 overflow-hidden` to `min-h-0 max-h-full overflow-hidden`
 - Card sizes to content, capped at available space
 
-**3. VarianceAnalysis.tsx (line 723)**
-- Change table wrapper from `flex-1 min-h-0` to `min-h-0 max-h-full`
-- Same pattern: natural height, capped at parent
+**3. NPSettingsTab.tsx (line 242)**
+- Outer wrapper: same change -- `h-[calc(100vh-var(--header-height)-220px)] overflow-hidden` to `h-full overflow-hidden`
 
-**4. ForecastTab.tsx** -- Apply the same pattern to the forecast table wrapper
+**4. NPSettingsTab.tsx (line 277)**
+- Table wrapper: change `flex-1 min-h-0 overflow-hidden` to `min-h-0 max-h-full overflow-hidden`
 
 ### Result
-- Few rows: card is short, empty space below is the page background (not card white)
+- Few rows: card is short, page background visible below
 - Many rows: card fills available space and scrolls internally
-- No page-level scrollbar
-
+- Consistent with the pattern applied to Position Planning, Variance Analysis, and Forecasts tabs
