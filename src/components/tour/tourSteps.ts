@@ -248,7 +248,7 @@ export const forecastSteps: Step[] = [
       'These cards summarize FTE Shortages (positions to open) and FTE Surpluses (positions to close). Click a card to filter the table below by that gap type; click again to show all.',
       'forecast-kpi-preview'
     ),
-    placement: 'bottom',
+    placement: 'top',
     disableBeacon: true,
   },
   {
@@ -258,7 +258,7 @@ export const forecastSteps: Step[] = [
       'Each row represents a department-skill-shift combination with an FTE gap. Columns show Market, Facility, Department, Skill Type, Shift, FTE Gap, and Status.',
       'forecast-table-preview'
     ),
-    placement: 'bottom',
+    placement: 'top',
     disableBeacon: true,
   },
   {
