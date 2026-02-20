@@ -108,6 +108,7 @@ export function AdminTour({ activeTab, onTabChange }: AdminTourProps) {
       continuous
       showSkipButton
       scrollToFirstStep={false}
+      disableScrollParentFix
       disableOverlayClose
       callback={handleCallback}
       tooltipComponent={TourTooltip}

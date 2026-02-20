@@ -152,11 +152,12 @@ export function TourLauncher({ open, onOpenChange }: TourLauncherProps) {
 
                         <button
                           onClick={(e) => {
+                            e.stopPropagation();
                             if (completed) {
-                              handleReset(section.tourKey, e);
-                            } else {
-                              handleLaunch(section);
+                              resetTour(section.tourKey);
+                              forceUpdate(n => n + 1);
                             }
+                            handleLaunch(section);
                           }}
                           className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
                             completed

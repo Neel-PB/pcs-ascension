@@ -2,20 +2,24 @@ import Joyride, { CallBackProps, EVENTS, STATUS } from 'react-joyride';
 import { useNavigate } from 'react-router-dom';
 import { useTour } from '@/hooks/useTour';
 import { useTourStore } from '@/stores/useTourStore';
-import { employeesTourSteps, contractorsTourSteps, requisitionsTourSteps } from './positionsTourSteps';
+import { employeesTourSteps, contractorsTourSteps, requisitionsTourSteps, openRequisitionTourSteps, contractorRequisitionTourSteps } from './positionsTourSteps';
 import { TourTooltip } from './TourTooltip';
 import { getNextSection, injectSectionMetadata } from './tourConfig';
 import { useMemo } from 'react';
 
 const TOUR_KEY_MAP: Record<string, string> = {
   employees: 'positions-employees',
+  'open-requisition': 'positions-open-requisition',
+  'open-position': 'positions-requisitions',
   contractors: 'positions-contractors',
-  requisitions: 'positions-requisitions',
+  'contractor-requisition': 'positions-contractor-requisition',
 };
 const RAW_STEPS_MAP: Record<string, any[]> = {
   employees: employeesTourSteps,
+  'open-requisition': openRequisitionTourSteps,
+  'open-position': requisitionsTourSteps,
   contractors: contractorsTourSteps,
-  requisitions: requisitionsTourSteps,
+  'contractor-requisition': contractorRequisitionTourSteps,
 };
 
 interface PositionsTourProps {

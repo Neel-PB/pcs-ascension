@@ -208,3 +208,65 @@ export const requisitionsTourSteps: Step[] = [
     data: { wideTooltip: true },
   },
 ];
+
+export const openRequisitionTourSteps: Step[] = [
+  {
+    target: '[data-tour="filter-bar"]',
+    title: 'Filter Bar',
+    content: 'Use these filters to narrow open requisitions by Region, Market, Facility, and Department.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="positions-tabs"]',
+    title: 'Tab Navigation',
+    content: 'Switch between Employee, Open Requisition, Open Position, Contractor, and Contractor Requisition views.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="positions-search"]',
+    title: 'Search',
+    content: 'Type to search by requisition number, job title, or status. Results filter as you type.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="positions-table"]',
+    title: 'Data Table',
+    content: 'View open requisitions with requisition number, job title, shift, employment type, and status columns. Columns can be reordered and sorted.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+];
+
+export const contractorRequisitionTourSteps: Step[] = [
+  {
+    target: '[data-tour="filter-bar"]',
+    title: 'Filter Bar',
+    content: 'Use these filters to narrow contractor requisitions by Region, Market, Facility, and Department.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="positions-tabs"]',
+    title: 'Tab Navigation',
+    content: 'Switch between Employee, Open Requisition, Open Position, Contractor, and Contractor Requisition views.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="positions-search"]',
+    title: 'Search',
+    content: 'Type to search by requisition number, job title, or status. Results filter as you type.',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="positions-table"]',
+    title: 'Data Table',
+    content: 'View contractor requisitions with requisition number, job title, shift, employment type, and status columns. Columns can be reordered and sorted.',
+    placement: 'top',
+    disableBeacon: true,
+  },
+];

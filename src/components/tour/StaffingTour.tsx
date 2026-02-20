@@ -129,7 +129,7 @@ export function StaffingTour({ activeTab = 'summary', onTabChange }: StaffingTou
       showSkipButton
       scrollToFirstStep={false}
       disableScrollParentFix
-      disableOverlayClose={false}
+      disableOverlayClose
       callback={handleCallback}
       tooltipComponent={TourTooltip}
       styles={{
