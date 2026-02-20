@@ -27,7 +27,13 @@ export function PositionsTour({ activeTab = 'employees', onTabChange }: Position
   const navigate = useNavigate();
   const tourKey = TOUR_KEY_MAP[activeTab] || 'positions-employees';
   const rawSteps = RAW_STEPS_MAP[activeTab] || employeesTourSteps;
-  const steps = useMemo(() => injectSectionMetadata(rawSteps, tourKey), [rawSteps, tourKey]);
+  const microTourStep = useTourStore(s => s.microTourStep);
+  const clearMicroTour = useTourStore(s => s.clearMicroTour);
+  const isMicro = microTourStep && microTourStep.tourKey === tourKey;
+  const effectiveSteps = useMemo(() => {
+    const base = isMicro ? [rawSteps[microTourStep.stepIndex]] : rawSteps;
+    return injectSectionMetadata(base, tourKey);
+  }, [rawSteps, tourKey, isMicro, microTourStep?.stepIndex]);
   const { run, setRun, completeTour } = useTour(tourKey);
 
   const tableCellTargets = [
@@ -131,9 +137,13 @@ export function PositionsTour({ activeTab = 'employees', onTabChange }: Position
           clearSkipMode();
         }
       } else {
-        const { singleSection } = useTourStore.getState();
-        if (!singleSection) {
-          handleNextSection();
+        if (isMicro) {
+          clearMicroTour();
+        } else {
+          const { singleSection } = useTourStore.getState();
+          if (!singleSection) {
+            handleNextSection();
+          }
         }
       }
     }
@@ -142,7 +152,7 @@ export function PositionsTour({ activeTab = 'employees', onTabChange }: Position
   return (
     <Joyride
       key={activeTab}
-      steps={steps}
+      steps={effectiveSteps}
       run={run}
       continuous
       showSkipButton

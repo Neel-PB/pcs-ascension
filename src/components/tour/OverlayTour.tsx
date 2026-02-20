@@ -12,7 +12,13 @@ interface OverlayTourProps {
 }
 
 export function OverlayTour({ tourKey, steps }: OverlayTourProps) {
-  const enrichedSteps = useMemo(() => injectSectionMetadata(steps, tourKey), [steps, tourKey]);
+  const microTourStep = useTourStore(s => s.microTourStep);
+  const clearMicroTour = useTourStore(s => s.clearMicroTour);
+  const isMicro = microTourStep && microTourStep.tourKey === tourKey;
+  const enrichedSteps = useMemo(() => {
+    const base = isMicro ? [steps[microTourStep.stepIndex]] : steps;
+    return injectSectionMetadata(base, tourKey);
+  }, [steps, tourKey, isMicro, microTourStep?.stepIndex]);
   const { run, setRun, completeTour } = useTour(tourKey, { autoStart: false });
 
   const handleCallback = (data: CallBackProps) => {
@@ -21,6 +27,7 @@ export function OverlayTour({ tourKey, steps }: OverlayTourProps) {
       document.body.style.overflow = '';
       completeTour();
 
+      if (isMicro) clearMicroTour();
       const { skipMode, clearSkipMode } = useTourStore.getState();
       if (skipMode) clearSkipMode();
 

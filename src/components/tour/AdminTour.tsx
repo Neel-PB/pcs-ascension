@@ -36,7 +36,13 @@ interface AdminTourProps {
 
 export function AdminTour({ activeTab, onTabChange }: AdminTourProps) {
   const config = tabConfig[activeTab] || tabConfig.users;
-  const steps = useMemo(() => injectSectionMetadata(config.steps, config.tourKey), [config.steps, config.tourKey]);
+  const microTourStep = useTourStore(s => s.microTourStep);
+  const clearMicroTour = useTourStore(s => s.clearMicroTour);
+  const isMicro = microTourStep && microTourStep.tourKey === config.tourKey;
+  const steps = useMemo(() => {
+    const base = isMicro ? [config.steps[microTourStep.stepIndex]] : config.steps;
+    return injectSectionMetadata(base, config.tourKey);
+  }, [config.steps, config.tourKey, isMicro, microTourStep?.stepIndex]);
   const { run, setRun, completeTour } = useTour(config.tourKey);
 
   const handleNextSection = () => {
@@ -82,9 +88,13 @@ export function AdminTour({ activeTab, onTabChange }: AdminTourProps) {
           clearSkipMode();
         }
       } else {
-        const { singleSection } = useTourStore.getState();
-        if (!singleSection) {
-          handleNextSection();
+        if (isMicro) {
+          clearMicroTour();
+        } else {
+          const { singleSection } = useTourStore.getState();
+          if (!singleSection) {
+            handleNextSection();
+          }
         }
       }
     }
