@@ -8,10 +8,11 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Play, FileText, AlertCircle, MessageSquare, ExternalLink } from "@/lib/icons";
 import { toast } from "sonner";
 import { UserGuidesTab } from "@/components/support/UserGuidesTab";
+import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 
 export default function SupportPage() {
   const [activeTab, setActiveTab] = useState("guides");
-  const [searchQuery, setSearchQuery] = useState("");
+  const { inputValue: searchQuery, debouncedValue: debouncedSearch, setInputValue: setSearchQuery } = useDebouncedSearch();
   const [issueTitle, setIssueTitle] = useState("");
   const [issueDescription, setIssueDescription] = useState("");
   
@@ -123,9 +124,9 @@ export default function SupportPage() {
   ];
 
   const filteredFaqs = faqs.filter(faq =>
-    searchQuery === "" ||
-    faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
+    debouncedSearch === "" ||
+    faq.question.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+    faq.answer.toLowerCase().includes(debouncedSearch.toLowerCase())
   );
 
   return (
