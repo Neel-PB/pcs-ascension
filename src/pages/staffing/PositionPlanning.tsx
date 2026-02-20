@@ -962,7 +962,7 @@ export default function PositionPlanning({ selectedDepartment }: PositionPlannin
       {/* Table */}
       <motion.div
         data-tour="planning-table"
-        className="bg-card rounded-xl border shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col"
+        className="bg-card rounded-xl border shadow-sm overflow-hidden min-h-0 max-h-full flex flex-col"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
