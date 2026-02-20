@@ -1,4 +1,12 @@
+import { createElement, type ReactNode } from 'react';
 import type { Step } from 'react-joyride';
+import { HeaderDemoPreview } from './HeaderDemoPreview';
+
+const headerDemoContent = (text: string, variant: 'notification-panel' | 'theme-cycle'): ReactNode =>
+  createElement('div', null,
+    createElement('p', null, text),
+    createElement(HeaderDemoPreview, { variant }),
+  );
 
 export const headerTourSteps: Step[] = [
   {
@@ -25,14 +33,20 @@ export const headerTourSteps: Step[] = [
   {
     target: '[data-tour="header-notifications"]',
     title: 'Notifications',
-    content: 'Click the bell to open the notification panel. A red badge appears when you have unread items.',
+    content: headerDemoContent(
+      'Click the bell to open the notification panel. A red badge appears when you have unread items.',
+      'notification-panel',
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
   {
     target: '[data-tour="header-theme"]',
     title: 'Theme Toggle',
-    content: 'Click to cycle between Light, Dark, and System themes. The icon updates to reflect the current mode.',
+    content: headerDemoContent(
+      'Click to cycle between Light, Dark, and System themes. The icon updates to reflect the current mode.',
+      'theme-cycle',
+    ),
     placement: 'bottom',
     disableBeacon: true,
   },
