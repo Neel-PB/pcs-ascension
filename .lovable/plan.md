@@ -1,99 +1,54 @@
 
 
-## Tour System Audit: Findings and Enhancement Plan
+## Fix Missing Tour Use Cases
 
-### 1. Missing Tour Coverage for 2 Position Tabs
+### Findings
 
-The Positions page has 5 tabs (`employees`, `open-requisition`, `open-position`, `contractors`, `contractor-requisition`), but tours only exist for 3 of them:
-- Employees (covered)
-- Open Position / requisitions (covered)
-- Contractors (covered)
-- **Open Requisition** (MISSING)
-- **Contractor Requisition** (MISSING)
+After auditing every page, tab, and feature against the tour registry, here are the gaps:
 
-The `APP_TOUR_SEQUENCE` and `TOUR_STEP_REGISTRY` only list 3 positions tours. The `PositionsTour` component only maps `employees`, `contractors`, and `requisitions` -- it does not handle `open-requisition` or `contractor-requisition` tabs at all.
+### 1. Feedback Management Page Tour Not Registered
 
-**Fix:** Add tour step arrays for Open Requisition and Contractor Requisition tabs, register them in `tourConfig.ts`, `tourStepRegistry.ts`, `PositionsTour.tsx`, and `UserGuidesTab.tsx`.
+The `feedbackPageTourSteps` array (5 steps) already exists in `tourSteps.ts` but is NOT registered in `TOUR_STEP_REGISTRY` or `APP_TOUR_SEQUENCE`. The User Guides tab lists it under `tourKey: "feedback-page"`, but since it has no registry entry, the micro-tour step list is empty and clicking individual steps does nothing.
 
----
+**Fix:**
+- Add `feedbackPageTourSteps` to `TOUR_STEP_REGISTRY` under key `feedback-page`
+- Add `feedback-page` entry to `APP_TOUR_SEQUENCE` in `tourConfig.ts` with `page: '/feedback'`
+- Import `feedbackPageTourSteps` in `tourStepRegistry.ts`
 
-### 2. Tab ID Mismatch in Tour Navigation
+### 2. Analytics Page Has No Tour
 
-The `PositionsTour` component maps tab IDs `employees`, `contractors`, `requisitions` to tour keys. But the actual Positions page uses `open-position` as the tab ID for what the tour calls "requisitions". When the tour tries to auto-navigate between sections, the `requisitions` key in `tourConfig.ts` does not match the actual `open-position` tab ID -- so navigation from the tour launcher may not land on the correct tab.
+The `/analytics` page has 4 tabs (Region, Market, Facility, Department) with volume trend charts, but no tour exists for it.
 
-**Fix:** Update `tourConfig.ts` to use `tab: 'open-position'` instead of `tab: 'requisitions'` for the Open Positions tour entry. Update `PositionsTour.tsx` to map `open-position` instead of `requisitions`.
+**Fix:**
+- Create `analyticsTourSteps` in `tourSteps.ts` with steps for: tab navigation, chart cards, date range filters, and trend visualization
+- Add `data-tour` attributes to `AnalyticsRegion.tsx` and `RegionVolumeTrendCharts.tsx`
+- Register in `TOUR_STEP_REGISTRY`, `APP_TOUR_SEQUENCE`, and `UserGuidesTab`
+- Add a Joyride instance (use existing `OverlayTour` pattern or create `AnalyticsTour`)
 
----
+### 3. Reports Page Has No Tour
 
-### 3. Demo Previews Use Hardcoded Wireframes Instead of Actual App Screenshots
+The `/reports` page has tabs and report cards but no tour.
 
-All tour demo previews (Position Details, Active FTE workflow, Shift Override, Comments, KPI cards, Variance table, Forecast table, Settings, etc.) are hand-coded wireframes with sample data. The user wants these to reflect the actual working application UI more closely.
+**Fix:**
+- Create `reportsTourSteps` in `tourSteps.ts` with steps for: tab navigation, report cards, and export buttons
+- Add `data-tour` attributes to `ReportsRegion.tsx`
+- Register in all tour infrastructure files
 
-**What needs updating:**
-- **Position Details Preview** -- recently updated but still uses generic mock data. Could use more realistic field values that match the database.
-- **Active FTE Steps Preview** -- the popover wireframe is a miniature recreation rather than a visual match of the actual `EditableFTECell` popover.
-- **Shift Override Steps Preview** -- similarly hand-drawn rather than matching the actual `ShiftCell` UI.
-- **Comments Preview** -- mock timeline, not matching the actual `PositionCommentSection` layout.
+### 4. Sidebar Navigation Has No Tour Step
 
-Since we cannot embed actual screenshots as images in the codebase easily, the approach is to make the wireframes pixel-accurate miniatures of the real components -- matching the same card styles (`bg-muted/50 rounded-xl`), field layouts, badge colors, and typography that the actual components use.
+Users may not understand the icon-only sidebar. No tour step explains it.
 
-**Fix:** Audit each demo preview component against its real counterpart and update styling, layout, and data to match. Key files:
-- `PositionsDemoPreview.tsx` -- compare against `EmployeeDetailsSheet.tsx`, `EditableFTECell`, `ShiftCell`, `PositionCommentSection`
-- `TourDemoPreview.tsx` -- compare KPI cards against `KPICard.tsx`
-- `SettingsDemoPreview.tsx` -- compare against `VolumeOverrideSettings.tsx` and `NPOverrideSettings`
-- `ForecastDemoPreview.tsx` -- compare against `ForecastBalanceTable`
-- `VarianceDemoPreview.tsx` -- compare against `VarianceAnalysis`
-- `PlanningDemoPreview.tsx` -- compare against `PositionPlanning`
+**Fix:**
+- Add a `sidebar` tour entry to the Header tour (or as a standalone overlay tour) with a step targeting the sidebar container
+- Add `data-tour="sidebar-nav"` to the sidebar component
 
----
+### 5. Organization Switcher Has No Tour Step
 
-### 4. Inconsistent `disableScrollParentFix` Across Tour Components
+The org switcher in the sidebar has no tour coverage.
 
-- `StaffingTour`: `disableScrollParentFix` is set
-- `PositionsTour`: `disableScrollParentFix` is set
-- `AdminTour`: `disableScrollParentFix` is NOT set
-- `OverlayTour`: `disableScrollParentFix` is set
-
-This inconsistency can cause scroll jitter in the Admin tour.
-
-**Fix:** Add `disableScrollParentFix` to `AdminTour.tsx`.
-
----
-
-### 5. Inconsistent `disableOverlayClose` Setting
-
-- `StaffingTour`: `disableOverlayClose={false}` (allows clicking overlay to close)
-- `PositionsTour`: `disableOverlayClose` (prevents closing)
-- `AdminTour`: `disableOverlayClose` (prevents closing)
-- `OverlayTour`: `disableOverlayClose` (prevents closing)
-
-Staffing tour allows closing by clicking the overlay while others do not.
-
-**Fix:** Standardize to `disableOverlayClose` (true) across all tour components for consistency.
-
----
-
-### 6. UserGuidesTab Missing 2 Position Guides
-
-The guide catalog in `UserGuidesTab.tsx` only lists 3 positions guides (Employees, Contractors, Open Positions). Missing: Open Requisition and Contractor Requisition.
-
-**Fix:** Add the 2 missing guide entries.
-
----
-
-### 7. Tour Auto-Start on First Visit May Conflict
-
-`useTour` auto-starts tours on first page visit (`autoStart: true` by default for page tours). If a user navigates to Staffing for the first time, the full 26-step Summary tour launches immediately. This could be overwhelming.
-
-**Enhancement:** Consider disabling auto-start by default and relying solely on the header menu "Tour This Page" trigger. Or add a brief welcome prompt asking if the user wants a tour.
-
----
-
-### 8. TourLauncher: Play Button Launches Tour but Reset Only Resets
-
-Currently in the TourLauncher, clicking the action icon when completed calls `handleReset` which only clears the completion flag but does NOT re-launch the tour. The user has to then click the title to actually play it. This is a two-click operation that should be one click.
-
-**Fix:** Make the reset icon both reset AND re-launch the tour in one action.
+**Fix:**
+- Add a step to the Header or Sidebar tour targeting `[data-tour="org-switcher"]`
+- Add the `data-tour` attribute to `OrganizationSwitcher.tsx`
 
 ---
 
@@ -101,26 +56,21 @@ Currently in the TourLauncher, clicking the action icon when completed calls `ha
 
 | File | Changes |
 |------|---------|
-| `src/components/tour/tourConfig.ts` | Add 2 missing position tab entries, fix `requisitions` tab ID to `open-position` |
-| `src/components/tour/tourStepRegistry.ts` | Register 2 new step arrays |
-| `src/components/tour/positionsTourSteps.ts` | Add `openRequisitionTourSteps` and `contractorRequisitionTourSteps` arrays |
-| `src/components/tour/PositionsTour.tsx` | Add mappings for `open-requisition` and `contractor-requisition` tabs, fix `requisitions` to `open-position` |
-| `src/components/tour/AdminTour.tsx` | Add `disableScrollParentFix` |
-| `src/components/tour/StaffingTour.tsx` | Set `disableOverlayClose` to true (remove `={false}`) |
-| `src/components/tour/TourLauncher.tsx` | Make reset icon also re-launch the tour |
-| `src/components/support/UserGuidesTab.tsx` | Add 2 missing guide catalog entries |
-| `src/components/tour/PositionsDemoPreview.tsx` | Update all 4 preview variants to more closely match actual component styling |
-| `src/components/tour/TourDemoPreview.tsx` | Audit KPI preview against real `KPICard` styling |
-| `src/components/tour/SettingsDemoPreview.tsx` | Audit override cell previews against real cell components |
-| `src/components/tour/ForecastDemoPreview.tsx` | Audit forecast previews against real `ForecastBalanceTable` |
-| `src/components/tour/VarianceDemoPreview.tsx` | Audit variance previews against real variance table |
-| `src/components/tour/PlanningDemoPreview.tsx` | Audit planning previews against real planning table |
+| `src/components/tour/tourStepRegistry.ts` | Import and register `feedbackPageTourSteps`; register new analytics and reports step arrays |
+| `src/components/tour/tourConfig.ts` | Add `feedback-page`, `analytics`, and `reports` entries to `APP_TOUR_SEQUENCE` |
+| `src/components/tour/tourSteps.ts` | Add `analyticsTourSteps` and `reportsTourSteps` arrays |
+| `src/components/support/UserGuidesTab.tsx` | Add Analytics and Reports guide catalog entries |
+| `src/pages/analytics/AnalyticsRegion.tsx` | Add `data-tour` attributes to key elements |
+| `src/components/analytics/RegionVolumeTrendCharts.tsx` | Add `data-tour` attributes |
+| `src/pages/reports/ReportsRegion.tsx` | Add `data-tour` attributes |
+| `src/components/tour/headerTourSteps.ts` | Add sidebar navigation and org switcher steps |
+| `src/components/layout/DynamicIconOnlySidebar.tsx` | Add `data-tour="sidebar-nav"` attribute |
+| `src/components/layout/OrganizationSwitcher.tsx` | Add `data-tour="org-switcher"` attribute |
 
 ### Priority Order
 
-1. Fix tab ID mismatch (breaks navigation -- high priority)
-2. Add missing Open Requisition and Contractor Requisition tours
-3. Fix TourLauncher reset-and-play behavior
-4. Standardize Joyride settings across all tour components
-5. Update all demo previews to match actual app UI more closely
+1. Register `feedback-page` in `TOUR_STEP_REGISTRY` and `APP_TOUR_SEQUENCE` (quick fix, already written steps)
+2. Add sidebar and org switcher steps to header tour
+3. Create Analytics page tour
+4. Create Reports page tour
 
