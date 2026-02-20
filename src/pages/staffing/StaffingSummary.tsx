@@ -135,19 +135,19 @@ export default function StaffingSummary() {
   // Determine override KPI value based on department selection
   const overrideKpiData = useMemo(() => {
     if (selectedDepartment === "all-departments") {
-      return { value: "Select Dept", hasData: false, isActive: false };
+      return { value: "Select Department", hasData: false, isActive: false };
     }
     
     const match = volumeOverrides?.find(o => o.department_id === selectedDepartment);
     if (!match) {
-      return { value: "--", hasData: false, isActive: false };
+      return { value: "No Override Found", hasData: false, isActive: false };
     }
     
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const expiry = new Date(match.expiry_date);
     if (expiry < today) {
-      return { value: "--", hasData: false, isActive: false };
+      return { value: "No Override Found", hasData: false, isActive: false };
     }
     
     return { value: String(match.override_volume), hasData: true, isActive: true };
