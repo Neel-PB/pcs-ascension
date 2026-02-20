@@ -1,43 +1,24 @@
 
 
-## Improve Support Page to Follow Helix Design System Standards
+## Align Support Page Search with Helix Standards
 
 ### Problem
 
-The Support page currently violates several Helix standards from `.lovable/plan.md`:
-
-1. **`space-y-6`** instead of `gap-4` (24px gaps vs standard 16px)
-2. **`mb-6`** on tab toggle wrapper (manual margin instead of gap)
-3. **`p-6`** on content cards (should be `px-4` per Section 4)
-4. **No flexbox height chain** -- missing `h-full flex flex-col overflow-hidden`
-5. **`shadow-soft`** on cards (should be `shadow-md` per Section 4)
-6. Content area doesn't use `min-h-0 max-h-full` shrink-wrap pattern
-7. Inner `space-y-6` wrapper around tab content (should be eliminated by gap)
+The FAQs tab on the Support page uses a raw `useState` for search filtering instead of the standard `useDebouncedSearch` hook used across all other modules (Employees, Contractors, Requisitions, User Guides). While the `SearchField` component itself is visually Helix-compliant (pill-shaped, blue button, 2px border), the search behavior is inconsistent.
 
 ### Changes
 
 **File: `src/pages/support/SupportPage.tsx`**
 
-1. **Line 132** -- Outer wrapper: change `space-y-6` to `h-full flex flex-col gap-4 overflow-hidden`
-2. **Lines 134, 168, 174, 205, 230, 246** -- All content cards: change `p-6 shadow-soft` to `px-4 shadow-md`
-3. **Line 157** -- Tab toggle wrapper: remove `mb-6`, keep `flex justify-center` (gap-4 handles spacing)
-4. **Line 166** -- Inner content wrapper: change `space-y-6` to `min-h-0 max-h-full` (shrink-wrap for scrollable content)
-5. **Line 134** -- Contact banner: add `flex-shrink-0` so it never collapses
-6. **Line 157** -- Tab toggle: add `flex-shrink-0` so it stays fixed height
+1. Import `useDebouncedSearch` from `@/hooks/useDebouncedSearch`
+2. Replace the raw `useState` for `searchQuery` with the debounced hook:
+   - `inputValue` for display in the SearchField
+   - `debouncedValue` for actual FAQ filtering
+   - `setInputValue` as the onChange handler
+3. Update the `filteredFaqs` filter to use `debouncedValue` instead of `searchQuery`
+4. Update the SearchField `value` and `onChange` to use `inputValue` / `setInputValue`
 
-### Technical Detail
+### Result
 
-The resulting structure will be:
-
-```text
-SupportPage (outer div)
-  h-full flex flex-col gap-4 overflow-hidden
-
-  Contact Banner     <-- flex-shrink-0, rounded-xl, px-4, shadow-md
-  Tab Toggle         <-- flex-shrink-0
-  Tab Content        <-- min-h-0 max-h-full overflow-auto
-    Card (guides/faqs/videos/etc)  <-- rounded-xl, px-4, shadow-md
-```
-
-This matches the exact pattern documented in Sections 1-5 of the project standards.
+Search on the Support page will use the same debounced pattern as every other module, preventing unnecessary re-renders on each keystroke while keeping the input responsive.
 
