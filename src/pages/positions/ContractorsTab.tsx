@@ -273,7 +273,7 @@ export function ContractorsTab({
   const showEmptyState = !isFetching && (!contractors || contractors.length === 0);
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+    <div className="flex flex-col min-h-0 max-h-full overflow-hidden">
       <div className="flex justify-between items-center mb-4 gap-4 flex-shrink-0">
         <SearchField
           placeholder="Search contractors..."
@@ -316,7 +316,7 @@ export function ContractorsTab({
           <p className="text-muted-foreground">No contractors found matching the filters.</p>
         </div>
       ) : (
-        <div data-tour="positions-table" className="flex-1 min-h-0 flex flex-col">
+        <div data-tour="positions-table" className="min-h-0 max-h-full flex flex-col">
           <EditableTable
             columns={columnsWithHandlers}
             data={filteredAndSortedContractors}
@@ -326,7 +326,7 @@ export function ContractorsTab({
             onSort={handleSort}
             onRowClick={handleRowClick}
             storeNamespace="contractors-columns-v2"
-            className="flex-1 min-h-0"
+            className="min-h-0 max-h-full"
           />
         </div>
       )}

@@ -98,8 +98,8 @@ export default function PositionsPage() {
         selectedPstat={selectedPstat === "all-pstat" ? null : selectedPstat}
       />
       
-      <div className="flex flex-col h-full space-y-6 overflow-hidden">
-        <div className="flex-shrink-0 py-2" data-tour="filter-bar">
+      <div className="h-full flex flex-col gap-4 overflow-hidden">
+        <div className="flex-shrink-0" data-tour="filter-bar">
           <FilterBar
             selectedRegion={selectedRegion}
             selectedMarket={selectedMarket}
@@ -117,7 +117,7 @@ export default function PositionsPage() {
           />
         </div>
 
-        <div className="flex-shrink-0 mb-6 flex justify-center" data-tour="positions-tabs">
+        <div className="flex-shrink-0 flex justify-center" data-tour="positions-tabs">
           <ToggleButtonGroup
             items={tabs}
             activeId={activeTab}
@@ -128,7 +128,7 @@ export default function PositionsPage() {
 
         <PositionsTour activeTab={activeTab} onTabChange={setActiveTab} />
 
-        <div className="flex-1 min-h-0 flex flex-col">
+        <div className="min-h-0 max-h-full flex flex-col">
             {activeTab === "employees" && (
               <EmployeesTab
                 selectedRegion={selectedRegion}
