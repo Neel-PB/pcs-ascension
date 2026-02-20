@@ -89,7 +89,16 @@ export function TourTooltip({
         <CardFooter className="px-5 pb-3 flex items-center justify-between gap-2 border-t border-border/30 pt-2.5">
           {/* Left: Skip actions */}
           <div className="flex items-center gap-1">
-            {!singleSection && (
+            {singleSection ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSkipAll}
+                className="text-muted-foreground/60 text-xs hover:text-destructive hover:bg-muted transition-colors px-2 rounded-lg"
+              >
+                Skip
+              </Button>
+            ) : (
               <>
                 <Button
                   variant="ghost"
