@@ -19,7 +19,7 @@ export const employeesTourSteps: Step[] = [
   {
     target: '[data-tour="positions-tabs"]',
     title: 'Tab Navigation',
-    content: 'Switch between Employees, Contractors, and Open Positions views.',
+    content: 'Switch between Employee, Open Requisition, Open Position, Contractor, and Contractor Requisition views.',
     placement: 'bottom',
     disableBeacon: true,
   },
@@ -50,6 +50,14 @@ export const employeesTourSteps: Step[] = [
     content: 'Click any row to open the employee detail sheet with full position information and comments. Columns can be resized, reordered, and toggled.',
     placement: 'top',
     disableBeacon: true,
+  },
+  {
+    target: '[data-tour="positions-row"]',
+    title: 'Position Details',
+    content: positionsDemoContent('Click any row to open the Position Details sheet. View all position information, make edits, and switch to the Comments tab to see activity history and add notes.', 'position-details'),
+    placement: 'bottom',
+    disableBeacon: true,
+    data: { wideTooltip: true },
   },
   {
     target: '[data-tour="positions-active-fte-cell"]',
@@ -114,6 +122,14 @@ export const contractorsTourSteps: Step[] = [
     disableBeacon: true,
   },
   {
+    target: '[data-tour="positions-row"]',
+    title: 'Position Details',
+    content: positionsDemoContent('Click any row to open the Position Details sheet. View all position information, make edits, and switch to the Comments tab to see activity history and add notes.', 'position-details'),
+    placement: 'bottom',
+    disableBeacon: true,
+    data: { wideTooltip: true },
+  },
+  {
     target: '[data-tour="positions-active-fte-cell"]',
     title: 'Active FTE',
     content: positionsDemoContent('Click the Active FTE cell to adjust a contractor\'s working FTE. Select a status reason (LOA, Orientation, Separation, etc.), set an expiration date, and optionally add a comment. Overrides appear in blue and automatically revert when expired.', 'active-fte-steps'),
@@ -174,6 +190,14 @@ export const requisitionsTourSteps: Step[] = [
     content: 'Click any row to open the requisition detail sheet. Vacancy age badges indicate urgency. Columns can be resized, reordered, and toggled.',
     placement: 'top',
     disableBeacon: true,
+  },
+  {
+    target: '[data-tour="positions-row"]',
+    title: 'Position Details',
+    content: positionsDemoContent('Click any row to open the Position Details sheet. View vacancy information, lifecycle stage, and switch to the Comments tab to see activity history and add notes.', 'position-details'),
+    placement: 'bottom',
+    disableBeacon: true,
+    data: { wideTooltip: true },
   },
   {
     target: '[data-tour="positions-comments"]',

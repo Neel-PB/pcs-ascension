@@ -1,7 +1,7 @@
 import { Pencil, RotateCcw, MessageSquare, ChevronDown, Send } from '@/lib/icons';
 import { FiClock } from 'react-icons/fi';
 
-type PositionsDemoVariant = 'active-fte-steps' | 'shift-override-steps' | 'comments-preview';
+type PositionsDemoVariant = 'active-fte-steps' | 'shift-override-steps' | 'comments-preview' | 'position-details';
 
 interface PositionsDemoPreviewProps {
   variant: PositionsDemoVariant;
@@ -168,6 +168,37 @@ const CommentsPreview = () => (
   </div>
 );
 
+/* ─── Position Details Preview ─── */
+
+const PositionDetailsPreview = () => (
+  <div className="rounded-lg border border-primary/20 bg-primary/[0.02] p-3 space-y-2 mt-1 shadow-sm ring-1 ring-primary/10">
+    <p className="text-[11px] font-semibold text-primary uppercase tracking-wider">Detail Sheet</p>
+
+    {/* Tab switcher */}
+    <div className="flex gap-1 border-b border-border pb-1">
+      <span className="text-[9px] font-medium text-primary border-b border-primary pb-0.5 px-1">Details</span>
+      <span className="text-[9px] text-muted-foreground px-1">Comments</span>
+    </div>
+
+    {/* Fields grid */}
+    <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+      {[
+        ['Position #', '1042857'],
+        ['Job Title', 'RN - Med/Surg'],
+        ['FTE', '1.0'],
+        ['Shift', 'Day'],
+        ['Department', 'Medical Surgical'],
+        ['Status', 'Filled'],
+      ].map(([label, value]) => (
+        <div key={label} className="space-y-0.5">
+          <span className="text-[8px] text-muted-foreground">{label}</span>
+          <div className="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] text-foreground/80">{value}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 /* ─── Main Export ─── */
 
 export function PositionsDemoPreview({ variant }: PositionsDemoPreviewProps) {
@@ -178,6 +209,8 @@ export function PositionsDemoPreview({ variant }: PositionsDemoPreviewProps) {
       return <ShiftOverrideStepsPreview />;
     case 'comments-preview':
       return <CommentsPreview />;
+    case 'position-details':
+      return <PositionDetailsPreview />;
     default:
       return null;
   }
