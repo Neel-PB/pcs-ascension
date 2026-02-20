@@ -2,8 +2,7 @@ import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Check, RotateCcw, Play, ChevronRight } from '@/lib/icons';
+import { RotateCcw, Play, ChevronRight } from '@/lib/icons';
 import { APP_TOUR_SEQUENCE, TourSection } from './tourConfig';
 import { useTourStore } from '@/stores/useTourStore';
 import { useFeedbackStore } from '@/stores/useFeedbackStore';
@@ -140,7 +139,7 @@ export function TourLauncher({ open, onOpenChange }: TourLauncherProps) {
                       open={isExpanded}
                       onOpenChange={() => toggleExpanded(section.tourKey)}
                     >
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-2 py-1.5 px-1">
                         <CollapsibleTrigger asChild>
                           <Button
                             variant="ghost"
@@ -152,34 +151,33 @@ export function TourLauncher({ open, onOpenChange }: TourLauncherProps) {
                         </CollapsibleTrigger>
 
                         <button
-                          onClick={() => handleLaunch(section)}
-                          className="flex-1 flex items-center gap-3 px-2 py-2.5 rounded-lg text-left hover:bg-accent/50 transition-colors group"
-                        >
-                          <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${
+                          onClick={(e) => {
+                            if (completed) {
+                              handleReset(section.tourKey, e);
+                            } else {
+                              handleLaunch(section);
+                            }
+                          }}
+                          className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
                             completed
                               ? 'bg-primary/15 text-primary'
-                              : 'bg-muted text-muted-foreground'
-                          }`}>
-                            {completed ? <Check className="h-3 w-3" /> : <Play className="h-3 w-3" />}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <span className="text-sm font-medium">{section.name}</span>
-                          </div>
-                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 font-normal">
-                            {stepCount} steps
-                          </Badge>
-                          {completed && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={(e) => handleReset(section.tourKey, e)}
-                              title="Reset tour"
-                            >
-                              <RotateCcw className="h-3 w-3" />
-                            </Button>
-                          )}
+                              : 'text-muted-foreground hover:text-foreground'
+                          }`}
+                          title={completed ? 'Reset tour' : 'Play tour'}
+                        >
+                          {completed ? <RotateCcw className="h-3 w-3" /> : <Play className="h-3 w-3" />}
                         </button>
+
+                        <button
+                          onClick={() => handleLaunch(section)}
+                          className="flex-1 min-w-0 text-left hover:text-primary transition-colors"
+                        >
+                          <span className="text-sm font-medium">{section.name}</span>
+                        </button>
+
+                        <span className="flex-shrink-0 w-16 text-right text-xs text-muted-foreground">
+                          {stepCount} steps
+                        </span>
                       </div>
 
                       <CollapsibleContent>
