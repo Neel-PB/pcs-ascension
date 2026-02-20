@@ -60,7 +60,7 @@ function PositionChangeList({ changes, type }: { changes: PositionChange[]; type
       <div className="space-y-1">
         {changes.map((change, i) => (
           <div key={i} className="flex items-center justify-between text-xs text-muted-foreground bg-primary/10 rounded px-2 py-1">
-            <span>{change.fteValue} FTE × {change.count}</span>
+            <span>{change.fteValue} FTE x {change.count}</span>
             <span>= {(change.fteValue * change.count).toFixed(1)}</span>
           </div>
         ))}
@@ -102,7 +102,7 @@ function ClosureChangeList({
       <div className="space-y-1">
         {changes.map((change, i) => (
           <div key={i} className={cn("flex items-center justify-between text-xs text-muted-foreground rounded px-2 py-1", bgColor)}>
-            <span>{change.fteValue} FTE × {change.count}</span>
+            <span>{change.fteValue} FTE x {change.count}</span>
             <span>= {(change.fteValue * change.count).toFixed(1)}</span>
           </div>
         ))}
