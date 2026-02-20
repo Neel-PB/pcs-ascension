@@ -1,62 +1,55 @@
 
 
-## Apply Shrink-Wrap Layout to Positions Module
+## Save Layout and Spacing Standards to Project Memory
 
-### Problem
-The Positions module uses `space-y-6` (24px gaps), `mb-6` extra margin, `py-2` padding, and `flex-1` on table containers -- causing tables to stretch to fill remaining viewport even with few rows. The Staffing module already uses a standardized pattern with `gap-4` (16px), `h-full`, and `min-h-0 max-h-full`.
+### What This Does
 
-### How the Layout Works (Viewport Calculation)
+Replace the current contents of `.lovable/plan.md` (which holds the old completed plan) with a permanent **Layout and Spacing Standards** reference document. This ensures every future page, module, or component follows the same pattern by default.
 
-The layout is a pure CSS Flexbox chain -- no manual `calc(100vh - ...)` needed for the content area:
+### File: `.lovable/plan.md`
+
+The new content will document these standards:
+
+---
+
+**1. Viewport Height Chain (Flexbox, no manual calc)**
 
 ```text
 ShellLayout (<main>)
   height: calc(100vh - var(--header-height))   <-- only calc in the system
-  overflow-y: auto                              <-- page-level scroll
-  padding: 16px (py-4 px-4)
+  overflow-y: auto
+  padding: py-4 px-4 (16px)
 
-  PositionsPage (outer div)
-    h-full              <-- fills parent (100vh - header - padding)
+  PageRoot (outer div)
+    h-full                <-- fills parent
     flex flex-col
-    gap-4               <-- uniform 16px between all children
-    overflow-hidden     <-- no double scrollbar
+    gap-4                 <-- uniform 16px between all children
+    overflow-hidden       <-- prevents double scrollbar
 
-    FilterBar           <-- flex-shrink-0, natural height (~48px)
-    ToggleButtonGroup   <-- flex-shrink-0, natural height (~44px)
-    Tab Content         <-- min-h-0 max-h-full (shrink-wrap / cap)
+    FilterBar / KPIs      <-- flex-shrink-0 (natural height)
+    Tabs / Toggle         <-- flex-shrink-0 (natural height)
+    Content Area          <-- min-h-0 max-h-full (shrink-wrap / cap)
 
-      Search + Buttons  <-- flex-shrink-0, natural height (~40px)
-      Table Card        <-- min-h-0 max-h-full (content-sized, capped)
+      Toolbar (search, buttons)  <-- flex-shrink-0
+      Table / Card               <-- min-h-0 max-h-full
 ```
 
-Key principle: `flex-1` forces stretching. `min-h-0 max-h-full` allows content to determine height but caps at available space.
+**2. Key Rules**
 
-### Files to Change
+- Use `gap-4` for vertical spacing between sibling sections. Never `space-y-6`, `mb-6`, or manual margins.
+- Use `min-h-0 max-h-full` on content areas, never `flex-1` (which forces stretching).
+- Fixed-height elements (filters, tabs, toolbars) get `flex-shrink-0`.
+- Table containers get `min-h-0 max-h-full overflow-hidden` so they shrink-wrap with few rows and scroll internally with many rows.
+- No hardcoded pixel offsets or extra `calc()` expressions inside page components.
 
-**1. `src/pages/positions/PositionsPage.tsx`**
-- Line 101: Change `space-y-6` to `gap-4` (standardize 16px vertical rhythm)
-- Line 120: Remove `mb-6` from tab section (gap handles spacing already)
-- Line 131: Change `flex-1 min-h-0` to `min-h-0 max-h-full` on content area
+**3. Behavior**
 
-**2. `src/pages/positions/EmployeesTab.tsx`**
-- Line 282: Change outer `flex-1 min-h-0` to `min-h-0 max-h-full`
-- Line 325: Change table wrapper `flex-1 min-h-0` to `min-h-0 max-h-full`
-- Line 335: Change EditableTable className `flex-1 min-h-0` to `min-h-0 max-h-full`
+- Few rows: table card is short, page background visible below.
+- Many rows: table fills available space and scrolls internally.
+- Consistent 16px vertical rhythm across all modules.
 
-**3. `src/pages/positions/ContractorsTab.tsx`**
-- Same three changes as EmployeesTab (identical layout structure)
-
-**4. `src/pages/positions/RequisitionsTab.tsx` (Open Position)**
-- Same three changes as EmployeesTab (identical layout structure)
-
-**5. `src/pages/positions/OpenRequisitionTab.tsx`**
-- Wrap the bare `EditableTable` in `<div className="min-h-0 max-h-full overflow-hidden">`
-
-**6. `src/pages/positions/ContractorRequisitionTab.tsx`**
-- Same wrapping as OpenRequisitionTab
+---
 
 ### Result
-- Few rows: table card is short, page background visible below
-- Many rows: table fills available space and scrolls internally
-- Uniform gap-4 (16px) spacing matching the Staffing module exactly
-- No hardcoded pixel offsets or `calc()` in the Positions module itself
+
+This file will serve as the default reference for all future layout work, so the shrink-wrap pattern, gap-4 spacing, and flexbox height chain are always applied automatically.
