@@ -82,7 +82,7 @@ export function StaffingTour({ activeTab = 'summary', onTabChange }: StaffingTou
     if (type === EVENTS.STEP_BEFORE && step?.target) {
       const el = document.querySelector(step.target as string);
       if (el) {
-        el.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'instant' });
+        el.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'instant' });
         const mainEl = document.querySelector('main');
         if (mainEl) {
           mainEl.scrollTo({ top: 0, behavior: 'instant' });
@@ -148,6 +148,7 @@ export function StaffingTour({ activeTab = 'summary', onTabChange }: StaffingTou
       }}
       floaterProps={{
         disableAnimation: true,
+        disableFlip: true,
       }}
     />
   );
