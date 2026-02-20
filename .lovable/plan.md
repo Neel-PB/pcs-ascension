@@ -1,71 +1,58 @@
-# Helix Design System – Component Reference
 
-Every future prompt referencing these UI elements MUST use the components, imports, and styling defined below.
 
----
+## Add Sidebar Navigation Tour
 
-## 1. Search
+### Problem
 
-- **Component:** `SearchField` from `@/components/ui/search-field`
-- **Hook:** Always pair with `useDebouncedSearch` from `@/hooks/useDebouncedSearch`
-- **Props:** `value={inputValue}`, `onChange={(e) => setInputValue(e.target.value)}`, `onClear={() => setInputValue("")}`
-- **Style:** pill-shaped (`rounded-full`), constant `border-2`, blue circular search button, 2px focus border
+The icon-only sidebar (showing Staffing, Positions, Analytics, Reports, Support, Admin, Feedback) has no dedicated tour coverage. The header tour includes a single generic step for `data-tour="sidebar-nav"` but does not walk through individual modules or explain the active-state indicator, prefetch behavior, or bottom-pinned sections.
 
----
+### Changes
 
-## 2. Button
+**1. Add `data-tour` attributes to individual sidebar modules**
 
-- **Component:** `Button` from `@/components/ui/button`
-- **Variants:** `default` | `destructive` | `outline` | `secondary` | `ghost` | `link` | `ascension` (pill-shaped primary)
-- **Sizes:** `default` (h-10) | `sm` (h-9) | `lg` (h-11) | `icon` (h-10 w-10 rounded-full, 24px icon) | `icon-lg` (h-12 w-12)
+**File: `src/components/layout/DynamicIconOnlySidebar.tsx`**
 
----
+- Add `data-tour={`sidebar-${module.label.toLowerCase()}`}` to each `ModuleItem` wrapper div (both main and bottom sections)
+- This produces targets like `sidebar-staffing`, `sidebar-positions`, `sidebar-analytics`, `sidebar-reports`, `sidebar-support`, `sidebar-admin`, `sidebar-feedback`
 
-## 3. Card
+**2. Create sidebar tour steps**
 
-- **Component:** `Card`, `CardHeader`, `CardContent`, `CardFooter` from `@/components/ui/card`
-- **Style:** `rounded-xl`, `shadow-md`, `px-4` padding (never `p-6`)
-- **Page wrapper:** `h-full flex flex-col gap-4 overflow-hidden`
+**File: `src/components/tour/sidebarTourSteps.ts`** (new file)
 
----
+Define steps covering:
+1. **Sidebar Overview** (`sidebar-nav`) -- explains the icon-only layout, that it is always visible, and module navigation
+2. **Staffing** (`sidebar-staffing`) -- first module, staffing summary and sub-tabs
+3. **Positions** (`sidebar-positions`) -- employee, requisition, and contractor management
+4. **Analytics** (`sidebar-analytics`) -- volume trend charts by region/market/facility
+5. **Reports** (`sidebar-reports`) -- exportable report cards
+6. **Support** (`sidebar-support`) -- FAQs, user guides, troubleshooting
+7. **Admin** (`sidebar-admin`) -- user management, RBAC, settings (permission-gated)
+8. **Feedback** (`sidebar-feedback`) -- bottom-pinned feedback module
+9. **Active State** (`sidebar-nav`) -- explains the primary-colored background indicator that follows the active module and the spring animation
 
-## 4. Table
+Each step will include descriptive text explaining what the module contains and when to use it.
 
-- **Data tables:** `EditableTable` from `@/components/editable-table/EditableTable`
-- **Primitives:** `Table`, `TableHeader`, `TableBody`, `TableRow`, `TableHead`, `TableCell` from `@/components/ui/table`
-- **Zebra striping:** alternating `muted/30` applied via `TableBody`
+**3. Register the tour**
 
----
+**File: `src/components/tour/tourStepRegistry.ts`**
 
-## 5. Select
+- Import `sidebarTourSteps` and add entry: `'sidebar': sidebarTourSteps`
 
-- **Component:** `Select`, `SelectTrigger`, `SelectContent`, `SelectItem` from `@/components/ui/select`
-- **Trigger:** `rounded-lg`, `border-2 border-input`, `px-4 py-3`, blue brand chevron (`text-[#1D69D2]`) rotates 180° when open
-- **Content:** `min-w-[210px]`, `rounded-lg`
-- **Selected item:** `bg-primary/15` + `border-primary/30` (no checkmarks)
+**File: `src/components/tour/tourConfig.ts`**
 
----
+- Add a new `TourSection` entry: `{ page: null, tab: null, tourKey: 'sidebar', name: 'Sidebar Navigation' }` (placed after the header entry since it is also a global overlay tour)
 
-## 6. Badge
+**4. Add OverlayTour to the sidebar component**
 
-- **Component:** `Badge` from `@/components/ui/badge`
-- **Shape:** `rounded-full` (pill)
-- **Variants:** `default` | `secondary` | `destructive` | `success` | `warning` | `outline`
+**File: `src/components/layout/DynamicIconOnlySidebar.tsx`**
 
----
+- Import `OverlayTour` and `sidebarTourSteps`
+- Render `<OverlayTour tourKey="sidebar" steps={sidebarTourSteps} />` inside the sidebar container
 
-## 7. Icons
+### Technical Notes
 
-- **Import:** ALL icons from `@/lib/icons` (never `lucide-react` or `react-icons` directly)
-- **Type:** `IconType` from `react-icons`
-- **Sizes:** 24px (`size-6` / `h-6 w-6`) for nav/header; 14–16px for table actions
-- **Source:** Material Design icons re-exported with Lucide-compatible names
+- The sidebar is always visible (fixed position, z-50), so Joyride spotlight targeting will work reliably
+- Module items are rendered conditionally based on RBAC permissions, so some steps may not have targets for all users -- Joyride handles missing targets gracefully by skipping those steps
+- The tour uses `autoStart: false` consistent with all global overlay tours (Header, Feedback, AI Hub, Checklist)
+- Individual module steps become available as micro-tours from the Support page User Guides tab
 
----
-
-## 8. Layout Standards
-
-- **Page wrapper:** `h-full flex flex-col gap-4 overflow-hidden`
-- **Fixed elements:** `flex-shrink-0`
-- **Scrollable content:** `min-h-0 max-h-full overflow-auto`
-- **Standard gap:** `gap-4` (16px), never `space-y-6`
