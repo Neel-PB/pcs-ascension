@@ -239,38 +239,42 @@ export function UserGuidesTab() {
                             </div>
                           </button>
 
-                          {/* Right side: badges + actions */}
+                          {/* Right side: badges + actions — fixed-width slots */}
                           <div className="flex items-center gap-1.5 flex-shrink-0">
                             <Badge
                               variant="secondary"
-                              className="text-[10px] px-1.5 py-0 h-5 font-normal tabular-nums"
+                              className="w-16 text-center text-[10px] px-1.5 py-0 h-5 font-normal tabular-nums"
                             >
                               {stepTitles.length} steps
                             </Badge>
-                            {completed && (
-                              <Badge
-                                variant="outline"
-                                className="text-emerald-600 border-emerald-300 dark:text-emerald-400 dark:border-emerald-700 gap-1 text-[10px]"
-                              >
-                                <CheckCircle className="h-3 w-3" />
-                                Done
-                              </Badge>
-                            )}
+                            <div className="w-14 flex justify-center">
+                              {completed ? (
+                                <Badge
+                                  variant="outline"
+                                  className="text-emerald-600 border-emerald-300 dark:text-emerald-400 dark:border-emerald-700 gap-1 text-[10px]"
+                                >
+                                  <CheckCircle className="h-3 w-3" />
+                                  Done
+                                </Badge>
+                              ) : null}
+                            </div>
                             <Button size="sm" className="gap-1 h-7 text-xs" onClick={() => handleStartTour(guide)}>
                               <Play className="h-3 w-3" />
                               {guide.isOverlay ? "Start" : "Go & Start"}
                             </Button>
-                            {completed && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-7 w-7 p-0 rounded-full"
-                                onClick={() => handleReset(guide.tourKey)}
-                                title="Reset tour"
-                              >
-                                <RotateCcw className="h-3 w-3" />
-                              </Button>
-                            )}
+                            <div className="w-7 flex justify-center">
+                              {completed ? (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-7 w-7 p-0 rounded-full"
+                                  onClick={() => handleReset(guide.tourKey)}
+                                  title="Reset tour"
+                                >
+                                  <RotateCcw className="h-3 w-3" />
+                                </Button>
+                              ) : null}
+                            </div>
                           </div>
                         </div>
                       </div>
