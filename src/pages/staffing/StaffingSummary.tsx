@@ -508,7 +508,7 @@ This metric helps:
         selectedPstat={selectedPstat === "all-pstat" ? null : selectedPstat}
       />
       
-      <div className="flex flex-col gap-4 h-[calc(100vh-var(--header-height)-2rem)]">
+      <div className="flex flex-col gap-4 h-full overflow-hidden">
         {/* Filters */}
         <div data-tour="filter-bar">
         <FilterBar 

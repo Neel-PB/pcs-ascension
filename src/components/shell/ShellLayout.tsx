@@ -40,7 +40,7 @@ export function ShellLayout({ children }: ShellLayoutProps) {
       <AppHeader />
       
       <main 
-        className="px-4 py-4 bg-shell-elevated overflow-y-scroll overflow-x-hidden" 
+        className="px-4 py-4 bg-shell-elevated overflow-y-auto overflow-x-hidden" 
         style={{ 
           marginLeft: 'var(--sidebar-width)', 
           marginTop: 'var(--header-height)',
