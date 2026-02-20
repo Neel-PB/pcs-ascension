@@ -1,52 +1,35 @@
 
 
-## Add "Position Details" Tour Step to Positions Tour
+## Update Position Details Tour Preview to Match Actual Detail Sheet
 
 ### What Changes
 
-Add a new Joyride step to the Employees, Contractors, and Open Position (requisitions) tours that highlights clicking a table row to open the Position Details sheet. The step will include a demo preview wireframe showing the detail sheet layout.
+Redesign the `PositionDetailsPreview` component in `src/components/tour/PositionsDemoPreview.tsx` to closely mirror the real `EmployeeDetailsSheet` layout shown in the screenshot.
 
-### Implementation
+### Current vs. New
 
-**1. Add `data-tour="positions-row"` to the first table row**
+The current preview shows a flat "Detail Sheet" header with a simple 2-column grid. The new version will replicate the actual sheet structure:
 
-In `src/components/editable-table/VirtualizedTableBody.tsx`, add a `data-tour` attribute to the first row's wrapper div (when `virtualRow.index === 0`).
+1. **Header area** -- Employee name (bold), job title subtitle, and an "Active" badge (top-right)
+2. **Details / Comments toggle** -- Pill-style toggle with "Details" selected (matching the `ToggleButtonGroup` look)
+3. **Position Information section** -- Rounded card (`bg-muted/50 rounded-xl`) with 2-column fields: Position Number, Job Title, Job Code, Job Family, FTE, Shift, Standard Hours
+4. **Employment Details section** -- Same card style with: Employee Type, Employment Type, Employment Flag, Employee ID
+5. **Location section** -- Same card style with: Market, Facility, Department
+6. **Close button** -- Bottom-right blue rounded button
 
-**2. Add a demo preview variant for the detail sheet**
-
-In `src/components/tour/PositionsDemoPreview.tsx`:
-- Add a new variant `'position-details'` to the type
-- Create a `PositionDetailsPreview` component showing a mini wireframe of the detail sheet (Position Information section with fields like Position Number, Job Title, FTE, Shift, plus the Details/Comments tab switcher)
-
-**3. Add the new step to all three tour step arrays**
-
-In `src/components/tour/positionsTourSteps.ts`, insert a new step after the "Data Table" step (index 5 for employees, index 4 for contractors, index 4 for requisitions):
-
-```
-{
-  target: '[data-tour="positions-row"]',
-  title: 'Position Details',
-  content: <demo content showing detail sheet wireframe>,
-  placement: 'bottom',
-  disableBeacon: true,
-  data: { wideTooltip: true },
-}
-```
-
-**4. Update PositionsTour scroll handling**
-
-In `src/components/tour/PositionsTour.tsx`, the new `positions-row` target doesn't need special horizontal scrolling (it's in the visible area), but ensure it scrolls vertically into view if needed.
-
-**5. Update tab navigation text**
-
-Also update the "Tab Navigation" step content from "Employees, Contractors, and Open Positions" to reflect the new 5-tab structure.
-
-### Files Changed
+### File Changed
 
 | File | Change |
 |------|--------|
-| `src/components/editable-table/VirtualizedTableBody.tsx` | Add `data-tour="positions-row"` to the first row wrapper div |
-| `src/components/tour/PositionsDemoPreview.tsx` | Add `position-details` variant with detail sheet wireframe |
-| `src/components/tour/positionsTourSteps.ts` | Insert "Position Details" step after "Data Table" in all three arrays; update Tab Navigation text |
-| `src/components/tour/PositionsTour.tsx` | No changes needed (existing scroll logic handles non-table-cell targets) |
+| `src/components/tour/PositionsDemoPreview.tsx` | Rewrite `PositionDetailsPreview` component (lines 171-199) to match the real detail sheet layout with sectioned cards, header with badge, and close button |
 
+### Technical Detail
+
+Replace the current `PositionDetailsPreview` with a miniaturized wireframe that uses:
+- A header row with name "Abagayle Peaden", subtitle "RN-Pediatric ICU", and a small green "Active" badge
+- A pill toggle bar showing "Details" as active (filled) and "Comments" as inactive
+- Three `bg-muted/50 rounded-lg` sections matching the real sheet's card groupings
+- 2-column field grids with label (tiny muted text) and value (slightly larger medium text)
+- A "Close" button aligned bottom-right in primary/ascension style
+
+Sample data will match the screenshot: Position Number 5963, Job Title RN-Pediatric ICU, Job Code 801210, Job Family Nursing, FTE 0.9, Shift Rotating, Standard Hours 36, etc.
