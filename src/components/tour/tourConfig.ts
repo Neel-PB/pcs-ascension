@@ -26,6 +26,7 @@ export const APP_TOUR_SEQUENCE: TourSection[] = [
   { page: '/analytics', tab: null, tourKey: 'analytics', name: 'Analytics' },
   { page: '/reports', tab: null, tourKey: 'reports', name: 'Reports' },
   { page: null, tab: null, tourKey: 'header', name: 'Header' },
+  { page: null, tab: null, tourKey: 'sidebar', name: 'Sidebar Navigation' },
   { page: null, tab: null, tourKey: 'feedback', name: 'Feedback Panel' },
   { page: null, tab: null, tourKey: 'ai-hub', name: 'AI Assistant' },
   { page: null, tab: null, tourKey: 'checklist', name: 'Positions Checklist' },
