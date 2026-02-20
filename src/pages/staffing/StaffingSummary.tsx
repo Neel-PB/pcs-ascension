@@ -508,7 +508,7 @@ This metric helps:
         selectedPstat={selectedPstat === "all-pstat" ? null : selectedPstat}
       />
       
-      <div className="space-y-6">
+      <div className="flex flex-col h-[calc(100vh-var(--header-height)-2rem)]">
         {/* Filters */}
         <div className="py-2" data-tour="filter-bar">
         <FilterBar 
@@ -539,7 +539,7 @@ This metric helps:
         />
       </div>
 
-      <div className="space-y-6">
+      <div className="flex-1 min-h-0">
         {activeTab === "summary" && (
             <div className="space-y-6">
               <DraggableSectionsContainer

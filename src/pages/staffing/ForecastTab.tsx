@@ -45,7 +45,7 @@ export function ForecastTab({
   });
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6 h-full">
       {/* Two Large KPIs */}
       <div data-tour="forecast-kpi-cards">
         <ForecastKPICards
@@ -60,10 +60,12 @@ export function ForecastTab({
       </div>
 
       {/* Smart Table */}
-      <ForecastBalanceTable
-        rows={filteredRows}
-        isLoading={isLoading}
-      />
+      <div className="flex-1 min-h-0">
+        <ForecastBalanceTable
+          rows={filteredRows}
+          isLoading={isLoading}
+        />
+      </div>
     </div>
   );
 }
