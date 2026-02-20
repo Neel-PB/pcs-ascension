@@ -1,48 +1,35 @@
 
 
-## Fix Right-Side Actions to Fixed Positions in User Guides
+## Fix: Forecast Tour Key Mismatch in User Guides
 
-### Problem
+### Root Cause
 
-The action buttons (step count, Done badge, "Go & Start", reset) currently float based on the title/description width, causing them to appear at inconsistent horizontal positions across rows.
+In `src/components/support/UserGuidesTab.tsx` line 52, the guide catalog entry uses `tourKey: "staffing-forecast"` (no trailing **s**), but everywhere else in the codebase the key is `"staffing-forecasts"`:
 
-### Solution
+- `tourStepRegistry.ts` -> `'staffing-forecasts': forecastSteps`
+- `tourConfig.ts` -> `tourKey: 'staffing-forecasts'`
+- `StaffingTour.tsx` -> `forecasts: 'staffing-forecasts'`
 
-Give the right-side action area fixed widths so all rows align consistently:
+Because of this mismatch, `TOUR_STEP_REGISTRY["staffing-forecast"]` returns `undefined`, so the User Guides shows 0 steps (or 1 if a fallback fires) instead of the actual 3 forecast steps.
 
-1. **Step count badge**: fixed width (`w-16`, right-aligned text)
-2. **Done badge**: fixed width slot (`w-14`) -- shows badge or empty space to keep alignment
-3. **Go & Start button**: already consistent size
-4. **Reset button**: fixed width slot (`w-7`) -- shows button or empty spacer
+### Fix
 
-This ensures all action columns line up regardless of title length.
+**File: `src/components/support/UserGuidesTab.tsx`**, line 52
 
-### Technical Details
-
-**File: `src/components/support/UserGuidesTab.tsx`** (lines 242-274)
-
-Replace the current `flex items-center gap-1.5 flex-shrink-0` div with fixed-width slots:
-
-```tsx
-<div className="flex items-center gap-1.5 flex-shrink-0">
-  <Badge className="w-16 text-center ...">
-    {stepTitles.length} steps
-  </Badge>
-  <div className="w-14 flex justify-center">
-    {completed ? <Badge>Done</Badge> : null}
-  </div>
-  <Button>Go & Start</Button>
-  <div className="w-7 flex justify-center">
-    {completed ? <Button>Reset</Button> : null}
-  </div>
-</div>
+Change:
+```
+tourKey: "staffing-forecast"
+```
+to:
+```
+tourKey: "staffing-forecasts"
 ```
 
-This keeps all rows aligned at the same column positions on the right side, matching the clean grid-like layout shown in the screenshot.
+That single character fix will make the forecast guide correctly resolve its 3 steps from the registry.
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/support/UserGuidesTab.tsx` | Give right-side action slots fixed widths so badges/buttons align across all rows |
+| `src/components/support/UserGuidesTab.tsx` | Fix `tourKey` from `"staffing-forecast"` to `"staffing-forecasts"` on line 52 |
 
