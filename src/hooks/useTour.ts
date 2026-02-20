@@ -26,19 +26,7 @@ export function useTour(pageKey: string, options?: { autoStart?: boolean }) {
     localStorage.removeItem(storageKey);
   }, [storageKey]);
 
-  // Auto-start on first visit (only if no other tour is running)
-  useEffect(() => {
-    if (autoStart && !isCompleted()) {
-      const timer = setTimeout(() => {
-        const { activeTour } = useTourStore.getState();
-        if (!activeTour) {
-          useTourStore.getState().startTour(pageKey);
-          setRun(true);
-        }
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [isCompleted, pageKey, autoStart]);
+  // Auto-start removed: onboarding is now triggered once via DB flag in AppContent
 
   // Start when triggered from header dropdown (match exact key or base path)
   useEffect(() => {

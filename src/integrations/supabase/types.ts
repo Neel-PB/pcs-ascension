@@ -882,6 +882,7 @@ export type Database = {
           id: string
           job_title: string | null
           last_name: string | null
+          onboarding_completed: boolean | null
           updated_at: string
         }
         Insert: {
@@ -893,6 +894,7 @@ export type Database = {
           id: string
           job_title?: string | null
           last_name?: string | null
+          onboarding_completed?: boolean | null
           updated_at?: string
         }
         Update: {
@@ -904,6 +906,7 @@ export type Database = {
           id?: string
           job_title?: string | null
           last_name?: string | null
+          onboarding_completed?: boolean | null
           updated_at?: string
         }
         Relationships: []

@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "next-themes";
@@ -10,6 +10,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUISettings } from "@/hooks/useAppSettings";
 import { useRealtimeSubscriptions } from "@/hooks/useRealtimeSubscriptions";
 import { LogoLoader } from "@/components/ui/LogoLoader";
+import { useTourStore } from "@/stores/useTourStore";
+import { supabase } from "@/integrations/supabase/client";
 
 // Lazy load all pages for code splitting
 const AuthPage = lazy(() => import("./pages/AuthPage"));
@@ -47,11 +49,35 @@ const PageLoader = () => (
 
 const AppContent = () => {
   const { user, loading } = useAuth();
+  const { onboardingChecked, startFullTour, markOnboardingComplete, setOnboardingChecked } = useTourStore();
   
   // Set up consolidated realtime subscriptions (replaces multiple individual subscriptions)
   useRealtimeSubscriptions();
   
   const { data: uiSettings } = useUISettings();
+
+  // Check onboarding status once after login
+  useEffect(() => {
+    if (!user || loading || onboardingChecked) return;
+
+    const checkOnboarding = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('onboarding_completed')
+        .eq('id', user.id)
+        .single();
+
+      if (data && !(data as any).onboarding_completed) {
+        startFullTour();
+        markOnboardingComplete(user.id);
+      } else {
+        setOnboardingChecked(true);
+      }
+    };
+
+    const timer = setTimeout(checkOnboarding, 1500);
+    return () => clearTimeout(timer);
+  }, [user, loading, onboardingChecked, startFullTour, markOnboardingComplete, setOnboardingChecked]);
 
   return (
     <>
