@@ -6,10 +6,10 @@ import { useAIHub } from "@/hooks/useAIHub";
 import { useFeedbackStore } from "@/stores/useFeedbackStore";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { TOUR_STEP_REGISTRY, getStepTitle } from "@/components/tour/tourStepRegistry";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { SearchField } from "@/components/ui/search-field";
 import {
   Collapsible,
   CollapsibleContent,
@@ -30,6 +30,8 @@ import {
   History,
   Briefcase,
   ChevronRight,
+  Search,
+  X,
 } from "@/lib/icons";
 import type { IconType } from "react-icons";
 
@@ -88,7 +90,6 @@ export function UserGuidesTab() {
     });
   }, []);
 
-  // Pre-compute step data and filtering
   const guidesWithSteps = useMemo(() => {
     return guideCatalog.map((guide) => {
       const steps = TOUR_STEP_REGISTRY[guide.tourKey] || [];
@@ -125,7 +126,6 @@ export function UserGuidesTab() {
     setRefresh((r) => r + 1);
   };
 
-  // Determine which categories have visible guides
   const visibleCategories = useMemo(
     () => categories.filter((cat) => guidesWithSteps.some((g) => g.guide.category === cat && g.visible)),
     [guidesWithSteps]
@@ -135,12 +135,31 @@ export function UserGuidesTab() {
 
   return (
     <div className="space-y-4">
-      <SearchField
-        placeholder="Search tours and steps…"
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        onClear={() => setInputValue("")}
-      />
+      {/* Intro text */}
+      <p className="text-sm text-muted-foreground">
+        Browse interactive walkthroughs for every feature. Expand a section to jump to a specific step.
+      </p>
+
+      {/* Compact search field */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+        <Input
+          placeholder="Search tours and steps…"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          className="pl-9 pr-8 h-9"
+        />
+        {inputValue && (
+          <button
+            type="button"
+            onClick={() => setInputValue("")}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Clear search"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
 
       <Tabs defaultValue="Staffing" value={visibleCategories.length ? undefined : "Staffing"} key={defaultTab}>
         <TabsList className="w-full">
@@ -165,11 +184,12 @@ export function UserGuidesTab() {
           );
           return (
             <TabsContent key={category} value={category} className="mt-4">
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 {categoryGuides.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-8">
-                    No matching tours or steps.
-                  </p>
+                  <div className="text-center py-10">
+                    <Search className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">No matching tours or steps.</p>
+                  </div>
                 )}
                 {categoryGuides.map(({ guide, stepTitles, matchingStepIndices }) => {
                   const completed = isCompleted(guide.tourKey);
@@ -184,78 +204,80 @@ export function UserGuidesTab() {
                       open={isExpanded}
                       onOpenChange={() => toggleExpanded(guide.tourKey)}
                     >
-                      <div className="flex items-center gap-1">
-                        {/* Expand chevron */}
-                        <CollapsibleTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0">
-                            <ChevronRight
-                              className={`h-3.5 w-3.5 transition-transform duration-200 ${
-                                isExpanded ? "rotate-90" : ""
-                              }`}
-                            />
-                          </Button>
-                        </CollapsibleTrigger>
-
-                        {/* Section row */}
-                        <button
-                          onClick={() => handleStartTour(guide)}
-                          className="flex-1 flex items-center gap-3 px-2 py-2.5 rounded-lg text-left hover:bg-accent/50 transition-colors group"
-                        >
-                          <div
-                            className={`flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center ${
-                              completed
-                                ? "bg-primary/15 text-primary"
-                                : "bg-muted text-muted-foreground"
-                            }`}
-                          >
-                            <Icon className="h-3.5 w-3.5" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <span className="text-sm font-medium">{guide.title}</span>
-                            <p className="text-xs text-muted-foreground line-clamp-1">
-                              {guide.description}
-                            </p>
-                          </div>
-                          <Badge
-                            variant="secondary"
-                            className="text-[10px] px-1.5 py-0 h-5 font-normal"
-                          >
-                            {stepTitles.length} steps
-                          </Badge>
-                          {completed && (
-                            <Badge
-                              variant="outline"
-                              className="text-emerald-600 border-emerald-300 dark:text-emerald-400 dark:border-emerald-700 gap-1 text-[10px]"
-                            >
-                              <CheckCircle className="h-3 w-3" />
-                              Done
-                            </Badge>
-                          )}
-                        </button>
-
-                        {/* Action buttons */}
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                          <Button size="sm" className="gap-1 h-7 text-xs" onClick={() => handleStartTour(guide)}>
-                            <Play className="h-3 w-3" />
-                            {guide.isOverlay ? "Start" : "Go & Start"}
-                          </Button>
-                          {completed && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-7 w-7 p-0"
-                              onClick={() => handleReset(guide.tourKey)}
-                              title="Reset tour"
-                            >
-                              <RotateCcw className="h-3 w-3" />
+                      <div className="rounded-lg border border-transparent hover:border-border hover:bg-accent/30 transition-colors px-1 py-0.5">
+                        <div className="flex items-center gap-1.5">
+                          {/* Expand chevron */}
+                          <CollapsibleTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0 rounded-full">
+                              <ChevronRight
+                                className={`h-3.5 w-3.5 transition-transform duration-200 ${
+                                  isExpanded ? "rotate-90" : ""
+                                }`}
+                              />
                             </Button>
-                          )}
+                          </CollapsibleTrigger>
+
+                          {/* Section row - clickable to start full tour */}
+                          <button
+                            onClick={() => handleStartTour(guide)}
+                            className="flex-1 flex items-center gap-2.5 px-1.5 py-2 rounded-md text-left transition-colors group min-w-0"
+                          >
+                            <div
+                              className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center ${
+                                completed
+                                  ? "bg-primary/15 text-primary"
+                                  : "bg-muted text-muted-foreground"
+                              }`}
+                            >
+                              <Icon className="h-3.5 w-3.5" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <span className="text-sm font-medium leading-tight">{guide.title}</span>
+                              <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                                {guide.description}
+                              </p>
+                            </div>
+                          </button>
+
+                          {/* Right side: badges + actions */}
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            <Badge
+                              variant="secondary"
+                              className="text-[10px] px-1.5 py-0 h-5 font-normal tabular-nums"
+                            >
+                              {stepTitles.length} steps
+                            </Badge>
+                            {completed && (
+                              <Badge
+                                variant="outline"
+                                className="text-emerald-600 border-emerald-300 dark:text-emerald-400 dark:border-emerald-700 gap-1 text-[10px]"
+                              >
+                                <CheckCircle className="h-3 w-3" />
+                                Done
+                              </Badge>
+                            )}
+                            <Button size="sm" className="gap-1 h-7 text-xs" onClick={() => handleStartTour(guide)}>
+                              <Play className="h-3 w-3" />
+                              {guide.isOverlay ? "Start" : "Go & Start"}
+                            </Button>
+                            {completed && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0 rounded-full"
+                                onClick={() => handleReset(guide.tourKey)}
+                                title="Reset tour"
+                              >
+                                <RotateCcw className="h-3 w-3" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
 
-                      {/* Expandable step list */}
+                      {/* Expandable numbered step list */}
                       <CollapsibleContent>
-                        <div className="ml-8 border-l border-border pl-3 py-1 space-y-0.5">
+                        <div className="ml-10 pl-4 py-1.5 space-y-0.5 border-l-2 border-dashed border-border">
                           {stepTitles.map(({ title, index }) => {
                             const isMatch =
                               query !== "" && matchingStepIndices.includes(index);
@@ -263,13 +285,23 @@ export function UserGuidesTab() {
                               <button
                                 key={index}
                                 onClick={() => handleMicroLaunch(guide, index)}
-                                className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                                className={`group/step w-full text-left flex items-center gap-2.5 py-2 px-3 rounded-md text-xs transition-colors ${
                                   isMatch
                                     ? "text-primary font-medium bg-primary/5 hover:bg-primary/10"
                                     : "text-muted-foreground hover:text-foreground hover:bg-accent/40"
                                 }`}
                               >
-                                {title}
+                                <span
+                                  className={`flex-shrink-0 h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-semibold ${
+                                    isMatch
+                                      ? "bg-primary/15 text-primary"
+                                      : "bg-muted text-muted-foreground group-hover/step:bg-accent group-hover/step:text-foreground"
+                                  }`}
+                                >
+                                  {index + 1}
+                                </span>
+                                <span className="flex-1 truncate">{title}</span>
+                                <Play className="h-3 w-3 flex-shrink-0 opacity-0 group-hover/step:opacity-60 transition-opacity" />
                               </button>
                             );
                           })}
