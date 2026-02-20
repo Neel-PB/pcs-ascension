@@ -35,7 +35,13 @@ export function StaffingTour({ activeTab = 'summary', onTabChange }: StaffingTou
   const navigate = useNavigate();
   const tourKey = TOUR_KEY_MAP[activeTab] || 'staffing';
   const rawSteps = RAW_STEPS_MAP[activeTab] || staffingSteps;
-  const steps = useMemo(() => injectSectionMetadata(rawSteps, tourKey), [rawSteps, tourKey]);
+  const microTourStep = useTourStore(s => s.microTourStep);
+  const clearMicroTour = useTourStore(s => s.clearMicroTour);
+  const isMicro = microTourStep && microTourStep.tourKey === tourKey;
+  const effectiveSteps = useMemo(() => {
+    const base = isMicro ? [rawSteps[microTourStep.stepIndex]] : rawSteps;
+    return injectSectionMetadata(base, tourKey);
+  }, [rawSteps, tourKey, isMicro, microTourStep?.stepIndex]);
   const { run, setRun, completeTour } = useTour(tourKey);
 
   const handleNextSection = () => {
@@ -102,10 +108,14 @@ export function StaffingTour({ activeTab = 'summary', onTabChange }: StaffingTou
           // Plain skip (no skip mode) — do nothing extra
         }
       } else {
-        // FINISHED — auto-continue to next section (unless single section mode)
-        const { singleSection } = useTourStore.getState();
-        if (!singleSection) {
-          handleNextSection();
+        // FINISHED — auto-continue to next section (unless single section mode or micro tour)
+        if (isMicro) {
+          clearMicroTour();
+        } else {
+          const { singleSection } = useTourStore.getState();
+          if (!singleSection) {
+            handleNextSection();
+          }
         }
       }
     }
@@ -113,7 +123,7 @@ export function StaffingTour({ activeTab = 'summary', onTabChange }: StaffingTou
 
   return (
     <Joyride
-      steps={steps}
+      steps={effectiveSteps}
       run={run}
       continuous
       showSkipButton
