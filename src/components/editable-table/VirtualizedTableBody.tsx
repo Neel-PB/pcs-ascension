@@ -55,6 +55,7 @@ export function VirtualizedTableBody<T = any>({
           return (
             <div
               key={rowId}
+              data-tour={virtualRow.index === 0 ? 'positions-row' : undefined}
               style={{
                 position: 'absolute',
                 top: 0,
