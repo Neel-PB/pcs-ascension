@@ -83,19 +83,6 @@ export const requisitionColumns: ColumnDef<Position>[] = [
     ),
   },
   {
-    id: 'jobFamily',
-    label: 'Job Family',
-    type: 'custom',
-    width: 200,
-    minWidth: 180,
-    sortable: false,
-    resizable: false,
-    draggable: true,
-    renderCell: (row) => (
-      <TruncatedTextCell value={row.jobFamily} maxLength={30} />
-    ),
-  },
-  {
     id: 'shift',
     label: 'Shift',
     type: 'custom',

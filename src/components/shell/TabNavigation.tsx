@@ -46,10 +46,11 @@ export const moduleTabConfigs = {
     { id: "np-settings", label: "NP Settings", path: "/staffing/np-settings" },
   ],
   positions: [
-    { id: "employees", label: "Employees", path: "/positions" },
-    { id: "contractors", label: "Contractors", path: "/positions/contractors" },
-    { id: "requisitions", label: "Requisitions", path: "/positions/requisitions" },
-    { id: "flex", label: "FLEX Positions", path: "/positions/flex" },
+    { id: "employees", label: "Employee", path: "/positions" },
+    { id: "open-requisition", label: "Open Requisition", path: "/positions?tab=open-requisition" },
+    { id: "open-position", label: "Open Position", path: "/positions?tab=open-position" },
+    { id: "contractors", label: "Contractor", path: "/positions?tab=contractors" },
+    { id: "contractor-requisition", label: "Contractor Requisition", path: "/positions?tab=contractor-requisition" },
   ],
   analytics: [
     { id: "region", label: "Region", path: "/analytics" },
