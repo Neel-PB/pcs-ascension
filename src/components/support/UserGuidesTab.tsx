@@ -6,7 +6,7 @@ import { useAIHub } from "@/hooks/useAIHub";
 import { useFeedbackStore } from "@/stores/useFeedbackStore";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { TOUR_STEP_REGISTRY, getStepTitle } from "@/components/tour/tourStepRegistry";
-import { Input } from "@/components/ui/input";
+import { SearchField } from "@/components/ui/search-field";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -31,7 +31,6 @@ import {
   Briefcase,
   ChevronRight,
   Search,
-  X,
 } from "@/lib/icons";
 import type { IconType } from "react-icons";
 
@@ -145,25 +144,12 @@ export function UserGuidesTab() {
       </p>
 
       {/* Compact search field */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-        <Input
-          placeholder="Search tours and steps…"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          className="pl-9 pr-8 h-9"
-        />
-        {inputValue && (
-          <button
-            type="button"
-            onClick={() => setInputValue("")}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-            aria-label="Clear search"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
-        )}
-      </div>
+      <SearchField
+        placeholder="Search tours and steps…"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        onClear={() => setInputValue("")}
+      />
 
       <Tabs defaultValue="Staffing" value={visibleCategories.length ? undefined : "Staffing"} key={defaultTab}>
         <TabsList className="w-full">
