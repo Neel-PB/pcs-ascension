@@ -129,9 +129,9 @@ export default function SupportPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="h-full flex flex-col gap-4 overflow-hidden">
       {/* Contact Support Banner */}
-      <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
+      <div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md flex-shrink-0">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-primary/10 rounded-lg">
             <MessageSquare className="h-5 w-5 text-primary" />
@@ -154,7 +154,7 @@ export default function SupportPage() {
       </div>
 
       {/* Tabs */}
-      <div className="mb-6 flex justify-center">
+      <div className="flex justify-center flex-shrink-0">
         <ToggleButtonGroup
           items={tabs}
           activeId={activeTab}
@@ -163,16 +163,16 @@ export default function SupportPage() {
         />
       </div>
 
-      <div className="space-y-6">
+      <div className="min-h-0 max-h-full overflow-auto">
         {activeTab === "guides" && (
-          <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
+          <div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">
             <UserGuidesTab />
           </div>
         )}
 
         {activeTab === "faqs" && (
-          <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
-          <div className="mb-6">
+          <div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">
+          <div className="mb-4">
             <SearchField
               placeholder="Search FAQs..."
               value={searchQuery}
@@ -202,7 +202,7 @@ export default function SupportPage() {
         )}
 
         {activeTab === "videos" && (
-          <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
+          <div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {trainingVideos.map((video, index) => (
               <div key={index} className="group bg-shell-elevated rounded-lg p-4 hover:shadow-medium transition-all cursor-pointer">
@@ -227,12 +227,12 @@ export default function SupportPage() {
         )}
 
         {activeTab === "troubleshooting" && (
-          <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
+          <div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">
           <div className="space-y-4">
             {troubleshootingTopics.map((topic, index) => (
               <div key={index} className="p-4 bg-shell-elevated rounded-lg border border-shell-elevated">
                 <h3 className="font-semibold text-foreground mb-2 flex items-start gap-2">
-                  <AlertCircle className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                  <AlertCircle className="h-5 w-5 text-warning mt-0.5 flex-shrink-0" />
                   {topic.issue}
                 </h3>
                 <p className="text-sm text-shell-muted ml-7">{topic.solution}</p>
@@ -243,7 +243,7 @@ export default function SupportPage() {
         )}
 
         {activeTab === "report" && (
-          <div className="bg-shell-elevated rounded-xl p-6 shadow-soft">
+          <div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">
           <form onSubmit={handleSubmitIssue} className="space-y-4">
             <div>
               <label className="text-sm font-medium text-foreground mb-2 block">Issue Title</label>
