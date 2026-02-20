@@ -508,9 +508,9 @@ This metric helps:
         selectedPstat={selectedPstat === "all-pstat" ? null : selectedPstat}
       />
       
-      <div className="flex flex-col h-[calc(100vh-var(--header-height)-2rem)]">
+      <div className="flex flex-col gap-4 h-[calc(100vh-var(--header-height)-2rem)]">
         {/* Filters */}
-        <div className="py-2" data-tour="filter-bar">
+        <div data-tour="filter-bar">
         <FilterBar 
           onRegionChange={setRegion}
           onMarketChange={setMarket}
@@ -530,7 +530,7 @@ This metric helps:
         />
       </div>
 
-      <div className="mb-6 flex justify-center" data-tour="tab-navigation">
+      <div className="flex justify-center" data-tour="tab-navigation">
         <ToggleButtonGroup
           items={tabs}
           activeId={activeTab}
