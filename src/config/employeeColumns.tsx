@@ -48,19 +48,6 @@ export const employeeColumns: ColumnDef<Position>[] = [
     ),
   },
   {
-    id: 'jobFamily',
-    label: 'Job Family',
-    type: 'custom',
-    width: 200,
-    minWidth: 180,
-    sortable: true,
-    resizable: false,
-    draggable: true,
-    renderCell: (row) => (
-      <TruncatedTextCell value={row.jobFamily} maxLength={30} />
-    ),
-  },
-  {
     id: 'FTE',
     label: 'Hired FTE',
     type: 'number',
@@ -109,19 +96,6 @@ export const employeeColumns: ColumnDef<Position>[] = [
         variant={row.payrollStatus === 'Active' ? 'default' : 'secondary'}
         maxLength={30}
       />
-    ),
-  },
-  {
-    id: 'employmentFlag',
-    label: 'Staff Type',
-    type: 'custom',
-    width: 180,
-    minWidth: 170,
-    sortable: true,
-    resizable: false,
-    draggable: true,
-    renderCell: (row) => (
-      <TruncatedTextCell value={row.employmentFlag || row.employeeType} maxLength={30} />
     ),
   },
   {

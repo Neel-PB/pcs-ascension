@@ -3,7 +3,9 @@ import { useSearchParams } from "react-router-dom";
 import { ToggleButtonGroup } from "@/components/ui/toggle-button-group";
 import { FilterBar } from "@/components/staffing/FilterBar";
 import { EmployeesTab } from "./EmployeesTab";
+import { OpenRequisitionTab } from "./OpenRequisitionTab";
 import { ContractorsTab } from "./ContractorsTab";
+import { ContractorRequisitionTab } from "./ContractorRequisitionTab";
 import { RequisitionsTab } from "./RequisitionsTab";
 import { WorkforceDrawer } from "@/components/workforce/WorkforceDrawer";
 import { WorkforceDrawerTrigger } from "@/components/workforce/WorkforceDrawerTrigger";
@@ -16,7 +18,7 @@ import { PositionsTour } from "@/components/tour/PositionsTour";
 export default function PositionsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const validTabs = ["employees", "contractors", "requisitions"];
+  const validTabs = ["employees", "open-requisition", "open-position", "contractors", "contractor-requisition"];
   const [activeTab, setActiveTab] = useState(
     tabParam && validTabs.includes(tabParam) ? tabParam : "employees"
   );
@@ -76,9 +78,11 @@ export default function PositionsPage() {
   }
 
   const tabs = [
-    { id: "employees", label: "Employees" },
-    { id: "contractors", label: "Contractors" },
-    { id: "requisitions", label: "Open Positions" },
+    { id: "employees", label: "Employee" },
+    { id: "open-requisition", label: "Open Requisition" },
+    { id: "open-position", label: "Open Position" },
+    { id: "contractors", label: "Contractor" },
+    { id: "contractor-requisition", label: "Contractor Requisition" },
   ];
 
   return (
@@ -135,6 +139,26 @@ export default function PositionsPage() {
                 selectedDepartment={selectedDepartment}
               />
             )}
+            {activeTab === "open-requisition" && (
+              <OpenRequisitionTab
+                selectedRegion={selectedRegion}
+                selectedMarket={selectedMarket}
+                selectedFacility={selectedFacility}
+                selectedPstat={selectedPstat}
+                selectedLevel2={selectedLevel2}
+                selectedDepartment={selectedDepartment}
+              />
+            )}
+            {activeTab === "open-position" && (
+              <RequisitionsTab
+                selectedRegion={selectedRegion}
+                selectedMarket={selectedMarket}
+                selectedFacility={selectedFacility}
+                selectedPstat={selectedPstat}
+                selectedLevel2={selectedLevel2}
+                selectedDepartment={selectedDepartment}
+              />
+            )}
             {activeTab === "contractors" && (
               <ContractorsTab
                 selectedRegion={selectedRegion}
@@ -145,8 +169,8 @@ export default function PositionsPage() {
                 selectedDepartment={selectedDepartment}
               />
             )}
-            {activeTab === "requisitions" && (
-              <RequisitionsTab
+            {activeTab === "contractor-requisition" && (
+              <ContractorRequisitionTab
                 selectedRegion={selectedRegion}
                 selectedMarket={selectedMarket}
                 selectedFacility={selectedFacility}
