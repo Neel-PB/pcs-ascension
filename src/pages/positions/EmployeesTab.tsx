@@ -279,7 +279,7 @@ export function EmployeesTab({
   const showEmptyState = !isFetching && (!employees || employees.length === 0);
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+    <div className="flex flex-col min-h-0 max-h-full overflow-hidden">
       <div className="flex justify-between items-center mb-4 gap-4 flex-shrink-0">
         <SearchField
           placeholder="Search employees..."
@@ -322,7 +322,7 @@ export function EmployeesTab({
           <p className="text-muted-foreground">No employees found matching the filters.</p>
         </div>
       ) : (
-        <div data-tour="positions-table" className="flex-1 min-h-0 flex flex-col">
+        <div data-tour="positions-table" className="min-h-0 max-h-full flex flex-col">
           <EditableTable
             columns={columnsWithHandlers}
             data={filteredAndSortedEmployees}
@@ -332,7 +332,7 @@ export function EmployeesTab({
             onSort={handleSort}
             onRowClick={handleRowClick}
             storeNamespace="employees-columns-v2"
-            className="flex-1 min-h-0"
+            className="min-h-0 max-h-full"
           />
         </div>
       )}

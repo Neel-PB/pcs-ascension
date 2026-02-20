@@ -93,11 +93,13 @@ interface ContractorRequisitionTabProps {
 
 export function ContractorRequisitionTab(_props: ContractorRequisitionTabProps) {
   return (
-    <EditableTable
-      data={dummyData}
-      columns={columns}
-      getRowId={(row) => row.id}
-      storeNamespace="contractor-requisitions"
-    />
+    <div className="min-h-0 max-h-full overflow-hidden">
+      <EditableTable
+        data={dummyData}
+        columns={columns}
+        getRowId={(row) => row.id}
+        storeNamespace="contractor-requisitions"
+      />
+    </div>
   );
 }

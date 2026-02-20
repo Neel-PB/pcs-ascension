@@ -93,11 +93,13 @@ interface OpenRequisitionTabProps {
 
 export function OpenRequisitionTab(_props: OpenRequisitionTabProps) {
   return (
-    <EditableTable
-      data={dummyData}
-      columns={columns}
-      getRowId={(row) => row.id}
-      storeNamespace="open-requisitions"
-    />
+    <div className="min-h-0 max-h-full overflow-hidden">
+      <EditableTable
+        data={dummyData}
+        columns={columns}
+        getRowId={(row) => row.id}
+        storeNamespace="open-requisitions"
+      />
+    </div>
   );
 }
