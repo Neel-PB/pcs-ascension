@@ -662,7 +662,7 @@ export function VarianceAnalysis({
   );
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6 h-full">
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -720,7 +720,7 @@ export function VarianceAnalysis({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.1 }}
-        className="rounded-xl border shadow-sm bg-card overflow-auto max-h-[calc(100vh-var(--header-height)-340px)] [&>div]:overflow-visible"
+        className="rounded-xl border shadow-sm bg-card overflow-auto flex-1 min-h-0 [&>div]:overflow-visible"
         data-tour="variance-table"
       >
         <VarianceTable />

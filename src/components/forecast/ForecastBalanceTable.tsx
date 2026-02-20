@@ -37,8 +37,8 @@ export function ForecastBalanceTable({ rows, isLoading }: ForecastBalanceTablePr
   }
   
   return (
-    <Card className="overflow-hidden">
-      <div className="border rounded-md max-h-[calc(100vh-var(--header-height)-300px)] overflow-auto">
+    <Card className="overflow-hidden h-full flex flex-col">
+      <div className="border rounded-md flex-1 min-h-0 overflow-auto">
         <div style={{ minWidth: 'max-content' }}>
           {/* Sticky Header */}
           <div

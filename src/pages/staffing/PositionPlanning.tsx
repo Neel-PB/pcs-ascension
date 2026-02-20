@@ -530,7 +530,7 @@ const FTESkillShiftTable = ({
     : data.map(d => ({ type: 'skill' as const, id: d.skill, name: d.skill, data: d }));
   
   return (
-    <div className="overflow-auto max-h-[calc(100vh-var(--header-height)-340px)] [&>div]:overflow-visible">
+    <div className="overflow-auto flex-1 min-h-0 [&>div]:overflow-visible">
       <Table className="table-fixed">
         <TableHeader className="sticky top-0 z-10 bg-card">
           <TableRow>
@@ -741,7 +741,7 @@ export default function PositionPlanning({ selectedDepartment }: PositionPlannin
 
   return (
     <TooltipProvider delayDuration={300} skipDelayDuration={300}>
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6 h-full">
       {/* Header with Legend */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -962,7 +962,7 @@ export default function PositionPlanning({ selectedDepartment }: PositionPlannin
       {/* Table */}
       <motion.div
         data-tour="planning-table"
-        className="bg-card rounded-xl border shadow-sm overflow-hidden"
+        className="bg-card rounded-xl border shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
