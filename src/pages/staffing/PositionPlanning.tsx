@@ -530,7 +530,7 @@ const FTESkillShiftTable = ({
     : data.map(d => ({ type: 'skill' as const, id: d.skill, name: d.skill, data: d }));
   
   return (
-    <div className="overflow-auto max-h-[600px] [&>div]:overflow-visible">
+    <div className="overflow-auto max-h-[calc(100vh-var(--header-height)-240px)] [&>div]:overflow-visible">
       <Table className="table-fixed">
         <TableHeader className="sticky top-0 z-10 bg-card">
           <TableRow>

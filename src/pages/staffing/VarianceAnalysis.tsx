@@ -720,7 +720,7 @@ export function VarianceAnalysis({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.1 }}
-        className="rounded-xl border shadow-sm bg-card overflow-auto max-h-[600px] [&>div]:overflow-visible"
+        className="rounded-xl border shadow-sm bg-card overflow-auto max-h-[calc(100vh-var(--header-height)-240px)] [&>div]:overflow-visible"
         data-tour="variance-table"
       >
         <VarianceTable />
