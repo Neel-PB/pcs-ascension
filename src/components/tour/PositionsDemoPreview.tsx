@@ -170,34 +170,73 @@ const CommentsPreview = () => (
 
 /* ─── Position Details Preview ─── */
 
-const PositionDetailsPreview = () => (
-  <div className="rounded-lg border border-primary/20 bg-primary/[0.02] p-3 space-y-2 mt-1 shadow-sm ring-1 ring-primary/10">
-    <p className="text-[11px] font-semibold text-primary uppercase tracking-wider">Detail Sheet</p>
-
-    {/* Tab switcher */}
-    <div className="flex gap-1 border-b border-border pb-1">
-      <span className="text-[9px] font-medium text-primary border-b border-primary pb-0.5 px-1">Details</span>
-      <span className="text-[9px] text-muted-foreground px-1">Comments</span>
+const PositionDetailsPreview = () => {
+  const Field = ({ label, value }: { label: string; value: string }) => (
+    <div>
+      <p className="text-[7px] text-muted-foreground mb-0.5">{label}</p>
+      <p className="text-[9px] font-medium text-foreground">{value}</p>
     </div>
+  );
 
-    {/* Fields grid */}
-    <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
-      {[
-        ['Position #', '1042857'],
-        ['Job Title', 'RN - Med/Surg'],
-        ['FTE', '1.0'],
-        ['Shift', 'Day'],
-        ['Department', 'Medical Surgical'],
-        ['Status', 'Filled'],
-      ].map(([label, value]) => (
-        <div key={label} className="space-y-0.5">
-          <span className="text-[8px] text-muted-foreground">{label}</span>
-          <div className="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] text-foreground/80">{value}</div>
+  return (
+    <div className="rounded-lg border border-primary/20 bg-primary/[0.02] p-3 space-y-2 mt-1 shadow-sm ring-1 ring-primary/10">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-[11px] font-semibold text-foreground">Abagayle Peaden</p>
+          <p className="text-[8px] text-muted-foreground">RN-Pediatric ICU</p>
         </div>
-      ))}
+        <span className="text-[7px] font-medium rounded-full px-1.5 py-0.5 bg-green-600 text-white">Active</span>
+      </div>
+
+      {/* Toggle bar */}
+      <div className="flex items-center rounded-full border-2 border-primary p-0.5 gap-0.5">
+        <span className="flex-1 text-center text-[8px] font-medium text-primary-foreground bg-primary rounded-full py-0.5">Details</span>
+        <span className="flex-1 text-center text-[8px] font-medium text-foreground rounded-full py-0.5">Comments</span>
+      </div>
+
+      {/* Position Information */}
+      <div className="bg-muted/50 rounded-lg p-2 space-y-1.5">
+        <p className="text-[8px] font-semibold text-foreground">Position Information</p>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+          <Field label="Position Number" value="5963" />
+          <Field label="Job Title" value="RN-Pediatric ICU" />
+          <Field label="Job Code" value="801210" />
+          <Field label="Job Family" value="Nursing" />
+          <Field label="FTE" value="0.9" />
+          <Field label="Shift" value="Rotating" />
+          <Field label="Standard Hours" value="36" />
+        </div>
+      </div>
+
+      {/* Employment Details */}
+      <div className="bg-muted/50 rounded-lg p-2 space-y-1.5">
+        <p className="text-[8px] font-semibold text-foreground">Employment Details</p>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+          <Field label="Employee Type" value="Regular" />
+          <Field label="Employment Type" value="Full Time" />
+          <Field label="Employment Flag" value="Active" />
+          <Field label="Employee ID" value="10284756" />
+        </div>
+      </div>
+
+      {/* Location */}
+      <div className="bg-muted/50 rounded-lg p-2 space-y-1.5">
+        <p className="text-[8px] font-semibold text-foreground">Location</p>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+          <Field label="Market" value="Indiana" />
+          <Field label="Facility" value="St. Vincent Indianapolis" />
+          <Field label="Department" value="Pediatric ICU" />
+        </div>
+      </div>
+
+      {/* Close button */}
+      <div className="flex justify-end pt-0.5">
+        <span className="text-[8px] font-medium text-primary-foreground bg-primary px-3 py-1 rounded-full">Close</span>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 /* ─── Main Export ─── */
 
