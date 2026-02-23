@@ -1,38 +1,71 @@
 
 
-## Fix Feedback Table Padding, PB Status Default, Description Tooltip, and Styling
+## Polish Feedback Table Visual Readability
 
-### Issues Found
-1. **Padding mismatch**: Header cells use `px-4` padding (from `DraggableColumnHeader`), but most feedback `renderCell` functions render raw `<span>` or `<Select>` elements without matching `px-4` padding. The Positions module cells use `CellButton` which provides `px-4 py-2` -- feedback columns skip this.
-2. **PB Status missing "Pending"**: The `pbStatusConfig` only has `in_progress`, `resolved`, `closed` -- no `pending` option. New feedback rows likely have `pb_status = 'in_progress'` by default, but you want `pending` as the default.
-3. **Description tooltip**: Currently a plain `<span>` with `line-clamp-2`. Needs a tooltip for long content, matching the `TruncatedTextCell` pattern used by Title.
-4. **Styling consistency**: Badge colors and Select trigger styles should follow the app's established patterns (Ascension brand blue for primary states, consistent `rounded-lg` selects per Helix reference).
+### Problems Identified (from screenshot)
+1. Select trigger chevrons create visual noise -- every badge has a small dropdown arrow that clutters the row
+2. Badge colors feel inconsistent -- "In Progress" orange is too loud, and the overall palette needs refinement
+3. Priority "High" uses red/destructive -- should use orange per app's shortage color semantics
+4. Date text is too small and muted to read easily
+5. Actions column icons (camera, "0" count, trash) feel cramped and visually disconnected
+6. Cell heights are inconsistent due to double-padding (wrapper `px-4 py-1` + select trigger padding)
 
-### Changes
+### Solution
 
-**`src/config/feedbackColumns.tsx`**
+**File: `src/config/feedbackColumns.tsx`**
 
-1. **Add `pending` to `pbStatusConfig`**:
-   - Add entry: `pending: { label: 'Pending', color: 'bg-blue-500/10 text-blue-600' }`
-   - This ensures new feedback with `pb_status = 'pending'` renders correctly
+**1. Cleaner Select triggers (remove visual noise)**
+- Hide the chevron icon on select triggers using `[&>svg]:hidden` so badges appear clean
+- Widen triggers slightly so the full badge text is never clipped
+- Remove the extra `py-1` wrapper padding; let cells use consistent `h-full` with centered flex content
 
-2. **Description column** -- wrap in `TruncatedTextCell` with tooltip:
-   - Replace raw `<span className="line-clamp-2">` with `TruncatedTextCell` (same component used by Title column)
-   - This provides automatic tooltip on hover for lengthy descriptions
+**2. Refined color palette (brand-aligned)**
+- **Type badges**: Keep current colors but ensure consistency
+  - Bug: `bg-destructive/10 text-destructive` (red tint, appropriate for bugs)
+  - Feature: `bg-amber-100 text-amber-700` (warmer, more readable)
+  - Improve: `bg-primary/10 text-primary` (brand blue)
+  - Question: `bg-purple-100 text-purple-700`
+- **ACS Status badges**:
+  - Pending: `bg-blue-100 text-blue-700`
+  - Approved: `bg-emerald-100 text-emerald-700`
+  - Disregard: `bg-muted text-muted-foreground`
+  - Backlog: `bg-amber-100 text-amber-700`
+- **PB Status badges**:
+  - Pending: `bg-blue-100 text-blue-700`
+  - In Progress: `bg-amber-100 text-amber-700`
+  - Resolved: `bg-emerald-100 text-emerald-700`
+  - Closed: `bg-muted text-muted-foreground`
+- **Priority**: Use `text-orange-600` for High (not destructive red), `text-amber-600` for Medium, `text-muted-foreground` for Low -- matching the app's orange shortage semantics
 
-3. **Wrap non-interactive cells with `px-4` padding**:
-   - **Author cell**: Wrap the name `<span>` inside a `div` with `px-4` to match header padding
-   - **Type, ACS Status, PB Status, Priority cells**: Add `px-4` to the outer wrapper of each Select so the badge/text aligns with the column header
-   - **Date cell**: Wrap in a `div` with `px-4`
-   - **Actions cell**: Add `px-4` to the flex container
+**3. Date column readability**
+- Change from `text-xs text-muted-foreground` to `text-sm text-foreground` so dates are actually readable
+- Wrap in `CellButton` for consistent padding and hover behavior
 
-4. **Apply app color/style conventions**:
-   - Use `rounded-lg` on Select triggers per Helix component reference
-   - Use brand-aligned badge colors matching existing app patterns (primary/10 for active states)
+**4. Actions column polish**
+- Increase column width from 130 to 140px
+- Add `gap-2` instead of `gap-1` for breathing room between icons
+- Style the comment count as a proper small text next to the icon, not a cramped "0"
+- Use `text-muted-foreground` for camera and comments icons for a subtler look
+- Keep only the trash icon as `text-destructive`
 
-### Technical Detail
+**5. Consistent cell layout**
+- Remove the extra `<div className="px-4 py-1">` wrappers from select cells
+- Instead, use a single `<div className="px-2 flex items-center h-full">` wrapper that aligns with the grid row height
+- Author and Date cells use `CellButton` (which provides `px-4 py-2` automatically) for consistency with other columns
 
-The core padding fix is adding `px-4` to each `renderCell` return since the `DraggableColumnHeader` already uses `px-4`, and cells rendered via `CellButton` (like `TruncatedTextCell`) also use `px-4`. The feedback-specific cells (Select dropdowns, raw spans, action buttons) currently skip this, causing visual misalignment.
+### Technical Detail -- Select Trigger Cleanup
+
+Current (noisy):
+```
+<SelectTrigger className="h-7 w-[95px] text-xs border-none bg-transparent hover:bg-muted/50 rounded-lg px-1">
+```
+
+Proposed (clean):
+```
+<SelectTrigger className="h-7 border-none bg-transparent hover:bg-muted/50 rounded-lg px-1.5 [&>svg]:hidden [&>span]:flex [&>span]:items-center">
+```
+
+The `[&>svg]:hidden` hides the chevron so the badge alone acts as the clickable trigger, significantly reducing visual clutter while keeping full Select functionality.
 
 ### Files Changed
-- `src/config/feedbackColumns.tsx` (all changes in this single file)
+- `src/config/feedbackColumns.tsx` (single file, all visual changes)
