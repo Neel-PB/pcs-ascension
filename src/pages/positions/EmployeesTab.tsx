@@ -331,7 +331,7 @@ export function EmployeesTab({
             sortDirection={sortDirection}
             onSort={handleSort}
             onRowClick={handleRowClick}
-            storeNamespace="employees-columns-v2"
+            storeNamespace="employees-columns-v3"
             className="min-h-0 max-h-full"
           />
         </div>
