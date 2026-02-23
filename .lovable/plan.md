@@ -1,21 +1,31 @@
 
 
-## Fix Content Area Left/Right Padding to Match Header
+## Fix Tab/KPI Width Misalignment on Staffing Page
 
 ### Problem
 
-The main content area (`ShellLayout`) uses `px-4` (16px) horizontal padding, while the header uses `px-6` (24px). This creates a visual misalignment where the tabs, filter bar, and KPI cards appear to extend further left than the header content above them. The right side looks correct because the scrollbar absorbs some space there.
+The tab toggle bar spans the full content width, but the KPI cards below are indented with an extra `pl-6` (24px left padding) applied to the `DraggableSectionsContainer`. This makes the KPI sections narrower than the tabs, creating a visual misalignment visible only on the Staffing Summary page.
 
-### Change
+### Root Cause
 
-**File: `src/components/shell/ShellLayout.tsx`**
-
-Update the `<main>` element's padding from `px-4` to `px-6` to match the header's inner `px-6` padding. This ensures the left edge of content (filter selects, toggle tabs, KPI cards) aligns vertically with the "Position Control System" title in the header.
+In `src/components/staffing/DraggableSectionsContainer.tsx` (line 121), the KPI sections wrapper has `pl-6`:
 
 ```
-Before: className="px-4 py-4 bg-shell-elevated ..."
-After:  className="px-6 py-4 bg-shell-elevated ..."
+<div className="space-y-8 pl-6" data-tour="kpi-sections">
 ```
 
-This is a single-line change that affects all pages uniformly (Staffing, Positions, Analytics, Reports, Support, Admin) since they all render inside ShellLayout.
+This extra left padding pushes all KPI cards inward relative to the tabs and filter bar above.
+
+### Fix
+
+**File: `src/components/staffing/DraggableSectionsContainer.tsx`**
+
+Remove `pl-6` from the container className on line 121:
+
+```
+Before: className="space-y-8 pl-6"
+After:  className="space-y-8"
+```
+
+This single change aligns the KPI card sections flush with the tabs and filter bar. No other pages are affected since this component is only used on the Staffing Summary tab.
 
