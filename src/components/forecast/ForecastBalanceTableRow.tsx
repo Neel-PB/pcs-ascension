@@ -71,7 +71,7 @@ export function ForecastBalanceTableRow({ row, isExpanded, onToggle }: ForecastB
       
       {/* Expanded Content */}
       {isExpanded && (
-        <div className="bg-muted/20 px-6 py-4 border-t sticky left-0 overflow-hidden" style={{ width: 'calc(100vw - 120px)' }}>
+        <div className="bg-muted/20 px-6 py-4 border-t sticky left-0 overflow-hidden" style={{ maxWidth: 'calc(100vw - 130px)', width: '100%' }}>
           <BalanceTwoPanel
             hiredFTE={row.hiredFTE}
             targetFTE={row.targetFTE}
