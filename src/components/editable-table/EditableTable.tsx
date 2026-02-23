@@ -227,9 +227,6 @@ export function EditableTable<T = any>({
                 gridTemplate={gridTemplate}
                 onSort={onSort}
                 onColumnResize={handleColumnResize}
-                onColumnHide={handleColumnHide}
-                onColumnResetWidth={handleColumnResetWidth}
-                onColumnAutoFit={handleColumnAutoFit}
                 sortField={sortField}
                 sortDirection={sortDirection}
               />
