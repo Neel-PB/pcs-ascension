@@ -1,8 +1,7 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { useTheme } from 'next-themes';
+import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Copy, Check } from '@/lib/icons';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,7 @@ interface MarkdownRendererProps {
 }
 
 export const MarkdownRenderer = ({ content }: MarkdownRendererProps) => {
-  const { theme } = useTheme();
+  
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const handleCopyCode = (code: string) => {
@@ -47,7 +46,7 @@ export const MarkdownRenderer = ({ content }: MarkdownRendererProps) => {
                   )}
                 </Button>
                 <SyntaxHighlighter
-                  style={theme === 'dark' ? oneDark : oneLight}
+                  style={oneLight}
                   language={match[1]}
                   PreTag="div"
                   customStyle={{}}
