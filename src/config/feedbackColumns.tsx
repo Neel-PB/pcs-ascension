@@ -42,29 +42,29 @@ import { supabase } from '@/integrations/supabase/client';
 
 const typeConfig: Record<string, { icon: React.ElementType; label: string; color: string }> = {
   bug: { icon: Bug, label: 'Bug', color: 'bg-destructive/10 text-destructive' },
-  feature: { icon: Lightbulb, label: 'Feature', color: 'bg-amber-500/10 text-amber-600' },
-  improvement: { icon: Wrench, label: 'Improve', color: 'bg-blue-500/10 text-blue-600' },
-  question: { icon: HelpCircle, label: 'Question', color: 'bg-purple-500/10 text-purple-600' },
+  feature: { icon: Lightbulb, label: 'Feature', color: 'bg-amber-100 text-amber-700' },
+  improvement: { icon: Wrench, label: 'Improve', color: 'bg-primary/10 text-primary' },
+  question: { icon: HelpCircle, label: 'Question', color: 'bg-purple-100 text-purple-700' },
 };
 
 const pcsStatusConfig: Record<string, { label: string; color: string }> = {
-  pending: { label: 'Pending', color: 'bg-blue-500/10 text-blue-600' },
-  approved: { label: 'Approved', color: 'bg-emerald-500/10 text-emerald-600' },
+  pending: { label: 'Pending', color: 'bg-blue-100 text-blue-700' },
+  approved: { label: 'Approved', color: 'bg-emerald-100 text-emerald-700' },
   disregard: { label: 'Disregard', color: 'bg-muted text-muted-foreground' },
-  backlog: { label: 'Backlog', color: 'bg-amber-500/10 text-amber-600' },
+  backlog: { label: 'Backlog', color: 'bg-amber-100 text-amber-700' },
 };
 
 const pbStatusConfig: Record<string, { label: string; color: string }> = {
-  pending: { label: 'Pending', color: 'bg-blue-500/10 text-blue-600' },
-  in_progress: { label: 'In Progress', color: 'bg-amber-500/10 text-amber-600' },
-  resolved: { label: 'Resolved', color: 'bg-emerald-500/10 text-emerald-600' },
+  pending: { label: 'Pending', color: 'bg-blue-100 text-blue-700' },
+  in_progress: { label: 'In Progress', color: 'bg-amber-100 text-amber-700' },
+  resolved: { label: 'Resolved', color: 'bg-emerald-100 text-emerald-700' },
   closed: { label: 'Closed', color: 'bg-muted text-muted-foreground' },
 };
 
 const priorityConfig: Record<string, { label: string; color: string }> = {
   low: { label: 'Low', color: 'text-muted-foreground' },
   medium: { label: 'Medium', color: 'text-amber-600' },
-  high: { label: 'High', color: 'text-destructive' },
+  high: { label: 'High', color: 'text-orange-600' },
 };
 
 function formatDate(dateString: string) {
@@ -210,9 +210,9 @@ export function createFeedbackColumns(handlers: FeedbackColumnHandlers): ColumnD
         const info = typeConfig[row.type] || typeConfig.question;
         const TypeIcon = info.icon;
         return (
-          <div className="px-4 py-1">
+          <div className="px-2 flex items-center h-full">
           <Select value={row.type} onValueChange={(v) => onTypeChange(row.id, v)}>
-            <SelectTrigger className="h-7 w-[95px] text-xs border-none bg-transparent hover:bg-muted/50 rounded-lg px-1 [&>span]:flex [&>span]:items-center">
+            <SelectTrigger className="h-7 border-none bg-transparent hover:bg-muted/50 rounded-lg px-1.5 [&>svg]:hidden [&>span]:flex [&>span]:items-center">
               <SelectValue>
                 <Badge variant="secondary" className={cn('text-xs', info.color)}>
                   <TypeIcon className="h-3 w-3 mr-1" />
@@ -248,14 +248,14 @@ export function createFeedbackColumns(handlers: FeedbackColumnHandlers): ColumnD
       resizable: false,
       draggable: true,
       renderCell: (row) => (
-        <div className="px-4 py-1">
+        <div className="px-2 flex items-center h-full">
         <Select
           value={row.pcs_status}
           onValueChange={(v) => onPcsStatusChange(row.id, v)}
           disabled={!canManageFeedback}
         >
           <SelectTrigger className={cn(
-            'h-7 w-[105px] text-xs border-none bg-transparent hover:bg-muted/50 rounded-lg px-1',
+            'h-7 border-none bg-transparent hover:bg-muted/50 rounded-lg px-1.5 [&>svg]:hidden [&>span]:flex [&>span]:items-center',
             !canManageFeedback && 'opacity-60 cursor-not-allowed'
           )}>
             <SelectValue>
@@ -290,14 +290,14 @@ export function createFeedbackColumns(handlers: FeedbackColumnHandlers): ColumnD
         const isPbLocked = row.pcs_status === 'disregard' || row.pcs_status === 'backlog';
         const effectiveStatus = isPbLocked ? 'closed' : row.pb_status;
         return (
-          <div className="px-4 py-1">
+          <div className="px-2 flex items-center h-full">
           <Select
             value={effectiveStatus}
             onValueChange={(v) => onPbStatusChange(row.id, v)}
             disabled={isPbLocked || !canManageFeedback}
           >
             <SelectTrigger className={cn(
-              'h-7 w-[100px] text-xs border-none bg-transparent hover:bg-muted/50 rounded-lg px-1',
+              'h-7 border-none bg-transparent hover:bg-muted/50 rounded-lg px-1.5 [&>svg]:hidden [&>span]:flex [&>span]:items-center',
               (isPbLocked || !canManageFeedback) && 'opacity-60 cursor-not-allowed'
             )}>
               <SelectValue>
@@ -332,9 +332,9 @@ export function createFeedbackColumns(handlers: FeedbackColumnHandlers): ColumnD
       renderCell: (row) => {
         const info = priorityConfig[row.priority] || priorityConfig.medium;
         return (
-          <div className="px-4 py-1">
+          <div className="px-2 flex items-center h-full">
           <Select value={row.priority} onValueChange={(v) => onPriorityChange(row.id, v)}>
-            <SelectTrigger className="h-7 w-[75px] text-xs border-none bg-transparent hover:bg-muted/50 rounded-lg px-1">
+            <SelectTrigger className="h-7 border-none bg-transparent hover:bg-muted/50 rounded-lg px-1.5 [&>svg]:hidden [&>span]:flex [&>span]:items-center">
               <SelectValue>
                 <span className={cn('text-xs font-medium', info.color)}>{info.label}</span>
               </SelectValue>
@@ -361,20 +361,20 @@ export function createFeedbackColumns(handlers: FeedbackColumnHandlers): ColumnD
       resizable: false,
       draggable: true,
       renderCell: (row) => (
-        <div className="px-4 py-2"><span className="text-xs text-muted-foreground">{formatDate(row.created_at)}</span></div>
+        <div className="px-4 py-2"><span className="text-sm text-foreground">{formatDate(row.created_at)}</span></div>
       ),
     },
     {
       id: 'actions',
       label: 'Actions',
       type: 'custom',
-      width: 130,
-      minWidth: 130,
+      width: 140,
+      minWidth: 140,
       sortable: false,
       resizable: false,
       draggable: false,
       renderCell: (row) => (
-        <div className="flex items-center gap-1 px-4">
+        <div className="flex items-center gap-2 px-4">
           <ScreenshotButton screenshotUrl={row.screenshot_url} />
           <FeedbackCommentsDialog
             feedbackId={row.id}
