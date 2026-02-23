@@ -55,6 +55,7 @@ const pcsStatusConfig: Record<string, { label: string; color: string }> = {
 };
 
 const pbStatusConfig: Record<string, { label: string; color: string }> = {
+  pending: { label: 'Pending', color: 'bg-blue-500/10 text-blue-600' },
   in_progress: { label: 'In Progress', color: 'bg-amber-500/10 text-amber-600' },
   resolved: { label: 'Resolved', color: 'bg-emerald-500/10 text-emerald-600' },
   closed: { label: 'Closed', color: 'bg-muted text-muted-foreground' },
@@ -173,7 +174,7 @@ export function createFeedbackColumns(handlers: FeedbackColumnHandlers): ColumnD
       resizable: false,
       draggable: true,
       renderCell: (row) => (
-        <span className="text-xs text-muted-foreground line-clamp-2">{row.description}</span>
+        <TruncatedTextCell value={row.description} maxLength={60} className="text-muted-foreground" />
       ),
     },
     {
@@ -193,7 +194,7 @@ export function createFeedbackColumns(handlers: FeedbackColumnHandlers): ColumnD
         const name = row.author
           ? `${row.author.first_name || ''} ${row.author.last_name || ''}`.trim() || 'Unknown'
           : 'Unknown';
-        return <span className="text-sm font-medium truncate block">{name}</span>;
+        return <div className="px-4 py-2"><span className="text-sm font-medium truncate block">{name}</span></div>;
       },
     },
     {
@@ -209,8 +210,9 @@ export function createFeedbackColumns(handlers: FeedbackColumnHandlers): ColumnD
         const info = typeConfig[row.type] || typeConfig.question;
         const TypeIcon = info.icon;
         return (
+          <div className="px-4 py-1">
           <Select value={row.type} onValueChange={(v) => onTypeChange(row.id, v)}>
-            <SelectTrigger className="h-7 w-[95px] text-xs border-none bg-transparent hover:bg-muted/50 px-1 [&>span]:flex [&>span]:items-center">
+            <SelectTrigger className="h-7 w-[95px] text-xs border-none bg-transparent hover:bg-muted/50 rounded-lg px-1 [&>span]:flex [&>span]:items-center">
               <SelectValue>
                 <Badge variant="secondary" className={cn('text-xs', info.color)}>
                   <TypeIcon className="h-3 w-3 mr-1" />
@@ -232,6 +234,7 @@ export function createFeedbackColumns(handlers: FeedbackColumnHandlers): ColumnD
               })}
             </SelectContent>
           </Select>
+          </div>
         );
       },
     },
@@ -245,13 +248,14 @@ export function createFeedbackColumns(handlers: FeedbackColumnHandlers): ColumnD
       resizable: false,
       draggable: true,
       renderCell: (row) => (
+        <div className="px-4 py-1">
         <Select
           value={row.pcs_status}
           onValueChange={(v) => onPcsStatusChange(row.id, v)}
           disabled={!canManageFeedback}
         >
           <SelectTrigger className={cn(
-            'h-7 w-[105px] text-xs border-none bg-transparent hover:bg-muted/50 px-1',
+            'h-7 w-[105px] text-xs border-none bg-transparent hover:bg-muted/50 rounded-lg px-1',
             !canManageFeedback && 'opacity-60 cursor-not-allowed'
           )}>
             <SelectValue>
@@ -270,6 +274,7 @@ export function createFeedbackColumns(handlers: FeedbackColumnHandlers): ColumnD
             ))}
           </SelectContent>
         </Select>
+        </div>
       ),
     },
     {
@@ -285,13 +290,14 @@ export function createFeedbackColumns(handlers: FeedbackColumnHandlers): ColumnD
         const isPbLocked = row.pcs_status === 'disregard' || row.pcs_status === 'backlog';
         const effectiveStatus = isPbLocked ? 'closed' : row.pb_status;
         return (
+          <div className="px-4 py-1">
           <Select
             value={effectiveStatus}
             onValueChange={(v) => onPbStatusChange(row.id, v)}
             disabled={isPbLocked || !canManageFeedback}
           >
             <SelectTrigger className={cn(
-              'h-7 w-[100px] text-xs border-none bg-transparent hover:bg-muted/50 px-1',
+              'h-7 w-[100px] text-xs border-none bg-transparent hover:bg-muted/50 rounded-lg px-1',
               (isPbLocked || !canManageFeedback) && 'opacity-60 cursor-not-allowed'
             )}>
               <SelectValue>
@@ -310,6 +316,7 @@ export function createFeedbackColumns(handlers: FeedbackColumnHandlers): ColumnD
               ))}
             </SelectContent>
           </Select>
+          </div>
         );
       },
     },
@@ -325,8 +332,9 @@ export function createFeedbackColumns(handlers: FeedbackColumnHandlers): ColumnD
       renderCell: (row) => {
         const info = priorityConfig[row.priority] || priorityConfig.medium;
         return (
+          <div className="px-4 py-1">
           <Select value={row.priority} onValueChange={(v) => onPriorityChange(row.id, v)}>
-            <SelectTrigger className="h-7 w-[75px] text-xs border-none bg-transparent hover:bg-muted/50 px-1">
+            <SelectTrigger className="h-7 w-[75px] text-xs border-none bg-transparent hover:bg-muted/50 rounded-lg px-1">
               <SelectValue>
                 <span className={cn('text-xs font-medium', info.color)}>{info.label}</span>
               </SelectValue>
@@ -339,6 +347,7 @@ export function createFeedbackColumns(handlers: FeedbackColumnHandlers): ColumnD
               ))}
             </SelectContent>
           </Select>
+          </div>
         );
       },
     },
@@ -352,7 +361,7 @@ export function createFeedbackColumns(handlers: FeedbackColumnHandlers): ColumnD
       resizable: false,
       draggable: true,
       renderCell: (row) => (
-        <span className="text-xs text-muted-foreground">{formatDate(row.created_at)}</span>
+        <div className="px-4 py-2"><span className="text-xs text-muted-foreground">{formatDate(row.created_at)}</span></div>
       ),
     },
     {
@@ -365,7 +374,7 @@ export function createFeedbackColumns(handlers: FeedbackColumnHandlers): ColumnD
       resizable: false,
       draggable: false,
       renderCell: (row) => (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 px-4">
           <ScreenshotButton screenshotUrl={row.screenshot_url} />
           <FeedbackCommentsDialog
             feedbackId={row.id}
