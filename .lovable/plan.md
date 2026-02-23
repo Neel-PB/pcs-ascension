@@ -1,61 +1,42 @@
 
 
-## Fix: Allow Facility Filter Dropdown to Open Above Tour Overlay
+## Simplify: Tour Shows the Empty State Instead of Highlighting the Filter
 
 ### Problem
-The tour correctly shows the "Select a Facility" prompt with `spotlightClicks: true`, which allows clicking the filter trigger. However, when the facility dropdown opens, its popover content has `z-index: 50` while the Joyride overlay sits at `z-index: 10000`. The dropdown renders behind the overlay, making it impossible to interact with.
+The current implementation adds special tour steps that highlight the facility filter and try to let the user interact with it during the tour. This is overly complex. The page already has a clear "Select a Facility" empty state (the screen you showed). The tour should simply show that empty state as a tour step and move on, rather than skipping the entire section.
 
-### Solution
-When the tour is running on a settings tab and needs a facility selection, temporarily boost the z-index of the facility filter's popover so it renders above the Joyride overlay.
+### Changes
 
-### Technical Details
+**1. `src/pages/staffing/SettingsTab.tsx` (line ~201) and `src/pages/staffing/NPSettingsTab.tsx` (line ~201)**
 
-**File: `src/components/staffing/FilterBar.tsx` (line 365)**
+Add a `data-tour` attribute to the empty state container so the tour can target it:
+- SettingsTab: `data-tour="volume-settings-empty"`
+- NPSettingsTab: `data-tour="np-settings-empty"`
 
-The `PopoverContent` for the facility filter currently has `z-50`. We need to conditionally raise it to `z-[10001]` when the tour is actively prompting for a facility selection.
+**2. `src/components/tour/tourSteps.ts`**
 
-- Accept a new optional prop `tourHighlightFacility?: boolean` on `FilterBar`
-- When `true`, apply `z-[10001]` instead of `z-50` on the facility PopoverContent
+Replace the current "requiresFacility" steps (that target the filter) with steps that target the empty state containers instead. Remove `spotlightClicks` and `requiresFacility` metadata:
 
-**File: `src/components/tour/StaffingTour.tsx`**
+- `volumeSettingsSteps[0]`: Change target from `[data-tour="filter-facility"]` to `[data-tour="volume-settings-empty"]`, update content to explain that a facility must be selected to see override data, remove `spotlightClicks` and `data: { requiresFacility: true }`.
+- `npSettingsSteps[0]`: Same change, targeting `[data-tour="np-settings-empty"]`.
 
-No changes needed here -- the `spotlightClicks: true` already allows clicking through the spotlight.
+**3. `src/components/tour/StaffingTour.tsx`**
 
-**File: `src/pages/staffing/SettingsTab.tsx` (or wherever FilterBar is rendered for settings tabs)**
+Remove the facility-aware step filtering logic:
+- Remove `useFilterStore` import and `selectedFacility` / `needsFacility` / `isSettingsTab` logic
+- Remove the `useEffect` that restarts the tour when a facility is selected
+- Remove the `prevNeedsFacility` ref
+- Simplify `effectiveSteps` back to just `injectSectionMetadata(rawSteps, tourKey)` (keeping micro-tour logic)
 
-Pass the `tourHighlightFacility` prop to FilterBar based on whether the tour is active and needs a facility. This can be derived from the tour store's running state and the filter store's facility value.
+**4. `src/components/staffing/FilterBar.tsx`**
 
-**Alternative (simpler) approach -- modify FilterBar only:**
+Revert the z-index boost changes:
+- Remove `useTourStore` import
+- Remove `activeTour` and `isTourNeedingFacility` variables
+- Restore PopoverContent to always use `z-50`
 
-Inside `FilterBar.tsx`, directly read the tour state to detect if a facility-selection tour step is active, and self-boost the z-index. This avoids prop-drilling:
-
-1. Import `useTourStore` in FilterBar
-2. Check if a tour with key `staffing-volume-settings` or `staffing-np-settings` is running
-3. Check if `selectedFacility` is still `all-facilities`
-4. If both true, use `z-[10001]` on the facility PopoverContent
-
-```tsx
-// In FilterBar.tsx
-import { useTourStore } from '@/stores/useTourStore';
-
-// Inside component:
-const activeTourKey = useTourStore(s => s.activeTourKey);
-const isTourNeedingFacility = 
-  (activeTourKey === 'staffing-volume-settings' || activeTourKey === 'staffing-np-settings')
-  && selectedFacility === 'all-facilities';
-
-// On PopoverContent (line 365):
-// Change z-50 to: z-${isTourNeedingFacility ? '[10001]' : '50'}
-```
-
-If `useTourStore` doesn't expose `activeTourKey`, we'll check what state is available and use the appropriate selector.
-
-### Scope
-- `src/components/staffing/FilterBar.tsx` -- Conditionally boost facility popover z-index when tour needs facility selection (1 line change + 2 lines of state)
-
-### User Experience
-1. Tour highlights "Select a Facility" on the filter
-2. User clicks the facility filter -- dropdown opens **above** the tour overlay
-3. User selects a facility
-4. Tour automatically continues with the settings steps
-
+### Result
+- Tour arrives at Volume Settings tab, shows the "Select a Facility" empty state with an explanation step, then continues to the next section
+- Same for NP Settings
+- No special filter interaction, no z-index hacks
+- Clean and simple
