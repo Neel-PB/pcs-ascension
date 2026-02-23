@@ -7,6 +7,7 @@ import { useIsCompactScreen } from "@/hooks/use-compact-screen";
 import { CombinedOptionalFilters } from "./CombinedOptionalFilters";
 import { useRBAC } from "@/hooks/useRBAC";
 import { useOrgScopedFilters } from "@/hooks/useOrgScopedFilters";
+import { useTourStore } from "@/stores/useTourStore";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
@@ -77,6 +78,12 @@ export function FilterBar({
   // Popover open state for searchable dropdowns
   const [facilityOpen, setFacilityOpen] = useState(false);
   const [departmentOpen, setDepartmentOpen] = useState(false);
+
+  // Boost facility popover z-index when tour needs facility selection
+  const activeTour = useTourStore(s => s.activeTour);
+  const isTourNeedingFacility =
+    (activeTour === 'staffing-volume-settings' || activeTour === 'staffing-np-settings')
+    && selectedFacility === 'all-facilities';
   
   // During loading, show all filters to prevent layout shift
   const filterPermissions = rbacLoading 
@@ -362,7 +369,7 @@ export function FilterBar({
                    <ChevronDown className={`ml-2 h-4 w-4 shrink-0 text-[#1D69D2] transition-transform duration-200 ${facilityOpen ? 'rotate-180' : ''}`} />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[520px] max-w-[calc(100vw-2rem)] p-0 bg-popover border-border z-50" align="start">
+              <PopoverContent className={`w-[520px] max-w-[calc(100vw-2rem)] p-0 bg-popover border-border ${isTourNeedingFacility ? 'z-[10001]' : 'z-50'}`} align="start">
                 {facilitiesLoading ? (
                   <div className="py-6 px-2 flex items-center justify-center gap-2 text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
