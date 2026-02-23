@@ -126,7 +126,7 @@ export function AppHeader() {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="relative" 
+            className="relative h-8 w-8" 
             onClick={() => setNotificationsOpen(true)}
             data-tour="header-notifications"
           >
