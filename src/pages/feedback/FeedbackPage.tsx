@@ -155,7 +155,7 @@ export default function FeedbackPage() {
         }}
       />
       {/* Header */}
-      <div className="shrink-0 px-6 py-4 border-b border-border">
+      <div className="shrink-0 py-4 border-b border-border">
         <div className="flex items-center justify-center gap-3">
           <div data-tour="feedback-search" className="w-64">
             <SearchField
@@ -206,7 +206,7 @@ export default function FeedbackPage() {
       </div>
 
       {/* Feedback Table */}
-      <div className="flex-1 min-h-0 overflow-hidden px-6 py-4">
+      <div className="flex-1 min-h-0 overflow-hidden py-4">
         {filteredFeedback.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
