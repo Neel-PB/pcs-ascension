@@ -7,11 +7,10 @@ import {
   HelpCircle, 
   Camera,
   Trash2,
-  ExternalLink,
-  ImageOff
+  
+  MessageSquare
 } from "@/lib/icons";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -130,12 +129,6 @@ export function FeedbackTableRow({ feedback, onDelete, isFirstRow }: FeedbackTab
   const authorName = feedback.author
     ? `${feedback.author.first_name || ""} ${feedback.author.last_name || ""}`.trim() || "Unknown"
     : "Unknown";
-  const authorInitials = authorName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -198,10 +191,20 @@ export function FeedbackTableRow({ feedback, onDelete, isFirstRow }: FeedbackTab
   return (
     <TableRow className="align-top border-b">
       {/* Title */}
-      <TableCell className="py-3 min-w-[200px]">
+      <TableCell className="py-3 min-w-[180px]">
         <p className="text-sm font-medium line-clamp-1" title={feedback.title}>
           {feedback.title}
         </p>
+      </TableCell>
+
+      {/* Description */}
+      <TableCell className="py-3 min-w-[220px]">
+        <p className="text-xs text-muted-foreground line-clamp-2">{feedback.description}</p>
+      </TableCell>
+
+      {/* Author */}
+      <TableCell className="py-3 w-[110px]">
+        <span className="text-sm font-medium truncate block max-w-[100px]">{authorName}</span>
       </TableCell>
 
       {/* Type */}
@@ -231,70 +234,7 @@ export function FeedbackTableRow({ feedback, onDelete, isFirstRow }: FeedbackTab
         </Select>
       </TableCell>
 
-      {/* Description */}
-      <TableCell className="py-3 min-w-[250px]">
-        <div className="space-y-1">
-          <p className="text-xs text-muted-foreground line-clamp-2">{feedback.description}</p>
-          {feedback.page_url && (
-            <a
-              href={feedback.page_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-primary hover:underline inline-flex items-center gap-1"
-            >
-              <ExternalLink className="h-3 w-3" />
-              View page
-            </a>
-          )}
-        </div>
-      </TableCell>
-
-      {/* Screenshot */}
-      <TableCell className="py-3 w-[80px]">
-        {feedback.screenshot_url && !imageError ? (
-          <Dialog>
-            <DialogTrigger asChild>
-              <button className="group relative w-14 h-10 rounded border border-border overflow-hidden hover:ring-2 hover:ring-primary/50 transition-all">
-                <img
-                  src={resolvedImageUrl || feedback.screenshot_url}
-                  alt="Screenshot"
-                  className="w-full h-full object-cover"
-                  onError={handleImageError}
-                />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <Camera className="h-4 w-4 text-white" />
-                </div>
-              </button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl p-2 border-border/20">
-              <img
-                src={resolvedImageUrl || feedback.screenshot_url}
-                alt="Screenshot"
-                className="w-full h-auto rounded"
-              />
-            </DialogContent>
-          </Dialog>
-        ) : feedback.screenshot_url && imageError ? (
-          <div className="w-14 h-10 rounded border border-border bg-muted flex items-center justify-center">
-            <ImageOff className="h-4 w-4 text-muted-foreground" />
-          </div>
-        ) : (
-          <span className="text-muted-foreground text-xs">—</span>
-        )}
-      </TableCell>
-
-      {/* Author */}
-      <TableCell className="py-3 w-[140px]">
-        <div className="flex items-center gap-2">
-          <Avatar className="h-7 w-7">
-            <AvatarImage src={feedback.author?.avatar_url || undefined} />
-            <AvatarFallback className="text-xs">{authorInitials}</AvatarFallback>
-          </Avatar>
-          <span className="text-sm font-medium truncate max-w-[80px]">{authorName}</span>
-        </div>
-      </TableCell>
-
-      {/* PCS Status */}
+      {/* ACS Status (formerly PCS Status) */}
       <TableCell className="py-3 w-[120px]" data-tour={isFirstRow ? "feedback-pcs-status" : undefined}>
         <Select 
           value={feedback.pcs_status} 
@@ -379,40 +319,64 @@ export function FeedbackTableRow({ feedback, onDelete, isFirstRow }: FeedbackTab
         <span className="text-xs text-muted-foreground">{formatDate(feedback.created_at)}</span>
       </TableCell>
 
-      {/* Comments */}
-      <TableCell className="py-3 w-[90px]" data-tour={isFirstRow ? "feedback-comments" : undefined}>
-        <FeedbackCommentsDialog 
-          feedbackId={feedback.id} 
-          commentCount={comments?.length || 0} 
-        />
-      </TableCell>
-
-      {/* Actions */}
-      <TableCell className="py-3 w-[50px]">
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive">
-              <Trash2 className="h-4 w-4" />
+      {/* Actions: Screenshot + Comments + Delete */}
+      <TableCell className="py-3 w-[130px]" data-tour={isFirstRow ? "feedback-comments" : undefined}>
+        <div className="flex items-center gap-1">
+          {/* Screenshot */}
+          {feedback.screenshot_url && !imageError ? (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7">
+                  <Camera className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl p-2 border-border/20">
+                <img
+                  src={resolvedImageUrl || feedback.screenshot_url}
+                  alt="Screenshot"
+                  className="w-full h-auto rounded"
+                  onError={handleImageError}
+                />
+              </DialogContent>
+            </Dialog>
+          ) : (
+            <Button variant="ghost" size="icon" className="h-7 w-7 opacity-30 cursor-default" disabled>
+              <Camera className="h-4 w-4" />
             </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete Feedback</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete this feedback? This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => onDelete(feedback.id)}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+          )}
+
+          {/* Comments */}
+          <FeedbackCommentsDialog 
+            feedbackId={feedback.id} 
+            commentCount={comments?.length || 0} 
+          />
+
+          {/* Delete */}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Feedback</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this feedback? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => onDelete(feedback.id)}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </TableCell>
     </TableRow>
   );
