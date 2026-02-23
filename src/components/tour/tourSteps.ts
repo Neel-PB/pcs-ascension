@@ -275,10 +275,10 @@ export const forecastSteps: Step[] = [
 
 export const volumeSettingsSteps: Step[] = [
   {
-    target: '[data-tour="volume-settings-empty"]',
+    target: '[data-tour="filter-bar"]',
     title: 'Facility Required',
     content: 'Volume overrides are configured per facility. Select a specific facility from the filter bar above to view and manage override volumes for its departments.',
-    placement: 'top',
+    placement: 'bottom',
     disableBeacon: true,
     disableOverlay: true,
     data: { emptyState: true },
@@ -337,10 +337,10 @@ export const volumeSettingsSteps: Step[] = [
 
 export const npSettingsSteps: Step[] = [
   {
-    target: '[data-tour="np-settings-empty"]',
+    target: '[data-tour="filter-bar"]',
     title: 'Facility Required',
     content: 'NP overrides are configured per facility. Select a specific facility from the filter bar above to view and manage NP override percentages for its departments.',
-    placement: 'top',
+    placement: 'bottom',
     disableBeacon: true,
     disableOverlay: true,
     data: { emptyState: true },
