@@ -39,13 +39,14 @@ export function ForecastBalanceTable({ rows, isLoading }: ForecastBalanceTablePr
   return (
     <Card className="overflow-hidden h-full flex flex-col">
       <div className="border rounded-md flex-1 min-h-0 overflow-auto">
-        <div style={{ minWidth: 'max-content' }}>
+        <div>
           {/* Sticky Header */}
           <div
             className="grid h-10 items-center bg-muted font-medium text-sm border-b sticky top-0 z-10"
             data-tour="forecast-table-header"
             style={{
               gridTemplateColumns: "40px minmax(80px, 1fr) minmax(140px, 1.5fr) minmax(140px, 1.5fr) minmax(80px, 1fr) 80px 100px 120px",
+              minWidth: 'max-content',
             }}
           >
             <div />

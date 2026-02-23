@@ -41,6 +41,7 @@ export function ForecastBalanceTableRow({ row, isExpanded, onToggle }: ForecastB
         className="grid items-center h-12 cursor-pointer hover:bg-muted/50 transition-colors"
         style={{
           gridTemplateColumns: "40px minmax(80px, 1fr) minmax(140px, 1.5fr) minmax(140px, 1.5fr) minmax(80px, 1fr) 80px 100px 120px",
+          minWidth: 'max-content',
         }}
         onClick={() => onToggle(row.id)}
       >
@@ -71,13 +72,15 @@ export function ForecastBalanceTableRow({ row, isExpanded, onToggle }: ForecastB
       
       {/* Expanded Content */}
       {isExpanded && (
-        <div className="bg-muted/20 px-6 py-4 border-t sticky left-0 overflow-hidden" style={{ maxWidth: 'calc(100vw - 130px)', width: '100%' }}>
-          <BalanceTwoPanel
-            hiredFTE={row.hiredFTE}
-            targetFTE={row.targetFTE}
-            recommendation={row.recommendation}
-            aiSummary={row.aiSummary}
-          />
+        <div className="bg-muted/20 border-t sticky left-0" style={{ width: 'min(100%, calc(100vw - 130px))' }}>
+          <div className="px-6 py-4 overflow-hidden">
+            <BalanceTwoPanel
+              hiredFTE={row.hiredFTE}
+              targetFTE={row.targetFTE}
+              recommendation={row.recommendation}
+              aiSummary={row.aiSummary}
+            />
+          </div>
         </div>
       )}
     </div>
