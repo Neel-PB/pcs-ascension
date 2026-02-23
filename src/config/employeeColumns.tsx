@@ -57,8 +57,8 @@ export const employeeColumns: ColumnDef<Position>[] = [
     id: 'FTE',
     label: 'Hired FTE',
     type: 'number',
-    width: 160,
-    minWidth: 140,
+    width: 120,
+    minWidth: 100,
     sortable: true,
     resizable: false,
     draggable: true,
@@ -68,8 +68,8 @@ export const employeeColumns: ColumnDef<Position>[] = [
     id: 'actual_fte',
     label: 'Active FTE',
     type: 'custom',
-    width: 160,
-    minWidth: 140,
+    width: 120,
+    minWidth: 100,
     sortable: true,
     resizable: false,
     draggable: true,
@@ -143,9 +143,9 @@ export const createEmployeeColumnsWithComments = (
       return {
         ...col,
         renderHeader: () => (
-          <span className="flex items-center gap-1.5">
-            Hired FTE
-            <span className="text-xs text-muted-foreground font-normal">({totals.totalHiredFTE.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })})</span>
+          <span className="flex flex-col leading-tight">
+            <span>Hired FTE</span>
+            <span className="text-[10px] text-muted-foreground font-normal">({totals.totalHiredFTE.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })})</span>
           </span>
         ),
       };
@@ -154,9 +154,9 @@ export const createEmployeeColumnsWithComments = (
       return {
         ...col,
         renderHeader: () => (
-          <span data-tour="positions-active-fte" className="flex items-center gap-1.5">
-            Active FTE
-            <span className="text-xs text-muted-foreground font-normal">({totals.totalActiveFTE.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })})</span>
+          <span data-tour="positions-active-fte" className="flex flex-col leading-tight">
+            <span>Active FTE</span>
+            <span className="text-[10px] text-muted-foreground font-normal">({totals.totalActiveFTE.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })})</span>
           </span>
         ),
       };
