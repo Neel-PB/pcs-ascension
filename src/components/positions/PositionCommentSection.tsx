@@ -55,8 +55,8 @@ function ActivityFieldRow({
   // No change - show em dash
   if (!hasActualChange) {
     return (
-      <div className="flex items-center gap-3 py-2">
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide w-14 shrink-0">{label}</span>
+      <div className="flex items-center gap-2 py-1">
+        <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide w-12 shrink-0">{label}</span>
         <span className="text-sm text-muted-foreground/60">—</span>
       </div>
     );
@@ -73,8 +73,8 @@ function ActivityFieldRow({
   // Vertical layout for long content
   if (useVerticalLayout) {
     return (
-      <div className="py-2 space-y-1.5">
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</span>
+      <div className="py-1 space-y-1">
+        <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">{label}</span>
         <div className="flex flex-col gap-1 pl-0.5">
           {hasOld && (
             <div className="text-sm text-muted-foreground line-through leading-relaxed break-words">{oldStr}</div>
@@ -90,8 +90,8 @@ function ActivityFieldRow({
 
   // Inline layout - arrow and new value stay together as a unit
   return (
-    <div className="flex items-center gap-3 py-2">
-      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide w-14 shrink-0">{label}</span>
+    <div className="flex items-center gap-2 py-1">
+      <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide w-12 shrink-0">{label}</span>
       <div className="flex items-center gap-2 min-w-0">
         {hasOld && (
           <span className="text-sm text-muted-foreground shrink-0">{oldStr}</span>
@@ -120,18 +120,15 @@ function FteActivityCard({ metadata, displayName }: { metadata: Record<string, u
   const formattedExpiryNew = expiryNew ? format(new Date(expiryNew), "MMM d, yyyy") : null;
 
   return (
-    <div className="divide-y divide-border/30">
+    <div className="space-y-0">
       <ActivityFieldRow label="FTE" oldValue={fteOld} newValue={fteNew} />
       <ActivityFieldRow label="Reason" oldValue={reasonOld} newValue={reasonNew} isMultiline />
       <ActivityFieldRow label="Expiry" oldValue={formattedExpiryOld} newValue={formattedExpiryNew} />
       {comment && (
-        <div className="pt-3 pb-1">
+        <div className="pt-1.5 pb-0.5">
           <p className="text-sm text-foreground italic">"{comment}"</p>
         </div>
       )}
-      <div className="flex justify-end pt-2">
-        <span className="text-xs text-muted-foreground">by {displayName}</span>
-      </div>
     </div>
   );
 }
@@ -143,7 +140,7 @@ function ShiftActivityCard({ metadata, displayName }: { metadata: Record<string,
   const isRevert = metadata.is_revert as boolean;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1">
       {isRevert ? (
         <div className="flex items-center gap-2">
           <RotateCcw className="h-4 w-4 text-primary" />
@@ -159,9 +156,6 @@ function ShiftActivityCard({ metadata, displayName }: { metadata: Record<string,
           <span className="text-sm font-medium text-foreground">{shiftNew}</span>
         </div>
       )}
-      <div className="flex justify-end pt-1 border-t border-border/30">
-        <span className="text-xs text-muted-foreground">by {displayName}</span>
-      </div>
     </div>
   );
 }
@@ -283,14 +277,14 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
             const metadata = (comment.metadata || {}) as Record<string, unknown>;
 
             return (
-              <div key={comment.id} className={`space-y-1 ${isActivityLog ? 'flex flex-col items-end' : 'flex flex-col items-start'}`}>
-                {/* Label above bubble: type label for activity logs, user name for regular comments */}
-                <div className={`text-xs font-medium text-muted-foreground ${isActivityLog ? 'text-right pr-1' : 'pl-1'}`}>
-                  {isActivityLog ? activityLabel : displayName}
+              <div key={comment.id} className="space-y-1 flex flex-col items-start">
+                {/* Label above bubble */}
+                <div className="text-xs font-medium text-muted-foreground pl-1">
+                  {isActivityLog ? <>{activityLabel} <span className="font-normal">— {displayName}</span></> : displayName}
                 </div>
 
                 {/* Message with actions */}
-                <div className={`group flex items-start gap-2 ${isActivityLog ? 'flex-row-reverse' : ''}`}>
+                <div className="group flex items-start gap-2">
                   {editingId === comment.id ? (
                     <div className="flex-1 space-y-3">
                       <Textarea
@@ -318,12 +312,12 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
                   ) : (
                     <div className="space-y-1">
                       {/* Message row with copy button only for activity logs */}
-                      <div className={`flex items-start gap-2 ${isActivityLog ? 'flex-row-reverse' : ''}`}>
+                      <div className="flex items-start gap-2">
                         {/* Message Bubble */}
                         <div className="max-w-[85%]">
-                          <div className={`px-4 py-3 rounded-2xl ${
+                          <div className={`px-3 py-2 rounded-2xl ${
                             isActivityLog 
-                              ? 'rounded-br-sm bg-primary/10 border border-primary/20' 
+                              ? 'rounded-bl-sm bg-primary/10 border border-primary/20' 
                               : 'rounded-bl-sm bg-muted'
                           }`}>
                             {/* Structured content for activity logs */}
@@ -362,7 +356,7 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
                       </div>
 
                       {/* Below bubble: Timestamp + Edit/Delete (only for regular comments owned by user) */}
-                      <div className={`flex items-center gap-2 ${isActivityLog ? 'justify-end pr-1' : 'pl-1'}`}>
+                      <div className="flex items-center gap-2 pl-1">
                         <span className="text-xs text-muted-foreground">
                           {formatCommentTimestamp(comment.created_at)}
                         </span>
