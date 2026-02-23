@@ -1,18 +1,28 @@
 
 
-## Fix: Allow Filter Interaction During "Facility Required" Tour Step
+## Move "Facility Required" Tooltip Below the Filter Bar
 
 ### Problem
-The "Facility Required" step spotlights the empty state area, but the Joyride overlay blocks clicks on the filter bar (Region, Market, Facility). The user has no way to select a facility -- they can only skip or continue.
+Currently the tour tooltip floats above the empty state content area, obscuring the page. You want the tooltip to sit below the filter bar, pointing at the filters, so the "Select a Facility" empty state content remains fully visible underneath.
 
 ### Solution
-Add `disableOverlay: true` to both empty-state tour steps. This removes the dimming overlay entirely for that step, letting users freely click on filters while the tooltip floats as guidance. Once a facility is selected, the step filtering logic already handles showing the correct content steps.
+Change the target of both empty-state steps from the empty state container to the filter bar (`[data-tour="filter-bar"]`), and set placement to `bottom` so the tooltip appears just below the filters, pointing up at them. The empty state content stays visible naturally below.
 
 ### Changes
 
-**`src/components/tour/tourSteps.ts`** -- Add `disableOverlay: true` to both empty-state steps:
-- `volumeSettingsSteps[0]`: add `disableOverlay: true`
-- `npSettingsSteps[0]`: add `disableOverlay: true`
+**`src/components/tour/tourSteps.ts`** -- 2 steps updated:
 
-That's it -- one property added to two steps. The existing `effectiveSteps` filtering in `StaffingTour.tsx` will automatically swap to the content steps once a facility is selected.
+1. `volumeSettingsSteps[0]` (line 278):
+   - `target`: change from `[data-tour="volume-settings-empty"]` to `[data-tour="filter-bar"]`
+   - `placement`: change from `top` to `bottom`
 
+2. `npSettingsSteps[0]` (line 340):
+   - `target`: change from `[data-tour="np-settings-empty"]` to `[data-tour="filter-bar"]`
+   - `placement`: change from `top` to `bottom`
+
+No other files need changes. The `data-tour="filter-bar"` attribute already exists on the filter bar wrapper on the staffing page.
+
+### Result
+- Tooltip appears directly below the filter bar, pointing up at the filters
+- The "Select a Facility" empty state content remains fully visible below
+- User can still interact with filters (disableOverlay is already true)
