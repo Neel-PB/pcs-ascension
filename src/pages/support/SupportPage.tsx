@@ -132,25 +132,16 @@ export default function SupportPage() {
   return (
     <div className="h-full flex flex-col gap-4 overflow-hidden">
       {/* Contact Support Banner */}
-      <div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md flex-shrink-0">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <MessageSquare className="h-5 w-5 text-primary" />
+      <div className="bg-shell-elevated rounded-xl px-4 py-3 shadow-md flex-shrink-0 flex items-center gap-6">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 bg-primary/10 rounded-lg">
+            <MessageSquare className="h-4 w-4 text-primary" />
           </div>
-          <h3 className="text-lg font-semibold text-foreground">Need Help?</h3>
+          <span className="text-sm font-semibold text-foreground">Need Help?</span>
         </div>
-        <p className="text-sm text-shell-muted mb-4">
-          Can't find what you're looking for? Our support team is here to help you.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 bg-shell-elevated rounded-lg border border-shell-elevated">
-            <p className="text-sm font-medium text-foreground mb-1">Email Support</p>
-            <p className="text-sm text-primary">support@company.com</p>
-          </div>
-          <div className="p-4 bg-shell-elevated rounded-lg border border-shell-elevated">
-            <p className="text-sm font-medium text-foreground mb-1">Phone Support</p>
-            <p className="text-sm text-primary">1-800-555-0123</p>
-          </div>
+        <div className="flex items-center gap-4 text-sm">
+          <span className="text-shell-muted">Email: <span className="text-primary">support@company.com</span></span>
+          <span className="text-shell-muted">Phone: <span className="text-primary">1-800-555-0123</span></span>
         </div>
       </div>
 
