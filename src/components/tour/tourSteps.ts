@@ -280,6 +280,7 @@ export const volumeSettingsSteps: Step[] = [
     content: 'Volume overrides are configured per facility. Select a specific facility from the filter bar above to view and manage override volumes for its departments.',
     placement: 'top',
     disableBeacon: true,
+    disableOverlay: true,
     data: { emptyState: true },
   },
   {
@@ -341,6 +342,7 @@ export const npSettingsSteps: Step[] = [
     content: 'NP overrides are configured per facility. Select a specific facility from the filter bar above to view and manage NP override percentages for its departments.',
     placement: 'top',
     disableBeacon: true,
+    disableOverlay: true,
     data: { emptyState: true },
   },
   {
