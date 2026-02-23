@@ -70,7 +70,7 @@ export function DraggableColumnHeader<T = any>({
       style={style}
       data-column-header
       className={cn(
-        "relative group h-10 px-4 flex items-center gap-2",
+        "relative group h-12 px-4 flex items-center gap-2",
         "text-xs uppercase tracking-wider font-medium text-muted-foreground",
         "border-r border-border last:border-r-0",
         "[backface-visibility:hidden] [transform-style:preserve-3d]",

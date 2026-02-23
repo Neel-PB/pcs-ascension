@@ -128,13 +128,14 @@ export const createEmployeeColumnsWithComments = (
 ): ColumnDef<Position>[] => {
   // Map columns and enhance with totals + shift handlers
   const columnsWithEnhancements = employeeColumns.map(col => {
+    // Columns with totals
     if (col.id === 'employeeName' && totals) {
       return {
         ...col,
         renderHeader: () => (
-          <span className="flex items-center gap-1.5">
-            Employee Name
-            <span className="text-xs text-muted-foreground font-normal">({totals.totalCount.toLocaleString()})</span>
+          <span className="flex flex-col leading-tight">
+            <span>Employee Name</span>
+            <span className="text-[10px] text-muted-foreground font-normal">({totals.totalCount.toLocaleString()})</span>
           </span>
         ),
       };
@@ -161,9 +162,27 @@ export const createEmployeeColumnsWithComments = (
         ),
       };
     }
+    // Columns without totals - add invisible placeholder for alignment
+    if (col.id === 'positionNum' || col.id === 'jobTitle' || col.id === 'payrollStatus' || col.id === 'employmentType') {
+      return {
+        ...col,
+        renderHeader: () => (
+          <span className="flex flex-col leading-tight">
+            <span>{col.label}</span>
+            <span className="text-[10px] invisible">-</span>
+          </span>
+        ),
+      };
+    }
     if (col.id === 'shift') {
       return {
         ...col,
+        renderHeader: () => (
+          <span data-tour="positions-shift" className="flex flex-col leading-tight">
+            <span>Shift</span>
+            <span className="text-[10px] invisible">-</span>
+          </span>
+        ),
         renderCell: (row: Position) => (
           <ShiftCell 
             value={row.shift} 
@@ -187,7 +206,12 @@ export const createEmployeeColumnsWithComments = (
       sortable: false,
       resizable: false,
       draggable: true,
-      renderHeader: () => <span data-tour="positions-comments"><MessageSquare className="h-4 w-4" /></span>,
+      renderHeader: () => (
+        <span data-tour="positions-comments" className="flex flex-col leading-tight">
+          <MessageSquare className="h-4 w-4" />
+          <span className="text-[10px] invisible">-</span>
+        </span>
+      ),
       renderCell: (row) => (
         <CommentIndicatorCell
           count={commentCounts.get(row.id) ?? 0}
