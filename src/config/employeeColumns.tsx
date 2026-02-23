@@ -9,6 +9,12 @@ import { MessageSquare } from '@/lib/icons';
 // Type for the shift override handler
 type ShiftOverrideHandler = (positionId: string, originalShift: string | null, value: string | null) => void;
 
+export interface EmployeeTotals {
+  totalCount: number;
+  totalHiredFTE: number;
+  totalActiveFTE: number;
+}
+
 export const employeeColumns: ColumnDef<Position>[] = [
   {
     id: 'positionNum',
@@ -113,14 +119,48 @@ export const employeeColumns: ColumnDef<Position>[] = [
   },
 ];
 
-// Function to create columns with comment counts and handlers
+// Function to create columns with comment counts, handlers, and totals
 export const createEmployeeColumnsWithComments = (
   commentCounts: Map<string, number>,
   onRowClick: (row: Position) => void,
-  onUpdateShiftOverride?: ShiftOverrideHandler
+  onUpdateShiftOverride?: ShiftOverrideHandler,
+  totals?: EmployeeTotals
 ): ColumnDef<Position>[] => {
-  // Map columns and enhance the shift column with handlers
-  const columnsWithShift = employeeColumns.map(col => {
+  // Map columns and enhance with totals + shift handlers
+  const columnsWithEnhancements = employeeColumns.map(col => {
+    if (col.id === 'employeeName' && totals) {
+      return {
+        ...col,
+        renderHeader: () => (
+          <span className="flex items-center gap-1.5">
+            Employee Name
+            <span className="text-xs text-muted-foreground font-normal">({totals.totalCount.toLocaleString()})</span>
+          </span>
+        ),
+      };
+    }
+    if (col.id === 'FTE' && totals) {
+      return {
+        ...col,
+        renderHeader: () => (
+          <span className="flex items-center gap-1.5">
+            Hired FTE
+            <span className="text-xs text-muted-foreground font-normal">({totals.totalHiredFTE.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })})</span>
+          </span>
+        ),
+      };
+    }
+    if (col.id === 'actual_fte' && totals) {
+      return {
+        ...col,
+        renderHeader: () => (
+          <span data-tour="positions-active-fte" className="flex items-center gap-1.5">
+            Active FTE
+            <span className="text-xs text-muted-foreground font-normal">({totals.totalActiveFTE.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })})</span>
+          </span>
+        ),
+      };
+    }
     if (col.id === 'shift') {
       return {
         ...col,
@@ -137,7 +177,7 @@ export const createEmployeeColumnsWithComments = (
   });
 
   return [
-    ...columnsWithShift,
+    ...columnsWithEnhancements,
     {
       id: 'comments',
       label: 'Comments',

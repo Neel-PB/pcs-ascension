@@ -225,13 +225,24 @@ export function EmployeesTab({
   // Fetch comment counts
   const commentCounts = usePositionCommentCounts(positionIds);
 
+  // Compute totals from ALL fetched employees (not filtered)
+  const totals = useMemo(() => {
+    if (!employees) return { totalCount: 0, totalHiredFTE: 0, totalActiveFTE: 0 };
+    return {
+      totalCount: employees.length,
+      totalHiredFTE: employees.reduce((sum, e) => sum + (Number(e.FTE) || 0), 0),
+      totalActiveFTE: employees.reduce((sum, e) => sum + (Number(e.actual_fte ?? e.FTE) || 0), 0),
+    };
+  }, [employees]);
+
   const firstRowId = filteredAndSortedEmployees[0]?.id;
 
   const columnsWithHandlers = useMemo(() => {
     const baseColumns = createEmployeeColumnsWithComments(
       commentCounts, 
       handleCommentClick,
-      handleShiftOverrideUpdate
+      handleShiftOverrideUpdate,
+      totals
     );
     return baseColumns.map(col => {
       if (col.id === 'actual_fte') {
@@ -274,7 +285,7 @@ export function EmployeesTab({
       }
       return col;
     });
-  }, [commentCounts, handleCommentClick, handleActualFteUpdate, handleShiftOverrideUpdate, filterDataProvider, firstRowId]);
+  }, [commentCounts, handleCommentClick, handleActualFteUpdate, handleShiftOverrideUpdate, filterDataProvider, firstRowId, totals]);
 
   const showEmptyState = !isFetching && (!employees || employees.length === 0);
 
