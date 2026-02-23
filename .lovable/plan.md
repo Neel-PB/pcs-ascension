@@ -1,42 +1,57 @@
 
 
-## Simplify: Tour Shows the Empty State Instead of Highlighting the Filter
+## Fix: Show Only the Empty-State Step When No Facility Is Selected
 
 ### Problem
-The current implementation adds special tour steps that highlight the facility filter and try to let the user interact with it during the tour. This is overly complex. The page already has a clear "Select a Facility" empty state (the screen you showed). The tour should simply show that empty state as a tour step and move on, rather than skipping the entire section.
+The tour shows "Facility Required" as step **1 of 6**, but steps 2-6 target DOM elements that only exist when a facility is selected. Clicking "Next" breaks the tour.
+
+### Solution
+Re-add step filtering logic in `StaffingTour.tsx` so that:
+- **No facility selected**: Only show the "Facility Required" step (1 of 1), then auto-advance to the next tour section
+- **Facility selected**: Skip the "Facility Required" step and show only the content steps (5 of 5)
 
 ### Changes
 
-**1. `src/pages/staffing/SettingsTab.tsx` (line ~201) and `src/pages/staffing/NPSettingsTab.tsx` (line ~201)**
+**1. `src/components/tour/tourSteps.ts`**
+- Add `data: { emptyState: true }` to the "Facility Required" step in both `volumeSettingsSteps` and `npSettingsSteps` so they can be identified for filtering.
 
-Add a `data-tour` attribute to the empty state container so the tour can target it:
-- SettingsTab: `data-tour="volume-settings-empty"`
-- NPSettingsTab: `data-tour="np-settings-empty"`
+**2. `src/components/tour/StaffingTour.tsx`**
+- Import `useFilterStore` to read `selectedFacility`
+- In the `effectiveSteps` memo, filter steps:
+  - On settings tabs with no facility: keep only steps with `data.emptyState`
+  - On settings tabs with a facility: exclude steps with `data.emptyState`
+  - On other tabs: no filtering
 
-**2. `src/components/tour/tourSteps.ts`**
+This is a minimal change -- just 2 lines of state and a filter condition in the existing memo. No z-index hacks, no restart effects, no refs needed. The tour will show "1/1" for the empty state, then auto-advance to the next section (Positions).
 
-Replace the current "requiresFacility" steps (that target the filter) with steps that target the empty state containers instead. Remove `spotlightClicks` and `requiresFacility` metadata:
+### Technical Details
 
-- `volumeSettingsSteps[0]`: Change target from `[data-tour="filter-facility"]` to `[data-tour="volume-settings-empty"]`, update content to explain that a facility must be selected to see override data, remove `spotlightClicks` and `data: { requiresFacility: true }`.
-- `npSettingsSteps[0]`: Same change, targeting `[data-tour="np-settings-empty"]`.
+**tourSteps.ts** -- tag empty-state steps:
+```ts
+// volumeSettingsSteps[0] and npSettingsSteps[0]
+data: { emptyState: true },
+```
 
-**3. `src/components/tour/StaffingTour.tsx`**
+**StaffingTour.tsx** -- add filtering:
+```ts
+import { useFilterStore } from '@/stores/useFilterStore';
 
-Remove the facility-aware step filtering logic:
-- Remove `useFilterStore` import and `selectedFacility` / `needsFacility` / `isSettingsTab` logic
-- Remove the `useEffect` that restarts the tour when a facility is selected
-- Remove the `prevNeedsFacility` ref
-- Simplify `effectiveSteps` back to just `injectSectionMetadata(rawSteps, tourKey)` (keeping micro-tour logic)
+const selectedFacility = useFilterStore(s => s.selectedFacility);
+const isSettingsTab = activeTab === 'volume-settings' || activeTab === 'np-settings';
 
-**4. `src/components/staffing/FilterBar.tsx`**
-
-Revert the z-index boost changes:
-- Remove `useTourStore` import
-- Remove `activeTour` and `isTourNeedingFacility` variables
-- Restore PopoverContent to always use `z-50`
+const effectiveSteps = useMemo(() => {
+  let steps = isMicro ? [rawSteps[microTourStep.stepIndex]] : rawSteps;
+  if (isSettingsTab) {
+    const hasFacility = selectedFacility && selectedFacility !== 'all-facilities';
+    steps = hasFacility
+      ? steps.filter(s => !s.data?.emptyState)
+      : steps.filter(s => s.data?.emptyState);
+  }
+  return injectSectionMetadata(steps, tourKey);
+}, [rawSteps, tourKey, isMicro, microTourStep?.stepIndex, isSettingsTab, selectedFacility]);
+```
 
 ### Result
-- Tour arrives at Volume Settings tab, shows the "Select a Facility" empty state with an explanation step, then continues to the next section
-- Same for NP Settings
-- No special filter interaction, no z-index hacks
-- Clean and simple
+- No facility: Tour shows "Facility Required (1/1)", user clicks Next, tour advances to the next section
+- Facility selected: Tour shows the actual content steps (Status Summary, Override Table, etc.) without the "Facility Required" prompt
+- Clean, no hacks
