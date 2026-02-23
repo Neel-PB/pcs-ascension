@@ -1,27 +1,43 @@
 
-## Unify Action Button Colors and Add Tooltips
+
+## Remove Feedback Header and Center-Align Filters
 
 ### What Changes
 
-**`src/config/feedbackColumns.tsx`**
+**File: `src/pages/feedback/FeedbackPage.tsx`**
 
-1. **Unified icon color**: Change the delete button from `text-destructive` to `text-muted-foreground` so all three action icons (camera, comments, delete) share the same muted color. Add `hover:text-destructive` only on hover for the delete button to signal its destructive nature.
+1. **Remove the header block** -- Delete the `div` containing the h1 "Feedback" title and the p "View and manage all submitted feedback" subtitle (lines ~129-135 in the current file).
 
-2. **Add tooltips to all three action buttons**:
-   - **Screenshot button**: Wrap in `TooltipProvider/Tooltip` with label "View Screenshot" (or "No Screenshot" when disabled)
-   - **Delete button**: Wrap the `AlertDialogTrigger` button in `TooltipProvider/Tooltip` with label "Delete Feedback"
+2. **Center-align the search and filters row** -- Change the filters container from `flex items-center gap-3` (left-aligned) to `flex items-center justify-center gap-3` so the search field and filter dropdowns sit in the center of the page.
 
-**`src/components/feedback/FeedbackCommentsDialog.tsx`**
+3. **Remove `max-w-sm` constraint on search** -- Currently the search field is constrained to `max-w-sm` with `flex-1`. Keep it at a fixed reasonable width (e.g., `w-64`) so it doesn't stretch unevenly when centered.
 
-3. **Add tooltip to comments button**: Wrap the `DialogTrigger` button in `TooltipProvider/Tooltip` with label "Comments (N)" or "No Comments" when count is 0
+4. **Clean up the outer wrapper** -- Remove the `mb-4` spacing that was between the header and filters since the header is gone. Adjust top padding slightly for breathing room.
 
 ### Technical Detail
 
-- Import `Tooltip, TooltipContent, TooltipProvider, TooltipTrigger` in both files
-- For the delete button, the tooltip wraps the `AlertDialogTrigger` so both tooltip and alert dialog work together -- tooltip on hover, alert on click
-- For the screenshot button (already in `feedbackColumns.tsx`), add tooltip around the `DialogTrigger` and the disabled button
-- All icons use `text-muted-foreground` as base color; delete gets `hover:text-destructive` on hover
+Current structure:
+```
+<div className="shrink-0 px-6 py-4 border-b border-border">
+  <div className="flex items-center justify-between mb-4">  <!-- REMOVE this block -->
+    <h1>Feedback</h1>
+    <p>View and manage...</p>
+  </div>
+  <div className="flex items-center gap-3">  <!-- CENTER this -->
+    ...search and filters...
+  </div>
+</div>
+```
+
+New structure:
+```
+<div className="shrink-0 px-6 py-4 border-b border-border">
+  <div className="flex items-center justify-center gap-3">
+    ...search and filters (centered)...
+  </div>
+</div>
+```
 
 ### Files Changed
-- `src/config/feedbackColumns.tsx` -- unify delete icon color, add tooltips to screenshot and delete buttons
-- `src/components/feedback/FeedbackCommentsDialog.tsx` -- add tooltip to comments trigger button
+- `src/pages/feedback/FeedbackPage.tsx` (remove header, center filters)
+
