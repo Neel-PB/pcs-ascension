@@ -1,21 +1,27 @@
 
-
-## Use Outlined Icons for Feedback Actions
+## Unify Action Button Colors and Add Tooltips
 
 ### What Changes
 
-**`src/lib/icons.ts`** -- Add two new outlined icon exports:
-- `MdOutlineCameraAlt as CameraOutline` (outlined camera)
-- `MdOutlineDeleteOutline as Trash2Outline` (outlined trash)
+**`src/config/feedbackColumns.tsx`**
 
-These are added as new exports so existing components using the filled variants are not affected.
+1. **Unified icon color**: Change the delete button from `text-destructive` to `text-muted-foreground` so all three action icons (camera, comments, delete) share the same muted color. Add `hover:text-destructive` only on hover for the delete button to signal its destructive nature.
 
-**`src/config/feedbackColumns.tsx`** -- Switch the Actions column icons:
-- Camera icon: Import and use `CameraOutline` instead of `Camera`
-- Comments icon: Already outlined (uses `MessageSquare` which maps to `MdOutlineChatBubbleOutline`) -- no change needed
-- Delete icon: Import and use `Trash2Outline` instead of `Trash2`
+2. **Add tooltips to all three action buttons**:
+   - **Screenshot button**: Wrap in `TooltipProvider/Tooltip` with label "View Screenshot" (or "No Screenshot" when disabled)
+   - **Delete button**: Wrap the `AlertDialogTrigger` button in `TooltipProvider/Tooltip` with label "Delete Feedback"
+
+**`src/components/feedback/FeedbackCommentsDialog.tsx`**
+
+3. **Add tooltip to comments button**: Wrap the `DialogTrigger` button in `TooltipProvider/Tooltip` with label "Comments (N)" or "No Comments" when count is 0
+
+### Technical Detail
+
+- Import `Tooltip, TooltipContent, TooltipProvider, TooltipTrigger` in both files
+- For the delete button, the tooltip wraps the `AlertDialogTrigger` so both tooltip and alert dialog work together -- tooltip on hover, alert on click
+- For the screenshot button (already in `feedbackColumns.tsx`), add tooltip around the `DialogTrigger` and the disabled button
+- All icons use `text-muted-foreground` as base color; delete gets `hover:text-destructive` on hover
 
 ### Files Changed
-- `src/lib/icons.ts` (add 2 new outlined exports)
-- `src/config/feedbackColumns.tsx` (swap Camera and Trash2 imports to outlined variants)
-
+- `src/config/feedbackColumns.tsx` -- unify delete icon color, add tooltips to screenshot and delete buttons
+- `src/components/feedback/FeedbackCommentsDialog.tsx` -- add tooltip to comments trigger button
