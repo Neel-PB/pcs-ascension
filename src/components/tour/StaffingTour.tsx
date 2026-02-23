@@ -6,6 +6,8 @@ import { staffingSteps, planningSteps, varianceSteps, forecastSteps, volumeSetti
 import { TourTooltip } from './TourTooltip';
 import { getNextSection, injectSectionMetadata } from './tourConfig';
 import { useMemo } from 'react';
+import { useFilterStore } from '@/stores/useFilterStore';
+import { FILTER_SENTINELS } from '@/lib/selectConstants';
 
 const TAB_SEQUENCE = ['summary', 'planning', 'variance', 'forecasts', 'volume-settings', 'np-settings'];
 const TOUR_KEY_MAP: Record<string, string> = {
@@ -39,10 +41,19 @@ export function StaffingTour({ activeTab = 'summary', onTabChange }: StaffingTou
   const clearMicroTour = useTourStore(s => s.clearMicroTour);
   const isMicro = microTourStep && microTourStep.tourKey === tourKey;
 
+  const selectedFacility = useFilterStore(s => s.selectedFacility);
+  const isSettingsTab = activeTab === 'volume-settings' || activeTab === 'np-settings';
+
   const effectiveSteps = useMemo(() => {
-    const steps = isMicro ? [rawSteps[microTourStep.stepIndex]] : rawSteps;
+    let steps = isMicro ? [rawSteps[microTourStep.stepIndex]] : rawSteps;
+    if (isSettingsTab) {
+      const hasFacility = selectedFacility && selectedFacility !== FILTER_SENTINELS.ALL_FACILITIES;
+      steps = hasFacility
+        ? steps.filter(s => !s.data?.emptyState)
+        : steps.filter(s => s.data?.emptyState);
+    }
     return injectSectionMetadata(steps, tourKey);
-  }, [rawSteps, tourKey, isMicro, microTourStep?.stepIndex]);
+  }, [rawSteps, tourKey, isMicro, microTourStep?.stepIndex, isSettingsTab, selectedFacility]);
 
   const { run, setRun, completeTour } = useTour(tourKey);
 
