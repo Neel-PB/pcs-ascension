@@ -11,20 +11,6 @@ type ShiftOverrideHandler = (positionId: string, originalShift: string | null, v
 
 export const employeeColumns: ColumnDef<Position>[] = [
   {
-    id: 'employeeName',
-    label: 'Employee Name',
-    type: 'custom',
-    width: 240,
-    minWidth: 220,
-    sortable: true,
-    resizable: false,
-    draggable: true,
-    locked: true,
-    renderCell: (row) => (
-      <TruncatedTextCell value={row.employeeName} maxLength={30} />
-    ),
-  },
-  {
     id: 'positionNum',
     label: 'Position #',
     type: 'text',
@@ -33,6 +19,20 @@ export const employeeColumns: ColumnDef<Position>[] = [
     sortable: true,
     resizable: false,
     draggable: true,
+    locked: true,
+  },
+  {
+    id: 'employeeName',
+    label: 'Employee Name',
+    type: 'custom',
+    width: 240,
+    minWidth: 220,
+    sortable: true,
+    resizable: false,
+    draggable: true,
+    renderCell: (row) => (
+      <TruncatedTextCell value={row.employeeName} maxLength={30} />
+    ),
   },
   {
     id: 'jobTitle',
@@ -51,8 +51,8 @@ export const employeeColumns: ColumnDef<Position>[] = [
     id: 'FTE',
     label: 'Hired FTE',
     type: 'number',
-    width: 180,
-    minWidth: 170,
+    width: 120,
+    minWidth: 100,
     sortable: true,
     resizable: false,
     draggable: true,
@@ -62,8 +62,8 @@ export const employeeColumns: ColumnDef<Position>[] = [
     id: 'actual_fte',
     label: 'Active FTE',
     type: 'custom',
-    width: 180,
-    minWidth: 170,
+    width: 120,
+    minWidth: 100,
     sortable: true,
     resizable: false,
     draggable: true,
@@ -142,8 +142,8 @@ export const createEmployeeColumnsWithComments = (
       id: 'comments',
       label: 'Comments',
       type: 'custom',
-      width: 80,
-      minWidth: 80,
+      width: 60,
+      minWidth: 60,
       sortable: false,
       resizable: false,
       draggable: true,
