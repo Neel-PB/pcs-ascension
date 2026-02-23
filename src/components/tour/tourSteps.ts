@@ -275,6 +275,15 @@ export const forecastSteps: Step[] = [
 
 export const volumeSettingsSteps: Step[] = [
   {
+    target: '[data-tour="filter-facility"]',
+    title: 'Select a Facility',
+    content: 'To view and manage volume overrides, first select a specific facility from this filter. The tour will continue once a facility is selected.',
+    placement: 'bottom',
+    disableBeacon: true,
+    spotlightClicks: true,
+    data: { requiresFacility: true },
+  },
+  {
     target: '[data-tour="volume-settings-stats"]',
     title: 'Status Summary',
     content: settingsDemoContent(
@@ -327,6 +336,15 @@ export const volumeSettingsSteps: Step[] = [
 ];
 
 export const npSettingsSteps: Step[] = [
+  {
+    target: '[data-tour="filter-facility"]',
+    title: 'Select a Facility',
+    content: 'To view and manage NP overrides, first select a specific facility from this filter. The tour will continue once a facility is selected.',
+    placement: 'bottom',
+    disableBeacon: true,
+    spotlightClicks: true,
+    data: { requiresFacility: true },
+  },
   {
     target: '[data-tour="np-settings-stats"]',
     title: 'Status Summary',
