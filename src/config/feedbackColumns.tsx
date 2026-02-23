@@ -33,8 +33,8 @@ import {
   Lightbulb,
   Wrench,
   HelpCircle,
-  Camera,
-  Trash2,
+  CameraOutline,
+  Trash2Outline,
 } from '@/lib/icons';
 import { format, formatDistanceToNow, differenceInHours } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -104,7 +104,7 @@ function ScreenshotButton({ screenshotUrl }: { screenshotUrl: string | null }) {
   if (!screenshotUrl || imageError) {
     return (
       <Button variant="ghost" size="icon" className="h-7 w-7 opacity-30 cursor-default" disabled>
-        <Camera className="h-4 w-4" />
+        <CameraOutline className="h-4 w-4" />
       </Button>
     );
   }
@@ -113,7 +113,7 @@ function ScreenshotButton({ screenshotUrl }: { screenshotUrl: string | null }) {
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon" className="h-7 w-7">
-          <Camera className="h-4 w-4" />
+          <CameraOutline className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl p-2 border-border/20">
@@ -383,7 +383,7 @@ export function createFeedbackColumns(handlers: FeedbackColumnHandlers): ColumnD
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive">
-                <Trash2 className="h-4 w-4" />
+                <Trash2Outline className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
