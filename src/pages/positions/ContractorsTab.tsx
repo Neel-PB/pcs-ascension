@@ -325,7 +325,7 @@ export function ContractorsTab({
             sortDirection={sortDirection}
             onSort={handleSort}
             onRowClick={handleRowClick}
-            storeNamespace="contractors-columns-v2"
+            storeNamespace="contractors-columns-v3"
             className="min-h-0 max-h-full"
           />
         </div>

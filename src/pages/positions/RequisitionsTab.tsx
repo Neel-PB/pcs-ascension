@@ -257,7 +257,7 @@ export function RequisitionsTab({
             sortDirection={sortDirection}
             onSort={handleSort}
             onRowClick={handleRowClick}
-            storeNamespace="requisitions-columns"
+            storeNamespace="requisitions-columns-v2"
             className="min-h-0 max-h-full"
           />
         </div>

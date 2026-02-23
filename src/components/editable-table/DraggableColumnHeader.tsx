@@ -1,6 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ArrowUp, ArrowDown, ChevronDown, Info, Maximize2, RotateCcw, EyeOff } from '@/lib/icons';
+import { ArrowUp, ArrowDown, ChevronDown, Info } from '@/lib/icons';
 import { ColumnDef } from '@/types/table';
 import { ColumnResizeHandle } from './ColumnResizeHandle';
 import {
@@ -21,9 +21,6 @@ interface DraggableColumnHeaderProps<T = any> {
   column: ColumnDef<T>;
   onResize: (width: number) => void;
   onSort?: (direction: 'asc' | 'desc') => void;
-  onHide: () => void;
-  onResetWidth: () => void;
-  onAutoFit: () => void;
   sortField?: string;
   sortDirection?: 'asc' | 'desc';
 }
@@ -32,9 +29,6 @@ export function DraggableColumnHeader<T = any>({
   column,
   onResize,
   onSort,
-  onHide,
-  onResetWidth,
-  onAutoFit,
   sortField,
   sortDirection,
 }: DraggableColumnHeaderProps<T>) {
@@ -142,24 +136,6 @@ export function DraggableColumnHeader<T = any>({
             <ArrowDown className="mr-2 h-4 w-4" />
             Sort Descending
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={onAutoFit}>
-            <Maximize2 className="mr-2 h-4 w-4" />
-            Auto-fit Width
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={onResetWidth}>
-            <RotateCcw className="mr-2 h-4 w-4" />
-            Reset Width
-          </DropdownMenuItem>
-          {!column.locked && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onHide}>
-                <EyeOff className="mr-2 h-4 w-4" />
-                Hide Column
-              </DropdownMenuItem>
-            </>
-          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -168,7 +144,6 @@ export function DraggableColumnHeader<T = any>({
         <ColumnResizeHandle 
           onResize={onResize} 
           minWidth={column.minWidth}
-          onAutoFit={onAutoFit}
         />
       )}
     </div>
