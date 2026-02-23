@@ -150,7 +150,7 @@ const Legend = () => (
     </div>
     <div className="flex items-center gap-2 text-xs">
       <div className="h-3 w-3 rounded-sm bg-orange-500" />
-      <span className="text-orange-700 font-medium">−3.5</span>
+      <span className="text-orange-700 font-medium">-3.5</span>
       <span className="text-muted-foreground">Shortage</span>
     </div>
   </div>
