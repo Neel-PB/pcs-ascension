@@ -124,10 +124,10 @@ export default function FeedbackPage() {
           </Select>
           <Select value={pcsStatusFilter} onValueChange={setPcsStatusFilter}>
             <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="PCS Status" />
+              <SelectValue placeholder="ACS Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All PCS Status</SelectItem>
+              <SelectItem value="all">All ACS Status</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
               <SelectItem value="approved">Approved</SelectItem>
               <SelectItem value="disregard">Disregard</SelectItem>
@@ -161,17 +161,15 @@ export default function FeedbackPage() {
             <Table className="w-full table-fixed">
               <TableHeader>
                 <TableRow className="bg-muted/50 sticky top-0 z-10">
-                  <TableHead className="min-w-[200px]">Title</TableHead>
+                  <TableHead className="min-w-[180px]">Title</TableHead>
+                  <TableHead className="min-w-[220px]">Description</TableHead>
+                  <TableHead className="w-[110px]">Author</TableHead>
                   <TableHead className="w-[100px]">Type</TableHead>
-                  <TableHead className="min-w-[250px]">Description</TableHead>
-                  <TableHead className="w-[80px]">Screenshot</TableHead>
-                  <TableHead className="w-[140px]">Author</TableHead>
-                  <TableHead className="w-[120px]">PCS Status</TableHead>
+                  <TableHead className="w-[120px]">ACS Status</TableHead>
                   <TableHead className="w-[110px]">PB Status</TableHead>
                   <TableHead className="w-[80px]">Priority</TableHead>
                   <TableHead className="w-[100px]">Date</TableHead>
-                  <TableHead className="w-[90px]">Comments</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
+                  <TableHead className="w-[130px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
