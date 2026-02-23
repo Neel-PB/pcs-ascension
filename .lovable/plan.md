@@ -1,31 +1,21 @@
 
 
-## Fix Tab/KPI Width Misalignment on Staffing Page
+## Change Workforce Drawer Trigger to Filled Variant
 
 ### Problem
 
-The tab toggle bar spans the full content width, but the KPI cards below are indented with an extra `pl-6` (24px left padding) applied to the `DraggableSectionsContainer`. This makes the KPI sections narrower than the tabs, creating a visual misalignment visible only on the Staffing Summary page.
+The Workforce/Positions Checklist trigger button on the right edge currently uses `variant="ghost"` with manual `bg-primary` overrides. The user wants it to use a proper filled (default) variant instead.
 
-### Root Cause
+### Change
 
-In `src/components/staffing/DraggableSectionsContainer.tsx` (line 121), the KPI sections wrapper has `pl-6`:
+**File: `src/components/workforce/WorkforceDrawerTrigger.tsx`**
 
-```
-<div className="space-y-8 pl-6" data-tour="kpi-sections">
-```
-
-This extra left padding pushes all KPI cards inward relative to the tabs and filter bar above.
-
-### Fix
-
-**File: `src/components/staffing/DraggableSectionsContainer.tsx`**
-
-Remove `pl-6` from the container className on line 121:
+Switch `variant="ghost"` to `variant="default"` on the Button. Since the `default` variant already applies `bg-primary text-primary-foreground hover:bg-primary/90`, the manual `bg-primary hover:bg-primary/90 text-white` classes become redundant and can be removed for cleanliness.
 
 ```
-Before: className="space-y-8 pl-6"
-After:  className="space-y-8"
+Before: variant="ghost" className="... bg-primary hover:bg-primary/90 ... text-white"
+After:  variant="default" className="... shadow-xl active:scale-95 transition-all duration-300 ease-out ..."
 ```
 
-This single change aligns the KPI card sections flush with the tabs and filter bar. No other pages are affected since this component is only used on the Staffing Summary tab.
+This only affects the single Workforce Drawer trigger button -- the AI Hub and Feedback triggers remain unchanged.
 
