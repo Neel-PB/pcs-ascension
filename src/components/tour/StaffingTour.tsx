@@ -5,7 +5,9 @@ import { useTourStore } from '@/stores/useTourStore';
 import { staffingSteps, planningSteps, varianceSteps, forecastSteps, volumeSettingsSteps, npSettingsSteps } from './tourSteps';
 import { TourTooltip } from './TourTooltip';
 import { getNextSection, injectSectionMetadata } from './tourConfig';
-import { useMemo } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
+import { useFilterStore } from '@/stores/useFilterStore';
+import { FILTER_SENTINELS } from '@/lib/selectConstants';
 
 const TAB_SEQUENCE = ['summary', 'planning', 'variance', 'forecasts', 'volume-settings', 'np-settings'];
 const TOUR_KEY_MAP: Record<string, string> = {
@@ -38,11 +40,37 @@ export function StaffingTour({ activeTab = 'summary', onTabChange }: StaffingTou
   const microTourStep = useTourStore(s => s.microTourStep);
   const clearMicroTour = useTourStore(s => s.clearMicroTour);
   const isMicro = microTourStep && microTourStep.tourKey === tourKey;
+
+  const selectedFacility = useFilterStore(s => s.selectedFacility);
+  const isSettingsTab = activeTab === 'volume-settings' || activeTab === 'np-settings';
+  const needsFacility = isSettingsTab
+    && (!selectedFacility || selectedFacility === FILTER_SENTINELS.ALL_FACILITIES);
+
   const effectiveSteps = useMemo(() => {
-    const base = isMicro ? [rawSteps[microTourStep.stepIndex]] : rawSteps;
-    return injectSectionMetadata(base, tourKey);
-  }, [rawSteps, tourKey, isMicro, microTourStep?.stepIndex]);
+    let steps = isMicro ? [rawSteps[microTourStep.stepIndex]] : rawSteps;
+
+    if (isSettingsTab) {
+      if (needsFacility) {
+        steps = steps.filter((s: any) => s.data?.requiresFacility);
+      } else {
+        steps = steps.filter((s: any) => !s.data?.requiresFacility);
+      }
+    }
+
+    return injectSectionMetadata(steps, tourKey);
+  }, [rawSteps, tourKey, isMicro, microTourStep?.stepIndex, needsFacility, isSettingsTab]);
+
   const { run, setRun, completeTour } = useTour(tourKey);
+
+  // Restart tour when user selects a facility on settings tabs
+  const prevNeedsFacility = useRef(needsFacility);
+  useEffect(() => {
+    if (prevNeedsFacility.current && !needsFacility && run && isSettingsTab) {
+      setRun(false);
+      setTimeout(() => setRun(true), 400);
+    }
+    prevNeedsFacility.current = needsFacility;
+  }, [needsFacility]);
 
   const handleNextSection = () => {
     const nextSection = getNextSection(tourKey);
