@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useFeedbackComments } from '@/hooks/useFeedbackComments';
 import { LogoLoader } from '@/components/ui/LogoLoader';
 
@@ -46,12 +47,19 @@ export const FeedbackCommentsDialog = ({ feedbackId, commentCount = 0 }: Feedbac
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-1.5 h-7 px-2">
-          <MessageSquare className="h-3.5 w-3.5" />
-          <span className="text-xs">{commentCount}</span>
-        </Button>
-      </DialogTrigger>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-1.5 h-7 px-2 text-muted-foreground">
+                <MessageSquare className="h-3.5 w-3.5" />
+                <span className="text-xs">{commentCount}</span>
+              </Button>
+            </DialogTrigger>
+          </TooltipTrigger>
+          <TooltipContent>{commentCount > 0 ? `Comments (${commentCount})` : 'No Comments'}</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <DialogContent className="max-w-md border-border/20 focus:outline-none focus-visible:outline-none focus-visible:ring-0">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
