@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Bell, Sun, Moon, Monitor } from "@/lib/icons";
-import { useTheme } from "next-themes";
+import { Bell } from "@/lib/icons";
+
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
@@ -35,7 +35,7 @@ export function AppHeader() {
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [tourLauncherOpen, setTourLauncherOpen] = useState(false);
-  const { theme, setTheme } = useTheme();
+  
   const { user, signOut } = useAuth();
   const { profile } = useUserProfile(user?.id);
   const { data: notifications } = useNotifications();
@@ -88,17 +88,6 @@ export function AppHeader() {
   const userEmail = profile?.email || user?.email || '';
   const avatarUrl = profile?.avatar_url;
 
-  const cycleTheme = () => {
-    if (theme === "light") setTheme("dark");
-    else if (theme === "dark") setTheme("system");
-    else setTheme("light");
-  };
-
-  const getThemeIcon = () => {
-    if (theme === "dark") return <Moon className="h-6 w-6" />;
-    if (theme === "system") return <Monitor className="h-6 w-6" />;
-    return <Sun className="h-6 w-6" />;
-  };
 
   const handleSignOut = async () => {
     await signOut(queryClient);
@@ -151,12 +140,6 @@ export function AppHeader() {
               </Badge>
             )}
             <span className="sr-only">Notifications</span>
-          </Button>
-
-          {/* Theme Selector */}
-          <Button variant="ghost" size="icon" onClick={cycleTheme} data-tour="header-theme">
-            {getThemeIcon()}
-            <span className="sr-only">Toggle theme</span>
           </Button>
 
           {/* User Menu */}
