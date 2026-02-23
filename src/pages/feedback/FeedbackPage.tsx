@@ -156,18 +156,8 @@ export default function FeedbackPage() {
       />
       {/* Header */}
       <div className="shrink-0 px-6 py-4 border-b border-border">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-semibold">Feedback</h1>
-            <p className="text-sm text-muted-foreground">
-              View and manage all submitted feedback
-            </p>
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="flex items-center gap-3">
-          <div data-tour="feedback-search" className="flex-1 max-w-sm">
+        <div className="flex items-center justify-center gap-3">
+          <div data-tour="feedback-search" className="w-64">
             <SearchField
               placeholder="Search feedback..."
               value={searchQuery}
