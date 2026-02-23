@@ -118,7 +118,7 @@ export function DraggableSectionsContainer({
       onDragEnd={handleDragEnd}
     >
       <SortableContext items={sectionOrder} strategy={verticalListSortingStrategy}>
-        <div className="space-y-8 pl-6" data-tour="kpi-sections">
+        <div className="space-y-8" data-tour="kpi-sections">
           {sortedSections.map((section) => (
             <DraggableSection key={section.id} section={section} />
           ))}
