@@ -193,7 +193,10 @@ export function AppHeader() {
                   <Play className="h-4 w-4 mr-2" />
                   <span>Tour This Page</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => startFullTour()}>
+                <DropdownMenuItem onSelect={() => {
+                  startFullTour();
+                  navigate('/staffing?tab=summary&tour=true');
+                }}>
                   <Navigation className="h-4 w-4 mr-2" />
                   <span>Full Guided Tour</span>
                 </DropdownMenuItem>
