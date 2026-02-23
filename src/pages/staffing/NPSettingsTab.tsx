@@ -202,7 +202,7 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
   // Show message if no facility selected
   if (!selectedFacility || selectedFacility === 'all-facilities') {
     return (
-      <div className="flex flex-col items-center justify-center h-96 text-center space-y-4">
+      <div data-tour="np-settings-empty" className="flex flex-col items-center justify-center h-96 text-center space-y-4">
         <Database className="h-16 w-16 text-muted-foreground" />
         <div className="space-y-2">
           <h3 className="text-lg font-semibold">Select a Facility</h3>
