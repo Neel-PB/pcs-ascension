@@ -36,6 +36,7 @@ import {
   CameraOutline,
   Trash2Outline,
 } from '@/lib/icons';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { format, formatDistanceToNow, differenceInHours } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -103,19 +104,33 @@ function ScreenshotButton({ screenshotUrl }: { screenshotUrl: string | null }) {
 
   if (!screenshotUrl || imageError) {
     return (
-      <Button variant="ghost" size="icon" className="h-7 w-7 opacity-30 cursor-default" disabled>
-        <CameraOutline className="h-4 w-4" />
-      </Button>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground opacity-30 cursor-default" disabled>
+              <CameraOutline className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>No Screenshot</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     );
   }
 
   return (
     <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-7 w-7">
-          <CameraOutline className="h-4 w-4" />
-        </Button>
-      </DialogTrigger>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground">
+                <CameraOutline className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+          </TooltipTrigger>
+          <TooltipContent>View Screenshot</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <DialogContent className="max-w-4xl p-2 border-border/20">
         <img
           src={resolvedUrl || screenshotUrl}
@@ -381,11 +396,18 @@ export function createFeedbackColumns(handlers: FeedbackColumnHandlers): ColumnD
             commentCount={commentCounts.get(row.id) ?? 0}
           />
           <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive">
-                <Trash2Outline className="h-4 w-4" />
-              </Button>
-            </AlertDialogTrigger>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive">
+                      <Trash2Outline className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                </TooltipTrigger>
+                <TooltipContent>Delete Feedback</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete Feedback</AlertDialogTitle>
