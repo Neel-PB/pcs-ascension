@@ -9,12 +9,11 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useFeedbackComments } from '@/hooks/useFeedbackComments';
 import { LogoLoader } from '@/components/ui/LogoLoader';
+import TextareaAutosize from 'react-textarea-autosize';
 
 interface FeedbackCommentsDialogProps {
   feedbackId: string;
@@ -41,10 +40,6 @@ export const FeedbackCommentsDialog = ({ feedbackId, commentCount = 0 }: Feedbac
     setNewComment('');
   };
 
-  const getInitials = (firstName?: string | null, lastName?: string | null) => {
-    return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase() || '?';
-  };
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <TooltipProvider>
@@ -68,7 +63,7 @@ export const FeedbackCommentsDialog = ({ feedbackId, commentCount = 0 }: Feedbac
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col h-[400px]">
+        <div className="flex flex-col h-[350px]">
           {/* Messages List */}
           <ScrollArea className="flex-1 pr-4">
             {isLoading ? (
@@ -77,39 +72,35 @@ export const FeedbackCommentsDialog = ({ feedbackId, commentCount = 0 }: Feedbac
               </div>
             ) : comments.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                <MessageSquare className="h-8 w-8 mb-2 opacity-50" />
+                <div className="rounded-full bg-muted p-3 mb-2">
+                  <MessageSquare className="h-6 w-6 opacity-50" />
+                </div>
                 <p className="text-sm">No comments yet</p>
               </div>
             ) : (
-              <div className="space-y-4 py-2">
+              <div className="space-y-3 py-2">
                 {comments.map((comment) => (
-                  <div key={comment.id} className="group flex gap-3">
-                    <Avatar className="h-8 w-8 shrink-0">
-                      <AvatarImage src={comment.author?.avatar_url || undefined} />
-                      <AvatarFallback className="text-xs">
-                        {getInitials(comment.author?.first_name, comment.author?.last_name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm">
-                          {comment.author?.first_name || 'Unknown'} {comment.author?.last_name || ''}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {formatDate(comment.created_at)}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity ml-auto"
-                          onClick={() => deleteComment.mutate(comment.id)}
-                        >
-                          <Trash2 className="h-3 w-3 text-destructive" />
-                        </Button>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1 break-words">
+                  <div key={comment.id} className="group flex flex-col gap-1">
+                    <span className="text-[11px] font-medium text-foreground px-1">
+                      {comment.author?.first_name || 'Unknown'} {comment.author?.last_name || ''}
+                    </span>
+                    <div className="rounded-2xl rounded-bl-sm bg-muted px-3 py-2">
+                      <p className="text-sm break-words">
                         {comment.content}
                       </p>
+                    </div>
+                    <div className="flex items-center gap-2 px-1">
+                      <span className="text-[10px] text-muted-foreground">
+                        {formatDate(comment.created_at)}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => deleteComment.mutate(comment.id)}
+                      >
+                        <Trash2 className="h-3 w-3 text-destructive" />
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -117,30 +108,33 @@ export const FeedbackCommentsDialog = ({ feedbackId, commentCount = 0 }: Feedbac
             )}
           </ScrollArea>
 
-          {/* Composer */}
-          <div className="pt-4 border-t mt-4">
-            <div className="flex gap-2">
-              <Textarea
+          {/* Pill Composer */}
+          <div className="pt-3 border-t mt-3">
+            <div className="flex items-end gap-1 rounded-xl border border-border/60 shadow-sm px-3 py-2 focus-within:border-primary/40 transition-colors">
+              <TextareaAutosize
                 placeholder="Add a comment..."
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                className="min-h-[60px] resize-none"
+                className="flex-1 resize-none bg-transparent text-sm placeholder:text-muted-foreground focus:outline-none min-h-[24px] max-h-[120px]"
+                maxRows={5}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                    e.preventDefault();
                     handleAddComment();
                   }
                 }}
               />
               <Button
+                variant="ghost"
                 size="icon"
                 onClick={handleAddComment}
                 disabled={!newComment.trim() || addComment.isPending}
-                className="shrink-0"
+                className="shrink-0 h-7 w-7"
               >
                 <Send className="h-4 w-4" />
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">⌘ + Enter to send</p>
+            <p className="text-[10px] text-muted-foreground mt-1 px-1">⌘ + Enter to send</p>
           </div>
         </div>
       </DialogContent>
