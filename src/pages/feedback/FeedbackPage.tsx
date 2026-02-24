@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import Joyride, { CallBackProps, STATUS } from 'react-joyride';
 import { useFeedback } from '@/hooks/useFeedback';
-import { useFeedbackComments } from '@/hooks/useFeedbackComments';
+import { useFeedbackCommentCounts } from '@/hooks/useFeedbackCommentCounts';
 import { SearchField } from '@/components/ui/search-field';
 import {
   Select,
@@ -72,9 +72,7 @@ export default function FeedbackPage() {
     updateFeedbackPriority.mutate({ id, priority: priority as any });
   }, [updateFeedbackPriority]);
 
-  // Build comment counts map from feedback data
-  // Note: FeedbackCommentsDialog fetches its own counts per-row, but we pass 0 as default
-  const commentCounts = useMemo(() => new Map<string, number>(), []);
+  const commentCounts = useFeedbackCommentCounts();
 
   const filteredFeedback = useMemo(() => {
     let filtered = feedback.filter((item) => {
