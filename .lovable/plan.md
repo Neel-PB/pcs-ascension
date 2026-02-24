@@ -1,27 +1,28 @@
 
 
-## Make KPI Section Drag Handle Always Visible with Primary Highlight
+## Make Position KPI Cards Single-Line and Right-Aligned
 
 ### Problem
 
-The GripVertical drag handle icon on KPI sections in the Summary modal is hidden by default and only appears on hover (`opacity-0 group-hover:opacity-100`). The user wants it always visible, with a primary color highlight on hover/active.
+The KPI cards (Employees, Hired FTE, Active FTE) currently stack label and value vertically in two lines. The user wants them displayed in a single row with label and value on the same line, and the cards should be right-aligned (pushed to the right side of the toolbar).
 
-### Change
+### Changes
 
 | File | Change |
 |------|--------|
-| `src/components/staffing/DraggableKPISection.tsx` | Update drag handle classes on line 64 to be always visible with primary hover/active styling |
+| `src/components/positions/PositionKPICards.tsx` | Change card layout from vertical (`flex-col`) to horizontal (`flex-row`) with label and value on one line. Adjust height and alignment. |
+| `src/pages/positions/EmployeesTab.tsx` | Move `PositionKPICards` into the right-side `div` (with `ml-auto`) so cards sit right-aligned before the action buttons. |
 
 ### Details
 
-Replace the current drag handle classes:
+**PositionKPICards.tsx**
+- Change each card from `flex flex-col justify-center` to `flex flex-row items-center gap-2`
+- Label and value sit side-by-side: `"Employees  3,157"`
+- Keep Helix card styling: `rounded-xl border border-border bg-card shadow-md px-4 h-11`
 
-```text
-Before: opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-muted-foreground
+**EmployeesTab.tsx (and other tabs using the same pattern)**
+- Move `<PositionKPICards>` from between SearchField and the action buttons into the `ml-auto` div, placing it before the Refresh/Filter buttons
+- This right-aligns the KPI cards naturally
 
-After:  cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-primary active:text-primary transition-colors duration-200
-```
+The same pattern will be applied to `ContractorsTab.tsx`, `OpenRequisitionTab.tsx`, and `RequisitionsTab.tsx` if they also use `PositionKPICards`.
 
-- Remove `opacity-0 group-hover:opacity-100` so the icon is always visible
-- Add `hover:text-primary active:text-primary` for brand blue highlight on interaction
-- Switch from `transition-opacity` to `transition-colors` since the animation is now on color, not visibility
