@@ -1,27 +1,18 @@
 
 
-## Gate Volume Settings and NP Settings Guides by Permission
+## Style the "Need Help?" Banner to Follow Helix Card Standards
 
 ### Problem
 
-The Volume Settings and NP Settings guides in User Guides are currently visible to anyone with `staffing.access`, but the actual tabs in Staffing are gated behind `settings.volume_override` and `settings.np_override` respectively. A user who can't see the tab shouldn't see the guide either.
+The "Need Help?" contact banner on the Support page uses `bg-shell-elevated` instead of the standard Helix card styling (`bg-card`), making it visually inconsistent with other cards in the application.
 
 ### Change
 
 | File | Change |
 |------|--------|
-| `src/components/support/UserGuidesTab.tsx` | Add per-guide permission overrides for `staffing-volume-settings` and `staffing-np-settings` so they require `settings.volume_override` and `settings.np_override` in addition to `staffing.access`. |
+| `src/pages/support/SupportPage.tsx` | Update the "Need Help?" banner div (line 135) to use `bg-card` background with `border border-border` to match Helix card standards. |
 
 ### Details
 
-Add a `guidePermissionMap` (similar to the existing `overlayPermissionMap`) that maps specific guide `tourKey` values to additional required permissions:
-
-```text
-staffing-volume-settings -> settings.volume_override
-staffing-np-settings     -> settings.np_override
-```
-
-In the `guidesWithSteps` filter, after passing the category-level check, also check this guide-level map. If the user lacks the specific permission, the guide is hidden. This mirrors the exact same pattern already used for overlay-level filtering (the `overlayPermissionMap`).
-
-No other files need changes -- the staffing tabs themselves already enforce these permissions correctly.
+Replace the banner's class from `bg-shell-elevated` to `bg-card border border-border`, keeping the existing `rounded-xl px-4 py-3 shadow-md` classes. This aligns with the Helix Design System card spec: `rounded-xl` (12px radius), `shadow-md`, `px-4` internal padding, and proper card background with border.
 
