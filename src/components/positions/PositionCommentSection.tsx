@@ -55,8 +55,8 @@ function ActivityFieldRow({
   // No change - show em dash
   if (!hasActualChange) {
     return (
-      <div className="flex items-center gap-2 py-1">
-        <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide w-12 shrink-0">{label}</span>
+    <div className="flex items-center gap-2 py-0.5">
+        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide w-12 shrink-0">{label}</span>
         <span className="text-sm text-muted-foreground/60">—</span>
       </div>
     );
@@ -73,14 +73,14 @@ function ActivityFieldRow({
   // Vertical layout for long content
   if (useVerticalLayout) {
     return (
-      <div className="py-1 space-y-1">
-        <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">{label}</span>
+      <div className="py-0.5 space-y-0.5">
+        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">{label}</span>
         <div className="flex flex-col gap-1 pl-0.5">
           {hasOld && (
             <div className="text-sm text-muted-foreground line-through leading-relaxed break-words">{oldStr}</div>
           )}
           <div className="inline-flex items-center gap-1.5">
-            <ArrowRight className="h-3.5 w-3.5 text-primary shrink-0" />
+            <ArrowRight className="h-3 w-3 text-primary shrink-0" />
             <span className="text-sm font-medium text-foreground leading-relaxed break-words">{newStr}</span>
           </div>
         </div>
@@ -90,14 +90,14 @@ function ActivityFieldRow({
 
   // Inline layout - arrow and new value stay together as a unit
   return (
-    <div className="flex items-center gap-2 py-1">
-      <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide w-12 shrink-0">{label}</span>
+    <div className="flex items-center gap-2 py-0.5">
+      <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide w-12 shrink-0">{label}</span>
       <div className="flex items-center gap-2 min-w-0">
         {hasOld && (
           <span className="text-sm text-muted-foreground shrink-0">{oldStr}</span>
         )}
         <span className="inline-flex items-center gap-1.5 shrink-0">
-          <ArrowRight className="h-3.5 w-3.5 text-primary" />
+          <ArrowRight className="h-3 w-3 text-primary" />
           <span className="text-sm font-medium text-foreground whitespace-nowrap">{newStr}</span>
         </span>
       </div>
@@ -125,7 +125,7 @@ function FteActivityCard({ metadata, displayName }: { metadata: Record<string, u
       <ActivityFieldRow label="Reason" oldValue={reasonOld} newValue={reasonNew} isMultiline />
       <ActivityFieldRow label="Expiry" oldValue={formattedExpiryOld} newValue={formattedExpiryNew} />
       {comment && (
-        <div className="pt-1.5 pb-0.5">
+        <div className="pt-1 pb-0.5">
           <p className="text-sm text-foreground italic">"{comment}"</p>
         </div>
       )}
@@ -249,7 +249,7 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex-1 min-h-0 pb-4 overflow-y-auto" ref={scrollRef}>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Enhanced Empty State */}
           {sortedComments.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -315,10 +315,10 @@ export function PositionCommentSection({ positionId, onClose }: PositionCommentS
                       <div className="flex items-start gap-2">
                         {/* Message Bubble */}
                         <div className="max-w-[85%]">
-                          <div className={`px-3 py-2 rounded-2xl ${
+                          <div className={`rounded-2xl ${
                             isActivityLog 
-                              ? 'rounded-bl-sm bg-primary/10 border border-primary/20' 
-                              : 'rounded-bl-sm bg-muted'
+                              ? 'px-2.5 py-1.5 rounded-bl-sm bg-primary/10 border border-primary/20' 
+                              : 'px-3 py-2 rounded-bl-sm bg-muted'
                           }`}>
                             {/* Structured content for activity logs */}
                             {isFteActivity && (
