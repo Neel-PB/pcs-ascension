@@ -11,7 +11,7 @@ import { ContractorDetailsSheet } from "@/components/workforce/ContractorDetails
 import { ContractorsFilterSheet } from "@/components/positions/ContractorsFilterSheet";
 import { EditableTable } from "@/components/editable-table/EditableTable";
 
-import { contractorColumns, createContractorColumnsWithComments } from "@/config/contractorColumns";
+import { contractorColumns, createContractorColumnsWithComments, ContractorTotals } from "@/config/contractorColumns";
 import { useUpdateActualFte } from "@/hooks/useUpdateActualFte";
 import { useUpdateShiftOverride } from "@/hooks/useUpdateShiftOverride";
 import { EditableFTECell, FilterDataProvider } from "@/components/editable-table/cells/EditableFTECell";
@@ -219,13 +219,22 @@ export function ContractorsTab({
   // Fetch comment counts
   const commentCounts = usePositionCommentCounts(positionIds);
 
+  // Compute totals for two-row headers
+  const contractorTotals: ContractorTotals = useMemo(() => ({
+    totalCount: filteredAndSortedContractors.length,
+    totalContractorNames: filteredAndSortedContractors.filter(c => c.employeeName).length,
+    totalHiredFTE: filteredAndSortedContractors.reduce((sum, c) => sum + (c.FTE || 0), 0),
+    totalActiveFTE: filteredAndSortedContractors.reduce((sum, c) => sum + (c.actual_fte ?? c.FTE ?? 0), 0),
+  }), [filteredAndSortedContractors]);
+
   const firstRowId = filteredAndSortedContractors[0]?.id;
 
   const columnsWithHandlers = useMemo(() => {
     const baseColumns = createContractorColumnsWithComments(
       commentCounts, 
       handleCommentClick,
-      handleShiftOverrideUpdate
+      handleShiftOverrideUpdate,
+      contractorTotals
     );
     return baseColumns.map(col => {
       if (col.id === 'actual_fte') {
@@ -268,7 +277,7 @@ export function ContractorsTab({
       }
       return col;
     });
-  }, [commentCounts, handleCommentClick, handleActualFteUpdate, handleShiftOverrideUpdate, filterDataProvider, firstRowId]);
+  }, [commentCounts, handleCommentClick, handleActualFteUpdate, handleShiftOverrideUpdate, filterDataProvider, firstRowId, contractorTotals]);
 
   const showEmptyState = !isFetching && (!contractors || contractors.length === 0);
 

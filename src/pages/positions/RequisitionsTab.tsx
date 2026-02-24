@@ -11,7 +11,7 @@ import { RequisitionDetailsSheet } from "@/components/workforce/RequisitionDetai
 import { RequisitionsFilterSheet } from "@/components/positions/RequisitionsFilterSheet";
 import { EditableTable } from "@/components/editable-table/EditableTable";
 
-import { requisitionColumns, createRequisitionColumnsWithComments } from "@/config/requisitionColumns";
+import { requisitionColumns, createRequisitionColumnsWithComments, RequisitionTotals } from "@/config/requisitionColumns";
 import { usePositionCommentCounts } from "@/hooks/usePositionCommentCounts";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 
@@ -197,9 +197,14 @@ export function RequisitionsTab({
   // Fetch comment counts
   const commentCounts = usePositionCommentCounts(positionIds);
 
+  // Compute totals for two-row headers
+  const requisitionTotals: RequisitionTotals = useMemo(() => ({
+    totalCount: filteredAndSortedRequisitions.length,
+  }), [filteredAndSortedRequisitions]);
+
   const columnsWithComments = useMemo(() => 
-    createRequisitionColumnsWithComments(commentCounts, handleCommentClick),
-    [commentCounts, handleCommentClick]
+    createRequisitionColumnsWithComments(commentCounts, handleCommentClick, requisitionTotals),
+    [commentCounts, handleCommentClick, requisitionTotals]
   );
 
   const showEmptyState = !isFetching && (!requisitions || requisitions.length === 0);
