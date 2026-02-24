@@ -56,17 +56,16 @@ export function ContractorRequisitionTab(_props: ContractorRequisitionTabProps) 
 
   return (
     <div className="flex flex-col gap-4 min-h-0 max-h-full overflow-hidden">
-      <div className="flex justify-between items-center gap-4 flex-shrink-0">
-        <SearchField placeholder="Search requisitions..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full max-w-2xl" />
-        <div className="flex gap-2 flex-shrink-0">
+      <div className="flex items-center gap-4 flex-shrink-0">
+        <SearchField placeholder="Search requisitions..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-64" />
+        <PositionKPICards items={[{ label: "Contractor Requisitions", value: filteredData.length }]} />
+        <div className="flex gap-2 flex-shrink-0 ml-auto">
           <DataRefreshButton dataSources={['positions_data']} />
           <Button variant="ascension" size="icon" aria-label="Filters" title="Filters">
             <Filter className="h-4 w-4" />
           </Button>
         </div>
       </div>
-
-      <PositionKPICards items={[{ label: "Contractor Requisitions", value: filteredData.length }]} />
 
       <div className="min-h-0 max-h-full flex flex-col">
         <EditableTable data={filteredData} columns={columns} getRowId={(row) => row.id} storeNamespace="contractor-requisitions" className="min-h-0 max-h-full" />

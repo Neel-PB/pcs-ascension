@@ -123,15 +123,18 @@ export function RequisitionsTab({
 
   return (
     <div className="flex flex-col gap-4 min-h-0 max-h-full overflow-hidden">
-      <div className="flex justify-between items-center gap-4 flex-shrink-0">
+      <div className="flex items-center gap-4 flex-shrink-0">
         <SearchField
           placeholder="Search requisitions..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full max-w-2xl"
+          className="w-64"
           data-tour="positions-search"
         />
-        <div className="flex gap-2 flex-shrink-0">
+
+        <PositionKPICards items={[{ label: "Open Positions", value: totalCount }]} />
+
+        <div className="flex gap-2 flex-shrink-0 ml-auto">
           <span data-tour="positions-refresh">
             <DataRefreshButton dataSources={['positions_data']} />
           </span>
@@ -143,8 +146,6 @@ export function RequisitionsTab({
           </Button>
         </div>
       </div>
-
-      <PositionKPICards items={[{ label: "Open Positions", value: totalCount }]} />
 
       {isFetching ? (
         <div className="flex-1 flex items-center justify-center min-h-[300px]"><LogoLoader size="lg" /></div>
