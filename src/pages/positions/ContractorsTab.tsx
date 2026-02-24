@@ -209,7 +209,6 @@ export function ContractorsTab({
 
         <div className="flex gap-2 items-center flex-shrink-0 ml-auto">
           <PositionKPICards items={[
-            { label: "Positions", value: totals.totalCount },
             { label: "Contractors", value: totals.totalContractorNames },
             { label: "Hired FTE", value: totals.totalHiredFTE },
             { label: "Active FTE", value: totals.totalActiveFTE },
