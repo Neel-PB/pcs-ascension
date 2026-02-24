@@ -9,13 +9,6 @@ import { MessageSquare } from '@/lib/icons';
 // Type for the shift override handler
 type ShiftOverrideHandler = (positionId: string, originalShift: string | null, value: string | null) => void;
 
-export interface ContractorTotals {
-  totalCount: number;
-  totalContractorNames: number;
-  totalHiredFTE: number;
-  totalActiveFTE: number;
-}
-
 export const contractorColumns: ColumnDef<Position>[] = [
   {
     id: 'positionNum',
@@ -63,7 +56,6 @@ export const contractorColumns: ColumnDef<Position>[] = [
     sortable: true,
     resizable: false,
     draggable: true,
-    
   },
   {
     id: 'actual_fte',
@@ -114,80 +106,16 @@ export const contractorColumns: ColumnDef<Position>[] = [
   },
 ];
 
-// Function to create columns with comment counts, handlers, and totals
+// Function to create columns with comment counts and handlers
 export const createContractorColumnsWithComments = (
   commentCounts: Map<string, number>,
   onRowClick: (row: Position) => void,
   onUpdateShiftOverride?: ShiftOverrideHandler,
-  totals?: ContractorTotals
 ): ColumnDef<Position>[] => {
   const columnsWithEnhancements = contractorColumns.map(col => {
-    // Columns with totals
-    if (col.id === 'positionNum' && totals) {
-      return {
-        ...col,
-        renderHeader: () => (
-          <span className="flex flex-col leading-tight">
-            <span>Position #</span>
-            <span className="text-[10px] text-muted-foreground font-normal">({totals.totalCount.toLocaleString()})</span>
-          </span>
-        ),
-      };
-    }
-    if (col.id === 'employeeName' && totals) {
-      return {
-        ...col,
-        renderHeader: () => (
-          <span className="flex flex-col leading-tight">
-            <span>Contractor Name</span>
-            <span className="text-[10px] text-muted-foreground font-normal">({totals.totalContractorNames.toLocaleString()})</span>
-          </span>
-        ),
-      };
-    }
-    if (col.id === 'FTE' && totals) {
-      return {
-        ...col,
-        renderHeader: () => (
-          <span className="flex flex-col leading-tight">
-            <span>Hired FTE</span>
-            <span className="text-[10px] text-muted-foreground font-normal">({totals.totalHiredFTE.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })})</span>
-          </span>
-        ),
-      };
-    }
-    if (col.id === 'actual_fte' && totals) {
-      return {
-        ...col,
-        renderHeader: () => (
-          <span data-tour="positions-active-fte" className="flex flex-col leading-tight">
-            <span>Active FTE</span>
-            <span className="text-[10px] text-muted-foreground font-normal">({totals.totalActiveFTE.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })})</span>
-          </span>
-        ),
-      };
-    }
-    // Columns without totals - invisible placeholder
-    if (col.id === 'jobTitle' || col.id === 'status' || col.id === 'employmentType') {
-      return {
-        ...col,
-        renderHeader: () => (
-          <span className="flex flex-col leading-tight">
-            <span>{col.label}</span>
-            <span className="text-[10px] invisible">-</span>
-          </span>
-        ),
-      };
-    }
     if (col.id === 'shift') {
       return {
         ...col,
-        renderHeader: () => (
-          <span data-tour="positions-shift" className="flex flex-col leading-tight">
-            <span>Shift</span>
-            <span className="text-[10px] invisible">-</span>
-          </span>
-        ),
         renderCell: (row: Position) => (
           <ShiftCell 
             value={row.shift} 
@@ -212,9 +140,8 @@ export const createContractorColumnsWithComments = (
       resizable: false,
       draggable: true,
       renderHeader: () => (
-        <span data-tour="positions-comments" className="flex flex-col leading-tight">
+        <span data-tour="positions-comments">
           <MessageSquare className="h-4 w-4" />
-          <span className="text-[10px] invisible">-</span>
         </span>
       ),
       renderCell: (row) => (

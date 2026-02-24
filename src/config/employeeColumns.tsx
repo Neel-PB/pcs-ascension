@@ -9,12 +9,6 @@ import { MessageSquare } from '@/lib/icons';
 // Type for the shift override handler
 type ShiftOverrideHandler = (positionId: string, originalShift: string | null, value: string | null) => void;
 
-export interface EmployeeTotals {
-  totalCount: number;
-  totalHiredFTE: number;
-  totalActiveFTE: number;
-}
-
 export const employeeColumns: ColumnDef<Position>[] = [
   {
     id: 'positionNum',
@@ -62,7 +56,6 @@ export const employeeColumns: ColumnDef<Position>[] = [
     sortable: true,
     resizable: false,
     draggable: true,
-    
   },
   {
     id: 'actual_fte',
@@ -119,70 +112,16 @@ export const employeeColumns: ColumnDef<Position>[] = [
   },
 ];
 
-// Function to create columns with comment counts, handlers, and totals
+// Function to create columns with comment counts and handlers
 export const createEmployeeColumnsWithComments = (
   commentCounts: Map<string, number>,
   onRowClick: (row: Position) => void,
   onUpdateShiftOverride?: ShiftOverrideHandler,
-  totals?: EmployeeTotals
 ): ColumnDef<Position>[] => {
-  // Map columns and enhance with totals + shift handlers
   const columnsWithEnhancements = employeeColumns.map(col => {
-    // Columns with totals
-    if (col.id === 'employeeName' && totals) {
-      return {
-        ...col,
-        renderHeader: () => (
-          <span className="flex flex-col leading-tight">
-            <span>Employee Name</span>
-            <span className="text-[10px] text-muted-foreground font-normal">({totals.totalCount.toLocaleString()})</span>
-          </span>
-        ),
-      };
-    }
-    if (col.id === 'FTE' && totals) {
-      return {
-        ...col,
-        renderHeader: () => (
-          <span className="flex flex-col leading-tight">
-            <span>Hired FTE</span>
-            <span className="text-[10px] text-muted-foreground font-normal">({totals.totalHiredFTE.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })})</span>
-          </span>
-        ),
-      };
-    }
-    if (col.id === 'actual_fte' && totals) {
-      return {
-        ...col,
-        renderHeader: () => (
-          <span data-tour="positions-active-fte" className="flex flex-col leading-tight">
-            <span>Active FTE</span>
-            <span className="text-[10px] text-muted-foreground font-normal">({totals.totalActiveFTE.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })})</span>
-          </span>
-        ),
-      };
-    }
-    // Columns without totals - add invisible placeholder for alignment
-    if (col.id === 'positionNum' || col.id === 'jobTitle' || col.id === 'payrollStatus' || col.id === 'employmentType') {
-      return {
-        ...col,
-        renderHeader: () => (
-          <span className="flex flex-col leading-tight">
-            <span>{col.label}</span>
-            <span className="text-[10px] invisible">-</span>
-          </span>
-        ),
-      };
-    }
     if (col.id === 'shift') {
       return {
         ...col,
-        renderHeader: () => (
-          <span data-tour="positions-shift" className="flex flex-col leading-tight">
-            <span>Shift</span>
-            <span className="text-[10px] invisible">-</span>
-          </span>
-        ),
         renderCell: (row: Position) => (
           <ShiftCell 
             value={row.shift} 
@@ -207,9 +146,8 @@ export const createEmployeeColumnsWithComments = (
       resizable: false,
       draggable: true,
       renderHeader: () => (
-        <span data-tour="positions-comments" className="flex flex-col leading-tight">
+        <span data-tour="positions-comments">
           <MessageSquare className="h-4 w-4" />
-          <span className="text-[10px] invisible">-</span>
         </span>
       ),
       renderCell: (row) => (

@@ -10,6 +10,7 @@ import { SearchField } from "@/components/ui/search-field";
 import { EmployeeDetailsSheet } from "@/components/workforce/EmployeeDetailsSheet";
 import { EmployeesFilterSheet } from "@/components/positions/EmployeesFilterSheet";
 import { EditableTable } from "@/components/editable-table/EditableTable";
+import { PositionKPICards } from "@/components/positions/PositionKPICards";
 
 import { employeeColumns, createEmployeeColumnsWithComments } from "@/config/employeeColumns";
 import { useUpdateActualFte } from "@/hooks/useUpdateActualFte";
@@ -36,7 +37,6 @@ export function EmployeesTab({
   selectedLevel2,
   selectedDepartment,
 }: EmployeesTabProps) {
-  // Check for expired Active FTE overrides once per session
   useCheckExpiredFte();
 
   const { data: employees, isFetching } = useEmployees({
@@ -49,7 +49,6 @@ export function EmployeesTab({
   const updateActualFte = useUpdateActualFte();
   const updateShiftOverride = useUpdateShiftOverride();
   
-  // Lift filter data to parent - passed to EditableFTECell via props instead of per-cell hook
   const { markets, getFacilitiesByMarket, getDepartmentsByFacility } = useFilterData();
   const filterDataProvider: FilterDataProvider = useMemo(() => ({
     markets,
@@ -138,77 +137,32 @@ export function EmployeesTab({
 
     let filtered = [...employees];
 
-    // Apply debounced search
     if (debouncedSearch) {
       const query = debouncedSearch.toLowerCase();
       filtered = filtered.filter((e) => {
         const searchFields = [
-          e.employeeName,
-          e.positionNum,
-          e.jobTitle,
-          e.jobFamily,
-          e.departmentName,
-          e.employmentType,
-          e.shift,
+          e.employeeName, e.positionNum, e.jobTitle, e.jobFamily,
+          e.departmentName, e.employmentType, e.shift,
         ];
-        return searchFields.some((field) => 
-          field?.toString().toLowerCase().includes(query)
-        );
+        return searchFields.some((field) => field?.toString().toLowerCase().includes(query));
       });
     }
 
-    // Apply filters
-    if (filters.status !== "all") {
-      filtered = filtered.filter((e) => e.payrollStatus === filters.status);
-    }
-    if (filters.employmentType !== "all") {
-      filtered = filtered.filter((e) => e.employmentType === filters.employmentType);
-    }
-    if (filters.skillType) {
-      filtered = filtered.filter((e) => 
-        e.jobFamily?.toLowerCase().includes(filters.skillType.toLowerCase())
-      );
-    }
-    if (filters.shift !== "all") {
-      filtered = filtered.filter((e) => e.shift === filters.shift);
-    }
-    if (filters.fteMin) {
-      const minFte = parseFloat(filters.fteMin);
-      filtered = filtered.filter((e) => {
-        const fte = typeof e.FTE === 'string' ? parseFloat(e.FTE) : (e.FTE || 0);
-        return fte >= minFte;
-      });
-    }
-    if (filters.fteMax) {
-      const maxFte = parseFloat(filters.fteMax);
-      filtered = filtered.filter((e) => {
-        const fte = typeof e.FTE === 'string' ? parseFloat(e.FTE) : (e.FTE || 0);
-        return fte <= maxFte;
-      });
-    }
+    if (filters.status !== "all") filtered = filtered.filter((e) => e.payrollStatus === filters.status);
+    if (filters.employmentType !== "all") filtered = filtered.filter((e) => e.employmentType === filters.employmentType);
+    if (filters.skillType) filtered = filtered.filter((e) => e.jobFamily?.toLowerCase().includes(filters.skillType.toLowerCase()));
+    if (filters.shift !== "all") filtered = filtered.filter((e) => e.shift === filters.shift);
+    if (filters.fteMin) { const min = parseFloat(filters.fteMin); filtered = filtered.filter((e) => (Number(e.FTE) || 0) >= min); }
+    if (filters.fteMax) { const max = parseFloat(filters.fteMax); filtered = filtered.filter((e) => (Number(e.FTE) || 0) <= max); }
 
-    // Apply sorting
     if (sortColumn) {
       filtered.sort((a, b) => {
         let aVal = a[sortColumn];
         let bVal = b[sortColumn];
-
-        // Handle numeric values
-        if (sortColumn === "FTE") {
-          aVal = parseFloat(aVal || "0");
-          bVal = parseFloat(bVal || "0");
-        }
-
-        // Handle null/undefined
+        if (sortColumn === "FTE") { aVal = parseFloat(aVal || "0"); bVal = parseFloat(bVal || "0"); }
         if (!aVal) return 1;
         if (!bVal) return -1;
-
-        if (typeof aVal === "string") {
-          return sortDirection === "asc"
-            ? aVal.localeCompare(bVal)
-            : bVal.localeCompare(aVal);
-        }
-
+        if (typeof aVal === "string") return sortDirection === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
         return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
       });
     }
@@ -216,13 +170,7 @@ export function EmployeesTab({
     return filtered;
   }, [employees, debouncedSearch, filters, sortColumn, sortDirection]);
 
-  // Extract position IDs for comment count fetching
-  const positionIds = useMemo(() => 
-    filteredAndSortedEmployees.map(e => e.id), 
-    [filteredAndSortedEmployees]
-  );
-
-  // Fetch comment counts
+  const positionIds = useMemo(() => filteredAndSortedEmployees.map(e => e.id), [filteredAndSortedEmployees]);
   const commentCounts = usePositionCommentCounts(positionIds);
 
   // Compute totals from ALL fetched employees (not filtered)
@@ -242,7 +190,6 @@ export function EmployeesTab({
       commentCounts, 
       handleCommentClick,
       handleShiftOverrideUpdate,
-      totals
     );
     return baseColumns.map(col => {
       if (col.id === 'actual_fte') {
@@ -259,13 +206,7 @@ export function EmployeesTab({
                 sharedWith={row.actual_fte_shared_with}
                 sharedFte={row.actual_fte_shared_fte}
                 sharedExpiry={row.actual_fte_shared_expiry}
-                onSave={(data) => handleActualFteUpdate(
-                  row.id, 
-                  row.actual_fte, 
-                  row.actual_fte_expiry,
-                  row.actual_fte_status,
-                  data
-                )}
+                onSave={(data) => handleActualFteUpdate(row.id, row.actual_fte, row.actual_fte_expiry, row.actual_fte_status, data)}
                 filterDataProvider={filterDataProvider}
               />
             );
@@ -285,13 +226,13 @@ export function EmployeesTab({
       }
       return col;
     });
-  }, [commentCounts, handleCommentClick, handleActualFteUpdate, handleShiftOverrideUpdate, filterDataProvider, firstRowId, totals]);
+  }, [commentCounts, handleCommentClick, handleActualFteUpdate, handleShiftOverrideUpdate, filterDataProvider, firstRowId]);
 
   const showEmptyState = !isFetching && (!employees || employees.length === 0);
 
   return (
-    <div className="flex flex-col min-h-0 max-h-full overflow-hidden">
-      <div className="flex justify-between items-center mb-4 gap-4 flex-shrink-0">
+    <div className="flex flex-col gap-4 min-h-0 max-h-full overflow-hidden">
+      <div className="flex justify-between items-center gap-4 flex-shrink-0">
         <SearchField
           placeholder="Search employees..."
           value={searchQuery}
@@ -323,6 +264,12 @@ export function EmployeesTab({
           </Button>
         </div>
       </div>
+
+      <PositionKPICards items={[
+        { label: "Employees", value: totals.totalCount },
+        { label: "Hired FTE", value: totals.totalHiredFTE },
+        { label: "Active FTE", value: totals.totalActiveFTE },
+      ]} />
 
       {isFetching ? (
         <div className="flex-1 flex items-center justify-center min-h-[300px]">
