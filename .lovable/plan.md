@@ -1,22 +1,21 @@
 
 
-## Improve Feedback Form UI
+## Fix Feedback Comment Counts
 
-### Changes in `src/components/feedback/FeedbackForm.tsx`
+### Problem
+The comment count column always shows `0` because the `commentCounts` Map in `FeedbackPage.tsx` (line 77) is initialized as an empty Map and never populated with actual data from the database.
 
-1. **Remove icons from submit button** -- remove the `Send` and `Loader2` icons, keep only text labels ("Submit Feedback" / "Submitting...")
+### Changes
 
-2. **Remove emojis from Type dropdown** -- change from "Bug Report" etc. to plain text labels (Bug, Feature, Improvement, Question)
+#### 1. `src/pages/feedback/FeedbackPage.tsx`
+- Add a query to fetch comment counts from the `feedback_comments` table, grouped by `feedback_id`
+- Replace the empty `useMemo(() => new Map())` with actual data from the query
+- Use a single aggregation query: `SELECT feedback_id, count(*) FROM feedback_comments GROUP BY feedback_id`
 
-3. **Reorder form fields** for a more logical flow:
-   - Title first
-   - Type and Priority side-by-side (second)
-   - Description (third)
-   - Screenshot at the bottom (last, since it's optional)
+Since Supabase JS doesn't support raw GROUP BY, we'll fetch all feedback comment rows (just `id` and `feedback_id`) and count client-side, or use an RPC. The simpler approach: fetch minimal comment data and build the map.
 
-4. **Tighten spacing** -- reduce form gap from `space-y-4` to `space-y-3` for a more compact layout
-
-5. **Use `ascension` button variant** -- match the app's pill-shaped primary button style instead of the default rectangular button
+**Approach**: Add a dedicated query that fetches `feedback_id` from `feedback_comments` for all current feedback IDs, then count occurrences client-side to build the Map.
 
 ### Files Changed
-- `src/components/feedback/FeedbackForm.tsx`
+- `src/pages/feedback/FeedbackPage.tsx` -- replace empty commentCounts with a real query
+
