@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { KPICard, EmploymentBreakdown } from './KPICard';
-import { Info } from '@/lib/icons';
+import { Info, GripVertical } from '@/lib/icons';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
@@ -56,16 +56,16 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
 
   return (
     <div className="space-y-4 pb-4 border-b border-border/50 last:border-b-0">
-      <div className="relative group">
+      <div className="relative group flex items-center gap-2">
         {dragHandleProps && (
           <div
             {...dragHandleProps.attributes}
             {...dragHandleProps.listeners}
-            className="absolute -left-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing flex items-center justify-center"
+            className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-muted-foreground"
             onClick={(e) => e.stopPropagation()}
             title="Drag to reorder section"
           >
-            <div className="w-1.5 h-6 bg-muted-foreground/40 rounded-full hover:bg-muted-foreground transition-colors" />
+            <GripVertical className="h-4 w-4" />
           </div>
         )}
         <h2 className="text-lg font-semibold text-foreground">{title}</h2>
