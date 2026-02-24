@@ -1,23 +1,22 @@
 
 
-## Default New Feedback to "Pending" for Both Statuses
+## Improve Feedback Form UI
 
-### Problem
-New feedback items currently default to `pending` for ACS status but `in_progress` for PB status. Both should default to `Pending`.
+### Changes in `src/components/feedback/FeedbackForm.tsx`
 
-### Changes
+1. **Remove icons from submit button** -- remove the `Send` and `Loader2` icons, keep only text labels ("Submit Feedback" / "Submitting...")
 
-#### 1. Database migration
-- Change the default value of `pb_status` column from `'in_progress'` to `'pending'`
+2. **Remove emojis from Type dropdown** -- change from "Bug Report" etc. to plain text labels (Bug, Feature, Improvement, Question)
 
-#### 2. `src/hooks/useFeedback.ts`
-- Add `'pending'` to the `pb_status` type union: `'pending' | 'in_progress' | 'resolved' | 'closed'`
+3. **Reorder form fields** for a more logical flow:
+   - Title first
+   - Type and Priority side-by-side (second)
+   - Description (third)
+   - Screenshot at the bottom (last, since it's optional)
 
-#### 3. `src/pages/feedback/FeedbackPage.tsx`
-- Add a `Pending` option to the PB Status filter dropdown
+4. **Tighten spacing** -- reduce form gap from `space-y-4` to `space-y-3` for a more compact layout
+
+5. **Use `ascension` button variant** -- match the app's pill-shaped primary button style instead of the default rectangular button
 
 ### Files Changed
-- Database migration (alter column default)
-- `src/hooks/useFeedback.ts` -- update type definition
-- `src/pages/feedback/FeedbackPage.tsx` -- add Pending filter option
-
+- `src/components/feedback/FeedbackForm.tsx`
