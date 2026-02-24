@@ -97,7 +97,7 @@ export function ForecastTab({
                 <ChevronDown className="h-4 w-4 text-[#1D69D2] shrink-0 transition-transform duration-200" />
               </div>
             </SelectTrigger>
-            <SelectContent className="min-w-[210px] bg-background z-50">
+            <SelectContent className="min-w-[210px] bg-background">
               <SelectItem value="all" className="data-[state=checked]:bg-primary/15 [&>span:first-child]:hidden">All Skills</SelectItem>
               {uniqueSkillTypes.map(skill => (
                 <SelectItem key={skill} value={skill} className="data-[state=checked]:bg-primary/15 [&>span:first-child]:hidden">
@@ -114,7 +114,7 @@ export function ForecastTab({
                 <ChevronDown className="h-4 w-4 text-[#1D69D2] shrink-0 transition-transform duration-200" />
               </div>
             </SelectTrigger>
-            <SelectContent className="min-w-[210px] bg-background z-50">
+            <SelectContent className="min-w-[210px] bg-background">
               <SelectItem value="all" className="data-[state=checked]:bg-primary/15 [&>span:first-child]:hidden">All Shifts</SelectItem>
               {uniqueShifts.map(shift => (
                 <SelectItem key={shift} value={shift} className="data-[state=checked]:bg-primary/15 [&>span:first-child]:hidden">
