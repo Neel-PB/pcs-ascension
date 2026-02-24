@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { useFeedbackStore } from '@/stores/useFeedbackStore';
 import { useFeedbackResizable } from '@/hooks/useFeedbackResizable';
 import { FeedbackForm } from './FeedbackForm';
@@ -10,9 +10,13 @@ const MIN_WIDTH = 490;
 const MAX_WIDTH_VW = 0.7;
 const SNAP_POINTS = [400, 520, 640, 820];
 
+const FORM_ID = 'feedback-form';
+
 export const FeedbackPanel: React.FC = () => {
   const { isOpen, setOpen, clearScreenshot } = useFeedbackStore();
   const panelRef = useRef<HTMLDivElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
   
   const { isDragging, currentWidth, handlePointerDown } = useFeedbackResizable({
     minWidth: MIN_WIDTH,
@@ -82,17 +86,32 @@ export const FeedbackPanel: React.FC = () => {
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto px-4 lg:px-6 py-4 flex flex-col min-h-0" data-tour="feedback-form">
-          <FeedbackForm onSuccess={handleClose} />
+          <FeedbackForm
+            formId={FORM_ID}
+            onSuccess={handleClose}
+            onSubmittingChange={setIsSubmitting}
+            onValidChange={setIsFormValid}
+          />
         </div>
 
-        {/* Footer with Close Button */}
-        <div className="flex-shrink-0 px-6 py-3 border-t flex items-center justify-between" data-tour="feedback-footer">
+        {/* Footer */}
+        <div className="flex-shrink-0 px-6 py-3 border-t border-border flex items-center justify-between" data-tour="feedback-footer">
           <p className="text-xs text-muted-foreground">
-            Press <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono">⌘+Shift+F</kbd> to toggle
+            <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono">⌘+Shift+F</kbd> to toggle
           </p>
-          <Button variant="default" onClick={handleClose}>
-            Close
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={handleClose}>
+              Close
+            </Button>
+            <Button
+              type="submit"
+              form={FORM_ID}
+              variant="ascension"
+              disabled={isSubmitting || !isFormValid}
+            >
+              {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
+            </Button>
+          </div>
         </div>
       </div>
     </>

@@ -76,7 +76,7 @@ export const ScreenshotCapture: React.FC<ScreenshotCaptureProps> = ({
           <img
             src={previewUrl}
             alt="Screenshot preview"
-            className="w-full h-40 object-cover rounded-lg border border-border"
+            className="w-full h-32 object-cover rounded-lg border border-border"
           />
           <Button
             type="button"
@@ -114,9 +114,9 @@ export const ScreenshotCapture: React.FC<ScreenshotCaptureProps> = ({
 
   return (
     <>
-      <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="flex gap-3">
+      <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex gap-2">
             <Button
               type="button"
               variant="outline"

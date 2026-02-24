@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ScreenshotCapture } from './ScreenshotCapture';
+import { Separator } from '@/components/ui/separator';
 import { useFeedbackStore } from '@/stores/useFeedbackStore';
 import { useFeedback, uploadScreenshot, CreateFeedbackInput } from '@/hooks/useFeedback';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,9 +19,12 @@ import { useAuth } from '@/hooks/useAuth';
 
 interface FeedbackFormProps {
   onSuccess?: () => void;
+  formId?: string;
+  onSubmittingChange?: (submitting: boolean) => void;
+  onValidChange?: (valid: boolean) => void;
 }
 
-export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onSuccess }) => {
+export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onSuccess, formId, onSubmittingChange, onValidChange }) => {
   const { capturedScreenshot, screenshotPreviewUrl, setScreenshot, clearScreenshot } = useFeedbackStore();
   const { createFeedback } = useFeedback();
   const { user } = useAuth();
@@ -30,6 +34,12 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onSuccess }) => {
   const [priority, setPriority] = useState<CreateFeedbackInput['priority']>('medium');
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isValid = title.trim().length > 0 && description.trim().length > 0;
+
+  // Notify parent of submitting/valid state changes
+  React.useEffect(() => { onSubmittingChange?.(isSubmitting); }, [isSubmitting, onSubmittingChange]);
+  React.useEffect(() => { onValidChange?.(isValid); }, [isValid, onValidChange]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,8 +93,8 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onSuccess }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      <div className="space-y-2">
+    <form id={formId} onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-1.5">
         <Label htmlFor="title">Title *</Label>
         <Input
           id="title"
@@ -96,7 +106,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onSuccess }) => {
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Label>Type *</Label>
           <Select value={type} onValueChange={(v) => setType(v as typeof type)}>
             <SelectTrigger>
@@ -111,7 +121,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onSuccess }) => {
           </Select>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Label>Priority</Label>
           <Select value={priority} onValueChange={(v) => setPriority(v as typeof priority)}>
             <SelectTrigger>
@@ -127,7 +137,9 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onSuccess }) => {
         </div>
       </div>
 
-      <div className="space-y-2">
+      <Separator className="my-1" />
+
+      <div className="space-y-1.5">
         <Label htmlFor="description">Description *</Label>
         <Textarea
           id="description"
@@ -139,7 +151,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onSuccess }) => {
         />
       </div>
 
-      <div className="space-y-2" data-tour="feedback-screenshot">
+      <div className="space-y-1.5" data-tour="feedback-screenshot">
         <Label>Screenshot (Optional)</Label>
         <ScreenshotCapture
           onCapture={setScreenshot}
@@ -148,14 +160,6 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onSuccess }) => {
         />
       </div>
 
-      <Button
-        type="submit"
-        variant="ascension"
-        className="w-full"
-        disabled={isSubmitting || !title.trim() || !description.trim()}
-      >
-        {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
-      </Button>
     </form>
   );
 };
