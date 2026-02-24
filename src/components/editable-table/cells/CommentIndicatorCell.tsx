@@ -32,7 +32,7 @@ export function CommentIndicatorCell({
             <Badge 
               variant={count > 0 ? "default" : "outline"}
               className={cn(
-                "font-medium tabular-nums",
+                "font-medium tabular-nums min-w-[2rem] justify-center text-center",
                 count === 0 && "text-muted-foreground"
               )}
             >

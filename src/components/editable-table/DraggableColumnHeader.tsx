@@ -1,15 +1,8 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ArrowUp, ArrowDown, ChevronDown, Info } from '@/lib/icons';
+import { ArrowUp, ArrowDown, Info } from '@/lib/icons';
 import { ColumnDef } from '@/types/table';
 import { ColumnResizeHandle } from './ColumnResizeHandle';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   Tooltip,
   TooltipContent,
@@ -117,27 +110,6 @@ export function DraggableColumnHeader<T = any>({
 
       {/* Sort icon (if active) */}
       {column.sortable && getSortIcon()}
-
-      {/* Dropdown trigger - menu icon */}
-      <DropdownMenu>
-        <DropdownMenuTrigger 
-          className="flex items-center opacity-40 group-hover:opacity-100 hover:text-foreground transition-all focus:outline-none"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <ChevronDown className="h-3 w-3" />
-        </DropdownMenuTrigger>
-
-        <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem onClick={() => onSort?.('asc')}>
-            <ArrowUp className="mr-2 h-4 w-4" />
-            Sort Ascending
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onSort?.('desc')}>
-            <ArrowDown className="mr-2 h-4 w-4" />
-            Sort Descending
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
 
       {/* Resize handle */}
       {column.resizable && (
