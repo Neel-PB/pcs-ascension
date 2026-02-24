@@ -12,7 +12,6 @@ export function GlobalSearchCommand() {
   const navigate = useNavigate();
   const { inputValue, debouncedValue, setInputValue } = useDebouncedSearch(300);
   const containerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const isOpen = inputValue.length > 0;
 
   const searchEnabled = debouncedValue.length >= 2;
@@ -29,17 +28,7 @@ export function GlobalSearchCommand() {
     return () => document.removeEventListener("mousedown", handler);
   }, [setInputValue]);
 
-  // Cmd+K focuses input
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        inputRef.current?.focus();
-      }
-    };
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
-  }, []);
+
 
   const { data: employees, isFetching: fetchingEmployees } = useQuery({
     queryKey: ["search-employees", debouncedValue],
@@ -122,8 +111,7 @@ export function GlobalSearchCommand() {
   return (
     <div ref={containerRef} className="relative w-full" data-tour="header-search">
       <SearchField
-        ref={inputRef}
-        placeholder="Search... (⌘K)"
+        placeholder="Search..."
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         onClear={() => setInputValue("")}
