@@ -93,7 +93,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onSuccess, formId, o
   };
 
   return (
-    <form id={formId} onSubmit={handleSubmit} className="space-y-4">
+    <form id={formId} onSubmit={handleSubmit} className="space-y-3">
       <div className="space-y-1.5">
         <Label htmlFor="title">Title *</Label>
         <Input
