@@ -13,7 +13,7 @@ export function PositionKPICards({ items }: PositionKPICardsProps) {
       {items.map((item) => (
         <div
           key={item.label}
-          className="rounded-xl border border-border bg-card shadow-md px-4 py-2"
+          className="rounded-xl border border-border bg-card shadow-md px-4 py-2 h-11 flex flex-col justify-center"
         >
           <div className="text-xs text-muted-foreground">{item.label}</div>
           <div className="text-sm font-semibold text-foreground">
