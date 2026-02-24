@@ -1,28 +1,35 @@
 
 
-## Make Position KPI Cards Single-Line and Right-Aligned
+## Add Skill Type and Shift Filters to Forecast Tab
 
 ### Problem
 
-The KPI cards (Employees, Hired FTE, Active FTE) currently stack label and value vertically in two lines. The user wants them displayed in a single row with label and value on the same line, and the cards should be right-aligned (pushed to the right side of the toolbar).
+The Forecast tab currently shows KPI cards and a table with no way to filter by Skill Type or Shift. The user wants two Select dropdowns placed between the KPI cards and the table, using the app's standard Helix select styling.
 
 ### Changes
 
 | File | Change |
 |------|--------|
-| `src/components/positions/PositionKPICards.tsx` | Change card layout from vertical (`flex-col`) to horizontal (`flex-row`) with label and value on one line. Adjust height and alignment. |
-| `src/pages/positions/EmployeesTab.tsx` | Move `PositionKPICards` into the right-side `div` (with `ml-auto`) so cards sit right-aligned before the action buttons. |
+| `src/pages/staffing/ForecastTab.tsx` | Add `selectedSkillType` and `selectedShift` state, extract unique values from `data.rows`, add two Select dropdowns in a new row between KPI cards and table, apply client-side filtering |
 
 ### Details
 
-**PositionKPICards.tsx**
-- Change each card from `flex flex-col justify-center` to `flex flex-row items-center gap-2`
-- Label and value sit side-by-side: `"Employees  3,157"`
-- Keep Helix card styling: `rounded-xl border border-border bg-card shadow-md px-4 h-11`
+**Filter Row Layout**
+- Place a `div` with `flex items-center gap-3 flex-shrink-0` between the KPI cards and the table
+- Two Select components side by side:
+  1. **Skill** (label text) -- values derived from unique `skillType` in `data.rows`
+  2. **Shift** -- values derived from unique `shift` in `data.rows` (Day, Night)
+- Include a clear/reset button (X icon) to reset both filters, matching existing FilterBar pattern
 
-**EmployeesTab.tsx (and other tabs using the same pattern)**
-- Move `<PositionKPICards>` from between SearchField and the action buttons into the `ml-auto` div, placing it before the Refresh/Filter buttons
-- This right-aligns the KPI cards naturally
+**Select Styling (Helix standard)**
+- Trigger: `rounded-lg border-2 border-input px-4 py-3` with blue brand chevron (`text-[#1D69D2]`)
+- Default value: "All Skills" / "All Shifts" using sentinel constants
+- Selection highlight: `bg-primary/15` (no checkmarks)
 
-The same pattern will be applied to `ContractorsTab.tsx`, `OpenRequisitionTab.tsx`, and `RequisitionsTab.tsx` if they also use `PositionKPICards`.
+**Filtering Logic**
+- Two `useState` hooks: `selectedSkillType` (default `"all"`) and `selectedShift` (default `"all"`)
+- Applied to existing `filteredRows` computation alongside the shortage/surplus filter
+- Unique skill types and shifts extracted via `useMemo` from `data?.rows`
+
+**No backend changes needed** -- purely client-side filtering on already-fetched data.
 
