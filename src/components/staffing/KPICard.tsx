@@ -122,7 +122,7 @@ export function KPICard({
             {/* Value and Trend Section */}
             <div className="space-y-0.5">
               {(() => {
-                const isPlaceholder = typeof value === 'string' && isNaN(Number(String(value).replace('%', '')));
+                const isPlaceholder = typeof value === 'string' && !/\d/.test(value);
                 return (
                   <div className={cn(
                     isPlaceholder
