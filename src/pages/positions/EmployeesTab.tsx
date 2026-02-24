@@ -237,7 +237,7 @@ export function EmployeesTab({
           placeholder="Search employees..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-64"
+          className="w-[32rem]"
           data-tour="positions-search"
         />
         

@@ -57,7 +57,7 @@ export function OpenRequisitionTab(_props: OpenRequisitionTabProps) {
   return (
     <div className="flex flex-col gap-4 min-h-0 max-h-full overflow-hidden">
       <div className="flex items-center gap-4 flex-shrink-0">
-        <SearchField placeholder="Search requisitions..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-64" />
+        <SearchField placeholder="Search requisitions..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-[32rem]" />
         <PositionKPICards items={[{ label: "Open Requisitions", value: filteredData.length }]} />
         <div className="flex gap-2 flex-shrink-0 ml-auto">
           <DataRefreshButton dataSources={['positions_data']} />
