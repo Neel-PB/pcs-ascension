@@ -1,33 +1,26 @@
 
-## Fix Employed Productive FTEs Font Size
+
+## Fix KPI Drag and Drop -- @dnd-kit Version Mismatch
 
 ### Problem
-The "Employed Productive FTEs" KPI card shows its value "35.3 / 5.6" in a small font (text-sm) instead of the large bold font (text-2xl font-bold) used by all other KPI cards.
+The drag and drop for KPI sections is broken due to incompatible `@dnd-kit` package versions:
+- `@dnd-kit/core`: ^6.3.1 (old)
+- `@dnd-kit/sortable`: ^10.0.0 (new, expects core v7+)
+- `@dnd-kit/modifiers`: ^9.0.0 (new, expects core v7+)
 
-### Root Cause
-In `KPICard.tsx` line 125, the placeholder detection logic uses:
-```ts
-const isPlaceholder = typeof value === 'string' && isNaN(Number(String(value).replace('%', '')));
-```
-The value `"35.3 / 5.6"` fails the `Number()` parse due to the slash, so it's incorrectly classified as a placeholder (like "Select Department" or "No Override Found"), which applies `text-sm` instead of `text-2xl font-bold`.
+These packages must be on compatible versions to work together.
 
 ### Fix
+Downgrade `@dnd-kit/sortable` and `@dnd-kit/modifiers` to versions compatible with `@dnd-kit/core` v6:
 
-#### `src/components/staffing/KPICard.tsx`
-Update the placeholder detection to be smarter -- instead of checking if the value parses as a single number, check if it matches known placeholder strings or if it contains at least one digit (real data always has numbers):
+#### `package.json`
+Change the dependencies to aligned versions:
+- `@dnd-kit/core`: `^6.3.1` (keep as-is)
+- `@dnd-kit/sortable`: `^8.0.0` (downgrade from ^10 -- v8 is compatible with core v6)
+- `@dnd-kit/modifiers`: `^7.0.0` (downgrade from ^9 -- v7 is compatible with core v6)
 
-```ts
-const isPlaceholder = typeof value === 'string' && !/\d/.test(value);
-```
-
-This way:
-- `"35.3 / 5.6"` -- contains digits, NOT a placeholder (gets text-2xl)
-- `"13.9%"` -- contains digits, NOT a placeholder (gets text-2xl)
-- `"Select Department"` -- no digits, IS a placeholder (gets text-sm)
-- `"No Override Found"` -- no digits, IS a placeholder (gets text-sm)
-
-### KPI Drag and Drop
-The section-level drag and drop (reordering the FTE, Volume, and Productive Resources sections) is still implemented and functional. The drag handle appears as a vertical bar on the left side of each section title on hover. No code changes needed here -- it should work as before.
+No code changes are needed -- the component APIs (`useSortable`, `DndContext`, `SortableContext`, etc.) are the same across these versions. The drag handles on section titles and column headers will work again once the packages are aligned.
 
 ### Files Changed
-- `src/components/staffing/KPICard.tsx` -- fix placeholder detection logic (1 line change)
+- `package.json` -- downgrade @dnd-kit/sortable and @dnd-kit/modifiers to core-v6-compatible versions
+
