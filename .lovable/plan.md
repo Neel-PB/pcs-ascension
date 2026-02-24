@@ -1,36 +1,27 @@
 
 
-## Move Filters Between Shortage and Surplus KPI Cards
+## Fix Invisible Dropdown List in Forecast Filters
 
-### What Changes
+### Problem
 
-The Skill and Shift filter dropdowns will move from below the KPI cards to sit **between** the Shortage card (left) and Surplus card (right), creating a single unified row.
+The Skill Type and Shift filter dropdowns open but their items are not visible. The `SelectContent` in `ForecastTab.tsx` has `className="min-w-[210px] bg-background z-50"`, where `z-50` overrides the component's default `z-[200]`, causing the dropdown to render behind the table.
 
-### Layout
-
-```text
-[ Shortage Card ] [ Skill Filter ] [ Shift Filter ] [ Surplus Card ]
-```
-
-### Implementation
+### Fix
 
 | File | Change |
 |------|--------|
-| `src/components/forecast/ForecastKPICards.tsx` | Change from `grid grid-cols-2` to accept a `children` slot rendered between the two cards. Use a flex row layout instead of grid so the filters sit naturally between the cards. |
-| `src/pages/staffing/ForecastTab.tsx` | Move the Skill/Shift Select components from their own section into the `ForecastKPICards` component as children. Remove the standalone filter row. |
+| `src/pages/staffing/ForecastTab.tsx` | Remove `z-50` from both `SelectContent` classNames so the default `z-[200]` from the Select component applies correctly |
 
-### Technical Details
+### Details
 
-**ForecastKPICards.tsx**
-- Add `children?: React.ReactNode` to the props interface
-- Change the container from `grid grid-cols-2 gap-6` to `flex items-center gap-4`
-- Both cards get `flex-1` so they share available space equally
-- Render `{children}` between the two cards
-- The children slot will contain the filter selects and reset button
+Both SelectContent elements (Skill Type and Shift) currently have:
+```
+className="min-w-[210px] bg-background z-50"
+```
 
-**ForecastTab.tsx**
-- Remove the standalone filter `div` (lines 95-141)
-- Pass the two Select components and reset button as children of `ForecastKPICards`
-- Filter selects will use `flex-shrink-0` so they don't collapse
-- Reduce select width slightly (e.g. `w-[150px]`) to fit between the cards comfortably
+Change to:
+```
+className="min-w-[210px] bg-background"
+```
 
+The base `SelectContent` component already applies `z-[200]`, which is sufficient to render above all other page content.
