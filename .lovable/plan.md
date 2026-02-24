@@ -1,29 +1,34 @@
 
 
-## Make Activity Log Comments More Compact
+## Align Feedback Comments Dialog to App Style
 
 ### Problem
-The FTE/Shift activity cards in the comment timeline take up too much vertical space. The field rows (FTE, REASON, EXPIRY) have generous padding and the overall bubble is spacious.
+The Feedback Comments dialog uses a generic layout (avatar + name + text rows) with a plain Textarea composer, which doesn't match the chat-bubble style and pill composer used in the Position Comment Section.
 
 ### Changes
 
-**File: `src/components/positions/PositionCommentSection.tsx`**
+**File: `src/components/feedback/FeedbackCommentsDialog.tsx`**
 
-1. **ActivityFieldRow** -- reduce vertical padding from `py-1` to `py-0.5` and shrink the label font from `text-[11px]` to `text-[10px]`
+Restyle the dialog internals to match the PositionCommentSection pattern:
 
-2. **FteActivityCard** -- reduce comment quote top padding from `pt-1.5` to `pt-1`
+1. **Remove avatars** -- replace the avatar-based layout with the label-above-bubble pattern (name above, message in a rounded bubble below)
 
-3. **Activity bubble padding** -- reduce from `px-3 py-2` to `px-2.5 py-1.5` for activity log entries only
+2. **Chat bubble style** -- wrap comment content in `rounded-2xl rounded-bl-sm bg-muted px-3 py-2` bubbles instead of plain text rows
 
-4. **Arrow icon size** -- shrink `ArrowRight` in inline rows from `h-3.5 w-3.5` to `h-3 w-3`
+3. **Timestamp below bubble** -- move timestamp + delete button below the bubble in a compact row (like position comments), with delete only visible on hover
 
-5. **Comment spacing** -- reduce the gap between comments from `space-y-4` to `space-y-3`
+4. **Pill-style composer** -- replace the Textarea + icon button with the same rounded-xl bordered composer used in PositionCommentSection:
+   - Bordered container with `rounded-xl border border-border/60 shadow-sm` and focus ring
+   - Auto-sizing textarea (using `react-textarea-autosize` which is already installed)
+   - Send button inside the pill as a ghost icon button
+   - Shortcut hint below
 
-6. **Timestamp row** -- reduce top gap slightly by keeping existing compact sizing
+5. **Reduce dialog height** -- change from `h-[400px]` to `h-[350px]` for a tighter feel
 
-### Result
-Each activity card will be visually tighter while remaining readable -- roughly 20-25% less vertical space per entry.
+6. **Comment spacing** -- use `space-y-3` (matching position comments) instead of `space-y-4`
+
+7. **Empty state** -- use the enhanced empty state pattern with a rounded circle background icon (matching position comments)
 
 ### Files Changed
-- `src/components/positions/PositionCommentSection.tsx`
+- `src/components/feedback/FeedbackCommentsDialog.tsx` -- restyle comments list and composer to match app-wide chat bubble pattern
 
