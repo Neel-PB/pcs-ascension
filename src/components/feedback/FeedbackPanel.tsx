@@ -5,6 +5,7 @@ import { FeedbackForm } from './FeedbackForm';
 import { Button } from '@/components/ui/button';
 import { OverlayTour } from '@/components/tour/OverlayTour';
 import { feedbackTourSteps } from '@/components/tour/tourSteps';
+import { X } from 'lucide-react';
 
 const MIN_WIDTH = 490;
 const MAX_WIDTH_VW = 0.7;
@@ -78,10 +79,13 @@ export const FeedbackPanel: React.FC = () => {
 
         {/* Fixed Header Row - matching global header */}
         <div 
-          className="flex items-center px-6 border-b border-border flex-shrink-0" 
+          className="flex items-center justify-between px-6 border-b border-border flex-shrink-0" 
           style={{ height: 'var(--header-height)' }}
         >
           <h1 className="text-lg font-semibold text-foreground">Submit Feedback</h1>
+          <Button variant="ghost" size="icon" onClick={handleClose} className="h-9 w-9">
+            <X className="h-4 w-4" />
+          </Button>
         </div>
 
         {/* Content Area */}
@@ -99,19 +103,14 @@ export const FeedbackPanel: React.FC = () => {
           <p className="text-xs text-muted-foreground">
             <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono">⌘+Shift+F</kbd> to toggle
           </p>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={handleClose}>
-              Close
-            </Button>
-            <Button
-              type="submit"
-              form={FORM_ID}
-              variant="ascension"
-              disabled={isSubmitting || !isFormValid}
-            >
-              {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
-            </Button>
-          </div>
+          <Button
+            type="submit"
+            form={FORM_ID}
+            variant="ascension"
+            disabled={isSubmitting || !isFormValid}
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
+          </Button>
         </div>
       </div>
     </>
