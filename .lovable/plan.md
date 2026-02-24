@@ -1,26 +1,39 @@
 
 
-## Fix KPI Drag and Drop -- @dnd-kit Version Mismatch
+## Fix KPI Section Drag and Drop on Staffing Summary
 
-### Problem
-The drag and drop for KPI sections is broken due to incompatible `@dnd-kit` package versions:
-- `@dnd-kit/core`: ^6.3.1 (old)
-- `@dnd-kit/sortable`: ^10.0.0 (new, expects core v7+)
-- `@dnd-kit/modifiers`: ^9.0.0 (new, expects core v7+)
-
-These packages must be on compatible versions to work together.
+### Root Cause
+The drag handle for each KPI section (FTE, Volume, Productive Resources) is positioned at `absolute -left-4`, which places it 16px outside the left edge of its container. However, the scrollable parent at `StaffingSummary.tsx` line 542 uses `overflow-auto`, which clips anything outside its bounds. The drag handle is invisible and unreachable.
 
 ### Fix
-Downgrade `@dnd-kit/sortable` and `@dnd-kit/modifiers` to versions compatible with `@dnd-kit/core` v6:
 
-#### `package.json`
-Change the dependencies to aligned versions:
-- `@dnd-kit/core`: `^6.3.1` (keep as-is)
-- `@dnd-kit/sortable`: `^8.0.0` (downgrade from ^10 -- v8 is compatible with core v6)
-- `@dnd-kit/modifiers`: `^7.0.0` (downgrade from ^9 -- v7 is compatible with core v6)
+#### 1. `src/components/staffing/DraggableKPISection.tsx` -- Move drag handle inside bounds
+- Change the drag handle from `absolute -left-4` to be inline, positioned to the left of the section title using flexbox
+- Use a 6-dot grip icon (two columns of 3 dots) instead of the current thin 1.5px bar, making it easier to grab
+- Keep the `opacity-0 group-hover:opacity-100` behavior so it appears on hover
 
-No code changes are needed -- the component APIs (`useSortable`, `DndContext`, `SortableContext`, etc.) are the same across these versions. The drag handles on section titles and column headers will work again once the packages are aligned.
+Before:
+```
+<div class="relative group">
+  <div class="absolute -left-4 ...">  <!-- clipped by overflow -->
+    <div class="w-1.5 h-6 ..." />
+  </div>
+  <h2>FTE</h2>
+</div>
+```
+
+After:
+```
+<div class="relative group flex items-center gap-2">
+  <div class="opacity-0 group-hover:opacity-100 cursor-grab ...">
+    <GripVertical class="h-4 w-4" />
+  </div>
+  <h2>FTE</h2>
+</div>
+```
+
+#### 2. `src/components/staffing/DraggableSectionsContainer.tsx` -- No changes needed
+The DndContext, SortableContext, and useSortable logic is correct. The versions are now aligned (core 6.3.1, sortable 8.0.0, modifiers 7.0.0).
 
 ### Files Changed
-- `package.json` -- downgrade @dnd-kit/sortable and @dnd-kit/modifiers to core-v6-compatible versions
-
+- `src/components/staffing/DraggableKPISection.tsx` -- move drag handle inside container bounds and use grip icon
