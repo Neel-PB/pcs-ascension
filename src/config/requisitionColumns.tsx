@@ -7,6 +7,10 @@ import { TruncatedTextCell } from '@/components/editable-table/cells/TruncatedTe
 import { differenceInDays } from 'date-fns';
 import { MessageSquare } from '@/lib/icons';
 
+export interface RequisitionTotals {
+  totalCount: number;
+}
+
 // Helper to calculate vacancy age
 const getVacancyAge = (statusDate: string | null) => {
   if (!statusDate) return null;
@@ -108,27 +112,63 @@ export const requisitionColumns: ColumnDef<Position>[] = [
   },
 ];
 
-// Function to create columns with comment counts and handlers
+// Function to create columns with comment counts, handlers, and totals
 export const createRequisitionColumnsWithComments = (
   commentCounts: Map<string, number>,
-  onRowClick: (row: Position) => void
-): ColumnDef<Position>[] => [
-  ...requisitionColumns,
-  {
-    id: 'comments',
-    label: 'Comments',
-    type: 'custom',
-    width: 60,
-    minWidth: 60,
-    sortable: false,
-    resizable: false,
-    draggable: true,
-    renderHeader: () => <span data-tour="positions-comments"><MessageSquare className="h-4 w-4" /></span>,
-    renderCell: (row) => (
-      <CommentIndicatorCell
-        count={commentCounts.get(row.id) ?? 0}
-        onClick={() => onRowClick(row)}
-      />
-    ),
-  },
-];
+  onRowClick: (row: Position) => void,
+  totals?: RequisitionTotals
+): ColumnDef<Position>[] => {
+  const columnsWithEnhancements = requisitionColumns.map(col => {
+    // Position # with count total
+    if (col.id === 'positionNum' && totals) {
+      return {
+        ...col,
+        renderHeader: () => (
+          <span className="flex flex-col leading-tight">
+            <span>Position #</span>
+            <span className="text-[10px] text-muted-foreground font-normal">({totals.totalCount.toLocaleString()})</span>
+          </span>
+        ),
+      };
+    }
+    // All other columns - invisible placeholder
+    if (col.id === 'positionLifecycle' || col.id === 'vacancyAge' || col.id === 'jobTitle' || col.id === 'shift' || col.id === 'employmentType') {
+      return {
+        ...col,
+        renderHeader: () => (
+          <span className="flex flex-col leading-tight">
+            <span>{col.label}</span>
+            <span className="text-[10px] invisible">-</span>
+          </span>
+        ),
+      };
+    }
+    return col;
+  });
+
+  return [
+    ...columnsWithEnhancements,
+    {
+      id: 'comments',
+      label: 'Comments',
+      type: 'custom',
+      width: 60,
+      minWidth: 60,
+      sortable: false,
+      resizable: false,
+      draggable: true,
+      renderHeader: () => (
+        <span data-tour="positions-comments" className="flex flex-col leading-tight">
+          <MessageSquare className="h-4 w-4" />
+          <span className="text-[10px] invisible">-</span>
+        </span>
+      ),
+      renderCell: (row) => (
+        <CommentIndicatorCell
+          count={commentCounts.get(row.id) ?? 0}
+          onClick={() => onRowClick(row)}
+        />
+      ),
+    },
+  ];
+};
