@@ -1,17 +1,35 @@
 
 
-## Feedback Panel: Remove Shortcut Hint and Stack Type/Priority
+## RBAC-Gate Guides, Overlays, and Global Feedback
+
+### Problem
+
+The User Guides tab and the floating Feedback button/panel ignore RBAC permissions. A Director (who lacks `admin.access`, `feedback.access`, etc.) can see Admin guides, Feedback guides, and the global Feedback trigger.
 
 ### Changes
 
 | File | Change |
 |------|--------|
-| `src/components/feedback/FeedbackPanel.tsx` | Remove the keyboard shortcut hint from the footer. Footer becomes right-aligned with only the Submit button. |
-| `src/components/feedback/FeedbackForm.tsx` | Change Type and Priority from `grid grid-cols-2` (side by side) to stacked rows (each full width). |
+| `src/components/support/UserGuidesTab.tsx` | Import `useRBAC`. Filter `guideCatalog` entries based on module permissions before rendering. Hide categories that have zero visible guides. |
+| `src/App.tsx` | Import `useRBAC`. Only render `FeedbackTrigger` and `FeedbackPanel` when the user has `feedback.access`. |
 
-### Details
+### Permission Mapping for Guides
 
-1. **Footer** (FeedbackPanel.tsx, ~lines 101-104): Remove the `<p>` element containing the `⌘+Shift+F` hint. Change footer flex from `justify-between` to `justify-end`.
+Each guide category maps to a permission key:
 
-2. **Type/Priority layout** (FeedbackForm.tsx, ~line 108): Replace `grid grid-cols-2 gap-3` with `space-y-3` so Type and Priority each take a full row.
+```text
+Staffing   -> staffing.access
+Positions  -> positions.access
+Admin      -> admin.access
+Feedback   -> feedback.access
+Analytics  -> analytics.access
+Reports    -> reports.access
+Overlays   -> per-item check (feedback overlay -> feedback.access, others always visible)
+```
+
+### Technical Details
+
+1. **UserGuidesTab.tsx**: Add a `categoryPermissionMap` that maps category names to permission keys. In the `guidesWithSteps` memo, filter out guides where the user lacks the required permission. For the "Overlays" category, check individual tourKeys (e.g., `feedback` overlay requires `feedback.access`; `ai-hub`, `checklist`, `header`, `sidebar` remain visible to all). Filter the `categories` array so empty tabs are hidden entirely.
+
+2. **App.tsx**: Create a small wrapper or add `useRBAC()` to `AppContent`. Gate `FeedbackTrigger` and `FeedbackPanel` behind `hasPermission('feedback.access')`.
 
