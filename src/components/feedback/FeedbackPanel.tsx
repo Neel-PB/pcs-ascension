@@ -98,10 +98,7 @@ export const FeedbackPanel: React.FC = () => {
         </div>
 
         {/* Footer */}
-        <div className="flex-shrink-0 px-6 py-3 border-t border-border flex items-center justify-between" data-tour="feedback-footer">
-          <p className="text-xs text-muted-foreground">
-            <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono">⌘+Shift+F</kbd> to toggle
-          </p>
+        <div className="flex-shrink-0 px-6 py-3 border-t border-border flex items-center justify-end" data-tour="feedback-footer">
           <Button
             type="submit"
             form={FORM_ID}
