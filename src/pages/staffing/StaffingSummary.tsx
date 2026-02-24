@@ -14,6 +14,7 @@ import { generateLast12MonthLabels } from "@/lib/utils";
 import { WorkforceDrawer } from "@/components/workforce/WorkforceDrawer";
 import { WorkforceDrawerTrigger } from "@/components/workforce/WorkforceDrawerTrigger";
 import { useRBAC } from "@/hooks/useRBAC";
+import { isKpiVisible } from "@/config/kpiVisibility";
 import { useOrgScopedFilters } from "@/hooks/useOrgScopedFilters";
 import { LogoLoader } from "@/components/ui/LogoLoader";
 import { useFilterStore } from "@/stores/useFilterStore";
@@ -39,7 +40,7 @@ export default function StaffingSummary() {
       }, { replace: true });
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const { hasPermission, loading: rbacLoading } = useRBAC();
+  const { hasPermission, loading: rbacLoading, roles } = useRBAC();
   const { defaultFilters, isLoading: orgScopedLoading, isReady: orgScopedReady } = useOrgScopedFilters();
   
   // Shared filter store
@@ -547,18 +548,20 @@ This metric helps:
                   {
                     id: 'fte',
                     title: 'FTE',
-                    kpis: fteKPIs,
+                    kpis: fteKPIs.filter(k => isKpiVisible(k.id, roles)),
                   },
                   {
                     id: 'volume',
                     title: 'Volume',
-                    kpis: volumeKPIs,
+                    kpis: volumeKPIs.filter(k => isKpiVisible(k.id, roles)),
                   },
-                  {
-                    id: 'productivity',
-                    title: 'Productive Resources',
-                    kpis: productivityKPIs,
-                  },
+                  ...(productivityKPIs.some(k => isKpiVisible(k.id, roles))
+                    ? [{
+                        id: 'productivity',
+                        title: 'Productive Resources',
+                        kpis: productivityKPIs.filter(k => isKpiVisible(k.id, roles)),
+                      }]
+                    : []),
                 ]}
                 sectionOrder={sectionOrder}
                 onSectionReorder={setSectionOrder}
