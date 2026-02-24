@@ -132,9 +132,8 @@ export function RequisitionsTab({
           data-tour="positions-search"
         />
 
-        <PositionKPICards items={[{ label: "Open Positions", value: totalCount }]} />
-
-        <div className="flex gap-2 flex-shrink-0 ml-auto">
+        <div className="flex gap-2 items-center flex-shrink-0 ml-auto">
+          <PositionKPICards items={[{ label: "Open Positions", value: totalCount }]} />
           <span data-tour="positions-refresh">
             <DataRefreshButton dataSources={['positions_data']} />
           </span>
