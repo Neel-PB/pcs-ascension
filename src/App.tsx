@@ -102,8 +102,8 @@ const AppContent = () => {
       </Routes>
       {!loading && user && (
         <Suspense fallback={null}>
-          {hasPermission('feedback.access') && uiSettings?.showFeedbackTrigger !== false && <FeedbackTrigger enableScreenshotCapture={uiSettings?.enableScreenshotCapture !== false} />}
-          {hasPermission('feedback.access') && uiSettings?.showFeedbackTrigger !== false && <FeedbackPanel />}
+          {uiSettings?.showFeedbackTrigger !== false && <FeedbackTrigger enableScreenshotCapture={uiSettings?.enableScreenshotCapture !== false} />}
+          {uiSettings?.showFeedbackTrigger !== false && <FeedbackPanel />}
           <AIHubTrigger />
           <AIHubPanel />
         </Suspense>
