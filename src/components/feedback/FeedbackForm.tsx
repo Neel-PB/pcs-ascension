@@ -105,7 +105,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onSuccess, formId, o
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-3">
         <div className="space-y-1.5">
           <Label>Type *</Label>
           <Select value={type} onValueChange={(v) => setType(v as typeof type)}>
