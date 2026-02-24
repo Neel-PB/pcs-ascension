@@ -98,9 +98,9 @@ export function ForecastTab({
               </div>
             </SelectTrigger>
             <SelectContent className="min-w-[210px] bg-background">
-              <SelectItem value="all" className="data-[state=checked]:bg-primary/15 [&>span:first-child]:hidden">All Skills</SelectItem>
+              <SelectItem value="all">All Skills</SelectItem>
               {uniqueSkillTypes.map(skill => (
-                <SelectItem key={skill} value={skill} className="data-[state=checked]:bg-primary/15 [&>span:first-child]:hidden">
+                <SelectItem key={skill} value={skill}>
                   {skill}
                 </SelectItem>
               ))}
@@ -115,9 +115,9 @@ export function ForecastTab({
               </div>
             </SelectTrigger>
             <SelectContent className="min-w-[210px] bg-background">
-              <SelectItem value="all" className="data-[state=checked]:bg-primary/15 [&>span:first-child]:hidden">All Shifts</SelectItem>
+              <SelectItem value="all">All Shifts</SelectItem>
               {uniqueShifts.map(shift => (
-                <SelectItem key={shift} value={shift} className="data-[state=checked]:bg-primary/15 [&>span:first-child]:hidden">
+                <SelectItem key={shift} value={shift}>
                   {shift}
                 </SelectItem>
               ))}
