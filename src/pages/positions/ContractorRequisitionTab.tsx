@@ -1,8 +1,15 @@
+import { useState, useMemo } from "react";
+import { Filter } from "@/lib/icons";
 import { EditableTable } from "@/components/editable-table/EditableTable";
 import { ColumnDef } from "@/types/table";
 import { BadgeCell } from "@/components/editable-table/cells/BadgeCell";
 import { TruncatedTextCell } from "@/components/editable-table/cells/TruncatedTextCell";
 import { ShiftCell } from "@/components/editable-table/cells/ShiftCell";
+import { SearchField } from "@/components/ui/search-field";
+import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
+import { Button } from "@/components/ui/button";
+import { PositionKPICards } from "@/components/positions/PositionKPICards";
+import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 
 interface ContractorReqRow {
   id: string;
@@ -22,64 +29,11 @@ const dummyData: ContractorReqRow[] = [
 ];
 
 const columns: ColumnDef<ContractorReqRow>[] = [
-  {
-    id: "requisitionNum",
-    label: "Requisition #",
-    type: "text",
-    width: 180,
-    minWidth: 160,
-    sortable: true,
-    resizable: false,
-    draggable: true,
-    locked: true,
-  },
-  {
-    id: "jobTitle",
-    label: "Job Title",
-    type: "custom",
-    width: 280,
-    minWidth: 220,
-    sortable: true,
-    resizable: false,
-    draggable: true,
-    renderCell: (row) => <TruncatedTextCell value={row.jobTitle} maxLength={30} />,
-  },
-  {
-    id: "shift",
-    label: "Shift",
-    type: "custom",
-    width: 180,
-    minWidth: 160,
-    sortable: true,
-    resizable: false,
-    draggable: true,
-    renderCell: (row) => <ShiftCell value={row.shift} />,
-  },
-  {
-    id: "employmentType",
-    label: "Employment Type",
-    type: "custom",
-    width: 180,
-    minWidth: 170,
-    sortable: true,
-    resizable: false,
-    draggable: true,
-    renderCell: (row) => <TruncatedTextCell value={row.employmentType} maxLength={30} />,
-  },
-  {
-    id: "status",
-    label: "Status",
-    type: "custom",
-    width: 160,
-    minWidth: 140,
-    sortable: true,
-    resizable: false,
-    draggable: true,
-    renderCell: (row) => {
-      const variant = row.status === "Offer Extended" ? "default" : "secondary";
-      return <BadgeCell value={row.status} variant={variant} maxLength={30} />;
-    },
-  },
+  { id: "requisitionNum", label: "Requisition #", type: "text", width: 180, minWidth: 160, sortable: true, resizable: false, draggable: true, locked: true },
+  { id: "jobTitle", label: "Job Title", type: "custom", width: 280, minWidth: 220, sortable: true, resizable: false, draggable: true, renderCell: (row) => <TruncatedTextCell value={row.jobTitle} maxLength={30} /> },
+  { id: "shift", label: "Shift", type: "custom", width: 180, minWidth: 160, sortable: true, resizable: false, draggable: true, renderCell: (row) => <ShiftCell value={row.shift} /> },
+  { id: "employmentType", label: "Employment Type", type: "custom", width: 180, minWidth: 170, sortable: true, resizable: false, draggable: true, renderCell: (row) => <TruncatedTextCell value={row.employmentType} maxLength={30} /> },
+  { id: "status", label: "Status", type: "custom", width: 160, minWidth: 140, sortable: true, resizable: false, draggable: true, renderCell: (row) => <BadgeCell value={row.status} variant={row.status === "Offer Extended" ? "default" : "secondary"} maxLength={30} /> },
 ];
 
 interface ContractorRequisitionTabProps {
@@ -92,14 +46,31 @@ interface ContractorRequisitionTabProps {
 }
 
 export function ContractorRequisitionTab(_props: ContractorRequisitionTabProps) {
+  const { inputValue: searchQuery, debouncedValue: debouncedSearch, setInputValue: setSearchQuery } = useDebouncedSearch(300);
+
+  const filteredData = useMemo(() => {
+    if (!debouncedSearch) return dummyData;
+    const q = debouncedSearch.toLowerCase();
+    return dummyData.filter(r => [r.requisitionNum, r.jobTitle, r.shift, r.employmentType, r.status].some(f => f?.toLowerCase().includes(q)));
+  }, [debouncedSearch]);
+
   return (
-    <div className="min-h-0 max-h-full overflow-hidden">
-      <EditableTable
-        data={dummyData}
-        columns={columns}
-        getRowId={(row) => row.id}
-        storeNamespace="contractor-requisitions"
-      />
+    <div className="flex flex-col gap-4 min-h-0 max-h-full overflow-hidden">
+      <div className="flex justify-between items-center gap-4 flex-shrink-0">
+        <SearchField placeholder="Search requisitions..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full max-w-2xl" />
+        <div className="flex gap-2 flex-shrink-0">
+          <DataRefreshButton dataSources={['positions_data']} />
+          <Button variant="ascension" size="icon" aria-label="Filters" title="Filters">
+            <Filter className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      <PositionKPICards items={[{ label: "Contractor Requisitions", value: filteredData.length }]} />
+
+      <div className="min-h-0 max-h-full flex flex-col">
+        <EditableTable data={filteredData} columns={columns} getRowId={(row) => row.id} storeNamespace="contractor-requisitions" className="min-h-0 max-h-full" />
+      </div>
     </div>
   );
 }

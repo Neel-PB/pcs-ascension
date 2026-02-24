@@ -10,8 +10,9 @@ import { SearchField } from "@/components/ui/search-field";
 import { ContractorDetailsSheet } from "@/components/workforce/ContractorDetailsSheet";
 import { ContractorsFilterSheet } from "@/components/positions/ContractorsFilterSheet";
 import { EditableTable } from "@/components/editable-table/EditableTable";
+import { PositionKPICards } from "@/components/positions/PositionKPICards";
 
-import { contractorColumns, createContractorColumnsWithComments, ContractorTotals } from "@/config/contractorColumns";
+import { contractorColumns, createContractorColumnsWithComments } from "@/config/contractorColumns";
 import { useUpdateActualFte } from "@/hooks/useUpdateActualFte";
 import { useUpdateShiftOverride } from "@/hooks/useUpdateShiftOverride";
 import { EditableFTECell, FilterDataProvider } from "@/components/editable-table/cells/EditableFTECell";
@@ -36,7 +37,6 @@ export function ContractorsTab({
   selectedLevel2,
   selectedDepartment,
 }: ContractorsTabProps) {
-  // Check for expired Active FTE overrides once per session
   useCheckExpiredFte();
 
   const { data: contractors, isFetching } = useContractors({
@@ -49,7 +49,6 @@ export function ContractorsTab({
   const updateActualFte = useUpdateActualFte();
   const updateShiftOverride = useUpdateShiftOverride();
   
-  // Lift filter data to parent - passed to EditableFTECell via props instead of per-cell hook
   const { markets, getFacilitiesByMarket, getDepartmentsByFacility } = useFilterData();
   const filterDataProvider: FilterDataProvider = useMemo(() => ({
     markets,
@@ -89,13 +88,7 @@ export function ContractorsTab({
   };
 
   const clearFilters = () => {
-    setFilters({
-      employmentType: "all",
-      skillType: "",
-      shift: "all",
-      fteMin: "",
-      fteMax: "",
-    });
+    setFilters({ employmentType: "all", skillType: "", shift: "all", fteMin: "", fteMax: "" });
   };
 
   const activeFilterCount = useMemo(() => {
@@ -109,19 +102,8 @@ export function ContractorsTab({
   }, [filters]);
 
   const handleActualFteUpdate = useCallback((
-    id: string, 
-    previousFte: number | null, 
-    previousExpiry: string | null,
-    previousStatus: string | null,
-    data: {
-      actual_fte: number | null;
-      actual_fte_expiry: string | null;
-      actual_fte_status: string | null;
-      actual_fte_shared_with?: string | null;
-      actual_fte_shared_fte?: number | null;
-      actual_fte_shared_expiry?: string | null;
-      comment?: string;
-    }
+    id: string, previousFte: number | null, previousExpiry: string | null, previousStatus: string | null,
+    data: { actual_fte: number | null; actual_fte_expiry: string | null; actual_fte_status: string | null; actual_fte_shared_with?: string | null; actual_fte_shared_fte?: number | null; actual_fte_shared_expiry?: string | null; comment?: string; }
   ) => {
     updateActualFte.mutate({ id, ...data, previousFte, previousExpiry, previousStatus });
   }, [updateActualFte]);
@@ -132,109 +114,52 @@ export function ContractorsTab({
 
   const filteredAndSortedContractors = useMemo(() => {
     if (!contractors) return [];
-
     let filtered = [...contractors];
 
-    // Apply debounced search
     if (debouncedSearch) {
       const query = debouncedSearch.toLowerCase();
       filtered = filtered.filter((c) => {
-        const searchFields = [
-          c.employeeName,
-          c.positionNum,
-          c.jobTitle,
-          c.jobFamily,
-          c.departmentName,
-          c.employmentType,
-          c.shift,
-        ];
-        return searchFields.some((field) => 
-          field?.toString().toLowerCase().includes(query)
-        );
+        const fields = [c.employeeName, c.positionNum, c.jobTitle, c.jobFamily, c.departmentName, c.employmentType, c.shift];
+        return fields.some((f) => f?.toString().toLowerCase().includes(query));
       });
     }
 
-    // Apply filters
-    if (filters.employmentType !== "all") {
-      filtered = filtered.filter((c) => c.employmentType === filters.employmentType);
-    }
-    if (filters.skillType) {
-      filtered = filtered.filter((c) => 
-        c.jobFamily?.toLowerCase().includes(filters.skillType.toLowerCase())
-      );
-    }
-    if (filters.shift !== "all") {
-      filtered = filtered.filter((c) => c.shift === filters.shift);
-    }
-    if (filters.fteMin) {
-      const minFte = parseFloat(filters.fteMin);
-      filtered = filtered.filter((c) => {
-        const fte = typeof c.FTE === 'string' ? parseFloat(c.FTE) : (c.FTE || 0);
-        return fte >= minFte;
-      });
-    }
-    if (filters.fteMax) {
-      const maxFte = parseFloat(filters.fteMax);
-      filtered = filtered.filter((c) => {
-        const fte = typeof c.FTE === 'string' ? parseFloat(c.FTE) : (c.FTE || 0);
-        return fte <= maxFte;
-      });
-    }
+    if (filters.employmentType !== "all") filtered = filtered.filter((c) => c.employmentType === filters.employmentType);
+    if (filters.skillType) filtered = filtered.filter((c) => c.jobFamily?.toLowerCase().includes(filters.skillType.toLowerCase()));
+    if (filters.shift !== "all") filtered = filtered.filter((c) => c.shift === filters.shift);
+    if (filters.fteMin) { const min = parseFloat(filters.fteMin); filtered = filtered.filter((c) => (Number(c.FTE) || 0) >= min); }
+    if (filters.fteMax) { const max = parseFloat(filters.fteMax); filtered = filtered.filter((c) => (Number(c.FTE) || 0) <= max); }
 
-    // Apply sorting
     if (sortColumn) {
       filtered.sort((a, b) => {
-        let aVal = a[sortColumn];
-        let bVal = b[sortColumn];
-
-        // Handle numeric values
-        if (sortColumn === "FTE") {
-          aVal = parseFloat(aVal || "0");
-          bVal = parseFloat(bVal || "0");
-        }
-
-        // Handle null/undefined
-        if (!aVal) return 1;
-        if (!bVal) return -1;
-
-        if (typeof aVal === "string") {
-          return sortDirection === "asc"
-            ? aVal.localeCompare(bVal)
-            : bVal.localeCompare(aVal);
-        }
-
+        let aVal = a[sortColumn]; let bVal = b[sortColumn];
+        if (sortColumn === "FTE") { aVal = parseFloat(aVal || "0"); bVal = parseFloat(bVal || "0"); }
+        if (!aVal) return 1; if (!bVal) return -1;
+        if (typeof aVal === "string") return sortDirection === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
         return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
       });
     }
-
     return filtered;
   }, [contractors, debouncedSearch, filters, sortColumn, sortDirection]);
 
-  // Extract position IDs for comment count fetching
-  const positionIds = useMemo(() => 
-    filteredAndSortedContractors.map(c => c.id), 
-    [filteredAndSortedContractors]
-  );
-
-  // Fetch comment counts
+  const positionIds = useMemo(() => filteredAndSortedContractors.map(c => c.id), [filteredAndSortedContractors]);
   const commentCounts = usePositionCommentCounts(positionIds);
 
-  // Compute totals for two-row headers
-  const contractorTotals: ContractorTotals = useMemo(() => ({
-    totalCount: filteredAndSortedContractors.length,
-    totalContractorNames: filteredAndSortedContractors.filter(c => c.employeeName).length,
-    totalHiredFTE: filteredAndSortedContractors.reduce((sum, c) => sum + (c.FTE || 0), 0),
-    totalActiveFTE: filteredAndSortedContractors.reduce((sum, c) => sum + (c.actual_fte ?? c.FTE ?? 0), 0),
-  }), [filteredAndSortedContractors]);
+  const totals = useMemo(() => {
+    if (!contractors) return { totalCount: 0, totalContractorNames: 0, totalHiredFTE: 0, totalActiveFTE: 0 };
+    return {
+      totalCount: contractors.length,
+      totalContractorNames: contractors.filter(c => c.employeeName).length,
+      totalHiredFTE: contractors.reduce((sum, c) => sum + (c.FTE || 0), 0),
+      totalActiveFTE: contractors.reduce((sum, c) => sum + (c.actual_fte ?? c.FTE ?? 0), 0),
+    };
+  }, [contractors]);
 
   const firstRowId = filteredAndSortedContractors[0]?.id;
 
   const columnsWithHandlers = useMemo(() => {
     const baseColumns = createContractorColumnsWithComments(
-      commentCounts, 
-      handleCommentClick,
-      handleShiftOverrideUpdate,
-      contractorTotals
+      commentCounts, handleCommentClick, handleShiftOverrideUpdate,
     );
     return baseColumns.map(col => {
       if (col.id === 'actual_fte') {
@@ -243,21 +168,11 @@ export function ContractorsTab({
           renderCell: (row: any) => {
             const cell = (
               <EditableFTECell
-                value={row.actual_fte}
-                originalValue={row.FTE}
-                expiryDate={row.actual_fte_expiry}
-                status={row.actual_fte_status}
-                employmentType={row.employmentType}
-                sharedWith={row.actual_fte_shared_with}
-                sharedFte={row.actual_fte_shared_fte}
+                value={row.actual_fte} originalValue={row.FTE} expiryDate={row.actual_fte_expiry}
+                status={row.actual_fte_status} employmentType={row.employmentType}
+                sharedWith={row.actual_fte_shared_with} sharedFte={row.actual_fte_shared_fte}
                 sharedExpiry={row.actual_fte_shared_expiry}
-                onSave={(data) => handleActualFteUpdate(
-                  row.id, 
-                  row.actual_fte, 
-                  row.actual_fte_expiry,
-                  row.actual_fte_status,
-                  data
-                )}
+                onSave={(data) => handleActualFteUpdate(row.id, row.actual_fte, row.actual_fte_expiry, row.actual_fte_status, data)}
                 filterDataProvider={filterDataProvider}
               />
             );
@@ -277,13 +192,13 @@ export function ContractorsTab({
       }
       return col;
     });
-  }, [commentCounts, handleCommentClick, handleActualFteUpdate, handleShiftOverrideUpdate, filterDataProvider, firstRowId, contractorTotals]);
+  }, [commentCounts, handleCommentClick, handleActualFteUpdate, handleShiftOverrideUpdate, filterDataProvider, firstRowId]);
 
   const showEmptyState = !isFetching && (!contractors || contractors.length === 0);
 
   return (
-    <div className="flex flex-col min-h-0 max-h-full overflow-hidden">
-      <div className="flex justify-between items-center mb-4 gap-4 flex-shrink-0">
+    <div className="flex flex-col gap-4 min-h-0 max-h-full overflow-hidden">
+      <div className="flex justify-between items-center gap-4 flex-shrink-0">
         <SearchField
           placeholder="Search contractors..."
           value={searchQuery}
@@ -291,35 +206,28 @@ export function ContractorsTab({
           className="w-full max-w-2xl"
           data-tour="positions-search"
         />
-        
         <div className="flex gap-2 flex-shrink-0">
           <span data-tour="positions-refresh">
             <DataRefreshButton dataSources={['positions_data']} />
           </span>
-          
-          <Button
-            variant="ascension"
-            size="icon"
-            onClick={() => setFilterOpen(true)}
-            className="relative"
-            aria-label="Filters"
-            title="Filters"
-            data-tour="positions-filter-btn"
-          >
+          <Button variant="ascension" size="icon" onClick={() => setFilterOpen(true)} className="relative" aria-label="Filters" title="Filters" data-tour="positions-filter-btn">
             <Filter className="h-4 w-4" />
             {activeFilterCount > 0 && (
-              <Badge variant="secondary" className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
-                {activeFilterCount}
-              </Badge>
+              <Badge variant="secondary" className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">{activeFilterCount}</Badge>
             )}
           </Button>
         </div>
       </div>
 
+      <PositionKPICards items={[
+        { label: "Positions", value: totals.totalCount },
+        { label: "Contractors", value: totals.totalContractorNames },
+        { label: "Hired FTE", value: totals.totalHiredFTE },
+        { label: "Active FTE", value: totals.totalActiveFTE },
+      ]} />
+
       {isFetching ? (
-        <div className="flex-1 flex items-center justify-center min-h-[300px]">
-          <LogoLoader size="lg" />
-        </div>
+        <div className="flex-1 flex items-center justify-center min-h-[300px]"><LogoLoader size="lg" /></div>
       ) : showEmptyState ? (
         <div className="flex-1 flex flex-col items-center justify-center min-h-[300px] bg-muted/20 rounded-xl border border-border/50">
           <p className="text-muted-foreground">No contractors found matching the filters.</p>
@@ -340,21 +248,8 @@ export function ContractorsTab({
         </div>
       )}
 
-      <ContractorDetailsSheet
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
-        contractor={selectedContractor}
-        defaultTab={sheetDefaultTab}
-      />
-
-      <ContractorsFilterSheet
-        open={filterOpen}
-        onOpenChange={setFilterOpen}
-        filters={filters}
-        onFiltersChange={setFilters}
-        onClearFilters={clearFilters}
-        activeFilterCount={activeFilterCount}
-      />
+      <ContractorDetailsSheet open={sheetOpen} onOpenChange={setSheetOpen} contractor={selectedContractor} defaultTab={sheetDefaultTab} />
+      <ContractorsFilterSheet open={filterOpen} onOpenChange={setFilterOpen} filters={filters} onFiltersChange={setFilters} onClearFilters={clearFilters} activeFilterCount={activeFilterCount} />
     </div>
   );
 }
