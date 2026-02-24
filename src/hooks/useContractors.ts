@@ -17,29 +17,43 @@ export function useContractors({
   return useQuery({
     queryKey: ["contractors", selectedRegion, selectedMarket, selectedFacility, selectedDepartment],
     queryFn: async () => {
-      let query = supabase
-        .from("positions")
-        .select("*")
-        .eq("positionLifecycle", "Filled")
-        .like("employmentFlag", "%Contingent%");
+      const buildQuery = (opts?: { count?: "exact"; head?: boolean }) => {
+        let q = supabase
+          .from("positions")
+          .select("*", opts?.count ? { count: opts.count, head: opts.head } : undefined)
+          .eq("positionLifecycle", "Filled")
+          .like("employmentFlag", "%Contingent%");
 
-      // Apply filters - use ilike for case-insensitive market matching
-      if (selectedMarket && selectedMarket !== "all-markets") {
-        query = query.ilike("market", selectedMarket);
+        if (selectedMarket && selectedMarket !== "all-markets") {
+          q = q.ilike("market", selectedMarket);
+        }
+        if (selectedFacility && selectedFacility !== "all-facilities") {
+          q = q.eq("facilityId", selectedFacility);
+        }
+        if (selectedDepartment && selectedDepartment !== "all-departments") {
+          q = q.eq("departmentId", selectedDepartment);
+        }
+        return q;
+      };
+
+      const { count, error: countError } = await buildQuery({ count: "exact", head: true });
+      if (countError) throw countError;
+      if (!count || count === 0) return [];
+
+      const PAGE_SIZE = 1000;
+      const pages = Math.ceil(count / PAGE_SIZE);
+      const allData: any[] = [];
+
+      for (let i = 0; i < pages; i++) {
+        const { data, error } = await buildQuery()
+          .range(i * PAGE_SIZE, (i + 1) * PAGE_SIZE - 1)
+          .order("employeeName", { ascending: true });
+
+        if (error) throw error;
+        if (data) allData.push(...data);
       }
 
-      if (selectedFacility && selectedFacility !== "all-facilities") {
-        query = query.eq("facilityId", selectedFacility);
-      }
-
-      if (selectedDepartment && selectedDepartment !== "all-departments") {
-        query = query.eq("departmentId", selectedDepartment);
-      }
-
-      const { data, error } = await query.order("employeeName", { ascending: true });
-
-      if (error) throw error;
-      return data || [];
+      return allData;
     },
   });
 }
