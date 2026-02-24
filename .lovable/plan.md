@@ -1,51 +1,69 @@
 
 
-## Consistent Two-Row Column Headers with Aligned Totals
+## Two-Row Header Layout for All Position Tabs
 
-### Approach
-Make ALL column headers use a fixed two-row layout. Columns with totals (Employee Name, Hired FTE, Active FTE) show the value on the second row. All other columns show only the label on the first row with an empty second row, ensuring everything aligns perfectly.
+### Overview
+Apply the same two-row header pattern (already working in Employees tab) to the **Open Position**, **Contractor**, and remaining tabs. Each column will use a `flex-col` layout with either a total on the second row or an invisible placeholder for alignment.
+
+### Totals by Tab
+
+| Tab | Columns with Totals |
+|-----|-------------------|
+| Employee (done) | Employee Name (count), Hired FTE (sum), Active FTE (sum) |
+| **Contractor** | Position # (count), Contractor Name (count), Hired FTE (sum), Active FTE (sum) |
+| **Open Position** | Position # (count) |
+| Open Requisition | No totals (placeholder tab with dummy data) |
+| Contractor Requisition | No totals (placeholder tab with dummy data) |
+
+---
 
 ### Changes
 
-**File: `src/components/editable-table/DraggableColumnHeader.tsx`**
+#### 1. `src/config/contractorColumns.tsx`
 
-- Increase header height from `h-10` (40px) to `h-12` (48px) to accommodate two lines.
-- Change the label wrapper from `truncate flex-1` to a flex-col layout so `renderHeader` content controls both rows naturally.
+- Add a `ContractorTotals` interface similar to `EmployeeTotals`:
+  ```ts
+  export interface ContractorTotals {
+    totalCount: number;
+    totalContractorNames: number;
+    totalHiredFTE: number;
+    totalActiveFTE: number;
+  }
+  ```
+- Update `createContractorColumnsWithComments` to accept an optional `totals` parameter
+- Add two-row `renderHeader` to ALL columns:
+  - `positionNum`: shows count total `(XXX)`
+  - `employeeName`: shows contractor name count `(XXX)`
+  - `FTE`: shows hired FTE sum
+  - `actual_fte`: shows active FTE sum
+  - All other columns (`jobTitle`, `shift`, `status`, `employmentType`, `comments`): invisible placeholder
 
-Specifically on line 73, change `h-10` to `h-12`.
+#### 2. `src/pages/positions/ContractorsTab.tsx`
 
-**File: `src/config/employeeColumns.tsx`**
+- Compute totals from the `contractors` data (count, sum of FTE, sum of actual_fte)
+- Pass `totals` to `createContractorColumnsWithComments`
 
-Update ALL `renderHeader` overrides inside `createEmployeeColumnsWithComments` to use a consistent two-row structure:
+#### 3. `src/config/requisitionColumns.tsx`
 
-- **Every column** gets a `renderHeader` that uses `flex flex-col leading-tight` with two fixed rows
-- Columns WITH totals (employeeName, FTE, actual_fte) show the total on the second row
-- Columns WITHOUT totals (positionNum, jobTitle, shift, payrollStatus, employmentType, comments) show only the label with an invisible placeholder on the second row to maintain alignment
+- Add a `RequisitionTotals` interface:
+  ```ts
+  export interface RequisitionTotals {
+    totalCount: number;
+  }
+  ```
+- Update `createRequisitionColumnsWithComments` to accept optional `totals`
+- Add two-row `renderHeader` to ALL columns:
+  - `positionNum`: shows position count `(XXX)`
+  - All other columns (`positionLifecycle`, `vacancyAge`, `jobTitle`, `shift`, `employmentType`, `comments`): invisible placeholder
 
-Example for a column WITH a total:
-```tsx
-renderHeader: () => (
-  <span className="flex flex-col leading-tight">
-    <span>Employee Name</span>
-    <span className="text-[10px] text-muted-foreground font-normal">
-      (7,234)
-    </span>
-  </span>
-)
-```
+#### 4. `src/pages/positions/RequisitionsTab.tsx` (Open Position tab)
 
-Example for a column WITHOUT a total:
-```tsx
-renderHeader: () => (
-  <span className="flex flex-col leading-tight">
-    <span>Position #</span>
-    <span className="text-[10px] invisible">-</span>
-  </span>
-)
-```
-
-The `invisible` placeholder ensures the second row takes up space for alignment but shows nothing visually.
+- Compute `totalCount` from `filteredAndSortedRequisitions.length` (or full requisitions count)
+- Pass `totals` to `createRequisitionColumnsWithComments`
 
 ### Files Changed
-- `src/components/editable-table/DraggableColumnHeader.tsx` -- increase header height from h-10 to h-12
-- `src/config/employeeColumns.tsx` -- give every column a two-row renderHeader with invisible placeholders for non-total columns
+- `src/config/contractorColumns.tsx` -- add totals interface, two-row headers for all columns
+- `src/pages/positions/ContractorsTab.tsx` -- compute and pass totals
+- `src/config/requisitionColumns.tsx` -- add totals interface, two-row headers for all columns
+- `src/pages/positions/RequisitionsTab.tsx` -- compute and pass totals
+
