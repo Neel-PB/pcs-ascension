@@ -5,7 +5,6 @@ import { FeedbackForm } from './FeedbackForm';
 import { Button } from '@/components/ui/button';
 import { OverlayTour } from '@/components/tour/OverlayTour';
 import { feedbackTourSteps } from '@/components/tour/tourSteps';
-import { X } from 'lucide-react';
 
 const MIN_WIDTH = 490;
 const MAX_WIDTH_VW = 0.7;
@@ -83,8 +82,8 @@ export const FeedbackPanel: React.FC = () => {
           style={{ height: 'var(--header-height)' }}
         >
           <h1 className="text-lg font-semibold text-foreground">Submit Feedback</h1>
-          <Button variant="ghost" size="icon" onClick={handleClose} className="h-9 w-9">
-            <X className="h-4 w-4" />
+          <Button variant="ghost" size="sm" onClick={handleClose}>
+            Close
           </Button>
         </div>
 
