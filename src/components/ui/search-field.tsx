@@ -50,7 +50,7 @@ const SearchField = React.forwardRef<HTMLInputElement, SearchFieldProps>(
         <button
           type="button"
           tabIndex={-1}
-          className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center rounded-full bg-primary text-primary-foreground"
+          className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 flex items-center justify-center rounded-full bg-primary text-primary-foreground"
           aria-label="Search"
         >
           <Search className="h-6 w-6" />
