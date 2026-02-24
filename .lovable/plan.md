@@ -1,32 +1,62 @@
 
 
-## Fix: Fetch All Requisitions (Not Just 1,000)
+## Role-Based KPI Visibility for Staffing Summary
 
-### Problem
-The `useRequisitions` hook does a single `.select("*")` query. Supabase caps results at 1,000 rows by default, so the "Open Positions" count is capped at 1,000 even if there are more.
+### What This Does
+Implements per-KPI visibility rules based on user roles, matching the uploaded spreadsheet. Different roles see different sets of KPI cards in the Staffing Summary tab.
 
-The `useEmployees` hook already solves this with a count-then-batch pattern, but `useRequisitions` and `useContractors` do not.
+### Visibility Rules Summary
 
-### Solution
-Apply the same batched-fetch pattern from `useEmployees` to both `useRequisitions` and `useContractors`:
+**FTE Section (6 KPIs):** All roles see all 6 KPIs -- no filtering needed.
 
-1. First query with `{ count: "exact", head: true }` to get the total count
-2. Then fetch all rows in pages of 1,000 using `.range()`
+**Volume Section:**
+- 12M Average: Hidden from Director and Manager
+- 12M Daily Average: Visible to all
+- 3M Low / 3M High: Hidden from Director only (Manager CAN see them)
+- Target Vol / Override Vol: Visible to all
+
+**Productive Resources Section:**
+- ALL 6 KPIs (Paid FTEs, Employed Productive FTEs, Contract FTEs, Overtime FTEs, Total PRN, Total NP%): Hidden from Director and Manager
+- The entire section is hidden if user is Director or Manager (since all cards would be empty)
+
+### Implementation
+
+**1. Create a KPI visibility config** (`src/config/kpiVisibility.ts`)
+
+A simple map from KPI id to the list of roles that CANNOT see it:
+
+```text
+hiddenForRoles = {
+  '12m-monthly':       ['director', 'manager'],
+  '3m-low':            ['director'],
+  '3m-high':           ['director'],
+  'paid-ftes':         ['director', 'manager'],
+  'contract-ftes':     ['director', 'manager'],
+  'overtime-ftes':     ['director', 'manager'],
+  'total-prn':         ['director', 'manager'],
+  'total-np':          ['director', 'manager'],
+  'total-fullpart-ftes': ['director', 'manager'],
+}
+```
+
+Also export a helper: `isKpiVisible(kpiId, userRoles) => boolean`
+
+**2. Update `StaffingSummary.tsx`**
+
+- Import `isKpiVisible` and user roles from `useRBAC`
+- Filter each KPI array (fteKPIs, volumeKPIs, productivityKPIs) through `isKpiVisible` before passing to `DraggableSectionsContainer`
+- Conditionally hide the entire "Productive Resources" section if the filtered array is empty
+- No changes to KPI card components themselves
 
 ### Files Changed
 
-**`src/hooks/useRequisitions.ts`**
-- Replace single query with count + batched fetch (same pattern as `useEmployees`)
-- Keeps existing filters and sort order
+| File | Change |
+|------|--------|
+| `src/config/kpiVisibility.ts` | New file -- visibility rules map and helper function |
+| `src/pages/staffing/StaffingSummary.tsx` | Filter KPI arrays based on user roles before rendering |
 
-**`src/hooks/useContractors.ts`**
-- Same fix applied for consistency, since contractors could also exceed 1,000
-
-### Pattern (from useEmployees)
-
-```text
-1. buildQuery({ count: "exact", head: true })  --> get total count
-2. Loop: buildQuery().range(i*1000, (i+1)*1000 - 1) --> fetch each page
-3. Combine all pages into one array
-```
+### Notes
+- admin and labor_team see everything (they have no entries in the hidden map)
+- The Workforce Drawer and Positions module KPIs are NOT affected by this change (separate request if needed)
+- Drag-and-drop reordering continues to work on the visible subset of KPIs
 
