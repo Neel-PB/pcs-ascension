@@ -79,7 +79,7 @@ export function ForecastTab({
 
   return (
     <div className="flex flex-col gap-4 h-full">
-      {/* Two Large KPIs */}
+      {/* Two Large KPIs with filters between */}
       <div data-tour="forecast-kpi-cards">
         <ForecastKPICards
           totalShortage={data?.totalShortage ?? 0}
@@ -89,55 +89,52 @@ export function ForecastTab({
           isLoading={isLoading}
           activeFilter={activeFilter}
           onFilterClick={handleFilterClick}
-        />
-      </div>
+        >
+          <Select value={selectedSkillType} onValueChange={setSelectedSkillType}>
+            <SelectTrigger className="w-[150px] rounded-lg border-2 border-input px-4 py-3 h-auto [&>svg]:hidden">
+              <div className="flex items-center justify-between w-full">
+                <SelectValue placeholder="All Skills" />
+                <ChevronDown className="h-4 w-4 text-[#1D69D2] shrink-0 transition-transform duration-200" />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="min-w-[210px] bg-background z-50">
+              <SelectItem value="all" className="data-[state=checked]:bg-primary/15 [&>span:first-child]:hidden">All Skills</SelectItem>
+              {uniqueSkillTypes.map(skill => (
+                <SelectItem key={skill} value={skill} className="data-[state=checked]:bg-primary/15 [&>span:first-child]:hidden">
+                  {skill}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-      {/* Skill Type & Shift Filters */}
-      <div className="flex items-center gap-3 flex-shrink-0">
-        <Select value={selectedSkillType} onValueChange={setSelectedSkillType}>
-          <SelectTrigger className="w-[180px] rounded-lg border-2 border-input px-4 py-3 h-auto [&>svg]:hidden">
-            <div className="flex items-center justify-between w-full">
-              <SelectValue placeholder="All Skills" />
-              <ChevronDown className="h-4 w-4 text-[#1D69D2] shrink-0 transition-transform duration-200" />
-            </div>
-          </SelectTrigger>
-          <SelectContent className="min-w-[210px] bg-background z-50">
-            <SelectItem value="all" className="data-[state=checked]:bg-primary/15 [&>span:first-child]:hidden">All Skills</SelectItem>
-            {uniqueSkillTypes.map(skill => (
-              <SelectItem key={skill} value={skill} className="data-[state=checked]:bg-primary/15 [&>span:first-child]:hidden">
-                {skill}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <Select value={selectedShift} onValueChange={setSelectedShift}>
+            <SelectTrigger className="w-[150px] rounded-lg border-2 border-input px-4 py-3 h-auto [&>svg]:hidden">
+              <div className="flex items-center justify-between w-full">
+                <SelectValue placeholder="All Shifts" />
+                <ChevronDown className="h-4 w-4 text-[#1D69D2] shrink-0 transition-transform duration-200" />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="min-w-[210px] bg-background z-50">
+              <SelectItem value="all" className="data-[state=checked]:bg-primary/15 [&>span:first-child]:hidden">All Shifts</SelectItem>
+              {uniqueShifts.map(shift => (
+                <SelectItem key={shift} value={shift} className="data-[state=checked]:bg-primary/15 [&>span:first-child]:hidden">
+                  {shift}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <Select value={selectedShift} onValueChange={setSelectedShift}>
-          <SelectTrigger className="w-[180px] rounded-lg border-2 border-input px-4 py-3 h-auto [&>svg]:hidden">
-            <div className="flex items-center justify-between w-full">
-              <SelectValue placeholder="All Shifts" />
-              <ChevronDown className="h-4 w-4 text-[#1D69D2] shrink-0 transition-transform duration-200" />
-            </div>
-          </SelectTrigger>
-          <SelectContent className="min-w-[210px] bg-background z-50">
-            <SelectItem value="all" className="data-[state=checked]:bg-primary/15 [&>span:first-child]:hidden">All Shifts</SelectItem>
-            {uniqueShifts.map(shift => (
-              <SelectItem key={shift} value={shift} className="data-[state=checked]:bg-primary/15 [&>span:first-child]:hidden">
-                {shift}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {hasActiveLocalFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={resetLocalFilters}
-            className="h-9 px-2 text-muted-foreground hover:text-foreground"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
+          {hasActiveLocalFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={resetLocalFilters}
+              className="h-9 px-2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </ForecastKPICards>
       </div>
 
       {/* Smart Table */}

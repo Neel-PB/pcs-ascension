@@ -11,6 +11,7 @@ interface ForecastKPICardsProps {
   isLoading?: boolean;
   activeFilter?: 'all' | 'shortage' | 'surplus';
   onFilterClick?: (filter: 'shortage' | 'surplus') => void;
+  children?: React.ReactNode;
 }
 
 export function ForecastKPICards({
@@ -21,6 +22,7 @@ export function ForecastKPICards({
   isLoading,
   activeFilter = 'all',
   onFilterClick,
+  children,
 }: ForecastKPICardsProps) {
   if (isLoading) {
     return (
@@ -31,11 +33,11 @@ export function ForecastKPICards({
   }
 
   return (
-    <div className="grid grid-cols-2 gap-6">
+    <div className="flex items-center gap-4">
       {/* FTE Shortage + Positions to Open Card */}
       <Card 
         className={cn(
-          "py-2 px-4 cursor-pointer transition-all",
+          "flex-1 py-2 px-4 cursor-pointer transition-all",
           activeFilter === 'shortage' 
             ? "border-2 border-orange-500/60 bg-orange-500/10 shadow-sm"
             : "border-2 border-orange-500/30 bg-orange-500/5"
@@ -63,10 +65,17 @@ export function ForecastKPICards({
         </div>
       </Card>
 
+      {/* Filter slot */}
+      {children && (
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {children}
+        </div>
+      )}
+
       {/* FTE Surplus + Positions to Close Card */}
       <Card 
         className={cn(
-          "py-2 px-4 cursor-pointer transition-all",
+          "flex-1 py-2 px-4 cursor-pointer transition-all",
           activeFilter === 'surplus' 
             ? "border-2 border-primary/60 bg-primary/10 shadow-sm"
             : "border-2 border-primary/30 bg-primary/5"
