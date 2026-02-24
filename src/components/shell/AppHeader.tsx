@@ -108,7 +108,7 @@ export function AppHeader() {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="relative h-8 w-8" 
+            className="relative h-11 w-11" 
             onClick={() => setNotificationsOpen(true)}
             data-tour="header-notifications"
           >
@@ -128,8 +128,8 @@ export function AppHeader() {
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 h-auto px-2 py-1.5" data-tour="header-user-menu">
-                  <Avatar className="h-8 w-8">
+                <Button variant="ghost" className="flex items-center gap-2 h-11 px-2 py-1.5" data-tour="header-user-menu">
+                  <Avatar className="h-9 w-9">
                     <AvatarImage 
                       src={avatarUrl || undefined} 
                       alt={userName} 
