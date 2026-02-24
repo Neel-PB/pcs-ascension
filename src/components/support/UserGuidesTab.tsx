@@ -5,6 +5,7 @@ import { useWorkforceDrawerStore } from "@/stores/useWorkforceDrawerStore";
 import { useAIHub } from "@/hooks/useAIHub";
 import { useFeedbackStore } from "@/stores/useFeedbackStore";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
+import { useRBAC } from "@/hooks/useRBAC";
 import { TOUR_STEP_REGISTRY, getStepTitle } from "@/components/tour/tourStepRegistry";
 import { SearchField } from "@/components/ui/search-field";
 import { Button } from "@/components/ui/button";
@@ -71,16 +72,40 @@ const guideCatalog: Guide[] = [
   { tourKey: "sidebar", title: "Sidebar Navigation", description: "Icon-only module switcher with active-state indicator and prefetch.", icon: Navigation, route: "", category: "Overlays", isOverlay: true },
 ];
 
-const categories = ["Staffing", "Positions", "Admin", "Feedback", "Analytics", "Reports", "Overlays"];
+const allCategories = ["Staffing", "Positions", "Admin", "Feedback", "Analytics", "Reports", "Overlays"];
+
+const categoryPermissionMap: Record<string, string> = {
+  Staffing: "staffing.access",
+  Positions: "positions.access",
+  Admin: "admin.access",
+  Feedback: "feedback.access",
+  Analytics: "analytics.access",
+  Reports: "reports.access",
+};
+
+// Overlay-level permission map for individual overlay tour items
+const overlayPermissionMap: Record<string, string> = {
+  feedback: "feedback.access",
+};
 
 export function UserGuidesTab() {
   const navigate = useNavigate();
   const { startTour, startMicroTour } = useTourStore();
   const [, setRefresh] = useState(0);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const { hasPermission } = useRBAC();
   const { inputValue, debouncedValue, setInputValue } = useDebouncedSearch(200);
 
   const query = debouncedValue.toLowerCase().trim();
+
+  // Filter categories based on permissions
+  const categories = useMemo(() => {
+    return allCategories.filter((cat) => {
+      const perm = categoryPermissionMap[cat];
+      // If no permission mapped (e.g. Overlays), keep it
+      return !perm || hasPermission(perm);
+    });
+  }, [hasPermission]);
 
   const isCompleted = (tourKey: string) =>
     localStorage.getItem(`helix-tour-${tourKey}-completed`) === "true";
@@ -95,19 +120,31 @@ export function UserGuidesTab() {
   }, []);
 
   const guidesWithSteps = useMemo(() => {
-    return guideCatalog.map((guide) => {
-      const steps = TOUR_STEP_REGISTRY[guide.tourKey] || [];
-      const stepTitles = steps.map((s, i) => ({ title: getStepTitle(s), index: i }));
-      const matchingStepIndices = query
-        ? stepTitles.filter((s) => s.title.toLowerCase().includes(query)).map((s) => s.index)
-        : [];
-      const sectionMatch = query
-        ? guide.title.toLowerCase().includes(query) || guide.description.toLowerCase().includes(query)
-        : true;
-      const visible = query ? sectionMatch || matchingStepIndices.length > 0 : true;
-      return { guide, steps, stepTitles, matchingStepIndices, sectionMatch, visible };
-    });
-  }, [query]);
+    return guideCatalog
+      .filter((guide) => {
+        // Check category-level permission
+        const catPerm = categoryPermissionMap[guide.category];
+        if (catPerm && !hasPermission(catPerm)) return false;
+        // Check overlay-level permission
+        if (guide.category === "Overlays") {
+          const overlayPerm = overlayPermissionMap[guide.tourKey];
+          if (overlayPerm && !hasPermission(overlayPerm)) return false;
+        }
+        return true;
+      })
+      .map((guide) => {
+        const steps = TOUR_STEP_REGISTRY[guide.tourKey] || [];
+        const stepTitles = steps.map((s, i) => ({ title: getStepTitle(s), index: i }));
+        const matchingStepIndices = query
+          ? stepTitles.filter((s) => s.title.toLowerCase().includes(query)).map((s) => s.index)
+          : [];
+        const sectionMatch = query
+          ? guide.title.toLowerCase().includes(query) || guide.description.toLowerCase().includes(query)
+          : true;
+        const visible = query ? sectionMatch || matchingStepIndices.length > 0 : true;
+        return { guide, steps, stepTitles, matchingStepIndices, sectionMatch, visible };
+      });
+  }, [query, hasPermission]);
 
   const handleStartTour = (guide: Guide) => {
     if (guide.tourKey === "checklist") useWorkforceDrawerStore.getState().setOpen(true);

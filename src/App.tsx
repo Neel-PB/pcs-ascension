@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useRBAC } from "@/hooks/useRBAC";
 import { useUISettings } from "@/hooks/useAppSettings";
 import { useRealtimeSubscriptions } from "@/hooks/useRealtimeSubscriptions";
 import { LogoLoader } from "@/components/ui/LogoLoader";
@@ -49,6 +50,7 @@ const PageLoader = () => (
 
 const AppContent = () => {
   const { user, loading } = useAuth();
+  const { hasPermission } = useRBAC();
   const { onboardingChecked, startFullTour, markOnboardingComplete, setOnboardingChecked } = useTourStore();
   
   // Set up consolidated realtime subscriptions (replaces multiple individual subscriptions)
@@ -100,8 +102,8 @@ const AppContent = () => {
       </Routes>
       {!loading && user && (
         <Suspense fallback={null}>
-          {uiSettings?.showFeedbackTrigger !== false && <FeedbackTrigger enableScreenshotCapture={uiSettings?.enableScreenshotCapture !== false} />}
-          {uiSettings?.showFeedbackTrigger !== false && <FeedbackPanel />}
+          {hasPermission('feedback.access') && uiSettings?.showFeedbackTrigger !== false && <FeedbackTrigger enableScreenshotCapture={uiSettings?.enableScreenshotCapture !== false} />}
+          {hasPermission('feedback.access') && uiSettings?.showFeedbackTrigger !== false && <FeedbackPanel />}
           <AIHubTrigger />
           <AIHubPanel />
         </Suspense>
