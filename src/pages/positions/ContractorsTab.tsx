@@ -198,15 +198,23 @@ export function ContractorsTab({
 
   return (
     <div className="flex flex-col gap-4 min-h-0 max-h-full overflow-hidden">
-      <div className="flex justify-between items-center gap-4 flex-shrink-0">
+      <div className="flex items-center gap-4 flex-shrink-0">
         <SearchField
           placeholder="Search contractors..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full max-w-2xl"
+          className="w-64"
           data-tour="positions-search"
         />
-        <div className="flex gap-2 flex-shrink-0">
+
+        <PositionKPICards items={[
+          { label: "Positions", value: totals.totalCount },
+          { label: "Contractors", value: totals.totalContractorNames },
+          { label: "Hired FTE", value: totals.totalHiredFTE },
+          { label: "Active FTE", value: totals.totalActiveFTE },
+        ]} />
+
+        <div className="flex gap-2 flex-shrink-0 ml-auto">
           <span data-tour="positions-refresh">
             <DataRefreshButton dataSources={['positions_data']} />
           </span>
@@ -218,13 +226,6 @@ export function ContractorsTab({
           </Button>
         </div>
       </div>
-
-      <PositionKPICards items={[
-        { label: "Positions", value: totals.totalCount },
-        { label: "Contractors", value: totals.totalContractorNames },
-        { label: "Hired FTE", value: totals.totalHiredFTE },
-        { label: "Active FTE", value: totals.totalActiveFTE },
-      ]} />
 
       {isFetching ? (
         <div className="flex-1 flex items-center justify-center min-h-[300px]"><LogoLoader size="lg" /></div>
