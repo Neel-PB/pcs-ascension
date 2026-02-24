@@ -1,33 +1,37 @@
 
 
-## Unify Header Element Heights to h-11 (44px)
+## Rearrange Feedback Panel: Close on Top, Submit at Bottom
 
-All interactive elements in the header will be standardized to the same `h-11` (44px) height to match the positions toolbar and the reference image.
+### What Changes
 
-### Current Heights
+Move the Close button into the header row (top-right) and keep only the Submit button in the footer, giving the form content maximum vertical space.
 
-| Element | Current Height |
-|---------|---------------|
-| Search field | h-11 (44px) -- already correct |
-| Search icon button | h-10 (40px) |
-| Notification bell | h-8 w-8 (32px) |
-| Avatar | h-8 w-8 (32px) |
-| User menu button | h-auto (content-driven) |
-| Org logo (sidebar) | w-10 h-10 / img w-9 h-9 |
+### Layout (Top to Bottom)
 
-### Target: All h-11 (44px)
+```text
++-------------------------------------------+
+| Submit Feedback              [Close btn]  |  <-- Header with close
++-------------------------------------------+
+|                                           |
+|  Title *                                  |
+|  Type *        Priority                   |
+|  Description *                            |
+|  Screenshot (Optional)                    |
+|                                           |  <-- Scrollable content area
++-------------------------------------------+
+| Cmd+Shift+F to toggle    [Submit Feedback]|  <-- Footer with submit only
++-------------------------------------------+
+```
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/shell/AppHeader.tsx` | Notification button: `h-8 w-8` to `h-11 w-11`; Avatar: `h-8 w-8` to `h-9 w-9`; User menu trigger button: add `h-11` |
-| `src/components/ui/search-field.tsx` | Search icon button: `h-10 w-10` to `h-9 w-9` (fits inside h-11 input with 1px border padding) |
-| `src/components/layout/OrganizationSwitcher.tsx` | Link container: `w-10 h-10` to `w-11 h-11`; Logo img: `w-9 h-9` to `w-10 h-10` |
+| `src/components/feedback/FeedbackPanel.tsx` | 1. Add Close button (outline, icon or text) to the header row (right-aligned). 2. Remove Close button from footer. 3. Footer simplified to keyboard hint + Submit button only. |
 
 ### Details
 
-1. **Notification bell button** -- change from `h-8 w-8` to `h-11 w-11`, keeping the icon at `h-6 w-6`
-2. **User menu trigger** -- add explicit `h-11` so the button aligns; avatar inside stays `h-9 w-9` for visual balance
-3. **Search field icon** -- keep at `h-9 w-9` (visually inset inside the h-11 input field, matching the reference)
-4. **Org switcher logo** -- bump container to `w-11 h-11` and image to `w-10 h-10`
+1. **Header**: Add `justify-between` to the header flex row. Add a ghost/outline Close button on the right side with an X icon.
+2. **Footer**: Remove the Close button. Keep the keyboard shortcut hint on the left and the Submit Feedback button on the right.
+3. No changes to form content or spacing -- the content area already uses `flex-1 overflow-y-auto` to fill available space.
+
