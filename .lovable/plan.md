@@ -1,62 +1,29 @@
 
 
-## Role-Based KPI Visibility for Staffing Summary
+## Remove Column Sort Dropdowns in Positions Tables + Fix Comment Badge Sizing
 
-### What This Does
-Implements per-KPI visibility rules based on user roles, matching the uploaded spreadsheet. Different roles see different sets of KPI cards in the Staffing Summary tab.
+### Change 1: Remove sorting dropdown menus from column headers
 
-### Visibility Rules Summary
+The `DraggableColumnHeader` component currently renders a `DropdownMenu` with "Sort Ascending" and "Sort Descending" options on every column header (the small chevron-down icon). This will be removed entirely from the component so no table in the app shows it.
 
-**FTE Section (6 KPIs):** All roles see all 6 KPIs -- no filtering needed.
+**Note:** Sorting still works via clicking the column header directly (the sort icon indicator remains). Only the dropdown menu trigger and its contents are removed.
 
-**Volume Section:**
-- 12M Average: Hidden from Director and Manager
-- 12M Daily Average: Visible to all
-- 3M Low / 3M High: Hidden from Director only (Manager CAN see them)
-- Target Vol / Override Vol: Visible to all
+**File: `src/components/editable-table/DraggableColumnHeader.tsx`**
+- Remove the `DropdownMenu`, `DropdownMenuContent`, `DropdownMenuItem`, `DropdownMenuSeparator`, `DropdownMenuTrigger` imports
+- Remove the `ChevronDown` icon import
+- Delete lines 122-140 (the entire DropdownMenu block)
 
-**Productive Resources Section:**
-- ALL 6 KPIs (Paid FTEs, Employed Productive FTEs, Contract FTEs, Overtime FTEs, Total PRN, Total NP%): Hidden from Director and Manager
-- The entire section is hidden if user is Director or Manager (since all cards would be empty)
+### Change 2: Make comment badge a fixed size for consistency
 
-### Implementation
+The comment indicator badge currently sizes based on content (e.g., "-" vs "12" vs "99+"), making badges different widths across rows. This will add a fixed minimum width so all badges appear the same size.
 
-**1. Create a KPI visibility config** (`src/config/kpiVisibility.ts`)
-
-A simple map from KPI id to the list of roles that CANNOT see it:
-
-```text
-hiddenForRoles = {
-  '12m-monthly':       ['director', 'manager'],
-  '3m-low':            ['director'],
-  '3m-high':           ['director'],
-  'paid-ftes':         ['director', 'manager'],
-  'contract-ftes':     ['director', 'manager'],
-  'overtime-ftes':     ['director', 'manager'],
-  'total-prn':         ['director', 'manager'],
-  'total-np':          ['director', 'manager'],
-  'total-fullpart-ftes': ['director', 'manager'],
-}
-```
-
-Also export a helper: `isKpiVisible(kpiId, userRoles) => boolean`
-
-**2. Update `StaffingSummary.tsx`**
-
-- Import `isKpiVisible` and user roles from `useRBAC`
-- Filter each KPI array (fteKPIs, volumeKPIs, productivityKPIs) through `isKpiVisible` before passing to `DraggableSectionsContainer`
-- Conditionally hide the entire "Productive Resources" section if the filtered array is empty
-- No changes to KPI card components themselves
+**File: `src/components/editable-table/cells/CommentIndicatorCell.tsx`**
+- Add `min-w-[2rem] justify-center text-center` classes to the Badge so all comment badges render at the same width regardless of content
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/config/kpiVisibility.ts` | New file -- visibility rules map and helper function |
-| `src/pages/staffing/StaffingSummary.tsx` | Filter KPI arrays based on user roles before rendering |
-
-### Notes
-- admin and labor_team see everything (they have no entries in the hidden map)
-- The Workforce Drawer and Positions module KPIs are NOT affected by this change (separate request if needed)
-- Drag-and-drop reordering continues to work on the visible subset of KPIs
+| `src/components/editable-table/DraggableColumnHeader.tsx` | Remove dropdown menu block and unused imports |
+| `src/components/editable-table/cells/CommentIndicatorCell.tsx` | Add fixed min-width to comment badge for uniform sizing |
 
