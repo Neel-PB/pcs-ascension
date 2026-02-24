@@ -61,7 +61,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
           <div
             {...dragHandleProps.attributes}
             {...dragHandleProps.listeners}
-            className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-muted-foreground"
+            className="cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-primary active:text-primary transition-colors duration-200"
             onClick={(e) => e.stopPropagation()}
             title="Drag to reorder section"
           >
