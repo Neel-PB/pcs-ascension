@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useDynamicSidebar } from "@/hooks/useDynamicSidebar";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, Briefcase, FileText, MessageSquare, Loader2 } from "lucide-react";
@@ -21,7 +20,6 @@ interface GlobalSearchCommandProps {
 
 export function GlobalSearchCommand({ open, onOpenChange }: GlobalSearchCommandProps) {
   const navigate = useNavigate();
-  const { sidebarModules } = useDynamicSidebar();
   const { inputValue, debouncedValue, setInputValue } = useDebouncedSearch(300);
 
   const searchEnabled = debouncedValue.length >= 2;
@@ -125,24 +123,6 @@ export function GlobalSearchCommand({ open, onOpenChange }: GlobalSearchCommandP
         {searchEnabled && !isLoading && !hasEntityResults && (
           <CommandEmpty>No results found.</CommandEmpty>
         )}
-
-        {/* Navigation - always visible, filtered by cmdk */}
-        <CommandGroup heading="Navigation">
-          {sidebarModules.map((module) =>
-            module.items.map((item) =>
-              item.url ? (
-                <CommandItem
-                  key={item.url}
-                  value={`${module.label} ${item.title}`}
-                  onSelect={() => handleSelect(item.url!)}
-                >
-                  <item.icon className="mr-2 h-4 w-4" />
-                  <span>{item.title}</span>
-                </CommandItem>
-              ) : null
-            )
-          )}
-        </CommandGroup>
 
         {/* Employees */}
         {employees && employees.length > 0 && (
