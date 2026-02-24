@@ -1,29 +1,45 @@
+import { useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, Briefcase, FileText, MessageSquare, Loader2 } from "lucide-react";
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+import { SearchField } from "@/components/ui/search-field";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
-interface GlobalSearchCommandProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
-export function GlobalSearchCommand({ open, onOpenChange }: GlobalSearchCommandProps) {
+export function GlobalSearchCommand() {
   const navigate = useNavigate();
   const { inputValue, debouncedValue, setInputValue } = useDebouncedSearch(300);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const isOpen = inputValue.length > 0;
 
   const searchEnabled = debouncedValue.length >= 2;
   const searchTerm = `%${debouncedValue}%`;
+
+  // Close on click outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setInputValue("");
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [setInputValue]);
+
+  // Cmd+K focuses input
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
 
   const { data: employees, isFetching: fetchingEmployees } = useQuery({
     queryKey: ["search-employees", debouncedValue],
@@ -83,130 +99,94 @@ export function GlobalSearchCommand({ open, onOpenChange }: GlobalSearchCommandP
   });
 
   const isLoading = fetchingEmployees || fetchingContractors || fetchingRequisitions || fetchingFeedback;
-  const hasEntityResults = (employees?.length || 0) + (contractors?.length || 0) + (requisitions?.length || 0) + (feedback?.length || 0) > 0;
+  const hasResults = (employees?.length || 0) + (contractors?.length || 0) + (requisitions?.length || 0) + (feedback?.length || 0) > 0;
 
-  const handleSelect = (url: string) => {
-    onOpenChange(false);
+  const handleSelect = useCallback((url: string) => {
     setInputValue("");
     navigate(url);
-  };
+  }, [navigate, setInputValue]);
 
-  const handleOpenChange = (nextOpen: boolean) => {
-    if (!nextOpen) setInputValue("");
-    onOpenChange(nextOpen);
-  };
+  const ResultItem = ({ icon: Icon, label, sub, onClick }: { icon: React.ElementType; label: string; sub: string; onClick: () => void }) => (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-2 w-full px-3 py-2 text-left rounded-md hover:bg-accent transition-colors"
+    >
+      <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+      <div className="flex flex-col min-w-0">
+        <span className="text-sm font-medium truncate text-foreground">{label}</span>
+        <span className="text-xs text-muted-foreground truncate">{sub}</span>
+      </div>
+    </button>
+  );
 
   return (
-    <CommandDialog open={open} onOpenChange={handleOpenChange}>
-      <CommandInput
-        placeholder="Search pages, employees, requisitions..."
+    <div ref={containerRef} className="relative w-full" data-tour="header-search">
+      <SearchField
+        ref={inputRef}
+        placeholder="Search... (⌘K)"
         value={inputValue}
-        onValueChange={setInputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        onClear={() => setInputValue("")}
       />
-      <CommandList>
-        {/* Loading indicator */}
-        {searchEnabled && isLoading && (
-          <div className="flex items-center justify-center gap-2 py-4 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Searching...
-          </div>
-        )}
 
-        {/* Hint when input is too short */}
-        {inputValue.length > 0 && inputValue.length < 2 && (
-          <div className="py-4 text-center text-sm text-muted-foreground">
-            Type 2+ characters to search...
-          </div>
-        )}
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 mt-1 rounded-lg border bg-popover text-popover-foreground shadow-lg z-50 max-h-80 overflow-y-auto">
+          {inputValue.length < 2 && (
+            <p className="py-4 text-center text-sm text-muted-foreground">Type 2+ characters to search...</p>
+          )}
 
-        {/* Empty state - only when we searched and found nothing */}
-        {searchEnabled && !isLoading && !hasEntityResults && (
-          <CommandEmpty>No results found.</CommandEmpty>
-        )}
+          {searchEnabled && isLoading && (
+            <div className="flex items-center justify-center gap-2 py-4 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />Searching...
+            </div>
+          )}
 
-        {/* Employees */}
-        {employees && employees.length > 0 && (
-          <CommandGroup heading="Employees">
-            {employees.map((emp) => (
-              <CommandItem
-                key={emp.id}
-                value={`employee ${emp.employeeName} ${emp.employeeId} ${emp.jobTitle}`}
-                onSelect={() => handleSelect("/positions?tab=employees")}
-              >
-                <Users className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
-                <div className="flex flex-col min-w-0">
-                  <span className="truncate font-medium">{emp.employeeName}</span>
-                  <span className="text-xs text-muted-foreground truncate">
-                    {emp.jobTitle} · {emp.facilityName}
-                  </span>
-                </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        )}
+          {searchEnabled && !isLoading && !hasResults && (
+            <p className="py-4 text-center text-sm text-muted-foreground">No results found.</p>
+          )}
 
-        {/* Contractors */}
-        {contractors && contractors.length > 0 && (
-          <CommandGroup heading="Contractors">
-            {contractors.map((c) => (
-              <CommandItem
-                key={c.id}
-                value={`contractor ${c.employeeName} ${c.employeeId}`}
-                onSelect={() => handleSelect("/positions?tab=contractors")}
-              >
-                <Briefcase className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
-                <div className="flex flex-col min-w-0">
-                  <span className="truncate font-medium">{c.employeeName}</span>
-                  <span className="text-xs text-muted-foreground truncate">
-                    {c.jobTitle} · {c.facilityName}
-                  </span>
-                </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        )}
+          {employees && employees.length > 0 && (
+            <div className="p-1">
+              <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground">Employees</p>
+              {employees.map((emp) => (
+                <ResultItem key={emp.id} icon={Users} label={emp.employeeName || ""} sub={`${emp.jobTitle} · ${emp.facilityName}`} onClick={() => handleSelect("/positions?tab=employees")} />
+              ))}
+            </div>
+          )}
 
-        {/* Requisitions */}
-        {requisitions && requisitions.length > 0 && (
-          <CommandGroup heading="Requisitions">
-            {requisitions.map((r) => (
-              <CommandItem
-                key={r.id}
-                value={`requisition ${r.positionNum} ${r.jobTitle} ${r.departmentName}`}
-                onSelect={() => handleSelect("/positions?tab=requisitions")}
-              >
-                <FileText className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
-                <div className="flex flex-col min-w-0">
-                  <span className="truncate font-medium">{r.positionNum}</span>
-                  <span className="text-xs text-muted-foreground truncate">
-                    {r.jobTitle} · {r.departmentName}
-                  </span>
-                </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        )}
+          {contractors && contractors.length > 0 && (
+            <div className="p-1">
+              <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground">Contractors</p>
+              {contractors.map((c) => (
+                <ResultItem key={c.id} icon={Briefcase} label={c.employeeName || ""} sub={`${c.jobTitle} · ${c.facilityName}`} onClick={() => handleSelect("/positions?tab=contractors")} />
+              ))}
+            </div>
+          )}
 
-        {/* Feedback */}
-        {feedback && feedback.length > 0 && (
-          <CommandGroup heading="Feedback">
-            {feedback.map((fb) => (
-              <CommandItem
-                key={fb.id}
-                value={`feedback ${fb.title}`}
-                onSelect={() => handleSelect("/feedback")}
-              >
-                <MessageSquare className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="truncate font-medium">{fb.title}</span>
+          {requisitions && requisitions.length > 0 && (
+            <div className="p-1">
+              <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground">Requisitions</p>
+              {requisitions.map((r) => (
+                <ResultItem key={r.id} icon={FileText} label={r.positionNum || ""} sub={`${r.jobTitle} · ${r.departmentName}`} onClick={() => handleSelect("/positions?tab=requisitions")} />
+              ))}
+            </div>
+          )}
+
+          {feedback && feedback.length > 0 && (
+            <div className="p-1">
+              <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground">Feedback</p>
+              {feedback.map((fb) => (
+                <button key={fb.id} onClick={() => handleSelect("/feedback")} className="flex items-center gap-2 w-full px-3 py-2 text-left rounded-md hover:bg-accent transition-colors">
+                  <MessageSquare className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <span className="text-sm font-medium truncate text-foreground">{fb.title}</span>
                   <Badge variant="outline" className="shrink-0 text-[10px]">{fb.type}</Badge>
                   <Badge variant="secondary" className="shrink-0 text-[10px]">{fb.priority}</Badge>
-                </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        )}
-      </CommandList>
-    </CommandDialog>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

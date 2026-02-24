@@ -10,7 +10,7 @@ import { UserProfileModal } from "@/components/profile/UserProfileModal";
 import { NotificationPanel } from "@/components/notifications/NotificationPanel";
 import { GlobalSearchCommand } from "@/components/shell/GlobalSearchCommand";
 import { Button } from "@/components/ui/button";
-import { SearchField } from "@/components/ui/search-field";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -31,7 +31,6 @@ import { TourLauncher } from "@/components/tour/TourLauncher";
 import { APP_TOUR_SEQUENCE } from "@/components/tour/tourConfig";
 
 export function AppHeader() {
-  const [commandOpen, setCommandOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [tourLauncherOpen, setTourLauncherOpen] = useState(false);
@@ -72,16 +71,6 @@ export function AppHeader() {
     }
   };
 
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setCommandOpen((open) => !open);
-      }
-    };
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
-  }, []);
 
   const userInitials = `${profile?.first_name?.[0] || ''}${profile?.last_name?.[0] || ''}` || 'U';
   const userName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'User';
@@ -109,15 +98,8 @@ export function AppHeader() {
         </div>
 
         {/* Center Section - Search */}
-        <div className="flex-1 max-w-md mx-8" data-tour="header-search">
-          <div onClick={() => setCommandOpen(true)}>
-            <SearchField
-              placeholder="Search..."
-              className="w-full cursor-pointer"
-              readOnly
-            />
-          </div>
-          <GlobalSearchCommand open={commandOpen} onOpenChange={setCommandOpen} />
+        <div className="flex-1 max-w-md mx-8">
+          <GlobalSearchCommand />
         </div>
 
         {/* Right Section - Utilities */}
