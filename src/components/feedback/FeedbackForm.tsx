@@ -14,7 +14,7 @@ import { ScreenshotCapture } from './ScreenshotCapture';
 import { useFeedbackStore } from '@/stores/useFeedbackStore';
 import { useFeedback, uploadScreenshot, CreateFeedbackInput } from '@/hooks/useFeedback';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Send } from '@/lib/icons';
+
 
 interface FeedbackFormProps {
   onSuccess?: () => void;
@@ -83,16 +83,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onSuccess }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2" data-tour="feedback-screenshot">
-        <Label>Screenshot (Optional)</Label>
-        <ScreenshotCapture
-          onCapture={setScreenshot}
-          previewUrl={screenshotPreviewUrl}
-          onClear={clearScreenshot}
-        />
-      </div>
-
+    <form onSubmit={handleSubmit} className="space-y-3">
       <div className="space-y-2">
         <Label htmlFor="title">Title *</Label>
         <Input
@@ -112,10 +103,10 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onSuccess }) => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="bug">🐛 Bug Report</SelectItem>
-              <SelectItem value="feature">✨ Feature Request</SelectItem>
-              <SelectItem value="improvement">🔧 Improvement</SelectItem>
-              <SelectItem value="question">❓ Question</SelectItem>
+              <SelectItem value="bug">Bug</SelectItem>
+              <SelectItem value="feature">Feature</SelectItem>
+              <SelectItem value="improvement">Improvement</SelectItem>
+              <SelectItem value="question">Question</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -148,22 +139,22 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onSuccess }) => {
         />
       </div>
 
+      <div className="space-y-2" data-tour="feedback-screenshot">
+        <Label>Screenshot (Optional)</Label>
+        <ScreenshotCapture
+          onCapture={setScreenshot}
+          previewUrl={screenshotPreviewUrl}
+          onClear={clearScreenshot}
+        />
+      </div>
+
       <Button
         type="submit"
+        variant="ascension"
         className="w-full"
         disabled={isSubmitting || !title.trim() || !description.trim()}
       >
-        {isSubmitting ? (
-          <>
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            Submitting...
-          </>
-        ) : (
-          <>
-            <Send className="h-4 w-4 mr-2" />
-            Submit Feedback
-          </>
-        )}
+        {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
       </Button>
     </form>
   );
