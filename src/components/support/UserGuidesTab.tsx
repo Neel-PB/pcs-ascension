@@ -88,6 +88,12 @@ const overlayPermissionMap: Record<string, string> = {
   feedback: "feedback.access",
 };
 
+// Guide-level permission map for specific tour items requiring extra permissions
+const guidePermissionMap: Record<string, string> = {
+  "staffing-volume-settings": "settings.volume_override",
+  "staffing-np-settings": "settings.np_override",
+};
+
 export function UserGuidesTab() {
   const navigate = useNavigate();
   const { startTour, startMicroTour } = useTourStore();
@@ -125,6 +131,9 @@ export function UserGuidesTab() {
         // Check category-level permission
         const catPerm = categoryPermissionMap[guide.category];
         if (catPerm && !hasPermission(catPerm)) return false;
+        // Check guide-level permission
+        const guidePerm = guidePermissionMap[guide.tourKey];
+        if (guidePerm && !hasPermission(guidePerm)) return false;
         // Check overlay-level permission
         if (guide.category === "Overlays") {
           const overlayPerm = overlayPermissionMap[guide.tourKey];
