@@ -196,6 +196,7 @@ export default function FeedbackPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All PB Status</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="in_progress">In Progress</SelectItem>
                 <SelectItem value="resolved">Resolved</SelectItem>
                 <SelectItem value="closed">Closed</SelectItem>

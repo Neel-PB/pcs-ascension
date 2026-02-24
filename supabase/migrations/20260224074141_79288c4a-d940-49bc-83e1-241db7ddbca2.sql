@@ -1,0 +1,1 @@
+ALTER TABLE public.feedback ALTER COLUMN pb_status SET DEFAULT 'pending';

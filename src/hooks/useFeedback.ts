@@ -14,7 +14,7 @@ export interface Feedback {
   page_url: string | null;
   browser_info: Record<string, unknown> | null;
   pcs_status: 'pending' | 'approved' | 'disregard' | 'backlog';
-  pb_status: 'in_progress' | 'resolved' | 'closed';
+  pb_status: 'pending' | 'in_progress' | 'resolved' | 'closed';
   created_at: string;
   updated_at: string;
   author?: {
