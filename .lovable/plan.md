@@ -1,20 +1,32 @@
 
 
-## Fix: Show "Support" Permission Category in Roles Permission Matrix
+## Fix: Show "Support" Category in Detail and List Views
 
-### Problem
-The `support.add_faq` permission exists in `CORE_PERMISSIONS` and renders in the matrix, but it appears at the very bottom with no proper label because `PermissionMatrix.tsx` doesn't include `"support"` in its `CATEGORY_ORDER` or `CATEGORY_LABELS` constants.
+The "Support" category with "Add FAQ" permission only appears in the Matrix view because you already added it there. The Detail view (card layout, which you're currently looking at) and the List view both have their own hardcoded category references that are missing "Support".
 
-### Fix
+### Changes
 
 | File | Change |
 |------|--------|
-| `src/components/admin/PermissionMatrix.tsx` | Add `"support"` to `CATEGORY_ORDER` array and add `support: "Support"` to `CATEGORY_LABELS` object |
+| `src/components/admin/RoleDetailView.tsx` | Add a new `CompactPermissionCard` for "Support" using `PERMISSION_CATEGORIES.support.permissions`, placed after the "Approvals" card |
+| `src/components/admin/PermissionListView.tsx` | Add `"support"` to the `CATEGORY_ORDER` array (line 43) so the Support category renders in the list view as well |
 
 ### Details
 
-Line 46-53 in `PermissionMatrix.tsx`:
-- `CATEGORY_ORDER`: Add `"support"` after `"approvals"`
-- `CATEGORY_LABELS`: Add `support: "Support"`
+**RoleDetailView.tsx** -- Around line 591-600, after the Approvals `CompactPermissionCard`, add:
+```tsx
+<CompactPermissionCard
+  title="Support"
+  permissions={PERMISSION_CATEGORIES.support.permissions}
+  role={selectedRoleName}
+  displayPermissions={displayPermissions}
+  ...
+/>
+```
 
-This ensures the "Support" category with the "Add FAQ" permission appears as a properly labeled, collapsible section in the permission matrix alongside Modules, Settings, Filters, etc.
+**PermissionListView.tsx** -- Line 43, update:
+```tsx
+const CATEGORY_ORDER = ["modules", "settings", "filters", "subfilters", "approvals", "support"];
+```
+
+This ensures the "Add FAQ" permission shows up in all three RBAC views (Matrix, Detail, and List).
