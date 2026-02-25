@@ -533,10 +533,9 @@ export function RoleDetailView({ roles, onEditRole }: RoleDetailViewProps) {
               )}
           </div>
           
-            {/* Permission Grid - 2 columns with 5 categories */}
-            <div className="p-3 grid grid-cols-2 gap-3">
-              {/* Left column: Modules + Sub-filters */}
-              <div className="space-y-3">
+            {/* Permission Grid - auto-balanced masonry layout */}
+            <div className="p-3 columns-2 gap-3">
+              <div className="break-inside-avoid mb-3">
                 <CompactPermissionCard
                   title="Modules"
                   permissions={PERMISSION_CATEGORIES.modules.permissions}
@@ -548,7 +547,9 @@ export function RoleDetailView({ roles, onEditRole }: RoleDetailViewProps) {
                   onReset={handleReset}
                   isUpdating={isSaving}
                 />
+              </div>
 
+              <div className="break-inside-avoid mb-3">
                 <CompactPermissionCard
                   title="Sub-filters"
                   permissions={PERMISSION_CATEGORIES.subfilters.permissions}
@@ -562,8 +563,7 @@ export function RoleDetailView({ roles, onEditRole }: RoleDetailViewProps) {
                 />
               </div>
 
-              {/* Right column: Settings + Filters + Approvals */}
-              <div className="space-y-3">
+              <div className="break-inside-avoid mb-3">
                 <CompactPermissionCard
                   title="Settings"
                   permissions={PERMISSION_CATEGORIES.settings.permissions}
@@ -575,7 +575,9 @@ export function RoleDetailView({ roles, onEditRole }: RoleDetailViewProps) {
                   onReset={handleReset}
                   isUpdating={isSaving}
                 />
+              </div>
 
+              <div className="break-inside-avoid mb-3">
                 <CompactPermissionCard
                   title="Filters"
                   permissions={PERMISSION_CATEGORIES.filters.permissions}
@@ -587,7 +589,9 @@ export function RoleDetailView({ roles, onEditRole }: RoleDetailViewProps) {
                   onReset={handleReset}
                   isUpdating={isSaving}
                 />
+              </div>
 
+              <div className="break-inside-avoid mb-3">
                 <CompactPermissionCard
                   title="Approvals"
                   permissions={PERMISSION_CATEGORIES.approvals.permissions}
@@ -599,7 +603,9 @@ export function RoleDetailView({ roles, onEditRole }: RoleDetailViewProps) {
                   onReset={handleReset}
                   isUpdating={isSaving}
                 />
+              </div>
 
+              <div className="break-inside-avoid mb-3">
                 <CompactPermissionCard
                   title="Support"
                   permissions={PERMISSION_CATEGORIES.support.permissions}
