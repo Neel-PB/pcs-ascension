@@ -6,6 +6,9 @@ import { useAIHub } from "@/hooks/useAIHub";
 import { useFeedbackStore } from "@/stores/useFeedbackStore";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { useRBAC } from "@/hooks/useRBAC";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserRoles } from "@/hooks/useUserRoles";
+import { isKpiVisible } from "@/config/kpiVisibility";
 import { TOUR_STEP_REGISTRY, getStepTitle } from "@/components/tour/tourStepRegistry";
 import { SearchField } from "@/components/ui/search-field";
 import { Button } from "@/components/ui/button";
@@ -100,6 +103,8 @@ export function UserGuidesTab() {
   const [, setRefresh] = useState(0);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const { hasPermission } = useRBAC();
+  const { user } = useAuth();
+  const { roles: userRoles } = useUserRoles(user?.id);
   const { inputValue, debouncedValue, setInputValue } = useDebouncedSearch(200);
 
   const query = debouncedValue.toLowerCase().trim();
@@ -142,7 +147,17 @@ export function UserGuidesTab() {
         return true;
       })
       .map((guide) => {
-        const steps = TOUR_STEP_REGISTRY[guide.tourKey] || [];
+        let steps = TOUR_STEP_REGISTRY[guide.tourKey] || [];
+        // Filter out KPI tour steps hidden for the user's roles
+        if (guide.tourKey === "staffing" && userRoles.length > 0) {
+          steps = steps.filter((s) => {
+            const kpiMatch = typeof s.target === "string" && s.target.match(/\[data-tour="kpi-(.+?)"\]/);
+            if (kpiMatch) {
+              return isKpiVisible(kpiMatch[1], userRoles as any);
+            }
+            return true;
+          });
+        }
         const stepTitles = steps.map((s, i) => ({ title: getStepTitle(s), index: i }));
         const matchingStepIndices = query
           ? stepTitles.filter((s) => s.title.toLowerCase().includes(query)).map((s) => s.index)
@@ -153,7 +168,7 @@ export function UserGuidesTab() {
         const visible = query ? sectionMatch || matchingStepIndices.length > 0 : true;
         return { guide, steps, stepTitles, matchingStepIndices, sectionMatch, visible };
       });
-  }, [query, hasPermission]);
+  }, [query, hasPermission, userRoles]);
 
   const handleStartTour = (guide: Guide) => {
     if (guide.tourKey === "checklist") useWorkforceDrawerStore.getState().setOpen(true);
