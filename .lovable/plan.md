@@ -1,52 +1,41 @@
 
-## Fix Forecast Filter Dropdown Items Not Showing
 
-### What I found
+## Center-Align KPI Cards When Fewer Than 6
 
-The dropdown menu is opening correctly, but each option label is hidden by CSS in `ForecastTab.tsx`:
+### Problem
+When a KPI section (e.g., Volume) has fewer than 6 cards, they left-align in the 6-column grid, leaving empty space on the right. The user wants cards centered within the row while keeping the section title (e.g., "Volume") left-aligned.
 
-- `SelectItem` currently includes `className="... [&>span:first-child]:hidden"`
-- In this Select implementation, the first span is the item text (`SelectPrimitive.ItemText`)
-- So the text is being explicitly hidden, which matches your screenshot (blank rows in open menu)
+### Solution
+Conditionally switch the KPI container layout in `DraggableKPISection.tsx`:
+- When there are 6 or more KPIs: keep the current `grid grid-cols-6` layout
+- When there are fewer than 6 KPIs: use `flex flex-wrap justify-center` so cards center naturally
 
-The z-index change was fine, but this separate class is the real reason the list appears “not there”.
-
-### Planned changes
+### File Changes
 
 | File | Change |
-|---|---|
-| `src/pages/staffing/ForecastTab.tsx` | Remove `"[&>span:first-child]:hidden"` from all Skill and Shift `SelectItem` entries |
-| `src/pages/staffing/ForecastTab.tsx` | Keep `bg-background` on `SelectContent` and keep current placement between shortage/surplus cards |
-| `src/pages/staffing/ForecastTab.tsx` | (Optional cleanup) switch from `SelectItem` to `SelectItemNoCheck` for explicit “no checkmark” behavior without hiding text |
+|------|--------|
+| `src/components/staffing/DraggableKPISection.tsx` | On line 75, conditionally apply `flex flex-wrap justify-center gap-4` when `kpis.length < 6`, otherwise keep `grid grid-cols-6`. Each card in flex mode gets a fixed width matching the grid column width for visual consistency. |
 
-### Exact implementation approach
+### Technical Details
 
-1. Update both dropdown blocks (Skill and Shift):
-   - `All Skills`, mapped `skill` items
-   - `All Shifts`, mapped `shift` items
-2. Keep only valid selection styling:
-   - `data-[state=checked]:bg-primary/15`
-3. Remove the text-hiding utility from each `SelectItem`.
-4. Verify the currently selected label still appears in the trigger and list items are readable.
+**DraggableKPISection.tsx (line 75)**
 
-### Why this will fix it
+Current:
+```tsx
+<div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+```
 
-- The blank list is not a data issue and not a portal issue.
-- Items exist, and rows render (you can see hover/highlight area).
-- Text is hidden by a utility selector targeting the first child span.
-- Removing that selector restores item labels immediately.
+Updated:
+```tsx
+<div className={cn(
+  "gap-4",
+  kpis.length < 6
+    ? "flex flex-wrap justify-center"
+    : "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6"
+)}>
+```
 
-### Validation checklist
+For flex mode, each `KPICard` wrapper needs a consistent width. We add a wrapper div with a style like `flex: 0 0 calc((100% - 5 * 16px) / 6)` to match the grid column sizing, ensuring cards are the same width as in a full 6-column row but centered.
 
-1. Open Forecast tab.
-2. Click **Skill** dropdown:
-   - Confirm “All Skills” plus skill options are visible.
-3. Click **Shift** dropdown:
-   - Confirm “All Shifts”, “Day”, “Night” (or available values) are visible.
-4. Select values and verify table rows filter correctly.
-5. Reset with the X button and verify both filters return to “all”.
+The section title and drag handle remain left-aligned as they are outside the card container. The breakdown badges row (lines 90-176) only renders when there are exactly 6 FTE KPIs, so it remains unaffected.
 
-### Technical notes
-
-- This aligns with your shared `Select` component (`src/components/ui/select.tsx`) where `SelectItem` has no indicator/check icon node.
-- If you want truly standardized no-check behavior project-wide, `SelectItemNoCheck` is the safer semantic option than CSS child-hiding hacks.
