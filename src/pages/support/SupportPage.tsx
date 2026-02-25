@@ -185,20 +185,6 @@ export default function SupportPage() {
 
   return (
     <div className="h-full flex flex-col gap-4 overflow-hidden">
-      {/* Contact Support Banner */}
-      <div className="bg-card border border-border rounded-xl px-4 py-3 shadow-md flex-shrink-0 flex items-center gap-6">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 bg-primary/10 rounded-lg">
-            <MessageSquare className="h-4 w-4 text-primary" />
-          </div>
-          <span className="text-sm font-semibold text-foreground">Need Help?</span>
-        </div>
-        <div className="flex items-center gap-4 text-sm">
-          <span className="text-shell-muted">Email: <span className="text-primary">support@company.com</span></span>
-          <span className="text-shell-muted">Phone: <span className="text-primary">1-800-555-0123</span></span>
-        </div>
-      </div>
-
       {/* Tabs */}
       <div className="flex justify-center flex-shrink-0">
         <ToggleButtonGroup
