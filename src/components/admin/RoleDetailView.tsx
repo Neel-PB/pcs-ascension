@@ -599,6 +599,18 @@ export function RoleDetailView({ roles, onEditRole }: RoleDetailViewProps) {
                   onReset={handleReset}
                   isUpdating={isSaving}
                 />
+
+                <CompactPermissionCard
+                  title="Support"
+                  permissions={PERMISSION_CATEGORIES.support.permissions}
+                  role={selectedRoleName}
+                  displayPermissions={displayPermissions}
+                  isPermissionOverridden={isPermissionOverridden}
+                  isPending={isPendingPermission}
+                  onToggle={handleToggle}
+                  onReset={handleReset}
+                  isUpdating={isSaving}
+                />
               </div>
             </div>
           </div>

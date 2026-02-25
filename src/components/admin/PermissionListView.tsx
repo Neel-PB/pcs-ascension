@@ -38,9 +38,10 @@ const CATEGORY_LABELS: Record<string, string> = {
   filters: "Filter Access",
   subfilters: "Sub-filter Access",
   approvals: "Approval Access",
+  support: "Support",
 };
 
-const CATEGORY_ORDER = ["modules", "settings", "filters", "subfilters", "approvals"];
+const CATEGORY_ORDER = ["modules", "settings", "filters", "subfilters", "approvals", "support"];
 
 interface PermissionListViewProps {
   permissions: Permission[];
