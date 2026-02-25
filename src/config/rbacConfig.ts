@@ -131,6 +131,9 @@ export const CORE_PERMISSIONS: Permission[] = [
   { id: "core-approvals.volume_override", key: "approvals.volume_override", label: "Approve Volume Overrides", description: "Ability to create and modify volume overrides", category: "approvals", is_system: true },
   { id: "core-approvals.np_override", key: "approvals.np_override", label: "Approve NP Overrides", description: "Ability to create and modify NP overrides", category: "approvals", is_system: true },
   { id: "core-approvals.feedback", key: "approvals.feedback", label: "Manage Feedback Status", description: "Ability to approve, disregard, or backlog feedback items", category: "approvals", is_system: true },
+  
+  // Support
+  { id: "core-support.add_faq", key: "support.add_faq", label: "Add FAQ", description: "Ability to create FAQ entries", category: "support", is_system: true },
 ];
 
 // Helper maps for quick lookup
@@ -199,6 +202,12 @@ export const PERMISSION_CATEGORIES = {
       "approvals.feedback": { label: "Manage Feedback Status", description: "Ability to approve, disregard, or backlog feedback items" },
     },
   },
+  support: {
+    label: "Support",
+    permissions: {
+      "support.add_faq": { label: "Add FAQ", description: "Ability to create FAQ entries" },
+    },
+  },
 } as const;
 
 export type PermissionKey = 
@@ -206,7 +215,8 @@ export type PermissionKey =
   | keyof typeof PERMISSION_CATEGORIES.settings.permissions
   | keyof typeof PERMISSION_CATEGORIES.filters.permissions
   | keyof typeof PERMISSION_CATEGORIES.subfilters.permissions
-  | keyof typeof PERMISSION_CATEGORIES.approvals.permissions;
+  | keyof typeof PERMISSION_CATEGORIES.approvals.permissions
+  | keyof typeof PERMISSION_CATEGORIES.support.permissions;
 
 export const ALL_PERMISSION_KEYS: PermissionKey[] = CORE_PERMISSIONS.map(p => p.key as PermissionKey);
 
