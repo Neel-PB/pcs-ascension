@@ -5,17 +5,26 @@ import { Input } from "@/components/ui/input";
 import { SearchField } from "@/components/ui/search-field";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Play, FileText, AlertCircle, MessageSquare, ExternalLink } from "@/lib/icons";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Play, FileText, AlertCircle, MessageSquare, ExternalLink, Plus } from "@/lib/icons";
 import { toast } from "sonner";
 import { UserGuidesTab } from "@/components/support/UserGuidesTab";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
+import { useRBAC } from "@/hooks/useRBAC";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function SupportPage() {
   const [activeTab, setActiveTab] = useState("guides");
   const { inputValue: searchQuery, debouncedValue: debouncedSearch, setInputValue: setSearchQuery } = useDebouncedSearch();
   const [issueTitle, setIssueTitle] = useState("");
   const [issueDescription, setIssueDescription] = useState("");
-  
+  const [showAddFaqDialog, setShowAddFaqDialog] = useState(false);
+  const [newFaqQuestion, setNewFaqQuestion] = useState("");
+  const [newFaqAnswer, setNewFaqAnswer] = useState("");
+
+  const { hasPermission, userId } = useRBAC();
+  const queryClient = useQueryClient();
 
   const tabs = [
     { id: "guides", label: "User Guides" },
@@ -34,7 +43,46 @@ export default function SupportPage() {
     setIssueDescription("");
   };
 
-  const faqs = [
+  // Fetch DB FAQs
+  const { data: dbFaqs = [] } = useQuery({
+    queryKey: ['faqs'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('faqs')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Insert FAQ mutation
+  const addFaqMutation = useMutation({
+    mutationFn: async ({ question, answer }: { question: string; answer: string }) => {
+      const { error } = await supabase
+        .from('faqs')
+        .insert({ question, answer, created_by: userId! });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['faqs'] });
+      toast.success("FAQ Added", { description: "Your FAQ has been published." });
+      setShowAddFaqDialog(false);
+      setNewFaqQuestion("");
+      setNewFaqAnswer("");
+    },
+    onError: () => {
+      toast.error("Failed to add FAQ");
+    },
+  });
+
+  const handleAddFaq = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newFaqQuestion.trim() || !newFaqAnswer.trim()) return;
+    addFaqMutation.mutate({ question: newFaqQuestion, answer: newFaqAnswer });
+  };
+
+  const hardcodedFaqs = [
     {
       question: "How do I add a new employee to the system?",
       answer: "Navigate to the Positions page, click on the Employees tab, and use the 'Add Employee' button. Fill in the required information including name, department, position, and start date."
@@ -60,6 +108,18 @@ export default function SupportPage() {
       answer: "Go to the Positions page and click on the Requisitions tab. You'll see all open positions, their status, priority level, and how long they've been open."
     }
   ];
+
+  // Merge DB FAQs (first) with hardcoded FAQs
+  const allFaqs = [
+    ...dbFaqs.map(f => ({ question: f.question, answer: f.answer })),
+    ...hardcodedFaqs,
+  ];
+
+  const filteredFaqs = allFaqs.filter(faq =>
+    debouncedSearch === "" ||
+    faq.question.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+    faq.answer.toLowerCase().includes(debouncedSearch.toLowerCase())
+  );
 
   const trainingVideos = [
     {
@@ -123,12 +183,6 @@ export default function SupportPage() {
     }
   ];
 
-  const filteredFaqs = faqs.filter(faq =>
-    debouncedSearch === "" ||
-    faq.question.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-    faq.answer.toLowerCase().includes(debouncedSearch.toLowerCase())
-  );
-
   return (
     <div className="h-full flex flex-col gap-4 overflow-hidden">
       {/* Contact Support Banner */}
@@ -164,12 +218,20 @@ export default function SupportPage() {
 
         {activeTab === "faqs" && (
           <div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">
-          <div className="mb-4">
-            <SearchField
-              placeholder="Search FAQs..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex-1">
+              <SearchField
+                placeholder="Search FAQs..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            {hasPermission('support.add_faq') && (
+              <Button size="sm" onClick={() => setShowAddFaqDialog(true)} className="gap-1.5 flex-shrink-0">
+                <Plus className="h-4 w-4" />
+                Add FAQ
+              </Button>
+            )}
           </div>
 
           <Accordion type="single" collapsible className="space-y-2">
@@ -271,6 +333,43 @@ export default function SupportPage() {
         </div>
         )}
       </div>
+
+      {/* Add FAQ Dialog */}
+      <Dialog open={showAddFaqDialog} onOpenChange={setShowAddFaqDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add FAQ</DialogTitle>
+            <DialogDescription>Create a new frequently asked question entry.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleAddFaq} className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">Question</label>
+              <Input
+                placeholder="Enter the question"
+                value={newFaqQuestion}
+                onChange={(e) => setNewFaqQuestion(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">Answer</label>
+              <Textarea
+                placeholder="Enter the answer"
+                value={newFaqAnswer}
+                onChange={(e) => setNewFaqAnswer(e.target.value)}
+                required
+                rows={4}
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowAddFaqDialog(false)}>Cancel</Button>
+              <Button type="submit" disabled={addFaqMutation.isPending}>
+                {addFaqMutation.isPending ? "Adding..." : "Add FAQ"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
