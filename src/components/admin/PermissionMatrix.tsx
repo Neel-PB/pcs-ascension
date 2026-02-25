@@ -43,13 +43,14 @@ interface PermissionMatrixProps {
   onEditRole: (role: Role) => void;
 }
 
-const CATEGORY_ORDER = ["modules", "settings", "filters", "subfilters", "approvals"];
+const CATEGORY_ORDER = ["modules", "settings", "filters", "subfilters", "approvals", "support"];
 const CATEGORY_LABELS: Record<string, string> = {
   modules: "Modules",
   settings: "Settings",
   filters: "Filters",
   subfilters: "Sub-filters",
   approvals: "Approvals",
+  support: "Support",
 };
 
 export function PermissionMatrix({ roles, onEditRole }: PermissionMatrixProps) {
