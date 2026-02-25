@@ -72,17 +72,27 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
       </div>
       
       {/* KPI Grid */}
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+      <div className={cn(
+        "gap-4",
+        kpis.length < 6
+          ? "flex flex-wrap justify-center"
+          : "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6"
+      )}>
         {kpis.map((kpi) => {
+          const isFlexMode = kpis.length < 6;
           return (
-            <KPICard 
-              key={kpi.id} 
-              {...kpi}
-              dataTour={`kpi-${kpi.id}`}
-              employmentBreakdown={kpi.id === 'hired-ftes' || kpi.id === 'target-ftes' ? undefined : kpi.employmentBreakdown}
-              dataTourChart={kpi.chartData && kpi.chartData.length > 0 ? `kpi-${kpi.id}-chart` : undefined}
-              dataTourInfo={`kpi-${kpi.id}-info`}
-            />
+            <div
+              key={kpi.id}
+              className={isFlexMode ? "w-full md:w-[calc((100%-2*16px)/3)] lg:w-[calc((100%-3*16px)/4)] xl:w-[calc((100%-5*16px)/6)]" : undefined}
+            >
+              <KPICard 
+                {...kpi}
+                dataTour={`kpi-${kpi.id}`}
+                employmentBreakdown={kpi.id === 'hired-ftes' || kpi.id === 'target-ftes' ? undefined : kpi.employmentBreakdown}
+                dataTourChart={kpi.chartData && kpi.chartData.length > 0 ? `kpi-${kpi.id}-chart` : undefined}
+                dataTourInfo={`kpi-${kpi.id}-info`}
+              />
+            </div>
           );
         })}
       </div>
