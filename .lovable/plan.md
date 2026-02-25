@@ -1,32 +1,39 @@
 
 
-## Fix: Show "Support" Category in Detail and List Views
+## Auto-Adjust Layout for Permission Cards
 
-The "Support" category with "Add FAQ" permission only appears in the Matrix view because you already added it there. The Detail view (card layout, which you're currently looking at) and the List view both have their own hardcoded category references that are missing "Support".
+### Problem
+The Role Detail View has a hardcoded two-column layout where the left column contains only 2 cards (Modules, Sub-filters) and the right column contains 4 cards (Settings, Filters, Approvals, Support). This creates a visually unbalanced layout with wasted space on the left.
+
+### Solution
+Replace the hardcoded two-column split with a CSS `columns` layout (newspaper-style masonry) that automatically distributes permission cards across columns based on their content height. Cards will flow naturally to fill available space evenly.
 
 ### Changes
 
-| File | Change |
-|------|--------|
-| `src/components/admin/RoleDetailView.tsx` | Add a new `CompactPermissionCard` for "Support" using `PERMISSION_CATEGORIES.support.permissions`, placed after the "Approvals" card |
-| `src/components/admin/PermissionListView.tsx` | Add `"support"` to the `CATEGORY_ORDER` array (line 43) so the Support category renders in the list view as well |
+**File: `src/components/admin/RoleDetailView.tsx`**
 
-### Details
+1. Remove the two separate `<div>` wrappers for left and right columns
+2. Replace `grid grid-cols-2 gap-3` with CSS `columns-2` layout
+3. Render all 6 `CompactPermissionCard` components as siblings in a single container, each with `break-inside-avoid` to prevent cards from splitting across columns
 
-**RoleDetailView.tsx** -- Around line 591-600, after the Approvals `CompactPermissionCard`, add:
-```tsx
-<CompactPermissionCard
-  title="Support"
-  permissions={PERMISSION_CATEGORIES.support.permissions}
-  role={selectedRoleName}
-  displayPermissions={displayPermissions}
-  ...
-/>
+The layout will change from:
+```text
++------------------+------------------+
+| Left div         | Right div        |
+|  - Modules       |  - Settings      |
+|  - Sub-filters   |  - Filters       |
+|                  |  - Approvals     |
+|  (empty space)   |  - Support       |
++------------------+------------------+
 ```
 
-**PermissionListView.tsx** -- Line 43, update:
-```tsx
-const CATEGORY_ORDER = ["modules", "settings", "filters", "subfilters", "approvals", "support"];
+To an auto-balanced flow:
+```text
++------------------+------------------+
+| Modules          | Settings         |
+| Sub-filters      | Filters          |
+| Approvals        | Support          |
++------------------+------------------+
 ```
 
-This ensures the "Add FAQ" permission shows up in all three RBAC views (Matrix, Detail, and List).
+Cards will automatically rebalance whenever permissions are added or removed from any category.
