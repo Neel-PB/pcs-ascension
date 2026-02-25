@@ -59,7 +59,7 @@ export function ContractorRequisitionTab(_props: ContractorRequisitionTabProps) 
       <div className="flex items-center gap-4 flex-shrink-0">
         <SearchField placeholder="Search requisitions..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-[32rem]" />
         <div className="flex gap-2 items-center flex-shrink-0 ml-auto">
-          <PositionKPICards items={[{ label: "Contractor Requisitions", value: filteredData.length }]} />
+          <PositionKPICards items={[{ label: "Open Requisitions", value: filteredData.length }]} />
           <DataRefreshButton dataSources={['positions_data']} />
           <Button variant="ascension" size="icon" aria-label="Filters" title="Filters">
             <Filter className="h-4 w-4" />
