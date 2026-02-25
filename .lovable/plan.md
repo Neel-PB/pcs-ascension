@@ -1,41 +1,34 @@
 
 
-## Center-Align KPI Cards When Fewer Than 6
+## Filter KPI Tour Steps by Role in User Guides
 
 ### Problem
-When a KPI section (e.g., Volume) has fewer than 6 cards, they left-align in the 6-column grid, leaving empty space on the right. The user wants cards centered within the row while keeping the section title (e.g., "Volume") left-aligned.
+The Staffing Summary tour in User Guides shows steps for all KPI cards, including ones the current user's role cannot access (e.g., Director role cannot see 12M Average, Productive Resources KPIs).
 
 ### Solution
-Conditionally switch the KPI container layout in `DraggableKPISection.tsx`:
-- When there are 6 or more KPIs: keep the current `grid grid-cols-6` layout
-- When there are fewer than 6 KPIs: use `flex flex-wrap justify-center` so cards center naturally
+Filter out tour steps that reference hidden KPIs based on the user's roles, using the existing `isKpiVisible` function from `kpiVisibility.ts`.
 
 ### File Changes
 
 | File | Change |
 |------|--------|
-| `src/components/staffing/DraggableKPISection.tsx` | On line 75, conditionally apply `flex flex-wrap justify-center gap-4` when `kpis.length < 6`, otherwise keep `grid grid-cols-6`. Each card in flex mode gets a fixed width matching the grid column width for visual consistency. |
+| `src/components/support/UserGuidesTab.tsx` | Import `isKpiVisible` and `useUserRoles`, get current user's roles, filter steps that target hidden KPIs |
 
 ### Technical Details
 
-**DraggableKPISection.tsx (line 75)**
+1. Import `isKpiVisible` from `@/config/kpiVisibility` and `useUserRoles` from `@/hooks/useUserRoles`, and get the current user ID from `useAuth`.
 
-Current:
-```tsx
-<div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-```
+2. In the `guidesWithSteps` memo, for the `staffing` tour key specifically, filter out steps whose `target` matches `[data-tour="kpi-{kpiId}"]` where `isKpiVisible(kpiId, userRoles)` returns `false`.
 
-Updated:
-```tsx
-<div className={cn(
-  "gap-4",
-  kpis.length < 6
-    ? "flex flex-wrap justify-center"
-    : "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6"
-)}>
-```
+3. The KPI ID is extracted from the step target string using a regex like `/\[data-tour="kpi-(.+?)"\]/`. Steps without a KPI target (e.g., Filter Bar, Tab Navigation) pass through unchanged.
 
-For flex mode, each `KPICard` wrapper needs a consistent width. We add a wrapper div with a style like `flex: 0 0 calc((100% - 5 * 16px) / 6)` to match the grid column sizing, ensuring cards are the same width as in a full 6-column row but centered.
+4. The filtered step list also updates the step count badge and the numbered step list, so users only see steps relevant to their role.
 
-The section title and drag handle remain left-aligned as they are outside the card container. The breakdown badges row (lines 90-176) only renders when there are exactly 6 FTE KPIs, so it remains unaffected.
+5. This reuses the same visibility rules already applied to the actual KPI cards on the Staffing Summary page, ensuring consistency.
+
+### Mapping
+
+Tour step targets like `[data-tour="kpi-12m-monthly"]` map to KPI IDs like `12m-monthly`. The `kpiVisibility.ts` rules hide these KPIs per role:
+- **Director + Manager**: 12M Average, Paid FTEs, Contract FTEs, Overtime, PRN, NP%, Employed Productive FTEs
+- **Director only**: 3M Low, 3M High
 
