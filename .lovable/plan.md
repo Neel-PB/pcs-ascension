@@ -1,34 +1,61 @@
 
 
-## Filter KPI Tour Steps by Role in User Guides
+## Add FAQ Management with RBAC Permission
 
-### Problem
-The Staffing Summary tour in User Guides shows steps for all KPI cards, including ones the current user's role cannot access (e.g., Director role cannot see 12M Average, Productive Resources KPIs).
+### Overview
+Add a new `support.add_faq` permission to the RBAC system. Users with this permission will see an "Add FAQ" button on the FAQs tab. Clicking it opens a dialog form to submit a new FAQ (question + answer), which gets saved to a new `faqs` database table. All users can read FAQs; only permitted users can create them.
 
-### Solution
-Filter out tour steps that reference hidden KPIs based on the user's roles, using the existing `isKpiVisible` function from `kpiVisibility.ts`.
+### Database Changes
 
-### File Changes
+**1. Create `faqs` table**
+
+```text
+faqs
++-------------+---------------------------+
+| id          | uuid (PK, auto-generated) |
+| question    | text (NOT NULL)           |
+| answer      | text (NOT NULL)           |
+| created_by  | uuid (NOT NULL)           |
+| created_at  | timestamptz (default now) |
+| updated_at  | timestamptz (default now) |
++-------------+---------------------------+
+```
+
+RLS policies:
+- SELECT: all authenticated users
+- INSERT: authenticated users (created_by = auth.uid())
+- UPDATE/DELETE: only the creator or admins
+
+**2. Insert `support.add_faq` permission into `permissions` table**
+
+Insert a new row:
+- key: `support.add_faq`
+- label: "Add FAQ"
+- description: "Ability to create FAQ entries"
+- category: "support"
+- is_system: true
+
+### Code Changes
 
 | File | Change |
 |------|--------|
-| `src/components/support/UserGuidesTab.tsx` | Import `isKpiVisible` and `useUserRoles`, get current user's roles, filter steps that target hidden KPIs |
+| `src/config/rbacConfig.ts` | Add `support.add_faq` permission to CORE_PERMISSIONS, PERMISSION_CATEGORIES (new "support" category), PermissionKey type, and grant it to `admin` and `labor_team` defaults |
+| `src/pages/support/SupportPage.tsx` | Import `useRBAC`, fetch FAQs from DB via React Query, merge with hardcoded defaults, add "Add FAQ" button (visible only when `hasPermission('support.add_faq')`), add Dialog form for creating new FAQ |
+
+### UI Behavior
+
+1. FAQs tab loads hardcoded FAQs plus any DB FAQs (DB FAQs shown first)
+2. Users with `support.add_faq` permission see an "Add FAQ" button next to the search bar
+3. Clicking "Add FAQ" opens a dialog with:
+   - Question field (Input, required)
+   - Answer field (Textarea, required)
+   - Cancel and Submit buttons
+4. On submit: insert into `faqs` table, invalidate query cache, show success toast
+5. Search filters apply across both hardcoded and DB FAQs
 
 ### Technical Details
 
-1. Import `isKpiVisible` from `@/config/kpiVisibility` and `useUserRoles` from `@/hooks/useUserRoles`, and get the current user ID from `useAuth`.
-
-2. In the `guidesWithSteps` memo, for the `staffing` tour key specifically, filter out steps whose `target` matches `[data-tour="kpi-{kpiId}"]` where `isKpiVisible(kpiId, userRoles)` returns `false`.
-
-3. The KPI ID is extracted from the step target string using a regex like `/\[data-tour="kpi-(.+?)"\]/`. Steps without a KPI target (e.g., Filter Bar, Tab Navigation) pass through unchanged.
-
-4. The filtered step list also updates the step count badge and the numbered step list, so users only see steps relevant to their role.
-
-5. This reuses the same visibility rules already applied to the actual KPI cards on the Staffing Summary page, ensuring consistency.
-
-### Mapping
-
-Tour step targets like `[data-tour="kpi-12m-monthly"]` map to KPI IDs like `12m-monthly`. The `kpiVisibility.ts` rules hide these KPIs per role:
-- **Director + Manager**: 12M Average, Paid FTEs, Contract FTEs, Overtime, PRN, NP%, Employed Productive FTEs
-- **Director only**: 3M Low, 3M High
-
+- New hook or inline query: `useQuery(['faqs'], ...)` to fetch from `faqs` table
+- Mutation: `useMutation` to insert new FAQ with `created_by = user.id`
+- The permission check uses `useRBAC().hasPermission('support.add_faq')`
+- Default role grants: admin and labor_team get `support.add_faq` by default; other roles do not
