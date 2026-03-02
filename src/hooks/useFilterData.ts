@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuthContext } from "@/contexts/AuthContext";
+
 export interface Region {
   id: string;
   region: string;
@@ -35,34 +34,30 @@ interface FilterDataResult {
   departments: Department[];
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export function useFilterData() {
-  const { session } = useAuthContext();
-  
-  // Single query that fetches all filter data in parallel
+  const token = sessionStorage.getItem("msal_access_token");
+
   const { data, isLoading } = useQuery({
-    // Include auth state in key to refetch after login
-    queryKey: ["all-filter-data", session?.access_token ? "authenticated" : "anonymous"],
+    queryKey: ["all-filter-data", token ? "authenticated" : "anonymous"],
     queryFn: async (): Promise<FilterDataResult> => {
-      const [regionsRes, marketsRes, facilitiesRes, departmentsRes] = await Promise.all([
-        supabase.from("regions").select("*").order("region"),
-        supabase.from("markets").select("*").order("market"),
-        supabase.from("facilities").select("*").order("facility_name"),
-        supabase.from("departments").select("*").order("department_name"),
-      ]);
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
 
-      if (regionsRes.error) throw regionsRes.error;
-      if (marketsRes.error) throw marketsRes.error;
-      if (facilitiesRes.error) throw facilitiesRes.error;
-      if (departmentsRes.error) throw departmentsRes.error;
+      const res = await fetch(`${API_BASE_URL}/filters/unique`, { headers });
+      if (!res.ok) throw new Error(`Filter fetch failed: ${res.status}`);
 
+      const json = await res.json();
       return {
-        regions: regionsRes.data as Region[],
-        markets: marketsRes.data as Market[],
-        facilities: facilitiesRes.data as Facility[],
-        departments: departmentsRes.data as Department[],
+        regions: json.regions ?? [],
+        markets: json.markets ?? [],
+        facilities: json.facilities ?? [],
+        departments: json.departments ?? [],
       };
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes - this is mostly static data
+    staleTime: 10 * 60 * 1000,
+    enabled: !!API_BASE_URL,
   });
 
   const regions = data?.regions ?? [];
