@@ -33,9 +33,10 @@ export function usePositionsByFlag(flag: string, filters: UsePositionsByFlagFilt
         if (filters.selectedFacility !== FILTER_SENTINELS.ALL_FACILITIES) params.append("facility", filters.selectedFacility);
         if (filters.selectedDepartment !== FILTER_SENTINELS.ALL_DEPARTMENTS) params.append("department", filters.selectedDepartment);
 
-        const res = await fetch(`${API_BASE_URL}/positions?${params}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const headers: Record<string, string> = {};
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
+        const res = await fetch(`${API_BASE_URL}/positions?${params}`, { headers });
 
         if (!res.ok) throw new Error(`Positions API error: ${res.status}`);
 
@@ -49,6 +50,6 @@ export function usePositionsByFlag(flag: string, filters: UsePositionsByFlagFilt
 
       return allData;
     },
-    enabled: !!token,
+    enabled: !!API_BASE_URL,
   });
 }
