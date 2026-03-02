@@ -58,6 +58,8 @@ export function useFilterData() {
     },
     staleTime: 10 * 60 * 1000,
     enabled: !!API_BASE_URL,
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
 
   const regions = data?.regions ?? [];
