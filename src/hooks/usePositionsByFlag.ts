@@ -9,6 +9,18 @@ interface UsePositionsByFlagFilters {
   selectedDepartment: string;
 }
 
+const normalizeRow = (row: any) => ({
+  ...row,
+  id: row.positionKey ?? row.id,
+  positionNum: row.positionNumber ?? row.positionNum,
+  FTE: row.hiredFte ?? row.FTE,
+  actual_fte: row.activeFte ?? row.actual_fte,
+  positionStatusDate: row.posStatusDate ?? row.positionStatusDate,
+  departmentName: row.departmentDescription ?? row.departmentName,
+  employmentType: row.employeeType ?? row.employmentType,
+  facility_name: row.businessUnitDescription ?? row.facility_name,
+});
+
 export function usePositionsByFlag(flag: string, filters: UsePositionsByFlagFilters) {
   const token = sessionStorage.getItem("msal_access_token");
 
@@ -42,7 +54,7 @@ export function usePositionsByFlag(flag: string, filters: UsePositionsByFlagFilt
 
         const batch = await res.json();
         const rows = Array.isArray(batch) ? batch : (batch.rows ?? batch.data ?? []);
-        allData.push(...rows);
+        allData.push(...rows.map(normalizeRow));
 
         hasMore = rows.length === PAGE_SIZE;
         offset += PAGE_SIZE;
