@@ -1,23 +1,46 @@
 
 
-## Fix: API Response Parsing Mismatch
+## Fix: Map API Response Fields to UI-Expected Field Names
 
 ### Problem
-The positions API returns data in the format `{ "count": 21067, "rows": [...] }`, but the `usePositionsByFlag` hook on line 44 looks for `batch.data`:
+The NestJS API returns position data with different field names than what the UI columns and tab logic expect. For example, the API returns `positionNumber` but the table column looks for `positionNum`. This is why the data loads but columns appear empty.
 
-```
-const rows = Array.isArray(batch) ? batch : batch.data ?? [];
-```
+### Field Mapping (API → UI)
 
-Since `batch.data` is `undefined`, it falls back to an empty array `[]`, so the UI always shows "No employees found" despite the API returning 21,067 records.
+| API Field | UI Expected Field | Used In |
+|-----------|------------------|---------|
+| `positionNumber` | `positionNum` | All tab columns (Position #) |
+| `hiredFte` | `FTE` | Employee/Contractor tabs (Hired FTE) |
+| `activeFte` | `actual_fte` | Employee/Contractor tabs (Active FTE) |
+| `posStatusDate` | `positionStatusDate` | Requisition tab (Vacancy Age calc) |
+| `departmentDescription` | `departmentName` | Search filters across all tabs |
+| `employeeType` | `employmentType` | All tabs (Full/Part Time column) |
+| `businessUnitDescription` | `facility_name` | Detail sheets, forecast checklist |
+| `positionKey` | `id` | Row identification, comment counts |
 
-### Fix
-**File: `src/hooks/usePositionsByFlag.ts`** (line 44)
+Fields that already match (no mapping needed): `employeeName`, `jobTitle`, `jobFamily`, `payrollStatus`, `shift`, `positionLifecycle`, `region`, `market`, `vacancyAge`.
 
-Change the response parsing to check for `batch.rows` (matching your API's actual response shape), with a fallback to `batch.data` for backward compatibility:
+### Solution
+Add a normalization step in `usePositionsByFlag` that maps API field names to UI-expected names before returning the data. This is done once at the data-fetching layer so all tabs, columns, search filters, and detail sheets work without any changes.
+
+### Technical Details
+
+**File: `src/hooks/usePositionsByFlag.ts`**
+
+After extracting `rows` from the API response, map each row through a normalizer function:
 
 ```typescript
-const rows = Array.isArray(batch) ? batch : (batch.rows ?? batch.data ?? []);
+const normalizeRow = (row: any) => ({
+  ...row,
+  id: row.positionKey ?? row.id,
+  positionNum: row.positionNumber ?? row.positionNum,
+  FTE: row.hiredFte ?? row.FTE,
+  actual_fte: row.activeFte ?? row.actual_fte,
+  positionStatusDate: row.posStatusDate ?? row.positionStatusDate,
+  departmentName: row.departmentDescription ?? row.departmentName,
+  employmentType: row.employeeType ?? row.employmentType,
+  facility_name: row.businessUnitDescription ?? row.facility_name,
+});
 ```
 
-This single-line change will correctly extract the position records from your API response.
+Each mapping uses a fallback (`??`) so if the API ever returns the old field name, it still works. This is a single-file change with no impact on columns, tabs, or detail sheets.
