@@ -34,7 +34,7 @@ interface FilterDataResult {
   departments: Department[];
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
 
 export function useFilterData() {
   const token = sessionStorage.getItem("msal_access_token");
