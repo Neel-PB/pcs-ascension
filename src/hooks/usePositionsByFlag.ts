@@ -63,5 +63,8 @@ export function usePositionsByFlag(flag: string, filters: UsePositionsByFlagFilt
       return allData;
     },
     enabled: !!API_BASE_URL,
+    retry: 1,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000,
   });
 }
