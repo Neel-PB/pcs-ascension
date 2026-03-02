@@ -41,7 +41,7 @@ export function usePositionsByFlag(flag: string, filters: UsePositionsByFlagFilt
         if (!res.ok) throw new Error(`Positions API error: ${res.status}`);
 
         const batch = await res.json();
-        const rows = Array.isArray(batch) ? batch : batch.data ?? [];
+        const rows = Array.isArray(batch) ? batch : (batch.rows ?? batch.data ?? []);
         allData.push(...rows);
 
         hasMore = rows.length === PAGE_SIZE;
