@@ -1,28 +1,95 @@
 
 
-## Fix Double Slash in Filter API URL
+## Wire Position Tabs to NestJS API
 
-### Problem
-`VITE_API_BASE_URL` is set to `http://127.0.0.1:8080` but the fetch URL template creates a double slash: `${API_BASE_URL}/filters/unique` becomes `http://127.0.0.1:8080//filters/unique`.
+### Overview
+Replace Supabase queries and dummy data across all 5 position tabs with a single NestJS API endpoint using flag-based filtering.
 
-This likely means the env var has a trailing slash. The fix is to strip any trailing slash from `API_BASE_URL` before using it.
+**API endpoint**: `GET /positions?flag={flag_name}&value=true&limit=200&offset=0`
 
-### Change
+### Flag Mapping
 
-**File: `src/hooks/useFilterData.ts`** (line 37)
+| Tab | Flag Parameter |
+|-----|---------------|
+| Employee | `employee_flag` |
+| Contractor | `contractor_flag` |
+| Open Position | `open_position_flag` |
+| Open Requisition | `open_requisition_flag` |
+| Contractor Requisition | `contractor_requisition_flag` |
 
-Replace:
+### Changes
+
+**1. New file: `src/hooks/usePositionsByFlag.ts`**
+- Generic hook that accepts a `flag` string and filter params (region, market, facility, department)
+- Fetches from `GET ${API_BASE_URL}/positions?flag={flag}&value=true&limit=1000&offset=0`
+- Sends MSAL Bearer token via `Authorization` header
+- Uses the same trailing-slash sanitization pattern as `useFilterData`
+- Handles pagination if needed (multiple fetches with offset)
+- Returns `{ data, isFetching }` matching the existing hook interface
+
+**2. Delete: `src/hooks/useEmployees.ts`**
+- Replaced by `usePositionsByFlag('employee_flag', ...)`
+
+**3. Delete: `src/hooks/useContractors.ts`**
+- Replaced by `usePositionsByFlag('contractor_flag', ...)`
+
+**4. Delete: `src/hooks/useRequisitions.ts`**
+- Replaced by `usePositionsByFlag('open_position_flag', ...)`
+
+**5. Update: `src/pages/positions/EmployeesTab.tsx`**
+- Replace `import { useEmployees }` with `import { usePositionsByFlag }`
+- Change `useEmployees({...})` to `usePositionsByFlag('employee_flag', {...})`
+
+**6. Update: `src/pages/positions/ContractorsTab.tsx`**
+- Replace `import { useContractors }` with `import { usePositionsByFlag }`
+- Change `useContractors({...})` to `usePositionsByFlag('contractor_flag', {...})`
+
+**7. Update: `src/pages/positions/RequisitionsTab.tsx` (Open Position tab)**
+- Replace `import { useRequisitions }` with `import { usePositionsByFlag }`
+- Change `useRequisitions({...})` to `usePositionsByFlag('open_position_flag', {...})`
+
+**8. Update: `src/pages/positions/OpenRequisitionTab.tsx`**
+- Remove dummy data
+- Add `usePositionsByFlag('open_requisition_flag', {...})` to fetch real data
+- Accept and use filter props (currently ignored as `_props`)
+- Add loading/empty states matching other tabs
+
+**9. Update: `src/pages/positions/ContractorRequisitionTab.tsx`**
+- Remove dummy data
+- Add `usePositionsByFlag('contractor_requisition_flag', {...})` to fetch real data
+- Accept and use filter props
+- Add loading/empty states matching other tabs
+
+### Technical Details
+
 ```typescript
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-```
-
-With:
-```typescript
+// src/hooks/usePositionsByFlag.ts
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
+
+export function usePositionsByFlag(flag: string, filters: {
+  selectedRegion: string;
+  selectedMarket: string;
+  selectedFacility: string;
+  selectedDepartment: string;
+}) {
+  const token = sessionStorage.getItem("msal_access_token");
+  return useQuery({
+    queryKey: ["positions", flag, filters],
+    queryFn: async () => {
+      const params = new URLSearchParams({ flag, value: "true", limit: "1000", offset: "0" });
+      const res = await fetch(`${API_BASE_URL}/positions?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(`Positions API error: ${res.status}`);
+      return res.json();
+    },
+    enabled: !!token,
+  });
+}
 ```
 
-This strips any trailing slashes from the env variable, so regardless of whether the user sets `http://127.0.0.1:8080` or `http://127.0.0.1:8080/`, the URL will always be correctly formed as `http://127.0.0.1:8080/filters/unique`.
-
-### Files Modified
-- `src/hooks/useFilterData.ts` -- one-line fix to strip trailing slash from base URL
+### Files Summary
+- 1 new file (`usePositionsByFlag.ts`)
+- 3 deleted files (`useEmployees.ts`, `useContractors.ts`, `useRequisitions.ts`)
+- 5 updated files (all 5 tab components)
 
