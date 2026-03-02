@@ -1,36 +1,23 @@
 
 
-## Fix: Positions API Not Called for Demo Users
+## Fix: API Response Parsing Mismatch
 
 ### Problem
-The `/positions` API is never called because `usePositionsByFlag` requires `msal_access_token` in sessionStorage (`enabled: !!token`), but demo login uses Supabase email/password auth which never sets that token. The `/filters/unique` call works because `useFilterData` uses `enabled: !!API_BASE_URL` instead.
+The positions API returns data in the format `{ "count": 21067, "rows": [...] }`, but the `usePositionsByFlag` hook on line 44 looks for `batch.data`:
 
-### Solution
-Align `usePositionsByFlag` with the same auth pattern as `useFilterData`:
-- Make the token optional in the Authorization header (send it if available, skip if not)
-- Change the `enabled` condition to `!!API_BASE_URL` instead of `!!token`
-
-### Change
-
-**File: `src/hooks/usePositionsByFlag.ts`**
-
-1. Change `enabled: !!token` to `enabled: !!API_BASE_URL` so the query runs even without an MSAL token
-2. Conditionally add the Authorization header only when a token exists (matching `useFilterData` pattern)
-
-```text
-// Before
-const res = await fetch(`${API_BASE_URL}/positions?${params}`, {
-  headers: { Authorization: `Bearer ${token}` },
-});
-
-// After
-const headers: Record<string, string> = {};
-if (token) headers["Authorization"] = `Bearer ${token}`;
-
-const res = await fetch(`${API_BASE_URL}/positions?${params}`, { headers });
+```
+const rows = Array.isArray(batch) ? batch : batch.data ?? [];
 ```
 
-And change `enabled: !!token` to `enabled: !!API_BASE_URL`.
+Since `batch.data` is `undefined`, it falls back to an empty array `[]`, so the UI always shows "No employees found" despite the API returning 21,067 records.
 
-This is a single-file, ~4-line change that makes the positions hook consistent with the filters hook.
+### Fix
+**File: `src/hooks/usePositionsByFlag.ts`** (line 44)
 
+Change the response parsing to check for `batch.rows` (matching your API's actual response shape), with a fallback to `batch.data` for backward compatibility:
+
+```typescript
+const rows = Array.isArray(batch) ? batch : (batch.rows ?? batch.data ?? []);
+```
+
+This single-line change will correctly extract the position records from your API response.
