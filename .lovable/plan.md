@@ -1,40 +1,25 @@
 
 
-## Fix: Excessive API Retry Calls
+## Fix: Hired FTE String Concatenation Bug
 
-### Root Cause
-All API calls to the NestJS backend (`127.0.0.1:8080`) are failing because the local server isn't reachable from the preview. React Query's default settings cause excessive retries:
-- **3 automatic retries per failure** (default)
-- **Refetch on window focus** (default) -- every time you switch between DevTools and the browser, all failed queries fire again
-- **Multiple components mounting** `useFilterData`, each triggering its own retry cycle
+### Problem
+The API returns `hiredFte` and `activeFte` as strings (e.g., `"0.2"`, `"1"`). The normalizer copies them as-is to `FTE` and `actual_fte`. When the KPI cards sum them with `reduce((sum, c) => sum + (c.FTE || 0), 0)`, JavaScript does string concatenation instead of numeric addition, producing the garbled display you see.
 
 ### Solution
-Add sensible retry and refetch settings to both hooks to prevent the request storm.
+Parse both values as numbers in the `normalizeRow` function in `usePositionsByFlag.ts`. This fixes it for all tabs (Employee, Contractor, etc.) at once.
 
-### Changes
+### Change
 
-**File 1: `src/hooks/usePositionsByFlag.ts`**
-Add `retry`, `refetchOnWindowFocus`, and `staleTime` options to the `useQuery` call:
-
-```typescript
-enabled: !!API_BASE_URL,
-retry: 1,
-refetchOnWindowFocus: false,
-staleTime: 5 * 60 * 1000,
-```
-
-**File 2: `src/hooks/useFilterData.ts`**
-Add `retry` and `refetchOnWindowFocus` options (it already has `staleTime`):
+**File: `src/hooks/usePositionsByFlag.ts`** -- Update two lines in `normalizeRow`:
 
 ```typescript
-staleTime: 10 * 60 * 1000,
-enabled: !!API_BASE_URL,
-retry: 1,
-refetchOnWindowFocus: false,
+// Before
+FTE: row.hiredFte ?? row.FTE,
+actual_fte: row.activeFte ?? row.actual_fte,
+
+// After
+FTE: parseFloat(row.hiredFte ?? row.FTE) || 0,
+actual_fte: parseFloat(row.activeFte ?? row.actual_fte) || 0,
 ```
 
-### Effect
-- Failed requests retry only once instead of 3 times
-- Switching between DevTools and the app no longer triggers refetches
-- Successfully cached data stays fresh for 5-10 minutes without re-fetching
-
+This ensures FTE values are always numbers, fixing the KPI cards and any sorting/filtering that relies on numeric comparison.
