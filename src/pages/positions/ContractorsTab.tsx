@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { Filter } from "@/lib/icons";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
-import { useContractors } from "@/hooks/useContractors";
+import { usePositionsByFlag } from "@/hooks/usePositionsByFlag";
 import { useCheckExpiredFte } from "@/hooks/useCheckExpiredFte";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,7 @@ export function ContractorsTab({
 }: ContractorsTabProps) {
   useCheckExpiredFte();
 
-  const { data: contractors, isFetching } = useContractors({
+  const { data: contractors, isFetching } = usePositionsByFlag('contractor_flag', {
     selectedRegion,
     selectedMarket,
     selectedFacility,

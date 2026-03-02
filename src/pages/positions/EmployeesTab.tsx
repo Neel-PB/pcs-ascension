@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { Filter } from "@/lib/icons";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
-import { useEmployees } from "@/hooks/useEmployees";
+import { usePositionsByFlag } from "@/hooks/usePositionsByFlag";
 import { useCheckExpiredFte } from "@/hooks/useCheckExpiredFte";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,7 @@ export function EmployeesTab({
 }: EmployeesTabProps) {
   useCheckExpiredFte();
 
-  const { data: employees, isFetching } = useEmployees({
+  const { data: employees, isFetching } = usePositionsByFlag('employee_flag', {
     selectedRegion,
     selectedMarket,
     selectedFacility,

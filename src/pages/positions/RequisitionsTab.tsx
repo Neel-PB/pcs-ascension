@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { Filter } from "@/lib/icons";
 import { differenceInDays } from "date-fns";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
-import { useRequisitions } from "@/hooks/useRequisitions";
+import { usePositionsByFlag } from "@/hooks/usePositionsByFlag";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LogoLoader } from "@/components/ui/LogoLoader";
@@ -33,7 +33,7 @@ export function RequisitionsTab({
   selectedLevel2,
   selectedDepartment,
 }: RequisitionsTabProps) {
-  const { data: requisitions, isFetching } = useRequisitions({
+  const { data: requisitions, isFetching } = usePositionsByFlag('open_position_flag', {
     selectedRegion, selectedMarket, selectedFacility, selectedDepartment,
   });
 
