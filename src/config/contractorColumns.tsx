@@ -12,7 +12,7 @@ type ShiftOverrideHandler = (positionId: string, originalShift: string | null, v
 export const contractorColumns: ColumnDef<Position>[] = [
   {
     id: 'positionNum',
-    label: 'Position #',
+    label: 'Position No',
     type: 'text',
     width: 160,
     minWidth: 150,
@@ -23,7 +23,7 @@ export const contractorColumns: ColumnDef<Position>[] = [
   },
   {
     id: 'employeeName',
-    label: 'Contractor Name',
+    label: 'Name',
     type: 'custom',
     width: 240,
     minWidth: 220,
@@ -48,6 +48,19 @@ export const contractorColumns: ColumnDef<Position>[] = [
     ),
   },
   {
+    id: 'employmentType',
+    label: 'Staff Type',
+    type: 'custom',
+    width: 180,
+    minWidth: 170,
+    sortable: true,
+    resizable: false,
+    draggable: true,
+    renderCell: (row) => (
+      <TruncatedTextCell value={row.employmentType} maxLength={30} />
+    ),
+  },
+  {
     id: 'FTE',
     label: 'Hired FTE',
     type: 'number',
@@ -56,17 +69,6 @@ export const contractorColumns: ColumnDef<Position>[] = [
     sortable: true,
     resizable: false,
     draggable: true,
-  },
-  {
-    id: 'actual_fte',
-    label: 'Active FTE',
-    type: 'custom',
-    width: 120,
-    minWidth: 100,
-    sortable: true,
-    resizable: false,
-    draggable: true,
-    renderHeader: () => <span data-tour="positions-active-fte">Active FTE</span>,
   },
   {
     id: 'shift',
@@ -89,19 +91,12 @@ export const contractorColumns: ColumnDef<Position>[] = [
     sortable: false,
     resizable: false,
     draggable: true,
-    renderCell: () => <BadgeCell value="Contingent" variant="secondary" maxLength={30} />,
-  },
-  {
-    id: 'employmentType',
-    label: 'Full/Part Time',
-    type: 'custom',
-    width: 180,
-    minWidth: 170,
-    sortable: true,
-    resizable: false,
-    draggable: true,
     renderCell: (row) => (
-      <TruncatedTextCell value={row.employmentType} maxLength={30} />
+      <BadgeCell
+        value={row.payrollStatus}
+        variant={row.payrollStatus === 'Active' ? 'default' : 'secondary'}
+        maxLength={30}
+      />
     ),
   },
 ];

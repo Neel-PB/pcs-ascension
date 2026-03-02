@@ -12,7 +12,7 @@ type ShiftOverrideHandler = (positionId: string, originalShift: string | null, v
 export const employeeColumns: ColumnDef<Position>[] = [
   {
     id: 'positionNum',
-    label: 'Position #',
+    label: 'Position No',
     type: 'text',
     width: 160,
     minWidth: 150,
@@ -23,7 +23,7 @@ export const employeeColumns: ColumnDef<Position>[] = [
   },
   {
     id: 'employeeName',
-    label: 'Employee Name',
+    label: 'Name',
     type: 'custom',
     width: 240,
     minWidth: 220,
@@ -45,6 +45,19 @@ export const employeeColumns: ColumnDef<Position>[] = [
     draggable: true,
     renderCell: (row) => (
       <TruncatedTextCell value={row.jobTitle} maxLength={30} />
+    ),
+  },
+  {
+    id: 'employmentType',
+    label: 'Staff Type',
+    type: 'custom',
+    width: 180,
+    minWidth: 170,
+    sortable: true,
+    resizable: false,
+    draggable: true,
+    renderCell: (row) => (
+      <TruncatedTextCell value={row.employmentType} maxLength={30} />
     ),
   },
   {
@@ -95,19 +108,6 @@ export const employeeColumns: ColumnDef<Position>[] = [
         variant={row.payrollStatus === 'Active' ? 'default' : 'secondary'}
         maxLength={30}
       />
-    ),
-  },
-  {
-    id: 'employmentType',
-    label: 'Full/Part Time',
-    type: 'custom',
-    width: 180,
-    minWidth: 170,
-    sortable: true,
-    resizable: false,
-    draggable: true,
-    renderCell: (row) => (
-      <TruncatedTextCell value={row.employmentType} maxLength={30} />
     ),
   },
 ];
