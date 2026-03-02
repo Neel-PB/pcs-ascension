@@ -1,31 +1,36 @@
 
 
-## Fix: Pass Location Filters to Positions API
+## Fix: Positions API Not Called for Demo Users
 
 ### Problem
-The `usePositionsByFlag` hook currently only sends `flag`, `value`, `limit`, and `offset` to the API. The location filters (region, market, facility, department) from the FilterBar are received but never appended as query parameters, so the API always returns unfiltered data.
+The `/positions` API is never called because `usePositionsByFlag` requires `msal_access_token` in sessionStorage (`enabled: !!token`), but demo login uses Supabase email/password auth which never sets that token. The `/filters/unique` call works because `useFilterData` uses `enabled: !!API_BASE_URL` instead.
 
 ### Solution
-Update `src/hooks/usePositionsByFlag.ts` to conditionally append filter values as query parameters, skipping sentinel values (e.g., `"all-regions"`, `"all-markets"`).
+Align `usePositionsByFlag` with the same auth pattern as `useFilterData`:
+- Make the token optional in the Authorization header (send it if available, skip if not)
+- Change the `enabled` condition to `!!API_BASE_URL` instead of `!!token`
 
 ### Change
 
 **File: `src/hooks/usePositionsByFlag.ts`**
 
-After constructing the base `URLSearchParams`, append each filter only when it holds a real value (not a sentinel):
+1. Change `enabled: !!token` to `enabled: !!API_BASE_URL` so the query runs even without an MSAL token
+2. Conditionally add the Authorization header only when a token exists (matching `useFilterData` pattern)
 
 ```text
-Before:
-  GET /positions?flag=employee_flag&value=true&limit=1000&offset=0
+// Before
+const res = await fetch(`${API_BASE_URL}/positions?${params}`, {
+  headers: { Authorization: `Bearer ${token}` },
+});
 
-After (with filters selected):
-  GET /positions?flag=employee_flag&value=true&limit=1000&offset=0&region=East&market=Florida
+// After
+const headers: Record<string, string> = {};
+if (token) headers["Authorization"] = `Bearer ${token}`;
+
+const res = await fetch(`${API_BASE_URL}/positions?${params}`, { headers });
 ```
 
-Logic:
-- Import `FILTER_SENTINELS` from `@/lib/selectConstants`
-- After creating `params`, check each filter against its sentinel value
-- Only append if the value differs from the sentinel (e.g., `selectedRegion !== "all-regions"`)
-- Map: `selectedRegion` -> `region`, `selectedMarket` -> `market`, `selectedFacility` -> `facility`, `selectedDepartment` -> `department`
+And change `enabled: !!token` to `enabled: !!API_BASE_URL`.
 
-This is a single-file, ~10-line change. The query key already includes all filter values, so React Query will automatically refetch when any filter changes.
+This is a single-file, ~4-line change that makes the positions hook consistent with the filters hook.
+
