@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
+import { FILTER_SENTINELS } from "@/lib/selectConstants";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
-
 interface UsePositionsByFlagFilters {
   selectedRegion: string;
   selectedMarket: string;
@@ -27,6 +27,11 @@ export function usePositionsByFlag(flag: string, filters: UsePositionsByFlagFilt
           limit: String(PAGE_SIZE),
           offset: String(offset),
         });
+
+        if (filters.selectedRegion !== FILTER_SENTINELS.ALL_REGIONS) params.append("region", filters.selectedRegion);
+        if (filters.selectedMarket !== FILTER_SENTINELS.ALL_MARKETS) params.append("market", filters.selectedMarket);
+        if (filters.selectedFacility !== FILTER_SENTINELS.ALL_FACILITIES) params.append("facility", filters.selectedFacility);
+        if (filters.selectedDepartment !== FILTER_SENTINELS.ALL_DEPARTMENTS) params.append("department", filters.selectedDepartment);
 
         const res = await fetch(`${API_BASE_URL}/positions?${params}`, {
           headers: { Authorization: `Bearer ${token}` },
