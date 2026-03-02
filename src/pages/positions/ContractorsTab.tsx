@@ -211,7 +211,6 @@ export function ContractorsTab({
           <PositionKPICards items={[
             { label: "Contractors", value: totals.totalContractorNames },
             { label: "Hired FTE", value: totals.totalHiredFTE },
-            { label: "Active FTE", value: totals.totalActiveFTE },
           ]} />
           <span data-tour="positions-refresh">
             <DataRefreshButton dataSources={['positions_data']} />
