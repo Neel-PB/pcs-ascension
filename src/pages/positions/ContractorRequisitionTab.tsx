@@ -1,8 +1,8 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { Filter } from "@/lib/icons";
 import { EditableTable } from "@/components/editable-table/EditableTable";
 import { ColumnDef } from "@/types/table";
-import { BadgeCell } from "@/components/editable-table/cells/BadgeCell";
+
 import { TruncatedTextCell } from "@/components/editable-table/cells/TruncatedTextCell";
 import { ShiftCell } from "@/components/editable-table/cells/ShiftCell";
 import { SearchField } from "@/components/ui/search-field";
@@ -14,11 +14,11 @@ import { usePositionsByFlag } from "@/hooks/usePositionsByFlag";
 import { LogoLoader } from "@/components/ui/LogoLoader";
 
 const columns: ColumnDef<any>[] = [
-  { id: "requisitionNum", label: "Requisition #", type: "text", width: 180, minWidth: 160, sortable: true, resizable: false, draggable: true, locked: true },
-  { id: "jobTitle", label: "Job Title", type: "custom", width: 280, minWidth: 220, sortable: true, resizable: false, draggable: true, renderCell: (row) => <TruncatedTextCell value={row.jobTitle} maxLength={30} /> },
+  { id: "positionNum", label: "Position No", type: "text", width: 160, minWidth: 150, sortable: true, resizable: false, draggable: true, locked: true },
+  { id: "jobTitle", label: "Job Title", type: "custom", width: 260, minWidth: 200, sortable: true, resizable: false, draggable: true, renderCell: (row) => <TruncatedTextCell value={row.jobTitle} maxLength={30} /> },
+  { id: "employmentType", label: "Staff Type", type: "custom", width: 180, minWidth: 170, sortable: true, resizable: false, draggable: true, renderCell: (row) => <TruncatedTextCell value={row.employmentType} maxLength={30} /> },
+  { id: "FTE", label: "Hired FTE", type: "number", width: 120, minWidth: 100, sortable: true, resizable: false, draggable: true },
   { id: "shift", label: "Shift", type: "custom", width: 180, minWidth: 160, sortable: true, resizable: false, draggable: true, renderCell: (row) => <ShiftCell value={row.shift} /> },
-  { id: "employmentType", label: "Employment Type", type: "custom", width: 180, minWidth: 170, sortable: true, resizable: false, draggable: true, renderCell: (row) => <TruncatedTextCell value={row.employmentType} maxLength={30} /> },
-  { id: "status", label: "Status", type: "custom", width: 160, minWidth: 140, sortable: true, resizable: false, draggable: true, renderCell: (row) => <BadgeCell value={row.positionLifecycle || row.status} variant={row.positionLifecycle === "Offer Extended" ? "default" : "secondary"} maxLength={30} /> },
 ];
 
 interface ContractorRequisitionTabProps {
