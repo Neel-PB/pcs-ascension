@@ -1,95 +1,31 @@
 
 
-## Wire Position Tabs to NestJS API
+## Fix: Pass Location Filters to Positions API
 
-### Overview
-Replace Supabase queries and dummy data across all 5 position tabs with a single NestJS API endpoint using flag-based filtering.
+### Problem
+The `usePositionsByFlag` hook currently only sends `flag`, `value`, `limit`, and `offset` to the API. The location filters (region, market, facility, department) from the FilterBar are received but never appended as query parameters, so the API always returns unfiltered data.
 
-**API endpoint**: `GET /positions?flag={flag_name}&value=true&limit=200&offset=0`
+### Solution
+Update `src/hooks/usePositionsByFlag.ts` to conditionally append filter values as query parameters, skipping sentinel values (e.g., `"all-regions"`, `"all-markets"`).
 
-### Flag Mapping
+### Change
 
-| Tab | Flag Parameter |
-|-----|---------------|
-| Employee | `employee_flag` |
-| Contractor | `contractor_flag` |
-| Open Position | `open_position_flag` |
-| Open Requisition | `open_requisition_flag` |
-| Contractor Requisition | `contractor_requisition_flag` |
+**File: `src/hooks/usePositionsByFlag.ts`**
 
-### Changes
+After constructing the base `URLSearchParams`, append each filter only when it holds a real value (not a sentinel):
 
-**1. New file: `src/hooks/usePositionsByFlag.ts`**
-- Generic hook that accepts a `flag` string and filter params (region, market, facility, department)
-- Fetches from `GET ${API_BASE_URL}/positions?flag={flag}&value=true&limit=1000&offset=0`
-- Sends MSAL Bearer token via `Authorization` header
-- Uses the same trailing-slash sanitization pattern as `useFilterData`
-- Handles pagination if needed (multiple fetches with offset)
-- Returns `{ data, isFetching }` matching the existing hook interface
+```text
+Before:
+  GET /positions?flag=employee_flag&value=true&limit=1000&offset=0
 
-**2. Delete: `src/hooks/useEmployees.ts`**
-- Replaced by `usePositionsByFlag('employee_flag', ...)`
-
-**3. Delete: `src/hooks/useContractors.ts`**
-- Replaced by `usePositionsByFlag('contractor_flag', ...)`
-
-**4. Delete: `src/hooks/useRequisitions.ts`**
-- Replaced by `usePositionsByFlag('open_position_flag', ...)`
-
-**5. Update: `src/pages/positions/EmployeesTab.tsx`**
-- Replace `import { useEmployees }` with `import { usePositionsByFlag }`
-- Change `useEmployees({...})` to `usePositionsByFlag('employee_flag', {...})`
-
-**6. Update: `src/pages/positions/ContractorsTab.tsx`**
-- Replace `import { useContractors }` with `import { usePositionsByFlag }`
-- Change `useContractors({...})` to `usePositionsByFlag('contractor_flag', {...})`
-
-**7. Update: `src/pages/positions/RequisitionsTab.tsx` (Open Position tab)**
-- Replace `import { useRequisitions }` with `import { usePositionsByFlag }`
-- Change `useRequisitions({...})` to `usePositionsByFlag('open_position_flag', {...})`
-
-**8. Update: `src/pages/positions/OpenRequisitionTab.tsx`**
-- Remove dummy data
-- Add `usePositionsByFlag('open_requisition_flag', {...})` to fetch real data
-- Accept and use filter props (currently ignored as `_props`)
-- Add loading/empty states matching other tabs
-
-**9. Update: `src/pages/positions/ContractorRequisitionTab.tsx`**
-- Remove dummy data
-- Add `usePositionsByFlag('contractor_requisition_flag', {...})` to fetch real data
-- Accept and use filter props
-- Add loading/empty states matching other tabs
-
-### Technical Details
-
-```typescript
-// src/hooks/usePositionsByFlag.ts
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
-
-export function usePositionsByFlag(flag: string, filters: {
-  selectedRegion: string;
-  selectedMarket: string;
-  selectedFacility: string;
-  selectedDepartment: string;
-}) {
-  const token = sessionStorage.getItem("msal_access_token");
-  return useQuery({
-    queryKey: ["positions", flag, filters],
-    queryFn: async () => {
-      const params = new URLSearchParams({ flag, value: "true", limit: "1000", offset: "0" });
-      const res = await fetch(`${API_BASE_URL}/positions?${params}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error(`Positions API error: ${res.status}`);
-      return res.json();
-    },
-    enabled: !!token,
-  });
-}
+After (with filters selected):
+  GET /positions?flag=employee_flag&value=true&limit=1000&offset=0&region=East&market=Florida
 ```
 
-### Files Summary
-- 1 new file (`usePositionsByFlag.ts`)
-- 3 deleted files (`useEmployees.ts`, `useContractors.ts`, `useRequisitions.ts`)
-- 5 updated files (all 5 tab components)
+Logic:
+- Import `FILTER_SENTINELS` from `@/lib/selectConstants`
+- After creating `params`, check each filter against its sentinel value
+- Only append if the value differs from the sentinel (e.g., `selectedRegion !== "all-regions"`)
+- Map: `selectedRegion` -> `region`, `selectedMarket` -> `market`, `selectedFacility` -> `facility`, `selectedDepartment` -> `department`
 
+This is a single-file, ~10-line change. The query key already includes all filter values, so React Query will automatically refetch when any filter changes.
