@@ -1,78 +1,85 @@
 
 
-## Add "Sign in with Microsoft" (MSAL) Authentication
+## MSAL Integration (Frontend-Only, No Lovable Cloud)
 
-### Prerequisites: Azure App Registration (You Do This First)
+Since you're using your own PostgreSQL + NestJS backend, I'll implement MSAL entirely on the frontend side and have it call your NestJS API for token verification.
 
-Before I can implement anything, you'll need to create an app in the Microsoft Azure Portal. Here's a step-by-step guide:
+### What I'll Build
 
-1. Go to [Azure Portal](https://portal.azure.com) and sign in with your Ascension admin account
-2. Navigate to **Azure Active Directory** (or **Microsoft Entra ID**) > **App registrations** > **New registration**
-3. Fill in:
-   - **Name**: "Position Control Dashboard" (or any name you prefer)
-   - **Supported account types**: Choose "Accounts in this organizational directory only" (single tenant for Ascension) or "Accounts in any organizational directory" (multi-tenant)
-   - **Redirect URI**: Select "Single-page application (SPA)" and enter your app URL: `https://pcs-ascension.lovable.app/auth` (and also `https://id-preview--b75aea96-d1cc-459d-b9c8-b92e13fbd2e9.lovable.app/auth` for testing)
-4. After registration, copy the **Application (client) ID** and **Directory (tenant) ID** from the Overview page
-5. Share those two values with me when ready
+#### 1. Install `@azure/msal-browser`
+- Add the MSAL browser SDK package
 
-### Implementation Plan
+#### 2. Create `src/config/msalConfig.ts`
+- Read `VITE_MSAL_CLIENT_ID` and `VITE_MSAL_TENANT_ID` from environment variables (placeholders for now)
+- Configure authority, redirect URI, cache settings
+- Export login request with scopes: `openid`, `profile`, `email`, `User.Read`
 
-Once you have the Client ID and Tenant ID, here's what I'll build:
+#### 3. Create `src/lib/msalAuth.ts`
+- Initialize `PublicClientApplication` singleton
+- `loginWithMicrosoft()` function — popup-based login with redirect fallback
+- Returns the Microsoft `idToken` plus parsed user info (email, name)
 
-#### 1. Install MSAL and add configuration
-- Install `@azure/msal-browser` package
-- Create `src/config/msalConfig.ts` with your Client ID, Tenant ID, and redirect URI
+#### 4. Update `src/contexts/AuthContext.tsx`
+- Add `signInWithMicrosoft()` method that:
+  1. Calls `loginWithMicrosoft()` to get the Microsoft ID token
+  2. Sends the token to your NestJS API endpoint (configurable via `VITE_API_BASE_URL`)
+  3. Receives back a session/JWT from your API
+  4. Stores it and sets the user state
 
-#### 2. Create MSAL utility module
-- Create `src/lib/msalAuth.ts` that initializes the MSAL `PublicClientApplication` instance
-- Handle the redirect flow (popup or redirect-based login)
+#### 5. Update `src/pages/AuthPage.tsx`
+- Add a divider ("or") below the Sign In form
+- Add a "Sign in with Microsoft" button with Microsoft branding
+- Wire it to `signInWithMicrosoft()` with loading/error handling
 
-#### 3. Create backend function to link Microsoft users
-- Create an edge function `msal-auth` that:
-  - Receives the Microsoft ID token after login
-  - Verifies the token
-  - Checks if a user with that email already exists in the database
-  - If yes: signs them in via the existing account
-  - If no: creates a new account and profile, then signs them in
-  - Returns a session token
+#### 6. No backend edge functions
+- Skipping the edge function entirely — your NestJS API handles token verification
 
-#### 4. Add "Sign in with Microsoft" button to AuthPage
-- Add a Microsoft-branded button below the existing Sign In form (with a divider "or")
-- On click: triggers the MSAL popup/redirect flow
-- On success: calls the backend function to get a session, then navigates to the dashboard
+---
 
-#### 5. Update AuthContext
-- Add a `signInWithMicrosoft` method to the AuthContext so it's available app-wide
+### What You Need to Build in NestJS
 
-### Technical Details
+After I finish the frontend, here's what your NestJS API needs:
 
-```text
-Flow:
-  User clicks "Sign in with Microsoft"
-       |
-  MSAL popup opens -> Microsoft login
-       |
-  Microsoft returns ID token to app
-       |
-  App calls edge function with ID token
-       |
-  Edge function verifies token, finds/creates user
-       |
-  Returns Supabase session -> user is logged in
+**Endpoint**: `POST /auth/msal`
+
+**Request body**:
+```json
+{ "idToken": "eyJ..." }
 ```
 
-**Files to create:**
-- `src/config/msalConfig.ts` -- MSAL configuration
-- `src/lib/msalAuth.ts` -- MSAL client initialization and login helper
-- `supabase/functions/msal-auth/index.ts` -- Backend token verification and user linking
+**What it should do**:
+1. Verify the Microsoft ID token signature using Microsoft's JWKS endpoint:
+   `https://login.microsoftonline.com/{tenant}/discovery/v2.0/keys`
+2. Validate claims: `aud` matches your Client ID, `iss` matches your tenant, token not expired
+3. Extract `preferred_username` (email), `given_name`, `family_name`
+4. Find or create user in your PostgreSQL database by email
+5. Return your app's JWT/session token
 
-**Files to modify:**
-- `src/contexts/AuthContext.tsx` -- Add `signInWithMicrosoft` method
-- `src/pages/AuthPage.tsx` -- Add Microsoft sign-in button
-- `package.json` -- Add `@azure/msal-browser` dependency
+**NestJS packages needed**:
+- `jwks-rsa` — fetch Microsoft's public signing keys
+- `jsonwebtoken` — verify the ID token
+- Or use `passport-azure-ad` for a more integrated approach
 
-### What You Need To Do
-1. Complete the Azure App Registration steps above
-2. Come back and share the **Client ID** and **Tenant ID**
-3. I'll then implement everything
+**Response format** (suggestion — I'll match whatever you use):
+```json
+{
+  "access_token": "your-jwt",
+  "user": { "id": "...", "email": "...", "firstName": "...", "lastName": "..." }
+}
+```
+
+---
+
+### Environment Variables (Placeholders)
+- `VITE_MSAL_CLIENT_ID` — your Azure App Client ID
+- `VITE_MSAL_TENANT_ID` — your Azure Tenant ID
+- `VITE_API_BASE_URL` — your NestJS API URL (e.g. `https://api.yourapp.com`)
+
+### Files to Create
+- `src/config/msalConfig.ts`
+- `src/lib/msalAuth.ts`
+
+### Files to Modify
+- `src/contexts/AuthContext.tsx` — add `signInWithMicrosoft` method
+- `src/pages/AuthPage.tsx` — add Microsoft sign-in button
 
