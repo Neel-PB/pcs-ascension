@@ -1,16 +1,41 @@
 
 
-## Fix Column Order Not Matching Specifications
+## Standardize Position Tab Filters
 
-### Problem
-The column definitions in code are in the correct order, but the UI shows columns in a different order (e.g., Hired FTE appearing last in Open Reqs). This is because the `useColumnStore` persists column order/visibility in localStorage. Once a user has visited a tab, the old column order is saved and never overwritten by new code changes.
+### Current State
+- Employee and Contractor tabs have filter sheets with inconsistent filter sets (text inputs for Job Family, number inputs for FTE)
+- Open Position tab (RequisitionsTab) has a filter sheet with vacancy age/lifecycle filters that don't match its columns
+- Open Requisition and Contractor Requisition tabs have non-functional filter buttons (no sheet wired)
 
-### Root Cause
-`src/stores/useColumnStore.ts` uses `persist` middleware with `version: 3`. The `initializeColumns` function preserves existing stored order and only appends new columns. So even though column configs were reordered in code, the browser keeps showing the old arrangement.
+### Plan
 
-### Fix
-Bump the store version from `3` to `4` in `src/stores/useColumnStore.ts`. This invalidates the cached column state in all browsers and forces a fresh initialization from the current column definitions.
+**Create one unified `PositionsFilterSheet` component** that all 5 tabs share. It accepts a config flag for whether to show the Status filter.
 
-### File Modified
-- `src/stores/useColumnStore.ts` -- change `version: 3` to `version: 4` (line 105)
+**Filters (all dropdowns):**
+
+| Filter | Field | Options | Tabs |
+|--------|-------|---------|------|
+| Skill Mix | jobFamily | Dynamic from data | All 5 |
+| Staff Type | employmentType | Full-Time, Part-Time, PRN | All 5 |
+| Shift | shift | Day, Night, Evening, Rotating, Weekend Options | All 5 |
+| FTE Range | FTE (min/max) | Two dropdowns: 0.1, 0.2, ... 1.0 | All 5 |
+| Status | payrollStatus | Active, Leave With Pay, Suspended | Employee, Contractor only |
+| Employee Type | employeeType | Dynamic from data | All 5 |
+
+**Files to create:**
+- `src/components/positions/PositionsFilterSheet.tsx` -- unified filter sheet
+
+**Files to modify:**
+- `src/pages/positions/EmployeesTab.tsx` -- swap EmployeesFilterSheet for PositionsFilterSheet, update filter state/logic
+- `src/pages/positions/ContractorsTab.tsx` -- same
+- `src/pages/positions/RequisitionsTab.tsx` (Open Position) -- same, remove vacancy age/lifecycle filters
+- `src/pages/positions/OpenRequisitionTab.tsx` -- add filter state, wire PositionsFilterSheet
+- `src/pages/positions/ContractorRequisitionTab.tsx` -- add filter state, wire PositionsFilterSheet
+
+**Files to delete (no longer needed):**
+- `src/components/positions/EmployeesFilterSheet.tsx`
+- `src/components/positions/ContractorsFilterSheet.tsx`
+- `src/components/positions/RequisitionsFilterSheet.tsx`
+
+Dynamic dropdown values (Skill Mix, Employee Type) will be extracted from the loaded position data using `useMemo` to get unique values.
 
