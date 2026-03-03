@@ -61,7 +61,7 @@ export function ContractorRequisitionTab({
     selectedRegion, selectedMarket, selectedFacility, selectedDepartment,
   });
 
-  const skillMixOptions = useMemo(() => [...new Set((requisitions || []).map(r => r.jobFamily).filter(Boolean))].sort() as string[], [requisitions]);
+  const skillMixOptions = useMemo(() => [...new Set((requisitions || []).map(r => (r as any).skillMix ?? (r as any).skill_mix).filter(Boolean))].sort() as string[], [requisitions]);
   const employeeTypeOptions = useMemo(() => [...new Set((requisitions || []).map(r => r.employeeType).filter(Boolean))].sort() as string[], [requisitions]);
   const activeFilterCount = useMemo(() => getActiveFilterCount(filters, false), [filters]);
   const clearFilters = () => setFilters({ ...DEFAULT_POSITION_FILTERS });
