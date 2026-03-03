@@ -41,7 +41,7 @@ export function RequisitionsTab({
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [filters, setFilters] = useState<PositionsFilterValues>({ ...DEFAULT_POSITION_FILTERS });
 
-  const skillMixOptions = useMemo(() => [...new Set((requisitions || []).map(r => r.jobFamily).filter(Boolean))].sort() as string[], [requisitions]);
+  const skillMixOptions = useMemo(() => [...new Set((requisitions || []).map(r => (r as any).skillMix ?? (r as any).skill_mix).filter(Boolean))].sort() as string[], [requisitions]);
   const employeeTypeOptions = useMemo(() => [...new Set((requisitions || []).map(r => r.employeeType).filter(Boolean))].sort() as string[], [requisitions]);
 
   const activeFilterCount = useMemo(() => getActiveFilterCount(filters, false), [filters]);

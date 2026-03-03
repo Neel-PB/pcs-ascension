@@ -70,7 +70,7 @@ export function applyPositionFilters<T extends Record<string, any>>(
   showStatus: boolean,
 ): T[] {
   let filtered = [...data];
-  if (filters.skillMix !== "all") filtered = filtered.filter(r => r.jobFamily === filters.skillMix);
+  if (filters.skillMix !== "all") filtered = filtered.filter(r => (r.skillMix ?? r.skill_mix) === filters.skillMix);
   if (filters.staffType !== "all") filtered = filtered.filter(r => r.employmentType === filters.staffType);
   if (filters.shift !== "all") filtered = filtered.filter(r => r.shift === filters.shift);
   if (filters.fteMin !== "all") {

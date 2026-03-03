@@ -55,7 +55,7 @@ export function ContractorsTab({
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [filters, setFilters] = useState<PositionsFilterValues>({ ...DEFAULT_POSITION_FILTERS });
 
-  const skillMixOptions = useMemo(() => [...new Set((contractors || []).map(c => c.jobFamily).filter(Boolean))].sort() as string[], [contractors]);
+  const skillMixOptions = useMemo(() => [...new Set((contractors || []).map(c => (c as any).skillMix ?? (c as any).skill_mix).filter(Boolean))].sort() as string[], [contractors]);
   const employeeTypeOptions = useMemo(() => [...new Set((contractors || []).map(c => c.employeeType).filter(Boolean))].sort() as string[], [contractors]);
 
   const activeFilterCount = useMemo(() => getActiveFilterCount(filters, true), [filters]);
