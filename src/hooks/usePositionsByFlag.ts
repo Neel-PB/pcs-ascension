@@ -18,6 +18,7 @@ const normalizeRow = (row: any) => ({
   positionStatusDate: row.posStatusDate ?? row.positionStatusDate,
   departmentName: row.departmentDescription ?? row.departmentName,
   employmentType: row.employment_type ?? row.employmentType,
+  skillMix: row.skill_mix ?? row.skillMix,
   facility_name: row.businessUnitDescription ?? row.facility_name,
 });
 
