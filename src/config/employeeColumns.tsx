@@ -52,7 +52,7 @@ export const employeeColumns: ColumnDef<Position>[] = [
     sortable: true,
     resizable: false,
     draggable: true,
-    renderCell: (row) => <TruncatedTextCell value={row.skillMix} maxLength={30} />,
+    renderCell: (row) => <TruncatedTextCell value={(row as any).skillMix} maxLength={30} />,
   },
   {
     id: "FTE",
