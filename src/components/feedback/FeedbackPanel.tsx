@@ -10,7 +10,7 @@ const MIN_WIDTH = 490;
 const MAX_WIDTH_VW = 0.7;
 const SNAP_POINTS = [400, 520, 640, 820];
 
-const FORM_ID = 'feedback-form';
+const FORM_ID = 'feedback-form'; 
 
 export const FeedbackPanel: React.FC = () => {
   const { isOpen, setOpen, clearScreenshot } = useFeedbackStore();
