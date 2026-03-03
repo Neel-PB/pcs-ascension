@@ -1,16 +1,16 @@
-import { ColumnDef } from '@/types/table';
-import { Position } from '@/types/position';
-import { BadgeCell } from '@/components/editable-table/cells/BadgeCell';
-import { CommentIndicatorCell } from '@/components/editable-table/cells/CommentIndicatorCell';
-import { ShiftCell } from '@/components/editable-table/cells/ShiftCell';
-import { TruncatedTextCell } from '@/components/editable-table/cells/TruncatedTextCell';
-import { MessageSquare } from '@/lib/icons';
+import { ColumnDef } from "@/types/table";
+import { Position } from "@/types/position";
+import { BadgeCell } from "@/components/editable-table/cells/BadgeCell";
+import { CommentIndicatorCell } from "@/components/editable-table/cells/CommentIndicatorCell";
+import { ShiftCell } from "@/components/editable-table/cells/ShiftCell";
+import { TruncatedTextCell } from "@/components/editable-table/cells/TruncatedTextCell";
+import { MessageSquare } from "@/lib/icons";
 
 export const contractorColumns: ColumnDef<Position>[] = [
   {
-    id: 'positionNum',
-    label: 'Position No',
-    type: 'text',
+    id: "positionNum",
+    label: "Position No",
+    type: "text",
     width: 160,
     minWidth: 150,
     sortable: true,
@@ -19,48 +19,42 @@ export const contractorColumns: ColumnDef<Position>[] = [
     locked: true,
   },
   {
-    id: 'employeeName',
-    label: 'Contractor Name',
-    type: 'custom',
+    id: "employeeName",
+    label: "Contractor Name",
+    type: "custom",
     width: 240,
     minWidth: 220,
     sortable: true,
     resizable: false,
     draggable: true,
-    renderCell: (row) => (
-      <TruncatedTextCell value={row.employeeName} maxLength={30} />
-    ),
+    renderCell: (row) => <TruncatedTextCell value={row.employeeName} maxLength={30} />,
   },
   {
-    id: 'jobTitle',
-    label: 'Job Title',
-    type: 'custom',
+    id: "jobTitle",
+    label: "Job Title",
+    type: "custom",
     width: 240,
     minWidth: 200,
     sortable: true,
     resizable: false,
     draggable: true,
-    renderCell: (row) => (
-      <TruncatedTextCell value={row.jobTitle} maxLength={30} />
-    ),
+    renderCell: (row) => <TruncatedTextCell value={row.jobTitle} maxLength={30} />,
   },
   {
-    id: 'jobFamily',
-    label: 'Skill Mix',
-    type: 'custom',
+    id: "skillMix",
+    label: "Skill Mix",
+    type: "custom",
     width: 180,
     minWidth: 160,
     sortable: true,
     resizable: false,
     draggable: true,
-    renderCell: (row) => (
-      <TruncatedTextCell value={row.jobFamily} maxLength={30} />
-    ),
+    renderCell: (row) => <TruncatedTextCell value={row.skillMix} maxLength={30} />,
   },
   {
-    id: 'FTE',
-    label: 'Hired FTE',
-    type: 'number',
+    id: "FTE",
+    label: "Hired FTE",
+    type: "number",
     width: 120,
     minWidth: 100,
     sortable: true,
@@ -68,9 +62,9 @@ export const contractorColumns: ColumnDef<Position>[] = [
     draggable: true,
   },
   {
-    id: 'shift',
-    label: 'Shift',
-    type: 'custom',
+    id: "shift",
+    label: "Shift",
+    type: "custom",
     width: 180,
     minWidth: 160,
     sortable: true,
@@ -80,9 +74,9 @@ export const contractorColumns: ColumnDef<Position>[] = [
     renderCell: (row) => <ShiftCell value={row.shift} />,
   },
   {
-    id: 'status',
-    label: 'Status',
-    type: 'custom',
+    id: "status",
+    label: "Status",
+    type: "custom",
     width: 140,
     minWidth: 130,
     sortable: false,
@@ -91,23 +85,21 @@ export const contractorColumns: ColumnDef<Position>[] = [
     renderCell: (row) => (
       <BadgeCell
         value={row.payrollStatus}
-        variant={row.payrollStatus === 'Active' ? 'default' : 'secondary'}
+        variant={row.payrollStatus === "Active" ? "default" : "secondary"}
         maxLength={30}
       />
     ),
   },
   {
-    id: 'employmentType',
-    label: 'Staff Type',
-    type: 'custom',
+    id: "employmentType",
+    label: "Staff Type",
+    type: "custom",
     width: 180,
     minWidth: 170,
     sortable: true,
     resizable: false,
     draggable: true,
-    renderCell: (row) => (
-      <TruncatedTextCell value={row.employmentType} maxLength={30} />
-    ),
+    renderCell: (row) => <TruncatedTextCell value={row.employmentType} maxLength={30} />,
   },
 ];
 
@@ -120,9 +112,9 @@ export const createContractorColumnsWithComments = (
   return [
     ...contractorColumns,
     {
-      id: 'comments',
-      label: 'Comments',
-      type: 'custom',
+      id: "comments",
+      label: "Comments",
+      type: "custom",
       width: 60,
       minWidth: 60,
       sortable: false,
@@ -134,10 +126,7 @@ export const createContractorColumnsWithComments = (
         </span>
       ),
       renderCell: (row) => (
-        <CommentIndicatorCell
-          count={commentCounts.get(row.id) ?? 0}
-          onClick={() => onRowClick(row)}
-        />
+        <CommentIndicatorCell count={commentCounts.get(row.id) ?? 0} onClick={() => onRowClick(row)} />
       ),
     },
   ];
