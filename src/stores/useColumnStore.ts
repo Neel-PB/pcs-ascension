@@ -123,7 +123,7 @@ export const useColumnStore = create<ColumnStore>()(
     }),
     {
       name: 'editable-table-columns',
-      version: 3,
+      version: 4,
     }
   )
 );
