@@ -6,9 +6,6 @@ import { ShiftCell } from '@/components/editable-table/cells/ShiftCell';
 import { TruncatedTextCell } from '@/components/editable-table/cells/TruncatedTextCell';
 import { MessageSquare } from '@/lib/icons';
 
-// Type for the shift override handler
-type ShiftOverrideHandler = (positionId: string, originalShift: string | null, value: string | null) => void;
-
 export const contractorColumns: ColumnDef<Position>[] = [
   {
     id: 'positionNum',
@@ -23,7 +20,7 @@ export const contractorColumns: ColumnDef<Position>[] = [
   },
   {
     id: 'employeeName',
-    label: 'Name',
+    label: 'Contractor Name',
     type: 'custom',
     width: 240,
     minWidth: 220,
@@ -48,16 +45,16 @@ export const contractorColumns: ColumnDef<Position>[] = [
     ),
   },
   {
-    id: 'employmentType',
-    label: 'Staff Type',
+    id: 'jobFamily',
+    label: 'Skill Mix',
     type: 'custom',
     width: 180,
-    minWidth: 170,
+    minWidth: 160,
     sortable: true,
     resizable: false,
     draggable: true,
     renderCell: (row) => (
-      <TruncatedTextCell value={row.employmentType} maxLength={30} />
+      <TruncatedTextCell value={row.jobFamily} maxLength={30} />
     ),
   },
   {
@@ -99,32 +96,29 @@ export const contractorColumns: ColumnDef<Position>[] = [
       />
     ),
   },
+  {
+    id: 'employmentType',
+    label: 'Staff Type',
+    type: 'custom',
+    width: 180,
+    minWidth: 170,
+    sortable: true,
+    resizable: false,
+    draggable: true,
+    renderCell: (row) => (
+      <TruncatedTextCell value={row.employmentType} maxLength={30} />
+    ),
+  },
 ];
 
 // Function to create columns with comment counts and handlers
+// Contractor shift is NOT editable - no shift override wiring
 export const createContractorColumnsWithComments = (
   commentCounts: Map<string, number>,
   onRowClick: (row: Position) => void,
-  onUpdateShiftOverride?: ShiftOverrideHandler,
 ): ColumnDef<Position>[] => {
-  const columnsWithEnhancements = contractorColumns.map(col => {
-    if (col.id === 'shift') {
-      return {
-        ...col,
-        renderCell: (row: Position) => (
-          <ShiftCell 
-            value={row.shift} 
-            selectedDayNight={row.shift_override}
-            onSave={(val) => onUpdateShiftOverride?.(row.id, row.shift, val)}
-          />
-        ),
-      };
-    }
-    return col;
-  });
-
   return [
-    ...columnsWithEnhancements,
+    ...contractorColumns,
     {
       id: 'comments',
       label: 'Comments',

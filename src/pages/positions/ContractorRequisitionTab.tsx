@@ -2,8 +2,10 @@ import { useMemo } from "react";
 import { Filter } from "@/lib/icons";
 import { EditableTable } from "@/components/editable-table/EditableTable";
 import { ColumnDef } from "@/types/table";
+import { differenceInDays } from "date-fns";
 
 import { TruncatedTextCell } from "@/components/editable-table/cells/TruncatedTextCell";
+import { BadgeCell } from "@/components/editable-table/cells/BadgeCell";
 import { ShiftCell } from "@/components/editable-table/cells/ShiftCell";
 import { SearchField } from "@/components/ui/search-field";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
@@ -13,12 +15,40 @@ import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { usePositionsByFlag } from "@/hooks/usePositionsByFlag";
 import { LogoLoader } from "@/components/ui/LogoLoader";
 
+const getVacancyAge = (statusDate: string | null) => {
+  if (!statusDate) return null;
+  return differenceInDays(new Date(), new Date(statusDate));
+};
+
+const getVacancyBadge = (days: number | null) => {
+  if (!days) return { variant: 'secondary' as const, label: '—', className: '' };
+  if (days > 60)
+    return { variant: 'outline' as const, label: `${days}d - Urgent`, className: 'border-orange-500/50 bg-orange-500/10 text-orange-700 dark:text-orange-400' };
+  if (days > 30)
+    return { variant: 'outline' as const, label: `${days}d - Attention`, className: 'border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400' };
+  return { variant: 'outline' as const, label: `${days}d - On Track`, className: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' };
+};
+
 const columns: ColumnDef<any>[] = [
   { id: "positionNum", label: "Position No", type: "text", width: 160, minWidth: 150, sortable: true, resizable: false, draggable: true, locked: true },
   { id: "jobTitle", label: "Job Title", type: "custom", width: 260, minWidth: 200, sortable: true, resizable: false, draggable: true, renderCell: (row) => <TruncatedTextCell value={row.jobTitle} maxLength={30} /> },
-  { id: "employmentType", label: "Staff Type", type: "custom", width: 180, minWidth: 170, sortable: true, resizable: false, draggable: true, renderCell: (row) => <TruncatedTextCell value={row.employmentType} maxLength={30} /> },
+  { id: "jobFamily", label: "Skill Mix", type: "custom", width: 180, minWidth: 160, sortable: true, resizable: false, draggable: true, renderCell: (row) => <TruncatedTextCell value={row.jobFamily} maxLength={30} /> },
+  { id: "vacancyAge", label: "Vacancy Age", type: "custom", width: 180, minWidth: 170, sortable: true, resizable: false, draggable: true,
+    getValue: (row) => getVacancyAge(row.positionStatusDate),
+    renderCell: (row) => {
+      const days = getVacancyAge(row.positionStatusDate);
+      const badge = getVacancyBadge(days);
+      return <BadgeCell value={badge.label} variant={badge.variant} className={badge.className} maxLength={30} />;
+    },
+    sortFn: (a, b) => {
+      const aDays = getVacancyAge(a.positionStatusDate) ?? 0;
+      const bDays = getVacancyAge(b.positionStatusDate) ?? 0;
+      return aDays - bDays;
+    },
+  },
   { id: "FTE", label: "Hired FTE", type: "number", width: 120, minWidth: 100, sortable: true, resizable: false, draggable: true },
   { id: "shift", label: "Shift", type: "custom", width: 180, minWidth: 160, sortable: true, resizable: false, draggable: true, renderCell: (row) => <ShiftCell value={row.shift} /> },
+  { id: "employmentType", label: "Staff Type", type: "custom", width: 180, minWidth: 170, sortable: true, resizable: false, draggable: true, renderCell: (row) => <TruncatedTextCell value={row.employmentType} maxLength={30} /> },
 ];
 
 interface ContractorRequisitionTabProps {
@@ -46,7 +76,7 @@ export function ContractorRequisitionTab({
     if (!requisitions) return [];
     if (!debouncedSearch) return requisitions;
     const q = debouncedSearch.toLowerCase();
-    return requisitions.filter((r: any) => [r.requisitionNum, r.positionNum, r.jobTitle, r.shift, r.employmentType, r.positionLifecycle].some(f => f?.toLowerCase().includes(q)));
+    return requisitions.filter((r: any) => [r.positionNum, r.jobTitle, r.jobFamily, r.shift, r.employmentType].some(f => f?.toLowerCase().includes(q)));
   }, [requisitions, debouncedSearch]);
 
   const showEmptyState = !isFetching && (!requisitions || requisitions.length === 0);

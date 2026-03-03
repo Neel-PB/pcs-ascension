@@ -159,7 +159,7 @@ export function ContractorsTab({
 
   const columnsWithHandlers = useMemo(() => {
     const baseColumns = createContractorColumnsWithComments(
-      commentCounts, handleCommentClick, handleShiftOverrideUpdate,
+      commentCounts, handleCommentClick,
     );
     return baseColumns.map(col => {
       if (col.id === 'actual_fte') {
