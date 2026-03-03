@@ -1,11 +1,11 @@
-import { ColumnDef } from '@/types/table';
-import { Position } from '@/types/position';
-import { BadgeCell } from '@/components/editable-table/cells/BadgeCell';
-import { CommentIndicatorCell } from '@/components/editable-table/cells/CommentIndicatorCell';
-import { ShiftCell } from '@/components/editable-table/cells/ShiftCell';
-import { TruncatedTextCell } from '@/components/editable-table/cells/TruncatedTextCell';
-import { differenceInDays } from 'date-fns';
-import { MessageSquare } from '@/lib/icons';
+import { ColumnDef } from "@/types/table";
+import { Position } from "@/types/position";
+import { BadgeCell } from "@/components/editable-table/cells/BadgeCell";
+import { CommentIndicatorCell } from "@/components/editable-table/cells/CommentIndicatorCell";
+import { ShiftCell } from "@/components/editable-table/cells/ShiftCell";
+import { TruncatedTextCell } from "@/components/editable-table/cells/TruncatedTextCell";
+import { differenceInDays } from "date-fns";
+import { MessageSquare } from "@/lib/icons";
 
 // Helper to calculate vacancy age
 const getVacancyAge = (statusDate: string | null) => {
@@ -15,19 +15,31 @@ const getVacancyAge = (statusDate: string | null) => {
 
 // Helper to get vacancy badge
 const getVacancyBadge = (days: number | null) => {
-  if (!days) return { variant: 'secondary' as const, label: '—', className: '' };
+  if (!days) return { variant: "secondary" as const, label: "—", className: "" };
   if (days > 60)
-    return { variant: 'outline' as const, label: `${days}d - Urgent`, className: 'border-orange-500/50 bg-orange-500/10 text-orange-700 dark:text-orange-400' };
+    return {
+      variant: "outline" as const,
+      label: `${days}d - Urgent`,
+      className: "border-orange-500/50 bg-orange-500/10 text-orange-700 dark:text-orange-400",
+    };
   if (days > 30)
-    return { variant: 'outline' as const, label: `${days}d - Attention`, className: 'border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400' };
-  return { variant: 'outline' as const, label: `${days}d - On Track`, className: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' };
+    return {
+      variant: "outline" as const,
+      label: `${days}d - Attention`,
+      className: "border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400",
+    };
+  return {
+    variant: "outline" as const,
+    label: `${days}d - On Track`,
+    className: "border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+  };
 };
 
 export const requisitionColumns: ColumnDef<Position>[] = [
   {
-    id: 'positionNum',
-    label: 'Position No',
-    type: 'text',
+    id: "positionNum",
+    label: "Position No",
+    type: "text",
     width: 160,
     minWidth: 150,
     sortable: true,
@@ -36,35 +48,31 @@ export const requisitionColumns: ColumnDef<Position>[] = [
     locked: true,
   },
   {
-    id: 'jobTitle',
-    label: 'Job Title',
-    type: 'custom',
+    id: "jobTitle",
+    label: "Job Title",
+    type: "custom",
     width: 240,
     minWidth: 200,
     sortable: true,
     resizable: false,
     draggable: true,
-    renderCell: (row) => (
-      <TruncatedTextCell value={row.jobTitle} maxLength={30} />
-    ),
+    renderCell: (row) => <TruncatedTextCell value={row.jobTitle} maxLength={30} />,
   },
   {
-    id: 'jobFamily',
-    label: 'Skill Mix',
-    type: 'custom',
+    id: "skillMix",
+    label: "Skill Mix",
+    type: "custom",
     width: 180,
     minWidth: 160,
     sortable: true,
     resizable: false,
     draggable: true,
-    renderCell: (row) => (
-      <TruncatedTextCell value={row.jobFamily} maxLength={30} />
-    ),
+    renderCell: (row) => <TruncatedTextCell value={row.skillMix} maxLength={30} />,
   },
   {
-    id: 'vacancyAge',
-    label: 'Vacancy Age',
-    type: 'custom',
+    id: "vacancyAge",
+    label: "Vacancy Age",
+    type: "custom",
     width: 180,
     minWidth: 170,
     sortable: true,
@@ -83,9 +91,9 @@ export const requisitionColumns: ColumnDef<Position>[] = [
     },
   },
   {
-    id: 'FTE',
-    label: 'Hired FTE',
-    type: 'number',
+    id: "FTE",
+    label: "Hired FTE",
+    type: "number",
     width: 120,
     minWidth: 100,
     sortable: true,
@@ -93,9 +101,9 @@ export const requisitionColumns: ColumnDef<Position>[] = [
     draggable: true,
   },
   {
-    id: 'shift',
-    label: 'Shift',
-    type: 'custom',
+    id: "shift",
+    label: "Shift",
+    type: "custom",
     width: 180,
     minWidth: 160,
     sortable: true,
@@ -104,17 +112,15 @@ export const requisitionColumns: ColumnDef<Position>[] = [
     renderCell: (row) => <ShiftCell value={row.shift} />,
   },
   {
-    id: 'employmentType',
-    label: 'Staff Type',
-    type: 'custom',
+    id: "employmentType",
+    label: "Staff Type",
+    type: "custom",
     width: 180,
     minWidth: 170,
     sortable: true,
     resizable: false,
     draggable: true,
-    renderCell: (row) => (
-      <TruncatedTextCell value={row.employmentType} maxLength={30} />
-    ),
+    renderCell: (row) => <TruncatedTextCell value={row.employmentType} maxLength={30} />,
   },
 ];
 
@@ -126,9 +132,9 @@ export const createRequisitionColumnsWithComments = (
   return [
     ...requisitionColumns,
     {
-      id: 'comments',
-      label: 'Comments',
-      type: 'custom',
+      id: "comments",
+      label: "Comments",
+      type: "custom",
       width: 60,
       minWidth: 60,
       sortable: false,
@@ -140,10 +146,7 @@ export const createRequisitionColumnsWithComments = (
         </span>
       ),
       renderCell: (row) => (
-        <CommentIndicatorCell
-          count={commentCounts.get(row.id) ?? 0}
-          onClick={() => onRowClick(row)}
-        />
+        <CommentIndicatorCell count={commentCounts.get(row.id) ?? 0} onClick={() => onRowClick(row)} />
       ),
     },
   ];
