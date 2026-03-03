@@ -17,7 +17,7 @@ const normalizeRow = (row: any) => ({
   actual_fte: parseFloat(row.activeFte ?? row.actual_fte) || 0,
   positionStatusDate: row.posStatusDate ?? row.positionStatusDate,
   departmentName: row.departmentDescription ?? row.departmentName,
-  employmentType: row.employeeType ?? row.employmentType,
+  employmentType: row.employment_type ?? row.employeeType ?? row.employmentType,
   facility_name: row.businessUnitDescription ?? row.facility_name,
 });
 
