@@ -46,15 +46,25 @@ export function DraggableColumnHeader<T = any>({
     willChange: isDragging ? 'transform' : undefined,
   } as React.CSSProperties;
 
+  const isActive = sortField === column.id;
+
+  const handleSort = () => {
+    if (!onSort) return;
+    const newDirection = isActive && sortDirection === 'asc' ? 'desc' : 'asc';
+    onSort(newDirection);
+  };
+
   const getSortIcon = () => {
-    if (!column.sortable || sortField !== column.id) {
-      return null; // Don't show sort icon when not sorted
+    if (!column.sortable) return null;
+    if (isActive) {
+      return sortDirection === 'asc' ? (
+        <ArrowUp className="h-3 w-3" />
+      ) : (
+        <ArrowDown className="h-3 w-3" />
+      );
     }
-    return sortDirection === 'asc' ? (
-      <ArrowUp className="h-3 w-3" />
-    ) : (
-      <ArrowDown className="h-3 w-3" />
-    );
+    // Show muted icon on hover for sortable but unsorted columns
+    return <ArrowUp className="h-3 w-3 opacity-0 group-hover:opacity-40 transition-opacity" />;
   };
 
   return (
@@ -62,12 +72,14 @@ export function DraggableColumnHeader<T = any>({
       ref={setNodeRef}
       style={style}
       data-column-header
+      onClick={onSort ? handleSort : undefined}
       className={cn(
         "relative group h-12 px-4 flex items-center gap-2",
         "text-xs uppercase tracking-wider font-medium text-muted-foreground",
         "border-r border-border last:border-r-0",
         "[backface-visibility:hidden] [transform-style:preserve-3d]",
         "[-webkit-font-smoothing:antialiased] [-moz-osx-font-smoothing:grayscale]",
+        onSort && "cursor-pointer select-none",
         column.headerClassName
       )}
     >

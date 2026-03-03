@@ -79,7 +79,7 @@ export const contractorColumns: ColumnDef<Position>[] = [
     type: "custom",
     width: 140,
     minWidth: 130,
-    sortable: false,
+    sortable: true,
     resizable: false,
     draggable: true,
     renderCell: (row) => (
