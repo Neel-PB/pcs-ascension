@@ -44,7 +44,7 @@ export const employeeColumns: ColumnDef<Position>[] = [
     renderCell: (row) => <TruncatedTextCell value={row.jobTitle} maxLength={30} />,
   },
   {
-    id: "jobFamily",
+    id: "SkillMix",
     label: "Skill Mix",
     type: "custom",
     width: 180,
@@ -52,7 +52,7 @@ export const employeeColumns: ColumnDef<Position>[] = [
     sortable: true,
     resizable: false,
     draggable: true,
-    renderCell: (row) => <TruncatedTextCell value={row.jobFamily} maxLength={30} />,
+    renderCell: (row) => <TruncatedTextCell value={row.skillMix} maxLength={30} />,
   },
   {
     id: "FTE",
