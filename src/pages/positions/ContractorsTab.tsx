@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { LogoLoader } from "@/components/ui/LogoLoader";
 import { SearchField } from "@/components/ui/search-field";
 import { ContractorDetailsSheet } from "@/components/workforce/ContractorDetailsSheet";
-import { ContractorsFilterSheet } from "@/components/positions/ContractorsFilterSheet";
+import { PositionsFilterSheet, PositionsFilterValues, DEFAULT_POSITION_FILTERS, getActiveFilterCount, applyPositionFilters } from "@/components/positions/PositionsFilterSheet";
 import { EditableTable } from "@/components/editable-table/EditableTable";
 import { PositionKPICards } from "@/components/positions/PositionKPICards";
 
@@ -30,20 +30,12 @@ interface ContractorsTabProps {
 }
 
 export function ContractorsTab({
-  selectedRegion,
-  selectedMarket,
-  selectedFacility,
-  selectedPstat,
-  selectedLevel2,
-  selectedDepartment,
+  selectedRegion, selectedMarket, selectedFacility, selectedPstat, selectedLevel2, selectedDepartment,
 }: ContractorsTabProps) {
   useCheckExpiredFte();
 
   const { data: contractors, isFetching } = usePositionsByFlag('contractor_flag', {
-    selectedRegion,
-    selectedMarket,
-    selectedFacility,
-    selectedDepartment,
+    selectedRegion, selectedMarket, selectedFacility, selectedDepartment,
   });
 
   const updateActualFte = useUpdateActualFte();
@@ -51,10 +43,9 @@ export function ContractorsTab({
   
   const { markets, getFacilitiesByMarket, getDepartmentsByFacility } = useFilterData();
   const filterDataProvider: FilterDataProvider = useMemo(() => ({
-    markets,
-    getFacilitiesByMarket,
-    getDepartmentsByFacility,
+    markets, getFacilitiesByMarket, getDepartmentsByFacility,
   }), [markets, getFacilitiesByMarket, getDepartmentsByFacility]);
+
   const [selectedContractor, setSelectedContractor] = useState<any>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetDefaultTab, setSheetDefaultTab] = useState<"details" | "comments">("details");
@@ -62,44 +53,23 @@ export function ContractorsTab({
   const { inputValue: searchQuery, debouncedValue: debouncedSearch, setInputValue: setSearchQuery } = useDebouncedSearch(300);
   const [sortColumn, setSortColumn] = useState<string>("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const [filters, setFilters] = useState({
-    employmentType: "all",
-    skillType: "",
-    shift: "all",
-    fteMin: "",
-    fteMax: "",
-  });
+  const [filters, setFilters] = useState<PositionsFilterValues>({ ...DEFAULT_POSITION_FILTERS });
+
+  const skillMixOptions = useMemo(() => [...new Set((contractors || []).map(c => c.jobFamily).filter(Boolean))].sort() as string[], [contractors]);
+  const employeeTypeOptions = useMemo(() => [...new Set((contractors || []).map(c => c.employeeType).filter(Boolean))].sort() as string[], [contractors]);
+
+  const activeFilterCount = useMemo(() => getActiveFilterCount(filters, true), [filters]);
 
   const handleRowClick = useCallback((contractor: any) => {
-    setSelectedContractor(contractor);
-    setSheetDefaultTab("details");
-    setSheetOpen(true);
+    setSelectedContractor(contractor); setSheetDefaultTab("details"); setSheetOpen(true);
   }, []);
 
   const handleCommentClick = useCallback((contractor: any) => {
-    setSelectedContractor(contractor);
-    setSheetDefaultTab("comments");
-    setSheetOpen(true);
+    setSelectedContractor(contractor); setSheetDefaultTab("comments"); setSheetOpen(true);
   }, []);
 
-  const handleSort = (columnId: string, direction: "asc" | "desc") => {
-    setSortColumn(columnId);
-    setSortDirection(direction);
-  };
-
-  const clearFilters = () => {
-    setFilters({ employmentType: "all", skillType: "", shift: "all", fteMin: "", fteMax: "" });
-  };
-
-  const activeFilterCount = useMemo(() => {
-    let count = 0;
-    if (filters.employmentType !== "all") count++;
-    if (filters.skillType) count++;
-    if (filters.shift !== "all") count++;
-    if (filters.fteMin) count++;
-    if (filters.fteMax) count++;
-    return count;
-  }, [filters]);
+  const handleSort = (columnId: string, direction: "asc" | "desc") => { setSortColumn(columnId); setSortDirection(direction); };
+  const clearFilters = () => setFilters({ ...DEFAULT_POSITION_FILTERS });
 
   const handleActualFteUpdate = useCallback((
     id: string, previousFte: number | null, previousExpiry: string | null, previousStatus: string | null,
@@ -124,11 +94,7 @@ export function ContractorsTab({
       });
     }
 
-    if (filters.employmentType !== "all") filtered = filtered.filter((c) => c.employmentType === filters.employmentType);
-    if (filters.skillType) filtered = filtered.filter((c) => c.jobFamily?.toLowerCase().includes(filters.skillType.toLowerCase()));
-    if (filters.shift !== "all") filtered = filtered.filter((c) => c.shift === filters.shift);
-    if (filters.fteMin) { const min = parseFloat(filters.fteMin); filtered = filtered.filter((c) => (Number(c.FTE) || 0) >= min); }
-    if (filters.fteMax) { const max = parseFloat(filters.fteMax); filtered = filtered.filter((c) => (Number(c.FTE) || 0) <= max); }
+    filtered = applyPositionFilters(filtered, filters, true);
 
     if (sortColumn) {
       filtered.sort((a, b) => {
@@ -158,9 +124,7 @@ export function ContractorsTab({
   const firstRowId = filteredAndSortedContractors[0]?.id;
 
   const columnsWithHandlers = useMemo(() => {
-    const baseColumns = createContractorColumnsWithComments(
-      commentCounts, handleCommentClick,
-    );
+    const baseColumns = createContractorColumnsWithComments(commentCounts, handleCommentClick);
     return baseColumns.map(col => {
       if (col.id === 'actual_fte') {
         return {
@@ -199,22 +163,13 @@ export function ContractorsTab({
   return (
     <div className="flex flex-col gap-4 min-h-0 max-h-full overflow-hidden">
       <div className="flex items-center gap-4 flex-shrink-0">
-        <SearchField
-          placeholder="Search contractors..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-[32rem]"
-          data-tour="positions-search"
-        />
-
+        <SearchField placeholder="Search contractors..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-[32rem]" data-tour="positions-search" />
         <div className="flex gap-2 items-center flex-shrink-0 ml-auto">
           <PositionKPICards items={[
             { label: "Contractors", value: totals.totalContractorNames },
             { label: "Hired FTE", value: totals.totalHiredFTE },
           ]} />
-          <span data-tour="positions-refresh">
-            <DataRefreshButton dataSources={['positions_data']} />
-          </span>
+          <span data-tour="positions-refresh"><DataRefreshButton dataSources={['positions_data']} /></span>
           <Button variant="ascension" size="icon" onClick={() => setFilterOpen(true)} className="relative" aria-label="Filters" title="Filters" data-tour="positions-filter-btn">
             <Filter className="h-4 w-4" />
             {activeFilterCount > 0 && (
@@ -232,22 +187,12 @@ export function ContractorsTab({
         </div>
       ) : (
         <div data-tour="positions-table" className="min-h-0 max-h-full flex flex-col">
-          <EditableTable
-            columns={columnsWithHandlers}
-            data={filteredAndSortedContractors}
-            getRowId={(row) => row.id}
-            sortField={sortColumn}
-            sortDirection={sortDirection}
-            onSort={handleSort}
-            onRowClick={handleRowClick}
-            storeNamespace="contractors-columns-v3"
-            className="min-h-0 max-h-full"
-          />
+          <EditableTable columns={columnsWithHandlers} data={filteredAndSortedContractors} getRowId={(row) => row.id} sortField={sortColumn} sortDirection={sortDirection} onSort={handleSort} onRowClick={handleRowClick} storeNamespace="contractors-columns-v3" className="min-h-0 max-h-full" />
         </div>
       )}
 
       <ContractorDetailsSheet open={sheetOpen} onOpenChange={setSheetOpen} contractor={selectedContractor} defaultTab={sheetDefaultTab} />
-      <ContractorsFilterSheet open={filterOpen} onOpenChange={setFilterOpen} filters={filters} onFiltersChange={setFilters} onClearFilters={clearFilters} activeFilterCount={activeFilterCount} />
+      <PositionsFilterSheet open={filterOpen} onOpenChange={setFilterOpen} filters={filters} onFiltersChange={setFilters} onClearFilters={clearFilters} activeFilterCount={activeFilterCount} showStatus skillMixOptions={skillMixOptions} employeeTypeOptions={employeeTypeOptions} title="Filter Contractors" />
     </div>
   );
 }

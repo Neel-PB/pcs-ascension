@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { LogoLoader } from "@/components/ui/LogoLoader";
 import { SearchField } from "@/components/ui/search-field";
 import { RequisitionDetailsSheet } from "@/components/workforce/RequisitionDetailsSheet";
-import { RequisitionsFilterSheet } from "@/components/positions/RequisitionsFilterSheet";
+import { PositionsFilterSheet, PositionsFilterValues, DEFAULT_POSITION_FILTERS, getActiveFilterCount, applyPositionFilters } from "@/components/positions/PositionsFilterSheet";
 import { EditableTable } from "@/components/editable-table/EditableTable";
 import { PositionKPICards } from "@/components/positions/PositionKPICards";
 
@@ -26,12 +26,7 @@ interface RequisitionsTabProps {
 }
 
 export function RequisitionsTab({
-  selectedRegion,
-  selectedMarket,
-  selectedFacility,
-  selectedPstat,
-  selectedLevel2,
-  selectedDepartment,
+  selectedRegion, selectedMarket, selectedFacility, selectedPstat, selectedLevel2, selectedDepartment,
 }: RequisitionsTabProps) {
   const { data: requisitions, isFetching } = usePositionsByFlag('open_position_flag', {
     selectedRegion, selectedMarket, selectedFacility, selectedDepartment,
@@ -44,9 +39,12 @@ export function RequisitionsTab({
   const { inputValue: searchQuery, debouncedValue: debouncedSearch, setInputValue: setSearchQuery } = useDebouncedSearch(300);
   const [sortColumn, setSortColumn] = useState<string>("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const [filters, setFilters] = useState({
-    vacancyAgeMin: "", vacancyAgeMax: "", positionLifecycle: "all", skillType: "", shift: "all", employmentType: "all",
-  });
+  const [filters, setFilters] = useState<PositionsFilterValues>({ ...DEFAULT_POSITION_FILTERS });
+
+  const skillMixOptions = useMemo(() => [...new Set((requisitions || []).map(r => r.jobFamily).filter(Boolean))].sort() as string[], [requisitions]);
+  const employeeTypeOptions = useMemo(() => [...new Set((requisitions || []).map(r => r.employeeType).filter(Boolean))].sort() as string[], [requisitions]);
+
+  const activeFilterCount = useMemo(() => getActiveFilterCount(filters, false), [filters]);
 
   const handleRowClick = useCallback((requisition: any) => {
     setSelectedRequisition(requisition); setSheetDefaultTab("details"); setSheetOpen(true);
@@ -62,21 +60,7 @@ export function RequisitionsTab({
   };
 
   const handleSort = (columnId: string, direction: "asc" | "desc") => { setSortColumn(columnId); setSortDirection(direction); };
-
-  const clearFilters = () => {
-    setFilters({ vacancyAgeMin: "", vacancyAgeMax: "", positionLifecycle: "all", skillType: "", shift: "all", employmentType: "all" });
-  };
-
-  const activeFilterCount = useMemo(() => {
-    let count = 0;
-    if (filters.vacancyAgeMin) count++;
-    if (filters.vacancyAgeMax) count++;
-    if (filters.positionLifecycle !== "all") count++;
-    if (filters.skillType) count++;
-    if (filters.shift !== "all") count++;
-    if (filters.employmentType !== "all") count++;
-    return count;
-  }, [filters]);
+  const clearFilters = () => setFilters({ ...DEFAULT_POSITION_FILTERS });
 
   const filteredAndSortedRequisitions = useMemo(() => {
     if (!requisitions) return [];
@@ -85,17 +69,12 @@ export function RequisitionsTab({
     if (debouncedSearch) {
       const query = debouncedSearch.toLowerCase();
       filtered = filtered.filter((r) => {
-        const fields = [r.positionNum, r.jobTitle, r.jobFamily, r.departmentName, r.positionLifecycle, r.employmentType, r.shift];
+        const fields = [r.positionNum, r.jobTitle, r.jobFamily, r.departmentName, r.employmentType, r.shift];
         return fields.some((f) => f?.toString().toLowerCase().includes(query));
       });
     }
 
-    if (filters.vacancyAgeMin) { const min = parseInt(filters.vacancyAgeMin); filtered = filtered.filter((r) => (r.vacancyAge ?? 0) >= min); }
-    if (filters.vacancyAgeMax) { const max = parseInt(filters.vacancyAgeMax); filtered = filtered.filter((r) => (r.vacancyAge ?? 0) <= max); }
-    if (filters.positionLifecycle !== "all") filtered = filtered.filter((r) => r.positionLifecycle === filters.positionLifecycle);
-    if (filters.skillType) filtered = filtered.filter((r) => r.jobFamily?.toLowerCase().includes(filters.skillType.toLowerCase()));
-    if (filters.shift !== "all") filtered = filtered.filter((r) => r.shift === filters.shift);
-    if (filters.employmentType !== "all") filtered = filtered.filter((r) => r.employmentType === filters.employmentType);
+    filtered = applyPositionFilters(filtered, filters, false);
 
     if (sortColumn) {
       filtered.sort((a, b) => {
@@ -111,7 +90,6 @@ export function RequisitionsTab({
 
   const positionIds = useMemo(() => filteredAndSortedRequisitions.map(r => r.id), [filteredAndSortedRequisitions]);
   const commentCounts = usePositionCommentCounts(positionIds);
-
   const totalCount = useMemo(() => filteredAndSortedRequisitions.length, [filteredAndSortedRequisitions]);
 
   const columnsWithComments = useMemo(() =>
@@ -124,19 +102,10 @@ export function RequisitionsTab({
   return (
     <div className="flex flex-col gap-4 min-h-0 max-h-full overflow-hidden">
       <div className="flex items-center gap-4 flex-shrink-0">
-        <SearchField
-          placeholder="Search requisitions..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-[32rem]"
-          data-tour="positions-search"
-        />
-
+        <SearchField placeholder="Search requisitions..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-[32rem]" data-tour="positions-search" />
         <div className="flex gap-2 items-center flex-shrink-0 ml-auto">
           <PositionKPICards items={[{ label: "Open Positions", value: totalCount }]} />
-          <span data-tour="positions-refresh">
-            <DataRefreshButton dataSources={['positions_data']} />
-          </span>
+          <span data-tour="positions-refresh"><DataRefreshButton dataSources={['positions_data']} /></span>
           <Button variant="ascension" size="icon" onClick={() => setFilterOpen(true)} className="relative" aria-label="Filters" title="Filters" data-tour="positions-filter-btn">
             <Filter className="h-4 w-4" />
             {activeFilterCount > 0 && (
@@ -154,22 +123,12 @@ export function RequisitionsTab({
         </div>
       ) : (
         <div data-tour="positions-table" className="min-h-0 max-h-full flex flex-col">
-          <EditableTable
-            columns={columnsWithComments}
-            data={filteredAndSortedRequisitions}
-            getRowId={(row) => row.id}
-            sortField={sortColumn}
-            sortDirection={sortDirection}
-            onSort={handleSort}
-            onRowClick={handleRowClick}
-            storeNamespace="requisitions-columns-v2"
-            className="min-h-0 max-h-full"
-          />
+          <EditableTable columns={columnsWithComments} data={filteredAndSortedRequisitions} getRowId={(row) => row.id} sortField={sortColumn} sortDirection={sortDirection} onSort={handleSort} onRowClick={handleRowClick} storeNamespace="requisitions-columns-v2" className="min-h-0 max-h-full" />
         </div>
       )}
 
       <RequisitionDetailsSheet open={sheetOpen} onOpenChange={setSheetOpen} requisition={selectedRequisition} defaultTab={sheetDefaultTab} />
-      <RequisitionsFilterSheet open={filterOpen} onOpenChange={setFilterOpen} filters={filters} onFiltersChange={setFilters} onClearFilters={clearFilters} activeFilterCount={activeFilterCount} />
+      <PositionsFilterSheet open={filterOpen} onOpenChange={setFilterOpen} filters={filters} onFiltersChange={setFilters} onClearFilters={clearFilters} activeFilterCount={activeFilterCount} skillMixOptions={skillMixOptions} employeeTypeOptions={employeeTypeOptions} title="Filter Open Positions" />
     </div>
   );
 }
