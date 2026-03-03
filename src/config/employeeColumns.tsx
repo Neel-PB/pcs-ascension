@@ -23,7 +23,7 @@ export const employeeColumns: ColumnDef<Position>[] = [
   },
   {
     id: 'employeeName',
-    label: 'Name',
+    label: 'Employee Name',
     type: 'custom',
     width: 240,
     minWidth: 220,
@@ -48,16 +48,16 @@ export const employeeColumns: ColumnDef<Position>[] = [
     ),
   },
   {
-    id: 'employmentType',
-    label: 'Staff Type',
+    id: 'jobFamily',
+    label: 'Skill Mix',
     type: 'custom',
     width: 180,
-    minWidth: 170,
+    minWidth: 160,
     sortable: true,
     resizable: false,
     draggable: true,
     renderCell: (row) => (
-      <TruncatedTextCell value={row.employmentType} maxLength={30} />
+      <TruncatedTextCell value={row.jobFamily} maxLength={30} />
     ),
   },
   {
@@ -108,6 +108,19 @@ export const employeeColumns: ColumnDef<Position>[] = [
         variant={row.payrollStatus === 'Active' ? 'default' : 'secondary'}
         maxLength={30}
       />
+    ),
+  },
+  {
+    id: 'employmentType',
+    label: 'Staff Type',
+    type: 'custom',
+    width: 180,
+    minWidth: 170,
+    sortable: true,
+    resizable: false,
+    draggable: true,
+    renderCell: (row) => (
+      <TruncatedTextCell value={row.employmentType} maxLength={30} />
     ),
   },
 ];

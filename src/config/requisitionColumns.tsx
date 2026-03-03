@@ -26,7 +26,7 @@ const getVacancyBadge = (days: number | null) => {
 export const requisitionColumns: ColumnDef<Position>[] = [
   {
     id: 'positionNum',
-    label: 'Position #',
+    label: 'Position No',
     type: 'text',
     width: 160,
     minWidth: 150,
@@ -36,16 +36,29 @@ export const requisitionColumns: ColumnDef<Position>[] = [
     locked: true,
   },
   {
-    id: 'positionLifecycle',
-    label: 'Position Lifecycle',
+    id: 'jobTitle',
+    label: 'Job Title',
     type: 'custom',
-    width: 200,
-    minWidth: 190,
+    width: 240,
+    minWidth: 200,
     sortable: true,
     resizable: false,
     draggable: true,
     renderCell: (row) => (
-      <TruncatedTextCell value={row.positionLifecycle} maxLength={30} />
+      <TruncatedTextCell value={row.jobTitle} maxLength={30} />
+    ),
+  },
+  {
+    id: 'jobFamily',
+    label: 'Skill Mix',
+    type: 'custom',
+    width: 180,
+    minWidth: 160,
+    sortable: true,
+    resizable: false,
+    draggable: true,
+    renderCell: (row) => (
+      <TruncatedTextCell value={row.jobFamily} maxLength={30} />
     ),
   },
   {
@@ -70,17 +83,14 @@ export const requisitionColumns: ColumnDef<Position>[] = [
     },
   },
   {
-    id: 'jobTitle',
-    label: 'Job Title',
-    type: 'custom',
-    width: 240,
-    minWidth: 200,
+    id: 'FTE',
+    label: 'Hired FTE',
+    type: 'number',
+    width: 120,
+    minWidth: 100,
     sortable: true,
     resizable: false,
     draggable: true,
-    renderCell: (row) => (
-      <TruncatedTextCell value={row.jobTitle} maxLength={30} />
-    ),
   },
   {
     id: 'shift',
@@ -95,7 +105,7 @@ export const requisitionColumns: ColumnDef<Position>[] = [
   },
   {
     id: 'employmentType',
-    label: 'Employment Type',
+    label: 'Staff Type',
     type: 'custom',
     width: 180,
     minWidth: 170,
