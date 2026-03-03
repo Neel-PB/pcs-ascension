@@ -1,19 +1,19 @@
-import { ColumnDef } from '@/types/table';
-import { Position } from '@/types/position';
-import { BadgeCell } from '@/components/editable-table/cells/BadgeCell';
-import { CommentIndicatorCell } from '@/components/editable-table/cells/CommentIndicatorCell';
-import { ShiftCell } from '@/components/editable-table/cells/ShiftCell';
-import { TruncatedTextCell } from '@/components/editable-table/cells/TruncatedTextCell';
-import { MessageSquare } from '@/lib/icons';
+import { ColumnDef } from "@/types/table";
+import { Position } from "@/types/position";
+import { BadgeCell } from "@/components/editable-table/cells/BadgeCell";
+import { CommentIndicatorCell } from "@/components/editable-table/cells/CommentIndicatorCell";
+import { ShiftCell } from "@/components/editable-table/cells/ShiftCell";
+import { TruncatedTextCell } from "@/components/editable-table/cells/TruncatedTextCell";
+import { MessageSquare } from "@/lib/icons";
 
 // Type for the shift override handler
 type ShiftOverrideHandler = (positionId: string, originalShift: string | null, value: string | null) => void;
 
 export const employeeColumns: ColumnDef<Position>[] = [
   {
-    id: 'positionNum',
-    label: 'Position No',
-    type: 'text',
+    id: "positionNum",
+    label: "Position No",
+    type: "text",
     width: 160,
     minWidth: 150,
     sortable: true,
@@ -22,48 +22,42 @@ export const employeeColumns: ColumnDef<Position>[] = [
     locked: true,
   },
   {
-    id: 'employeeName',
-    label: 'Employee Name',
-    type: 'custom',
+    id: "employeeName",
+    label: "Employee Name",
+    type: "custom",
     width: 240,
     minWidth: 220,
     sortable: true,
     resizable: false,
     draggable: true,
-    renderCell: (row) => (
-      <TruncatedTextCell value={row.employeeName} maxLength={30} />
-    ),
+    renderCell: (row) => <TruncatedTextCell value={row.employeeName} maxLength={30} />,
   },
   {
-    id: 'jobTitle',
-    label: 'Job Title',
-    type: 'custom',
+    id: "jobTitle",
+    label: "Job Title",
+    type: "custom",
     width: 240,
     minWidth: 200,
     sortable: true,
     resizable: false,
     draggable: true,
-    renderCell: (row) => (
-      <TruncatedTextCell value={row.jobTitle} maxLength={30} />
-    ),
+    renderCell: (row) => <TruncatedTextCell value={row.jobTitle} maxLength={30} />,
   },
   {
-    id: 'jobFamily',
-    label: 'Skill Mix',
-    type: 'custom',
+    id: "jobFamily",
+    label: "Skill Mix",
+    type: "custom",
     width: 180,
     minWidth: 160,
     sortable: true,
     resizable: false,
     draggable: true,
-    renderCell: (row) => (
-      <TruncatedTextCell value={row.jobFamily} maxLength={30} />
-    ),
+    renderCell: (row) => <TruncatedTextCell value={row.jobFamily} maxLength={30} />,
   },
   {
-    id: 'FTE',
-    label: 'Hired FTE',
-    type: 'number',
+    id: "FTE",
+    label: "Hired FTE",
+    type: "number",
     width: 120,
     minWidth: 100,
     sortable: true,
@@ -71,9 +65,9 @@ export const employeeColumns: ColumnDef<Position>[] = [
     draggable: true,
   },
   {
-    id: 'actual_fte',
-    label: 'Active FTE',
-    type: 'custom',
+    id: "actual_fte",
+    label: "Active FTE",
+    type: "custom",
     width: 120,
     minWidth: 100,
     sortable: true,
@@ -82,9 +76,9 @@ export const employeeColumns: ColumnDef<Position>[] = [
     renderHeader: () => <span data-tour="positions-active-fte">Active FTE</span>,
   },
   {
-    id: 'shift',
-    label: 'Shift',
-    type: 'custom',
+    id: "shift",
+    label: "Shift",
+    type: "custom",
     width: 180,
     minWidth: 160,
     sortable: true,
@@ -94,9 +88,9 @@ export const employeeColumns: ColumnDef<Position>[] = [
     renderCell: (row) => <ShiftCell value={row.shift} />,
   },
   {
-    id: 'payrollStatus',
-    label: 'Status',
-    type: 'badge',
+    id: "payrollStatus",
+    label: "Status",
+    type: "badge",
     width: 140,
     minWidth: 130,
     sortable: true,
@@ -105,23 +99,21 @@ export const employeeColumns: ColumnDef<Position>[] = [
     renderCell: (row) => (
       <BadgeCell
         value={row.payrollStatus}
-        variant={row.payrollStatus === 'Active' ? 'default' : 'secondary'}
+        variant={row.payrollStatus === "Active" ? "default" : "secondary"}
         maxLength={30}
       />
     ),
   },
   {
-    id: 'employmentType',
-    label: 'Staff Type',
-    type: 'custom',
+    id: "employmentType",
+    label: "Staff Type",
+    type: "custom",
     width: 180,
     minWidth: 170,
     sortable: true,
     resizable: false,
     draggable: true,
-    renderCell: (row) => (
-      <TruncatedTextCell value={row.employmentType} maxLength={30} />
-    ),
+    renderCell: (row) => <TruncatedTextCell value={row.employmentType} maxLength={30} />,
   },
 ];
 
@@ -131,13 +123,13 @@ export const createEmployeeColumnsWithComments = (
   onRowClick: (row: Position) => void,
   onUpdateShiftOverride?: ShiftOverrideHandler,
 ): ColumnDef<Position>[] => {
-  const columnsWithEnhancements = employeeColumns.map(col => {
-    if (col.id === 'shift') {
+  const columnsWithEnhancements = employeeColumns.map((col) => {
+    if (col.id === "shift") {
       return {
         ...col,
         renderCell: (row: Position) => (
-          <ShiftCell 
-            value={row.shift} 
+          <ShiftCell
+            value={row.shift}
             selectedDayNight={row.shift_override}
             onSave={(val) => onUpdateShiftOverride?.(row.id, row.shift, val)}
           />
@@ -150,9 +142,9 @@ export const createEmployeeColumnsWithComments = (
   return [
     ...columnsWithEnhancements,
     {
-      id: 'comments',
-      label: 'Comments',
-      type: 'custom',
+      id: "comments",
+      label: "Comments",
+      type: "custom",
       width: 60,
       minWidth: 60,
       sortable: false,
@@ -164,10 +156,7 @@ export const createEmployeeColumnsWithComments = (
         </span>
       ),
       renderCell: (row) => (
-        <CommentIndicatorCell
-          count={commentCounts.get(row.id) ?? 0}
-          onClick={() => onRowClick(row)}
-        />
+        <CommentIndicatorCell count={commentCounts.get(row.id) ?? 0} onClick={() => onRowClick(row)} />
       ),
     },
   ];
