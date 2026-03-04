@@ -1,22 +1,19 @@
 
 
-## Increase Fixed Column Widths
+## Fix: Column Widths Not Applying Due to Cached Store
 
-The headers for Position No, Skill Mix, Hired FTE, and Active FTE are truncating ("POSITI...", "SK...", "HIRE...", "ACTIVE..."). Comments column already has `maxWidth: 60` so it's correctly fixed — it's not stealing space. The issue is the base widths on these columns are too tight.
+### Root Cause
+The `useColumnStore` uses Zustand's `persist` middleware with `version: 4`. When `initializeColumns` runs, it skips updating existing columns — it only adds brand-new ones. So the old narrower widths (from before the recent changes) are stuck in localStorage and override the column definitions.
 
-### Width Changes
+### Fix
 
-| Column | Current | New | maxWidth |
-|--------|---------|-----|----------|
-| Position No | 110px | 130px | 130px |
-| Skill Mix | 80px | 100px | 100px |
-| Hired FTE | 90px | 110px | 110px |
-| Active FTE | 110px | 130px | 130px |
+**1. Bump store version** (`src/stores/useColumnStore.ts`)
+- Change `version: 4` → `version: 5`
+- This forces a full re-initialization with the correct widths from column definitions
 
-### Files to Update
-1. **`src/config/employeeColumns.tsx`** — Position No, Skill Mix, Hired FTE, Active FTE
-2. **`src/config/contractorColumns.tsx`** — Position No, Skill Mix, Hired FTE
-3. **`src/config/requisitionColumns.tsx`** — Position No, Skill Mix, Hired FTE
+**2. Update `initializeColumns` to sync widths** (`src/stores/useColumnStore.ts`)
+- When existing columns are found, update their `width` property from the new defaults so future config changes always take effect without needing version bumps
 
-Same width/maxWidth/minWidth values across all tabs for consistency.
+### Files Changed
+- `src/stores/useColumnStore.ts` — bump version to 5, update merge logic to sync widths from definitions
 
