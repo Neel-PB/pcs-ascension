@@ -11,6 +11,7 @@ export interface ColumnDef<T = any> {
   // Display & behavior
   width?: number;              // Default width in pixels
   minWidth?: number;           // Minimum resize width
+  maxWidth?: number;           // Maximum width (prevents stretching)
   sortable?: boolean;          // Enable sorting
   editable?: boolean;          // Allow inline editing (future)
   resizable?: boolean;         // Allow resizing

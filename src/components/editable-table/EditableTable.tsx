@@ -99,13 +99,38 @@ export function EditableTable<T = any>({
     const totalMinWidth = visibleColumns.reduce((sum, col) => sum + (col.width ?? 160), 0);
     
     // If container is wider than total column widths, scale proportionally
+    // but cap columns at their maxWidth, redistributing extra space to flexible columns
     if (containerWidth > 0 && containerWidth > totalMinWidth) {
+      const extraSpace = containerWidth - totalMinWidth;
+      
+      // Identify which columns have maxWidth (fixed) vs flexible
+      const fixedColumns = visibleColumns.filter(col => col.maxWidth);
+      const flexibleColumns = visibleColumns.filter(col => !col.maxWidth);
+      
+      if (flexibleColumns.length > 0) {
+        // Distribute extra space equally among flexible columns
+        const extraPerFlexible = extraSpace / flexibleColumns.length;
+        
+        return visibleColumns
+          .map(col => {
+            const baseWidth = col.width ?? 160;
+            if (col.maxWidth) {
+              // Fixed column: use base width, capped at maxWidth
+              return `${Math.min(baseWidth, col.maxWidth)}px`;
+            }
+            // Flexible column: get extra space
+            return `${Math.floor(baseWidth + extraPerFlexible)}px`;
+          })
+          .join(' ');
+      }
+      
+      // All columns have maxWidth — just scale proportionally capped
       const scaleFactor = containerWidth / totalMinWidth;
       return visibleColumns
         .map(col => {
           const baseWidth = col.width ?? 160;
           const scaledWidth = Math.floor(baseWidth * scaleFactor);
-          return `${scaledWidth}px`;
+          return col.maxWidth ? `${Math.min(scaledWidth, col.maxWidth)}px` : `${scaledWidth}px`;
         })
         .join(' ');
     }

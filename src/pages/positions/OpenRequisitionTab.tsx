@@ -1,12 +1,6 @@
 import { useState, useMemo } from "react";
 import { Filter } from "@/lib/icons";
 import { EditableTable } from "@/components/editable-table/EditableTable";
-import { ColumnDef } from "@/types/table";
-import { differenceInDays } from "date-fns";
-
-import { TruncatedTextCell } from "@/components/editable-table/cells/TruncatedTextCell";
-import { BadgeCell } from "@/components/editable-table/cells/BadgeCell";
-import { ShiftCell } from "@/components/editable-table/cells/ShiftCell";
 import { SearchField } from "@/components/ui/search-field";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import { Button } from "@/components/ui/button";
@@ -16,21 +10,12 @@ import { PositionsFilterSheet, PositionsFilterValues, DEFAULT_POSITION_FILTERS, 
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { usePositionsByFlag } from "@/hooks/usePositionsByFlag";
 import { useUpdateShiftOverride } from "@/hooks/useUpdateShiftOverride";
+import { usePositionCommentCounts } from "@/hooks/usePositionCommentCounts";
+import { createRequisitionColumnsWithComments } from "@/config/requisitionColumns";
+import { RequisitionDetailsSheet } from "@/components/workforce/RequisitionDetailsSheet";
 import { LogoLoader } from "@/components/ui/LogoLoader";
-
-const getVacancyAge = (statusDate: string | null) => {
-  if (!statusDate) return null;
-  return differenceInDays(new Date(), new Date(statusDate));
-};
-
-const getVacancyBadge = (days: number | null) => {
-  if (!days) return { variant: "secondary" as const, label: "—", className: "" };
-  if (days > 60)
-    return { variant: "outline" as const, label: `${days}d - Urgent`, className: "border-orange-500/50 bg-orange-500/10 text-orange-700 dark:text-orange-400" };
-  if (days > 30)
-    return { variant: "outline" as const, label: `${days}d - Attention`, className: "border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400" };
-  return { variant: "outline" as const, label: `${days}d - On Track`, className: "border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" };
-};
+import { ShiftCell } from "@/components/editable-table/cells/ShiftCell";
+import { Position } from "@/types/position";
 
 interface OpenRequisitionTabProps {
   selectedRegion: string;
@@ -48,10 +33,14 @@ export function OpenRequisitionTab({
   const { mutate: updateShiftOverride } = useUpdateShiftOverride();
   const [filterOpen, setFilterOpen] = useState(false);
   const [filters, setFilters] = useState<PositionsFilterValues>({ ...DEFAULT_POSITION_FILTERS });
+  const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
 
   const { data: requisitions, isFetching } = usePositionsByFlag("open_requisition_flag", {
     selectedRegion, selectedMarket, selectedFacility, selectedDepartment,
   });
+
+  const positionIds = useMemo(() => (requisitions || []).map(r => r.id), [requisitions]);
+  const commentCounts = usePositionCommentCounts(positionIds);
 
   const skillMixOptions = useMemo(() => [...new Set((requisitions || []).map(r => (r as any).skillMix ?? (r as any).skill_mix).filter(Boolean))].sort() as string[], [requisitions]);
   const employeeTypeOptions = useMemo(() => [...new Set((requisitions || []).map(r => r.employeeType).filter(Boolean))].sort() as string[], [requisitions]);
@@ -62,18 +51,29 @@ export function OpenRequisitionTab({
     updateShiftOverride({ id: positionId, shift_override: value, originalShift });
   };
 
-  const columns: ColumnDef<any>[] = useMemo(
-    () => [
-      { id: "positionNum", label: "Position No", type: "text", width: 160, minWidth: 150, sortable: true, resizable: false, draggable: true, locked: true },
-      { id: "jobTitle", label: "Job Title", type: "custom", width: 260, minWidth: 200, sortable: true, resizable: false, draggable: true, renderCell: (row: any) => <TruncatedTextCell value={row.jobTitle} maxLength={30} /> },
-      { id: "skillMix", label: "Skill Mix", type: "custom", width: 180, minWidth: 160, sortable: true, resizable: false, draggable: true, renderCell: (row: any) => <TruncatedTextCell value={row.skillMix} maxLength={30} /> },
-      { id: "vacancyAge", label: "Vacancy Age", type: "custom", width: 180, minWidth: 170, sortable: true, resizable: false, draggable: true, getValue: (row: any) => getVacancyAge(row.positionStatusDate), renderCell: (row: any) => { const days = getVacancyAge(row.positionStatusDate); const badge = getVacancyBadge(days); return <BadgeCell value={badge.label} variant={badge.variant} className={badge.className} maxLength={30} />; }, sortFn: (a: any, b: any) => { const aDays = getVacancyAge(a.positionStatusDate) ?? 0; const bDays = getVacancyAge(b.positionStatusDate) ?? 0; return aDays - bDays; } },
-      { id: "FTE", label: "Hired FTE", type: "number", width: 120, minWidth: 100, sortable: true, resizable: false, draggable: true },
-      { id: "shift", label: "Shift", type: "custom", width: 180, minWidth: 160, sortable: true, resizable: false, draggable: true, renderCell: (row: any) => (<ShiftCell value={row.shift} selectedDayNight={row.shift_override} onSave={(val) => handleShiftOverride(row.id, row.shift, val)} />) },
-      { id: "employmentType", label: "Staff Type", type: "custom", width: 180, minWidth: 170, sortable: true, resizable: false, draggable: true, renderCell: (row: any) => <TruncatedTextCell value={row.employmentType} maxLength={30} /> },
-    ],
-    [],
-  );
+  const handleRowClick = (row: Position) => {
+    setSelectedPosition(row);
+  };
+
+  const columns = useMemo(() => {
+    const baseCols = createRequisitionColumnsWithComments(commentCounts, handleRowClick);
+    // Override shift column to be editable
+    return baseCols.map(col => {
+      if (col.id === "shift") {
+        return {
+          ...col,
+          renderCell: (row: Position) => (
+            <ShiftCell
+              value={row.shift}
+              selectedDayNight={row.shift_override}
+              onSave={(val) => handleShiftOverride(row.id, row.shift, val)}
+            />
+          ),
+        };
+      }
+      return col;
+    });
+  }, [commentCounts]);
 
   const filteredData = useMemo(() => {
     if (!requisitions) return [];
@@ -114,11 +114,19 @@ export function OpenRequisitionTab({
         </div>
       ) : (
         <div className="min-h-0 max-h-full flex flex-col">
-          <EditableTable data={filteredData} columns={columns} getRowId={(row) => row.id} storeNamespace="open-requisitions" className="min-h-0 max-h-full" />
+          <EditableTable data={filteredData} columns={columns} getRowId={(row) => row.id} onRowClick={handleRowClick} storeNamespace="open-requisitions" className="min-h-0 max-h-full" />
         </div>
       )}
 
       <PositionsFilterSheet open={filterOpen} onOpenChange={setFilterOpen} filters={filters} onFiltersChange={setFilters} onClearFilters={clearFilters} activeFilterCount={activeFilterCount} skillMixOptions={skillMixOptions} employeeTypeOptions={employeeTypeOptions} title="Filter Open Requisitions" />
+
+      {selectedPosition && (
+        <RequisitionDetailsSheet
+          requisition={selectedPosition}
+          open={!!selectedPosition}
+          onOpenChange={(open) => { if (!open) setSelectedPosition(null); }}
+        />
+      )}
     </div>
   );
 }
