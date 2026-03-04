@@ -38,6 +38,41 @@ const normalizeRow = (row: any) => ({
   market: row.market,
 });
 
+/**
+ * Fetch all overrides from the NestJS API (paginated) and return as a Map keyed by positionKey.
+ */
+async function fetchAllOverrides(headers: Record<string, string>): Promise<Map<string, any>> {
+  const overrideMap = new Map<string, any>();
+  const PAGE_SIZE = 500;
+  let skip = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const res = await fetch(
+      `${API_BASE_URL}/position-overrides?skip=${skip}&take=${PAGE_SIZE}`,
+      { headers }
+    );
+    if (!res.ok) {
+      console.error("Failed to fetch overrides:", res.status);
+      break;
+    }
+    const body = await res.json();
+    const rows = Array.isArray(body) ? body : (body.data ?? []);
+    const total = body.total ?? rows.length;
+
+    for (const ov of rows) {
+      if (ov.positionKey) {
+        overrideMap.set(ov.positionKey, ov);
+      }
+    }
+
+    skip += PAGE_SIZE;
+    hasMore = skip < total;
+  }
+
+  return overrideMap;
+}
+
 export function usePositionsByFlag(flag: string, filters: UsePositionsByFlagFilters) {
   const token = sessionStorage.getItem("msal_access_token");
 
@@ -51,6 +86,10 @@ export function usePositionsByFlag(flag: string, filters: UsePositionsByFlagFilt
       filters.selectedDepartment,
     ],
     queryFn: async () => {
+      const headers: Record<string, string> = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      // 1. Fetch base positions (paginated)
       const allData: any[] = [];
       const PAGE_SIZE = 1000;
       let offset = 0;
@@ -71,9 +110,6 @@ export function usePositionsByFlag(flag: string, filters: UsePositionsByFlagFilt
         if (filters.selectedDepartment !== FILTER_SENTINELS.ALL_DEPARTMENTS)
           params.append("department", filters.selectedDepartment);
 
-        const headers: Record<string, string> = {};
-        if (token) headers["Authorization"] = `Bearer ${token}`;
-
         const res = await fetch(`${API_BASE_URL}/positions?${params}`, { headers });
 
         if (!res.ok) throw new Error(`Positions API error: ${res.status}`);
@@ -86,7 +122,27 @@ export function usePositionsByFlag(flag: string, filters: UsePositionsByFlagFilt
         offset += PAGE_SIZE;
       }
 
-      return allData;
+      // 2. Fetch all overrides and merge
+      const overrideMap = await fetchAllOverrides(headers);
+
+      const merged = allData.map((pos) => {
+        const ov = overrideMap.get(pos.id); // id is positionKey after normalizeRow
+        if (!ov) return pos;
+
+        return {
+          ...pos,
+          actual_fte: ov.actualFte != null ? parseFloat(ov.actualFte) : pos.actual_fte,
+          actual_fte_expiry: ov.actualFteExpiry ?? pos.actual_fte_expiry,
+          actual_fte_status: ov.actualFteStatus ?? pos.actual_fte_status,
+          actual_fte_shared_with: ov.actualFteSharedWith ?? pos.actual_fte_shared_with,
+          actual_fte_shared_fte: ov.actualFteSharedFte != null ? parseFloat(ov.actualFteSharedFte) : pos.actual_fte_shared_fte,
+          actual_fte_shared_expiry: ov.actualFteSharedExpiry ?? pos.actual_fte_shared_expiry,
+          shift_override: ov.shiftOverride ?? pos.shift_override,
+          overrideId: ov.id,
+        };
+      });
+
+      return merged;
     },
     enabled: !!API_BASE_URL,
     retry: 1,

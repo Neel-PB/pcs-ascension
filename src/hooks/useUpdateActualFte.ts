@@ -1,12 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Position } from '@/types/position';
-import { useAddActivityLog } from './useAddActivityLog';
 
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
 
 interface UpdateActualFteParams {
-  id: string;
+  id: string; // positionKey
+  overrideId?: string | null;
   actual_fte: number | null;
   actual_fte_expiry?: string | null;
   actual_fte_status?: string | null;
@@ -19,56 +18,79 @@ interface UpdateActualFteParams {
   previousStatus?: string | null;
   // Optional user comment
   comment?: string;
+  // User ID for new overrides
+  updatedBy?: string;
 }
 
 export function useUpdateActualFte() {
   const queryClient = useQueryClient();
-  const addActivityLog = useAddActivityLog();
-  
 
   return useMutation({
-    mutationFn: async ({ 
-      id, 
-      actual_fte, 
-      actual_fte_expiry, 
-      actual_fte_status,
-      actual_fte_shared_with,
-      actual_fte_shared_fte,
-      actual_fte_shared_expiry,
-      previousFte,
-      previousExpiry,
-      previousStatus,
-      comment,
-    }: UpdateActualFteParams) => {
-      const { data, error } = await supabase
-        .from('positions')
-        .update({
-          actual_fte,
-          actual_fte_expiry,
-          actual_fte_status,
-          actual_fte_shared_with,
-          actual_fte_shared_fte,
-          actual_fte_shared_expiry,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id)
-        .select()
-        .single();
+    mutationFn: async (params: UpdateActualFteParams) => {
+      const token = sessionStorage.getItem("msal_access_token");
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
 
-      if (error) throw error;
-      return { 
-        ...data, 
-        previousFte,
-        previousExpiry,
-        previousStatus,
-        comment,
+      let res: Response;
+
+      if (params.overrideId) {
+        // UPDATE existing override
+        res = await fetch(`${API_BASE_URL}/position-overrides/${params.overrideId}`, {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({
+            actualFte: params.actual_fte,
+            actualFteExpiry: params.actual_fte_expiry ?? null,
+            actualFteStatus: params.actual_fte_status ?? null,
+            actualFteSharedWith: params.actual_fte_shared_with ?? null,
+            actualFteSharedFte: params.actual_fte_shared_fte ?? null,
+            actualFteSharedExpiry: params.actual_fte_shared_expiry ?? null,
+            updatedBy: params.updatedBy ?? null,
+            comment: params.comment || `FTE Change`,
+            commentType: "activity_fte",
+          }),
+        });
+      } else {
+        // CREATE new override
+        res = await fetch(`${API_BASE_URL}/position-overrides`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            positionKey: params.id,
+            actualFte: params.actual_fte,
+            actualFteExpiry: params.actual_fte_expiry ?? null,
+            actualFteStatus: params.actual_fte_status ?? null,
+            actualFteSharedWith: params.actual_fte_shared_with ?? null,
+            actualFteSharedFte: params.actual_fte_shared_fte ?? null,
+            actualFteSharedExpiry: params.actual_fte_shared_expiry ?? null,
+            updatedBy: params.updatedBy ?? null,
+            initialComment: params.comment || `FTE Change`,
+          }),
+        });
+      }
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `API error: ${res.status}`);
+      }
+
+      const data = await res.json();
+      return {
+        positionKey: params.id,
+        overrideId: data.id,
+        actual_fte: params.actual_fte,
+        actual_fte_expiry: params.actual_fte_expiry,
+        actual_fte_status: params.actual_fte_status,
+        actual_fte_shared_with: params.actual_fte_shared_with,
+        actual_fte_shared_fte: params.actual_fte_shared_fte,
+        actual_fte_shared_expiry: params.actual_fte_shared_expiry,
       };
     },
     onSuccess: (updatedData) => {
-      const updatePositionInCache = (oldData: Position[] | undefined) => {
+      const updatePositionInCache = (oldData: any[] | undefined) => {
         if (!oldData) return oldData;
-        return oldData.map(position =>
-          position.id === updatedData.id
+        return oldData.map((position: any) =>
+          position.id === updatedData.positionKey
             ? {
                 ...position,
                 actual_fte: updatedData.actual_fte,
@@ -77,34 +99,16 @@ export function useUpdateActualFte() {
                 actual_fte_shared_with: updatedData.actual_fte_shared_with,
                 actual_fte_shared_fte: updatedData.actual_fte_shared_fte,
                 actual_fte_shared_expiry: updatedData.actual_fte_shared_expiry,
+                overrideId: updatedData.overrideId,
               }
             : position
         );
       };
 
-      queryClient.setQueriesData<Position[]>(
-        { queryKey: ['employees'] },
+      queryClient.setQueriesData(
+        { queryKey: ['positions'] },
         updatePositionInCache
       );
-      queryClient.setQueriesData<Position[]>(
-        { queryKey: ['contractors'] },
-        updatePositionInCache
-      );
-
-      // Log activity with structured field details (comment included in metadata)
-      addActivityLog.mutate({
-        positionId: updatedData.id,
-        changeType: 'fte',
-        fteDetails: {
-          fte_old: updatedData.previousFte ?? null,
-          fte_new: updatedData.actual_fte,
-          reason_old: updatedData.previousStatus ?? null,
-          reason_new: updatedData.actual_fte_status ?? null,
-          expiry_old: updatedData.previousExpiry ?? null,
-          expiry_new: updatedData.actual_fte_expiry ?? null,
-        },
-        comment: updatedData.comment,
-      });
 
       toast.success('Active FTE updated successfully');
     },

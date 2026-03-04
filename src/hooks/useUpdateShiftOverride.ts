@@ -1,76 +1,92 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Position } from "@/types/position";
-import { useAddActivityLog } from "./useAddActivityLog";
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
 
 export function useUpdateShiftOverride() {
   const queryClient = useQueryClient();
-  const addActivityLog = useAddActivityLog();
 
   return useMutation({
-    mutationFn: async ({ 
-      id, 
-      shift_override, 
+    mutationFn: async ({
+      id,
+      overrideId,
+      shift_override,
       originalShift,
       previousOverride,
-    }: { 
-      id: string; 
-      shift_override: string | null; 
+      updatedBy,
+    }: {
+      id: string; // positionKey
+      overrideId?: string | null;
+      shift_override: string | null;
       originalShift?: string | null;
       previousOverride?: string | null;
+      updatedBy?: string;
     }) => {
-      const { data, error } = await supabase
-        .from("positions")
-        .update({ shift_override })
-        .eq("id", id)
-        .select()
-        .single();
+      const token = sessionStorage.getItem("msal_access_token");
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
 
-      if (error) throw error;
-      return { 
-        id, 
-        shift_override: data.shift_override, 
-        originalShift,
-        previousOverride,
+      const isRevert = shift_override === null;
+      const shiftOld = previousOverride || originalShift;
+      const shiftNew = isRevert ? originalShift : shift_override;
+      const commentText = isRevert ? "Shift Reverted" : "Shift Change";
+
+      let res: Response;
+
+      if (overrideId) {
+        res = await fetch(`${API_BASE_URL}/position-overrides/${overrideId}`, {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({
+            shiftOverride: shift_override,
+            updatedBy: updatedBy ?? null,
+            comment: commentText,
+            commentType: "activity_shift",
+          }),
+        });
+      } else {
+        res = await fetch(`${API_BASE_URL}/position-overrides`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            positionKey: id,
+            shiftOverride: shift_override,
+            updatedBy: updatedBy ?? null,
+            initialComment: commentText,
+          }),
+        });
+      }
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `API error: ${res.status}`);
+      }
+
+      const data = await res.json();
+      return {
+        positionKey: id,
+        overrideId: data.id,
+        shift_override: shift_override,
       };
     },
     onSuccess: (updatedData) => {
-      const updatePositionInCache = (oldData: Position[] | undefined) => {
+      const updatePositionInCache = (oldData: any[] | undefined) => {
         if (!oldData) return oldData;
-        return oldData.map(position =>
-          position.id === updatedData.id
-            ? { ...position, shift_override: updatedData.shift_override }
+        return oldData.map((position: any) =>
+          position.id === updatedData.positionKey
+            ? {
+                ...position,
+                shift_override: updatedData.shift_override,
+                overrideId: updatedData.overrideId,
+              }
             : position
         );
       };
 
-      queryClient.setQueriesData<Position[]>(
-        { queryKey: ["employees"] },
+      queryClient.setQueriesData(
+        { queryKey: ["positions"] },
         updatePositionInCache
       );
-      queryClient.setQueriesData<Position[]>(
-        { queryKey: ["contractors"] },
-        updatePositionInCache
-      );
-
-      // Determine if this is a revert (setting to null) or a change
-      const isRevert = updatedData.shift_override === null;
-      
-      // For display: show what we're changing from/to
-      const shiftOld = updatedData.previousOverride || updatedData.originalShift;
-      const shiftNew = isRevert ? updatedData.originalShift : updatedData.shift_override;
-
-      // Log activity with structured shift details
-      addActivityLog.mutate({
-        positionId: updatedData.id,
-        changeType: 'shift',
-        shiftDetails: {
-          shift_old: shiftOld ?? null,
-          shift_new: shiftNew ?? null,
-          is_revert: isRevert,
-        },
-      });
     },
     onError: (error) => {
       console.error("Error updating shift override:", error);
