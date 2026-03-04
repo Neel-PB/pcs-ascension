@@ -136,7 +136,7 @@ export const useColumnStore = create<ColumnStore>()(
     }),
     {
       name: 'editable-table-columns',
-      version: 5,
+      version: 6,
     }
   )
 );
