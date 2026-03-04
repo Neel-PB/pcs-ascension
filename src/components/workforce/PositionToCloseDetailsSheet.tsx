@@ -110,6 +110,10 @@ export function PositionToCloseDetailsSheet({
                 <h3 className="text-sm font-semibold text-foreground">Location</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
+                    <p className="text-xs text-muted-foreground mb-1">Region</p>
+                    <p className="text-sm font-medium text-foreground">{position.region || "—"}</p>
+                  </div>
+                  <div>
                     <p className="text-xs text-muted-foreground mb-1">Market</p>
                     <p className="text-sm font-medium text-foreground">{position.market || "—"}</p>
                   </div>
