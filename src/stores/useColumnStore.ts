@@ -73,19 +73,32 @@ export const useColumnStore = create<ColumnStore>()(
             };
           }
           
-          // Merge new columns into existing state, preserving stored order
+          // Build a map of new default widths
+          const defaultWidthMap = new Map(columns.map(c => [c.id, c.width]));
+          
+          // Sync widths from defaults on existing columns
+          const synced = existingColumns.map(col => {
+            const defaultWidth = defaultWidthMap.get(col.id);
+            return defaultWidth !== undefined ? { ...col, width: defaultWidth } : col;
+          });
+          
+          // Find truly new columns
           const existingIds = new Set(existingColumns.map(c => c.id));
           const newColumns = columns.filter(c => !existingIds.has(c.id));
           
           if (newColumns.length === 0) {
-            return state; // No new columns to add
+            return {
+              columnsByNamespace: {
+                ...state.columnsByNamespace,
+                [namespace]: synced,
+              },
+            };
           }
           
           // Insert new columns at their intended positions
-          const merged = [...existingColumns];
+          const merged = [...synced];
           newColumns.forEach(newCol => {
             const intendedIndex = columns.findIndex(c => c.id === newCol.id);
-            // Find the closest existing column before this position
             let insertIndex = 0;
             for (let i = intendedIndex - 1; i >= 0; i--) {
               const existingIndex = merged.findIndex(c => c.id === columns[i].id);
@@ -123,7 +136,7 @@ export const useColumnStore = create<ColumnStore>()(
     }),
     {
       name: 'editable-table-columns',
-      version: 4,
+      version: 5,
     }
   )
 );
