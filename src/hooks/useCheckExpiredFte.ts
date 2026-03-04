@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
 
 // Module-level flag to ensure we only check once per session
 let hasCheckedExpiredFte = false;
@@ -12,17 +13,31 @@ export function useCheckExpiredFte() {
   const hasInvoked = useRef(false);
 
   useEffect(() => {
-    if (!hasCheckedExpiredFte && !hasInvoked.current) {
+    if (!hasCheckedExpiredFte && !hasInvoked.current && API_BASE_URL) {
       hasInvoked.current = true;
       hasCheckedExpiredFte = true;
-      
-      supabase.functions.invoke('check-expired-fte').then(({ data, error }) => {
-        if (error) {
-          console.error('Error checking expired FTE:', error);
-        } else if (data?.count > 0 || data?.sharedExpiredCount > 0) {
-          console.log(`Reverted ${data.count} expired FTE override(s), ${data.sharedExpiredCount} shared expiry(s)`);
-        }
-      });
+
+      const token = sessionStorage.getItem("msal_access_token");
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      fetch(`${API_BASE_URL}/position-overrides/check-expired`, {
+        method: "POST",
+        headers,
+      })
+        .then(async (res) => {
+          if (!res.ok) {
+            console.error("Error checking expired FTE:", res.status);
+            return;
+          }
+          const data = await res.json();
+          if (data?.reverted > 0) {
+            console.log(`Reverted ${data.reverted} expired FTE override(s)`);
+          }
+        })
+        .catch((err) => {
+          console.error("Error checking expired FTE:", err);
+        });
     }
   }, []);
 }

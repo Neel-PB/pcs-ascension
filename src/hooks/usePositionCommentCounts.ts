@@ -1,16 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useMemo } from 'react';
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
 
 // Stable empty Map to prevent referential instability during loading
 const EMPTY_MAP = new Map<string, number>();
 
 /**
  * Optimized hook for fetching comment counts per position
- * Uses server-side aggregation instead of fetching all comments
+ * Uses the bulk POST /position-overrides/comment-counts endpoint
  */
 export function usePositionCommentCounts(positionIds: string[]) {
-  // Create a stable key from position IDs - use hash for large arrays
   const positionIdsKey = useMemo(() => {
     if (!positionIds || !Array.isArray(positionIds) || positionIds.length === 0) {
       return '';
@@ -18,7 +18,6 @@ export function usePositionCommentCounts(positionIds: string[]) {
     const validIds = positionIds.filter(
       id => id != null && id !== '' && typeof id === 'string' && id.length > 0
     );
-    // For large arrays, use length + first/last as a cache key optimization
     if (validIds.length > 100) {
       return `${validIds.length}-${validIds[0]}-${validIds[validIds.length - 1]}`;
     }
@@ -39,39 +38,45 @@ export function usePositionCommentCounts(positionIds: string[]) {
         return new Map<string, number>();
       }
 
-      // Batch queries for large arrays to avoid URL length limits (~8KB)
+      const token = sessionStorage.getItem("msal_access_token");
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
       const BATCH_SIZE = 500;
       const countMap = new Map<string, number>();
 
-      // Process in batches to avoid "Bad Request" errors on large datasets
       for (let i = 0; i < validPositionIds.length; i += BATCH_SIZE) {
         const batch = validPositionIds.slice(i, i + BATCH_SIZE);
-        const { data, error } = await supabase
-          .from('position_comments')
-          .select('position_id')
-          .in('position_id', batch);
 
-        if (error) {
-          console.error('Error fetching comment counts batch:', error);
-          continue;
-        }
-
-        if (data) {
-          data.forEach((comment) => {
-            const currentCount = countMap.get(comment.position_id) || 0;
-            countMap.set(comment.position_id, currentCount + 1);
+        try {
+          const res = await fetch(`${API_BASE_URL}/position-overrides/comment-counts`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({ positionKeys: batch }),
           });
+
+          if (!res.ok) {
+            console.error('Error fetching comment counts batch:', res.status);
+            continue;
+          }
+
+          const data = await res.json();
+          // Response is { "POS-123": 5, "POS-456": 0, ... }
+          for (const [key, count] of Object.entries(data)) {
+            if (typeof count === 'number' && count > 0) {
+              countMap.set(key, count);
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching comment counts batch:', err);
         }
       }
 
       return countMap;
     },
-    enabled: validPositionIds.length > 0,
-    staleTime: 30000, // Cache for 30 seconds
+    enabled: validPositionIds.length > 0 && !!API_BASE_URL,
+    staleTime: 30000,
   });
-
-  // Realtime subscription is handled by useRealtimeSubscriptions hook
-  // which invalidates the 'position-comment-counts' query key
 
   return counts;
 }

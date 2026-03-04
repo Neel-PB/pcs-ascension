@@ -3,6 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
+
+function getApiHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const token = sessionStorage.getItem("msal_access_token");
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  return headers;
+}
+
 export interface PositionComment {
   id: string;
   position_id: string;
@@ -25,35 +34,61 @@ export interface PositionComment {
   };
 }
 
+/**
+ * Look up the override ID for a given position key.
+ * Returns the override object or null.
+ */
+async function lookupOverrideByKey(positionKey: string, headers: Record<string, string>) {
+  const res = await fetch(`${API_BASE_URL}/position-overrides/key/${encodeURIComponent(positionKey)}`, { headers });
+  if (res.status === 404 || res.status === 400) return null;
+  if (!res.ok) throw new Error(`Override lookup failed: ${res.status}`);
+  return res.json();
+}
+
 export function usePositionComments(positionId: string) {
   return useQuery({
     queryKey: ["position-comments", positionId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("position_comments")
-        .select("*")
-        .eq("position_id", positionId)
-        .order("created_at", { ascending: false });
+      const headers = getApiHeaders();
 
-      if (error) throw error;
+      // Step 1: Look up override by position key
+      const override = await lookupOverrideByKey(positionId, headers);
+      if (!override) return [] as PositionComment[];
 
-      // Fetch profiles separately
+      // Step 2: Fetch comments for this override
+      const res = await fetch(`${API_BASE_URL}/position-overrides/${override.id}/comments`, { headers });
+      if (!res.ok) throw new Error(`Comments fetch failed: ${res.status}`);
+      const apiComments = await res.json();
+
+      // Step 3: Map API fields → frontend interface & fetch profiles
       const commentsWithProfiles = await Promise.all(
-        (data || []).map(async (comment) => {
+        (apiComments || []).map(async (c: any) => {
           const { data: profile } = await supabase
             .from("profiles")
             .select("first_name, last_name, avatar_url")
-            .eq("id", comment.user_id)
+            .eq("id", c.created_by)
             .single();
 
           return {
-            ...comment,
+            id: c.id,
+            position_id: positionId,
+            user_id: c.created_by,
+            content: c.text,
+            created_at: c.created_at,
+            updated_at: c.created_at,
+            comment_type: c.comment_type ?? 'comment',
+            metadata: c.metadata ?? null,
             profiles: profile || undefined,
-          };
+          } as PositionComment;
         })
       );
 
-      return commentsWithProfiles as PositionComment[];
+      // Sort newest first
+      commentsWithProfiles.sort((a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      return commentsWithProfiles;
     },
     enabled: !!positionId,
   });
@@ -64,21 +99,46 @@ export function useAddPositionComment() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ positionId, content }: { positionId: string; content: string }) => {
+    mutationFn: async ({ positionId, content, overrideId }: { positionId: string; content: string; overrideId?: string }) => {
       if (!user) throw new Error("Not authenticated");
+      const headers = getApiHeaders();
 
-      const { data, error } = await supabase
-        .from("position_comments")
-        .insert({
-          position_id: positionId,
-          user_id: user.id,
-          content,
-        })
-        .select()
-        .single();
+      let targetOverrideId = overrideId;
 
-      if (error) throw error;
-      return data;
+      // If no overrideId provided, look it up or create a new override
+      if (!targetOverrideId) {
+        const override = await lookupOverrideByKey(positionId, headers);
+        if (override) {
+          targetOverrideId = override.id;
+        } else {
+          // Create a minimal override just to attach a comment
+          const createRes = await fetch(`${API_BASE_URL}/position-overrides`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+              positionKey: positionId,
+              updatedBy: user.id,
+              initialComment: content,
+            }),
+          });
+          if (!createRes.ok) throw new Error("Failed to create override for comment");
+          const created = await createRes.json();
+          return created;
+        }
+      }
+
+      const res = await fetch(`${API_BASE_URL}/position-overrides/${targetOverrideId}/comments`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          text: content,
+          commentType: "manual_note",
+          userId: user.id,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to add comment");
+      return res.json();
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["position-comments", variables.positionId] });
@@ -95,16 +155,24 @@ export function useUpdatePositionComment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, content, positionId }: { id: string; content: string; positionId: string }) => {
-      const { data, error } = await supabase
-        .from("position_comments")
-        .update({ content })
-        .eq("id", id)
-        .select()
-        .single();
+    mutationFn: async ({ id, content, positionId, overrideId }: { id: string; content: string; positionId: string; overrideId?: string }) => {
+      const headers = getApiHeaders();
 
-      if (error) throw error;
-      return { data, positionId };
+      let targetOverrideId = overrideId;
+      if (!targetOverrideId) {
+        const override = await lookupOverrideByKey(positionId, headers);
+        if (!override) throw new Error("Override not found");
+        targetOverrideId = override.id;
+      }
+
+      const res = await fetch(`${API_BASE_URL}/position-overrides/${targetOverrideId}/comments/${id}`, {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ text: content }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update comment");
+      return { data: await res.json(), positionId };
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["position-comments", result.positionId] });
@@ -121,13 +189,22 @@ export function useDeletePositionComment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, positionId }: { id: string; positionId: string }) => {
-      const { error } = await supabase
-        .from("position_comments")
-        .delete()
-        .eq("id", id);
+    mutationFn: async ({ id, positionId, overrideId }: { id: string; positionId: string; overrideId?: string }) => {
+      const headers = getApiHeaders();
 
-      if (error) throw error;
+      let targetOverrideId = overrideId;
+      if (!targetOverrideId) {
+        const override = await lookupOverrideByKey(positionId, headers);
+        if (!override) throw new Error("Override not found");
+        targetOverrideId = override.id;
+      }
+
+      const res = await fetch(`${API_BASE_URL}/position-overrides/${targetOverrideId}/comments/${id}`, {
+        method: "DELETE",
+        headers,
+      });
+
+      if (!res.ok) throw new Error("Failed to delete comment");
       return positionId;
     },
     onSuccess: (positionId) => {
