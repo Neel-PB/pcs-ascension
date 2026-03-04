@@ -1,73 +1,54 @@
 
 
-## Investigation: Missing Fields in Position Detail Sheets
+## Fix Column Widths and Add Comments to All Tabs
 
-### Findings
+### Summary
+Set fixed max-widths on specific columns so they don't stretch, let remaining columns (Employee/Contractor Name, Job Title, Vacancy Age) fill available space equally. Add comments column to the two tabs currently missing it (Open Requisitions, Contractor Requisitions).
 
-**Root Cause**: The `normalizeRow` function in `usePositionsByFlag.ts` only normalizes 8 fields. All other fields pass through via `...row` spread with their original API names. When the NestJS API returns snake_case or differently-cased field names, the UI shows "—" because it looks for the wrong property name.
+### Fixed-Width Columns (consistent across all 5 tabs)
 
-**Currently normalized fields** (8 total):
-`id`, `positionNum`, `FTE`, `actual_fte`, `positionStatusDate`, `departmentName`, `employmentType`, `skillMix`, `facility_name`
+| Column | Width | Rationale |
+|--------|-------|-----------|
+| Position No | 110px | Fits 10 digits |
+| Skill Mix | 80px | 3-4 letters |
+| Hired FTE | 90px | 4 digits |
+| Active FTE | 110px | 10 digits (employees only) |
+| Shift | 160px | Keep current |
+| Status | 120px | Badge fits |
+| Staff Type | 130px | "Full Time" / "Part Time" / "PRN" |
+| Comments | 60px | Icon only |
+| Vacancy Age | 160px | Badge with "XXd - Urgent" |
 
-**Missing from normalization** (fields the detail sheets expect but API may return differently):
+Flexible columns (Name, Job Title) will use `flex: 1` equivalent to fill remaining space.
 
-| UI expects | API likely returns | Used in |
-|---|---|---|
-| `jobcode` | `jobCode` | EmployeeDetailsSheet |
-| `jobFamily` | `job_family` | EmployeeDetailsSheet |
-| `facilityName` | `businessUnitDescription` or `facility_name` | All detail sheets |
-| `standardHours` | `standard_hours` | EmployeeDetailsSheet |
-| `employeeType` | `employee_type` | EmployeeDetailsSheet |
-| `employmentFlag` | `employment_flag` | EmployeeDetailsSheet |
-| `employeeId` | `employee_id` | EmployeeDetailsSheet |
-| `employeeName` | `employee_name` | All detail sheets |
-| `managerName` | `manager_name` | EmployeeDetailsSheet |
-| `managerEmployeeId` | `manager_employee_id` | EmployeeDetailsSheet |
-| `payrollStatus` | `payroll_status` | All detail sheets |
-| `shift` | `shift` | (likely fine) |
+### Technical Approach
 
-**Region is missing entirely** from the Location section in all detail sheets.
+**1. Add `maxWidth` to `ColumnDef` type** (`src/types/table.ts`)
+- Add optional `maxWidth?: number` property
 
-### Plan
+**2. Update grid template logic** (`src/components/editable-table/EditableTable.tsx`)
+- When scaling proportionally, cap columns at their `maxWidth` if defined
+- Redistribute extra space only to columns without `maxWidth` (the flexible ones)
 
-**1. Expand `normalizeRow` in `usePositionsByFlag.ts`**
-Add fallback mappings for every field the detail sheets consume:
-```typescript
-const normalizeRow = (row: any) => ({
-  ...row,
-  id: row.positionKey ?? row.id,
-  positionNum: row.positionNumber ?? row.positionNum,
-  FTE: parseFloat(row.hiredFte ?? row.FTE) || 0,
-  actual_fte: parseFloat(row.activeFte ?? row.actual_fte) || 0,
-  positionStatusDate: row.posStatusDate ?? row.positionStatusDate,
-  departmentName: row.departmentDescription ?? row.departmentName ?? row.department_name,
-  employmentType: row.employmentType ?? row.employment_type,
-  skillMix: row.skill_mix ?? row.skillMix,
-  facilityName: row.businessUnitDescription ?? row.facilityName ?? row.facility_name,
-  jobcode: row.jobcode ?? row.jobCode ?? row.job_code,
-  jobFamily: row.jobFamily ?? row.job_family,
-  jobTitle: row.jobTitle ?? row.job_title,
-  standardHours: row.standardHours ?? row.standard_hours,
-  employeeType: row.employeeType ?? row.employee_type,
-  employmentFlag: row.employmentFlag ?? row.employment_flag,
-  employeeId: row.employeeId ?? row.employee_id,
-  employeeName: row.employeeName ?? row.employee_name,
-  managerName: row.managerName ?? row.manager_name,
-  managerEmployeeId: row.managerEmployeeId ?? row.manager_employee_id,
-  managerPositionNum: row.managerPositionNum ?? row.manager_position_num,
-  payrollStatus: row.payrollStatus ?? row.payroll_status,
-  shift: row.shift,
-  region: row.region,
-  market: row.market,
-});
-```
+**3. Update all column configs** with `maxWidth` on fixed columns:
+- `src/config/employeeColumns.tsx` -- Position No, Skill Mix, Hired FTE, Active FTE, Shift, Status, Staff Type, Comments
+- `src/config/contractorColumns.tsx` -- same applicable columns
+- `src/config/requisitionColumns.tsx` -- same applicable columns
 
-**2. Add Region to all detail sheets' Location section**
-- `EmployeeDetailsSheet.tsx` — add Region field above Market
-- `ContractorDetailsSheet.tsx` — same
-- `RequisitionDetailsSheet.tsx` — same
-- `PositionToOpenDetailsSheet.tsx` / `PositionToCloseDetailsSheet.tsx` — same if they have Location sections
+**4. Add comments column to Open Requisitions tab** (`src/pages/positions/OpenRequisitionTab.tsx`)
+- Import `CommentIndicatorCell`, `MessageSquare`, `usePositionCommentCounts`
+- Add detail sheet for row click / comment click
+- Append comments column to inline column definition
 
-**3. Use `facilityName` consistently in detail sheets**
-The sheet currently reads `employee.facilityName` — after normalization this will work correctly since `normalizeRow` will map `facility_name`/`businessUnitDescription` → `facilityName`.
+**5. Add comments column to Contractor Requisitions tab** (`src/pages/positions/ContractorRequisitionTab.tsx`)
+- Same approach as above
+
+### Files Changed
+- `src/types/table.ts` -- add `maxWidth`
+- `src/components/editable-table/EditableTable.tsx` -- respect `maxWidth` in grid scaling
+- `src/config/employeeColumns.tsx` -- set widths and maxWidths
+- `src/config/contractorColumns.tsx` -- set widths and maxWidths
+- `src/config/requisitionColumns.tsx` -- set widths and maxWidths
+- `src/pages/positions/OpenRequisitionTab.tsx` -- add comments column + detail sheet
+- `src/pages/positions/ContractorRequisitionTab.tsx` -- add comments column + detail sheet
 
