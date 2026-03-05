@@ -1,20 +1,22 @@
 
 
-## Fix: Horizontal scrolling broken in EditableTable
+## Fix: Shift cell click opens details instead of edit popover in Open Requisitions
 
-### Root Cause
-In `src/components/editable-table/VirtualizedTableBody.tsx` (line 41), the scroll container has `overflow-x-hidden`, which explicitly prevents horizontal scrolling. The horizontal scroll is supposed to be handled by the parent container in `EditableTable.tsx`, but the `VirtualizedTableBody` is the actual scroll element for virtualization — so horizontal overflow inside it is clipped.
+### Problem
+In `OpenRequisitionTab.tsx`, the shift column is overridden with a custom `ShiftCell` renderer (line 62), but `editable: true` is not set on the column. The `TableRow` component only calls `stopPropagation` on cells marked `editable: true`, so clicking the shift cell triggers the row-level `onRowClick` handler (opening the details sheet) instead of the `ShiftCell` popover.
 
-### Solution
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** — Change `overflow-x-hidden` to `overflow-x-auto` on line 41:
+### Fix
+**File: `src/pages/positions/OpenRequisitionTab.tsx`** — Add `editable: true` to the overridden shift column (around line 63):
 
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain"
-
-// After  
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+```ts
+return {
+  ...col,
+  editable: true,  // ← add this line
+  renderCell: (row: Position) => (
+    <ShiftCell ... />
+  ),
+};
 ```
 
-This single change allows the virtualized body to scroll horizontally in sync with the header (which is inside the same `overflow-x-auto` parent container in `EditableTable.tsx`). All five position tabs use the same `EditableTable` component, so this fix applies everywhere.
+Single-line addition. This matches the pattern used in `EmployeesTab.tsx` for editable columns.
 
