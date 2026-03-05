@@ -1,27 +1,37 @@
 
 
-## Fix: Handle empty JSON response in `lookupOverrideByKey`
+## Fix: Pass `overrideId` to FTE and Shift mutation calls
 
-### Problem
-The external API at `/position-overrides/key/{positionKey}` returns HTTP 200 with an empty body when no override exists (instead of 404). Calling `.json()` on an empty response throws `SyntaxError: Unexpected end of JSON input`, which causes the "Failed to add comment" error.
+### Root Cause
+When you revert (or update) Active FTE or Shift, the mutation hooks (`useUpdateActualFte`, `useUpdateShiftOverride`) check for `overrideId` to decide whether to PUT (update existing) or POST (create new). However, the handler functions in `EmployeesTab.tsx` and `ContractorsTab.tsx` never pass `overrideId` from the row data. This means every call hits the POST/create branch, and the API returns 500 because:
+- It tries to create a new override for a position that already has one (duplicate), or
+- It rejects creating an override with null values (revert scenario)
 
-### Solution
-**File: `src/hooks/usePositionComments.ts`** — Update `lookupOverrideByKey` (lines 41-46) to safely parse the response body:
+### Fix
 
-1. Read the response as text first
-2. If the text is empty, return `null` (no override found)
-3. Only parse as JSON if there's actual content
+**1. `src/pages/positions/EmployeesTab.tsx`**
+- Update `handleActualFteUpdate` to accept and pass `overrideId`:
+  ```ts
+  const handleActualFteUpdate = useCallback((
+    id: string, previousFte, previousExpiry, previousStatus,
+    data: { ... },
+    overrideId?: string | null  // add this
+  ) => {
+    updateActualFte.mutate({ id, overrideId, ...data, previousFte, previousExpiry, previousStatus });
+  }, [updateActualFte]);
+  ```
+- Update `handleShiftOverrideUpdate` to accept and pass `overrideId`:
+  ```ts
+  const handleShiftOverrideUpdate = useCallback((
+    id: string, originalShift: string | null, value: string | null, overrideId?: string | null
+  ) => {
+    updateShiftOverride.mutate({ id, overrideId, shift_override: value, originalShift });
+  }, [updateShiftOverride]);
+  ```
 
-```ts
-async function lookupOverrideByKey(positionKey: string, headers: Record<string, string>) {
-  const res = await fetch(`${API_BASE_URL}/position-overrides/key/${encodeURIComponent(positionKey)}`, { headers });
-  if (res.status === 404 || res.status === 400) return null;
-  if (!res.ok) throw new Error(`Override lookup failed: ${res.status}`);
-  const text = await res.text();
-  if (!text) return null;
-  return JSON.parse(text);
-}
-```
+**2. `src/pages/positions/ContractorsTab.tsx`** — Same changes as above.
 
-This single change fixes both the query (fetching comments) and mutation (adding comments) paths since both call `lookupOverrideByKey`.
+**3. Column config call sites** — Update where `handleActualFteUpdate` and `handleShiftOverrideUpdate` are invoked (in the `renderCell` callbacks within `EmployeesTab` and `ContractorsTab`) to pass `row.overrideId`.
+
+This requires tracing exactly where the cell components call these handlers to include the `overrideId` parameter. The `EditableFTECell` and `ShiftCell` components receive callbacks, and those callbacks need to forward `row.overrideId` from the column config's `renderCell`.
 
