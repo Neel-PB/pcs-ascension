@@ -2,7 +2,7 @@ import { ColumnDef } from "@/types/table";
 import { Position } from "@/types/position";
 import { BadgeCell } from "@/components/editable-table/cells/BadgeCell";
 import { CommentIndicatorCell } from "@/components/editable-table/cells/CommentIndicatorCell";
-import { ShiftCell } from "@/components/editable-table/cells/ShiftCell";
+
 import { TruncatedTextCell } from "@/components/editable-table/cells/TruncatedTextCell";
 import { differenceInDays } from "date-fns";
 import { MessageSquare } from "@/lib/icons";
@@ -114,7 +114,7 @@ export const requisitionColumns: ColumnDef<Position>[] = [
     sortable: true,
     resizable: false,
     draggable: true,
-    renderCell: (row) => <ShiftCell value={row.shift} />,
+    renderCell: (row) => <TruncatedTextCell value={row.shift} maxLength={30} />,
   },
   {
     id: "employmentType",
