@@ -42,7 +42,9 @@ async function lookupOverrideByKey(positionKey: string, headers: Record<string, 
   const res = await fetch(`${API_BASE_URL}/position-overrides/key/${encodeURIComponent(positionKey)}`, { headers });
   if (res.status === 404 || res.status === 400) return null;
   if (!res.ok) throw new Error(`Override lookup failed: ${res.status}`);
-  return res.json();
+  const text = await res.text();
+  if (!text) return null;
+  return JSON.parse(text);
 }
 
 export function usePositionComments(positionId: string) {
@@ -63,11 +65,15 @@ export function usePositionComments(positionId: string) {
       // Step 3: Map API fields → frontend interface & fetch profiles
       const commentsWithProfiles = await Promise.all(
         (apiComments || []).map(async (c: any) => {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("first_name, last_name, avatar_url")
-            .eq("id", c.created_by)
-            .single();
+          let profile = undefined;
+          if (c.created_by) {
+            const { data } = await supabase
+              .from("profiles")
+              .select("first_name, last_name, avatar_url")
+              .eq("id", c.created_by)
+              .single();
+            profile = data || undefined;
+          }
 
           return {
             id: c.id,
@@ -78,7 +84,7 @@ export function usePositionComments(positionId: string) {
             updated_at: c.created_at,
             comment_type: c.comment_type ?? 'comment',
             metadata: c.metadata ?? null,
-            profiles: profile || undefined,
+            profiles: profile,
           } as PositionComment;
         })
       );
