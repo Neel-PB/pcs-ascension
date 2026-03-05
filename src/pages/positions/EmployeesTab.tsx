@@ -78,13 +78,14 @@ export function EmployeesTab({
 
   const handleActualFteUpdate = useCallback((
     id: string, previousFte: number | null, previousExpiry: string | null, previousStatus: string | null,
-    data: { actual_fte: number | null; actual_fte_expiry: string | null; actual_fte_status: string | null; actual_fte_shared_with?: string | null; actual_fte_shared_fte?: number | null; actual_fte_shared_expiry?: string | null; comment?: string; }
+    data: { actual_fte: number | null; actual_fte_expiry: string | null; actual_fte_status: string | null; actual_fte_shared_with?: string | null; actual_fte_shared_fte?: number | null; actual_fte_shared_expiry?: string | null; comment?: string; },
+    overrideId?: string | null,
   ) => {
-    updateActualFte.mutate({ id, ...data, previousFte, previousExpiry, previousStatus });
+    updateActualFte.mutate({ id, overrideId, ...data, previousFte, previousExpiry, previousStatus });
   }, [updateActualFte]);
 
-  const handleShiftOverrideUpdate = useCallback((id: string, originalShift: string | null, value: string | null) => {
-    updateShiftOverride.mutate({ id, shift_override: value, originalShift });
+  const handleShiftOverrideUpdate = useCallback((id: string, originalShift: string | null, value: string | null, overrideId?: string | null) => {
+    updateShiftOverride.mutate({ id, overrideId, shift_override: value, originalShift });
   }, [updateShiftOverride]);
 
   const filteredAndSortedEmployees = useMemo(() => {
@@ -140,7 +141,7 @@ export function EmployeesTab({
                 status={row.actual_fte_status} employmentType={row.employmentType}
                 sharedWith={row.actual_fte_shared_with} sharedFte={row.actual_fte_shared_fte}
                 sharedExpiry={row.actual_fte_shared_expiry}
-                onSave={(data) => handleActualFteUpdate(row.id, row.actual_fte, row.actual_fte_expiry, row.actual_fte_status, data)}
+                onSave={(data) => handleActualFteUpdate(row.id, row.actual_fte, row.actual_fte_expiry, row.actual_fte_status, data, row.overrideId)}
                 filterDataProvider={filterDataProvider}
               />
             );

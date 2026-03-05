@@ -47,8 +47,8 @@ export function OpenRequisitionTab({
   const activeFilterCount = useMemo(() => getActiveFilterCount(filters, false), [filters]);
   const clearFilters = () => setFilters({ ...DEFAULT_POSITION_FILTERS });
 
-  const handleShiftOverride = (positionId: string, originalShift: string | null, value: string | null) => {
-    updateShiftOverride({ id: positionId, shift_override: value, originalShift });
+  const handleShiftOverride = (positionId: string, originalShift: string | null, value: string | null, overrideId?: string | null) => {
+    updateShiftOverride({ id: positionId, overrideId, shift_override: value, originalShift });
   };
 
   const handleRowClick = (row: Position) => {
@@ -66,7 +66,7 @@ export function OpenRequisitionTab({
             <ShiftCell
               value={row.shift}
               selectedDayNight={row.shift_override}
-              onSave={(val) => handleShiftOverride(row.id, row.shift, val)}
+              onSave={(val) => handleShiftOverride(row.id, row.shift, val, row.overrideId)}
             />
           ),
         };
