@@ -1,10 +1,11 @@
 
 
-## Remove "Apply Filters" button from PositionsFilterSheet
+## Increase Status column width by 20px across all position tabs
 
-Since filters already apply on change, the "Apply Filters" button is redundant. Remove it and keep only "Clear Filters".
+**Files to change:**
 
-**File: `src/components/positions/PositionsFilterSheet.tsx`**
+1. **`src/config/employeeColumns.tsx`** — Status column: `width: 120 → 140`, `maxWidth: 120 → 140`
+2. **`src/config/contractorColumns.tsx`** — Status column: `width: 120 → 140`, `maxWidth: 120 → 140`
 
-In the button row at the bottom (~lines 178-185), remove the "Apply Filters" `Button` and let the "Clear Filters" button take full width.
+These are the only two column configs with a Status column (requisition tabs don't have Status per the design spec).
 
