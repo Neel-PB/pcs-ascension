@@ -1,26 +1,27 @@
 
 
-## Fix: Use `editable` flag instead of `renderCell` for stopPropagation
+## Fix: Handle empty JSON response in `lookupOverrideByKey`
 
 ### Problem
-Currently, clicking ANY column with `renderCell` (Employee Name, Job Title, Skill Mix, Status, Staff Type) does NOT open the detail sheet because `stopPropagation` fires on all of them. Only Active FTE, Shift, and Comments are truly interactive and need it.
+The external API at `/position-overrides/key/{positionKey}` returns HTTP 200 with an empty body when no override exists (instead of 404). Calling `.json()` on an empty response throws `SyntaxError: Unexpected end of JSON input`, which causes the "Failed to add comment" error.
 
 ### Solution
-Use the existing `editable` property on `ColumnDef` to mark interactive columns. Only those get `stopPropagation`.
+**File: `src/hooks/usePositionComments.ts`** — Update `lookupOverrideByKey` (lines 41-46) to safely parse the response body:
 
-**1. `src/components/editable-table/TableRow.tsx` (line 66)**
+1. Read the response as text first
+2. If the text is empty, return `null` (no override found)
+3. Only parse as JSON if there's actual content
 
-Change the condition from `column.renderCell` to `column.editable`:
-```tsx
-onClick={column.editable ? (e) => e.stopPropagation() : undefined}
+```ts
+async function lookupOverrideByKey(positionKey: string, headers: Record<string, string>) {
+  const res = await fetch(`${API_BASE_URL}/position-overrides/key/${encodeURIComponent(positionKey)}`, { headers });
+  if (res.status === 404 || res.status === 400) return null;
+  if (!res.ok) throw new Error(`Override lookup failed: ${res.status}`);
+  const text = await res.text();
+  if (!text) return null;
+  return JSON.parse(text);
+}
 ```
 
-**2. Mark interactive columns as `editable: true` in column configs:**
-
-- **`src/config/employeeColumns.tsx`**: Add `editable: true` to `actual_fte` (line ~76) and `shift` (line ~88)
-- **`src/config/employeeColumns.tsx`**: Add `editable: true` to the `comments` column (~line 155)
-- **`src/config/contractorColumns.tsx`**: Add `editable: true` to the `comments` column in `createContractorColumnsWithComments`
-- **`src/config/requisitionColumns.tsx`**: Add `editable: true` to `shift` (if editable) and `comments` columns
-
-Display-only columns (Employee Name, Job Title, Skill Mix, Status, Staff Type) keep `editable` unset/false, so clicks pass through to the row handler and open the detail sheet.
+This single change fixes both the query (fetching comments) and mutation (adding comments) paths since both call `lookupOverrideByKey`.
 
