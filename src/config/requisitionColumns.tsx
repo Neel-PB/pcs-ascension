@@ -145,6 +145,7 @@ export const createRequisitionColumnsWithComments = (
       minWidth: 60,
       maxWidth: 60,
       sortable: false,
+      editable: true,
       resizable: false,
       draggable: true,
       renderHeader: () => (
