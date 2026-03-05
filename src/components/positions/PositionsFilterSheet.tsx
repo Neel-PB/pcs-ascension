@@ -215,13 +215,10 @@ export function PositionsFilterSheet({
             </Select>
           </div>
 
-          <div className="flex gap-2 pt-4">
-            <Button variant="outline" onClick={onClearFilters} className="flex-1">
+          <div className="pt-4">
+            <Button variant="outline" onClick={onClearFilters} className="w-full">
               <X className="h-4 w-4 mr-2" />
               Clear Filters
-            </Button>
-            <Button onClick={() => onOpenChange(false)} className="flex-1">
-              Apply Filters
             </Button>
           </div>
         </div>
