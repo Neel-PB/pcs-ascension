@@ -38,7 +38,7 @@ export function VirtualizedTableBody<T = any>({
     <div
       ref={parentRef}
       data-tour-virtual-body
-      className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+      className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
       style={{ contain: 'layout' }}
     >
       <div
