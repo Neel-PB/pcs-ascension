@@ -25,25 +25,15 @@ export function CommentIndicatorCell({
   };
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <CellButton onClick={handleClick} className={className}>
-            <Badge 
-              variant={count > 0 ? "default" : "outline"}
-              className={cn(
-                "font-medium tabular-nums min-w-[2rem] justify-center text-center",
-                count === 0 && "text-muted-foreground"
-              )}
-            >
-              {count === 0 ? '-' : count > 99 ? '99+' : count}
-            </Badge>
-          </CellButton>
-        </TooltipTrigger>
-        <TooltipContent>
-          {count === 0 ? 'No Comments Yet' : `View Comments (${count})`}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <CellButton onClick={handleClick} className={cn("flex items-center justify-center", className)}>
+      {count > 0 && (
+        <Badge 
+          variant="default"
+          className="font-medium tabular-nums min-w-[2rem] justify-center text-center"
+        >
+          {count > 99 ? '99+' : count}
+        </Badge>
+      )}
+    </CellButton>
   );
 }
