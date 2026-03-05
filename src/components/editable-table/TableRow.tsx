@@ -33,17 +33,17 @@ function TableRowInner<T = any>({
     // Render based on type
     switch (column.type) {
       case 'number':
-        return <NumberCell value={value} onClick={onClick} className={column.className} />;
+        return <NumberCell value={value} className={column.className} />;
       
       case 'badge':
-        return <BadgeCell value={value} onClick={onClick} className={column.className} />;
+        return <BadgeCell value={value} className={column.className} />;
       
       case 'date':
-        return <DateCell value={value} onClick={onClick} className={column.className} />;
+        return <DateCell value={value} className={column.className} />;
       
       case 'text':
       default:
-        return <TextCell value={value} onClick={onClick} className={column.className} />;
+        return <TextCell value={value} className={column.className} />;
     }
   };
 
@@ -57,6 +57,7 @@ function TableRowInner<T = any>({
         "h-12 border-b border-border hover:bg-muted/30 transition-colors cursor-pointer",
         className
       )}
+      onClick={onClick}
     >
       {columns.map((column) => (
         <div
