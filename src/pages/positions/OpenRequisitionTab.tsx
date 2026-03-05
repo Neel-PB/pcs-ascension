@@ -62,6 +62,7 @@ export function OpenRequisitionTab({
       if (col.id === "shift") {
         return {
           ...col,
+          editable: true,
           renderCell: (row: Position) => (
             <ShiftCell
               value={row.shift}
