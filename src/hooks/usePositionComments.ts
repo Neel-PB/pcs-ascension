@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
 
@@ -96,11 +96,12 @@ export function usePositionComments(positionId: string) {
 
 export function useAddPositionComment() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, msalUser } = useAuthContext();
 
   return useMutation({
     mutationFn: async ({ positionId, content, overrideId }: { positionId: string; content: string; overrideId?: string }) => {
-      if (!user) throw new Error("Not authenticated");
+      const currentUserId = user?.id || msalUser?.id;
+      if (!currentUserId) throw new Error("Not authenticated");
       const headers = getApiHeaders();
 
       let targetOverrideId = overrideId;
@@ -117,7 +118,7 @@ export function useAddPositionComment() {
             headers,
             body: JSON.stringify({
               positionKey: positionId,
-              updatedBy: user.id,
+              updatedBy: currentUserId,
               initialComment: content,
             }),
           });
@@ -133,7 +134,7 @@ export function useAddPositionComment() {
         body: JSON.stringify({
           text: content,
           commentType: "manual_note",
-          userId: user.id,
+          userId: currentUserId,
         }),
       });
 
