@@ -75,6 +75,7 @@ export const employeeColumns: ColumnDef<Position>[] = [
     minWidth: 110,
     maxWidth: 130,
     sortable: true,
+    editable: true,
     resizable: false,
     draggable: true,
     renderHeader: () => <span data-tour="positions-active-fte">Active FTE</span>,
@@ -87,6 +88,7 @@ export const employeeColumns: ColumnDef<Position>[] = [
     minWidth: 140,
     maxWidth: 160,
     sortable: true,
+    editable: true,
     resizable: false,
     draggable: true,
     renderHeader: () => <span data-tour="positions-shift">Shift</span>,
@@ -156,6 +158,7 @@ export const createEmployeeColumnsWithComments = (
       minWidth: 60,
       maxWidth: 60,
       sortable: false,
+      editable: true,
       resizable: false,
       draggable: true,
       renderHeader: () => (
