@@ -1,27 +1,17 @@
 
 
-## Fix: Comments fail for MSAL-authenticated users
+## Fix: Clicking any non-editable column should open the detail sheet
 
-### Root Cause
-In `usePositionComments.ts`, the `useAddPositionComment` hook does:
-```typescript
-const { user } = useAuth();
-// ...
-if (!user) throw new Error("Not authenticated");
-```
+### Problem
+Currently, only cells rendered with built-in types (`text`, `number`, `badge`, `date`) receive the `onClick` handler. Custom-rendered cells (like `TruncatedTextCell`, `BadgeCell` via `renderCell`) don't get the row click handler, so clicking them does nothing.
 
-For MSAL users, `user` (Supabase User) is `null`. Only `msalUser` is populated. The error fires before any API call is made.
+### Solution
+Move the `onClick` handler from individual cells up to the row-level `div` in `TableRow.tsx`. Editable cells (like `ShiftCell`) already call `e.stopPropagation()`, so they won't trigger the row click.
 
-The same issue exists in `useUpdatePositionComment` and `useDeletePositionComment` — they also rely on `user.id` for the `updatedBy` field.
+**File: `src/components/editable-table/TableRow.tsx`**
 
-### Fix
+1. Add `onClick={onClick}` to the outer row `div` (line ~50)
+2. Remove `onClick={onClick}` from individual cell renderers (`TextCell`, `NumberCell`, `BadgeCell`, `DateCell` — lines 36-46)
 
-**File: `src/hooks/usePositionComments.ts`**
-
-1. Import `useAuthContext` instead of `useAuth` to access both `user` and `msalUser`
-2. In `useAddPositionComment`, derive `currentUserId` from `user?.id || msalUser?.id`
-3. Use `currentUserId` in the auth check and in the API payload (`userId` / `updatedBy`)
-4. Apply the same pattern in `useUpdatePositionComment` and `useDeletePositionComment` if they reference `user`
-
-This is the same pattern already used in other hooks like `useUpdateShiftOverride` which passes `updatedBy` without checking Supabase auth.
+This is a single-file change. All five position tabs (Employee, Contractor, Open Requisition, Open Position, Contractor Requisition) will benefit since they all use `EditableTable` with `onRowClick`.
 
