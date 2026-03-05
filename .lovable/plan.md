@@ -1,22 +1,25 @@
 
 
-## Fix: Shift cell click opens details instead of edit popover in Open Requisitions
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-### Problem
-In `OpenRequisitionTab.tsx`, the shift column is overridden with a custom `ShiftCell` renderer (line 62), but `editable: true` is not set on the column. The `TableRow` component only calls `stopPropagation` on cells marked `editable: true`, so clicking the shift cell triggers the row-level `onRowClick` handler (opening the details sheet) instead of the `ShiftCell` popover.
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### Fix
-**File: `src/pages/positions/OpenRequisitionTab.tsx`** — Add `editable: true` to the overridden shift column (around line 63):
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-```ts
-return {
-  ...col,
-  editable: true,  // ← add this line
-  renderCell: (row: Position) => (
-    <ShiftCell ... />
-  ),
-};
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
 ```
 
-Single-line addition. This matches the pattern used in `EmployeesTab.tsx` for editable columns.
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 
