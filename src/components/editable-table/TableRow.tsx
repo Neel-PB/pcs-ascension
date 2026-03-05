@@ -63,6 +63,7 @@ function TableRowInner<T = any>({
         <div
           key={column.id}
           className="flex items-center overflow-hidden"
+          onClick={column.renderCell ? (e) => e.stopPropagation() : undefined}
         >
           {renderCell(column)}
         </div>
