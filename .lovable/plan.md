@@ -1,37 +1,20 @@
 
 
-## Fix: Pass `overrideId` to FTE and Shift mutation calls
+## Fix: Horizontal scrolling broken in EditableTable
 
 ### Root Cause
-When you revert (or update) Active FTE or Shift, the mutation hooks (`useUpdateActualFte`, `useUpdateShiftOverride`) check for `overrideId` to decide whether to PUT (update existing) or POST (create new). However, the handler functions in `EmployeesTab.tsx` and `ContractorsTab.tsx` never pass `overrideId` from the row data. This means every call hits the POST/create branch, and the API returns 500 because:
-- It tries to create a new override for a position that already has one (duplicate), or
-- It rejects creating an override with null values (revert scenario)
+In `src/components/editable-table/VirtualizedTableBody.tsx` (line 41), the scroll container has `overflow-x-hidden`, which explicitly prevents horizontal scrolling. The horizontal scroll is supposed to be handled by the parent container in `EditableTable.tsx`, but the `VirtualizedTableBody` is the actual scroll element for virtualization — so horizontal overflow inside it is clipped.
 
-### Fix
+### Solution
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** — Change `overflow-x-hidden` to `overflow-x-auto` on line 41:
 
-**1. `src/pages/positions/EmployeesTab.tsx`**
-- Update `handleActualFteUpdate` to accept and pass `overrideId`:
-  ```ts
-  const handleActualFteUpdate = useCallback((
-    id: string, previousFte, previousExpiry, previousStatus,
-    data: { ... },
-    overrideId?: string | null  // add this
-  ) => {
-    updateActualFte.mutate({ id, overrideId, ...data, previousFte, previousExpiry, previousStatus });
-  }, [updateActualFte]);
-  ```
-- Update `handleShiftOverrideUpdate` to accept and pass `overrideId`:
-  ```ts
-  const handleShiftOverrideUpdate = useCallback((
-    id: string, originalShift: string | null, value: string | null, overrideId?: string | null
-  ) => {
-    updateShiftOverride.mutate({ id, overrideId, shift_override: value, originalShift });
-  }, [updateShiftOverride]);
-  ```
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain"
 
-**2. `src/pages/positions/ContractorsTab.tsx`** — Same changes as above.
+// After  
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+```
 
-**3. Column config call sites** — Update where `handleActualFteUpdate` and `handleShiftOverrideUpdate` are invoked (in the `renderCell` callbacks within `EmployeesTab` and `ContractorsTab`) to pass `row.overrideId`.
-
-This requires tracing exactly where the cell components call these handlers to include the `overrideId` parameter. The `EditableFTECell` and `ShiftCell` components receive callbacks, and those callbacks need to forward `row.overrideId` from the column config's `renderCell`.
+This single change allows the virtualized body to scroll horizontally in sync with the header (which is inside the same `overflow-x-auto` parent container in `EditableTable.tsx`). All five position tabs use the same `EditableTable` component, so this fix applies everywhere.
 
