@@ -409,7 +409,7 @@ export function FilterBar({
                             }}
                             className={selectedFacility === facility.facility_id ? "bg-primary/15 border border-primary/30" : ""}
                           >
-                            <div className="grid grid-cols-[minmax(0,1fr)_80px] w-full">
+                             <div className="grid grid-cols-[minmax(0,1fr)_80px] w-full items-center">
                               <span className="whitespace-normal break-words text-left">{facility.facility_name}</span>
                               <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right whitespace-nowrap">
                                 {facility.facility_id}
@@ -499,7 +499,7 @@ export function FilterBar({
                             }}
                             className={selectedDepartment === dept.department_id ? "bg-primary/15 border border-primary/30" : ""}
                           >
-                            <div className="grid grid-cols-[minmax(0,1fr)_80px] w-full">
+                            <div className="grid grid-cols-[minmax(0,1fr)_80px] w-full items-center">
                               <span className="whitespace-normal break-words text-left">{dept.department_name}</span>
                               <span className="text-xs text-muted-foreground font-mono pl-3 border-l border-border text-right whitespace-nowrap">
                                 {dept.department_id}
