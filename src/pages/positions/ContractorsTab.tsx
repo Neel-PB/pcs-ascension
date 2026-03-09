@@ -79,7 +79,7 @@ export function ContractorsTab({
     data: { actual_fte: number | null; actual_fte_expiry: string | null; actual_fte_status: string | null; actual_fte_shared_with?: string | null; actual_fte_shared_fte?: number | null; actual_fte_shared_expiry?: string | null; comment?: string; },
     overrideId?: string | null,
   ) => {
-    updateActualFte.mutate({ id, overrideId, ...data, previousFte, previousExpiry, previousStatus });
+    updateActualFte.mutate({ id, overrideId, ...data, previousFte, previousExpiry, previousStatus, updatedBy: currentUserId });
   }, [updateActualFte]);
 
   const handleShiftOverrideUpdate = useCallback((id: string, originalShift: string | null, value: string | null) => {
