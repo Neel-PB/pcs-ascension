@@ -62,32 +62,37 @@ export function usePositionComments(positionId: string) {
       if (!res.ok) throw new Error(`Comments fetch failed: ${res.status}`);
       const apiComments = await res.json();
 
-      // Step 3: Map API fields → frontend interface & fetch profiles
-      const commentsWithProfiles = await Promise.all(
-        (apiComments || []).map(async (c: any) => {
-          let profile = undefined;
-          if (c.created_by) {
-            const { data } = await supabase
-              .from("profiles")
-              .select("first_name, last_name, avatar_url")
-              .eq("id", c.created_by)
-              .single();
-            profile = data || undefined;
-          }
+      // Step 3: Batch-fetch profiles for all authors
+      const authorIds = [...new Set(
+        (apiComments || [])
+          .map((c: any) => c.created_by || c.createdBy || c.userId || c.user_id)
+          .filter(Boolean)
+      )] as string[];
 
-          return {
-            id: c.id,
-            position_id: positionId,
-            user_id: c.created_by || c.createdBy,
-            content: c.text,
-            created_at: c.created_at || c.createdAt,
-            updated_at: c.created_at || c.createdAt,
-            comment_type: c.comment_type || c.commentType || 'comment',
-            metadata: c.metadata ?? null,
-            profiles: profile,
-          } as PositionComment;
-        })
-      );
+      const profileMap = new Map<string, { first_name: string | null; last_name: string | null; avatar_url: string | null }>();
+      if (authorIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, first_name, last_name, avatar_url")
+          .in("id", authorIds);
+        (profiles || []).forEach((p) => profileMap.set(p.id, p));
+      }
+
+      // Step 4: Map API fields → frontend interface
+      const commentsWithProfiles = (apiComments || []).map((c: any) => {
+        const authorId = c.created_by || c.createdBy || c.userId || c.user_id;
+        return {
+          id: c.id,
+          position_id: positionId,
+          user_id: authorId,
+          content: c.text,
+          created_at: c.created_at || c.createdAt,
+          updated_at: c.created_at || c.createdAt,
+          comment_type: c.comment_type || c.commentType || 'comment',
+          metadata: c.metadata ?? null,
+          profiles: profileMap.get(authorId) || undefined,
+        } as PositionComment;
+      });
 
       // Sort newest first
       commentsWithProfiles.sort((a, b) =>

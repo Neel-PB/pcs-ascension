@@ -42,6 +42,11 @@ export function useUpdateShiftOverride() {
             updatedBy: updatedBy ?? null,
             comment: commentText,
             commentType: "activity_shift",
+            metadata: {
+              shiftOld: shiftOld ?? null,
+              shiftNew: shiftNew ?? null,
+              isRevert: isRevert,
+            },
           }),
         });
       } else {
@@ -53,6 +58,11 @@ export function useUpdateShiftOverride() {
             shiftOverride: shift_override,
             updatedBy: updatedBy ?? null,
             initialComment: commentText,
+            metadata: {
+              shiftOld: shiftOld ?? null,
+              shiftNew: shiftNew ?? null,
+              isRevert: isRevert,
+            },
           }),
         });
       }
