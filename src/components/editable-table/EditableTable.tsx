@@ -46,6 +46,22 @@ export function EditableTable<T = any>({
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(0);
 
+  // Enable touchpad horizontal scrolling
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) > 0 && el.scrollWidth > el.clientWidth) {
+        e.preventDefault();
+        el.scrollLeft += e.deltaX;
+      }
+    };
+
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, []);
+
   // Measure container width on mount and resize
   useEffect(() => {
     const updateWidth = () => {
