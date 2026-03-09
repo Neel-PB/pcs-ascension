@@ -107,12 +107,12 @@ function ActivityFieldRow({
 
 // Render FTE activity log card - ALWAYS shows all 3 sections
 function FteActivityCard({ metadata, displayName }: { metadata: Record<string, unknown>; displayName: string }) {
-  const fteOld = metadata.fte_old as number | null;
-  const fteNew = metadata.fte_new as number | null;
-  const reasonOld = metadata.reason_old as string | null;
-  const reasonNew = metadata.reason_new as string | null;
-  const expiryOld = metadata.expiry_old as string | null;
-  const expiryNew = metadata.expiry_new as string | null;
+  const fteOld = (metadata.fte_old ?? metadata.fteOld ?? metadata.old_value) as number | null;
+  const fteNew = (metadata.fte_new ?? metadata.fteNew ?? metadata.new_value) as number | null;
+  const reasonOld = (metadata.reason_old ?? metadata.reasonOld) as string | null;
+  const reasonNew = (metadata.reason_new ?? metadata.reasonNew ?? metadata.status) as string | null;
+  const expiryOld = (metadata.expiry_old ?? metadata.expiryOld ?? metadata.expiryDate) as string | null;
+  const expiryNew = (metadata.expiry_new ?? metadata.expiryNew ?? metadata.expiryDate) as string | null;
   const comment = metadata.comment as string | null;
 
   // Format expiry dates
@@ -135,9 +135,9 @@ function FteActivityCard({ metadata, displayName }: { metadata: Record<string, u
 
 // Render Shift activity log card
 function ShiftActivityCard({ metadata, displayName }: { metadata: Record<string, unknown>; displayName: string }) {
-  const shiftOld = metadata.shift_old as string | null;
-  const shiftNew = metadata.shift_new as string | null;
-  const isRevert = metadata.is_revert as boolean;
+  const shiftOld = (metadata.shift_old ?? metadata.shiftOld ?? metadata.old_value) as string | null;
+  const shiftNew = (metadata.shift_new ?? metadata.shiftNew ?? metadata.new_value) as string | null;
+  const isRevert = (metadata.is_revert ?? metadata.isRevert) as boolean;
 
   return (
     <div className="space-y-1">
