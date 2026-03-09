@@ -63,7 +63,12 @@ export function useUpdateShiftOverride() {
       return {
         positionKey: id,
         overrideId: data.id,
-        shift_override: shift_override,
+        shift_override,
+        commentText,
+        shiftOld: shiftOld ?? null,
+        shiftNew: shiftNew ?? null,
+        isRevert,
+        updatedBy: updatedBy ?? null,
       };
     },
     onSuccess: (updatedData) => {
