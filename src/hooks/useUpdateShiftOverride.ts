@@ -42,6 +42,11 @@ export function useUpdateShiftOverride() {
             updatedBy: updatedBy ?? null,
             comment: commentText,
             commentType: "activity_shift",
+            metadata: {
+              shiftOld: shiftOld ?? null,
+              shiftNew: shiftNew ?? null,
+              isRevert: isRevert,
+            },
           }),
         });
       } else {
