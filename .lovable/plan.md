@@ -1,21 +1,25 @@
 
 
-## Add Shared Position fields to FTE activity logs
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-### Problem
-When a user selects "Shared Position" as the Active FTE status, the override correctly saves `actual_fte_shared_with`, `actual_fte_shared_fte`, and `actual_fte_shared_expiry`. However, these values are **not included** in the activity log comment posted to the comments endpoint, and the `FteActivityCard` component doesn't render them.
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### Changes
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-**1. `src/hooks/useUpdateActualFte.ts`** — Include shared fields in the activity comment JSON:
-Add `sharedWith`, `sharedFte`, `sharedExpiry` to the `JSON.stringify` text payload so they're persisted in the comment.
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-**2. `src/components/positions/PositionCommentSection.tsx`** — Render shared fields in `FteActivityCard`:
-- Extract `sharedWith`, `sharedFte`, `sharedExpiry` from metadata
-- When reason is "SHARED_POSITION", show additional rows:
-  - **Shared With**: position number/name
-  - **Shared FTE**: the shared FTE value
-  - **Shared Expiry**: formatted date (or "No Expiry" if null since Shared Position has no max)
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
 
-This ensures the activity log fully captures what was changed when a Shared Position override is applied.
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+```
+
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 
