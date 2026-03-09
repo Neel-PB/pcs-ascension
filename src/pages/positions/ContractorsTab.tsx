@@ -80,7 +80,7 @@ export function ContractorsTab({
     overrideId?: string | null,
   ) => {
     updateActualFte.mutate({ id, overrideId, ...data, previousFte, previousExpiry, previousStatus, updatedBy: currentUserId });
-  }, [updateActualFte]);
+  }, [updateActualFte, currentUserId]);
 
   const handleShiftOverrideUpdate = useCallback((id: string, originalShift: string | null, value: string | null, overrideId?: string | null, previousOverride?: string | null) => {
     updateShiftOverride.mutate({ id, overrideId, shift_override: value, originalShift, previousOverride, updatedBy: currentUserId });
