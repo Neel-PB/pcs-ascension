@@ -34,7 +34,6 @@ export function useUpdateActualFte() {
       let res: Response;
 
       if (params.overrideId) {
-        // UPDATE existing override
         res = await fetch(`${API_BASE_URL}/position-overrides/${params.overrideId}`, {
           method: "PUT",
           headers,
@@ -46,21 +45,9 @@ export function useUpdateActualFte() {
             actualFteSharedFte: params.actual_fte_shared_fte ?? null,
             actualFteSharedExpiry: params.actual_fte_shared_expiry ?? null,
             updatedBy: params.updatedBy ?? null,
-            comment: params.comment || `FTE Change`,
-            commentType: "activity_fte",
-            metadata: {
-              fteOld: params.previousFte ?? null,
-              fteNew: params.actual_fte,
-              reasonOld: params.previousStatus ?? null,
-              reasonNew: params.actual_fte_status ?? null,
-              expiryOld: params.previousExpiry ?? null,
-              expiryNew: params.actual_fte_expiry ?? null,
-              comment: params.comment || null,
-            },
           }),
         });
       } else {
-        // CREATE new override
         res = await fetch(`${API_BASE_URL}/position-overrides`, {
           method: "POST",
           headers,
@@ -73,16 +60,6 @@ export function useUpdateActualFte() {
             actualFteSharedFte: params.actual_fte_shared_fte ?? null,
             actualFteSharedExpiry: params.actual_fte_shared_expiry ?? null,
             updatedBy: params.updatedBy ?? null,
-            initialComment: params.comment || `FTE Change`,
-            metadata: {
-              fteOld: params.previousFte ?? null,
-              fteNew: params.actual_fte,
-              reasonOld: params.previousStatus ?? null,
-              reasonNew: params.actual_fte_status ?? null,
-              expiryOld: params.previousExpiry ?? null,
-              expiryNew: params.actual_fte_expiry ?? null,
-              comment: params.comment || null,
-            },
           }),
         });
       }
@@ -102,9 +79,43 @@ export function useUpdateActualFte() {
         actual_fte_shared_with: params.actual_fte_shared_with,
         actual_fte_shared_fte: params.actual_fte_shared_fte,
         actual_fte_shared_expiry: params.actual_fte_shared_expiry,
+        // Pass through for onSuccess activity comment
+        updatedBy: params.updatedBy,
+        comment: params.comment,
+        previousFte: params.previousFte,
+        previousExpiry: params.previousExpiry,
+        previousStatus: params.previousStatus,
       };
     },
-    onSuccess: (updatedData) => {
+    onSuccess: async (updatedData) => {
+      // Post structured activity comment separately
+      try {
+        const token = sessionStorage.getItem("msal_access_token");
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
+        await fetch(`${API_BASE_URL}/position-overrides/${updatedData.overrideId}/comments`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            text: updatedData.comment || "FTE Change",
+            commentType: "activity_fte",
+            userId: updatedData.updatedBy ?? null,
+            metadata: {
+              fteOld: updatedData.previousFte ?? null,
+              fteNew: updatedData.actual_fte,
+              reasonOld: updatedData.previousStatus ?? null,
+              reasonNew: updatedData.actual_fte_status ?? null,
+              expiryOld: updatedData.previousExpiry ?? null,
+              expiryNew: updatedData.actual_fte_expiry ?? null,
+              comment: updatedData.comment || null,
+            },
+          }),
+        });
+      } catch (e) {
+        console.error("Failed to post FTE activity comment:", e);
+      }
+
       const updatePositionInCache = (oldData: any[] | undefined) => {
         if (!oldData) return oldData;
         return oldData.map((position: any) =>
@@ -128,7 +139,6 @@ export function useUpdateActualFte() {
         updatePositionInCache
       );
 
-      // Refresh activity logs in comments panel
       queryClient.invalidateQueries({ queryKey: ["position-comments", updatedData.positionKey] });
       queryClient.invalidateQueries({ queryKey: ["position-comment-counts"] });
 
