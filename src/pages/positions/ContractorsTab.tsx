@@ -82,9 +82,9 @@ export function ContractorsTab({
     updateActualFte.mutate({ id, overrideId, ...data, previousFte, previousExpiry, previousStatus, updatedBy: currentUserId });
   }, [updateActualFte]);
 
-  const handleShiftOverrideUpdate = useCallback((id: string, originalShift: string | null, value: string | null) => {
-    updateShiftOverride.mutate({ id, shift_override: value, originalShift });
-  }, [updateShiftOverride]);
+  const handleShiftOverrideUpdate = useCallback((id: string, originalShift: string | null, value: string | null, overrideId?: string | null, previousOverride?: string | null) => {
+    updateShiftOverride.mutate({ id, overrideId, shift_override: value, originalShift, previousOverride, updatedBy: currentUserId });
+  }, [updateShiftOverride, currentUserId]);
 
   const filteredAndSortedContractors = useMemo(() => {
     if (!contractors) return [];
