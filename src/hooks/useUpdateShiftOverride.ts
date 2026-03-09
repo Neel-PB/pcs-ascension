@@ -97,6 +97,10 @@ export function useUpdateShiftOverride() {
         { queryKey: ["positions"] },
         updatePositionInCache
       );
+
+      // Refresh activity logs in comments panel
+      queryClient.invalidateQueries({ queryKey: ["position-comments", updatedData.positionKey] });
+      queryClient.invalidateQueries({ queryKey: ["position-comment-counts"] });
     },
     onError: (error) => {
       console.error("Error updating shift override:", error);
