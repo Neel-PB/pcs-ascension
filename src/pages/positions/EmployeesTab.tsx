@@ -84,8 +84,8 @@ export function EmployeesTab({
     updateActualFte.mutate({ id, overrideId, ...data, previousFte, previousExpiry, previousStatus });
   }, [updateActualFte]);
 
-  const handleShiftOverrideUpdate = useCallback((id: string, originalShift: string | null, value: string | null, overrideId?: string | null) => {
-    updateShiftOverride.mutate({ id, overrideId, shift_override: value, originalShift });
+  const handleShiftOverrideUpdate = useCallback((id: string, originalShift: string | null, value: string | null, overrideId?: string | null, previousOverride?: string | null) => {
+    updateShiftOverride.mutate({ id, overrideId, shift_override: value, originalShift, previousOverride });
   }, [updateShiftOverride]);
 
   const filteredAndSortedEmployees = useMemo(() => {

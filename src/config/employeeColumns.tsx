@@ -140,7 +140,7 @@ export const createEmployeeColumnsWithComments = (
           <ShiftCell
             value={row.shift}
             selectedDayNight={row.shift_override}
-            onSave={(val) => onUpdateShiftOverride?.(row.id, row.shift, val, row.overrideId)}
+            onSave={(val) => onUpdateShiftOverride?.(row.id, row.shift, val, row.overrideId, row.shift_override)}
           />
         ),
       };

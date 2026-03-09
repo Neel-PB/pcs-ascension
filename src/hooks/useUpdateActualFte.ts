@@ -128,6 +128,10 @@ export function useUpdateActualFte() {
         updatePositionInCache
       );
 
+      // Refresh activity logs in comments panel
+      queryClient.invalidateQueries({ queryKey: ["position-comments", updatedData.positionKey] });
+      queryClient.invalidateQueries({ queryKey: ["position-comment-counts"] });
+
       toast.success('Active FTE updated successfully');
     },
     onError: (error) => {
