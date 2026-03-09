@@ -48,6 +48,15 @@ export function useUpdateActualFte() {
             updatedBy: params.updatedBy ?? null,
             comment: params.comment || `FTE Change`,
             commentType: "activity_fte",
+            metadata: {
+              fteOld: params.previousFte ?? null,
+              fteNew: params.actual_fte,
+              reasonOld: params.previousStatus ?? null,
+              reasonNew: params.actual_fte_status ?? null,
+              expiryOld: params.previousExpiry ?? null,
+              expiryNew: params.actual_fte_expiry ?? null,
+              comment: params.comment || null,
+            },
           }),
         });
       } else {
