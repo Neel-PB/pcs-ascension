@@ -38,6 +38,8 @@ export function EmployeesTab({
   selectedLevel2,
   selectedDepartment,
 }: EmployeesTabProps) {
+  const { user, msalUser } = useAuthContext();
+  const currentUserId = user?.id || msalUser?.id;
   useCheckExpiredFte();
 
   const { data: employees, isFetching } = usePositionsByFlag('employee_flag', {
