@@ -79,6 +79,12 @@ export function useUpdateActualFte() {
         actual_fte_shared_with: params.actual_fte_shared_with,
         actual_fte_shared_fte: params.actual_fte_shared_fte,
         actual_fte_shared_expiry: params.actual_fte_shared_expiry,
+        // Pass through for onSuccess activity comment
+        updatedBy: params.updatedBy,
+        comment: params.comment,
+        previousFte: params.previousFte,
+        previousExpiry: params.previousExpiry,
+        previousStatus: params.previousStatus,
       };
     },
     onSuccess: (updatedData) => {
