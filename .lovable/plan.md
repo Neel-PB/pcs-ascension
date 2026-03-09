@@ -1,25 +1,26 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Fix: FTE/Shift activity logs showing as plain comments + "Unknown User"
 
 ### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+Two issues:
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+1. **`updatedBy` never passed** — Both `EmployeesTab` and `ContractorsTab` call the FTE and Shift mutation hooks without passing the current user's ID. The API receives `updatedBy: null`, so it can't record who made the change → "Unknown User".
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+2. **`ContractorsTab` shift handler missing `overrideId` and `previousOverride`** — The contractor shift handler only passes `id`, `originalShift`, and `value` — no `overrideId` or `previousOverride`, so the API can't attach the activity log to the correct override.
 
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
-```
+### Changes
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+**1. `src/pages/positions/EmployeesTab.tsx`**
+- Import `useAuthContext` 
+- Get `user` and `msalUser` from auth context
+- Pass `updatedBy: user?.id || msalUser?.id` to both `updateActualFte.mutate()` and `updateShiftOverride.mutate()`
+
+**2. `src/pages/positions/ContractorsTab.tsx`**
+- Same auth context import + `updatedBy` for both mutations
+- Fix `handleShiftOverrideUpdate` to accept and pass `overrideId` and `previousOverride` (same pattern as EmployeesTab)
+
+**3. `src/config/contractorColumns.tsx`**
+- Update the shift column `onSave` to pass `row.overrideId` and `row.shift_override` (same fix already applied to employeeColumns)
 
