@@ -1,25 +1,46 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Fix: Activity comment logs showing empty fields (dashes)
 
 ### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+The mutation hooks (`useUpdateActualFte`, `useUpdateShiftOverride`) send `comment` and `commentType` to the API but **never send metadata** containing the old/new values. The API stores the comment without any structured metadata, so when the `FteActivityCard` and `ShiftActivityCard` read `metadata.fte_old`, `metadata.fte_new`, etc., everything is `undefined` → dashes.
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+Additionally, the profile lookup only checks `c.created_by` (snake_case) but the API likely returns `c.createdBy` (camelCase), causing "Unknown User".
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+### Changes
 
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+**1. `src/hooks/useUpdateActualFte.ts`** — Include metadata in the API request body for both PUT and POST:
+
+```ts
+metadata: {
+  fteOld: params.previousFte,
+  fteNew: params.actual_fte,
+  reasonOld: params.previousStatus,
+  reasonNew: params.actual_fte_status,
+  expiryOld: params.previousExpiry,
+  expiryNew: params.actual_fte_expiry,
+  comment: params.comment,
+},
 ```
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+**2. `src/hooks/useUpdateShiftOverride.ts`** — Include metadata in the API request body:
+
+```ts
+metadata: {
+  shiftOld: shiftOld,
+  shiftNew: shiftNew,
+  isRevert: isRevert,
+},
+```
+
+**3. `src/hooks/usePositionComments.ts`** — Fix profile lookup to handle camelCase author IDs + batch into a single query:
+
+```ts
+const authorId = c.created_by || c.createdBy || c.userId || c.user_id;
+```
+
+Collect all unique author IDs first, fetch profiles in one `.in("id", authorIds)` query, then map back via a `Map`.
+
+Three files, ensures activity cards render with actual change values and correct user names.
 
