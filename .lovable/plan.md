@@ -1,38 +1,25 @@
 
 
-## Fix: Enable touchpad horizontal scrolling on Position tables
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-### Problem
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-The horizontal scroll container (line 247 in `EditableTable.tsx`) uses `overflow-x-auto`. Vertical touchpad gestures work because the VirtualizedTableBody has `overflow-y-auto`. However, horizontal two-finger trackpad scrolling doesn't work because the scroll container with `overflow-x-auto` is a parent that doesn't receive the vertical scroll events — trackpads send wheel events with `deltaX` but the nested vertical scroller captures the gesture first.
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
 ### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-Add a `wheel` event listener on the horizontal scroll container that translates horizontal wheel deltas (`deltaX`) into horizontal scroll, and also handles the common trackpad pattern where shift+vertical scroll should scroll horizontally. This ensures trackpad two-finger horizontal swipes work.
-
-### Change
-
-**File: `src/components/editable-table/EditableTable.tsx`**
-
-Add a `useEffect` on `containerRef` that listens for `wheel` events. When `deltaX` is non-zero (trackpad horizontal swipe), apply `scrollLeft += deltaX`. This gives the browser a nudge to recognize horizontal scroll intent on the correct container.
-
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
 ```tsx
-useEffect(() => {
-  const el = containerRef.current;
-  if (!el) return;
-  
-  const handleWheel = (e: WheelEvent) => {
-    // If there's horizontal delta (trackpad swipe), scroll horizontally
-    if (Math.abs(e.deltaX) > 0 && el.scrollWidth > el.clientWidth) {
-      e.preventDefault();
-      el.scrollLeft += e.deltaX;
-    }
-  };
-  
-  el.addEventListener('wheel', handleWheel, { passive: false });
-  return () => el.removeEventListener('wheel', handleWheel);
-}, []);
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
 ```
 
-This is a single, small addition — no other files need changes. Works for all 5 position tabs since they all use `EditableTable`.
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 
