@@ -19,6 +19,7 @@ import { EditableFTECell, FilterDataProvider } from "@/components/editable-table
 import { usePositionCommentCounts } from "@/hooks/usePositionCommentCounts";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { useFilterData } from "@/hooks/useFilterData";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 interface EmployeesTabProps {
   selectedRegion: string;
