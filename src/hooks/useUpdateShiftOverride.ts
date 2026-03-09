@@ -71,7 +71,31 @@ export function useUpdateShiftOverride() {
         updatedBy: updatedBy ?? null,
       };
     },
-    onSuccess: (updatedData) => {
+    onSuccess: async (updatedData) => {
+      // Post structured activity comment separately
+      try {
+        const token = sessionStorage.getItem("msal_access_token");
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
+        await fetch(`${API_BASE_URL}/position-overrides/${updatedData.overrideId}/comments`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            text: updatedData.commentText,
+            commentType: "activity_shift",
+            userId: updatedData.updatedBy,
+            metadata: {
+              shiftOld: updatedData.shiftOld,
+              shiftNew: updatedData.shiftNew,
+              isRevert: updatedData.isRevert,
+            },
+          }),
+        });
+      } catch (e) {
+        console.error("Failed to post shift activity comment:", e);
+      }
+
       const updatePositionInCache = (oldData: any[] | undefined) => {
         if (!oldData) return oldData;
         return oldData.map((position: any) =>
@@ -90,7 +114,6 @@ export function useUpdateShiftOverride() {
         updatePositionInCache
       );
 
-      // Refresh activity logs in comments panel
       queryClient.invalidateQueries({ queryKey: ["position-comments", updatedData.positionKey] });
       queryClient.invalidateQueries({ queryKey: ["position-comment-counts"] });
     },

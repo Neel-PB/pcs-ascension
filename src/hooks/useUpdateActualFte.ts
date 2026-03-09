@@ -87,7 +87,35 @@ export function useUpdateActualFte() {
         previousStatus: params.previousStatus,
       };
     },
-    onSuccess: (updatedData) => {
+    onSuccess: async (updatedData) => {
+      // Post structured activity comment separately
+      try {
+        const token = sessionStorage.getItem("msal_access_token");
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
+        await fetch(`${API_BASE_URL}/position-overrides/${updatedData.overrideId}/comments`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            text: updatedData.comment || "FTE Change",
+            commentType: "activity_fte",
+            userId: updatedData.updatedBy ?? null,
+            metadata: {
+              fteOld: updatedData.previousFte ?? null,
+              fteNew: updatedData.actual_fte,
+              reasonOld: updatedData.previousStatus ?? null,
+              reasonNew: updatedData.actual_fte_status ?? null,
+              expiryOld: updatedData.previousExpiry ?? null,
+              expiryNew: updatedData.actual_fte_expiry ?? null,
+              comment: updatedData.comment || null,
+            },
+          }),
+        });
+      } catch (e) {
+        console.error("Failed to post FTE activity comment:", e);
+      }
+
       const updatePositionInCache = (oldData: any[] | undefined) => {
         if (!oldData) return oldData;
         return oldData.map((position: any) =>
@@ -111,7 +139,6 @@ export function useUpdateActualFte() {
         updatePositionInCache
       );
 
-      // Refresh activity logs in comments panel
       queryClient.invalidateQueries({ queryKey: ["position-comments", updatedData.positionKey] });
       queryClient.invalidateQueries({ queryKey: ["position-comment-counts"] });
 
