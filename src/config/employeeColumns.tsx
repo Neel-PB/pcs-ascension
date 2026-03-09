@@ -7,7 +7,7 @@ import { TruncatedTextCell } from "@/components/editable-table/cells/TruncatedTe
 import { MessageSquare } from "@/lib/icons";
 
 // Type for the shift override handler
-type ShiftOverrideHandler = (positionId: string, originalShift: string | null, value: string | null, overrideId?: string | null) => void;
+type ShiftOverrideHandler = (positionId: string, originalShift: string | null, value: string | null, overrideId?: string | null, previousOverride?: string | null) => void;
 
 export const employeeColumns: ColumnDef<Position>[] = [
   {
