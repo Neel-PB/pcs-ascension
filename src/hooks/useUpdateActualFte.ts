@@ -74,6 +74,15 @@ export function useUpdateActualFte() {
             actualFteSharedExpiry: params.actual_fte_shared_expiry ?? null,
             updatedBy: params.updatedBy ?? null,
             initialComment: params.comment || `FTE Change`,
+            metadata: {
+              fteOld: params.previousFte ?? null,
+              fteNew: params.actual_fte,
+              reasonOld: params.previousStatus ?? null,
+              reasonNew: params.actual_fte_status ?? null,
+              expiryOld: params.previousExpiry ?? null,
+              expiryNew: params.actual_fte_expiry ?? null,
+              comment: params.comment || null,
+            },
           }),
         });
       }
