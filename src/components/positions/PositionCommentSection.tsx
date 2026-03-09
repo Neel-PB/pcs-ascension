@@ -115,15 +115,29 @@ function FteActivityCard({ metadata, displayName }: { metadata: Record<string, u
   const expiryNew = (metadata.expiry_new ?? metadata.expiryNew ?? metadata.expiryDate) as string | null;
   const comment = metadata.comment as string | null;
 
+  const sharedWith = (metadata.sharedWith ?? metadata.shared_with) as string | null;
+  const sharedFte = (metadata.sharedFte ?? metadata.shared_fte) as number | null;
+  const sharedExpiry = (metadata.sharedExpiry ?? metadata.shared_expiry) as string | null;
+
+  const isSharedPosition = reasonNew === 'SHARED_POSITION' || reasonOld === 'SHARED_POSITION';
+
   // Format expiry dates
   const formattedExpiryOld = expiryOld ? format(new Date(expiryOld), "MMM d, yyyy") : null;
   const formattedExpiryNew = expiryNew ? format(new Date(expiryNew), "MMM d, yyyy") : null;
+  const formattedSharedExpiry = sharedExpiry ? format(new Date(sharedExpiry), "MMM d, yyyy") : null;
 
   return (
     <div className="space-y-0">
       <ActivityFieldRow label="FTE" oldValue={fteOld} newValue={fteNew} />
       <ActivityFieldRow label="Reason" oldValue={reasonOld} newValue={reasonNew} isMultiline />
       <ActivityFieldRow label="Expiry" oldValue={formattedExpiryOld} newValue={formattedExpiryNew} />
+      {isSharedPosition && (
+        <>
+          <ActivityFieldRow label="Shared" oldValue={null} newValue={sharedWith} />
+          <ActivityFieldRow label="Sh. FTE" oldValue={null} newValue={sharedFte} />
+          <ActivityFieldRow label="Sh. Exp" oldValue={null} newValue={formattedSharedExpiry || "No Expiry"} />
+        </>
+      )}
       {comment && (
         <div className="pt-1 pb-0.5">
           <p className="text-sm text-foreground italic">"{comment}"</p>
