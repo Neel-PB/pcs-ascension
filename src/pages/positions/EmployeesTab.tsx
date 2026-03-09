@@ -19,6 +19,7 @@ import { EditableFTECell, FilterDataProvider } from "@/components/editable-table
 import { usePositionCommentCounts } from "@/hooks/usePositionCommentCounts";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { useFilterData } from "@/hooks/useFilterData";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 interface EmployeesTabProps {
   selectedRegion: string;
@@ -37,6 +38,8 @@ export function EmployeesTab({
   selectedLevel2,
   selectedDepartment,
 }: EmployeesTabProps) {
+  const { user, msalUser } = useAuthContext();
+  const currentUserId = user?.id || msalUser?.id;
   useCheckExpiredFte();
 
   const { data: employees, isFetching } = usePositionsByFlag('employee_flag', {
@@ -81,12 +84,12 @@ export function EmployeesTab({
     data: { actual_fte: number | null; actual_fte_expiry: string | null; actual_fte_status: string | null; actual_fte_shared_with?: string | null; actual_fte_shared_fte?: number | null; actual_fte_shared_expiry?: string | null; comment?: string; },
     overrideId?: string | null,
   ) => {
-    updateActualFte.mutate({ id, overrideId, ...data, previousFte, previousExpiry, previousStatus });
-  }, [updateActualFte]);
+    updateActualFte.mutate({ id, overrideId, ...data, previousFte, previousExpiry, previousStatus, updatedBy: currentUserId });
+  }, [updateActualFte, currentUserId]);
 
   const handleShiftOverrideUpdate = useCallback((id: string, originalShift: string | null, value: string | null, overrideId?: string | null, previousOverride?: string | null) => {
-    updateShiftOverride.mutate({ id, overrideId, shift_override: value, originalShift, previousOverride });
-  }, [updateShiftOverride]);
+    updateShiftOverride.mutate({ id, overrideId, shift_override: value, originalShift, previousOverride, updatedBy: currentUserId });
+  }, [updateShiftOverride, currentUserId]);
 
   const filteredAndSortedEmployees = useMemo(() => {
     if (!employees) return [];
