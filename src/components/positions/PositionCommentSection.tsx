@@ -135,9 +135,9 @@ function FteActivityCard({ metadata, displayName }: { metadata: Record<string, u
 
 // Render Shift activity log card
 function ShiftActivityCard({ metadata, displayName }: { metadata: Record<string, unknown>; displayName: string }) {
-  const shiftOld = metadata.shift_old as string | null;
-  const shiftNew = metadata.shift_new as string | null;
-  const isRevert = metadata.is_revert as boolean;
+  const shiftOld = (metadata.shift_old ?? metadata.shiftOld ?? metadata.old_value) as string | null;
+  const shiftNew = (metadata.shift_new ?? metadata.shiftNew ?? metadata.new_value) as string | null;
+  const isRevert = (metadata.is_revert ?? metadata.isRevert) as boolean;
 
   return (
     <div className="space-y-1">

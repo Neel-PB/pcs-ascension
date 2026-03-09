@@ -78,11 +78,11 @@ export function usePositionComments(positionId: string) {
           return {
             id: c.id,
             position_id: positionId,
-            user_id: c.created_by,
+            user_id: c.created_by || c.createdBy,
             content: c.text,
-            created_at: c.created_at,
-            updated_at: c.created_at,
-            comment_type: c.comment_type ?? 'comment',
+            created_at: c.created_at || c.createdAt,
+            updated_at: c.created_at || c.createdAt,
+            comment_type: c.comment_type || c.commentType || 'comment',
             metadata: c.metadata ?? null,
             profiles: profile,
           } as PositionComment;
