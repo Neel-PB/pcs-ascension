@@ -1,52 +1,63 @@
 
 
-## Migrate Volume Settings to NestJS API
+## Migrate Volume Overrides to NestJS API
 
-### Current State
-The volume settings tab (`SettingsTab.tsx`) uses **direct Supabase calls** via `useVolumeOverrides.ts` for CRUD on the `volume_overrides` table. Your NestJS backend now has a full `volume-overrides` controller with endpoints for CRUD, comments, and expiry checks.
+### Entity Field Mapping (Frontend → API)
 
-### Plan
+Based on the TypeORM entity you shared:
 
-**File: `src/hooks/useVolumeOverrides.ts`** — Rewrite all 3 hooks to call the NestJS API instead of Supabase:
+| Frontend field | API field (camelCase) | DB column |
+|---|---|---|
+| `facility_id` | `businessUnit` | `business_unit` |
+| `department_id` | `departmentId` | `department_id` |
+| `market` | `market` | `market` |
+| region (new) | `region` | `region` |
+| `override_volume` | `volumeOverrideValue` | `volume_override_value` |
+| `expiry_date` | `expiryDate` | `expiry_date` |
+| — | `updatedBy` | `updated_by` |
+| — | `commentsHistory` | `comments_history` (jsonb) |
 
-1. **`useVolumeOverrides(facilityId)`** — `GET /volume-overrides?businessUnit={facilityId}` (or appropriate query params). Uses the same `API_BASE_URL` + MSAL token pattern as other hooks.
+Note: The entity has no `facility_name` or `department_name` columns — those are resolved from other data on the frontend.
 
-2. **`useUpsertVolumeOverride()`** — Two paths:
-   - If override has an `id` (exists): `PUT /volume-overrides/:id` with `UpdateVolumeOverrideDto`
-   - If new: `POST /volume-overrides` with `CreateVolumeOverrideDto`
+### Files to Change
 
-3. **`useDeleteVolumeOverride()`** — `DELETE /volume-overrides/:id`
+**1. `src/hooks/useVolumeOverrides.ts`** — Full rewrite from Supabase to NestJS API
 
-**File: `src/hooks/useVolumeOverrideComments.ts`** (new) — Add hooks for the comments API:
-- `useVolumeOverrideComments(overrideId)` — `GET /volume-overrides/:id/comments`
-- `useAddVolumeOverrideComment()` — `POST /volume-overrides/:id/comments`
-- `useUpdateVolumeOverrideComment()` — `PATCH /volume-overrides/:id/comments/:commentId`
-- `useDeleteVolumeOverrideComment()` — `DELETE /volume-overrides/:id/comments/:commentId`
+- `useVolumeOverrides(facilityId)` → `GET /volume-overrides?businessUnit={facilityId}`
+  - Maps response back to `VolumeOverride` interface (rename `volumeOverrideValue` → `override_volume`, `expiryDate` → `expiry_date`, etc.)
+- `useUpsertVolumeOverride()` → Check for existing ID:
+  - New: `POST /volume-overrides` with `{ businessUnit, departmentId, region, market, volumeOverrideValue, expiryDate }`
+  - Update: `PUT /volume-overrides/:id` with `{ volumeOverrideValue, expiryDate }`
+- `useDeleteVolumeOverride()` → `DELETE /volume-overrides/:id`
+- Auth: MSAL token from `sessionStorage.getItem("msal_access_token")` in Authorization header
+- Uses `VITE_API_BASE_URL` (same pattern as `useCheckExpiredFte`)
 
-**File: `src/hooks/useCheckExpiredOverrides.ts`** (new or update existing) — Call `POST /volume-overrides/check-expired` on session init.
+**2. `src/hooks/useVolumeOverrideComments.ts`** — New file for comment CRUD
 
-### API Pattern (consistent with existing codebase)
-```typescript
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
-const token = sessionStorage.getItem("msal_access_token");
-const headers: Record<string, string> = { "Content-Type": "application/json" };
-if (token) headers["Authorization"] = `Bearer ${token}`;
-```
+- `useVolumeOverrideComments(overrideId)` → `GET /volume-overrides/:id/comments`
+- `useAddVolumeOverrideComment()` → `POST /volume-overrides/:id/comments`
+- `useUpdateVolumeOverrideComment()` → `PATCH /volume-overrides/:id/comments/:commentId`
+- `useDeleteVolumeOverrideComment()` → `DELETE /volume-overrides/:id/comments/:commentId`
+
+**3. `src/hooks/useCheckExpiredOverrides.ts`** — New file (mirrors `useCheckExpiredFte.ts` pattern)
+
+- Calls `POST /volume-overrides/check-expired` once per session on load
+
+**4. `src/pages/staffing/SettingsTab.tsx`** — Minor updates
+
+- Add `region` to the upsert call (from facility data or filter context)
+- Remove `facility_name` and `department_name` from the mutation payload (not in entity)
+
+**5. `src/pages/staffing/StaffingSummary.tsx`** — No changes needed
+
+- It reads `override_volume` and `expiry_date` from the hook response, which we'll map back to the same shape
 
 ### What stays the same
-- `SettingsTab.tsx` — No changes needed, it already consumes the hooks
-- `useHistoricalVolumeAnalysis.ts` — Stays on Supabase (reads `labor_performance` for target calculation)
-- `volumeOverrideColumns.tsx` — No changes
-- The two-step staged save workflow (pending volume in memory → date picker → save) remains identical
+- `volumeOverrideColumns.tsx` — No changes (renders from `VolumeOverrideRow`)
+- `useHistoricalVolumeAnalysis.ts` — Stays on Supabase
+- Two-step staged save workflow unchanged
+- `VolumeOverride` and `VolumeOverrideRow` interfaces keep same shape for consumers
 
-### Key mapping: Frontend fields → API DTO
-| Frontend | API (CreateVolumeOverrideDto) |
-|----------|------------------------------|
-| `facility_id` | `businessUnit` (confirm with your backend) |
-| `department_id` | `departmentId` |
-| `market` | `market` |
-| `override_volume` | `overrideVolume` |
-| `expiry_date` | `expiryDate` |
-
-The exact DTO field names need to match your NestJS service. I'll need to confirm the `CreateVolumeOverrideDto` and `UpdateVolumeOverrideDto` field names — can you share the service/DTO definitions, or should I use the field names from the controller (`businessUnit`, `departmentId`, `region`, `market`)?
+### Key question before implementation
+The `region` field is required in the entity's unique constraint. Where does the region come from in the current filter context? I see `facilities` table has a `region` column. I'll pull it from `facilityData.region` in `SettingsTab`.
 
