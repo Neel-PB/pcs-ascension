@@ -98,10 +98,7 @@ export function useUpdateActualFte() {
           method: "POST",
           headers,
           body: JSON.stringify({
-            text: updatedData.comment || "FTE Change",
-            commentType: "activity_fte",
-            userId: updatedData.updatedBy ?? null,
-            metadata: {
+            text: JSON.stringify({
               fteOld: updatedData.previousFte ?? null,
               fteNew: updatedData.actual_fte,
               reasonOld: updatedData.previousStatus ?? null,
@@ -109,7 +106,9 @@ export function useUpdateActualFte() {
               expiryOld: updatedData.previousExpiry ?? null,
               expiryNew: updatedData.actual_fte_expiry ?? null,
               comment: updatedData.comment || null,
-            },
+            }),
+            commentType: "activity_fte",
+            userId: updatedData.updatedBy ?? null,
           }),
         });
       } catch (e) {

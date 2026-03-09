@@ -82,14 +82,13 @@ export function useUpdateShiftOverride() {
           method: "POST",
           headers,
           body: JSON.stringify({
-            text: updatedData.commentText,
-            commentType: "activity_shift",
-            userId: updatedData.updatedBy,
-            metadata: {
+            text: JSON.stringify({
               shiftOld: updatedData.shiftOld,
               shiftNew: updatedData.shiftNew,
               isRevert: updatedData.isRevert,
-            },
+            }),
+            commentType: "activity_shift",
+            userId: updatedData.updatedBy,
           }),
         });
       } catch (e) {
