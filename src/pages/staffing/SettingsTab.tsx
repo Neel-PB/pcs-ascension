@@ -151,6 +151,7 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
 
     // NOW save both to database
     await upsertMutation.mutateAsync({
+      id: row.id.startsWith('dept-') ? undefined : row.id,
       market: row.market,
       facility_id: row.facility_id,
       facility_name: row.facility_name,
@@ -158,6 +159,7 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
       department_name: row.department_name,
       override_volume: volumeToSave,
       expiry_date: date,
+      region: facilityData?.region || '',
     });
 
     // Clear from pending state after successful save
