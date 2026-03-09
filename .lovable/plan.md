@@ -1,47 +1,25 @@
 
 
-## Fix: API drops `metadata` field — encode activity data in `text`
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
 ### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-The NestJS comments endpoint stores `commentType` correctly but **ignores the `metadata` field entirely**. The activity card renders (correct `comment_type`) but all values show em-dashes because `metadata` is always `null` when fetched back.
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
 ### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-Encode the structured metadata as a JSON string inside the `text` field. On fetch, detect activity comments and parse `text` as JSON to reconstruct `metadata`.
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
 
-### Changes
-
-**1. `src/hooks/useUpdateActualFte.ts`** — Encode metadata in `text`:
-```ts
-text: JSON.stringify({
-  fteOld: ..., fteNew: ..., 
-  reasonOld: ..., reasonNew: ...,
-  expiryOld: ..., expiryNew: ..., 
-  comment: ...
-}),
-commentType: "activity_fte",
-// remove metadata field
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
 ```
 
-**2. `src/hooks/useUpdateShiftOverride.ts`** — Same pattern:
-```ts
-text: JSON.stringify({
-  shiftOld: ..., shiftNew: ..., isRevert: ...
-}),
-commentType: "activity_shift",
-```
-
-**3. `src/hooks/usePositionComments.ts`** — Parse JSON text for activity comments:
-In the mapping step, when `commentType` is `activity_fte` or `activity_shift`, attempt to parse the `text` field as JSON and use it as `metadata`. Fall back to existing `c.metadata` if parsing fails.
-
-```ts
-let metadata = c.metadata ?? null;
-const commentType = c.comment_type || c.commentType || 'comment';
-if ((commentType === 'activity_fte' || commentType === 'activity_shift') && !metadata) {
-  try { metadata = JSON.parse(c.text); } catch {}
-}
-```
-
-This is backward-compatible: existing comments with real metadata still work, and new comments encode metadata in text as a workaround for the API limitation.
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 

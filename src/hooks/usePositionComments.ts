@@ -81,6 +81,14 @@ export function usePositionComments(positionId: string) {
       // Step 4: Map API fields → frontend interface
       const commentsWithProfiles = (apiComments || []).map((c: any) => {
         const authorId = c.created_by || c.createdBy || c.userId || c.user_id;
+        const commentType = c.comment_type || c.commentType || 'comment';
+        let metadata = c.metadata ?? null;
+
+        // API drops metadata field — decode from text for activity comments
+        if ((commentType === 'activity_fte' || commentType === 'activity_shift') && !metadata) {
+          try { metadata = JSON.parse(c.text); } catch {}
+        }
+
         return {
           id: c.id,
           position_id: positionId,
@@ -88,8 +96,8 @@ export function usePositionComments(positionId: string) {
           content: c.text,
           created_at: c.created_at || c.createdAt,
           updated_at: c.created_at || c.createdAt,
-          comment_type: c.comment_type || c.commentType || 'comment',
-          metadata: c.metadata ?? null,
+          comment_type: commentType,
+          metadata,
           profiles: profileMap.get(authorId) || undefined,
         } as PositionComment;
       });
