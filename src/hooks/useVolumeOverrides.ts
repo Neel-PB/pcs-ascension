@@ -1,7 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useAuth } from '@/hooks/useAuth';
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
+
+function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const token = sessionStorage.getItem("msal_access_token");
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  return headers;
+}
 
 export interface VolumeOverride {
   id: string;
@@ -15,6 +22,39 @@ export interface VolumeOverride {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  region: string;
+}
+
+interface ApiVolumeOverride {
+  id: string;
+  businessUnit: string;
+  departmentId: string;
+  region: string;
+  market: string;
+  volumeOverrideValue: number;
+  expiryDate: string | null;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+  commentsHistory: unknown[];
+}
+
+/** Map API response to frontend interface */
+function mapApiToFrontend(item: ApiVolumeOverride): VolumeOverride {
+  return {
+    id: item.id,
+    market: item.market,
+    facility_id: item.businessUnit,
+    facility_name: '', // resolved from facility data on frontend
+    department_id: item.departmentId,
+    department_name: '', // resolved from department data on frontend
+    override_volume: Number(item.volumeOverrideValue),
+    expiry_date: item.expiryDate || '',
+    created_by: item.updatedBy,
+    created_at: item.createdAt,
+    updated_at: item.updatedAt,
+    region: item.region,
+  };
 }
 
 export function useVolumeOverrides(facilityId: string | null) {
@@ -22,83 +62,86 @@ export function useVolumeOverrides(facilityId: string | null) {
     queryKey: ['volume-overrides', facilityId],
     queryFn: async () => {
       if (!facilityId || facilityId === 'all-facilities') return [];
-      
-      const { data, error } = await supabase
-        .from('volume_overrides')
-        .select('*')
-        .eq('facility_id', facilityId)
-        .order('department_name');
 
-      if (error) throw error;
-      return data as VolumeOverride[];
+      const res = await fetch(
+        `${API_BASE_URL}/volume-overrides?businessUnit=${encodeURIComponent(facilityId)}`,
+        { headers: getAuthHeaders() }
+      );
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Failed to fetch overrides (${res.status})`);
+      }
+
+      const data: ApiVolumeOverride[] = await res.json();
+      return data.map(mapApiToFrontend);
     },
-    enabled: !!facilityId && facilityId !== 'all-facilities',
+    enabled: !!facilityId && facilityId !== 'all-facilities' && !!API_BASE_URL,
   });
+}
+
+export interface UpsertVolumeOverridePayload {
+  id?: string; // present when updating existing override
+  market: string;
+  facility_id: string;
+  facility_name: string;
+  department_id: string;
+  department_name: string;
+  override_volume: number;
+  expiry_date: string;
+  region: string;
 }
 
 export function useUpsertVolumeOverride() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (override: Partial<VolumeOverride> & { 
-      market: string;
-      facility_id: string;
-      facility_name: string;
-      department_id: string;
-      department_name: string;
-      override_volume: number;
-      expiry_date: string;
-    }) => {
-      if (!user) throw new Error('User not authenticated');
+    mutationFn: async (override: UpsertVolumeOverridePayload) => {
+      const isUpdate = override.id && !override.id.startsWith('dept-');
 
-      // Check if override exists
-      const { data: existing } = await supabase
-        .from('volume_overrides')
-        .select('id')
-        .eq('facility_id', override.facility_id)
-        .eq('department_id', override.department_id)
-        .maybeSingle();
+      if (isUpdate) {
+        // PUT /volume-overrides/:id
+        const res = await fetch(`${API_BASE_URL}/volume-overrides/${override.id}`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            volumeOverrideValue: override.override_volume,
+            expiryDate: override.expiry_date,
+          }),
+        });
 
-      if (existing) {
-        // Update existing
-        const { data, error } = await supabase
-          .from('volume_overrides')
-          .update({
-            override_volume: override.override_volume,
-            expiry_date: override.expiry_date,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', existing.id)
-          .select()
-          .single();
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || `Failed to update override (${res.status})`);
+        }
 
-        if (error) throw error;
-        return data;
+        return { facilityId: override.facility_id };
       } else {
-        // Insert new
-        const { data, error } = await supabase
-          .from('volume_overrides')
-          .insert({
+        // POST /volume-overrides
+        const res = await fetch(`${API_BASE_URL}/volume-overrides`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            businessUnit: override.facility_id,
+            departmentId: override.department_id,
+            region: override.region,
             market: override.market,
-            facility_id: override.facility_id,
-            facility_name: override.facility_name,
-            department_id: override.department_id,
-            department_name: override.department_name,
-            override_volume: override.override_volume,
-            expiry_date: override.expiry_date,
-            created_by: user.id,
-          })
-          .select()
-          .single();
+            volumeOverrideValue: override.override_volume,
+            expiryDate: override.expiry_date,
+          }),
+        });
 
-        if (error) throw error;
-        return data;
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || `Failed to create override (${res.status})`);
+        }
+
+        return { facilityId: override.facility_id };
       }
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ 
-        queryKey: ['volume-overrides', variables.facility_id] 
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ['volume-overrides', data.facilityId],
       });
       toast.success('Override volume saved successfully');
     },
@@ -113,17 +156,21 @@ export function useDeleteVolumeOverride() {
 
   return useMutation({
     mutationFn: async ({ id, facilityId }: { id: string; facilityId: string }) => {
-      const { error } = await supabase
-        .from('volume_overrides')
-        .delete()
-        .eq('id', id);
+      const res = await fetch(`${API_BASE_URL}/volume-overrides/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
 
-      if (error) throw error;
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Failed to delete override (${res.status})`);
+      }
+
       return { facilityId };
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ 
-        queryKey: ['volume-overrides', data.facilityId] 
+      queryClient.invalidateQueries({
+        queryKey: ['volume-overrides', data.facilityId],
       });
       toast.success('Override removed successfully');
     },
