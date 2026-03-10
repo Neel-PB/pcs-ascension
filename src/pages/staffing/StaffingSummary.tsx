@@ -283,7 +283,7 @@ Example: If FTE Variance is 2.5 and Open Requisitions is 5:
     const monthLabels = generateLast12MonthLabels();
 
     const fmt = (v: number | null | undefined) =>
-      v != null ? v.toLocaleString(undefined, { maximumFractionDigits: 1 }) : "—";
+      v != null ? v.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "—";
 
     const mthly12 = pvAgg?.mthly_avg_volume_12mth ?? null;
     const dly12 = pvAgg?.dly_avg_volume_12mth ?? null;
