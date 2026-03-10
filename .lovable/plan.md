@@ -1,39 +1,25 @@
 
 
-## Fix: Aggregate patient volume across all records & restore charts
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-### Problem
-1. Current code only uses `patientVolumeData?.[0]` — ignores all other records. When multiple departments/locations are returned, only the first record's values display.
-2. Charts are conditionally empty (`mthly12 != null ? generateGrowthTrend(...) : []`) — so when API hasn't loaded or returns no data, charts disappear entirely. Previously they always showed with seeded data.
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### Fix in `src/pages/staffing/StaffingSummary.tsx`
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-**Replace single-record lookup with aggregation:**
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-```typescript
-// Instead of: const pvRecord = patientVolumeData?.[0] ?? null;
-const pvAgg = useMemo(() => {
-  if (!patientVolumeData?.length) return null;
-  return {
-    mthly_avg_volume_12mth: patientVolumeData.reduce((s, r) => s + (r.mthly_avg_volume_12mth ?? 0), 0),
-    dly_avg_volume_12mth: patientVolumeData.reduce((s, r) => s + (r.dly_avg_volume_12mth ?? 0), 0),
-    dly_avg_volume_3mth_low: patientVolumeData.reduce((s, r) => s + (r.dly_avg_volume_3mth_low ?? 0), 0),
-    dly_avg_volume_3mth_high: patientVolumeData.reduce((s, r) => s + (r.dly_avg_volume_3mth_high ?? 0), 0),
-    target_volume: patientVolumeData.reduce((s, r) => s + (r.target_volume ?? 0), 0),
-  };
-}, [patientVolumeData]);
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
 ```
 
-**Restore charts — always generate seeded from value (fallback to previous hardcoded base):**
-
-```typescript
-// Before (broken): chartData: mthly12 != null ? generateGrowthTrend(...) : [],
-// After: always generate chart, use API value or fallback
-chartData: generateGrowthTrend((mthly12 ?? 633.5) * 0.9, mthly12 ?? 633.5, 30),
-```
-
-Same pattern for all 5 volume KPI cards — charts always render, seeded from real values when available, fallback when not.
-
-### Scope
-Single file edit: `src/pages/staffing/StaffingSummary.tsx` — lines ~147 and ~279-351
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 

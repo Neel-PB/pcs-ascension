@@ -144,7 +144,16 @@ export default function StaffingSummary() {
     level2: selectedLevel2,
     pstat: selectedPstat,
   });
-  const pvRecord = patientVolumeData?.[0] ?? null;
+  const pvAgg = useMemo(() => {
+    if (!patientVolumeData?.length) return null;
+    return {
+      mthly_avg_volume_12mth: patientVolumeData.reduce((s, r) => s + (r.mthly_avg_volume_12mth ?? 0), 0),
+      dly_avg_volume_12mth: patientVolumeData.reduce((s, r) => s + (r.dly_avg_volume_12mth ?? 0), 0),
+      dly_avg_volume_3mth_low: patientVolumeData.reduce((s, r) => s + (r.dly_avg_volume_3mth_low ?? 0), 0),
+      dly_avg_volume_3mth_high: patientVolumeData.reduce((s, r) => s + (r.dly_avg_volume_3mth_high ?? 0), 0),
+      target_volume: patientVolumeData.reduce((s, r) => s + (r.target_volume ?? 0), 0),
+    };
+  }, [patientVolumeData]);
 
   // Determine override KPI value based on department selection
   const overrideKpiData = useMemo(() => {
@@ -276,18 +285,18 @@ Example: If FTE Variance is 2.5 and Open Requisitions is 5:
     const fmt = (v: number | null | undefined) =>
       v != null ? v.toLocaleString(undefined, { maximumFractionDigits: 1 }) : "—";
 
-    const mthly12 = pvRecord?.mthly_avg_volume_12mth ?? null;
-    const dly12 = pvRecord?.dly_avg_volume_12mth ?? null;
-    const low3 = pvRecord?.dly_avg_volume_3mth_low ?? null;
-    const high3 = pvRecord?.dly_avg_volume_3mth_high ?? null;
-    const targetVol = pvRecord?.target_volume ?? null;
+    const mthly12 = pvAgg?.mthly_avg_volume_12mth ?? null;
+    const dly12 = pvAgg?.dly_avg_volume_12mth ?? null;
+    const low3 = pvAgg?.dly_avg_volume_3mth_low ?? null;
+    const high3 = pvAgg?.dly_avg_volume_3mth_high ?? null;
+    const targetVol = pvAgg?.target_volume ?? null;
 
     const kpis = [
       {
         id: '12m-monthly',
         title: "12M Average",
         value: fmt(mthly12),
-        chartData: mthly12 != null ? generateGrowthTrend(mthly12 * 0.9, mthly12, 30) : [],
+        chartData: generateGrowthTrend((mthly12 ?? 633.5) * 0.9, mthly12 ?? 633.5, 30),
         chartType: "area" as const,
         delay: 0,
         xAxisLabels: monthLabels,
@@ -301,7 +310,7 @@ Example: If total volume over 12 months is 7,602:
         id: '12m-daily',
         title: "12M Daily Average",
         value: fmt(dly12),
-        chartData: dly12 != null ? generateGrowthTrend(dly12 * 0.9, dly12, 30) : [],
+        chartData: generateGrowthTrend((dly12 ?? 20.8) * 0.9, dly12 ?? 20.8, 30),
         chartType: "area" as const,
         delay: 0.05,
         xAxisLabels: monthLabels,
@@ -315,7 +324,7 @@ Example: If total volume is 7,602 over 365 days:
         id: '3m-low',
         title: "3M Low",
         value: fmt(low3),
-        chartData: low3 != null ? generateVolatileTrend(low3, 3) : [],
+        chartData: generateVolatileTrend(low3 ?? 14.2, 3),
         chartType: "area" as const,
         delay: 0.1,
         xAxisLabels: monthLabels,
@@ -331,7 +340,7 @@ Calculated by:
         id: '3m-high',
         title: "3M High",
         value: fmt(high3),
-        chartData: high3 != null ? generateVolatileTrend(high3, 5) : [],
+        chartData: generateVolatileTrend(high3 ?? 28.4, 5),
         chartType: "bar" as const,
         delay: 0.15,
         xAxisLabels: monthLabels,
@@ -348,7 +357,7 @@ Calculated by:
         title: "Target Vol",
         value: fmt(targetVol),
         isHighlighted: !overrideKpiData.isActive,
-        chartData: targetVol != null ? generateSeasonalTrend(targetVol, 3) : [],
+        chartData: generateSeasonalTrend(targetVol ?? 20.8, 3),
         chartType: "area" as const,
         delay: 0.2,
         xAxisLabels: monthLabels,
@@ -390,7 +399,7 @@ Used when:
       const bIndex = volumeOrder.indexOf(b.id);
       return aIndex - bIndex;
     });
-  }, [volumeOrder, overrideKpiData, pvRecord, selectedDepartment]);
+  }, [volumeOrder, overrideKpiData, pvAgg, selectedDepartment]);
 
   // Productivity KPIs Configuration
   const productivityKPIs = useMemo(() => {
