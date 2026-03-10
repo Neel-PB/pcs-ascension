@@ -296,7 +296,7 @@ Example: If FTE Variance is 2.5 and Open Requisitions is 5:
         id: '12m-monthly',
         title: "12M Average",
         value: fmt(mthly12),
-        chartData: mthly12 != null ? generateGrowthTrend(mthly12 * 0.9, mthly12, 30) : [],
+        chartData: generateGrowthTrend((mthly12 ?? 633.5) * 0.9, mthly12 ?? 633.5, 30),
         chartType: "area" as const,
         delay: 0,
         xAxisLabels: monthLabels,
