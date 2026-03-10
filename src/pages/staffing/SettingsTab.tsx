@@ -63,7 +63,7 @@ export function SettingsTab({ selectedRegion, selectedMarket, selectedFacility }
       return {
         id: override?.id || `dept-${record.department_id}`,
         department_id: record.department_id,
-        department_name: record.concat_dept_name,
+        department_name: record.department_description || record.concat_dept_name,
         override_volume: overrideVolume,
         pending_volume: pendingVolume ?? null,
         expiry_date: expiryDate,
