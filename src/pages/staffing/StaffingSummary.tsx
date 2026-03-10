@@ -144,7 +144,16 @@ export default function StaffingSummary() {
     level2: selectedLevel2,
     pstat: selectedPstat,
   });
-  const pvRecord = patientVolumeData?.[0] ?? null;
+  const pvAgg = useMemo(() => {
+    if (!patientVolumeData?.length) return null;
+    return {
+      mthly_avg_volume_12mth: patientVolumeData.reduce((s, r) => s + (r.mthly_avg_volume_12mth ?? 0), 0),
+      dly_avg_volume_12mth: patientVolumeData.reduce((s, r) => s + (r.dly_avg_volume_12mth ?? 0), 0),
+      dly_avg_volume_3mth_low: patientVolumeData.reduce((s, r) => s + (r.dly_avg_volume_3mth_low ?? 0), 0),
+      dly_avg_volume_3mth_high: patientVolumeData.reduce((s, r) => s + (r.dly_avg_volume_3mth_high ?? 0), 0),
+      target_volume: patientVolumeData.reduce((s, r) => s + (r.target_volume ?? 0), 0),
+    };
+  }, [patientVolumeData]);
 
   // Determine override KPI value based on department selection
   const overrideKpiData = useMemo(() => {
