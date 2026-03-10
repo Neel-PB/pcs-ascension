@@ -104,8 +104,8 @@ export function useUpsertNPOverride() {
           departmentId: override.department_id,
           region: override.region,
           market: override.market,
-          volumeOverrideValue: override.np_override_volume,
-          expiryDate: override.expiry_date,
+          npValue: override.np_override_volume,
+          npExpiryDate: override.expiry_date,
         }),
       });
 
