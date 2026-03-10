@@ -31,8 +31,8 @@ interface ApiVolumeOverride {
   departmentId: string;
   region: string;
   market: string;
-  volumeOverrideValue: number;
-  expiryDate: string | null;
+  npValue: number;
+  npExpiryDate: string | null;
   updatedBy: string | null;
   createdAt: string;
   updatedAt: string;
