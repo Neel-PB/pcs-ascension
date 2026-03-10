@@ -357,7 +357,7 @@ Calculated by:
         title: "Target Vol",
         value: fmt(targetVol),
         isHighlighted: !overrideKpiData.isActive,
-        chartData: targetVol != null ? generateSeasonalTrend(targetVol, 3) : [],
+        chartData: generateSeasonalTrend(targetVol ?? 20.8, 3),
         chartType: "area" as const,
         delay: 0.2,
         xAxisLabels: monthLabels,
