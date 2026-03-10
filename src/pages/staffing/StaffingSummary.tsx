@@ -147,11 +147,11 @@ export default function StaffingSummary() {
   const pvAgg = useMemo(() => {
     if (!patientVolumeData?.length) return null;
     return {
-      mthly_avg_volume_12mth: patientVolumeData.reduce((s, r) => s + (r.mthly_avg_volume_12mth ?? 0), 0),
-      dly_avg_volume_12mth: patientVolumeData.reduce((s, r) => s + (r.dly_avg_volume_12mth ?? 0), 0),
-      dly_avg_volume_3mth_low: patientVolumeData.reduce((s, r) => s + (r.dly_avg_volume_3mth_low ?? 0), 0),
-      dly_avg_volume_3mth_high: patientVolumeData.reduce((s, r) => s + (r.dly_avg_volume_3mth_high ?? 0), 0),
-      target_volume: patientVolumeData.reduce((s, r) => s + (r.target_volume ?? 0), 0),
+      mthly_avg_volume_12mth: patientVolumeData.reduce((s, r) => s + Number(r.mthly_avg_volume_12mth ?? 0), 0),
+      dly_avg_volume_12mth: patientVolumeData.reduce((s, r) => s + Number(r.dly_avg_volume_12mth ?? 0), 0),
+      dly_avg_volume_3mth_low: patientVolumeData.reduce((s, r) => s + Number(r.dly_avg_volume_3mth_low ?? 0), 0),
+      dly_avg_volume_3mth_high: patientVolumeData.reduce((s, r) => s + Number(r.dly_avg_volume_3mth_high ?? 0), 0),
+      target_volume: patientVolumeData.reduce((s, r) => s + Number(r.target_volume ?? 0), 0),
     };
   }, [patientVolumeData]);
 
