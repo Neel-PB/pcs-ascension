@@ -1,108 +1,90 @@
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { EditableTable } from '@/components/editable-table/EditableTable';
 import { createVolumeOverrideColumns, VolumeOverrideRow } from '@/config/volumeOverrideColumns';
 import { useVolumeOverrides, useUpsertVolumeOverride, useDeleteVolumeOverride } from '@/hooks/useVolumeOverrides';
-import { useHistoricalVolumeAnalysis, useVolumeOverrideConfig } from '@/hooks/useHistoricalVolumeAnalysis';
+import { useVolumeOverrideConfig } from '@/hooks/useHistoricalVolumeAnalysis';
+import { usePatientVolume } from '@/hooks/usePatientVolume';
 import { Database, Lock } from '@/lib/icons';
 import { Button } from '@/components/ui/button';
 import { LogoLoader } from '@/components/ui/LogoLoader';
 import { useRBAC } from '@/hooks/useRBAC';
+import {
+  isOverrideMandatory,
+  calculateMaxOverrideExpiry,
+  determineOverrideCategory,
+} from '@/lib/volumeOverrideRules';
 
 interface SettingsTabProps {
+  selectedRegion: string;
   selectedMarket: string;
   selectedFacility: string;
 }
 
-export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabProps) {
+export function SettingsTab({ selectedRegion, selectedMarket, selectedFacility }: SettingsTabProps) {
   const { data: overrides = [], isLoading: isLoadingOverrides } = useVolumeOverrides(selectedFacility);
-  const { data: volumeAnalysis = [], isLoading: isLoadingAnalysis } = useHistoricalVolumeAnalysis();
   const { data: config } = useVolumeOverrideConfig();
   const upsertMutation = useUpsertVolumeOverride();
   const deleteMutation = useDeleteVolumeOverride();
   const { hasPermission } = useRBAC();
   const canManageOverrides = hasPermission('approvals.volume_override');
-  
+
+  // Patient volume API as primary data source
+  const { data: patientVolumeData, isLoading: isLoadingPatientVolume } = usePatientVolume({
+    region: selectedRegion,
+    market: selectedMarket,
+    facility: selectedFacility,
+  });
+
   // Pending overrides stored in memory (not saved to DB until expiration date is set)
   const [pendingOverrides, setPendingOverrides] = useState<Record<string, number>>({});
-  
   // Track which department should auto-open its date picker
   const [autoOpenDatePicker, setAutoOpenDatePicker] = useState<string | null>(null);
 
-  // Fetch departments for the selected facility
-  const { data: departments = [], isLoading: isLoadingDepartments } = useQuery({
-    queryKey: ['departments', selectedFacility],
-    queryFn: async () => {
-      if (!selectedFacility || selectedFacility === 'all-facilities') return [];
-      
-      const { data, error } = await supabase
-        .from('departments')
-        .select('*')
-        .eq('facility_id', selectedFacility)
-        .order('department_name');
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!selectedFacility && selectedFacility !== 'all-facilities',
-  });
-
-  // Fetch facility details for the selected facility
-  const { data: facilityData } = useQuery({
-    queryKey: ['facility', selectedFacility],
-    queryFn: async () => {
-      if (!selectedFacility || selectedFacility === 'all-facilities') return null;
-      
-      const { data, error } = await supabase
-        .from('facilities')
-        .select('*')
-        .eq('facility_id', selectedFacility)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!selectedFacility && selectedFacility !== 'all-facilities',
-  });
-
-  // Merge departments with overrides, historical analysis, and pending values
+  // Merge patient-volume data with overrides and pending values
   const tableData = useMemo((): VolumeOverrideRow[] => {
-    if (!departments.length) return [];
+    if (!patientVolumeData?.length) return [];
 
-    return departments.map((dept) => {
-      const override = overrides.find((o) => o.department_id === dept.department_id);
-      const analysis = volumeAnalysis.find(
-        (a) => a.facility_id === selectedFacility && a.department_id === dept.department_id
-      );
-      const pendingVolume = pendingOverrides[dept.department_id];
-      
+    return patientVolumeData.map((record) => {
+      const override = overrides.find((o) => o.department_id === record.department_id);
+      const pendingVolume = pendingOverrides[record.department_id];
+
+      const totalValidMonths = Number(record.total_valid_months ?? 0);
+      const overrideMandatory = config ? isOverrideMandatory(totalValidMonths, config) : false;
+      const maxAllowedExpiry = config ? calculateMaxOverrideExpiry(totalValidMonths, config) : null;
+      const category = config ? determineOverrideCategory(totalValidMonths, config) : undefined;
+
+      // Use override from API, or fallback to edited values from patient-volume record
+      const overrideVolume = override?.override_volume
+        ?? (record.edited_volume_override_value != null ? Number(record.edited_volume_override_value) : null);
+      const expiryDate = override?.expiry_date
+        ?? record.edited_expiry_date
+        ?? null;
+
       return {
-        id: override?.id || `dept-${dept.department_id}`,
-        department_id: dept.department_id,
-        department_name: dept.department_name,
-        override_volume: override?.override_volume || null,
-        pending_volume: pendingVolume ?? null, // NEW: Track pending value in memory
-        expiry_date: override?.expiry_date || null,
-        market: selectedMarket,
-        facility_id: selectedFacility,
-        facility_name: facilityData?.facility_name || '',
-        // Historical analysis data
-        historical_months_count: analysis?.historical_months_count,
-        historical_months_data: analysis?.historical_months_data,
-        target_volume: analysis?.target_volume,
-        override_mandatory: analysis?.override_mandatory,
-        max_allowed_expiry_date: analysis?.max_allowed_expiry_date,
-        category: analysis?.category,
-        // New 3-month low fields
-        three_month_low_avg: analysis?.three_month_low_avg,
-        n_month_avg: analysis?.n_month_avg,
-        spread_percentage: analysis?.spread_percentage,
-        used_three_month_low: analysis?.used_three_month_low,
-        lowest_three_months: analysis?.lowest_three_months,
+        id: override?.id || `dept-${record.department_id}`,
+        department_id: record.department_id,
+        department_name: record.concat_dept_name,
+        override_volume: overrideVolume,
+        pending_volume: pendingVolume ?? null,
+        expiry_date: expiryDate,
+        market: record.market || selectedMarket,
+        facility_id: record.business_unit || selectedFacility,
+        facility_name: record.business_unit_description || '',
+        // Historical analysis from patient-volume API
+        historical_months_count: totalValidMonths,
+        target_volume: Number(record.target_volume ?? 0) || null,
+        override_mandatory: overrideMandatory,
+        max_allowed_expiry_date: maxAllowedExpiry,
+        category,
+        // 3-month low fields
+        three_month_low_avg: record.dly_avg_volume_3mth_low != null ? Number(record.dly_avg_volume_3mth_low) : null,
+        n_month_avg: record.dly_avg_volume_12mth != null ? Number(record.dly_avg_volume_12mth) : null,
+        spread_percentage: null,
+        used_three_month_low: false,
+        lowest_three_months: [],
       };
     });
-  }, [departments, overrides, volumeAnalysis, selectedMarket, selectedFacility, facilityData, pendingOverrides]);
+  }, [patientVolumeData, overrides, pendingOverrides, selectedMarket, selectedFacility, config]);
 
   // Calculate warning stats
   const stats = useMemo(() => {
@@ -113,43 +95,27 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
       return daysUntilExpiry > 0 && daysUntilExpiry <= 7;
     }).length;
     const usingTargetCount = tableData.filter(row => !row.override_volume && row.target_volume).length;
-
     return { mandatoryCount, expiringSoonCount, usingTargetCount };
   }, [tableData]);
 
   // Step 1: Store volume in memory only (staged save)
   const handleSaveVolume = async (departmentId: string, volume: number | null) => {
-    if (!canManageOverrides) return;
-    if (!volume) return;
-
-    // Store in pending state (memory) - don't save to DB yet
-    setPendingOverrides(prev => ({
-      ...prev,
-      [departmentId]: volume
-    }));
-    
-    // Trigger auto-open for this department's date picker
+    if (!canManageOverrides || !volume) return;
+    setPendingOverrides(prev => ({ ...prev, [departmentId]: volume }));
     setAutoOpenDatePicker(departmentId);
   };
-  
-  // Clear auto-open state after the calendar has opened
-  const handleAutoOpenComplete = () => {
-    setAutoOpenDatePicker(null);
-  };
+
+  const handleAutoOpenComplete = () => setAutoOpenDatePicker(null);
 
   // Step 2: Save both volume AND date to database together
   const handleSaveDate = async (departmentId: string, date: string | null) => {
-    if (!canManageOverrides) return;
-    if (!date) return;
-    
+    if (!canManageOverrides || !date) return;
     const row = tableData.find((r) => r.department_id === departmentId);
     if (!row) return;
 
-    // Get volume from pending state or existing override
     const volumeToSave = pendingOverrides[departmentId] ?? row.override_volume;
     if (!volumeToSave) return;
 
-    // NOW save both to database
     await upsertMutation.mutateAsync({
       id: row.id.startsWith('dept-') ? undefined : row.id,
       market: row.market,
@@ -159,10 +125,9 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
       department_name: row.department_name,
       override_volume: volumeToSave,
       expiry_date: date,
-      region: facilityData?.region || '',
+      region: selectedRegion || '',
     });
 
-    // Clear from pending state after successful save
     setPendingOverrides(prev => {
       const updated = { ...prev };
       delete updated[departmentId];
@@ -172,24 +137,16 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
 
   const handleDeleteOverride = async (departmentId: string) => {
     if (!canManageOverrides) return;
-    
     const row = tableData.find((r) => r.department_id === departmentId);
-    if (!row) return;
-
-    // Only delete if there's an existing override (not a placeholder)
-    if (!row.id.startsWith('dept-')) {
-      await deleteMutation.mutateAsync({ 
-        id: row.id, 
-        facilityId: selectedFacility 
-      });
-    }
+    if (!row || row.id.startsWith('dept-')) return;
+    await deleteMutation.mutateAsync({ id: row.id, facilityId: selectedFacility });
   };
 
   const columns = useMemo(
     () => createVolumeOverrideColumns(
-      handleSaveVolume, 
-      handleSaveDate, 
-      handleDeleteOverride, 
+      handleSaveVolume,
+      handleSaveDate,
+      handleDeleteOverride,
       config ?? undefined,
       autoOpenDatePicker,
       handleAutoOpenComplete
@@ -212,8 +169,7 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
     );
   }
 
-  // Show loading state
-  if (isLoadingDepartments || isLoadingOverrides || isLoadingAnalysis) {
+  if (isLoadingPatientVolume || isLoadingOverrides) {
     return (
       <div className="flex items-center justify-center h-96">
         <LogoLoader size="lg" />
@@ -221,8 +177,7 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
     );
   }
 
-  // Show empty state if no departments
-  if (!departments.length) {
+  if (!patientVolumeData?.length) {
     return (
       <div className="flex flex-col items-center justify-center h-96 text-center space-y-4">
         <Database className="h-16 w-16 text-muted-foreground" />
@@ -241,7 +196,6 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
       {/* Consolidated Stats Banner */}
       <div data-tour="volume-settings-stats" className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
         <div className="flex items-center gap-8">
-          {/* Require Override Stat */}
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${stats.mandatoryCount > 0 ? 'bg-destructive' : 'bg-green-500'}`} />
             <span className="text-sm">
@@ -249,8 +203,6 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
               {' '}Require Override
             </span>
           </div>
-          
-          {/* Using Target Volume Stat */}
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-blue-500" />
             <span className="text-sm">
@@ -258,8 +210,6 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
               {' '}Using Target Volume
             </span>
           </div>
-          
-          {/* Expiring Soon (if any) */}
           {stats.expiringSoonCount > 0 && (
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-yellow-500" />
@@ -270,12 +220,8 @@ export function SettingsTab({ selectedMarket, selectedFacility }: SettingsTabPro
             </div>
           )}
         </div>
-        
-        {/* Action Button */}
         {stats.mandatoryCount > 0 && (
-          <Button variant="outline" size="sm">
-            View Required
-          </Button>
+          <Button variant="outline" size="sm">View Required</Button>
         )}
       </div>
 
