@@ -1,25 +1,26 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Fix: `.toFixed is not a function` — API returns string numbers
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+The patient-volume API returns numeric fields as strings (e.g., `"458.35"` instead of `458.35`). The `.reduce()` aggregation uses `??  0` which doesn't coerce strings, so `"458.35" + 0` produces `"458.350"` (string concatenation). When this string flows into `generateGrowthTrend` → `chartData` → `KPIChartModal`, the `.toFixed()` call fails because it's a string, not a number.
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+### Fix in `src/pages/staffing/StaffingSummary.tsx` (~lines 147-156)
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+Wrap each reduce accessor with `Number()` to coerce string values:
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
-
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+```typescript
+const pvAgg = useMemo(() => {
+  if (!patientVolumeData?.length) return null;
+  return {
+    mthly_avg_volume_12mth: patientVolumeData.reduce((s, r) => s + Number(r.mthly_avg_volume_12mth ?? 0), 0),
+    dly_avg_volume_12mth: patientVolumeData.reduce((s, r) => s + Number(r.dly_avg_volume_12mth ?? 0), 0),
+    dly_avg_volume_3mth_low: patientVolumeData.reduce((s, r) => s + Number(r.dly_avg_volume_3mth_low ?? 0), 0),
+    dly_avg_volume_3mth_high: patientVolumeData.reduce((s, r) => s + Number(r.dly_avg_volume_3mth_high ?? 0), 0),
+    target_volume: patientVolumeData.reduce((s, r) => s + Number(r.target_volume ?? 0), 0),
+  };
+}, [patientVolumeData]);
 ```
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+### Scope
+Single file, ~5 lines changed.
 
