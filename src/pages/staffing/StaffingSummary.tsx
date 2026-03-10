@@ -626,6 +626,7 @@ This metric helps:
           
           {activeTab === "volume-settings" && (
             <SettingsTab 
+              selectedRegion={selectedRegion}
               selectedMarket={selectedMarket}
               selectedFacility={selectedFacility}
             />
