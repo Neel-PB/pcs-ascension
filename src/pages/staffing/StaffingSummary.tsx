@@ -310,7 +310,7 @@ Example: If total volume over 12 months is 7,602:
         id: '12m-daily',
         title: "12M Daily Average",
         value: fmt(dly12),
-        chartData: dly12 != null ? generateGrowthTrend(dly12 * 0.9, dly12, 30) : [],
+        chartData: generateGrowthTrend((dly12 ?? 20.8) * 0.9, dly12 ?? 20.8, 30),
         chartType: "area" as const,
         delay: 0.05,
         xAxisLabels: monthLabels,
