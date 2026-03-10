@@ -73,8 +73,9 @@ export function useVolumeOverrides(facilityId: string | null) {
         throw new Error(err.message || `Failed to fetch overrides (${res.status})`);
       }
 
-      const data: ApiVolumeOverride[] = await res.json();
-      return data.map(mapApiToFrontend);
+      const json = await res.json();
+      const items: ApiVolumeOverride[] = Array.isArray(json) ? json : (json.data || []);
+      return items.map(mapApiToFrontend);
     },
     enabled: !!facilityId && facilityId !== 'all-facilities' && !!API_BASE_URL,
   });
