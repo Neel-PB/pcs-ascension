@@ -1,20 +1,25 @@
 
 
-## Use `npValue` and `npExpiryDate` fields for NP overrides API
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-### Problem
-The NP Settings upsert is currently sending `volumeOverrideValue` and `expiryDate` — the same fields used by Volume overrides. The API expects `npValue` and `npExpiryDate` for NP-specific overrides.
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### Changes
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-**`src/hooks/useNPOverrides.ts`**
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-1. **Upsert payload** (line 102-109): Change the JSON body keys:
-   - `volumeOverrideValue` → `npValue`
-   - `expiryDate` → `npExpiryDate`
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
 
-2. **API response mapping** (line 28-38 & 41-55): Update `ApiVolumeOverride` interface and `mapApiToFrontend` to read from `npValue` and `npExpiryDate` instead of `volumeOverrideValue` and `expiryDate`.
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+```
 
-### Scope
-Single file: `useNPOverrides.ts` — interface, mapping function, and upsert body.
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 

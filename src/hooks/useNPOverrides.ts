@@ -31,8 +31,8 @@ interface ApiVolumeOverride {
   departmentId: string;
   region: string;
   market: string;
-  volumeOverrideValue: number;
-  expiryDate: string | null;
+  npValue: number;
+  npExpiryDate: string | null;
   updatedBy: string | null;
   createdAt: string;
   updatedAt: string;
@@ -46,8 +46,8 @@ function mapApiToFrontend(item: ApiVolumeOverride): NPOverride {
     facility_name: '',
     department_id: item.departmentId,
     department_name: '',
-    np_override_volume: Number(item.volumeOverrideValue),
-    expiry_date: item.expiryDate || '',
+    np_override_volume: Number(item.npValue),
+    expiry_date: item.npExpiryDate || '',
     created_by: item.updatedBy,
     created_at: item.createdAt,
     updated_at: item.updatedAt,
@@ -104,8 +104,8 @@ export function useUpsertNPOverride() {
           departmentId: override.department_id,
           region: override.region,
           market: override.market,
-          volumeOverrideValue: override.np_override_volume,
-          expiryDate: override.expiry_date,
+          npValue: override.np_override_volume,
+          npExpiryDate: override.expiry_date,
         }),
       });
 
