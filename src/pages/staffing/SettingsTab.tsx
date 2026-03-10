@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { EditableTable } from '@/components/editable-table/EditableTable';
 import { createVolumeOverrideColumns, VolumeOverrideRow } from '@/config/volumeOverrideColumns';
 import { useVolumeOverrides, useUpsertVolumeOverride, useDeleteVolumeOverride } from '@/hooks/useVolumeOverrides';
-import { useVolumeOverrideConfig } from '@/hooks/useVolumeOverrideConfig';
+import { useVolumeOverrideConfig } from '@/hooks/useHistoricalVolumeAnalysis';
 import { usePatientVolume } from '@/hooks/usePatientVolume';
 import { Database, Lock } from '@/lib/icons';
 import { Button } from '@/components/ui/button';
