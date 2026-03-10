@@ -1,34 +1,25 @@
 
 
-## Wire Volume KPIs to Patient Volume API
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-### What stays the same
-- **Override Vol** KPI card continues using `useVolumeOverrides` hook (NestJS `/volume-overrides`) — no changes
-- Chart data generators remain for sparkline visuals (seeded from real values)
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### New hook: `src/hooks/usePatientVolume.ts`
-- Fetches `GET /patient-volume` with query params: `region`, `market`, `businessUnit` (facility), `departmentId`, `submarket`, `level2`, `pstat`
-- Same auth pattern (MSAL token from sessionStorage)
-- Unwraps `{ data, total }` paginated response
-- Returns typed array of `PatientVolumeRecord`
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-### Edit: `src/pages/staffing/StaffingSummary.tsx`
-- Import and call `usePatientVolume` with current filter selections
-- Replace hardcoded Volume KPI values with API data from first matching record:
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-| KPI Card | Hardcoded → | API field |
-|---|---|---|
-| 12M Average | `"633.5"` | `mthly_avg_volume_12mth` |
-| 12M Daily Average | `"20.8"` | `dly_avg_volume_12mth` |
-| 3M Low | `"14.2"` | `dly_avg_volume_3mth_low` |
-| 3M High | `"28.4"` | `dly_avg_volume_3mth_high` |
-| Target Vol | `"20.8"` | `target_volume` |
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
 
-- When no data returned or loading, show `"—"` as value
-- Override Vol card remains unchanged (uses `useVolumeOverrides`)
-- Sparkline charts seeded from real value (e.g., `generateGrowthTrend(val * 0.9, val)`)
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+```
 
-### Scope
-- 1 new file, 1 edited file
-- No changes to `useVolumeOverrides`, `useHistoricalVolumeAnalysis`, or Settings tab
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 

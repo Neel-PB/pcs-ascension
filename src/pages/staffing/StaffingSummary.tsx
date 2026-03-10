@@ -20,6 +20,7 @@ import { LogoLoader } from "@/components/ui/LogoLoader";
 import { useFilterStore } from "@/stores/useFilterStore";
 import { StaffingTour } from "@/components/tour/StaffingTour";
 import { useVolumeOverrides } from "@/hooks/useVolumeOverrides";
+import { usePatientVolume } from "@/hooks/usePatientVolume";
 
 const validTabs = ["summary", "planning", "variance", "forecasts", "volume-settings", "np-settings"];
 
@@ -132,6 +133,18 @@ export default function StaffingSummary() {
   // Fetch volume overrides for the selected facility
   const facilityForOverrides = selectedFacility === "all-facilities" ? null : selectedFacility;
   const { data: volumeOverrides } = useVolumeOverrides(facilityForOverrides);
+
+  // Fetch patient volume data from API
+  const { data: patientVolumeData, isLoading: pvLoading } = usePatientVolume({
+    region: selectedRegion,
+    market: selectedMarket,
+    facility: selectedFacility,
+    department: selectedDepartment,
+    submarket: selectedSubmarket,
+    level2: selectedLevel2,
+    pstat: selectedPstat,
+  });
+  const pvRecord = patientVolumeData?.[0] ?? null;
 
   // Determine override KPI value based on department selection
   const overrideKpiData = useMemo(() => {
@@ -256,16 +269,25 @@ Example: If FTE Variance is 2.5 and Open Requisitions is 5:
     });
   }, [fteOrder]);
 
-  // Volume KPIs Configuration
+  // Volume KPIs Configuration – wired to patient-volume API
   const volumeKPIs = useMemo(() => {
     const monthLabels = generateLast12MonthLabels();
-    
+
+    const fmt = (v: number | null | undefined) =>
+      v != null ? v.toLocaleString(undefined, { maximumFractionDigits: 1 }) : "—";
+
+    const mthly12 = pvRecord?.mthly_avg_volume_12mth ?? null;
+    const dly12 = pvRecord?.dly_avg_volume_12mth ?? null;
+    const low3 = pvRecord?.dly_avg_volume_3mth_low ?? null;
+    const high3 = pvRecord?.dly_avg_volume_3mth_high ?? null;
+    const targetVol = pvRecord?.target_volume ?? null;
+
     const kpis = [
       {
         id: '12m-monthly',
         title: "12M Average",
-        value: "633.5",
-        chartData: generateGrowthTrend(565, 633.5, 30),
+        value: fmt(mthly12),
+        chartData: mthly12 != null ? generateGrowthTrend(mthly12 * 0.9, mthly12, 30) : [],
         chartType: "area" as const,
         delay: 0,
         xAxisLabels: monthLabels,
@@ -278,8 +300,8 @@ Example: If total volume over 12 months is 7,602:
       {
         id: '12m-daily',
         title: "12M Daily Average",
-        value: "20.8",
-        chartData: generateGrowthTrend(19.8, 20.8, 30),
+        value: fmt(dly12),
+        chartData: dly12 != null ? generateGrowthTrend(dly12 * 0.9, dly12, 30) : [],
         chartType: "area" as const,
         delay: 0.05,
         xAxisLabels: monthLabels,
@@ -292,8 +314,8 @@ Example: If total volume is 7,602 over 365 days:
       {
         id: '3m-low',
         title: "3M Low",
-        value: "14.2",
-        chartData: generateVolatileTrend(14.2, 3),
+        value: fmt(low3),
+        chartData: low3 != null ? generateVolatileTrend(low3, 3) : [],
         chartType: "area" as const,
         delay: 0.1,
         xAxisLabels: monthLabels,
@@ -308,8 +330,8 @@ Calculated by:
       {
         id: '3m-high',
         title: "3M High",
-        value: "28.4",
-        chartData: generateVolatileTrend(28.4, 5),
+        value: fmt(high3),
+        chartData: high3 != null ? generateVolatileTrend(high3, 5) : [],
         chartType: "bar" as const,
         delay: 0.15,
         xAxisLabels: monthLabels,
@@ -324,9 +346,9 @@ Calculated by:
       {
         id: 'target-vol',
         title: "Target Vol",
-        value: "20.8",
+        value: fmt(targetVol),
         isHighlighted: !overrideKpiData.isActive,
-        chartData: generateSeasonalTrend(20.8, 3),
+        chartData: targetVol != null ? generateSeasonalTrend(targetVol, 3) : [],
         chartType: "area" as const,
         delay: 0.2,
         xAxisLabels: monthLabels,
@@ -368,7 +390,7 @@ Used when:
       const bIndex = volumeOrder.indexOf(b.id);
       return aIndex - bIndex;
     });
-  }, [volumeOrder, overrideKpiData]);
+  }, [volumeOrder, overrideKpiData, pvRecord, selectedDepartment]);
 
   // Productivity KPIs Configuration
   const productivityKPIs = useMemo(() => {
