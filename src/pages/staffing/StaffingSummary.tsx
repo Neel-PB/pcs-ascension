@@ -399,7 +399,7 @@ Used when:
       const bIndex = volumeOrder.indexOf(b.id);
       return aIndex - bIndex;
     });
-  }, [volumeOrder, overrideKpiData, pvRecord, selectedDepartment]);
+  }, [volumeOrder, overrideKpiData, pvAgg, selectedDepartment]);
 
   // Productivity KPIs Configuration
   const productivityKPIs = useMemo(() => {
