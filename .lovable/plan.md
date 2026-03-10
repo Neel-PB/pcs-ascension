@@ -1,20 +1,25 @@
 
 
-## Fix: Show full decimal precision for Volume KPI values
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-### Problem
-The `fmt` function in `StaffingSummary.tsx` (line 285) uses `maximumFractionDigits: 1`, which rounds `179.97` to `180`. The API returns values with up to 2 decimal places that should be preserved.
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### Fix
-In `src/pages/staffing/StaffingSummary.tsx` line 285-286, change `maximumFractionDigits` from `1` to `2`:
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-```typescript
-const fmt = (v: number | null | undefined) =>
-  v != null ? v.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "—";
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
 ```
 
-This will display `179.97` instead of `180` for daily averages, while monthly totals like `5,474` remain unaffected since they have no decimals.
-
-### Scope
-Single line change in `StaffingSummary.tsx`.
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 
