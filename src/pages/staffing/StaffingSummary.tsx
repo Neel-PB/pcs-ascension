@@ -20,6 +20,7 @@ import { LogoLoader } from "@/components/ui/LogoLoader";
 import { useFilterStore } from "@/stores/useFilterStore";
 import { StaffingTour } from "@/components/tour/StaffingTour";
 import { useVolumeOverrides } from "@/hooks/useVolumeOverrides";
+import { usePatientVolume } from "@/hooks/usePatientVolume";
 
 const validTabs = ["summary", "planning", "variance", "forecasts", "volume-settings", "np-settings"];
 
