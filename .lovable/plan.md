@@ -1,35 +1,25 @@
 
 
-## Migrate NP Settings to Patient Volume API + PATCH /volume-overrides/upsert
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-### Current State
-- **Department list**: Fetched from Supabase `departments` table
-- **NP overrides**: Saved/deleted via Supabase `np_overrides` table
-- **Facility details**: Fetched from Supabase `facilities` table
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### What Changes
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-**1. `src/pages/staffing/StaffingSummary.tsx`** — Pass `selectedRegion` to `NPSettingsTab`
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-**2. `src/pages/staffing/NPSettingsTab.tsx`** — Rewrite data source
-- Add `selectedRegion` prop
-- Replace Supabase `departments` query with `usePatientVolume({ facility, region, market })`
-- Remove Supabase `facilities` query — use patient-volume record's `business_unit_description`
-- Remove `useHistoricalVolumeAnalysis` import
-- Use `department_description` for clean department names
-- Use `max_expiry_date` from patient-volume instead of hardcoded fiscal year end
-- Keep existing staged-save workflow and stats logic
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
 
-**3. `src/hooks/useNPOverrides.ts`** — Rewrite mutations to use NestJS API
-- **Read**: Replace Supabase query with `GET /volume-overrides?businessUnit={facilityId}` (same endpoint as volume overrides — NP overrides go through the same API)
-- **Upsert**: Replace Supabase insert/update with `PATCH /volume-overrides/upsert` sending `{ businessUnit, departmentId, region, market, volumeOverrideValue, expiryDate }`
-- **Delete**: Replace Supabase delete with `DELETE /volume-overrides/:id`
-- Map API response fields (camelCase) to frontend interface (snake_case), same pattern as `useVolumeOverrides.ts`
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+```
 
-### No changes to
-- `npOverrideColumns.tsx` (column config unchanged)
-- `usePatientVolume.ts` (already has the right filters)
-
-### Scope
-3 files edited: `StaffingSummary.tsx`, `NPSettingsTab.tsx`, `useNPOverrides.ts`
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 

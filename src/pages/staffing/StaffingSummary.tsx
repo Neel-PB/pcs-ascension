@@ -634,6 +634,7 @@ This metric helps:
           
         {activeTab === "np-settings" && (
           <NPSettingsTab 
+            selectedRegion={selectedRegion}
             selectedMarket={selectedMarket}
             selectedFacility={selectedFacility}
           />
