@@ -285,11 +285,11 @@ Example: If FTE Variance is 2.5 and Open Requisitions is 5:
     const fmt = (v: number | null | undefined) =>
       v != null ? v.toLocaleString(undefined, { maximumFractionDigits: 1 }) : "—";
 
-    const mthly12 = pvRecord?.mthly_avg_volume_12mth ?? null;
-    const dly12 = pvRecord?.dly_avg_volume_12mth ?? null;
-    const low3 = pvRecord?.dly_avg_volume_3mth_low ?? null;
-    const high3 = pvRecord?.dly_avg_volume_3mth_high ?? null;
-    const targetVol = pvRecord?.target_volume ?? null;
+    const mthly12 = pvAgg?.mthly_avg_volume_12mth ?? null;
+    const dly12 = pvAgg?.dly_avg_volume_12mth ?? null;
+    const low3 = pvAgg?.dly_avg_volume_3mth_low ?? null;
+    const high3 = pvAgg?.dly_avg_volume_3mth_high ?? null;
+    const targetVol = pvAgg?.target_volume ?? null;
 
     const kpis = [
       {
