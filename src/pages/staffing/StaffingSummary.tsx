@@ -340,7 +340,7 @@ Calculated by:
         id: '3m-high',
         title: "3M High",
         value: fmt(high3),
-        chartData: high3 != null ? generateVolatileTrend(high3, 5) : [],
+        chartData: generateVolatileTrend(high3 ?? 28.4, 5),
         chartType: "bar" as const,
         delay: 0.15,
         xAxisLabels: monthLabels,
