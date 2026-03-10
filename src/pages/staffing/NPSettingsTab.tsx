@@ -1,83 +1,55 @@
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { EditableTable } from '@/components/editable-table/EditableTable';
 import { createNPOverrideColumns, NPOverrideRow } from '@/config/npOverrideColumns';
 import { useNPOverrides, useUpsertNPOverride, useDeleteNPOverride } from '@/hooks/useNPOverrides';
-import { useHistoricalVolumeAnalysis } from '@/hooks/useHistoricalVolumeAnalysis';
+import { usePatientVolume, PatientVolumeRecord } from '@/hooks/usePatientVolume';
 import { Database } from '@/lib/icons';
 import { LogoLoader } from '@/components/ui/LogoLoader';
 import { useRBAC } from '@/hooks/useRBAC';
 
 interface NPSettingsTabProps {
+  selectedRegion: string;
   selectedMarket: string;
   selectedFacility: string;
 }
 
-// Helper function to get fiscal year end date (June 30th)
-function getFiscalYearEndDate(): Date {
-  const today = new Date();
-  const currentYear = today.getFullYear();
-  const currentMonth = today.getMonth();
-  
-  const fiscalYearEnd = currentMonth >= 6 
-    ? new Date(currentYear + 1, 5, 30)
-    : new Date(currentYear, 5, 30);
-  
-  return fiscalYearEnd;
-}
-
-export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTabProps) {
+export function NPSettingsTab({ selectedRegion, selectedMarket, selectedFacility }: NPSettingsTabProps) {
   const { data: overrides = [], isLoading: isLoadingOverrides } = useNPOverrides(selectedFacility);
-  const { data: volumeAnalysis = [], isLoading: isLoadingAnalysis } = useHistoricalVolumeAnalysis();
+  const { data: patientVolumeData = [], isLoading: isLoadingPV } = usePatientVolume({
+    region: selectedRegion,
+    market: selectedMarket,
+    facility: selectedFacility,
+  });
   const upsertMutation = useUpsertNPOverride();
   const deleteMutation = useDeleteNPOverride();
   const { hasPermission } = useRBAC();
   const canManageOverrides = hasPermission('approvals.np_override');
 
-  // Pending overrides stored in memory (not saved to DB until expiration date is set)
   const [pendingOverrides, setPendingOverrides] = useState<Record<string, number>>({});
-  
-  // Track which department should auto-open its date picker
   const [autoOpenDatePicker, setAutoOpenDatePicker] = useState<string | null>(null);
 
-  // Fetch departments for the selected facility
-  const { data: departments = [], isLoading: isLoadingDepartments } = useQuery({
-    queryKey: ['departments', selectedFacility],
-    queryFn: async () => {
-      if (!selectedFacility || selectedFacility === 'all-facilities') return [];
-      
-      const { data, error } = await supabase
-        .from('departments')
-        .select('*')
-        .eq('facility_id', selectedFacility)
-        .order('department_name');
+  // Deduplicate departments from patient volume data
+  const departments = useMemo(() => {
+    const deptMap = new Map<string, PatientVolumeRecord>();
+    for (const record of patientVolumeData) {
+      if (!deptMap.has(record.department_id)) {
+        deptMap.set(record.department_id, record);
+      }
+    }
+    return Array.from(deptMap.values()).sort((a, b) =>
+      (a.department_description || a.concat_dept_name).localeCompare(b.department_description || b.concat_dept_name)
+    );
+  }, [patientVolumeData]);
 
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!selectedFacility && selectedFacility !== 'all-facilities',
-  });
+  // Derive facility name from patient volume data
+  const facilityName = useMemo(() => {
+    return patientVolumeData[0]?.business_unit_description || '';
+  }, [patientVolumeData]);
 
-  // Fetch facility details for the selected facility
-  const { data: facilityData } = useQuery({
-    queryKey: ['facility', selectedFacility],
-    queryFn: async () => {
-      if (!selectedFacility || selectedFacility === 'all-facilities') return null;
-      
-      const { data, error } = await supabase
-        .from('facilities')
-        .select('*')
-        .eq('facility_id', selectedFacility)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!selectedFacility && selectedFacility !== 'all-facilities',
-  });
-
-  const fiscalYearEnd = useMemo(() => getFiscalYearEndDate(), []);
+  // Derive region from patient volume data
+  const region = useMemo(() => {
+    return patientVolumeData[0]?.region || selectedRegion || '';
+  }, [patientVolumeData, selectedRegion]);
 
   // Merge departments with overrides and pending values
   const tableData = useMemo((): NPOverrideRow[] => {
@@ -86,22 +58,23 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
     return departments.map((dept) => {
       const override = overrides.find((o) => o.department_id === dept.department_id);
       const pendingVolume = pendingOverrides[dept.department_id];
-      
+      const maxExpiry = dept.max_expiry_date ? new Date(dept.max_expiry_date) : new Date(new Date().getFullYear() + 1, 5, 30);
+
       return {
         id: override?.id || `dept-${dept.department_id}`,
         department_id: dept.department_id,
-        department_name: dept.department_name,
+        department_name: dept.department_description || dept.concat_dept_name,
         np_target_volume: 10,
         np_override_volume: override?.np_override_volume ?? null,
         pending_volume: pendingVolume ?? null,
         expiry_date: override?.expiry_date ?? null,
-        max_expiry_date: fiscalYearEnd,
+        max_expiry_date: maxExpiry,
         market: selectedMarket,
         facility_id: selectedFacility,
-        facility_name: facilityData?.facility_name || '',
+        facility_name: facilityName,
       };
     });
-  }, [departments, overrides, selectedMarket, selectedFacility, facilityData, fiscalYearEnd, pendingOverrides]);
+  }, [departments, overrides, selectedMarket, selectedFacility, facilityName, pendingOverrides]);
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -110,13 +83,13 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
       const daysUntilExpiry = Math.ceil((new Date(row.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
       return daysUntilExpiry > 7;
     }).length;
-    
+
     const expiringSoonCount = tableData.filter(row => {
       if (!row.expiry_date || !row.np_override_volume) return false;
       const daysUntilExpiry = Math.ceil((new Date(row.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
       return daysUntilExpiry > 0 && daysUntilExpiry <= 7;
     }).length;
-    
+
     const notSetCount = tableData.filter(row => !row.np_override_volume && row.pending_volume == null).length;
 
     return { activeCount, expiringSoonCount, notSetCount };
@@ -127,35 +100,27 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
     if (!canManageOverrides) return;
     if (!volume) return;
 
-    // Store in pending state (memory) - don't save to DB yet
-    setPendingOverrides(prev => ({
-      ...prev,
-      [departmentId]: volume
-    }));
-    
-    // Trigger auto-open for this department's date picker
+    setPendingOverrides(prev => ({ ...prev, [departmentId]: volume }));
     setAutoOpenDatePicker(departmentId);
   };
 
-  // Clear auto-open state after the calendar has opened
   const handleAutoOpenComplete = () => {
     setAutoOpenDatePicker(null);
   };
 
-  // Step 2: Save both volume AND date to database together
+  // Step 2: Save both volume AND date to database together via PATCH upsert
   const handleSaveDate = async (departmentId: string, date: string | null) => {
     if (!canManageOverrides) return;
     if (!date) return;
-    
+
     const row = tableData.find((r) => r.department_id === departmentId);
     if (!row) return;
 
-    // Get volume from pending state or existing override
     const volumeToSave = pendingOverrides[departmentId] ?? row.np_override_volume;
     if (!volumeToSave) return;
 
-    // NOW save both to database
     await upsertMutation.mutateAsync({
+      id: row.id.startsWith('dept-') ? undefined : row.id,
       market: row.market,
       facility_id: row.facility_id,
       facility_name: row.facility_name,
@@ -163,9 +128,9 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
       department_name: row.department_name,
       np_override_volume: volumeToSave,
       expiry_date: date,
+      region: region,
     });
 
-    // Clear from pending state after successful save
     setPendingOverrides(prev => {
       const updated = { ...prev };
       delete updated[departmentId];
@@ -175,23 +140,22 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
 
   const handleDeleteOverride = async (departmentId: string) => {
     if (!canManageOverrides) return;
-    
+
     const row = tableData.find((r) => r.department_id === departmentId);
     if (!row) return;
 
-    // Only delete if there's an existing override (not a placeholder)
     if (!row.id.startsWith('dept-')) {
-      await deleteMutation.mutateAsync({ 
-        id: row.id, 
-        facilityId: selectedFacility 
+      await deleteMutation.mutateAsync({
+        id: row.id,
+        facilityId: selectedFacility,
       });
     }
   };
 
   const columns = useMemo(
     () => createNPOverrideColumns(
-      handleSaveVolume, 
-      handleSaveDate, 
+      handleSaveVolume,
+      handleSaveDate,
       handleDeleteOverride,
       autoOpenDatePicker,
       handleAutoOpenComplete
@@ -199,7 +163,6 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
     [tableData, autoOpenDatePicker]
   );
 
-  // Show message if no facility selected
   if (!selectedFacility || selectedFacility === 'all-facilities') {
     return (
       <div data-tour="np-settings-empty" className="flex flex-col items-center justify-center h-96 text-center space-y-4">
@@ -214,8 +177,7 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
     );
   }
 
-  // Show loading state
-  if (isLoadingDepartments || isLoadingOverrides || isLoadingAnalysis) {
+  if (isLoadingPV || isLoadingOverrides) {
     return (
       <div className="flex items-center justify-center h-96">
         <LogoLoader size="lg" />
@@ -223,7 +185,6 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
     );
   }
 
-  // Show empty state if no departments
   if (!departments.length) {
     return (
       <div className="flex flex-col items-center justify-center h-96 text-center space-y-4">
@@ -240,10 +201,8 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
 
   return (
     <div className="flex flex-col gap-4 h-full overflow-hidden">
-      {/* Stats Banner */}
       <div data-tour="np-settings-stats" className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
         <div className="flex items-center gap-8">
-          {/* Active Stat */}
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${stats.activeCount > 0 ? 'bg-green-500' : 'bg-muted-foreground'}`} />
             <span className="text-sm">
@@ -251,8 +210,6 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
               {' '}Active
             </span>
           </div>
-          
-          {/* Expiring Soon (if any) */}
           {stats.expiringSoonCount > 0 && (
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-yellow-500" />
@@ -262,8 +219,6 @@ export function NPSettingsTab({ selectedMarket, selectedFacility }: NPSettingsTa
               </span>
             </div>
           )}
-          
-          {/* Not Set Stat */}
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-muted-foreground" />
             <span className="text-sm">

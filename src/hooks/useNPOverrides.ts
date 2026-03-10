@@ -1,7 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useAuth } from '@/hooks/useAuth';
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
+
+function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const token = sessionStorage.getItem("msal_access_token");
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  return headers;
+}
 
 export interface NPOverride {
   id: string;
@@ -15,6 +22,37 @@ export interface NPOverride {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  region: string;
+}
+
+interface ApiVolumeOverride {
+  id: string;
+  businessUnit: string;
+  departmentId: string;
+  region: string;
+  market: string;
+  volumeOverrideValue: number;
+  expiryDate: string | null;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+function mapApiToFrontend(item: ApiVolumeOverride): NPOverride {
+  return {
+    id: item.id,
+    market: item.market,
+    facility_id: item.businessUnit,
+    facility_name: '',
+    department_id: item.departmentId,
+    department_name: '',
+    np_override_volume: Number(item.volumeOverrideValue),
+    expiry_date: item.expiryDate || '',
+    created_by: item.updatedBy,
+    created_at: item.createdAt,
+    updated_at: item.updatedAt,
+    region: item.region,
+  };
 }
 
 export function useNPOverrides(facilityId: string | null) {
@@ -22,83 +60,65 @@ export function useNPOverrides(facilityId: string | null) {
     queryKey: ['np-overrides', facilityId],
     queryFn: async () => {
       if (!facilityId || facilityId === 'all-facilities') return [];
-      
-      const { data, error } = await supabase
-        .from('np_overrides')
-        .select('*')
-        .eq('facility_id', facilityId)
-        .order('department_name');
 
-      if (error) throw error;
-      return data as NPOverride[];
+      const res = await fetch(
+        `${API_BASE_URL}/volume-overrides?businessUnit=${encodeURIComponent(facilityId)}`,
+        { headers: getAuthHeaders() }
+      );
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Failed to fetch NP overrides (${res.status})`);
+      }
+
+      const json = await res.json();
+      const items: ApiVolumeOverride[] = Array.isArray(json) ? json : (json.data || []);
+      return items.map(mapApiToFrontend);
     },
-    enabled: !!facilityId && facilityId !== 'all-facilities',
+    enabled: !!facilityId && facilityId !== 'all-facilities' && !!API_BASE_URL,
   });
+}
+
+export interface UpsertNPOverridePayload {
+  id?: string;
+  market: string;
+  facility_id: string;
+  facility_name: string;
+  department_id: string;
+  department_name: string;
+  np_override_volume: number;
+  expiry_date: string;
+  region: string;
 }
 
 export function useUpsertNPOverride() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (override: {
-      market: string;
-      facility_id: string;
-      facility_name: string;
-      department_id: string;
-      department_name: string;
-      np_override_volume: number;
-      expiry_date: string;
-    }) => {
-      if (!user) throw new Error('User not authenticated');
+    mutationFn: async (override: UpsertNPOverridePayload) => {
+      const res = await fetch(`${API_BASE_URL}/volume-overrides/upsert`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          businessUnit: override.facility_id,
+          departmentId: override.department_id,
+          region: override.region,
+          market: override.market,
+          volumeOverrideValue: override.np_override_volume,
+          expiryDate: override.expiry_date,
+        }),
+      });
 
-      // Check if override exists
-      const { data: existing } = await supabase
-        .from('np_overrides')
-        .select('id')
-        .eq('facility_id', override.facility_id)
-        .eq('department_id', override.department_id)
-        .maybeSingle();
-
-      if (existing) {
-        // Update existing
-        const { data, error } = await supabase
-          .from('np_overrides')
-          .update({
-            np_override_volume: override.np_override_volume,
-            expiry_date: override.expiry_date,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', existing.id)
-          .select()
-          .single();
-
-        if (error) throw error;
-        return data;
-      } else {
-        // Insert new
-        const { data, error } = await supabase
-          .from('np_overrides')
-          .insert({
-            market: override.market,
-            facility_id: override.facility_id,
-            facility_name: override.facility_name,
-            department_id: override.department_id,
-            department_name: override.department_name,
-            np_override_volume: override.np_override_volume,
-            expiry_date: override.expiry_date,
-            created_by: user.id,
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-        return data;
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Failed to save NP override (${res.status})`);
       }
+
+      return { facilityId: override.facility_id };
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ 
-        queryKey: ['np-overrides', variables.facility_id] 
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ['np-overrides', data.facilityId],
       });
       toast.success('NP override saved successfully');
     },
@@ -113,17 +133,21 @@ export function useDeleteNPOverride() {
 
   return useMutation({
     mutationFn: async ({ id, facilityId }: { id: string; facilityId: string }) => {
-      const { error } = await supabase
-        .from('np_overrides')
-        .delete()
-        .eq('id', id);
+      const res = await fetch(`${API_BASE_URL}/volume-overrides/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
 
-      if (error) throw error;
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Failed to delete NP override (${res.status})`);
+      }
+
       return { facilityId };
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ 
-        queryKey: ['np-overrides', data.facilityId] 
+      queryClient.invalidateQueries({
+        queryKey: ['np-overrides', data.facilityId],
       });
       toast.success('NP override removed successfully');
     },
