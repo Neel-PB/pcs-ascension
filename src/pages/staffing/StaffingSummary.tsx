@@ -134,6 +134,18 @@ export default function StaffingSummary() {
   const facilityForOverrides = selectedFacility === "all-facilities" ? null : selectedFacility;
   const { data: volumeOverrides } = useVolumeOverrides(facilityForOverrides);
 
+  // Fetch patient volume data from API
+  const { data: patientVolumeData, isLoading: pvLoading } = usePatientVolume({
+    region: selectedRegion,
+    market: selectedMarket,
+    facility: selectedFacility,
+    department: selectedDepartment,
+    submarket: selectedSubmarket,
+    level2: selectedLevel2,
+    pstat: selectedPstat,
+  });
+  const pvRecord = patientVolumeData?.[0] ?? null;
+
   // Determine override KPI value based on department selection
   const overrideKpiData = useMemo(() => {
     if (selectedDepartment === "all-departments") {
