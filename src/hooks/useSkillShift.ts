@@ -49,30 +49,56 @@ interface SkillShiftFilters {
 }
 
 async function fetchSkillShift(filters: SkillShiftFilters): Promise<SkillShiftRecord[]> {
-  const params = new URLSearchParams();
-  params.append('limit', '10000');
+  const PAGE_SIZE = 1000;
+  const allRecords: SkillShiftRecord[] = [];
+  let offset = 0;
 
-  if (filters.region) params.append('region', filters.region);
-  if (filters.market) params.append('market', filters.market);
-  if (filters.businessUnit) params.append('businessUnit', filters.businessUnit);
-  if (filters.departmentId) params.append('departmentId', filters.departmentId);
-  if (filters.submarket) params.append('submarket', filters.submarket);
-  if (filters.level2) params.append('level2', filters.level2);
-  if (filters.pstat) params.append('pstat', filters.pstat);
-  if (filters.nursingFlag) params.append('nursingFlag', filters.nursingFlag);
+  const baseParams = new URLSearchParams();
+  if (filters.region) baseParams.append('region', filters.region);
+  if (filters.market) baseParams.append('market', filters.market);
+  if (filters.businessUnit) baseParams.append('businessUnit', filters.businessUnit);
+  if (filters.departmentId) baseParams.append('departmentId', filters.departmentId);
+  if (filters.submarket) baseParams.append('submarket', filters.submarket);
+  if (filters.level2) baseParams.append('level2', filters.level2);
+  if (filters.pstat) baseParams.append('pstat', filters.pstat);
+  if (filters.nursingFlag) baseParams.append('nursingFlag', filters.nursingFlag);
 
-  const qs = params.toString();
-  const url = `${API_BASE_URL}/skill-shift${qs ? `?${qs}` : ''}`;
+  while (true) {
+    const params = new URLSearchParams(baseParams);
+    params.append('limit', String(PAGE_SIZE));
+    params.append('offset', String(offset));
 
-  const res = await fetch(url, { headers: getAuthHeaders() });
-  if (!res.ok) throw new Error(`Failed to fetch skill-shift: ${res.status}`);
+    const qs = params.toString();
+    const url = `${API_BASE_URL}/skill-shift?${qs}`;
 
-  const json = await res.json();
+    const res = await fetch(url, { headers: getAuthHeaders() });
+    if (!res.ok) throw new Error(`Failed to fetch skill-shift: ${res.status}`);
 
-  // Handle paginated { data, total } or flat array
-  if (json && Array.isArray(json.data)) return json.data as SkillShiftRecord[];
-  if (Array.isArray(json)) return json as SkillShiftRecord[];
-  return [];
+    const text = await res.text();
+    if (!text) break;
+
+    const json = JSON.parse(text);
+
+    let pageData: SkillShiftRecord[] = [];
+    let total: number | null = null;
+
+    if (json && Array.isArray(json.data)) {
+      pageData = json.data as SkillShiftRecord[];
+      total = typeof json.total === 'number' ? json.total : null;
+    } else if (Array.isArray(json)) {
+      pageData = json as SkillShiftRecord[];
+    }
+
+    allRecords.push(...pageData);
+
+    // Stop if we got fewer than PAGE_SIZE or reached total
+    if (pageData.length < PAGE_SIZE) break;
+    if (total !== null && allRecords.length >= total) break;
+
+    offset += PAGE_SIZE;
+  }
+
+  return allRecords;
 }
 
 const SENTINEL_VALUES = ['all-regions', 'all-markets', 'all-facilities', 'all-departments', 'all-submarkets', 'all-level2', 'all-pstat'];
