@@ -1,25 +1,29 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Fix: Fetch all skill-shift records by requesting full dataset
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
-
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+### Problem
+The `/skill-shift` API returns paginated data (`{ data, total }`). When no filters are applied, the total record count exceeds the API's default page size, so only a subset is returned. This causes "All Regions" to show lower totals than a single region.
 
 ### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+Pass `limit=10000` (or a sufficiently large number) as a query parameter to the `/skill-shift` API call so the backend returns all records in one request. This matches the pattern used by other hooks in the app.
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+### Change: `src/hooks/useSkillShift.ts` — `fetchSkillShift` function
 
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+Add a `limit` query parameter to the request URL to ensure the full dataset is returned:
+
+```typescript
+async function fetchSkillShift(filters: SkillShiftFilters): Promise<SkillShiftRecord[]> {
+  const params = new URLSearchParams();
+  params.append('limit', '10000'); // Request all records
+
+  if (filters.region) params.append('region', filters.region);
+  // ... rest unchanged
+}
 ```
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+If the API uses `take` instead of `limit`, adjust accordingly. If this doesn't resolve it, we'll need to implement multi-page fetching using the `total` from the response.
+
+### Scope
+Single file, ~1 line addition in `useSkillShift.ts`.
 
