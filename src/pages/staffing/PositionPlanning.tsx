@@ -485,10 +485,24 @@ const FTESkillShiftTable = ({
 };
 
 interface PositionPlanningProps {
+  selectedRegion?: string;
+  selectedMarket?: string;
+  selectedFacility?: string;
   selectedDepartment?: string;
+  selectedSubmarket?: string;
+  selectedLevel2?: string;
+  selectedPstat?: string;
 }
 
-export default function PositionPlanning({ selectedDepartment }: PositionPlanningProps) {
+export default function PositionPlanning({
+  selectedRegion,
+  selectedMarket,
+  selectedFacility,
+  selectedDepartment,
+  selectedSubmarket,
+  selectedLevel2,
+  selectedPstat,
+}: PositionPlanningProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<'planned' | 'active'>('planned');
@@ -507,17 +521,33 @@ export default function PositionPlanning({ selectedDepartment }: PositionPlannin
     }
   }, [isDepartmentSelected, departmentIsNursing]);
 
-  // Apply data variation when in "Active" mode
+  // Fetch skill-shift data from API
+  const nursingFlag = staffCategory === 'nursing' ? 'Y' : 'N';
+  const { data: skillShiftData, isLoading: skillShiftLoading } = useSkillShift({
+    region: selectedRegion,
+    market: selectedMarket,
+    facility: selectedFacility,
+    department: selectedDepartment,
+    submarket: selectedSubmarket,
+    level2: selectedLevel2,
+    pstat: selectedPstat,
+    nursingFlag,
+  });
+
+  // Build dynamic skill groups from API data
+  const dynamicSkillGroups = useMemo(() => {
+    if (!skillShiftData?.length) return [];
+    return buildSkillGroups(skillShiftData);
+  }, [skillShiftData]);
+
+  // Map API data to VarianceData based on view mode
   const displayVarianceData = useMemo(() => {
-    if (viewMode === 'active') {
-      const modifiedData = applyActiveVariation(varianceData.filter(d => d.skill !== 'TOTAL'));
-      
-      // Recalculate TOTAL row based on modified data
-      const newTotal = computeGroupTotals(modifiedData);
-      return [...modifiedData, { ...newTotal, skill: 'TOTAL' }];
-    }
-    return varianceData;
-  }, [viewMode]);
+    if (!skillShiftData?.length) return [];
+    const mapped = mapRecordsToVariance(skillShiftData, viewMode);
+    // Compute TOTAL row
+    const total = computeGroupTotals(mapped);
+    return [...mapped, { ...total, skill: 'TOTAL' }];
+  }, [skillShiftData, viewMode]);
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroups(prev => {
