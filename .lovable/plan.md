@@ -1,25 +1,21 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Fix: Change `limit` to `take` in skill-shift pagination
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+### Problem
+The `useSkillShift.ts` hook sends `limit=1000` but the API likely expects `take` (matching the patient-volume pattern). Since the API doesn't recognize `limit`, it returns its default page size of 50 records and the loop exits after the first batch.
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+### Change: `src/hooks/useSkillShift.ts`
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+On line 68, change `'limit'` to `'take'`:
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
+```typescript
 // Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+params.append('limit', String(PAGE_SIZE));
 
 // After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+params.append('take', String(PAGE_SIZE));
 ```
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+Single-line change. The existing pagination loop (`while` + `offset`) will then correctly fetch all pages in batches of 1,000.
 
