@@ -65,7 +65,7 @@ async function fetchSkillShift(filters: SkillShiftFilters): Promise<SkillShiftRe
 
   while (true) {
     const params = new URLSearchParams(baseParams);
-    params.append('limit', String(PAGE_SIZE));
+    params.append('take', String(PAGE_SIZE));
     params.append('offset', String(offset));
 
     const qs = params.toString();
