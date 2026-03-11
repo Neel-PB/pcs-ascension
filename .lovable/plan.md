@@ -1,24 +1,25 @@
 
 
-## Fix: Chart's last data point must match the displayed current value
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-### Problem
-`generateGrowthTrend` adds `(Math.random() - 0.5) * 2` noise to every point, including the last one. So the chart's final value drifts slightly from the real KPI value shown in the modal header (e.g., 390,397.7 vs 390,397.2).
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### Fix: `src/pages/staffing/StaffingSummary.tsx`
-In the `generateGrowthTrend` function (line ~103), clamp the last data point to exactly equal `end` — no random noise on the final point.
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-```typescript
-const generateGrowthTrend = (start: number, end: number, points: number = 24) =>
-  Array.from({ length: points }, (_, i) => ({
-    value: i === points - 1
-      ? end
-      : start + ((end - start) * i) / (points - 1) + (Math.random() - 0.5) * 2
-  }));
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
 ```
 
-Same fix in `src/config/kpiConfigs.ts` (line ~4) for consistency.
-
-### Scope
-Two one-line edits across two files.
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 
