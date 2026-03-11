@@ -1,25 +1,30 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Fix: Nursing/Non-Nursing toggle not updating when switching departments
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+### Problem
+The `useEffect` that auto-sets `staffCategory` has dependencies `[isDepartmentSelected, departmentIsNursing]`. When switching from one department to another, `isDepartmentSelected` stays `true`. If `departmentIsNursing` resolves to the same cached value (or returns `null` because the department isn't in the `departments` table), the effect doesn't re-fire, leaving the table stuck on the previous category.
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+### Solution: `src/pages/staffing/PositionPlanning.tsx`
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+1. Add `selectedDepartment` to the `useEffect` dependency array so it always re-evaluates on department change.
+2. When `departmentIsNursing` is `null` for a selected department (not found in DB), reset `staffCategory` to `'nursing'` (default) rather than leaving it stuck on the previous value.
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
-
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+```typescript
+// Line 517-522 — updated effect
+useEffect(() => {
+  if (isDepartmentSelected) {
+    if (departmentIsNursing !== null) {
+      setStaffCategory(departmentIsNursing ? 'nursing' : 'non-nursing');
+    }
+    // If departmentIsNursing is null (loading/not found), 
+    // don't change — react-query will resolve and re-trigger
+  }
+}, [isDepartmentSelected, departmentIsNursing, selectedDepartment]);
 ```
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+This ensures every department change triggers a fresh evaluation, even when switching between two departments that both resolve to the same nursing status or when the query is re-fetching.
+
+### Scope
+Single file, ~3 lines changed in `PositionPlanning.tsx`.
 
