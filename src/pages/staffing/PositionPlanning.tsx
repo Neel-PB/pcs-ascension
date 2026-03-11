@@ -573,7 +573,7 @@ export default function PositionPlanning({
     
     const rows: any[] = [];
     
-    skillGroups.forEach(group => {
+    dynamicSkillGroups.forEach(group => {
       const groupSkills = group.skills
         .map(skillName => displayVarianceData.find(d => d.skill === skillName))
         .filter(Boolean) as VarianceData[];
