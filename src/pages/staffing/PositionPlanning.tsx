@@ -61,213 +61,71 @@ interface GroupedVarianceData {
   isExpanded?: boolean;
 }
 
-const skillGroups: SkillGroup[] = [
-  {
-    id: 'overheads',
-    name: 'Overheads',
-    skills: ['Director', 'Manager', 'Assistant Manager', 'Coordinator', 'SPEC'],
-    defaultExpanded: false
-  },
-  {
-    id: 'clinical_staff',
-    name: 'Clinical Staff',
-    skills: ['Clinical Lead', 'Registered Nurse'],
-    defaultExpanded: false
-  },
-  {
-    id: 'support_staff',
-    name: 'Support Staff',
-    skills: ['Patient Care Technician', 'CLERK'],
-    defaultExpanded: false
-  }
-];
-
-const varianceData: VarianceData[] = [
-  {
-    skill: "Director",
-    targetDay: 0,
-    targetNight: 0,
-    targetTotal: 0,
-    hiredDay: 0,
-    hiredNight: 0,
-    hiredTotal: 0,
-    reqsDay: 0,
-    reqsNight: 0,
-    reqsTotal: 0,
-    varianceDay: 0,
-    varianceNight: 0,
-    varianceTotal: 0,
-  },
-  {
-    skill: "Manager",
-    targetDay: 1.0,
-    targetNight: 0,
-    targetTotal: 1.0,
-    hiredDay: 1.0,
-    hiredNight: 0,
-    hiredTotal: 1.0,
-    reqsDay: 0,
-    reqsNight: 0,
-    reqsTotal: 0,
-    varianceDay: 0,
-    varianceNight: 0,
-    varianceTotal: 0,
-  },
-  {
-    skill: "Assistant Manager",
-    targetDay: 1.0,
-    targetNight: 0,
-    targetTotal: 1.0,
-    hiredDay: 1.0,
-    hiredNight: 0,
-    hiredTotal: 1.0,
-    reqsDay: 0,
-    reqsNight: 0,
-    reqsTotal: 0,
-    varianceDay: 0,
-    varianceNight: 0,
-    varianceTotal: 0,
-  },
-  {
-    skill: "Coordinator",
-    targetDay: 0,
-    targetNight: 0,
-    targetTotal: 0,
-    hiredDay: 0,
-    hiredNight: 0,
-    hiredTotal: 0,
-    reqsDay: 0,
-    reqsNight: 0,
-    reqsTotal: 0,
-    varianceDay: 0,
-    varianceNight: 0,
-    varianceTotal: 0,
-  },
-  {
-    skill: "SPEC",
-    targetDay: 0,
-    targetNight: 0,
-    targetTotal: 0,
-    hiredDay: 0,
-    hiredNight: 0,
-    hiredTotal: 0,
-    reqsDay: 0,
-    reqsNight: 0,
-    reqsTotal: 0,
-    varianceDay: 0,
-    varianceNight: 0,
-    varianceTotal: 0,
-  },
-  {
-    skill: "Clinical Lead",
-    targetDay: 2.4,
-    targetNight: 2.4,
-    targetTotal: 4.8,
-    hiredDay: 1.8,
-    hiredNight: 1.8,
-    hiredTotal: 3.6,
-    reqsDay: 0.6,
-    reqsNight: 0.6,
-    reqsTotal: 1.2,
-    varianceDay: 0.6,
-    varianceNight: 0.6,
-    varianceTotal: 1.2,
-  },
-  {
-    skill: "Registered Nurse",
-    targetDay: 14.3,
-    targetNight: 14.3,
-    targetTotal: 28.6,
-    hiredDay: 13.8,
-    hiredNight: 13.8,
-    hiredTotal: 27.6,
-    reqsDay: 0,
-    reqsNight: 0,
-    reqsTotal: 0,
-    varianceDay: -0.5,
-    varianceNight: -0.5,
-    varianceTotal: -1.0,
-  },
-  {
-    skill: "Patient Care Technician",
-    targetDay: 9.6,
-    targetNight: 9.6,
-    targetTotal: 19.2,
-    hiredDay: 9.2,
-    hiredNight: 9.2,
-    hiredTotal: 18.4,
-    reqsDay: 0.8,
-    reqsNight: 0.8,
-    reqsTotal: 1.6,
-    varianceDay: 0.4,
-    varianceNight: 0.4,
-    varianceTotal: 0.8,
-  },
-  {
-    skill: "CLERK",
-    targetDay: 4.8,
-    targetNight: 4.8,
-    targetTotal: 9.6,
-    hiredDay: 4.8,
-    hiredNight: 4.8,
-    hiredTotal: 9.6,
-    reqsDay: 0,
-    reqsNight: 0,
-    reqsTotal: 0,
-    varianceDay: 0,
-    varianceNight: 0,
-    varianceTotal: 0,
-  },
-  {
-    skill: "TOTAL",
-    targetDay: 33.1,
-    targetNight: 31.1,
-    targetTotal: 64.2,
-    hiredDay: 31.6,
-    hiredNight: 29.6,
-    hiredTotal: 61.2,
-    reqsDay: 1.4,
-    reqsNight: 1.4,
-    reqsTotal: 2.8,
-    varianceDay: -0.1,
-    varianceNight: -0.1,
-    varianceTotal: -0.2,
-  },
-];
-
-const applyActiveVariation = (data: VarianceData[]): VarianceData[] => {
-  return data.map(skill => {
-    // Don't modify TOTAL row directly, it will be recalculated
-    if (skill.skill === 'TOTAL') {
-      return skill;
-    }
-    
-    // Generate small deterministic variations for hired values based on skill name
-    const hashCode = skill.skill.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const variationDay = ((hashCode % 5) - 2) * 0.5; // Range: -1.0 to +1.0
-    const variationNight = (((hashCode + 1) % 5) - 2) * 0.5;
-    
-    // Apply variations (keeping 1 decimal precision, ensuring non-negative)
-    const activeDay = Math.max(0, Math.round((skill.hiredDay + variationDay) * 10) / 10);
-    const activeNight = Math.max(0, Math.round((skill.hiredNight + variationNight) * 10) / 10);
-    const activeTotal = Math.round((activeDay + activeNight) * 10) / 10;
-    
-    // Recalculate variance based on new hired values: variance = target - hired - reqs
-    const varianceDay = Math.round((skill.targetDay - activeDay - skill.reqsDay) * 10) / 10;
-    const varianceNight = Math.round((skill.targetNight - activeNight - skill.reqsNight) * 10) / 10;
-    const varianceTotal = Math.round((skill.targetTotal - activeTotal - skill.reqsTotal) * 10) / 10;
-    
-    return {
-      ...skill,
-      hiredDay: activeDay,
-      hiredNight: activeNight,
-      hiredTotal: activeTotal,
-      varianceDay,
-      varianceNight,
-      varianceTotal
-    };
+// Build skill groups dynamically from API data based on broader_skill_mix_category
+function buildSkillGroups(records: SkillShiftRecord[]): SkillGroup[] {
+  const categoryMap = new Map<string, Set<string>>();
+  records.forEach(r => {
+    const cat = r.broader_skill_mix_category || 'Other';
+    if (!categoryMap.has(cat)) categoryMap.set(cat, new Set());
+    categoryMap.get(cat)!.add(r.skill_mix);
   });
-};
+  return Array.from(categoryMap.entries()).map(([cat, skills]) => ({
+    id: cat.toLowerCase().replace(/\s+/g, '_'),
+    name: cat,
+    skills: Array.from(skills),
+    defaultExpanded: false,
+  }));
+}
+
+// Map API records to VarianceData for a given view mode
+function mapRecordsToVariance(records: SkillShiftRecord[], mode: 'planned' | 'active'): VarianceData[] {
+  // Aggregate by skill_mix (in case multiple records per skill)
+  const skillMap = new Map<string, VarianceData>();
+  records.forEach(r => {
+    const existing = skillMap.get(r.skill_mix);
+    const hDay = mode === 'active' ? Number(r.active_day_fte ?? 0) : Number(r.hired_day_fte ?? 0);
+    const hNight = mode === 'active' ? Number(r.active_night_fte ?? 0) : Number(r.hired_night_fte ?? 0);
+    const hTotal = mode === 'active' ? Number(r.active_total_fte ?? 0) : Number(r.hired_total_fte ?? 0);
+    const tDay = Number(r.target_fte_day ?? 0);
+    const tNight = Number(r.target_fte_night ?? 0);
+    const tTotal = Number(r.target_fte_total ?? 0);
+    const rDay = Number(r.open_reqs_day_fte ?? 0);
+    const rNight = Number(r.open_reqs_night_fte ?? 0);
+    const rTotal = Number(r.open_reqs_total_fte ?? 0);
+
+    if (existing) {
+      existing.targetDay += tDay;
+      existing.targetNight += tNight;
+      existing.targetTotal += tTotal;
+      existing.hiredDay += hDay;
+      existing.hiredNight += hNight;
+      existing.hiredTotal += hTotal;
+      existing.reqsDay += rDay;
+      existing.reqsNight += rNight;
+      existing.reqsTotal += rTotal;
+      existing.varianceDay = existing.targetDay - existing.hiredDay - existing.reqsDay;
+      existing.varianceNight = existing.targetNight - existing.hiredNight - existing.reqsNight;
+      existing.varianceTotal = existing.targetTotal - existing.hiredTotal - existing.reqsTotal;
+    } else {
+      skillMap.set(r.skill_mix, {
+        skill: r.skill_mix,
+        targetDay: tDay,
+        targetNight: tNight,
+        targetTotal: tTotal,
+        hiredDay: hDay,
+        hiredNight: hNight,
+        hiredTotal: hTotal,
+        reqsDay: rDay,
+        reqsNight: rNight,
+        reqsTotal: rTotal,
+        varianceDay: tDay - hDay - rDay,
+        varianceNight: tNight - hNight - rNight,
+        varianceTotal: tTotal - hTotal - rTotal,
+      });
+    }
+  });
+  return Array.from(skillMap.values());
+}
 
 const getVarianceColor = (value: number) => {
   if (value < 0) return "text-orange-600 font-semibold";
