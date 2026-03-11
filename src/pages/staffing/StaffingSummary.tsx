@@ -294,6 +294,7 @@ Example: If FTE Variance is 2.5 and Open Requisitions is 5:
 
   // Volume KPIs Configuration – wired to patient-volume API
   const volumeKPIs = useMemo(() => {
+    const monthLabels = generateLast12MonthLabels();
     const fmt = (v: number | null | undefined) =>
       v != null ? v.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "—";
 
@@ -303,36 +304,15 @@ Example: If FTE Variance is 2.5 and Open Requisitions is 5:
     const high3 = pvAgg?.dly_avg_volume_3mth_high ?? null;
     const targetVol = pvAgg?.target_volume ?? null;
 
-    // Build per-department breakdown for chart data
-    const buildBreakdown = (field: keyof import('@/hooks/usePatientVolume').PatientVolumeRecord) => {
-      const sorted = [...pvFilteredRecords]
-        .map(r => ({
-          value: Number((r as any)[field] ?? 0),
-          label: r.department_description || (r.concat_dept_name?.includes(' - ') ? r.concat_dept_name.split(' - ').slice(1).join(' - ') : r.concat_dept_name) || 'Unknown',
-        }))
-        .filter(d => d.value > 0)
-        .sort((a, b) => b.value - a.value);
-      return {
-        chartData: sorted.map(d => ({ value: d.value })),
-        xAxisLabels: sorted.map(d => d.label.length > 12 ? d.label.substring(0, 12) + '…' : d.label),
-      };
-    };
-
-    const bd12m = buildBreakdown('mthly_avg_volume_12mth');
-    const bdDly = buildBreakdown('dly_avg_volume_12mth');
-    const bd3mLow = buildBreakdown('dly_avg_volume_3mth_low');
-    const bd3mHigh = buildBreakdown('dly_avg_volume_3mth_high');
-    const bdTarget = buildBreakdown('target_volume');
-
     const kpis = [
       {
         id: '12m-monthly',
         title: "12M Average",
         value: fmt(mthly12),
-        chartData: bd12m.chartData,
-        chartType: "bar" as const,
+        chartData: mthly12 != null ? generateGrowthTrend(mthly12 * 0.9, mthly12, 12) : [],
+        chartType: "area" as const,
         delay: 0,
-        xAxisLabels: bd12m.xAxisLabels,
+        xAxisLabels: monthLabels,
         definition: "Rolling 12-Month Average Monthly Volume represents the average number of patient encounters, procedures, or units of service delivered per month over the immediately preceding 12 months.",
         calculation: `12M Avg Monthly = Sum of monthly volumes over 12 months / 12
 
@@ -343,10 +323,10 @@ Example: If total volume over 12 months is 7,602:
         id: '12m-daily',
         title: "12M Daily Average",
         value: fmt(dly12),
-        chartData: bdDly.chartData,
-        chartType: "bar" as const,
+        chartData: dly12 != null ? generateGrowthTrend(dly12 * 0.9, dly12, 12) : [],
+        chartType: "area" as const,
         delay: 0.05,
-        xAxisLabels: bdDly.xAxisLabels,
+        xAxisLabels: monthLabels,
         definition: "12-Month Average Daily Volume represents the average number of patient encounters, procedures, or units of service delivered per day over the past 12 months.",
         calculation: `12M Avg Daily = Total volume over 12 months / Total working days
 
@@ -357,10 +337,10 @@ Example: If total volume is 7,602 over 365 days:
         id: '3m-low',
         title: "3M Low",
         value: fmt(low3),
-        chartData: bd3mLow.chartData,
-        chartType: "bar" as const,
+        chartData: low3 != null ? generateVolatileTrend(low3, 3, 12) : [],
+        chartType: "area" as const,
         delay: 0.1,
-        xAxisLabels: bd3mLow.xAxisLabels,
+        xAxisLabels: monthLabels,
         definition: "3-Month Average Lowest Volume shows the average daily volume recorded during the three months with the lowest total volume in the immediately preceding 12 months. This value is used to determine minimum staffing requirements.",
         calculation: `3M Avg Lowest = Average daily volume during the 3 lowest-volume months in past 12 months
 
@@ -373,10 +353,10 @@ Calculated by:
         id: '3m-high',
         title: "3M High",
         value: fmt(high3),
-        chartData: bd3mHigh.chartData,
+        chartData: high3 != null ? generateVolatileTrend(high3, 5, 12) : [],
         chartType: "bar" as const,
         delay: 0.15,
-        xAxisLabels: bd3mHigh.xAxisLabels,
+        xAxisLabels: monthLabels,
         definition: "3-Month Average Highest Volume shows the average daily volume recorded during the three months with the highest total volume in the immediately preceding 12 months. This value is used to determine maximum capacity or peak staffing requirements.",
         calculation: `3M Avg Highest = Average daily volume during the 3 highest-volume months in past 12 months
 
@@ -390,10 +370,10 @@ Calculated by:
         title: "Target Vol",
         value: fmt(targetVol),
         isHighlighted: !overrideKpiData.isActive,
-        chartData: bdTarget.chartData,
-        chartType: "bar" as const,
+        chartData: targetVol != null ? generateSeasonalTrend(targetVol, targetVol * 0.15, 12) : [],
+        chartType: "area" as const,
         delay: 0.2,
-        xAxisLabels: bdTarget.xAxisLabels,
+        xAxisLabels: monthLabels,
         definition: "Target Volume represents the expected daily volume used for staffing calculations and planning. This is typically based on historical trends and projected growth.",
         calculation: `Target Volume = Forecasted daily volume based on historical data and growth projections
 
@@ -408,10 +388,10 @@ Determined by:
         title: "Override Vol",
         value: overrideKpiData.value,
         isHighlighted: overrideKpiData.isActive,
-        chartData: overrideKpiData.hasData ? generateVolatileTrend(Number(overrideKpiData.value), 4) : [],
+        chartData: overrideKpiData.hasData ? generateVolatileTrend(Number(overrideKpiData.value), 4, 12) : [],
         chartType: "bar" as const,
         delay: 0.25,
-        xAxisLabels: generateLast12MonthLabels(),
+        xAxisLabels: monthLabels,
         definition: overrideKpiData.isActive
           ? "Override Volume is a manually adjusted volume target that supersedes the calculated target volume. This override is currently active."
           : selectedDepartment === "all-departments"
@@ -432,7 +412,7 @@ Used when:
       const bIndex = volumeOrder.indexOf(b.id);
       return aIndex - bIndex;
     });
-  }, [volumeOrder, overrideKpiData, pvAgg, pvFilteredRecords, selectedDepartment]);
+  }, [volumeOrder, overrideKpiData, pvAgg, selectedDepartment]);
 
   // Productivity KPIs Configuration
   const productivityKPIs = useMemo(() => {
