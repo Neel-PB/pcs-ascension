@@ -1,57 +1,25 @@
 
 
-## Wire Planned/Active Resources to `GET /skill-shift` API
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-### Current State
-`PositionPlanning.tsx` uses a hardcoded `varianceData` array (lines 83-233) with mock FTE numbers. The Hired/Active toggle applies fake variations via `applyActiveVariation`. Only `selectedDepartment` is passed as a prop.
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### API Response Fields → `VarianceData` Mapping
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-The `GET /skill-shift` endpoint returns records per `skill_mix`, each with day/night/total breakdowns:
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-```text
-API field              → VarianceData field
-─────────────────────────────────────────
-skill_mix              → skill
-target_fte_day         → targetDay
-target_fte_night       → targetNight
-target_fte_total       → targetTotal
-hired_day_fte          → hiredDay (Hired mode)
-hired_night_fte        → hiredNight
-hired_total_fte        → hiredTotal
-active_day_fte         → hiredDay (Active mode)
-active_night_fte       → hiredNight
-active_total_fte       → hiredTotal
-open_reqs_day_fte      → reqsDay
-open_reqs_night_fte    → reqsNight
-open_reqs_total_fte    → reqsTotal
-(computed)             → varianceDay/Night/Total = target - hired/active - reqs
-nursing_flag           → used to determine nursing/non-nursing
-broader_skill_mix_category → used for skill group buckets
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
 ```
 
-### Changes
-
-**1. New hook: `src/hooks/useSkillShift.ts`**
-- Fetch `GET /skill-shift` with filter query params: `region`, `market`, `businessUnit`, `departmentId`, `submarket`, `level2`, `pstat`, `nursingFlag`
-- Same auth header pattern as `usePatientVolume`
-- Handle paginated `{ data, total }` or flat array response
-- Return raw records; let the component do the mapping
-
-**2. `src/pages/staffing/StaffingSummary.tsx`**
-- Pass all filter values to `PositionPlanning` (currently only passes `selectedDepartment`)
-
-**3. `src/pages/staffing/PositionPlanning.tsx`**
-- Accept full filter props (region, market, facility, department, submarket, level2, pstat)
-- Call `useSkillShift` with those filters + `nursingFlag` based on `staffCategory`
-- Map API records to `VarianceData[]`, computing variance as `target - hired - reqs`
-- For **Hired** mode: use `hired_day_fte` / `hired_night_fte` / `hired_total_fte`
-- For **Active** mode: use `active_day_fte` / `active_night_fte` / `active_total_fte`
-- Use `broader_skill_mix_category` to dynamically build `skillGroups` instead of hardcoded list
-- Compute TOTAL row by summing all skill rows
-- Remove hardcoded `varianceData` and `applyActiveVariation`
-- Show loading state while fetching
-
-### Scope
-3 files: new `useSkillShift.ts`, edit `StaffingSummary.tsx`, edit `PositionPlanning.tsx`
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 
