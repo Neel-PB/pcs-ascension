@@ -3,7 +3,7 @@ import { generateLast12MonthLabels } from '@/lib/utils';
 // Chart data generators
 export const generateGrowthTrend = (start: number, end: number, points: number = 24) => 
   Array.from({ length: points }, (_, i) => ({
-    value: start + ((end - start) * i) / (points - 1) + (Math.random() - 0.5) * 2
+    value: i === points - 1 ? end : start + ((end - start) * i) / (points - 1) + (Math.random() - 0.5) * 2
   }));
 
 export const generateDeclineTrend = (start: number, end: number, points: number = 24) =>
