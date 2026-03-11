@@ -145,9 +145,9 @@ export default function StaffingSummary() {
     pstat: selectedPstat,
   });
   const ROLLUP_PSTATS = useMemo(() => new Set([
-    'Patient Days',
-    'Patient Days + OBS',
-    'Patient Days + OBS + Newborns',
+    'Pat Days + Obs',
+    'Total Pat Days + Obs',
+    'Pat Days + Obs + Newborn Days',
   ]), []);
 
   const pvAgg = useMemo(() => {

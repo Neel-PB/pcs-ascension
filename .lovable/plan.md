@@ -1,20 +1,25 @@
 
 
-## Fix ROLLUP_PSTATS values to match actual API data
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-The current P-stat names in `ROLLUP_PSTATS` don't match what the API returns. Need to update the set values.
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### Change: `src/pages/staffing/StaffingSummary.tsx` (line 147-151)
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-Update the set to use the correct `unit_of_service` strings from the API:
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-```typescript
-const ROLLUP_PSTATS = useMemo(() => new Set([
-  'Pat Days + Obs',
-  'Total Pat Days + Obs',
-  'Pat Days + Obs + Newborn Days',
-]), []);
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
 ```
 
-Single line change, same file.
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 
