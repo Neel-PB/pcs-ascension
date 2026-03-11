@@ -1,32 +1,25 @@
 
 
-## Use real patient-volume data for Volume KPI charts
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-### Problem
-Volume KPI cards (12M Average, 12M Daily Average, 3M Low, 3M High, Target Vol) currently show randomly generated chart data (`generateGrowthTrend`, `generateVolatileTrend`, etc.) instead of real data.
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### Approach
-The patient-volume API returns one record per department (with pre-computed aggregates), not monthly time-series. The chart format is `Array<{ value: number }>`. We will populate charts with **per-department breakdown bars** — each bar represents one department's contribution to the summed KPI value. This gives a meaningful view of which departments drive the total.
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-For Override Vol, it remains as-is (single value, no breakdown source).
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-### Changes: `src/pages/staffing/StaffingSummary.tsx`
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
 
-1. **Build chart data arrays from `patientVolumeData`** inside the `volumeKPIs` useMemo, using the same filtered records that feed `pvAgg`:
-   - For each volume metric (e.g. `mthly_avg_volume_12mth`), map the filtered records to `{ value: Number(record[field]) }`, sorted descending by value
-   - Generate corresponding `xAxisLabels` from department names (truncated for readability)
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+```
 
-2. **Replace random generators** in chart data for each volume KPI:
-   - `12m-monthly`: `records.map(r => ({ value: Number(r.mthly_avg_volume_12mth) }))` 
-   - `12m-daily`: uses `dly_avg_volume_12mth`
-   - `3m-low`: uses `dly_avg_volume_3mth_low`
-   - `3m-high`: uses `dly_avg_volume_3mth_high`
-   - `target-vol`: uses `target_volume`
-
-3. **Switch chart type to `bar`** for all volume KPIs (department breakdown is better visualized as bars)
-
-4. **Extract department labels** from the same filtered records, using `department_description` (falling back to cleaned `concat_dept_name`)
-
-### Scope
-Single file changed: `StaffingSummary.tsx`. ~30 lines modified in the `volumeKPIs` useMemo block (lines 296-416).
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 

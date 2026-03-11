@@ -150,24 +150,24 @@ export default function StaffingSummary() {
     'Pat Days + Obs + Newborn Days',
   ]), []);
 
-  const pvAgg = useMemo(() => {
-    if (!patientVolumeData?.length) return null;
-
+  const pvFilteredRecords = useMemo(() => {
+    if (!patientVolumeData?.length) return [];
     const noDept = !selectedDepartment || selectedDepartment === 'all-departments';
-    const records = noDept
+    return noDept
       ? patientVolumeData.filter(r => ROLLUP_PSTATS.has(r.unit_of_service))
       : patientVolumeData;
-
-    if (!records.length) return null;
-
-    return {
-      mthly_avg_volume_12mth: records.reduce((s, r) => s + Number(r.mthly_avg_volume_12mth ?? 0), 0),
-      dly_avg_volume_12mth: records.reduce((s, r) => s + Number(r.dly_avg_volume_12mth ?? 0), 0),
-      dly_avg_volume_3mth_low: records.reduce((s, r) => s + Number(r.dly_avg_volume_3mth_low ?? 0), 0),
-      dly_avg_volume_3mth_high: records.reduce((s, r) => s + Number(r.dly_avg_volume_3mth_high ?? 0), 0),
-      target_volume: records.reduce((s, r) => s + Number(r.target_volume ?? 0), 0),
-    };
   }, [patientVolumeData, selectedDepartment, ROLLUP_PSTATS]);
+
+  const pvAgg = useMemo(() => {
+    if (!pvFilteredRecords.length) return null;
+    return {
+      mthly_avg_volume_12mth: pvFilteredRecords.reduce((s, r) => s + Number(r.mthly_avg_volume_12mth ?? 0), 0),
+      dly_avg_volume_12mth: pvFilteredRecords.reduce((s, r) => s + Number(r.dly_avg_volume_12mth ?? 0), 0),
+      dly_avg_volume_3mth_low: pvFilteredRecords.reduce((s, r) => s + Number(r.dly_avg_volume_3mth_low ?? 0), 0),
+      dly_avg_volume_3mth_high: pvFilteredRecords.reduce((s, r) => s + Number(r.dly_avg_volume_3mth_high ?? 0), 0),
+      target_volume: pvFilteredRecords.reduce((s, r) => s + Number(r.target_volume ?? 0), 0),
+    };
+  }, [pvFilteredRecords]);
 
   // Determine override KPI value based on department selection
   const overrideKpiData = useMemo(() => {
@@ -294,8 +294,6 @@ Example: If FTE Variance is 2.5 and Open Requisitions is 5:
 
   // Volume KPIs Configuration – wired to patient-volume API
   const volumeKPIs = useMemo(() => {
-    const monthLabels = generateLast12MonthLabels();
-
     const fmt = (v: number | null | undefined) =>
       v != null ? v.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "—";
 
@@ -305,15 +303,36 @@ Example: If FTE Variance is 2.5 and Open Requisitions is 5:
     const high3 = pvAgg?.dly_avg_volume_3mth_high ?? null;
     const targetVol = pvAgg?.target_volume ?? null;
 
+    // Build per-department breakdown for chart data
+    const buildBreakdown = (field: keyof import('@/hooks/usePatientVolume').PatientVolumeRecord) => {
+      const sorted = [...pvFilteredRecords]
+        .map(r => ({
+          value: Number((r as any)[field] ?? 0),
+          label: r.department_description || (r.concat_dept_name?.includes(' - ') ? r.concat_dept_name.split(' - ').slice(1).join(' - ') : r.concat_dept_name) || 'Unknown',
+        }))
+        .filter(d => d.value > 0)
+        .sort((a, b) => b.value - a.value);
+      return {
+        chartData: sorted.map(d => ({ value: d.value })),
+        xAxisLabels: sorted.map(d => d.label.length > 12 ? d.label.substring(0, 12) + '…' : d.label),
+      };
+    };
+
+    const bd12m = buildBreakdown('mthly_avg_volume_12mth');
+    const bdDly = buildBreakdown('dly_avg_volume_12mth');
+    const bd3mLow = buildBreakdown('dly_avg_volume_3mth_low');
+    const bd3mHigh = buildBreakdown('dly_avg_volume_3mth_high');
+    const bdTarget = buildBreakdown('target_volume');
+
     const kpis = [
       {
         id: '12m-monthly',
         title: "12M Average",
         value: fmt(mthly12),
-        chartData: generateGrowthTrend((mthly12 ?? 633.5) * 0.9, mthly12 ?? 633.5, 30),
-        chartType: "area" as const,
+        chartData: bd12m.chartData,
+        chartType: "bar" as const,
         delay: 0,
-        xAxisLabels: monthLabels,
+        xAxisLabels: bd12m.xAxisLabels,
         definition: "Rolling 12-Month Average Monthly Volume represents the average number of patient encounters, procedures, or units of service delivered per month over the immediately preceding 12 months.",
         calculation: `12M Avg Monthly = Sum of monthly volumes over 12 months / 12
 
@@ -324,10 +343,10 @@ Example: If total volume over 12 months is 7,602:
         id: '12m-daily',
         title: "12M Daily Average",
         value: fmt(dly12),
-        chartData: generateGrowthTrend((dly12 ?? 20.8) * 0.9, dly12 ?? 20.8, 30),
-        chartType: "area" as const,
+        chartData: bdDly.chartData,
+        chartType: "bar" as const,
         delay: 0.05,
-        xAxisLabels: monthLabels,
+        xAxisLabels: bdDly.xAxisLabels,
         definition: "12-Month Average Daily Volume represents the average number of patient encounters, procedures, or units of service delivered per day over the past 12 months.",
         calculation: `12M Avg Daily = Total volume over 12 months / Total working days
 
@@ -338,10 +357,10 @@ Example: If total volume is 7,602 over 365 days:
         id: '3m-low',
         title: "3M Low",
         value: fmt(low3),
-        chartData: generateVolatileTrend(low3 ?? 14.2, 3),
-        chartType: "area" as const,
+        chartData: bd3mLow.chartData,
+        chartType: "bar" as const,
         delay: 0.1,
-        xAxisLabels: monthLabels,
+        xAxisLabels: bd3mLow.xAxisLabels,
         definition: "3-Month Average Lowest Volume shows the average daily volume recorded during the three months with the lowest total volume in the immediately preceding 12 months. This value is used to determine minimum staffing requirements.",
         calculation: `3M Avg Lowest = Average daily volume during the 3 lowest-volume months in past 12 months
 
@@ -354,10 +373,10 @@ Calculated by:
         id: '3m-high',
         title: "3M High",
         value: fmt(high3),
-        chartData: generateVolatileTrend(high3 ?? 28.4, 5),
+        chartData: bd3mHigh.chartData,
         chartType: "bar" as const,
         delay: 0.15,
-        xAxisLabels: monthLabels,
+        xAxisLabels: bd3mHigh.xAxisLabels,
         definition: "3-Month Average Highest Volume shows the average daily volume recorded during the three months with the highest total volume in the immediately preceding 12 months. This value is used to determine maximum capacity or peak staffing requirements.",
         calculation: `3M Avg Highest = Average daily volume during the 3 highest-volume months in past 12 months
 
@@ -371,10 +390,10 @@ Calculated by:
         title: "Target Vol",
         value: fmt(targetVol),
         isHighlighted: !overrideKpiData.isActive,
-        chartData: generateSeasonalTrend(targetVol ?? 20.8, 3),
-        chartType: "area" as const,
+        chartData: bdTarget.chartData,
+        chartType: "bar" as const,
         delay: 0.2,
-        xAxisLabels: monthLabels,
+        xAxisLabels: bdTarget.xAxisLabels,
         definition: "Target Volume represents the expected daily volume used for staffing calculations and planning. This is typically based on historical trends and projected growth.",
         calculation: `Target Volume = Forecasted daily volume based on historical data and growth projections
 
@@ -392,7 +411,7 @@ Determined by:
         chartData: overrideKpiData.hasData ? generateVolatileTrend(Number(overrideKpiData.value), 4) : [],
         chartType: "bar" as const,
         delay: 0.25,
-        xAxisLabels: monthLabels,
+        xAxisLabels: generateLast12MonthLabels(),
         definition: overrideKpiData.isActive
           ? "Override Volume is a manually adjusted volume target that supersedes the calculated target volume. This override is currently active."
           : selectedDepartment === "all-departments"
@@ -413,7 +432,7 @@ Used when:
       const bIndex = volumeOrder.indexOf(b.id);
       return aIndex - bIndex;
     });
-  }, [volumeOrder, overrideKpiData, pvAgg, selectedDepartment]);
+  }, [volumeOrder, overrideKpiData, pvAgg, pvFilteredRecords, selectedDepartment]);
 
   // Productivity KPIs Configuration
   const productivityKPIs = useMemo(() => {
