@@ -1,37 +1,25 @@
 
 
-## Fix: Paginated fetching for patient-volume API
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-### Problem
-`usePatientVolume` fetches only one page of data. The API uses `take` (not `limit`) for pagination, defaulting to 500.
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### Change: `src/hooks/usePatientVolume.ts`
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-Refactor `fetchPatientVolume` to loop with `take=1000` and `offset`, accumulating all pages until complete — matching the pattern already used in `useSkillShift`.
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-```typescript
-async function fetchPatientVolume(filters: PatientVolumeFilters): Promise<PatientVolumeRecord[]> {
-  const PAGE_SIZE = 1000;
-  const allRecords: PatientVolumeRecord[] = [];
-  let offset = 0;
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
 
-  const baseParams = new URLSearchParams();
-  if (filters.region) baseParams.append('region', filters.region);
-  // ... other filters ...
-
-  while (true) {
-    const params = new URLSearchParams(baseParams);
-    params.append('take', String(PAGE_SIZE));
-    params.append('offset', String(offset));
-
-    const res = await fetch(`${API_BASE_URL}/patient-volume?${params}`, { headers: getAuthHeaders() });
-    // parse, accumulate, break when done
-    offset += PAGE_SIZE;
-  }
-  return allRecords;
-}
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
 ```
 
-### Scope
-Single file change in `usePatientVolume.ts`.
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 
