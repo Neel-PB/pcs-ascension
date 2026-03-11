@@ -601,7 +601,15 @@ This metric helps:
           )}
           
           {activeTab === "planning" && (
-            <PositionPlanning selectedDepartment={selectedDepartment} />
+            <PositionPlanning
+              selectedRegion={selectedRegion}
+              selectedMarket={selectedMarket}
+              selectedFacility={selectedFacility}
+              selectedDepartment={selectedDepartment}
+              selectedSubmarket={selectedSubmarket}
+              selectedLevel2={selectedLevel2}
+              selectedPstat={selectedPstat}
+            />
           )}
           
           {activeTab === "variance" && (
