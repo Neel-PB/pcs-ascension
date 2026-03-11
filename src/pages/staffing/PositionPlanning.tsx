@@ -857,6 +857,17 @@ export default function PositionPlanning({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
       >
+        {skillShiftLoading ? (
+          <div className="p-6 space-y-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-8 w-full" />
+            ))}
+          </div>
+        ) : displayVarianceData.length === 0 ? (
+          <div className="p-8 text-center text-muted-foreground">
+            No skill-shift data available for the selected filters.
+          </div>
+        ) : (
           <FTESkillShiftTable 
             data={displayVarianceData} 
             expandedGroups={expandedGroups}
@@ -865,6 +876,7 @@ export default function PositionPlanning({
             viewMode={viewMode}
             staffCategory={staffCategory}
           />
+        )}
       </motion.div>
 
       {/* Expanded Modal */}
