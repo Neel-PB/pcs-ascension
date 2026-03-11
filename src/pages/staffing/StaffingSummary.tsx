@@ -150,24 +150,24 @@ export default function StaffingSummary() {
     'Pat Days + Obs + Newborn Days',
   ]), []);
 
-  const pvAgg = useMemo(() => {
-    if (!patientVolumeData?.length) return null;
-
+  const pvFilteredRecords = useMemo(() => {
+    if (!patientVolumeData?.length) return [];
     const noDept = !selectedDepartment || selectedDepartment === 'all-departments';
-    const records = noDept
+    return noDept
       ? patientVolumeData.filter(r => ROLLUP_PSTATS.has(r.unit_of_service))
       : patientVolumeData;
-
-    if (!records.length) return null;
-
-    return {
-      mthly_avg_volume_12mth: records.reduce((s, r) => s + Number(r.mthly_avg_volume_12mth ?? 0), 0),
-      dly_avg_volume_12mth: records.reduce((s, r) => s + Number(r.dly_avg_volume_12mth ?? 0), 0),
-      dly_avg_volume_3mth_low: records.reduce((s, r) => s + Number(r.dly_avg_volume_3mth_low ?? 0), 0),
-      dly_avg_volume_3mth_high: records.reduce((s, r) => s + Number(r.dly_avg_volume_3mth_high ?? 0), 0),
-      target_volume: records.reduce((s, r) => s + Number(r.target_volume ?? 0), 0),
-    };
   }, [patientVolumeData, selectedDepartment, ROLLUP_PSTATS]);
+
+  const pvAgg = useMemo(() => {
+    if (!pvFilteredRecords.length) return null;
+    return {
+      mthly_avg_volume_12mth: pvFilteredRecords.reduce((s, r) => s + Number(r.mthly_avg_volume_12mth ?? 0), 0),
+      dly_avg_volume_12mth: pvFilteredRecords.reduce((s, r) => s + Number(r.dly_avg_volume_12mth ?? 0), 0),
+      dly_avg_volume_3mth_low: pvFilteredRecords.reduce((s, r) => s + Number(r.dly_avg_volume_3mth_low ?? 0), 0),
+      dly_avg_volume_3mth_high: pvFilteredRecords.reduce((s, r) => s + Number(r.dly_avg_volume_3mth_high ?? 0), 0),
+      target_volume: pvFilteredRecords.reduce((s, r) => s + Number(r.target_volume ?? 0), 0),
+    };
+  }, [pvFilteredRecords]);
 
   // Determine override KPI value based on department selection
   const overrideKpiData = useMemo(() => {
