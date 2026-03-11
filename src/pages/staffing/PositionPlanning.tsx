@@ -508,21 +508,39 @@ export default function PositionPlanning({
   const [viewMode, setViewMode] = useState<'planned' | 'active'>('planned');
   const [staffCategory, setStaffCategory] = useState<'nursing' | 'non-nursing'>('nursing');
   
-  // Get department's nursing status
-  const { isNursing: departmentIsNursing } = useDepartmentCategory(selectedDepartment ?? null);
+  // Get department's nursing status (pass facility for unique lookup)
+  const { isNursing: departmentIsNursing } = useDepartmentCategory(
+    selectedDepartment ?? null,
+    selectedFacility ?? null
+  );
   
   // Determine if a specific department is selected (not "all-departments")
   const isDepartmentSelected = selectedDepartment && selectedDepartment !== 'all-departments';
   
-  // Auto-set category when department changes
+  // Track whether we need to auto-detect nursing status from API data
+  const [autoDetected, setAutoDetected] = useState(false);
+  
+  // Reset auto-detected when department changes
+  useEffect(() => {
+    setAutoDetected(false);
+  }, [selectedDepartment, selectedFacility]);
+  
+  // Auto-set category when department changes and DB has the answer
   useEffect(() => {
     if (isDepartmentSelected && departmentIsNursing !== null) {
       setStaffCategory(departmentIsNursing ? 'nursing' : 'non-nursing');
+      setAutoDetected(true);
+    } else if (isDepartmentSelected && departmentIsNursing === null) {
+      // DB doesn't have this department — reset so we can auto-detect from API
+      setAutoDetected(false);
     }
   }, [isDepartmentSelected, departmentIsNursing, selectedDepartment]);
 
-  // Fetch skill-shift data from API
-  const nursingFlag = staffCategory === 'nursing' ? 'Y' : 'N';
+  // When department is selected but DB doesn't know its category, fetch without nursingFlag filter
+  // so we can derive the category from the API data's nursing_flag field
+  const needsAutoDetect = isDepartmentSelected && departmentIsNursing === null && !autoDetected;
+  const nursingFlag = needsAutoDetect ? undefined : (staffCategory === 'nursing' ? 'Y' : 'N');
+  
   const { data: skillShiftData, isLoading: skillShiftLoading } = useSkillShift({
     region: selectedRegion,
     market: selectedMarket,
@@ -533,6 +551,21 @@ export default function PositionPlanning({
     pstat: selectedPstat,
     nursingFlag,
   });
+  
+  // Auto-detect nursing status from API data when DB doesn't have the department
+  useEffect(() => {
+    if (needsAutoDetect && skillShiftData && skillShiftData.length > 0) {
+      const hasNursing = skillShiftData.some(r => r.nursing_flag === 'Y');
+      const hasNonNursing = skillShiftData.some(r => r.nursing_flag === 'N');
+      // If mixed or only nursing, default to nursing; if only non-nursing, set non-nursing
+      if (hasNonNursing && !hasNursing) {
+        setStaffCategory('non-nursing');
+      } else {
+        setStaffCategory('nursing');
+      }
+      setAutoDetected(true);
+    }
+  }, [needsAutoDetect, skillShiftData]);
 
   // Build dynamic skill groups from API data
   const dynamicSkillGroups = useMemo(() => {
