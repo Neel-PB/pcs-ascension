@@ -519,7 +519,7 @@ export default function PositionPlanning({
     if (isDepartmentSelected && departmentIsNursing !== null) {
       setStaffCategory(departmentIsNursing ? 'nursing' : 'non-nursing');
     }
-  }, [isDepartmentSelected, departmentIsNursing]);
+  }, [isDepartmentSelected, departmentIsNursing, selectedDepartment]);
 
   // Fetch skill-shift data from API
   const nursingFlag = staffCategory === 'nursing' ? 'Y' : 'N';
