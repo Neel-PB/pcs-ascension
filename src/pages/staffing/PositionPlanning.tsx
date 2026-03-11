@@ -965,7 +965,7 @@ export default function PositionPlanning({
               data={displayVarianceData} 
               expandedGroups={expandedGroups}
               onToggleGroup={toggleGroup}
-              skillGroups={skillGroups}
+              skillGroups={dynamicSkillGroups}
               viewMode={viewMode}
               staffCategory={staffCategory}
             />
