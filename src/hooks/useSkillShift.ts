@@ -50,6 +50,7 @@ interface SkillShiftFilters {
 
 async function fetchSkillShift(filters: SkillShiftFilters): Promise<SkillShiftRecord[]> {
   const params = new URLSearchParams();
+  params.append('limit', '10000');
 
   if (filters.region) params.append('region', filters.region);
   if (filters.market) params.append('market', filters.market);
