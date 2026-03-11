@@ -1,25 +1,43 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Filter volume KPI roll-up by aggregatable P-stats when no department is selected
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+### Problem
+When no department is selected, the volume KPIs aggregate **all** records. Only certain P-stat types (Patient Days, Patient Days + OBS, Patient Days + OBS + Newborns) can be meaningfully rolled up; others should be excluded from the sum.
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+### Change
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+**`src/pages/staffing/StaffingSummary.tsx`** — `pvAgg` memo (~lines 147-156)
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+Before aggregating, filter `patientVolumeData` to only include records whose `unit_of_service` (or `pstat`) matches the allowed roll-up values — but **only when no specific department is selected** (`selectedDepartment === 'all-departments'`). When a department IS selected, aggregate all records as before (since they're already scoped to one department).
 
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+```typescript
+const ROLLUP_PSTATS = new Set([
+  'Patient Days',
+  'Patient Days + OBS',
+  'Patient Days + OBS + Newborns',
+]);
+
+const pvAgg = useMemo(() => {
+  if (!patientVolumeData?.length) return null;
+
+  const noDept = selectedDepartment === 'all-departments';
+  const records = noDept
+    ? patientVolumeData.filter(r => ROLLUP_PSTATS.has(r.unit_of_service))
+    : patientVolumeData;
+
+  if (!records.length) return null;
+
+  return {
+    mthly_avg_volume_12mth: records.reduce(...),
+    dly_avg_volume_12mth:   records.reduce(...),
+    dly_avg_volume_3mth_low: records.reduce(...),
+    dly_avg_volume_3mth_high: records.reduce(...),
+    target_volume:           records.reduce(...),
+  };
+}, [patientVolumeData, selectedDepartment]);
 ```
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+### Scope
+Single file edit: `StaffingSummary.tsx`, ~10 lines changed in the `pvAgg` memo.
 
