@@ -46,7 +46,7 @@ function mapApiToFrontend(item: ApiVolumeOverride): NPOverride {
     facility_name: '',
     department_id: item.departmentId,
     department_name: '',
-    np_override_volume: Number(item.npValue),
+    np_override_volume: item.npValue != null ? Number(item.npValue) : null,
     expiry_date: item.npExpiryDate || '',
     created_by: item.updatedBy,
     created_at: item.createdAt,
