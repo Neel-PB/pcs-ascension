@@ -520,6 +520,11 @@ export default function PositionPlanning({
   // Track whether we need to auto-detect nursing status from API data
   const [autoDetected, setAutoDetected] = useState(false);
   
+  // Reset auto-detected when department changes
+  useEffect(() => {
+    setAutoDetected(false);
+  }, [selectedDepartment, selectedFacility]);
+  
   // Auto-set category when department changes and DB has the answer
   useEffect(() => {
     if (isDepartmentSelected && departmentIsNursing !== null) {
