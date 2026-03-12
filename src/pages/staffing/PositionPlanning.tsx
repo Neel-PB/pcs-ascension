@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion, LayoutGroup } from "framer-motion";
-import { useDepartmentCategory } from "@/hooks/useDepartmentCategory";
+// nursing status is now derived from API data, not Supabase DB
 import { useSkillShift, type SkillShiftRecord } from "@/hooks/useSkillShift";
 import { Download, Maximize2, ChevronRight } from "@/lib/icons";
 import { Skeleton } from "@/components/ui/skeleton";
