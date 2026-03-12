@@ -83,10 +83,11 @@ function transformFlatRows(rows: FlatFilterRow[]): FilterDataResult {
       });
     }
 
-    // Departments (dedupe by department_id)
-    if (row.department_id && !departmentMap.has(row.department_id)) {
-      departmentMap.set(row.department_id, {
-        id: row.department_id,
+    // Departments (dedupe by department_id + business_unit composite key)
+    const deptKey = `${row.department_id}|${row.business_unit}`;
+    if (row.department_id && !departmentMap.has(deptKey)) {
+      departmentMap.set(deptKey, {
+        id: deptKey,
         department_id: row.department_id,
         department_name: row.department_description ?? row.department_id,
         facility_id: row.business_unit,
