@@ -100,8 +100,10 @@ export function PositionsFilterSheet({
   onClearFilters,
   activeFilterCount,
   showStatus = false,
+  showLifecycle = false,
   skillMixOptions,
   employeeTypeOptions,
+  lifecycleOptions = [],
   title = "Filter Positions",
 }: PositionsFilterSheetProps) {
   const updateFilter = (key: keyof PositionsFilterValues, value: string) => {
