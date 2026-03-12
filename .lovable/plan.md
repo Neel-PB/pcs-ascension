@@ -1,51 +1,25 @@
 
 
-## Fix: Filter skill-shift data by detected nursing category
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-### Problem
-When a department is selected, we correctly fetch **all** records (without `nursingFlag` filter) to auto-detect the category. However, after detection, `displayVarianceData` and `dynamicSkillGroups` still use **all** unfiltered `skillShiftData`. This means:
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-1. If a department has only non-nursing records, auto-detection sets `staffCategory = 'non-nursing'` — but the data is correct anyway since all records are non-nursing.
-2. The real issue: the `nursing_flag` comparison uses strict `=== 'Y'` / `=== 'N'`, but the API may return lowercase (`'y'`/`'n'`) or other variants. If neither matches, `hasNursing` and `hasNonNursing` are both `false`, so the `else` branch defaults to `'nursing'`.
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-### Fix — `src/pages/staffing/PositionPlanning.tsx`
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-**1. Case-insensitive nursing_flag comparison in auto-detection (~line 540):**
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
 
-```typescript
-useEffect(() => {
-  if (isDepartmentSelected && skillShiftData && skillShiftData.length > 0 && !autoDetected) {
-    const hasNursing = skillShiftData.some(r => r.nursing_flag?.toUpperCase() === 'Y');
-    const hasNonNursing = skillShiftData.some(r => r.nursing_flag?.toUpperCase() === 'N');
-    if (hasNonNursing && !hasNursing) {
-      setStaffCategory('non-nursing');
-    } else if (hasNursing && !hasNonNursing) {
-      setStaffCategory('nursing');
-    } else {
-      // Mixed or unknown — default to nursing
-      setStaffCategory('nursing');
-    }
-    setAutoDetected(true);
-  }
-}, [isDepartmentSelected, skillShiftData, autoDetected]);
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
 ```
 
-**2. Filter data by detected category when department is selected (~lines 553-565):**
-
-Add a filtered data memo that applies the `staffCategory` filter when a department is selected:
-
-```typescript
-const filteredSkillShiftData = useMemo(() => {
-  if (!skillShiftData?.length) return [];
-  if (!isDepartmentSelected) return skillShiftData;
-  // Filter by detected category
-  const flag = staffCategory === 'nursing' ? 'Y' : 'N';
-  return skillShiftData.filter(r => r.nursing_flag?.toUpperCase() === flag);
-}, [skillShiftData, isDepartmentSelected, staffCategory]);
-```
-
-Then use `filteredSkillShiftData` in both `dynamicSkillGroups` and `displayVarianceData` instead of `skillShiftData`.
-
-### Scope
-Single file, ~15 lines changed. Ensures non-nursing departments like 10276 correctly show without Target FTE and Variance columns.
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 

@@ -534,35 +534,43 @@ export default function PositionPlanning({
      nursingFlag,
    });
    
-   // Auto-detect nursing status from API data when a department is selected
-   useEffect(() => {
-     if (isDepartmentSelected && skillShiftData && skillShiftData.length > 0 && !autoDetected) {
-       const hasNursing = skillShiftData.some(r => r.nursing_flag === 'Y');
-       const hasNonNursing = skillShiftData.some(r => r.nursing_flag === 'N');
-       // If only non-nursing records, set non-nursing; otherwise default to nursing
-       if (hasNonNursing && !hasNursing) {
-         setStaffCategory('non-nursing');
-       } else {
-         setStaffCategory('nursing');
-       }
-       setAutoDetected(true);
-     }
-   }, [isDepartmentSelected, skillShiftData, autoDetected]);
+    // Auto-detect nursing status from API data when a department is selected (case-insensitive)
+    useEffect(() => {
+      if (isDepartmentSelected && skillShiftData && skillShiftData.length > 0 && !autoDetected) {
+        const hasNursing = skillShiftData.some(r => r.nursing_flag?.toUpperCase() === 'Y');
+        const hasNonNursing = skillShiftData.some(r => r.nursing_flag?.toUpperCase() === 'N');
+        if (hasNonNursing && !hasNursing) {
+          setStaffCategory('non-nursing');
+        } else if (hasNursing && !hasNonNursing) {
+          setStaffCategory('nursing');
+        } else {
+          setStaffCategory('nursing');
+        }
+        setAutoDetected(true);
+      }
+    }, [isDepartmentSelected, skillShiftData, autoDetected]);
 
-  // Build dynamic skill groups from API data
+  // Filter skill-shift data by detected category when department is selected
+  const filteredSkillShiftData = useMemo(() => {
+    if (!skillShiftData?.length) return [];
+    if (!isDepartmentSelected) return skillShiftData;
+    const flag = staffCategory === 'nursing' ? 'Y' : 'N';
+    return skillShiftData.filter(r => r.nursing_flag?.toUpperCase() === flag);
+  }, [skillShiftData, isDepartmentSelected, staffCategory]);
+
+  // Build dynamic skill groups from filtered API data
   const dynamicSkillGroups = useMemo(() => {
-    if (!skillShiftData?.length) return [];
-    return buildSkillGroups(skillShiftData);
-  }, [skillShiftData]);
+    if (!filteredSkillShiftData?.length) return [];
+    return buildSkillGroups(filteredSkillShiftData);
+  }, [filteredSkillShiftData]);
 
-  // Map API data to VarianceData based on view mode
+  // Map filtered API data to VarianceData based on view mode
   const displayVarianceData = useMemo(() => {
-    if (!skillShiftData?.length) return [];
-    const mapped = mapRecordsToVariance(skillShiftData, viewMode);
-    // Compute TOTAL row
+    if (!filteredSkillShiftData?.length) return [];
+    const mapped = mapRecordsToVariance(filteredSkillShiftData, viewMode);
     const total = computeGroupTotals(mapped);
     return [...mapped, { ...total, skill: 'TOTAL' }];
-  }, [skillShiftData, viewMode]);
+  }, [filteredSkillShiftData, viewMode]);
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroups(prev => {
