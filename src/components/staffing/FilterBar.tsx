@@ -49,6 +49,7 @@ export function FilterBar({
   selectedPstat = "all-pstat",
   selectedLevel2 = "all-level2",
   selectedDepartment = "all-departments",
+  hideOptionalFilters = false,
 }: FilterBarProps) {
   const { 
     regions, 
