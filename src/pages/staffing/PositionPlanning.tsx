@@ -521,7 +521,7 @@ export default function PositionPlanning({
    
    // When department is selected, fetch without nursingFlag filter so we can
    // derive the category from the API data's nursing_flag field (source of truth)
-   const nursingFlag = isDepartmentSelected ? undefined : (staffCategory === 'nursing' ? 'Y' : 'N');
+   const nursingFlag = isDepartmentSelected ? undefined : (staffCategory === 'nursing' ? 'true' : 'false');
    
    const { data: skillShiftData, isLoading: skillShiftLoading } = useSkillShift({
      region: selectedRegion,
@@ -553,13 +553,13 @@ export default function PositionPlanning({
   // Filter skill-shift data by detected category when department is selected
   const filteredSkillShiftData = useMemo(() => {
     if (!skillShiftData?.length) return [];
-    if (!isDepartmentSelected) return skillShiftData;
     const isNursing = staffCategory === 'nursing';
     return skillShiftData.filter(r => {
       if (typeof r.nursing_flag === 'boolean') return r.nursing_flag === isNursing;
-      return (r.nursing_flag === 'Y') === isNursing;
+      if (typeof r.nursing_flag === 'string') return (r.nursing_flag.toUpperCase() === 'Y') === isNursing;
+      return true;
     });
-  }, [skillShiftData, isDepartmentSelected, staffCategory]);
+  }, [skillShiftData, staffCategory]);
 
   // Build dynamic skill groups from filtered API data
   const dynamicSkillGroups = useMemo(() => {
