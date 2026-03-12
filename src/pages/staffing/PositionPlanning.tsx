@@ -521,7 +521,7 @@ export default function PositionPlanning({
    
    // When department is selected, fetch without nursingFlag filter so we can
    // derive the category from the API data's nursing_flag field (source of truth)
-   const nursingFlag = isDepartmentSelected ? undefined : (staffCategory === 'nursing' ? 'Y' : 'N');
+   const nursingFlag = isDepartmentSelected ? undefined : (staffCategory === 'nursing' ? 'true' : 'false');
    
    const { data: skillShiftData, isLoading: skillShiftLoading } = useSkillShift({
      region: selectedRegion,
