@@ -36,6 +36,7 @@ export const DEFAULT_POSITION_FILTERS: PositionsFilterValues = {
   fteMax: "all",
   status: "all",
   employeeType: "all",
+  positionLifecycle: "all",
 };
 
 const FTE_OPTIONS = Array.from({ length: 10 }, (_, i) => ((i + 1) / 10).toFixed(1));
