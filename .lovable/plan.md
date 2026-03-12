@@ -1,25 +1,34 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Add Position Lifecycle Status Filter to Employee and Open Requisition Tabs
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+### What changes
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+Add a "Position Lifecycle Status" dropdown filter to the shared `PositionsFilterSheet`, visible only on the Employee and Open Requisition tabs. Options are dynamically extracted from the loaded dataset (same pattern as Skill Mix).
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+### Files to change
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
-
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+**1. `src/hooks/usePositionsByFlag.ts`** (~line 12-39)
+- Add `positionLifecycle` to the normalizer to handle both camelCase and snake_case from the API:
+```typescript
+positionLifecycle: row.positionLifecycle ?? row.position_lifecycle,
 ```
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+**2. `src/components/positions/PositionsFilterSheet.tsx`**
+- Add `positionLifecycle: string` to `PositionsFilterValues` interface and default to `"all"`
+- Add new prop `showLifecycle?: boolean` and `lifecycleOptions: string[]`
+- Add lifecycle filter counting in `getActiveFilterCount`
+- Add lifecycle filtering in `applyPositionFilters` (filter on `r.positionLifecycle`)
+- Add a "Position Lifecycle Status" `<Select>` dropdown (conditionally rendered when `showLifecycle` is true)
+
+**3. `src/pages/positions/EmployeesTab.tsx`**
+- Extract unique `positionLifecycle` values from `employees` data
+- Pass `showLifecycle={true}` and `lifecycleOptions={lifecycleOptions}` to `PositionsFilterSheet`
+- Update `getActiveFilterCount` call to include lifecycle
+
+**4. `src/pages/positions/OpenRequisitionTab.tsx`**
+- Same as EmployeesTab: extract lifecycle options, pass `showLifecycle` and `lifecycleOptions` to the filter sheet
+
+### Pattern
+Follows the exact same pattern as the existing `showStatus` conditional filter — a boolean prop controls visibility, options are dynamically derived from data, and filtering applies client-side via `applyPositionFilters`.
 
