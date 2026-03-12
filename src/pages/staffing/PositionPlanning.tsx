@@ -537,8 +537,8 @@ export default function PositionPlanning({
     // Auto-detect nursing status from API data when a department is selected (case-insensitive)
     useEffect(() => {
       if (isDepartmentSelected && skillShiftData && skillShiftData.length > 0 && !autoDetected) {
-        const hasNursing = skillShiftData.some(r => r.nursing_flag?.toUpperCase() === 'Y');
-        const hasNonNursing = skillShiftData.some(r => r.nursing_flag?.toUpperCase() === 'N');
+        const hasNursing = skillShiftData.some(r => (r.nursing_flag as unknown) === true || r.nursing_flag === 'Y');
+        const hasNonNursing = skillShiftData.some(r => (r.nursing_flag as unknown) === false || r.nursing_flag === 'N');
         if (hasNonNursing && !hasNursing) {
           setStaffCategory('non-nursing');
         } else if (hasNursing && !hasNonNursing) {
@@ -554,8 +554,11 @@ export default function PositionPlanning({
   const filteredSkillShiftData = useMemo(() => {
     if (!skillShiftData?.length) return [];
     if (!isDepartmentSelected) return skillShiftData;
-    const flag = staffCategory === 'nursing' ? 'Y' : 'N';
-    return skillShiftData.filter(r => r.nursing_flag?.toUpperCase() === flag);
+    const isNursing = staffCategory === 'nursing';
+    return skillShiftData.filter(r => {
+      if (typeof r.nursing_flag === 'boolean') return r.nursing_flag === isNursing;
+      return (r.nursing_flag === 'Y') === isNursing;
+    });
   }, [skillShiftData, isDepartmentSelected, staffCategory]);
 
   // Build dynamic skill groups from filtered API data
