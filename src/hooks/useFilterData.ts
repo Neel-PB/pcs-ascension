@@ -67,6 +67,8 @@ function transformFlatRows(rows: FlatFilterRow[]): FilterDataResult {
   const marketMap = new Map<string, Market>();
   const facilityMap = new Map<string, Facility>();
   const departmentMap = new Map<string, Department>();
+  const level2Map = new Map<string, Level2Value>();
+  const pstatMap = new Map<string, PstatValue>();
 
   for (const row of rows) {
     // Regions
@@ -105,6 +107,28 @@ function transformFlatRows(rows: FlatFilterRow[]): FilterDataResult {
         facility_id: row.business_unit,
       });
     }
+
+    // Level 2 values (dedupe by level_2 + business_unit)
+    if (row.level_2) {
+      const l2Key = `${row.level_2}|${row.business_unit}`;
+      if (!level2Map.has(l2Key)) {
+        level2Map.set(l2Key, {
+          facility_id: row.business_unit,
+          level_2: row.level_2,
+        });
+      }
+    }
+
+    // PSTAT / Unit of Service values (dedupe by unit_of_service + business_unit)
+    if (row.unit_of_service) {
+      const pstatKey = `${row.unit_of_service}|${row.business_unit}`;
+      if (!pstatMap.has(pstatKey)) {
+        pstatMap.set(pstatKey, {
+          facility_id: row.business_unit,
+          unit_of_service: row.unit_of_service,
+        });
+      }
+    }
   }
 
   return {
@@ -112,6 +136,8 @@ function transformFlatRows(rows: FlatFilterRow[]): FilterDataResult {
     markets: Array.from(marketMap.values()).sort((a, b) => a.market.localeCompare(b.market)),
     facilities: Array.from(facilityMap.values()).sort((a, b) => a.facility_name.localeCompare(b.facility_name)),
     departments: Array.from(departmentMap.values()).sort((a, b) => a.department_name.localeCompare(b.department_name)),
+    level2Values: Array.from(level2Map.values()),
+    pstatValues: Array.from(pstatMap.values()),
   };
 }
 
