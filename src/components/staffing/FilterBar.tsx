@@ -544,12 +544,12 @@ export function FilterBar({
       </div>
 
       {/* SEPARATOR - hidden on compact screens, only show if any sub-filter is accessible */}
-      {(subfilterPermissions.submarket || subfilterPermissions.level2 || subfilterPermissions.pstat) && (
+      {!hideOptionalFilters && (subfilterPermissions.submarket || subfilterPermissions.level2 || subfilterPermissions.pstat) && (
         <div className="hidden xl:block h-10 w-[2px] bg-border/60 mx-6" />
       )}
 
       {/* RIGHT GROUP: Optional Filters - only show filters user has permission for */}
-      {(subfilterPermissions.submarket || subfilterPermissions.level2 || subfilterPermissions.pstat) && (
+      {!hideOptionalFilters && (subfilterPermissions.submarket || subfilterPermissions.level2 || subfilterPermissions.pstat) && (
         isCompact ? (
           <div data-tour="filter-more"><CombinedOptionalFilters
             selectedSubmarket={selectedSubmarket}

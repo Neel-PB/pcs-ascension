@@ -27,6 +27,20 @@ export interface Department {
   facility_id: string;
 }
 
+interface FlatFilterRow {
+  region: string;
+  market: string;
+  submarket: string | null;
+  business_unit: string;
+  business_unit_description: string;
+  department_id: string;
+  department_description: string;
+  level_2: string | null;
+  unit_of_service: string | null;
+  nursing_flag: boolean;
+  market_hierarchy_key: string | null;
+}
+
 interface FilterDataResult {
   regions: Region[];
   markets: Market[];
@@ -35,6 +49,58 @@ interface FilterDataResult {
 }
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
+
+function transformFlatRows(rows: FlatFilterRow[]): FilterDataResult {
+  const regionMap = new Map<string, Region>();
+  const marketMap = new Map<string, Market>();
+  const facilityMap = new Map<string, Facility>();
+  const departmentMap = new Map<string, Department>();
+
+  for (const row of rows) {
+    // Regions
+    if (row.region && !regionMap.has(row.region)) {
+      regionMap.set(row.region, { id: row.region, region: row.region });
+    }
+
+    // Markets (keep region reference)
+    if (row.market && !marketMap.has(row.market)) {
+      marketMap.set(row.market, {
+        id: row.market,
+        market: row.market,
+        region: row.region ?? null,
+      });
+    }
+
+    // Facilities (business_unit → facility_id, business_unit_description → facility_name)
+    if (row.business_unit && !facilityMap.has(row.business_unit)) {
+      facilityMap.set(row.business_unit, {
+        id: row.business_unit,
+        facility_id: row.business_unit,
+        facility_name: row.business_unit_description ?? row.business_unit,
+        market: row.market,
+        region: row.region ?? null,
+        submarket: row.submarket ?? null,
+      });
+    }
+
+    // Departments (dedupe by department_id)
+    if (row.department_id && !departmentMap.has(row.department_id)) {
+      departmentMap.set(row.department_id, {
+        id: row.department_id,
+        department_id: row.department_id,
+        department_name: row.department_description ?? row.department_id,
+        facility_id: row.business_unit,
+      });
+    }
+  }
+
+  return {
+    regions: Array.from(regionMap.values()).sort((a, b) => a.region.localeCompare(b.region)),
+    markets: Array.from(marketMap.values()).sort((a, b) => a.market.localeCompare(b.market)),
+    facilities: Array.from(facilityMap.values()).sort((a, b) => a.facility_name.localeCompare(b.facility_name)),
+    departments: Array.from(departmentMap.values()).sort((a, b) => a.department_name.localeCompare(b.department_name)),
+  };
+}
 
 export function useFilterData() {
   const token = sessionStorage.getItem("msal_access_token");
@@ -49,6 +115,13 @@ export function useFilterData() {
       if (!res.ok) throw new Error(`Filter fetch failed: ${res.status}`);
 
       const json = await res.json();
+
+      // Handle flat denormalized rows from API
+      if (Array.isArray(json)) {
+        return transformFlatRows(json);
+      }
+
+      // Fallback: legacy structured response
       return {
         regions: json.regions ?? [],
         markets: json.markets ?? [],

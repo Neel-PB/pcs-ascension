@@ -114,6 +114,7 @@ export default function PositionsPage() {
             onLevel2Change={setLevel2}
             onDepartmentChange={setDepartment}
             onClearFilters={() => clearFilters(defaultFilters)}
+            hideOptionalFilters
           />
         </div>
 
