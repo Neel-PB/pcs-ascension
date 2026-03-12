@@ -202,7 +202,7 @@ export function EmployeesTab({
       )}
 
       <EmployeeDetailsSheet open={sheetOpen} onOpenChange={setSheetOpen} employee={selectedEmployee} defaultTab={sheetDefaultTab} />
-      <PositionsFilterSheet open={filterOpen} onOpenChange={setFilterOpen} filters={filters} onFiltersChange={setFilters} onClearFilters={clearFilters} activeFilterCount={activeFilterCount} showStatus skillMixOptions={skillMixOptions} employeeTypeOptions={employeeTypeOptions} title="Filter Employees" />
+      <PositionsFilterSheet open={filterOpen} onOpenChange={setFilterOpen} filters={filters} onFiltersChange={setFilters} onClearFilters={clearFilters} activeFilterCount={activeFilterCount} showStatus showLifecycle skillMixOptions={skillMixOptions} employeeTypeOptions={employeeTypeOptions} lifecycleOptions={lifecycleOptions} title="Filter Employees" />
     </div>
   );
 }

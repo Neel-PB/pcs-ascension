@@ -120,7 +120,7 @@ export function OpenRequisitionTab({
         </div>
       )}
 
-      <PositionsFilterSheet open={filterOpen} onOpenChange={setFilterOpen} filters={filters} onFiltersChange={setFilters} onClearFilters={clearFilters} activeFilterCount={activeFilterCount} skillMixOptions={skillMixOptions} employeeTypeOptions={employeeTypeOptions} title="Filter Open Requisitions" />
+      <PositionsFilterSheet open={filterOpen} onOpenChange={setFilterOpen} filters={filters} onFiltersChange={setFilters} onClearFilters={clearFilters} activeFilterCount={activeFilterCount} showLifecycle skillMixOptions={skillMixOptions} employeeTypeOptions={employeeTypeOptions} lifecycleOptions={lifecycleOptions} title="Filter Open Requisitions" />
 
       {selectedPosition && (
         <RequisitionDetailsSheet

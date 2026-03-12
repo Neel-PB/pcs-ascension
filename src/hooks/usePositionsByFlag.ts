@@ -33,6 +33,7 @@ const normalizeRow = (row: any) => ({
   managerEmployeeId: row.managerEmployeeId ?? row.manager_employee_id,
   managerPositionNum: row.managerPositionNum ?? row.manager_position_num,
   payrollStatus: row.payrollStatus ?? row.payroll_status,
+  positionLifecycle: row.positionLifecycle ?? row.position_lifecycle,
   shift: row.shift,
   region: row.region,
   market: row.market,

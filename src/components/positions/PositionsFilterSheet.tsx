@@ -209,6 +209,22 @@ export function PositionsFilterSheet({
             </div>
           )}
 
+          {/* Position Lifecycle Status */}
+          {showLifecycle && (
+            <div className="space-y-2">
+              <Label>Position Lifecycle Status</Label>
+              <Select value={filters.positionLifecycle} onValueChange={(v) => updateFilter("positionLifecycle", v)}>
+                <SelectTrigger><SelectValue placeholder="All" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  {lifecycleOptions.map(opt => (
+                    <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           {/* Employee Type */}
           <div className="space-y-2">
             <Label>Employee Type</Label>
