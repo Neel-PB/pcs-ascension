@@ -27,6 +27,16 @@ export interface Department {
   facility_id: string;
 }
 
+export interface Level2Value {
+  facility_id: string;
+  level_2: string;
+}
+
+export interface PstatValue {
+  facility_id: string;
+  unit_of_service: string;
+}
+
 interface FlatFilterRow {
   region: string;
   market: string;
@@ -46,6 +56,8 @@ interface FilterDataResult {
   markets: Market[];
   facilities: Facility[];
   departments: Department[];
+  level2Values: Level2Value[];
+  pstatValues: PstatValue[];
 }
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
