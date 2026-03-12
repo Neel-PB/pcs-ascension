@@ -537,8 +537,8 @@ export default function PositionPlanning({
     // Auto-detect nursing status from API data when a department is selected (case-insensitive)
     useEffect(() => {
       if (isDepartmentSelected && skillShiftData && skillShiftData.length > 0 && !autoDetected) {
-        const hasNursing = skillShiftData.some(r => r.nursing_flag?.toUpperCase() === 'Y');
-        const hasNonNursing = skillShiftData.some(r => r.nursing_flag?.toUpperCase() === 'N');
+        const hasNursing = skillShiftData.some(r => r.nursing_flag === true || r.nursing_flag === 'Y');
+        const hasNonNursing = skillShiftData.some(r => r.nursing_flag === false || r.nursing_flag === 'N');
         if (hasNonNursing && !hasNursing) {
           setStaffCategory('non-nursing');
         } else if (hasNursing && !hasNonNursing) {
