@@ -60,6 +60,8 @@ export function FilterBar({
     getFacilitiesByMarket, 
     getDepartmentsByFacility,
     getSubmarketsByMarket,
+    getLevel2Options,
+    getPstatOptions,
     regionsLoading,
     marketsLoading,
     facilitiesLoading,
