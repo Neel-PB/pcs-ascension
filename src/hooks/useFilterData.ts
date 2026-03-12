@@ -27,6 +27,16 @@ export interface Department {
   facility_id: string;
 }
 
+export interface Level2Value {
+  facility_id: string;
+  level_2: string;
+}
+
+export interface PstatValue {
+  facility_id: string;
+  unit_of_service: string;
+}
+
 interface FlatFilterRow {
   region: string;
   market: string;
@@ -46,6 +56,8 @@ interface FilterDataResult {
   markets: Market[];
   facilities: Facility[];
   departments: Department[];
+  level2Values: Level2Value[];
+  pstatValues: PstatValue[];
 }
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
@@ -55,6 +67,8 @@ function transformFlatRows(rows: FlatFilterRow[]): FilterDataResult {
   const marketMap = new Map<string, Market>();
   const facilityMap = new Map<string, Facility>();
   const departmentMap = new Map<string, Department>();
+  const level2Map = new Map<string, Level2Value>();
+  const pstatMap = new Map<string, PstatValue>();
 
   for (const row of rows) {
     // Regions
@@ -93,6 +107,28 @@ function transformFlatRows(rows: FlatFilterRow[]): FilterDataResult {
         facility_id: row.business_unit,
       });
     }
+
+    // Level 2 values (dedupe by level_2 + business_unit)
+    if (row.level_2) {
+      const l2Key = `${row.level_2}|${row.business_unit}`;
+      if (!level2Map.has(l2Key)) {
+        level2Map.set(l2Key, {
+          facility_id: row.business_unit,
+          level_2: row.level_2,
+        });
+      }
+    }
+
+    // PSTAT / Unit of Service values (dedupe by unit_of_service + business_unit)
+    if (row.unit_of_service) {
+      const pstatKey = `${row.unit_of_service}|${row.business_unit}`;
+      if (!pstatMap.has(pstatKey)) {
+        pstatMap.set(pstatKey, {
+          facility_id: row.business_unit,
+          unit_of_service: row.unit_of_service,
+        });
+      }
+    }
   }
 
   return {
@@ -100,6 +136,8 @@ function transformFlatRows(rows: FlatFilterRow[]): FilterDataResult {
     markets: Array.from(marketMap.values()).sort((a, b) => a.market.localeCompare(b.market)),
     facilities: Array.from(facilityMap.values()).sort((a, b) => a.facility_name.localeCompare(b.facility_name)),
     departments: Array.from(departmentMap.values()).sort((a, b) => a.department_name.localeCompare(b.department_name)),
+    level2Values: Array.from(level2Map.values()),
+    pstatValues: Array.from(pstatMap.values()),
   };
 }
 
@@ -128,6 +166,8 @@ export function useFilterData() {
         markets: json.markets ?? [],
         facilities: json.facilities ?? [],
         departments: json.departments ?? [],
+        level2Values: [],
+        pstatValues: [],
       };
     },
     staleTime: 10 * 60 * 1000,
@@ -140,6 +180,8 @@ export function useFilterData() {
   const markets = data?.markets ?? [];
   const facilities = data?.facilities ?? [];
   const departments = data?.departments ?? [];
+  const level2Values = data?.level2Values ?? [];
+  const pstatValues = data?.pstatValues ?? [];
 
   // Helper: get markets filtered by region
   const getMarketsByRegion = (regionName: string | null) => {
@@ -183,11 +225,29 @@ export function useFilterData() {
     return submarkets.sort();
   };
 
+  // Helper: get unique Level 2 values, optionally filtered by facility
+  const getLevel2Options = (facilityId: string | null) => {
+    const filtered = (!facilityId || facilityId === "all-facilities")
+      ? level2Values
+      : level2Values.filter((v) => v.facility_id === facilityId);
+    return [...new Set(filtered.map((v) => v.level_2))].sort();
+  };
+
+  // Helper: get unique PSTAT/UoS values, optionally filtered by facility
+  const getPstatOptions = (facilityId: string | null) => {
+    const filtered = (!facilityId || facilityId === "all-facilities")
+      ? pstatValues
+      : pstatValues.filter((v) => v.facility_id === facilityId);
+    return [...new Set(filtered.map((v) => v.unit_of_service))].sort();
+  };
+
   return {
     regions,
     markets,
     facilities,
     departments,
+    level2Values,
+    pstatValues,
     // Keep backward compatibility with individual loading states
     regionsLoading: isLoading,
     marketsLoading: isLoading,
@@ -199,5 +259,7 @@ export function useFilterData() {
     getDepartmentsByFacility,
     getFacilitiesGroupedBySubmarket,
     getSubmarketsByMarket,
+    getLevel2Options,
+    getPstatOptions,
   };
 }
