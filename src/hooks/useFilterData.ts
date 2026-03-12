@@ -180,6 +180,8 @@ export function useFilterData() {
   const markets = data?.markets ?? [];
   const facilities = data?.facilities ?? [];
   const departments = data?.departments ?? [];
+  const level2Values = data?.level2Values ?? [];
+  const pstatValues = data?.pstatValues ?? [];
 
   // Helper: get markets filtered by region
   const getMarketsByRegion = (regionName: string | null) => {
@@ -223,11 +225,29 @@ export function useFilterData() {
     return submarkets.sort();
   };
 
+  // Helper: get unique Level 2 values, optionally filtered by facility
+  const getLevel2Options = (facilityId: string | null) => {
+    const filtered = (!facilityId || facilityId === "all-facilities")
+      ? level2Values
+      : level2Values.filter((v) => v.facility_id === facilityId);
+    return [...new Set(filtered.map((v) => v.level_2))].sort();
+  };
+
+  // Helper: get unique PSTAT/UoS values, optionally filtered by facility
+  const getPstatOptions = (facilityId: string | null) => {
+    const filtered = (!facilityId || facilityId === "all-facilities")
+      ? pstatValues
+      : pstatValues.filter((v) => v.facility_id === facilityId);
+    return [...new Set(filtered.map((v) => v.unit_of_service))].sort();
+  };
+
   return {
     regions,
     markets,
     facilities,
     departments,
+    level2Values,
+    pstatValues,
     // Keep backward compatibility with individual loading states
     regionsLoading: isLoading,
     marketsLoading: isLoading,
@@ -239,5 +259,7 @@ export function useFilterData() {
     getDepartmentsByFacility,
     getFacilitiesGroupedBySubmarket,
     getSubmarketsByMarket,
+    getLevel2Options,
+    getPstatOptions,
   };
 }
