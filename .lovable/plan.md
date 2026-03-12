@@ -1,25 +1,37 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Fix: `nursing_flag` is a boolean, not a string
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+The API returns `nursing_flag` as `true`/`false` (boolean), not `'Y'`/`'N'` (string). Calling `.toUpperCase()` on a boolean crashes.
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+### Change — `src/pages/staffing/PositionPlanning.tsx`
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+**Auto-detection effect (~line 540-541):**
+```typescript
+// Before:
+const hasNursing = skillShiftData.some(r => r.nursing_flag?.toUpperCase() === 'Y');
+const hasNonNursing = skillShiftData.some(r => r.nursing_flag?.toUpperCase() === 'N');
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
-
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+// After:
+const hasNursing = skillShiftData.some(r => r.nursing_flag === true || r.nursing_flag === 'Y');
+const hasNonNursing = skillShiftData.some(r => r.nursing_flag === false || r.nursing_flag === 'N');
 ```
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+**Filter memo (~line 558):**
+```typescript
+// Before:
+return skillShiftData.filter(r => r.nursing_flag?.toUpperCase() === flag);
+
+// After:
+const isNursing = staffCategory === 'nursing';
+return skillShiftData.filter(r => {
+  if (typeof r.nursing_flag === 'boolean') return r.nursing_flag === isNursing;
+  return (r.nursing_flag === 'Y') === isNursing;
+});
+```
+
+**Also update the `nursingFlag` query parameter in `useSkillShift`** — currently sends `'Y'`/`'N'` string but the API may expect `true`/`false`. Need to check the hook. If the hook converts it, no change needed there.
+
+### Scope
+Single file, ~6 lines changed. Handles both boolean and string formats for `nursing_flag`.
 
