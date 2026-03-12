@@ -104,7 +104,14 @@ async function fetchPatientVolume(filters: PatientVolumeFilters): Promise<Patien
     offset += PAGE_SIZE;
   }
 
-  return allRecords;
+  const seen = new Set<string>();
+  const deduped = allRecords.filter(r => {
+    const key = `${r.market_hierarchy_key}|${r.department_id}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  return deduped;
 }
 
 const SENTINEL_VALUES = ['all-regions', 'all-markets', 'all-facilities', 'all-departments', 'all-submarkets', 'all-level2', 'all-pstat'];

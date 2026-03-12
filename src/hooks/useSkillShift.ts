@@ -98,7 +98,14 @@ async function fetchSkillShift(filters: SkillShiftFilters): Promise<SkillShiftRe
     offset += PAGE_SIZE;
   }
 
-  return allRecords;
+  const seen = new Set<string>();
+  const deduped = allRecords.filter(r => {
+    const key = `${r.market_hierarchy_key}|${r.skill_mix}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  return deduped;
 }
 
 const SENTINEL_VALUES = ['all-regions', 'all-markets', 'all-facilities', 'all-departments', 'all-submarkets', 'all-level2', 'all-pstat'];
