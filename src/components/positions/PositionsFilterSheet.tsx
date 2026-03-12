@@ -25,6 +25,7 @@ export interface PositionsFilterValues {
   fteMax: string;
   status: string;
   employeeType: string;
+  positionLifecycle: string;
 }
 
 export const DEFAULT_POSITION_FILTERS: PositionsFilterValues = {
@@ -35,6 +36,7 @@ export const DEFAULT_POSITION_FILTERS: PositionsFilterValues = {
   fteMax: "all",
   status: "all",
   employeeType: "all",
+  positionLifecycle: "all",
 };
 
 const FTE_OPTIONS = Array.from({ length: 10 }, (_, i) => ((i + 1) / 10).toFixed(1));
@@ -47,12 +49,14 @@ interface PositionsFilterSheetProps {
   onClearFilters: () => void;
   activeFilterCount: number;
   showStatus?: boolean;
+  showLifecycle?: boolean;
   skillMixOptions: string[];
   employeeTypeOptions: string[];
+  lifecycleOptions?: string[];
   title?: string;
 }
 
-export function getActiveFilterCount(filters: PositionsFilterValues, showStatus: boolean): number {
+export function getActiveFilterCount(filters: PositionsFilterValues, showStatus: boolean, showLifecycle: boolean = false): number {
   let count = 0;
   if (filters.skillMix !== "all") count++;
   if (filters.staffType !== "all") count++;
@@ -61,6 +65,7 @@ export function getActiveFilterCount(filters: PositionsFilterValues, showStatus:
   if (filters.fteMax !== "all") count++;
   if (showStatus && filters.status !== "all") count++;
   if (filters.employeeType !== "all") count++;
+  if (showLifecycle && filters.positionLifecycle !== "all") count++;
   return count;
 }
 
@@ -83,6 +88,7 @@ export function applyPositionFilters<T extends Record<string, any>>(
   }
   if (showStatus && filters.status !== "all") filtered = filtered.filter(r => r.payrollStatus === filters.status);
   if (filters.employeeType !== "all") filtered = filtered.filter(r => r.employeeType === filters.employeeType);
+  if (filters.positionLifecycle !== "all") filtered = filtered.filter(r => r.positionLifecycle === filters.positionLifecycle);
   return filtered;
 }
 
@@ -94,8 +100,10 @@ export function PositionsFilterSheet({
   onClearFilters,
   activeFilterCount,
   showStatus = false,
+  showLifecycle = false,
   skillMixOptions,
   employeeTypeOptions,
+  lifecycleOptions = [],
   title = "Filter Positions",
 }: PositionsFilterSheetProps) {
   const updateFilter = (key: keyof PositionsFilterValues, value: string) => {
@@ -196,6 +204,22 @@ export function PositionsFilterSheet({
                   <SelectItem value="Active">Active</SelectItem>
                   <SelectItem value="Leave With Pay">Leave With Pay</SelectItem>
                   <SelectItem value="Suspended">Suspended</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Position Lifecycle Status */}
+          {showLifecycle && (
+            <div className="space-y-2">
+              <Label>Position Lifecycle Status</Label>
+              <Select value={filters.positionLifecycle} onValueChange={(v) => updateFilter("positionLifecycle", v)}>
+                <SelectTrigger><SelectValue placeholder="All" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  {lifecycleOptions.map(opt => (
+                    <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

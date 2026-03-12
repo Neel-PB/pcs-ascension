@@ -44,7 +44,8 @@ export function OpenRequisitionTab({
 
   const skillMixOptions = useMemo(() => [...new Set((requisitions || []).map(r => (r as any).skillMix ?? (r as any).skill_mix).filter(Boolean))].sort() as string[], [requisitions]);
   const employeeTypeOptions = useMemo(() => [...new Set((requisitions || []).map(r => r.employeeType).filter(Boolean))].sort() as string[], [requisitions]);
-  const activeFilterCount = useMemo(() => getActiveFilterCount(filters, false), [filters]);
+  const lifecycleOptions = useMemo(() => [...new Set((requisitions || []).map(r => (r as any).positionLifecycle).filter(Boolean))].sort() as string[], [requisitions]);
+  const activeFilterCount = useMemo(() => getActiveFilterCount(filters, false, true), [filters]);
   const clearFilters = () => setFilters({ ...DEFAULT_POSITION_FILTERS });
 
   const handleShiftOverride = (positionId: string, originalShift: string | null, value: string | null, overrideId?: string | null) => {
@@ -119,7 +120,7 @@ export function OpenRequisitionTab({
         </div>
       )}
 
-      <PositionsFilterSheet open={filterOpen} onOpenChange={setFilterOpen} filters={filters} onFiltersChange={setFilters} onClearFilters={clearFilters} activeFilterCount={activeFilterCount} skillMixOptions={skillMixOptions} employeeTypeOptions={employeeTypeOptions} title="Filter Open Requisitions" />
+      <PositionsFilterSheet open={filterOpen} onOpenChange={setFilterOpen} filters={filters} onFiltersChange={setFilters} onClearFilters={clearFilters} activeFilterCount={activeFilterCount} showLifecycle skillMixOptions={skillMixOptions} employeeTypeOptions={employeeTypeOptions} lifecycleOptions={lifecycleOptions} title="Filter Open Requisitions" />
 
       {selectedPosition && (
         <RequisitionDetailsSheet
