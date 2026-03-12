@@ -166,6 +166,8 @@ export function useFilterData() {
         markets: json.markets ?? [],
         facilities: json.facilities ?? [],
         departments: json.departments ?? [],
+        level2Values: [],
+        pstatValues: [],
       };
     },
     staleTime: 10 * 60 * 1000,
