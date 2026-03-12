@@ -93,28 +93,9 @@ export function FilterBar({
     ? { submarket: true, level2: true, pstat: true }
     : getSubfilterPermissions();
 
-  // PSTAT Options
-  const pstatOptions = [
-    "P Patient DaysAndObservation",
-    "P Total Adjusted Discharges",
-    "P PatientDaysObservNewbornDays",
-    "P Total Pat Days Obs",
-    "P Procedures",
-    "P Cases",
-    "P Calendar Days",
-    "P BTUs",
-    "P Worked RVUs",
-  ].sort();
-
-  // Level 2 Options
-  const level2Options = [
-    "LngTrmAcuteCareLTACH",
-    "NrsngPsychiatricCare",
-    "Nursing Acute Care",
-    "Nursing Rehab Acute Care",
-    "NursingIntensiveCare",
-    "Skilled Nursing Care",
-  ].sort();
+  // Dynamic PSTAT and Level 2 options from API, cascading by selected facility
+  const pstatOptions = getPstatOptions(selectedFacility);
+  const level2Options = getLevel2Options(selectedFacility);
 
   // Get available options based on org restrictions OR full data
   // For markets: use restricted if user has market restrictions, otherwise cascade from region
