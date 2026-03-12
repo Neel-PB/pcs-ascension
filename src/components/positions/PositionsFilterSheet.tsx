@@ -88,6 +88,7 @@ export function applyPositionFilters<T extends Record<string, any>>(
   }
   if (showStatus && filters.status !== "all") filtered = filtered.filter(r => r.payrollStatus === filters.status);
   if (filters.employeeType !== "all") filtered = filtered.filter(r => r.employeeType === filters.employeeType);
+  if (filters.positionLifecycle !== "all") filtered = filtered.filter(r => r.positionLifecycle === filters.positionLifecycle);
   return filtered;
 }
 
