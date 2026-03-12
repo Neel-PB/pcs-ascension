@@ -1,25 +1,32 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Plan: Two Changes
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+### 1. Transform flat API response in `useFilterData`
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
-
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
-
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
-
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+The `/filters/unique` API now returns flat denormalized rows like:
+```json
+{ "region": "Region 1", "market": "Baltimore", "submarket": "MDBAL", "business_unit": "32022", "business_unit_description": "St Agnes Healthcare", "department_id": "10162", "department_description": "Mother Baby Unit 001", ... }
 ```
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+**`src/hooks/useFilterData.ts`** — Rewrite the `queryFn` to:
+1. Fetch the flat array from `/filters/unique`
+2. Extract unique regions (dedupe by `region` field) → `Region[]`
+3. Extract unique markets (dedupe by `market`, keep `region` reference) → `Market[]`
+4. Extract unique facilities (dedupe by `business_unit`, map `business_unit` → `facility_id`, `business_unit_description` → `facility_name`, keep `market`, `region`, `submarket`) → `Facility[]`
+5. Extract unique departments (dedupe by `department_id`, map `department_description` → `department_name`, keep `business_unit` → `facility_id`) → `Department[]`
+
+All existing helper functions (`getMarketsByRegion`, `getFacilitiesByMarket`, `getDepartmentsByFacility`, `getSubmarketsByMarket`) continue to work unchanged because the output shape is preserved.
+
+### 2. Hide optional filters on Positions module
+
+**`src/components/staffing/FilterBar.tsx`**:
+- Add prop `hideOptionalFilters?: boolean` (default `false`)
+- When `true`, skip rendering the separator and the optional filters section (Submarket, Level2, Pstat)
+
+**`src/pages/positions/PositionsPage.tsx`**:
+- Pass `hideOptionalFilters` to `FilterBar`
+
+### Scope
+2 files changed significantly (`useFilterData.ts`, `FilterBar.tsx`), 1 file minor (`PositionsPage.tsx`).
 
