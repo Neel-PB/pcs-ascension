@@ -49,8 +49,10 @@ interface PositionsFilterSheetProps {
   onClearFilters: () => void;
   activeFilterCount: number;
   showStatus?: boolean;
+  showLifecycle?: boolean;
   skillMixOptions: string[];
   employeeTypeOptions: string[];
+  lifecycleOptions?: string[];
   title?: string;
 }
 
