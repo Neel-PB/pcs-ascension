@@ -29,6 +29,7 @@ interface FilterBarProps {
   selectedPstat?: string;
   selectedLevel2?: string;
   selectedDepartment?: string;
+  hideOptionalFilters?: boolean;
 }
 
 export function FilterBar({ 
