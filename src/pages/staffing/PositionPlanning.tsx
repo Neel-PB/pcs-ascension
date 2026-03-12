@@ -554,8 +554,11 @@ export default function PositionPlanning({
   const filteredSkillShiftData = useMemo(() => {
     if (!skillShiftData?.length) return [];
     if (!isDepartmentSelected) return skillShiftData;
-    const flag = staffCategory === 'nursing' ? 'Y' : 'N';
-    return skillShiftData.filter(r => r.nursing_flag?.toUpperCase() === flag);
+    const isNursing = staffCategory === 'nursing';
+    return skillShiftData.filter(r => {
+      if (typeof r.nursing_flag === 'boolean') return r.nursing_flag === isNursing;
+      return (r.nursing_flag === 'Y') === isNursing;
+    });
   }, [skillShiftData, isDepartmentSelected, staffCategory]);
 
   // Build dynamic skill groups from filtered API data
