@@ -25,6 +25,7 @@ export interface PositionsFilterValues {
   fteMax: string;
   status: string;
   employeeType: string;
+  positionLifecycle: string;
 }
 
 export const DEFAULT_POSITION_FILTERS: PositionsFilterValues = {
