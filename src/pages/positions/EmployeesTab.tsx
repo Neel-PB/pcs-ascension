@@ -65,8 +65,9 @@ export function EmployeesTab({
 
   const skillMixOptions = useMemo(() => [...new Set((employees || []).map(e => (e as any).skillMix ?? (e as any).skill_mix).filter(Boolean))].sort() as string[], [employees]);
   const employeeTypeOptions = useMemo(() => [...new Set((employees || []).map(e => e.employeeType).filter(Boolean))].sort() as string[], [employees]);
+  const lifecycleOptions = useMemo(() => [...new Set((employees || []).map(e => (e as any).positionLifecycle).filter(Boolean))].sort() as string[], [employees]);
 
-  const activeFilterCount = useMemo(() => getActiveFilterCount(filters, true), [filters]);
+  const activeFilterCount = useMemo(() => getActiveFilterCount(filters, true, true), [filters]);
 
   const handleRowClick = useCallback((employee: any) => {
     setSelectedEmployee(employee); setSheetDefaultTab("details"); setSheetOpen(true);
