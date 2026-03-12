@@ -1,32 +1,25 @@
 
 
-## Fix: Duplicate records from broken API pagination in skill-shift
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
 ### Root Cause
-The NestJS `/skill-shift` API ignores the `offset` query parameter. When Region-level queries return exactly 1000 records (hitting `PAGE_SIZE`), the pagination loop fetches a second page at `offset=1000` — but the API returns the same 1000 records again. This doubles all aggregated values (hired FTE, target, open reqs).
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-Market/Facility/Department views work correctly because they return fewer than 1000 records, so only one page is ever fetched.
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-**Evidence**: Network requests show `offset=0` and `offset=1000` both returning identical first records (Mother Baby Unit 001 / ANM / hired_day_fte: 1.00).
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-### Fix
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
 
-**File: `src/hooks/useSkillShift.ts`** — Deduplicate records after the pagination loop using `market_hierarchy_key` + `skill_mix` as a composite unique key.
-
-```typescript
-// After the while loop, deduplicate by composite key
-const seen = new Set<string>();
-const deduped = allRecords.filter(r => {
-  const key = `${r.market_hierarchy_key}|${r.skill_mix}`;
-  if (seen.has(key)) return false;
-  seen.add(key);
-  return true;
-});
-return deduped;
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
 ```
 
-**File: `src/hooks/usePatientVolume.ts`** — Apply the same deduplication preventatively using `market_hierarchy_key` + `department_id` as the unique key, since the same pagination bug will surface when patient-volume data exceeds 1000 records.
-
-### Scope
-Two small edits, one per file. No UI or component changes needed.
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 
