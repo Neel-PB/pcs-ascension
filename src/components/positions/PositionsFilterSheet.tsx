@@ -56,7 +56,7 @@ interface PositionsFilterSheetProps {
   title?: string;
 }
 
-export function getActiveFilterCount(filters: PositionsFilterValues, showStatus: boolean): number {
+export function getActiveFilterCount(filters: PositionsFilterValues, showStatus: boolean, showLifecycle: boolean = false): number {
   let count = 0;
   if (filters.skillMix !== "all") count++;
   if (filters.staffType !== "all") count++;
@@ -65,6 +65,7 @@ export function getActiveFilterCount(filters: PositionsFilterValues, showStatus:
   if (filters.fteMax !== "all") count++;
   if (showStatus && filters.status !== "all") count++;
   if (filters.employeeType !== "all") count++;
+  if (showLifecycle && filters.positionLifecycle !== "all") count++;
   return count;
 }
 
