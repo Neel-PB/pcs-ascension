@@ -135,7 +135,7 @@ export function KPIChartModal({
 
           {activeTab === "chart" && (
             <div className="space-y-4">
-              <div className="h-[340px]">
+              <div className="h-[300px]">
                 {enrichedData && enrichedData.length > 0 && (
                   <div className="h-full w-full">
                     <ResponsiveContainer width="100%" height="100%">
