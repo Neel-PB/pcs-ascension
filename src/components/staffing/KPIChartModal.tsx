@@ -138,106 +138,86 @@ export function KPIChartModal({
             <div className="space-y-4">
               <div className="h-[300px]">
                 {enrichedData && enrichedData.length > 0 && (
-                  <div className="h-full w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      {chartType === "area" ? (
-                        <AreaChart data={enrichedData}>
-                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                          <XAxis 
-                            dataKey="period" 
-                            className="text-xs"
-                            tick={{ fill: "hsl(var(--muted-foreground))" }}
-                          />
-                          <YAxis 
-                            className="text-xs"
-                            tick={{ fill: "hsl(var(--muted-foreground))" }}
-                            tickFormatter={formatAxisTick}
-                            domain={['auto', 'auto']}
-                          />
-                          <Tooltip 
-                            formatter={(value: number) => [formatValue(value), "Value"]}
-                            contentStyle={{
-                              backgroundColor: "hsl(var(--popover))",
-                              border: "1px solid hsl(var(--border))",
-                              borderRadius: "8px",
-                            }}
-                          />
-                          <defs>
-                            <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor={getChartColor()} stopOpacity={0.3}/>
-                              <stop offset="95%" stopColor={getChartColor()} stopOpacity={0}/>
-                            </linearGradient>
-                          </defs>
-                          <Area
-                            type="monotone"
-                            dataKey="value"
-                            stroke={getChartColor()}
-                            strokeWidth={3}
-                            fill="url(#chartGradient)"
-                          />
-                        </AreaChart>
-                      ) : chartType === "line" ? (
-                        <LineChart data={enrichedData}>
-                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                          <XAxis 
-                            dataKey="period" 
-                            className="text-xs"
-                            tick={{ fill: "hsl(var(--muted-foreground))" }}
-                          />
-                          <YAxis 
-                            className="text-xs"
-                            tick={{ fill: "hsl(var(--muted-foreground))" }}
-                            tickFormatter={formatAxisTick}
-                            domain={['auto', 'auto']}
-                          />
-                          <Tooltip 
-                            formatter={(value: number) => [formatValue(value), "Value"]}
-                            contentStyle={{
-                              backgroundColor: "hsl(var(--popover))",
-                              border: "1px solid hsl(var(--border))",
-                              borderRadius: "8px",
-                            }}
-                          />
-                          <Line
-                            type="monotone"
-                            dataKey="value"
-                            stroke={getChartColor()}
-                            strokeWidth={3}
-                            dot={{ fill: getChartColor(), r: 4 }}
-                            activeDot={{ r: 6 }}
-                          />
-                        </LineChart>
-                      ) : (
-                        <BarChart data={enrichedData}>
-                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                          <XAxis 
-                            dataKey="period" 
-                            className="text-xs"
-                            tick={{ fill: "hsl(var(--muted-foreground))" }}
-                          />
-                          <YAxis 
-                            className="text-xs"
-                            tick={{ fill: "hsl(var(--muted-foreground))" }}
-                            tickFormatter={formatAxisTick}
-                            domain={['auto', 'auto']}
-                          />
-                          <Tooltip 
-                            formatter={(value: number) => [formatValue(value), "Value"]}
-                            contentStyle={{
-                              backgroundColor: "hsl(var(--popover))",
-                              border: "1px solid hsl(var(--border))",
-                              borderRadius: "8px",
-                            }}
-                          />
-                          <Bar
-                            dataKey="value"
-                            fill={getChartColor()}
-                            radius={[4, 4, 0, 0]}
-                          />
-                        </BarChart>
-                      )}
-                    </ResponsiveContainer>
-                  </div>
+                  <ChartContainer config={{ value: { label: title, color: getChartColor() } } satisfies ChartConfig} className="h-[300px] w-full">
+                    {chartType === "area" ? (
+                      <AreaChart data={enrichedData} margin={{ left: -10, right: 10, top: 5, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis 
+                          dataKey="period" 
+                          className="text-xs"
+                          tick={{ fill: "hsl(var(--muted-foreground))" }}
+                        />
+                        <YAxis 
+                          className="text-xs"
+                          tick={{ fill: "hsl(var(--muted-foreground))" }}
+                          tickFormatter={formatAxisTick}
+                          domain={['auto', 'auto']}
+                          width={45}
+                        />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <defs>
+                          <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="var(--color-value)" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="var(--color-value)" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <Area
+                          type="monotone"
+                          dataKey="value"
+                          stroke="var(--color-value)"
+                          strokeWidth={3}
+                          fill="url(#chartGradient)"
+                        />
+                      </AreaChart>
+                    ) : chartType === "line" ? (
+                      <LineChart data={enrichedData} margin={{ left: -10, right: 10, top: 5, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis 
+                          dataKey="period" 
+                          className="text-xs"
+                          tick={{ fill: "hsl(var(--muted-foreground))" }}
+                        />
+                        <YAxis 
+                          className="text-xs"
+                          tick={{ fill: "hsl(var(--muted-foreground))" }}
+                          tickFormatter={formatAxisTick}
+                          domain={['auto', 'auto']}
+                          width={45}
+                        />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Line
+                          type="monotone"
+                          dataKey="value"
+                          stroke="var(--color-value)"
+                          strokeWidth={3}
+                          dot={{ fill: "var(--color-value)", r: 4 }}
+                          activeDot={{ r: 6 }}
+                        />
+                      </LineChart>
+                    ) : (
+                      <BarChart data={enrichedData} margin={{ left: -10, right: 10, top: 5, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis 
+                          dataKey="period" 
+                          className="text-xs"
+                          tick={{ fill: "hsl(var(--muted-foreground))" }}
+                        />
+                        <YAxis 
+                          className="text-xs"
+                          tick={{ fill: "hsl(var(--muted-foreground))" }}
+                          tickFormatter={formatAxisTick}
+                          domain={['auto', 'auto']}
+                          width={45}
+                        />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Bar
+                          dataKey="value"
+                          fill="var(--color-value)"
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    )}
+                  </ChartContainer>
                 )}
               </div>
 
