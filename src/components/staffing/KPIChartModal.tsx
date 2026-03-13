@@ -170,7 +170,6 @@ export function KPIChartModal({
                             stroke={getChartColor()}
                             strokeWidth={3}
                             fill="url(#chartGradient)"
-                            name={title}
                           />
                         </AreaChart>
                       ) : chartType === "line" ? (
