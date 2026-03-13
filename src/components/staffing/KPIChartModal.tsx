@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
@@ -51,11 +51,14 @@ export function KPIChartModal({
     return "text-muted-foreground";
   };
 
+  const formatValue = (val: number) => val.toLocaleString(undefined, { maximumFractionDigits: decimalPlaces });
+  const formatAxisTick = (val: number) => val >= 1000 ? `${(val / 1000).toLocaleString(undefined, { maximumFractionDigits: 0 })}K` : val.toString();
+
   // Calculate statistics if data exists
   const stats = chartData ? {
-    high: Math.max(...chartData.map(d => d.value)).toFixed(decimalPlaces),
-    low: Math.min(...chartData.map(d => d.value)).toFixed(decimalPlaces),
-    average: (chartData.reduce((sum, d) => sum + d.value, 0) / chartData.length).toFixed(decimalPlaces),
+    high: formatValue(Math.max(...chartData.map(d => d.value))),
+    low: formatValue(Math.min(...chartData.map(d => d.value))),
+    average: formatValue(chartData.reduce((sum, d) => sum + d.value, 0) / chartData.length),
   } : null;
 
   // Add time labels to chart data - use last 12 data points when xAxisLabels provided
@@ -145,17 +148,16 @@ export function KPIChartModal({
                           <YAxis 
                             className="text-xs"
                             tick={{ fill: "hsl(var(--muted-foreground))" }}
-                            tickFormatter={(value: number) => value.toFixed(decimalPlaces)}
+                            tickFormatter={formatAxisTick}
                           />
                           <Tooltip 
-                            formatter={(value: number) => value.toFixed(decimalPlaces)}
+                            formatter={(value: number) => [formatValue(value), "Value"]}
                             contentStyle={{
                               backgroundColor: "hsl(var(--popover))",
                               border: "1px solid hsl(var(--border))",
                               borderRadius: "8px",
                             }}
                           />
-                          <Legend />
                           <defs>
                             <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                               <stop offset="5%" stopColor={getChartColor()} stopOpacity={0.3}/>
@@ -168,7 +170,6 @@ export function KPIChartModal({
                             stroke={getChartColor()}
                             strokeWidth={3}
                             fill="url(#chartGradient)"
-                            name={title}
                           />
                         </AreaChart>
                       ) : chartType === "line" ? (
@@ -182,17 +183,16 @@ export function KPIChartModal({
                           <YAxis 
                             className="text-xs"
                             tick={{ fill: "hsl(var(--muted-foreground))" }}
-                            tickFormatter={(value: number) => value.toFixed(decimalPlaces)}
+                            tickFormatter={formatAxisTick}
                           />
                           <Tooltip 
-                            formatter={(value: number) => value.toFixed(decimalPlaces)}
+                            formatter={(value: number) => [formatValue(value), "Value"]}
                             contentStyle={{
                               backgroundColor: "hsl(var(--popover))",
                               border: "1px solid hsl(var(--border))",
                               borderRadius: "8px",
                             }}
                           />
-                          <Legend />
                           <Line
                             type="monotone"
                             dataKey="value"
@@ -200,7 +200,6 @@ export function KPIChartModal({
                             strokeWidth={3}
                             dot={{ fill: getChartColor(), r: 4 }}
                             activeDot={{ r: 6 }}
-                            name={title}
                           />
                         </LineChart>
                       ) : (
@@ -214,22 +213,20 @@ export function KPIChartModal({
                           <YAxis 
                             className="text-xs"
                             tick={{ fill: "hsl(var(--muted-foreground))" }}
-                            tickFormatter={(value: number) => value.toFixed(decimalPlaces)}
+                            tickFormatter={formatAxisTick}
                           />
                           <Tooltip 
-                            formatter={(value: number) => value.toFixed(decimalPlaces)}
+                            formatter={(value: number) => [formatValue(value), "Value"]}
                             contentStyle={{
                               backgroundColor: "hsl(var(--popover))",
                               border: "1px solid hsl(var(--border))",
                               borderRadius: "8px",
                             }}
                           />
-                          <Legend />
                           <Bar
                             dataKey="value"
                             fill={getChartColor()}
                             radius={[4, 4, 0, 0]}
-                            name={title}
                           />
                         </BarChart>
                       )}
