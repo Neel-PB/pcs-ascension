@@ -22,6 +22,7 @@ import { StaffingTour } from "@/components/tour/StaffingTour";
 import { useVolumeOverrides } from "@/hooks/useVolumeOverrides";
 import { usePatientVolume } from "@/hooks/usePatientVolume";
 import { useProductiveResourcesKpi } from "@/hooks/useProductiveResourcesKpi";
+import { useSkillShift } from "@/hooks/useSkillShift";
 
 const validTabs = ["summary", "planning", "variance", "forecasts", "volume-settings", "np-settings"];
 
@@ -156,6 +157,17 @@ export default function StaffingSummary() {
     pstat: selectedPstat,
   });
 
+  // Fetch skill-shift data for FTE KPIs
+  const { data: skillShiftData, isLoading: ssLoading } = useSkillShift({
+    region: selectedRegion,
+    market: selectedMarket,
+    facility: selectedFacility,
+    department: selectedDepartment,
+    submarket: selectedSubmarket,
+    level2: selectedLevel2,
+    pstat: selectedPstat,
+  });
+
   const prAgg = useMemo(() => {
     if (!prKpiData?.length) return null;
     return prKpiData.reduce(
@@ -165,13 +177,53 @@ export default function StaffingSummary() {
         overtime_fte: acc.overtime_fte + Number(r.overtime_fte ?? 0),
         total_prn: acc.total_prn + Number(r.total_prn ?? 0),
         employed_productive_fte: acc.employed_productive_fte + Number(r.employed_productive_fte ?? 0),
-        // weighted NP% — accumulate numerator parts, compute at end
         np_weighted_sum: acc.np_weighted_sum + Number(r.non_productive_percentage ?? 0) * Number(r.paid_fte ?? 0),
         total_paid_for_weight: acc.total_paid_for_weight + Number(r.paid_fte ?? 0),
       }),
       { paid_fte: 0, contractor_fte: 0, overtime_fte: 0, total_prn: 0, employed_productive_fte: 0, np_weighted_sum: 0, total_paid_for_weight: 0 },
     );
   }, [prKpiData]);
+
+  // Aggregate skill-shift data for FTE KPIs
+  const ssAgg = useMemo(() => {
+    if (!skillShiftData?.length) return null;
+    return skillShiftData.reduce(
+      (acc, r) => {
+        const nf = String(r.nursing_flag).toLowerCase();
+        const isNursing = nf === 'y' || nf === 'true' || nf === '1';
+        return {
+          hired_total_fte: acc.hired_total_fte + Number(r.hired_total_fte ?? 0),
+          open_reqs_total_fte: acc.open_reqs_total_fte + Number(r.open_reqs_total_fte ?? 0),
+          nursing_target_fte: acc.nursing_target_fte + (isNursing ? Number(r.target_fte_total ?? 0) : 0),
+        };
+      },
+      { hired_total_fte: 0, open_reqs_total_fte: 0, nursing_target_fte: 0 },
+    );
+  }, [skillShiftData]);
+
+  // Non-nursing target from productive-resources-kpi
+  const nonNursingTarget = useMemo(() => {
+    if (!prKpiData?.length) return 0;
+    return prKpiData
+      .filter(r => {
+        const nf = String(r.nursing_flag).toLowerCase();
+        return nf === 'false' || nf === 'n' || nf === '0';
+      })
+      .reduce((sum, r) => sum + Number(r.target_fte ?? 0), 0);
+  }, [prKpiData]);
+
+  // Derived FTE KPI values
+  const fteKpiValues = useMemo(() => {
+    const hiredFtes = ssAgg?.hired_total_fte ?? null;
+    const targetFtes = ssAgg != null ? ssAgg.nursing_target_fte + nonNursingTarget : null;
+    const openReqs = ssAgg?.open_reqs_total_fte ?? null;
+    const fteVariance = targetFtes != null && hiredFtes != null ? targetFtes - hiredFtes : null;
+    const reqVariance = fteVariance != null && openReqs != null ? fteVariance - openReqs : null;
+    const vacancyRate = fteVariance != null && targetFtes != null && targetFtes !== 0
+      ? (fteVariance / targetFtes) * 100
+      : null;
+    return { hiredFtes, targetFtes, openReqs, fteVariance, reqVariance, vacancyRate };
+  }, [ssAgg, nonNursingTarget]);
 
   const prNpPercent = useMemo(() => {
     if (!prAgg || prAgg.total_paid_for_weight === 0) return null;
@@ -224,79 +276,81 @@ export default function StaffingSummary() {
     return { value: String(match.override_volume), hasData: true, isActive: true };
   }, [selectedDepartment, volumeOverrides]);
 
-  // FTE KPIs Configuration
+  // FTE KPIs Configuration – wired to skill-shift + productive-resources-kpi APIs
   const fteKPIs = useMemo(() => {
+    const fmt = (v: number | null) =>
+      v != null ? v.toLocaleString(undefined, { maximumFractionDigits: 1 }) : "—";
+    const fmtPct = (v: number | null) =>
+      v != null ? `${v.toFixed(1)}%` : "—";
+
+    const { hiredFtes, targetFtes, openReqs, fteVariance, reqVariance, vacancyRate } = fteKpiValues;
+
     const kpis = [
       {
         id: 'vacancy-rate',
         title: "Vacancy Rate",
-        value: "13.9%",
-        chartData: generateDeclineTrend(16, 13.9),
+        value: fmtPct(vacancyRate),
+        chartData: vacancyRate != null ? generateDeclineTrend(vacancyRate * 1.15, vacancyRate) : [],
         chartType: "bar" as const,
         delay: 0,
         definition: "Vacancy Rate measures the percentage of Approved budgeted positions that are currently unfilled.",
-        calculation: `Vacancy Rate = (Vacant Positions / Total Authorized Positions) × 100
+        calculation: `Vacancy Rate = (FTE Variance / Target FTEs) × 100
 
-Example: If you have 6 vacant positions and 43.4 total authorized positions:
-(6 / 43.4) × 100 = 13.8%`,
+Example: If FTE Variance is ${fmt(fteVariance)} and Target is ${fmt(targetFtes)}:
+(${fmt(fteVariance)} / ${fmt(targetFtes)}) × 100 = ${fmtPct(vacancyRate)}`,
       },
       {
         id: 'hired-ftes',
         title: "Hired FTEs",
-        value: "40.9",
-        chartData: generateGrowthTrend(37, 40.9),
+        value: fmt(hiredFtes),
+        chartData: hiredFtes != null ? generateGrowthTrend(hiredFtes * 0.9, hiredFtes) : [],
         chartType: "bar" as const,
         delay: 0.05,
         definition: "Total Full-time, Part-Time and PRNs equivalent labor resources currently employed by the organization (PRNs counted as 0.2 FTEs commitment).",
-        calculation: `Hired FTEs = Sum of all active employee FTEs
+        calculation: `Hired FTEs = Sum of all active employee FTEs from Skill-Shift data
 
 Includes:
 • Full-time staff (1.0 FTE each)
 • Part-time staff (0.5, 0.8, etc.)
 • Active employees only (excludes open positions)`,
-        employmentBreakdown: { ft: 62, pt: 23, prn: 15 },
-        breakdownVariant: 'orange' as const,
       },
       {
         id: 'target-ftes',
         title: "Target FTEs",
-        value: "43.4",
-        chartData: generateSeasonalTrend(43.4, 2),
+        value: fmt(targetFtes),
+        chartData: targetFtes != null ? generateSeasonalTrend(targetFtes, 2) : [],
         chartType: "area" as const,
         delay: 0.1,
-        definition: "The number of resources needed to meet budgeted staffing levels based on specific type and amount of Unit of Service.",
-        calculation: `Target FTEs = (Expected Volume × Hours per Unit) / (Standard Hours per FTE × Expected Productivity %)
+        definition: "The number of resources needed to meet budgeted staffing levels based on specific type and amount of Unit of Service. Combines nursing targets from Skill-Shift and non-nursing targets from Productive Resources.",
+        calculation: `Target FTEs = Nursing Target (Skill-Shift) + Non-Nursing Target (Productive Resources)
 
-Determined by:
-• Historical volume patterns
-• Industry productivity benchmarks
-• Department-specific standards`,
-        employmentBreakdown: { ft: 70, pt: 20, prn: 10 },
-        breakdownVariant: 'green' as const,
+Nursing Target: ${fmt(ssAgg?.nursing_target_fte ?? null)}
+Non-Nursing Target: ${fmt(nonNursingTarget)}
+Combined: ${fmt(targetFtes)}`,
       },
       {
         id: 'fte-variance',
         title: "FTE Variance",
-        value: "2.5",
-        chartData: generateGrowthTrend(1.7, 2.5),
+        value: fmt(fteVariance),
+        chartData: fteVariance != null ? generateGrowthTrend(fteVariance * 0.8, fteVariance) : [],
         chartType: "area" as const,
         delay: 0.15,
         definition: "Variance between Hired FTEs and Target FTEs.",
         calculation: `FTE Variance = Target FTEs - Hired FTEs
 
-Example: If target is 43.4 and hired is 40.9:
-43.4 - 40.9 = 2.5 FTE shortage`,
+Example: If target is ${fmt(targetFtes)} and hired is ${fmt(hiredFtes)}:
+${fmt(targetFtes)} - ${fmt(hiredFtes)} = ${fmt(fteVariance)}`,
       },
       {
         id: 'open-reqs',
         title: "Open Reqs",
-        value: "5",
-        chartData: generateVolatileTrend(5, 2),
+        value: fmt(openReqs),
+        chartData: openReqs != null ? generateVolatileTrend(openReqs, 2) : [],
         chartType: "bar" as const,
         delay: 0.2,
         decimalPlaces: 0,
         definition: "The number of approved requisitions that have not yet been successfully filled.",
-        calculation: `Open Requisitions = Count of all active job postings
+        calculation: `Open Requisitions = Sum of open_reqs_total_fte from Skill-Shift data
 
 Includes:
 • Approved requisitions in recruiting
@@ -307,15 +361,15 @@ Excludes: Filled positions, withdrawn postings`,
       {
         id: 'req-variance',
         title: "Req Variance",
-        value: "2.5",
-        chartData: generateGrowthTrend(1.3, 2.5),
+        value: fmt(reqVariance),
+        chartData: reqVariance != null ? generateGrowthTrend(reqVariance * 0.8, reqVariance) : [],
         chartType: "line" as const,
         delay: 0.25,
         definition: "Variance between Hire FTEs plus Open Requisition and Target FTEs.",
         calculation: `Requisition Variance = FTE Variance - Open Requisitions
 
-Example: If FTE Variance is 2.5 and Open Requisitions is 5:
-2.5 - 5 = -2.5 (over-recruiting by 2.5 positions)`,
+Example: If FTE Variance is ${fmt(fteVariance)} and Open Requisitions is ${fmt(openReqs)}:
+${fmt(fteVariance)} - ${fmt(openReqs)} = ${fmt(reqVariance)}`,
       },
     ];
 
@@ -324,7 +378,7 @@ Example: If FTE Variance is 2.5 and Open Requisitions is 5:
       const bIndex = fteOrder.indexOf(b.id);
       return aIndex - bIndex;
     });
-  }, [fteOrder]);
+  }, [fteOrder, fteKpiValues, ssAgg, nonNursingTarget]);
 
   // Volume KPIs Configuration – wired to patient-volume API
   const volumeKPIs = useMemo(() => {
