@@ -124,15 +124,17 @@ export function KPIChartModal({
         
         <div className="space-y-4 pt-2 overflow-hidden flex flex-col">
 
-          {/* Tabs for Chart and Table */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList>
-              <TabsTrigger value="chart">Chart</TabsTrigger>
-              <TabsTrigger value="table">Table</TabsTrigger>
-            </TabsList>
+          {/* Toggle for Chart and Table */}
+          <ToggleButtonGroup
+            items={[{ id: "chart", label: "Chart" }, { id: "table", label: "Table" }]}
+            activeId={activeTab}
+            onSelect={setActiveTab}
+            layoutId="kpiChartTab"
+            className="max-w-xs"
+          />
 
-            {/* Chart Tab */}
-            <TabsContent value="chart" className="space-y-4">
+          {activeTab === "chart" && (
+            <div className="space-y-4">
               <div className="h-[340px]">
                 {enrichedData && enrichedData.length > 0 && (
                   <div className="h-full w-full">
