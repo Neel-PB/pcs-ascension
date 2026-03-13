@@ -21,6 +21,7 @@ import { useFilterStore } from "@/stores/useFilterStore";
 import { StaffingTour } from "@/components/tour/StaffingTour";
 import { useVolumeOverrides } from "@/hooks/useVolumeOverrides";
 import { usePatientVolume } from "@/hooks/usePatientVolume";
+import { useProductiveResourcesKpi } from "@/hooks/useProductiveResourcesKpi";
 
 const validTabs = ["summary", "planning", "variance", "forecasts", "volume-settings", "np-settings"];
 
