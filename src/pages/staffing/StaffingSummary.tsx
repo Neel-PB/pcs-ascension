@@ -21,6 +21,7 @@ import { useFilterStore } from "@/stores/useFilterStore";
 import { StaffingTour } from "@/components/tour/StaffingTour";
 import { useVolumeOverrides } from "@/hooks/useVolumeOverrides";
 import { usePatientVolume } from "@/hooks/usePatientVolume";
+import { useProductiveResourcesKpi } from "@/hooks/useProductiveResourcesKpi";
 
 const validTabs = ["summary", "planning", "variance", "forecasts", "volume-settings", "np-settings"];
 
@@ -144,6 +145,39 @@ export default function StaffingSummary() {
     level2: selectedLevel2,
     pstat: selectedPstat,
   });
+  // Fetch productive resources KPI data from API
+  const { data: prKpiData, isLoading: prLoading } = useProductiveResourcesKpi({
+    region: selectedRegion,
+    market: selectedMarket,
+    facility: selectedFacility,
+    department: selectedDepartment,
+    submarket: selectedSubmarket,
+    level2: selectedLevel2,
+    pstat: selectedPstat,
+  });
+
+  const prAgg = useMemo(() => {
+    if (!prKpiData?.length) return null;
+    return prKpiData.reduce(
+      (acc, r) => ({
+        paid_fte: acc.paid_fte + Number(r.paid_fte ?? 0),
+        contractor_fte: acc.contractor_fte + Number(r.contractor_fte ?? 0),
+        overtime_fte: acc.overtime_fte + Number(r.overtime_fte ?? 0),
+        total_prn: acc.total_prn + Number(r.total_prn ?? 0),
+        employed_productive_fte: acc.employed_productive_fte + Number(r.employed_productive_fte ?? 0),
+        // weighted NP% — accumulate numerator parts, compute at end
+        np_weighted_sum: acc.np_weighted_sum + Number(r.non_productive_percentage ?? 0) * Number(r.paid_fte ?? 0),
+        total_paid_for_weight: acc.total_paid_for_weight + Number(r.paid_fte ?? 0),
+      }),
+      { paid_fte: 0, contractor_fte: 0, overtime_fte: 0, total_prn: 0, employed_productive_fte: 0, np_weighted_sum: 0, total_paid_for_weight: 0 },
+    );
+  }, [prKpiData]);
+
+  const prNpPercent = useMemo(() => {
+    if (!prAgg || prAgg.total_paid_for_weight === 0) return null;
+    return prAgg.np_weighted_sum / prAgg.total_paid_for_weight;
+  }, [prAgg]);
+
   const ROLLUP_PSTATS = useMemo(() => new Set([
     'Pat Days + Obs',
     'Total Pat Days + Obs',
@@ -414,14 +448,19 @@ Used when:
     });
   }, [volumeOrder, overrideKpiData, pvAgg, selectedDepartment]);
 
-  // Productivity KPIs Configuration
+  // Productivity KPIs Configuration – wired to productive-resources-kpi API
   const productivityKPIs = useMemo(() => {
+    const fmt = (v: number | null | undefined) =>
+      v != null ? v.toLocaleString(undefined, { maximumFractionDigits: 1 }) : "—";
+    const fmtPct = (v: number | null | undefined) =>
+      v != null ? `${v.toFixed(1)}%` : "—";
+
     const kpis = [
       {
         id: 'paid-ftes',
         title: "Paid FTEs",
-        value: "38.2",
-        chartData: generateGrowthTrend(35.8, 38.2),
+        value: fmt(prAgg?.paid_fte ?? null),
+        chartData: prAgg ? generateGrowthTrend(prAgg.paid_fte * 0.9, prAgg.paid_fte) : [],
         chartType: "bar" as const,
         delay: 0,
         definition: "Total labor resources the organization actually pays for, regardless of whether those hours are productive or non-productive.",
@@ -429,19 +468,12 @@ Used when:
 
 Example: If 7,928 hours were paid in a 2-week period:
 7,928 / (40 hours × 2 weeks × 52 periods) = 38.2 FTEs`,
-        breakdownData: [
-          { skillType: 'RN', ftFtes: 45.0, ptFtes: 25.0, prnFtes: 8.5, totalActualPaidFtes: 78.5 },
-          { skillType: 'Clinical Lead', ftFtes: 15.0, ptFtes: 5.0, prnFtes: 2.5, totalActualPaidFtes: 22.5 },
-          { skillType: 'PCT', ftFtes: 10.0, ptFtes: 4.0, prnFtes: 1.0, totalActualPaidFtes: 15.0 },
-          { skillType: 'RN Manager', ftFtes: 5.0, ptFtes: 2.0, prnFtes: 0.0, totalActualPaidFtes: 7.0 },
-          { skillType: 'TOTAL', ftFtes: 75.0, ptFtes: 36.0, prnFtes: 12.0, totalActualPaidFtes: 123.0 },
-        ],
       },
       {
         id: 'contract-ftes',
         title: "Contract FTEs",
-        value: "5.7",
-        chartData: generateSeasonalTrend(5.7, 1.2),
+        value: fmt(prAgg?.contractor_fte ?? null),
+        chartData: prAgg ? generateSeasonalTrend(prAgg.contractor_fte, prAgg.contractor_fte * 0.2) : [],
         chartType: "bar" as const,
         delay: 0.05,
         definition: "Total equivalent labor resources supplied by entities that are not Acute Ascension Hospitals, that are paid for and used by the organization.",
@@ -456,8 +488,8 @@ Excludes: Regular staff, PRN staff`,
       {
         id: 'overtime-ftes',
         title: "Overtime FTEs",
-        value: "2.1",
-        chartData: generateDeclineTrend(2.4, 2.1),
+        value: fmt(prAgg?.overtime_fte ?? null),
+        chartData: prAgg ? generateDeclineTrend(prAgg.overtime_fte * 1.15, prAgg.overtime_fte) : [],
         chartType: "area" as const,
         delay: 0.1,
         definition: "Total worked hours above regular (FT) commitment the organization actually pays for.",
@@ -470,8 +502,8 @@ Note: This is the volume equivalent, not cost equivalent`,
       {
         id: 'total-prn',
         title: "Total PRN",
-        value: "12.4",
-        chartData: generateGrowthTrend(10.6, 12.4),
+        value: fmt(prAgg?.total_prn ?? null),
+        chartData: prAgg ? generateGrowthTrend(prAgg.total_prn * 0.85, prAgg.total_prn) : [],
         chartType: "bar" as const,
         delay: 0.15,
         definition: "Total PRNs productive equivalent labor resources the organization actually pays for.",
@@ -486,8 +518,8 @@ PRN staff characteristics:
       {
         id: 'total-np',
         title: "Total NP%",
-        value: "9.7%",
-        chartData: generateGrowthTrend(8.1, 9.7),
+        value: fmtPct(prNpPercent ?? null),
+        chartData: prNpPercent != null ? generateGrowthTrend(prNpPercent * 0.85, prNpPercent) : [],
         chartType: "area" as const,
         delay: 0.2,
         definition: "The percentage of all paid hours that were not spent directly delivering patient care or performing operational work tied to Patient Volume (e.g., PTO, Holiday Pay, sick leave, education, admin or committee time, Training or onboarding).",
@@ -501,18 +533,12 @@ Lower NP% indicates better labor efficiency`,
       {
         id: 'total-fullpart-ftes',
         title: "EMPLOYED PRODUCTIVE FTES",
-        value: "35.3 / 5.6",
-        chartData: generateGrowthTrend(33.8, 40.9),
+        value: fmt(prAgg?.employed_productive_fte ?? null),
+        chartData: prAgg ? generateGrowthTrend(prAgg.employed_productive_fte * 0.9, prAgg.employed_productive_fte) : [],
         chartType: "bar" as const,
         delay: 0.25,
         definition: "Total Full-time, Part-Time and PRNs productive equivalent labor resources the organization actually pays for.",
-        calculation: `Full Time FTEs = Sum of all FTEs where employmentType = "Full Time"
-Part Time FTEs = Sum of all FTEs where employmentType = "Part Time"
-
-Example breakdown:
-• Full Time: 35.3 FTEs (86.5%)
-• Part Time: 5.6 FTEs (13.5%)
-• Total: 40.9 FTEs
+        calculation: `Employed Productive FTEs = Sum of all employed productive FTEs
 
 This metric helps:
 • Understand workforce composition
@@ -526,7 +552,7 @@ This metric helps:
       const bIndex = productivityOrder.indexOf(b.id);
       return aIndex - bIndex;
     });
-  }, [productivityOrder]);
+  }, [productivityOrder, prAgg, prNpPercent]);
 
   // Page-level loading guard
   const isInitializing = rbacLoading || (orgScopedLoading && !filtersInitialized);
