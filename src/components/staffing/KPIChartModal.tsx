@@ -148,17 +148,16 @@ export function KPIChartModal({
                           <YAxis 
                             className="text-xs"
                             tick={{ fill: "hsl(var(--muted-foreground))" }}
-                            tickFormatter={(value: number) => value.toFixed(decimalPlaces)}
+                            tickFormatter={formatAxisTick}
                           />
                           <Tooltip 
-                            formatter={(value: number) => value.toFixed(decimalPlaces)}
+                            formatter={(value: number) => [formatValue(value), "Value"]}
                             contentStyle={{
                               backgroundColor: "hsl(var(--popover))",
                               border: "1px solid hsl(var(--border))",
                               borderRadius: "8px",
                             }}
                           />
-                          <Legend />
                           <defs>
                             <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                               <stop offset="5%" stopColor={getChartColor()} stopOpacity={0.3}/>
