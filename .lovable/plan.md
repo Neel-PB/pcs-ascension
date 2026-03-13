@@ -1,25 +1,38 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Wire FTE KPIs to Skill-Shift API Data
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+### Current State
+The 5 FTE KPI cards (Vacancy Rate, Hired FTEs, Target FTEs, FTE Variance, Open Reqs, Req Variance) in Staffing Summary use hardcoded mock values.
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+### Data Sources
+- **Skill-Shift API** (`useSkillShift`): provides `hired_total_fte`, `target_fte_total`, `open_reqs_total_fte` per record
+- **Productive Resources KPI API** (`useProductiveResourcesKpi`): provides `target_fte` per record (for non-nursing departments)
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+### Plan
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+**1. Add `useSkillShift` to `StaffingSummary.tsx`**
+- Import and call the hook with the same filter set (region, market, facility, department, submarket, level2, pstat)
+- No `nursingFlag` filter — fetch all records to get both nursing and non-nursing
 
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
-```
+**2. Aggregate skill-shift data**
+- Sum `hired_total_fte` → Hired FTEs
+- Sum `open_reqs_total_fte` → Open Reqs
+- Sum `target_fte_total` (nursing records only, where `nursing_flag === 'Y'` or `true`) → nursing target
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+**3. Target FTEs = nursing target (skill-shift) + non-nursing target (productive-resources-kpi)**
+- From productive-resources-kpi: sum `target_fte` where `nursing_flag === false` → non-nursing target
+- Combined: `targetFtes = nursingTarget + nonNursingTarget`
+
+**4. Derived KPIs**
+- **FTE Variance** = Target FTEs − Hired FTEs
+- **Req Variance** = FTE Variance − Open Reqs
+- **Vacancy Rate** = (FTE Variance / Target FTEs) × 100
+
+**5. Wire values into `fteKPIs` useMemo**
+- Replace all 5 hardcoded values with computed values
+- Show "—" while loading
+
+### Files Modified
+- `src/pages/staffing/StaffingSummary.tsx` — import `useSkillShift`, add aggregation logic, replace hardcoded FTE KPI values
 
