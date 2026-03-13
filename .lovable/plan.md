@@ -1,25 +1,34 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Migrate KPIChartModal from raw Recharts to shadcn Chart components
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+### What
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+Replace direct `recharts` imports (`ResponsiveContainer`, `Tooltip`, etc.) with the project's shadcn `ChartContainer`, `ChartTooltip`, and `ChartTooltipContent` from `@/components/ui/chart`. This also fixes the left-spacing issue since `ChartContainer` wraps `ResponsiveContainer` internally with proper defaults.
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+### Changes — `src/components/staffing/KPIChartModal.tsx`
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+1. **Imports**: Replace `ResponsiveContainer, Tooltip` from `recharts` with `ChartContainer, ChartTooltip, ChartTooltipContent` from `@/components/ui/chart`. Keep `LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid` from `recharts` (shadcn chart wraps these, doesn't replace them).
 
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
-```
+2. **Chart config**: Create a `chartConfig` object based on the dynamic color:
+   ```typescript
+   const chartConfig = {
+     value: { label: title, color: getChartColor() }
+   };
+   ```
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+3. **Replace `ResponsiveContainer` wrapper**: Swap the `<div className="h-full w-full"><ResponsiveContainer>` block with `<ChartContainer config={chartConfig} className="h-[300px] w-full">`. This handles responsive sizing internally and injects CSS variables for theming.
+
+4. **Replace `<Tooltip>`**: Swap all three `<Tooltip>` instances with:
+   ```tsx
+   <ChartTooltip content={<ChartTooltipContent />} />
+   ```
+   Remove the manual `contentStyle` and `formatter` — `ChartTooltipContent` uses the config labels and applies consistent shadcn styling automatically.
+
+5. **Use CSS variable for colors**: Replace hardcoded `stroke={getChartColor()}` / `fill={getChartColor()}` with `var(--color-value)` which `ChartContainer` injects from the config. The gradient `stopColor` also uses `var(--color-value)`.
+
+6. **Left spacing fix**: Add `margin={{ left: -10, right: 10, top: 5, bottom: 5 }}` to each chart component (`AreaChart`, `LineChart`, `BarChart`) and `width={45}` to each `YAxis` — this tightens the left gap that the user originally reported.
+
+### Scope
+Single file. Aligns with shadcn chart patterns already established in `chart.tsx`. Fixes the left spacing issue simultaneously.
 
