@@ -205,7 +205,10 @@ export default function StaffingSummary() {
   const nonNursingTarget = useMemo(() => {
     if (!prKpiData?.length) return 0;
     return prKpiData
-      .filter(r => r.nursing_flag === false || r.nursing_flag === 'false' || r.nursing_flag === 'N')
+      .filter(r => {
+        const nf = String(r.nursing_flag).toLowerCase();
+        return nf === 'false' || nf === 'n' || nf === '0';
+      })
       .reduce((sum, r) => sum + Number(r.target_fte ?? 0), 0);
   }, [prKpiData]);
 
