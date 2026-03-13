@@ -694,15 +694,23 @@ export function VarianceAnalysis({
         </div>
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-        className="rounded-xl border shadow-sm bg-card overflow-auto min-h-0 max-h-full [&>div]:overflow-visible"
-        data-tour="variance-table"
-      >
-        <VarianceTable />
-      </motion.div>
+      {isSkillShiftLoading ? (
+        <div className="rounded-xl border shadow-sm bg-card p-6 space-y-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-8 w-full" />
+          ))}
+        </div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="rounded-xl border shadow-sm bg-card overflow-auto min-h-0 max-h-full [&>div]:overflow-visible"
+          data-tour="variance-table"
+        >
+          <VarianceTable />
+        </motion.div>
+      )}
 
       {/* Expanded Modal */}
       <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
