@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ToggleButtonGroup } from "@/components/ui/toggle-button-group";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -124,15 +124,17 @@ export function KPIChartModal({
         
         <div className="space-y-4 pt-2 overflow-hidden flex flex-col">
 
-          {/* Tabs for Chart and Table */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList>
-              <TabsTrigger value="chart">Chart</TabsTrigger>
-              <TabsTrigger value="table">Table</TabsTrigger>
-            </TabsList>
+          {/* Toggle for Chart and Table */}
+          <ToggleButtonGroup
+            items={[{ id: "chart", label: "Chart" }, { id: "table", label: "Table" }]}
+            activeId={activeTab}
+            onSelect={setActiveTab}
+            layoutId="kpiChartTab"
+            className="max-w-xs"
+          />
 
-            {/* Chart Tab */}
-            <TabsContent value="chart" className="space-y-4">
+          {activeTab === "chart" && (
+            <div className="space-y-4">
               <div className="h-[340px]">
                 {enrichedData && enrichedData.length > 0 && (
                   <div className="h-full w-full">
@@ -255,10 +257,11 @@ export function KPIChartModal({
                   <Button onClick={() => onOpenChange(false)}>Close</Button>
                 </div>
               )}
-            </TabsContent>
+            </div>
+          )}
 
-            {/* Table Tab */}
-            <TabsContent value="table" className="space-y-4">
+          {activeTab === "table" && (
+            <div className="space-y-4">
               <div className="h-[340px]">
                 {enrichedData && enrichedData.length > 0 ? (
                   <div className="rounded-lg border overflow-hidden h-full">
@@ -308,8 +311,8 @@ export function KPIChartModal({
                   <Button onClick={() => onOpenChange(false)}>Close</Button>
                 </div>
               )}
-            </TabsContent>
-          </Tabs>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

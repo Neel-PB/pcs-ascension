@@ -1,16 +1,25 @@
 
 
-## Replace Tabs with Helix ToggleButtonGroup in KPI Chart Modal
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-### Change
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-**`src/components/staffing/KPIChartModal.tsx`**:
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-1. Replace `Tabs`/`TabsList`/`TabsTrigger` import with `ToggleButtonGroup` from `@/components/ui/toggle-button-group`.
-2. Remove the `<Tabs>` wrapper and replace `<TabsList>` + `<TabsTrigger>` with a `<ToggleButtonGroup>` using items `[{ id: "chart", label: "Chart" }, { id: "table", label: "Table" }]`, `activeId={activeTab}`, `onSelect={setActiveTab}`, and a unique `layoutId="kpiChartTab"`.
-3. Replace `<TabsContent value="chart">` / `<TabsContent value="table">` with simple conditional rendering: `{activeTab === "chart" && (...)}` / `{activeTab === "table" && (...)}`.
-4. Constrain the toggle group width with `className="max-w-xs"` so it doesn't stretch full-width in the modal.
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-### Scope
-Single file, ~10 lines changed. Swaps Radix underline tabs for the pill-shaped Helix toggle group per design system standards.
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+```
+
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 
