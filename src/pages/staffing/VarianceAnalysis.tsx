@@ -21,6 +21,8 @@ import { useExpandStore } from "@/stores/useExpandStore";
 import { cn } from "@/lib/utils";
 import { useFilterData } from "@/hooks/useFilterData";
 import { useOrgScopedFilters } from "@/hooks/useOrgScopedFilters";
+import { useSkillShift, SkillShiftRecord } from "@/hooks/useSkillShift";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface VarianceData {
   name: string;
@@ -48,33 +50,71 @@ interface GroupedVarianceData extends VarianceData {
   children?: GroupedVarianceData[];
 }
 
-// Helper function to generate realistic variance data
-const generateVariance = () => ({
-  clDay: (Math.random() * 6 - 3),
-  clNight: (Math.random() * 4 - 2),
-  clTotal: (Math.random() * 5 - 2.5),
-  rnDay: (Math.random() * 6 - 3),
-  rnNight: (Math.random() * 4 - 2),
-  rnTotal: (Math.random() * 5 - 2.5),
-  pctDay: (Math.random() * 3 - 1.5),
-  pctNight: (Math.random() * 2 - 1),
-  pctTotal: (Math.random() * 3 - 1.5),
-  hucDay: (Math.random() * 3 - 1.5),
-  hucNight: (Math.random() * 2 - 1),
-  hucTotal: (Math.random() * 3 - 1.5),
-  overheadDay: (Math.random() * 1 - 0.5),
-  overheadNight: (Math.random() * 0.6 - 0.3),
-  overheadTotal: (Math.random() * 1 - 0.5),
-});
+const ZERO_VARIANCE: Omit<VarianceData, 'name'> = {
+  clDay: 0, clNight: 0, clTotal: 0,
+  rnDay: 0, rnNight: 0, rnTotal: 0,
+  pctDay: 0, pctNight: 0, pctTotal: 0,
+  hucDay: 0, hucNight: 0, hucTotal: 0,
+  overheadDay: 0, overheadNight: 0, overheadTotal: 0,
+};
 
-// Note: regionMap is now derived from database via useFilterData hook
-// Markets and departments are now fetched dynamically from database
+// Map broader_skill_mix_category to variance column prefix
+function mapCategoryToPrefix(category: string): 'cl' | 'rn' | 'pct' | 'huc' | 'overhead' | null {
+  const upper = category.toUpperCase().trim();
+  if (upper === 'CL') return 'cl';
+  if (upper === 'RN') return 'rn';
+  if (upper === 'PCT') return 'pct';
+  if (upper === 'CLERK' || upper === 'HUC') return 'huc';
+  if (upper === 'OVERHEAD') return 'overhead';
+  return null;
+}
+
+// Aggregate skill-shift records into a single VarianceData row
+function aggregateRecordsToVariance(records: SkillShiftRecord[]): Omit<VarianceData, 'name'> {
+  const result = { ...ZERO_VARIANCE };
+  for (const r of records) {
+    const prefix = mapCategoryToPrefix(r.broader_skill_mix_category || '');
+    if (!prefix) continue;
+    const dayVar = r.target_fte_day - r.hired_day_fte - r.open_reqs_day_fte;
+    const nightVar = r.target_fte_night - r.hired_night_fte - r.open_reqs_night_fte;
+    const totalVar = r.target_fte_total - r.hired_total_fte - r.open_reqs_total_fte;
+    result[`${prefix}Day` as keyof typeof result] += dayVar;
+    result[`${prefix}Night` as keyof typeof result] += nightVar;
+    result[`${prefix}Total` as keyof typeof result] += totalVar;
+  }
+  return result;
+}
+
+// Group records by a field and return a map
+function groupBy(records: SkillShiftRecord[], field: keyof SkillShiftRecord): Record<string, SkillShiftRecord[]> {
+  const map: Record<string, SkillShiftRecord[]> = {};
+  for (const r of records) {
+    const key = String(r[field] || 'Unknown');
+    if (!map[key]) map[key] = [];
+    map[key].push(r);
+  }
+  return map;
+}
+
+// Sum multiple VarianceData objects (without name)
+function sumVariances(items: Omit<VarianceData, 'name'>[]): Omit<VarianceData, 'name'> {
+  const result = { ...ZERO_VARIANCE };
+  for (const item of items) {
+    for (const key of Object.keys(result) as (keyof typeof result)[]) {
+      result[key] += item[key];
+    }
+  }
+  return result;
+}
 
 interface VarianceAnalysisProps {
   selectedRegion: string;
   selectedMarket: string;
   selectedFacility: string;
   selectedDepartment: string;
+  selectedSubmarket?: string;
+  selectedLevel2?: string;
+  selectedPstat?: string;
 }
 
 export function VarianceAnalysis({
@@ -82,11 +122,27 @@ export function VarianceAnalysis({
   selectedMarket,
   selectedFacility,
   selectedDepartment,
+  selectedSubmarket,
+  selectedLevel2,
+  selectedPstat,
 }: VarianceAnalysisProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { isExpanded: isGroupExpanded, toggleExpanded } = useExpandStore();
   const { markets, getFacilitiesGroupedBySubmarket, getDepartmentsByFacility, facilities } = useFilterData();
   const { restrictedOptions, hasRestrictions, hasRestrictionAt } = useOrgScopedFilters();
+
+  // Fetch skill-shift data with all active filters
+  const { data: skillShiftData, isLoading: isSkillShiftLoading } = useSkillShift({
+    region: selectedRegion,
+    market: selectedMarket,
+    facility: selectedFacility,
+    department: selectedDepartment,
+    submarket: selectedSubmarket,
+    level2: selectedLevel2,
+    pstat: selectedPstat,
+  });
+
+  const records = skillShiftData || [];
 
   // Build region-to-markets map from database
   const regionMap = useMemo(() => {
@@ -101,34 +157,6 @@ export function VarianceAnalysis({
     });
     return map;
   }, [markets]);
-
-  // Dynamic markets data from database with mock variance numbers
-  const dynamicMarkets = useMemo(() => 
-    markets.map(m => ({
-      name: m.market,
-      ...generateVariance()
-    })), [markets]
-  );
-
-  // Dynamic departments data from database based on selected facility OR access scope
-  const dynamicDepartments = useMemo(() => {
-    // If user has department restrictions and viewing "all" departments, show only authorized ones
-    if (hasRestrictionAt('department') && selectedFacility === "all-facilities" && selectedDepartment === "all-departments") {
-      return restrictedOptions.availableDepartments.map(d => ({
-        name: d.department_name,
-        subText: d.department_id,
-        ...generateVariance()
-      }));
-    }
-    
-    if (selectedFacility === "all-facilities") return [];
-    const facilityDepts = getDepartmentsByFacility(selectedFacility);
-    return facilityDepts.map(d => ({
-      name: d.department_name,
-      subText: d.department_id,
-      ...generateVariance()
-    }));
-  }, [selectedFacility, selectedDepartment, getDepartmentsByFacility, hasRestrictionAt, restrictedOptions.availableDepartments]);
 
   // Format variance value with +/- sign
   const formatVariance = (value: number): string => {
