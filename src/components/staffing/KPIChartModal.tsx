@@ -311,8 +311,8 @@ export function KPIChartModal({
                   <Button onClick={() => onOpenChange(false)}>Close</Button>
                 </div>
               )}
-            </TabsContent>
-          </Tabs>
+            </div>
+          )
         </div>
       </DialogContent>
     </Dialog>
