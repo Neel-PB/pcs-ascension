@@ -1,12 +1,25 @@
 
 
-## Fix: Y-axis domain — remove empty space on left of chart
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-The issue is that the Y-axis starts at 0 while the data range is ~350K–400K, leaving a huge empty area below the data line. The fix is to set `domain={['auto', 'auto']}` on all three `<YAxis>` components so Recharts auto-calculates a tight domain based on actual data values.
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### Changes — `src/components/staffing/KPIChartModal.tsx`
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-Add `domain={['auto', 'auto']}` to all three `<YAxis>` instances (area, line, bar chart types) at lines 150, 185, and 215. This tells Recharts to derive min/max from the data rather than defaulting to 0, eliminating the wasted vertical space.
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-Single file, 3 lines changed.
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+```
+
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 

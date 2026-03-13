@@ -151,6 +151,7 @@ export function KPIChartModal({
                             className="text-xs"
                             tick={{ fill: "hsl(var(--muted-foreground))" }}
                             tickFormatter={formatAxisTick}
+                            domain={['auto', 'auto']}
                           />
                           <Tooltip 
                             formatter={(value: number) => [formatValue(value), "Value"]}
@@ -186,6 +187,7 @@ export function KPIChartModal({
                             className="text-xs"
                             tick={{ fill: "hsl(var(--muted-foreground))" }}
                             tickFormatter={formatAxisTick}
+                            domain={['auto', 'auto']}
                           />
                           <Tooltip 
                             formatter={(value: number) => [formatValue(value), "Value"]}
@@ -216,6 +218,7 @@ export function KPIChartModal({
                             className="text-xs"
                             tick={{ fill: "hsl(var(--muted-foreground))" }}
                             tickFormatter={formatAxisTick}
+                            domain={['auto', 'auto']}
                           />
                           <Tooltip 
                             formatter={(value: number) => [formatValue(value), "Value"]}
