@@ -189,7 +189,8 @@ export default function StaffingSummary() {
     if (!skillShiftData?.length) return null;
     return skillShiftData.reduce(
       (acc, r) => {
-        const isNursing = r.nursing_flag === 'Y' || r.nursing_flag === 'true' || r.nursing_flag === true;
+        const nf = String(r.nursing_flag).toLowerCase();
+        const isNursing = nf === 'y' || nf === 'true' || nf === '1';
         return {
           hired_total_fte: acc.hired_total_fte + Number(r.hired_total_fte ?? 0),
           open_reqs_total_fte: acc.open_reqs_total_fte + Number(r.open_reqs_total_fte ?? 0),
