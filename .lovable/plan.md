@@ -1,21 +1,25 @@
 
 
-## Update FTE Variance and Req Variance Formulas
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-### Changes
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-In `src/pages/staffing/StaffingSummary.tsx` (~line 220-221):
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-**Current:**
-- `FTE Variance = Target FTEs − Hired FTEs`
-- `Req Variance = FTE Variance − Open Reqs`
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-**New:**
-- `FTE Variance = Hired FTEs − Target FTEs`
-- `Req Variance = FTE Variance + Open Reqs`
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
 
-Vacancy Rate formula also needs updating to use the new FTE Variance direction (absolute value or sign flip depending on intent — will use `Math.abs(fteVariance) / targetFtes * 100` or keep consistent sign).
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+```
 
-### File
-- `src/pages/staffing/StaffingSummary.tsx` — two lines changed in the `fteKpiValues` useMemo
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 
