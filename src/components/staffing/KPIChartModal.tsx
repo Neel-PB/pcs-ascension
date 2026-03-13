@@ -51,11 +51,14 @@ export function KPIChartModal({
     return "text-muted-foreground";
   };
 
+  const formatValue = (val: number) => val.toLocaleString(undefined, { maximumFractionDigits: decimalPlaces });
+  const formatAxisTick = (val: number) => val >= 1000 ? `${(val / 1000).toLocaleString(undefined, { maximumFractionDigits: 0 })}K` : val.toString();
+
   // Calculate statistics if data exists
   const stats = chartData ? {
-    high: Math.max(...chartData.map(d => d.value)).toFixed(decimalPlaces),
-    low: Math.min(...chartData.map(d => d.value)).toFixed(decimalPlaces),
-    average: (chartData.reduce((sum, d) => sum + d.value, 0) / chartData.length).toFixed(decimalPlaces),
+    high: formatValue(Math.max(...chartData.map(d => d.value))),
+    low: formatValue(Math.min(...chartData.map(d => d.value))),
+    average: formatValue(chartData.reduce((sum, d) => sum + d.value, 0) / chartData.length),
   } : null;
 
   // Add time labels to chart data - use last 12 data points when xAxisLabels provided
