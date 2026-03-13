@@ -312,7 +312,7 @@ export function KPIChartModal({
                 </div>
               )}
             </div>
-          )
+          )}
         </div>
       </DialogContent>
     </Dialog>
