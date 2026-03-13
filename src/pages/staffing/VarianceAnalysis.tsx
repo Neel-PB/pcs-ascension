@@ -81,9 +81,9 @@ function aggregateRecordsToVariance(records: SkillShiftRecord[]): Omit<VarianceD
     // Overhead records go to overhead column regardless of skill_mix
     const prefix = isOverhead(r) ? 'overhead' : mapSkillToPrefix(r.skill_mix || '');
     if (!prefix) continue;
-    const dayVar = r.target_fte_day - r.hired_day_fte - r.open_reqs_day_fte;
-    const nightVar = r.target_fte_night - r.hired_night_fte - r.open_reqs_night_fte;
-    const totalVar = r.target_fte_total - r.hired_total_fte - r.open_reqs_total_fte;
+    const dayVar = r.hired_day_fte - r.target_fte_day + r.open_reqs_day_fte;
+    const nightVar = r.hired_night_fte - r.target_fte_night + r.open_reqs_night_fte;
+    const totalVar = r.hired_total_fte - r.target_fte_total + r.open_reqs_total_fte;
     result[`${prefix}Day` as keyof typeof result] += dayVar;
     result[`${prefix}Night` as keyof typeof result] += nightVar;
     result[`${prefix}Total` as keyof typeof result] += totalVar;
