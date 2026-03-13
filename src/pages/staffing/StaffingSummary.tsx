@@ -217,8 +217,8 @@ export default function StaffingSummary() {
     const hiredFtes = ssAgg?.hired_total_fte ?? null;
     const targetFtes = ssAgg != null ? ssAgg.nursing_target_fte + nonNursingTarget : null;
     const openReqs = ssAgg?.open_reqs_total_fte ?? null;
-    const fteVariance = targetFtes != null && hiredFtes != null ? targetFtes - hiredFtes : null;
-    const reqVariance = fteVariance != null && openReqs != null ? fteVariance - openReqs : null;
+    const fteVariance = targetFtes != null && hiredFtes != null ? hiredFtes - targetFtes : null;
+    const reqVariance = fteVariance != null && openReqs != null ? fteVariance + openReqs : null;
     const vacancyRate = fteVariance != null && targetFtes != null && targetFtes !== 0
       ? (fteVariance / targetFtes) * 100
       : null;
