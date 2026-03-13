@@ -1,25 +1,17 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Fix: Tighten spacing in KPI Chart Modal
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+Looking at the screenshot, there's excessive padding on all sides — the dialog base `p-6`, header `pb-2`, content `space-y-4 pt-2`, stats `pt-4`, and chart container all compound into too much whitespace.
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+### Changes — `src/components/staffing/KPIChartModal.tsx`
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+1. **DialogContent**: Change `p-6` override to `p-4` and remove redundant `pb-4` — tightens all outer edges.
+2. **DialogHeader**: Remove `pb-2` padding, keep border-b.
+3. **Content wrapper**: Change `space-y-4 pt-2` to `space-y-3 pt-1` — reduce vertical gaps between toggle, chart, and stats.
+4. **Chart container**: Reduce `h-[340px]` to `h-[300px]` — chart doesn't need that much height given the data range.
+5. **Stats row**: Change `pt-4` to `pt-2` and `gap-8` to `gap-6` — tighten the bottom stats section.
+6. **Value text**: Reduce header value from `text-4xl` to `text-3xl` to save vertical header space.
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
-
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
-```
-
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+Single file changed, spacing-only adjustments.
 
