@@ -58,22 +58,28 @@ const ZERO_VARIANCE: Omit<VarianceData, 'name'> = {
   overheadDay: 0, overheadNight: 0, overheadTotal: 0,
 };
 
-// Map broader_skill_mix_category to variance column prefix
-function mapCategoryToPrefix(category: string): 'cl' | 'rn' | 'pct' | 'huc' | 'overhead' | null {
-  const upper = category.toUpperCase().trim();
+// Map skill_mix to variance column prefix
+function mapSkillToPrefix(skill: string): 'cl' | 'rn' | 'pct' | 'huc' | 'overhead' | null {
+  const upper = skill.toUpperCase().trim();
   if (upper === 'CL') return 'cl';
   if (upper === 'RN') return 'rn';
   if (upper === 'PCT') return 'pct';
   if (upper === 'CLERK' || upper === 'HUC') return 'huc';
-  if (upper === 'OVERHEAD') return 'overhead';
   return null;
+}
+
+// Check if a record is overhead based on broader_skill_mix_category
+function isOverhead(record: SkillShiftRecord): boolean {
+  const cat = (record.broader_skill_mix_category || '').toLowerCase().trim();
+  return cat === 'overheads' || cat === 'overhead';
 }
 
 // Aggregate skill-shift records into a single VarianceData row
 function aggregateRecordsToVariance(records: SkillShiftRecord[]): Omit<VarianceData, 'name'> {
   const result = { ...ZERO_VARIANCE };
   for (const r of records) {
-    const prefix = mapCategoryToPrefix(r.broader_skill_mix_category || '');
+    // Overhead records go to overhead column regardless of skill_mix
+    const prefix = isOverhead(r) ? 'overhead' : mapSkillToPrefix(r.skill_mix || '');
     if (!prefix) continue;
     const dayVar = r.target_fte_day - r.hired_day_fte - r.open_reqs_day_fte;
     const nightVar = r.target_fte_night - r.hired_night_fte - r.open_reqs_night_fte;
