@@ -257,10 +257,11 @@ export function KPIChartModal({
                   <Button onClick={() => onOpenChange(false)}>Close</Button>
                 </div>
               )}
-            </TabsContent>
+            </div>
+          )}
 
-            {/* Table Tab */}
-            <TabsContent value="table" className="space-y-4">
+          {activeTab === "table" && (
+            <div className="space-y-4">
               <div className="h-[340px]">
                 {enrichedData && enrichedData.length > 0 ? (
                   <div className="rounded-lg border overflow-hidden h-full">
