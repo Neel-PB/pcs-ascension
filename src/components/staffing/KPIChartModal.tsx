@@ -213,22 +213,20 @@ export function KPIChartModal({
                           <YAxis 
                             className="text-xs"
                             tick={{ fill: "hsl(var(--muted-foreground))" }}
-                            tickFormatter={(value: number) => value.toFixed(decimalPlaces)}
+                            tickFormatter={formatAxisTick}
                           />
                           <Tooltip 
-                            formatter={(value: number) => value.toFixed(decimalPlaces)}
+                            formatter={(value: number) => [formatValue(value), "Value"]}
                             contentStyle={{
                               backgroundColor: "hsl(var(--popover))",
                               border: "1px solid hsl(var(--border))",
                               borderRadius: "8px",
                             }}
                           />
-                          <Legend />
                           <Bar
                             dataKey="value"
                             fill={getChartColor()}
                             radius={[4, 4, 0, 0]}
-                            name={title}
                           />
                         </BarChart>
                       )}
