@@ -262,7 +262,7 @@ export function KPIChartModal({
 
           {activeTab === "table" && (
             <div className="space-y-4">
-              <div className="h-[340px]">
+              <div className="h-[300px]">
                 {enrichedData && enrichedData.length > 0 ? (
                   <div className="rounded-lg border overflow-hidden h-full">
                     <ScrollArea className="h-full">
