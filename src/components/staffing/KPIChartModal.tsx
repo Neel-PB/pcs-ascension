@@ -89,8 +89,8 @@ export function KPIChartModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden pb-4 flex flex-col">
-        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-2 border-b">
+      <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden p-4 flex flex-col">
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0 border-b">
           <div>
             <DialogTitle className="text-2xl">{title}</DialogTitle>
             <DialogDescription className="sr-only">
@@ -103,7 +103,7 @@ export function KPIChartModal({
             <div className="text-right">
               <p className="text-sm text-muted-foreground mb-1">Current Value</p>
               <p className={cn(
-                "text-4xl font-bold",
+                "text-3xl font-bold",
                 isNegative ? "text-orange-600" : "text-foreground"
               )}>
                 {value}
@@ -122,7 +122,7 @@ export function KPIChartModal({
           </div>
         </DialogHeader>
         
-        <div className="space-y-4 pt-2 overflow-hidden flex flex-col">
+        <div className="space-y-3 pt-1 overflow-hidden flex flex-col">
 
           {/* Toggle for Chart and Table */}
           <ToggleButtonGroup
@@ -135,7 +135,7 @@ export function KPIChartModal({
 
           {activeTab === "chart" && (
             <div className="space-y-4">
-              <div className="h-[340px]">
+              <div className="h-[300px]">
                 {enrichedData && enrichedData.length > 0 && (
                   <div className="h-full w-full">
                     <ResponsiveContainer width="100%" height="100%">
@@ -239,8 +239,8 @@ export function KPIChartModal({
 
               {/* Statistics */}
               {stats && (
-                <div className="flex items-center justify-between pt-4 border-t">
-                  <div className="grid grid-cols-3 gap-8">
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <div className="grid grid-cols-3 gap-6">
                     <div className="text-center">
                       <p className="text-sm text-muted-foreground mb-1">High</p>
                       <p className="text-xl font-semibold text-foreground">{stats.high}</p>
@@ -262,7 +262,7 @@ export function KPIChartModal({
 
           {activeTab === "table" && (
             <div className="space-y-4">
-              <div className="h-[340px]">
+              <div className="h-[300px]">
                 {enrichedData && enrichedData.length > 0 ? (
                   <div className="rounded-lg border overflow-hidden h-full">
                     <ScrollArea className="h-full">
@@ -293,8 +293,8 @@ export function KPIChartModal({
 
               {/* Statistics */}
               {stats && (
-                <div className="flex items-center justify-between pt-4 border-t">
-                  <div className="grid grid-cols-3 gap-8">
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <div className="grid grid-cols-3 gap-6">
                     <div className="text-center">
                       <p className="text-sm text-muted-foreground mb-1">High</p>
                       <p className="text-xl font-semibold text-foreground">{stats.high}</p>
