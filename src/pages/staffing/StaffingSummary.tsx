@@ -145,6 +145,39 @@ export default function StaffingSummary() {
     level2: selectedLevel2,
     pstat: selectedPstat,
   });
+  // Fetch productive resources KPI data from API
+  const { data: prKpiData, isLoading: prLoading } = useProductiveResourcesKpi({
+    region: selectedRegion,
+    market: selectedMarket,
+    facility: selectedFacility,
+    department: selectedDepartment,
+    submarket: selectedSubmarket,
+    level2: selectedLevel2,
+    pstat: selectedPstat,
+  });
+
+  const prAgg = useMemo(() => {
+    if (!prKpiData?.length) return null;
+    return prKpiData.reduce(
+      (acc, r) => ({
+        paid_fte: acc.paid_fte + Number(r.paid_fte ?? 0),
+        contractor_fte: acc.contractor_fte + Number(r.contractor_fte ?? 0),
+        overtime_fte: acc.overtime_fte + Number(r.overtime_fte ?? 0),
+        total_prn: acc.total_prn + Number(r.total_prn ?? 0),
+        employed_productive_fte: acc.employed_productive_fte + Number(r.employed_productive_fte ?? 0),
+        // weighted NP% — accumulate numerator parts, compute at end
+        np_weighted_sum: acc.np_weighted_sum + Number(r.non_productive_percentage ?? 0) * Number(r.paid_fte ?? 0),
+        total_paid_for_weight: acc.total_paid_for_weight + Number(r.paid_fte ?? 0),
+      }),
+      { paid_fte: 0, contractor_fte: 0, overtime_fte: 0, total_prn: 0, employed_productive_fte: 0, np_weighted_sum: 0, total_paid_for_weight: 0 },
+    );
+  }, [prKpiData]);
+
+  const prNpPercent = useMemo(() => {
+    if (!prAgg || prAgg.total_paid_for_weight === 0) return null;
+    return prAgg.np_weighted_sum / prAgg.total_paid_for_weight;
+  }, [prAgg]);
+
   const ROLLUP_PSTATS = useMemo(() => new Set([
     'Pat Days + Obs',
     'Total Pat Days + Obs',
