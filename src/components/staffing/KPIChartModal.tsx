@@ -183,17 +183,16 @@ export function KPIChartModal({
                           <YAxis 
                             className="text-xs"
                             tick={{ fill: "hsl(var(--muted-foreground))" }}
-                            tickFormatter={(value: number) => value.toFixed(decimalPlaces)}
+                            tickFormatter={formatAxisTick}
                           />
                           <Tooltip 
-                            formatter={(value: number) => value.toFixed(decimalPlaces)}
+                            formatter={(value: number) => [formatValue(value), "Value"]}
                             contentStyle={{
                               backgroundColor: "hsl(var(--popover))",
                               border: "1px solid hsl(var(--border))",
                               borderRadius: "8px",
                             }}
                           />
-                          <Legend />
                           <Line
                             type="monotone"
                             dataKey="value"
@@ -201,7 +200,6 @@ export function KPIChartModal({
                             strokeWidth={3}
                             dot={{ fill: getChartColor(), r: 4 }}
                             activeDot={{ r: 6 }}
-                            name={title}
                           />
                         </LineChart>
                       ) : (
