@@ -631,6 +631,9 @@ This metric helps:
               selectedMarket={selectedMarket}
               selectedFacility={selectedFacility}
               selectedDepartment={selectedDepartment}
+              selectedSubmarket={selectedSubmarket}
+              selectedLevel2={selectedLevel2}
+              selectedPstat={selectedPstat}
             />
           )}
           

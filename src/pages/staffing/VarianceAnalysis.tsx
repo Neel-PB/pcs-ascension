@@ -21,6 +21,8 @@ import { useExpandStore } from "@/stores/useExpandStore";
 import { cn } from "@/lib/utils";
 import { useFilterData } from "@/hooks/useFilterData";
 import { useOrgScopedFilters } from "@/hooks/useOrgScopedFilters";
+import { useSkillShift, SkillShiftRecord } from "@/hooks/useSkillShift";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface VarianceData {
   name: string;
@@ -48,33 +50,71 @@ interface GroupedVarianceData extends VarianceData {
   children?: GroupedVarianceData[];
 }
 
-// Helper function to generate realistic variance data
-const generateVariance = () => ({
-  clDay: (Math.random() * 6 - 3),
-  clNight: (Math.random() * 4 - 2),
-  clTotal: (Math.random() * 5 - 2.5),
-  rnDay: (Math.random() * 6 - 3),
-  rnNight: (Math.random() * 4 - 2),
-  rnTotal: (Math.random() * 5 - 2.5),
-  pctDay: (Math.random() * 3 - 1.5),
-  pctNight: (Math.random() * 2 - 1),
-  pctTotal: (Math.random() * 3 - 1.5),
-  hucDay: (Math.random() * 3 - 1.5),
-  hucNight: (Math.random() * 2 - 1),
-  hucTotal: (Math.random() * 3 - 1.5),
-  overheadDay: (Math.random() * 1 - 0.5),
-  overheadNight: (Math.random() * 0.6 - 0.3),
-  overheadTotal: (Math.random() * 1 - 0.5),
-});
+const ZERO_VARIANCE: Omit<VarianceData, 'name'> = {
+  clDay: 0, clNight: 0, clTotal: 0,
+  rnDay: 0, rnNight: 0, rnTotal: 0,
+  pctDay: 0, pctNight: 0, pctTotal: 0,
+  hucDay: 0, hucNight: 0, hucTotal: 0,
+  overheadDay: 0, overheadNight: 0, overheadTotal: 0,
+};
 
-// Note: regionMap is now derived from database via useFilterData hook
-// Markets and departments are now fetched dynamically from database
+// Map broader_skill_mix_category to variance column prefix
+function mapCategoryToPrefix(category: string): 'cl' | 'rn' | 'pct' | 'huc' | 'overhead' | null {
+  const upper = category.toUpperCase().trim();
+  if (upper === 'CL') return 'cl';
+  if (upper === 'RN') return 'rn';
+  if (upper === 'PCT') return 'pct';
+  if (upper === 'CLERK' || upper === 'HUC') return 'huc';
+  if (upper === 'OVERHEAD') return 'overhead';
+  return null;
+}
+
+// Aggregate skill-shift records into a single VarianceData row
+function aggregateRecordsToVariance(records: SkillShiftRecord[]): Omit<VarianceData, 'name'> {
+  const result = { ...ZERO_VARIANCE };
+  for (const r of records) {
+    const prefix = mapCategoryToPrefix(r.broader_skill_mix_category || '');
+    if (!prefix) continue;
+    const dayVar = r.target_fte_day - r.hired_day_fte - r.open_reqs_day_fte;
+    const nightVar = r.target_fte_night - r.hired_night_fte - r.open_reqs_night_fte;
+    const totalVar = r.target_fte_total - r.hired_total_fte - r.open_reqs_total_fte;
+    result[`${prefix}Day` as keyof typeof result] += dayVar;
+    result[`${prefix}Night` as keyof typeof result] += nightVar;
+    result[`${prefix}Total` as keyof typeof result] += totalVar;
+  }
+  return result;
+}
+
+// Group records by a field and return a map
+function groupBy(records: SkillShiftRecord[], field: keyof SkillShiftRecord): Record<string, SkillShiftRecord[]> {
+  const map: Record<string, SkillShiftRecord[]> = {};
+  for (const r of records) {
+    const key = String(r[field] || 'Unknown');
+    if (!map[key]) map[key] = [];
+    map[key].push(r);
+  }
+  return map;
+}
+
+// Sum multiple VarianceData objects (without name)
+function sumVariances(items: Omit<VarianceData, 'name'>[]): Omit<VarianceData, 'name'> {
+  const result = { ...ZERO_VARIANCE };
+  for (const item of items) {
+    for (const key of Object.keys(result) as (keyof typeof result)[]) {
+      result[key] += item[key];
+    }
+  }
+  return result;
+}
 
 interface VarianceAnalysisProps {
   selectedRegion: string;
   selectedMarket: string;
   selectedFacility: string;
   selectedDepartment: string;
+  selectedSubmarket?: string;
+  selectedLevel2?: string;
+  selectedPstat?: string;
 }
 
 export function VarianceAnalysis({
@@ -82,11 +122,27 @@ export function VarianceAnalysis({
   selectedMarket,
   selectedFacility,
   selectedDepartment,
+  selectedSubmarket,
+  selectedLevel2,
+  selectedPstat,
 }: VarianceAnalysisProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { isExpanded: isGroupExpanded, toggleExpanded } = useExpandStore();
   const { markets, getFacilitiesGroupedBySubmarket, getDepartmentsByFacility, facilities } = useFilterData();
   const { restrictedOptions, hasRestrictions, hasRestrictionAt } = useOrgScopedFilters();
+
+  // Fetch skill-shift data with all active filters
+  const { data: skillShiftData, isLoading: isSkillShiftLoading } = useSkillShift({
+    region: selectedRegion,
+    market: selectedMarket,
+    facility: selectedFacility,
+    department: selectedDepartment,
+    submarket: selectedSubmarket,
+    level2: selectedLevel2,
+    pstat: selectedPstat,
+  });
+
+  const records = skillShiftData || [];
 
   // Build region-to-markets map from database
   const regionMap = useMemo(() => {
@@ -101,34 +157,6 @@ export function VarianceAnalysis({
     });
     return map;
   }, [markets]);
-
-  // Dynamic markets data from database with mock variance numbers
-  const dynamicMarkets = useMemo(() => 
-    markets.map(m => ({
-      name: m.market,
-      ...generateVariance()
-    })), [markets]
-  );
-
-  // Dynamic departments data from database based on selected facility OR access scope
-  const dynamicDepartments = useMemo(() => {
-    // If user has department restrictions and viewing "all" departments, show only authorized ones
-    if (hasRestrictionAt('department') && selectedFacility === "all-facilities" && selectedDepartment === "all-departments") {
-      return restrictedOptions.availableDepartments.map(d => ({
-        name: d.department_name,
-        subText: d.department_id,
-        ...generateVariance()
-      }));
-    }
-    
-    if (selectedFacility === "all-facilities") return [];
-    const facilityDepts = getDepartmentsByFacility(selectedFacility);
-    return facilityDepts.map(d => ({
-      name: d.department_name,
-      subText: d.department_id,
-      ...generateVariance()
-    }));
-  }, [selectedFacility, selectedDepartment, getDepartmentsByFacility, hasRestrictionAt, restrictedOptions.availableDepartments]);
 
   // Format variance value with +/- sign
   const formatVariance = (value: number): string => {
@@ -147,31 +175,42 @@ export function VarianceAnalysis({
     return "Regions";
   };
 
+  // Build variance lookup from skill-shift records grouped by a field
+  const varianceByField = useMemo(() => {
+    const byMarket = groupBy(records, 'market');
+    const byFacility = groupBy(records, 'business_unit');
+    const byDept = groupBy(records, 'department_id');
+    const byRegion = groupBy(records, 'region');
+    return { byMarket, byFacility, byDept, byRegion };
+  }, [records]);
+
   const getData = (): GroupedVarianceData[] => {
-    // PRIORITY 1: If user has department restrictions and "all-departments" is selected,
-    // show ONLY their authorized departments (not all departments in the database)
+    // PRIORITY 1: Department restrictions — show only authorized departments
     if (hasRestrictionAt('department') && selectedDepartment === "all-departments" && selectedFacility === "all-facilities") {
-      return dynamicDepartments.map((dept, idx) => ({
-        ...dept,
+      return restrictedOptions.availableDepartments.map((d, idx) => ({
+        name: d.department_name,
+        subText: d.department_id,
+        ...aggregateRecordsToVariance(varianceByField.byDept[d.department_id] || []),
         type: 'skill' as const,
         id: `dept-${idx}`,
       }));
     }
     
-    // Show departments when facility is selected (no grouping)
+    // Show departments when facility is selected
     if (selectedFacility !== "all-facilities") {
-      return dynamicDepartments.map((dept, idx) => ({
-        ...dept,
+      const facilityDepts = getDepartmentsByFacility(selectedFacility);
+      return facilityDepts.map((d, idx) => ({
+        name: d.department_name,
+        subText: d.department_id,
+        ...aggregateRecordsToVariance(varianceByField.byDept[d.department_id] || []),
         type: 'skill' as const,
         id: `dept-${idx}`,
       }));
     }
     
-    // PRIORITY 2: If user has facility restrictions and "all-facilities" is selected,
-    // show ONLY their authorized facilities (grouped by submarket if available)
+    // PRIORITY 2: Facility restrictions — show authorized facilities grouped by submarket
     if (hasRestrictionAt('facility') && selectedFacility === "all-facilities" && selectedMarket === "all-markets") {
       const authorizedFacilities = restrictedOptions.availableFacilities;
-      // Group authorized facilities by submarket
       const submarketGroups: Record<string, typeof authorizedFacilities> = {};
       authorizedFacilities.forEach(f => {
         const submarket = f.submarket || "Other";
@@ -185,16 +224,10 @@ export function VarianceAnalysis({
           const facilitiesWithVariance = facs.map(f => ({
             name: f.facility_name,
             subText: f.facility_id,
-            ...generateVariance(),
+            ...aggregateRecordsToVariance(varianceByField.byFacility[f.facility_id] || []),
           }));
           
-          const groupTotal = facilitiesWithVariance.reduce((acc, curr) => ({
-            clDay: acc.clDay + curr.clDay, clNight: acc.clNight + curr.clNight, clTotal: acc.clTotal + curr.clTotal,
-            rnDay: acc.rnDay + curr.rnDay, rnNight: acc.rnNight + curr.rnNight, rnTotal: acc.rnTotal + curr.rnTotal,
-            pctDay: acc.pctDay + curr.pctDay, pctNight: acc.pctNight + curr.pctNight, pctTotal: acc.pctTotal + curr.pctTotal,
-            hucDay: acc.hucDay + curr.hucDay, hucNight: acc.hucNight + curr.hucNight, hucTotal: acc.hucTotal + curr.hucTotal,
-            overheadDay: acc.overheadDay + curr.overheadDay, overheadNight: acc.overheadNight + curr.overheadNight, overheadTotal: acc.overheadTotal + curr.overheadTotal,
-          }), { clDay: 0, clNight: 0, clTotal: 0, rnDay: 0, rnNight: 0, rnTotal: 0, pctDay: 0, pctNight: 0, pctTotal: 0, hucDay: 0, hucNight: 0, hucTotal: 0, overheadDay: 0, overheadNight: 0, overheadTotal: 0 });
+          const groupTotal = sumVariances(facilitiesWithVariance);
           
           groups.push({
             name: submarket,
@@ -212,15 +245,12 @@ export function VarianceAnalysis({
       return groups;
     }
     
-    // PRIORITY 3: If user has market restrictions and "all-markets" is selected,
-    // show ONLY their authorized markets
+    // PRIORITY 3: Market restrictions — show authorized markets
     if (hasRestrictionAt('market') && selectedMarket === "all-markets" && selectedRegion === "all-regions") {
       const authorizedMarkets = restrictedOptions.availableMarkets;
-      const marketData = dynamicMarkets.filter(m =>
-        authorizedMarkets.some(am => am.toUpperCase() === m.name.toUpperCase())
-      );
-      return marketData.map((market, idx) => ({
-        ...market,
+      return authorizedMarkets.map((mkt, idx) => ({
+        name: mkt,
+        ...aggregateRecordsToVariance(varianceByField.byMarket[mkt] || []),
         type: 'skill' as const,
         id: `market-${idx}`,
       }));
@@ -231,38 +261,15 @@ export function VarianceAnalysis({
       const submarketGroups = getFacilitiesGroupedBySubmarket(selectedMarket);
       const groups: GroupedVarianceData[] = [];
 
-      Object.entries(submarketGroups).forEach(([submarket, facilities]) => {
-        if (facilities.length > 0) {
-          // Generate mock variance data for each facility
-          const facilitiesWithVariance = facilities.map(f => ({
+      Object.entries(submarketGroups).forEach(([submarket, facs]) => {
+        if (facs.length > 0) {
+          const facilitiesWithVariance = facs.map(f => ({
             name: f.facility_name,
             subText: f.facility_id,
-            ...generateVariance(),
+            ...aggregateRecordsToVariance(varianceByField.byFacility[f.facility_id] || []),
           }));
 
-          const groupTotal = facilitiesWithVariance.reduce((acc, curr) => ({
-            clDay: acc.clDay + curr.clDay,
-            clNight: acc.clNight + curr.clNight,
-            clTotal: acc.clTotal + curr.clTotal,
-            rnDay: acc.rnDay + curr.rnDay,
-            rnNight: acc.rnNight + curr.rnNight,
-            rnTotal: acc.rnTotal + curr.rnTotal,
-            pctDay: acc.pctDay + curr.pctDay,
-            pctNight: acc.pctNight + curr.pctNight,
-            pctTotal: acc.pctTotal + curr.pctTotal,
-            hucDay: acc.hucDay + curr.hucDay,
-            hucNight: acc.hucNight + curr.hucNight,
-            hucTotal: acc.hucTotal + curr.hucTotal,
-            overheadDay: acc.overheadDay + curr.overheadDay,
-            overheadNight: acc.overheadNight + curr.overheadNight,
-            overheadTotal: acc.overheadTotal + curr.overheadTotal,
-          }), {
-            clDay: 0, clNight: 0, clTotal: 0,
-            rnDay: 0, rnNight: 0, rnTotal: 0,
-            pctDay: 0, pctNight: 0, pctTotal: 0,
-            hucDay: 0, hucNight: 0, hucTotal: 0,
-            overheadDay: 0, overheadNight: 0, overheadTotal: 0,
-          });
+          const groupTotal = sumVariances(facilitiesWithVariance);
 
           groups.push({
             name: submarket,
@@ -281,66 +288,37 @@ export function VarianceAnalysis({
       return groups;
     }
 
-    // Show markets grouped by region when region is selected
+    // Show markets when region is selected
     if (selectedRegion !== "all-regions") {
       const marketsInRegion = regionMap[selectedRegion] || [];
-      const marketData = dynamicMarkets.filter(m => 
-        marketsInRegion.some(mr => mr.toUpperCase() === m.name.toUpperCase())
-      );
-      
-      return marketData.map((market, idx) => ({
-        ...market,
+      return marketsInRegion.map((mkt, idx) => ({
+        name: mkt,
+        ...aggregateRecordsToVariance(varianceByField.byMarket[mkt] || []),
         type: 'skill' as const,
         id: `market-${idx}`,
       }));
     }
 
-    // Default: show all regions with markets as children (dynamically from database)
+    // Default: show all regions with markets as children
     const dynamicRegions = Object.keys(regionMap);
     
     return dynamicRegions.map((regionName, idx) => {
       const marketsInRegion = regionMap[regionName] || [];
-      const marketData = dynamicMarkets.filter(m => 
-        marketsInRegion.some(mr => mr.toUpperCase() === m.name.toUpperCase())
-      );
+      const marketItems = marketsInRegion.map((mkt, midx) => ({
+        name: mkt,
+        ...aggregateRecordsToVariance(varianceByField.byMarket[mkt] || []),
+        type: 'skill' as const,
+        id: `region-${idx}-market-${midx}`,
+      }));
       
-      // Calculate aggregated variance for the region from its markets
-      const regionVariance = marketData.length > 0 
-        ? marketData.reduce((acc, curr) => ({
-            clDay: acc.clDay + curr.clDay,
-            clNight: acc.clNight + curr.clNight,
-            clTotal: acc.clTotal + curr.clTotal,
-            rnDay: acc.rnDay + curr.rnDay,
-            rnNight: acc.rnNight + curr.rnNight,
-            rnTotal: acc.rnTotal + curr.rnTotal,
-            pctDay: acc.pctDay + curr.pctDay,
-            pctNight: acc.pctNight + curr.pctNight,
-            pctTotal: acc.pctTotal + curr.pctTotal,
-            hucDay: acc.hucDay + curr.hucDay,
-            hucNight: acc.hucNight + curr.hucNight,
-            hucTotal: acc.hucTotal + curr.hucTotal,
-            overheadDay: acc.overheadDay + curr.overheadDay,
-            overheadNight: acc.overheadNight + curr.overheadNight,
-            overheadTotal: acc.overheadTotal + curr.overheadTotal,
-          }), {
-            clDay: 0, clNight: 0, clTotal: 0,
-            rnDay: 0, rnNight: 0, rnTotal: 0,
-            pctDay: 0, pctNight: 0, pctTotal: 0,
-            hucDay: 0, hucNight: 0, hucTotal: 0,
-            overheadDay: 0, overheadNight: 0, overheadTotal: 0,
-          })
-        : generateVariance();
+      const regionVariance = sumVariances(marketItems);
       
       return {
         name: regionName,
         ...regionVariance,
         type: 'group' as const,
         id: `region-${idx}`,
-        children: marketData.map((market, midx) => ({
-          ...market,
-          type: 'skill' as const,
-          id: `region-${idx}-market-${midx}`,
-        })),
+        children: marketItems,
       };
     });
   };
@@ -716,15 +694,23 @@ export function VarianceAnalysis({
         </div>
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-        className="rounded-xl border shadow-sm bg-card overflow-auto min-h-0 max-h-full [&>div]:overflow-visible"
-        data-tour="variance-table"
-      >
-        <VarianceTable />
-      </motion.div>
+      {isSkillShiftLoading ? (
+        <div className="rounded-xl border shadow-sm bg-card p-6 space-y-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-8 w-full" />
+          ))}
+        </div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="rounded-xl border shadow-sm bg-card overflow-auto min-h-0 max-h-full [&>div]:overflow-visible"
+          data-tour="variance-table"
+        >
+          <VarianceTable />
+        </motion.div>
+      )}
 
       {/* Expanded Modal */}
       <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
