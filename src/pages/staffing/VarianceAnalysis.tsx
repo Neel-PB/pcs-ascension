@@ -148,7 +148,14 @@ export function VarianceAnalysis({
     pstat: selectedPstat,
   });
 
-  const records = skillShiftData || [];
+  // Filter out non-nursing departments from variance analysis
+  const records = useMemo(() => {
+    const raw = skillShiftData || [];
+    return raw.filter(r => {
+      const flag = (r.nursing_flag || '').toString().toUpperCase().trim();
+      return flag === 'Y' || flag === 'YES' || flag === 'TRUE' || flag === '1';
+    });
+  }, [skillShiftData]);
 
   // Build region-to-markets map from database
   const regionMap = useMemo(() => {
