@@ -157,6 +157,17 @@ export default function StaffingSummary() {
     pstat: selectedPstat,
   });
 
+  // Fetch skill-shift data for FTE KPIs
+  const { data: skillShiftData, isLoading: ssLoading } = useSkillShift({
+    region: selectedRegion,
+    market: selectedMarket,
+    facility: selectedFacility,
+    department: selectedDepartment,
+    submarket: selectedSubmarket,
+    level2: selectedLevel2,
+    pstat: selectedPstat,
+  });
+
   const prAgg = useMemo(() => {
     if (!prKpiData?.length) return null;
     return prKpiData.reduce(
@@ -166,13 +177,49 @@ export default function StaffingSummary() {
         overtime_fte: acc.overtime_fte + Number(r.overtime_fte ?? 0),
         total_prn: acc.total_prn + Number(r.total_prn ?? 0),
         employed_productive_fte: acc.employed_productive_fte + Number(r.employed_productive_fte ?? 0),
-        // weighted NP% — accumulate numerator parts, compute at end
         np_weighted_sum: acc.np_weighted_sum + Number(r.non_productive_percentage ?? 0) * Number(r.paid_fte ?? 0),
         total_paid_for_weight: acc.total_paid_for_weight + Number(r.paid_fte ?? 0),
       }),
       { paid_fte: 0, contractor_fte: 0, overtime_fte: 0, total_prn: 0, employed_productive_fte: 0, np_weighted_sum: 0, total_paid_for_weight: 0 },
     );
   }, [prKpiData]);
+
+  // Aggregate skill-shift data for FTE KPIs
+  const ssAgg = useMemo(() => {
+    if (!skillShiftData?.length) return null;
+    return skillShiftData.reduce(
+      (acc, r) => {
+        const isNursing = r.nursing_flag === 'Y' || r.nursing_flag === 'true' || r.nursing_flag === true;
+        return {
+          hired_total_fte: acc.hired_total_fte + Number(r.hired_total_fte ?? 0),
+          open_reqs_total_fte: acc.open_reqs_total_fte + Number(r.open_reqs_total_fte ?? 0),
+          nursing_target_fte: acc.nursing_target_fte + (isNursing ? Number(r.target_fte_total ?? 0) : 0),
+        };
+      },
+      { hired_total_fte: 0, open_reqs_total_fte: 0, nursing_target_fte: 0 },
+    );
+  }, [skillShiftData]);
+
+  // Non-nursing target from productive-resources-kpi
+  const nonNursingTarget = useMemo(() => {
+    if (!prKpiData?.length) return 0;
+    return prKpiData
+      .filter(r => r.nursing_flag === false || r.nursing_flag === 'false' || r.nursing_flag === 'N')
+      .reduce((sum, r) => sum + Number(r.target_fte ?? 0), 0);
+  }, [prKpiData]);
+
+  // Derived FTE KPI values
+  const fteKpiValues = useMemo(() => {
+    const hiredFtes = ssAgg?.hired_total_fte ?? null;
+    const targetFtes = ssAgg != null ? ssAgg.nursing_target_fte + nonNursingTarget : null;
+    const openReqs = ssAgg?.open_reqs_total_fte ?? null;
+    const fteVariance = targetFtes != null && hiredFtes != null ? targetFtes - hiredFtes : null;
+    const reqVariance = fteVariance != null && openReqs != null ? fteVariance - openReqs : null;
+    const vacancyRate = fteVariance != null && targetFtes != null && targetFtes !== 0
+      ? (fteVariance / targetFtes) * 100
+      : null;
+    return { hiredFtes, targetFtes, openReqs, fteVariance, reqVariance, vacancyRate };
+  }, [ssAgg, nonNursingTarget]);
 
   const prNpPercent = useMemo(() => {
     if (!prAgg || prAgg.total_paid_for_weight === 0) return null;
