@@ -122,7 +122,7 @@ export function KPIChartModal({
           </div>
         </DialogHeader>
         
-        <div className="space-y-4 pt-2 overflow-hidden flex flex-col">
+        <div className="space-y-3 pt-1 overflow-hidden flex flex-col">
 
           {/* Toggle for Chart and Table */}
           <ToggleButtonGroup
