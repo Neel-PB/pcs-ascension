@@ -172,8 +172,9 @@ export function VarianceAnalysis({
   }, [markets]);
 
   // Format variance value with +/- sign
-  const formatVariance = (value: number): string => {
-    return `${value > 0 ? '+' : ''}${value.toFixed(1)}`;
+  const formatVariance = (value: number | undefined | null): string => {
+    const num = typeof value === 'number' && !isNaN(value) ? value : 0;
+    return `${num > 0 ? '+' : ''}${num.toFixed(1)}`;
   };
 
   const getColumnHeader = (): string => {
