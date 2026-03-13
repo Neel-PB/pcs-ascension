@@ -103,7 +103,7 @@ export function KPIChartModal({
             <div className="text-right">
               <p className="text-sm text-muted-foreground mb-1">Current Value</p>
               <p className={cn(
-                "text-4xl font-bold",
+                "text-3xl font-bold",
                 isNegative ? "text-orange-600" : "text-foreground"
               )}>
                 {value}
