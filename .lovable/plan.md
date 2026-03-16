@@ -1,25 +1,24 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Fix: Variance Analysis showing zeros because API returns string FTE values
 
 ### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+The `/skill-shift` API returns all FTE fields as **strings** (e.g., `"hired_day_fte":"1.00"`), but `aggregateRecordsToVariance` performs arithmetic on them directly. JavaScript string subtraction yields `NaN`, so every cell becomes `0.0` due to the `NaN` guard in `formatVariance`.
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+The Staffing Summary / Position Planning tabs work because they use `reduce` with explicit number coercion or different aggregation logic.
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+### Fix
 
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+In `src/pages/staffing/VarianceAnalysis.tsx`, wrap each field access with `parseFloat()` (or `Number()`) in the `aggregateRecordsToVariance` function (lines 84-86):
+
+```typescript
+const dayVar = Number(r.hired_day_fte) - Number(r.target_fte_day) + Number(r.open_reqs_day_fte);
+const nightVar = Number(r.hired_night_fte) - Number(r.target_fte_night) + Number(r.open_reqs_night_fte);
+const totalVar = Number(r.hired_total_fte) - Number(r.target_fte_total) + Number(r.open_reqs_total_fte);
 ```
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+### Scope
+- **1 file**: `src/pages/staffing/VarianceAnalysis.tsx`
+- **3 lines** changed (84-86)
 
