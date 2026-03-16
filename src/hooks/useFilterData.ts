@@ -225,19 +225,41 @@ export function useFilterData() {
     return submarkets.sort();
   };
 
-  // Helper: get unique Level 2 values, optionally filtered by facility
-  const getLevel2Options = (facilityId: string | null) => {
-    const filtered = (!facilityId || facilityId === "all-facilities")
-      ? level2Values
-      : level2Values.filter((v) => v.facility_id === facilityId);
+  // Helper: get unique Level 2 values, cascading by facility > market > region
+  const getLevel2Options = (facilityId: string | null, marketName?: string | null, regionName?: string | null) => {
+    let filtered = level2Values;
+    if (facilityId && facilityId !== "all-facilities") {
+      filtered = level2Values.filter((v) => v.facility_id === facilityId);
+    } else if (marketName && marketName !== "all-markets") {
+      const marketFacilityIds = new Set(
+        facilities.filter((f) => f.market.toUpperCase() === marketName.toUpperCase()).map((f) => f.facility_id)
+      );
+      filtered = level2Values.filter((v) => marketFacilityIds.has(v.facility_id));
+    } else if (regionName && regionName !== "all-regions") {
+      const regionFacilityIds = new Set(
+        facilities.filter((f) => f.region?.toUpperCase() === regionName.toUpperCase()).map((f) => f.facility_id)
+      );
+      filtered = level2Values.filter((v) => regionFacilityIds.has(v.facility_id));
+    }
     return [...new Set(filtered.map((v) => v.level_2))].sort();
   };
 
-  // Helper: get unique PSTAT/UoS values, optionally filtered by facility
-  const getPstatOptions = (facilityId: string | null) => {
-    const filtered = (!facilityId || facilityId === "all-facilities")
-      ? pstatValues
-      : pstatValues.filter((v) => v.facility_id === facilityId);
+  // Helper: get unique PSTAT/UoS values, cascading by facility > market > region
+  const getPstatOptions = (facilityId: string | null, marketName?: string | null, regionName?: string | null) => {
+    let filtered = pstatValues;
+    if (facilityId && facilityId !== "all-facilities") {
+      filtered = pstatValues.filter((v) => v.facility_id === facilityId);
+    } else if (marketName && marketName !== "all-markets") {
+      const marketFacilityIds = new Set(
+        facilities.filter((f) => f.market.toUpperCase() === marketName.toUpperCase()).map((f) => f.facility_id)
+      );
+      filtered = pstatValues.filter((v) => marketFacilityIds.has(v.facility_id));
+    } else if (regionName && regionName !== "all-regions") {
+      const regionFacilityIds = new Set(
+        facilities.filter((f) => f.region?.toUpperCase() === regionName.toUpperCase()).map((f) => f.facility_id)
+      );
+      filtered = pstatValues.filter((v) => regionFacilityIds.has(v.facility_id));
+    }
     return [...new Set(filtered.map((v) => v.unit_of_service))].sort();
   };
 
