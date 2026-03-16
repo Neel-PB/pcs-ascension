@@ -1,19 +1,25 @@
 
 
-## Revert: Department Only Enabled When Facility Is Selected
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-The recent change enabled the department dropdown when a region or market was selected. Per your requirement, department should **only** be available when a specific facility is selected.
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### Changes — `src/components/staffing/FilterBar.tsx`
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-**1. Revert `isDepartmentDisabled` (line 281-283)**:
-```typescript
-const isDepartmentDisabled = lockedFilters.department || 
-  (!hasRestrictionAt('department') && selectedFacility === "all-facilities");
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
 ```
 
-**2. Remove market/region-based department cascading (lines ~197-255)**:
-Remove the two blocks that cascade departments from market and region selections. Keep only the existing facility-based and access-scope-restriction-based department logic.
-
-The facility and region cascading for the **facility dropdown** stays intact — only department behavior changes.
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 
