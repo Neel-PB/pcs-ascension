@@ -93,9 +93,9 @@ export function FilterBar({
     ? { submarket: true, level2: true, pstat: true }
     : getSubfilterPermissions();
 
-  // Dynamic PSTAT and Level 2 options from API, cascading by selected facility
-  const pstatOptions = getPstatOptions(selectedFacility);
-  const level2Options = getLevel2Options(selectedFacility);
+  // Dynamic PSTAT and Level 2 options from API, cascading by facility > market > region
+  const pstatOptions = getPstatOptions(selectedFacility, selectedMarket, selectedRegion);
+  const level2Options = getLevel2Options(selectedFacility, selectedMarket, selectedRegion);
 
   // Get available options based on org restrictions OR full data
   // For markets: use restricted if user has market restrictions, otherwise cascade from region
@@ -107,27 +107,29 @@ export function FilterBar({
   // Otherwise, if market is selected cascade from market
   // If user has market restrictions and no specific market selected, filter by allowed markets
   const getAvailableFacilities = () => {
+    let result;
     if (hasRestrictionAt('facility')) {
-      return restrictedOptions.availableFacilities;
-    }
-    if (selectedMarket !== "all-markets") {
-      return getFacilitiesByMarket(selectedMarket);
-    }
-    // When "All Markets" is selected, but user has market restrictions, filter facilities by allowed markets
-    if (hasRestrictionAt('market')) {
-      return allFacilities.filter(f => 
+      result = restrictedOptions.availableFacilities;
+    } else if (selectedMarket !== "all-markets") {
+      result = getFacilitiesByMarket(selectedMarket);
+    } else if (hasRestrictionAt('market')) {
+      result = allFacilities.filter(f => 
         restrictedOptions.availableMarkets.some(m => 
           m.toLowerCase() === f.market?.toLowerCase()
         )
       );
-    }
-    // Region selected → filter by region
-    if (selectedRegion !== "all-regions") {
-      return allFacilities.filter(f =>
+    } else if (selectedRegion !== "all-regions") {
+      result = allFacilities.filter(f =>
         f.region?.toLowerCase() === selectedRegion.toLowerCase()
       );
+    } else {
+      result = allFacilities;
     }
-    return allFacilities;
+    // Further filter by submarket if one is selected
+    if (selectedSubmarket !== "all-submarkets") {
+      result = result.filter(f => f.submarket === selectedSubmarket);
+    }
+    return result;
   };
   const availableFacilities = getAvailableFacilities();
 
