@@ -377,7 +377,12 @@ export function AccessScopeManager({ userId, isEditMode, onAccessChange }: Acces
 
   // Get selected department objects for chips display
   const selectedDepartmentObjects = useMemo(() => {
-    return departments.filter(d => selectedAccess.departments.has(d.department_id));
+    const all = departments.filter(d => selectedAccess.departments.has(d.department_id));
+    const seen = new Map<string, typeof departments[0]>();
+    for (const d of all) {
+      if (!seen.has(d.department_id)) seen.set(d.department_id, d);
+    }
+    return Array.from(seen.values());
   }, [departments, selectedAccess.departments]);
   
   const totalSelected = selectedAccess.regions.size + selectedAccess.markets.size + 
