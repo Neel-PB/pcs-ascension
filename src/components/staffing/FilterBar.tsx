@@ -279,7 +279,8 @@ export function FilterBar({
   const isFacilityDisabled = lockedFilters.facility;
   // Department is disabled if locked, OR if no facility is selected (unless user has department-level restrictions)
   const isDepartmentDisabled = lockedFilters.department || 
-    (!hasRestrictionAt('department') && selectedFacility === "all-facilities");
+    (!hasRestrictionAt('department') && selectedFacility === "all-facilities" 
+      && selectedMarket === "all-markets" && selectedRegion === "all-regions");
 
   // Check if any filters are active (not in default state)
   const hasActiveFilters = 
