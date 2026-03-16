@@ -1,25 +1,53 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Fix: Add Region/Market-Based Cascading for Facilities and Departments
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+### Problem
+1. **Facilities**: When a region is selected but market is "All Markets", `getAvailableFacilities()` falls through to `return allFacilities` — showing every facility instead of only those in the selected region.
+2. **Departments**: Disabled when facility is "all-facilities", even if a region or market is selected. Should cascade from the selected market/region.
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+### Changes — `src/components/staffing/FilterBar.tsx`
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
-
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
-
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+**1. Facility cascading from region** (~line 123, before `return allFacilities`):
+Add a region check after the market-restriction block:
+```typescript
+// NEW: Region selected → filter by region
+if (selectedRegion !== "all-regions") {
+  return allFacilities.filter(f =>
+    f.region?.toLowerCase() === selectedRegion.toLowerCase()
+  );
+}
+return allFacilities;
 ```
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+**2. Department cascading from market/region** (~line 147, after facility cascade and before restriction checks):
+Insert two new blocks after `if (selectedFacility !== "all-facilities")`:
+```typescript
+// NEW: Market selected → departments from facilities in that market
+if (selectedMarket !== "all-markets") {
+  const marketFacilityIds = new Set(
+    allFacilities.filter(f => f.market.toLowerCase() === selectedMarket.toLowerCase()).map(f => f.facility_id)
+  );
+  // dedupe by department_name, return sorted
+}
+
+// NEW: Region selected → departments from facilities in that region  
+if (selectedRegion !== "all-regions") {
+  const regionFacilityIds = new Set(
+    allFacilities.filter(f => f.region?.toLowerCase() === selectedRegion.toLowerCase()).map(f => f.facility_id)
+  );
+  // dedupe by department_name, return sorted
+}
+```
+
+**3. Enable department dropdown when region or market is selected** (line 245-246):
+```typescript
+const isDepartmentDisabled = lockedFilters.department || 
+  (!hasRestrictionAt('department') && selectedFacility === "all-facilities" 
+    && selectedMarket === "all-markets" && selectedRegion === "all-regions");
+```
+
+### Scope
+- **1 file**: `src/components/staffing/FilterBar.tsx`
+- 3 insertion points, no breaking changes
 
