@@ -121,6 +121,12 @@ export function FilterBar({
         )
       );
     }
+    // Region selected → filter by region
+    if (selectedRegion !== "all-regions") {
+      return allFacilities.filter(f =>
+        f.region?.toLowerCase() === selectedRegion.toLowerCase()
+      );
+    }
     return allFacilities;
   };
   const availableFacilities = getAvailableFacilities();
