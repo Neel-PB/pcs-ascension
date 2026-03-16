@@ -1,25 +1,26 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Fix: Duplicate Departments in Access Scope Dropdowns
 
 ### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+The `useFilterData` hook deduplicates departments using a **composite key** (`department_id|business_unit`), so the same department (e.g., "Emergency") appears once per facility it belongs to. The `AccessScopeManager` then displays all of these as separate rows in the dropdown and chips, causing duplicates.
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+### Fix
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+In `src/components/admin/AccessScopeManager.tsx`, deduplicate departments by `department_id` in three places:
 
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
-```
+1. **`filteredDepartments`** — after filtering by cascade, dedupe by `department_id` (keep first occurrence)
+2. **`selectedDepartmentObjects`** — same deduplication for chip display
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+Both use a simple `Map` keyed by `department_id` to keep only unique entries.
+
+### Changes
+
+**File: `src/components/admin/AccessScopeManager.tsx`**
+
+- **`filteredDepartments` memo (~line 338)**: After the existing cascade filter, dedupe the result by `department_id` using a Map, keeping the first match.
+- **`selectedDepartmentObjects` memo (~line 373)**: Same dedup logic — filter then dedupe by `department_id`.
+
+This ensures the department dropdown and chips each show a department name only once, regardless of how many facilities share that department.
 
