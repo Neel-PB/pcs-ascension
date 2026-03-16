@@ -313,6 +313,8 @@ Includes:
 • Full-time staff (1.0 FTE each)
 • Part-time staff (0.5, 0.8, etc.)
 • Active employees only (excludes open positions)`,
+        employmentBreakdown: { ft: 62, pt: 23, prn: 15 },
+        breakdownVariant: 'orange' as const,
       },
       {
         id: 'target-ftes',
@@ -327,6 +329,8 @@ Includes:
 Nursing Target: ${fmt(ssAgg?.nursing_target_fte ?? null)}
 Non-Nursing Target: ${fmt(nonNursingTarget)}
 Combined: ${fmt(targetFtes)}`,
+        employmentBreakdown: { ft: 70, pt: 20, prn: 10 },
+        breakdownVariant: 'green' as const,
       },
       {
         id: 'fte-variance',

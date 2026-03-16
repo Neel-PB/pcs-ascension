@@ -1,24 +1,25 @@
 
 
-## Restore Static FTE Employment Split Bars
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-### What happened
-The FTE KPI section in the Staffing Summary used to show breakdown bars (green "70% FT · 20% PT · 10% PRN" under Target FTEs, and orange "Hired and Open Reqs: 62% FT · 23% PT · 15% PRN" spanning Hired FTEs through Open Reqs). These bars are no longer rendering.
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### Root cause
-The rendering logic in `DraggableKPISection.tsx` is intact — it looks for `employmentBreakdown` on the `hired-ftes` and `target-ftes` KPI objects. However, `StaffingSummary.tsx` never sets `employmentBreakdown` or `breakdownVariant` on any FTE KPI object, so the bars silently don't render.
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-The Skill-Shift API does not provide FT/PT/PRN breakdown data, so these were always static placeholder values.
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-### Fix — `src/pages/staffing/StaffingSummary.tsx`
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
 
-Add `employmentBreakdown` and `breakdownVariant` to the `target-ftes` and `hired-ftes` KPI objects in the `fteKPIs` memo:
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+```
 
-- **`target-ftes`**: `employmentBreakdown: { ft: 70, pt: 20, prn: 10 }`, `breakdownVariant: 'green'`
-- **`hired-ftes`**: `employmentBreakdown: { ft: 62, pt: 23, prn: 15 }`, `breakdownVariant: 'orange'`
-
-This restores the breakdown bars exactly as they were in the screenshot. One file changed, two properties added to two KPI objects.
-
-### Volume KPI question
-You also asked about Volume KPI values. The current Volume KPIs use a `ROLLUP_PSTATS` filter that restricts aggregation to specific `unit_of_service` types when "All Departments" is selected. This was a deliberate design choice. Should I also remove that filter so all department records are summed? (This was discussed previously but you asked to skip it.)
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 
