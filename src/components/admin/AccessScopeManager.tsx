@@ -336,22 +336,28 @@ export function AccessScopeManager({ userId, isEditMode, onAccessChange }: Acces
 
   // Cascading: Departments filtered by selected Facilities (or cascade from Markets/Regions)
   const filteredDepartments = useMemo(() => {
+    let result: typeof departments;
     if (selectedAccess.facilities.size > 0) {
-      return departments.filter(d => selectedAccess.facilities.has(d.facility_id));
-    }
-    if (selectedAccess.markets.size > 0) {
+      result = departments.filter(d => selectedAccess.facilities.has(d.facility_id));
+    } else if (selectedAccess.markets.size > 0) {
       const facilityIds = facilities
         .filter(f => selectedAccess.markets.has(f.market))
         .map(f => f.facility_id);
-      return departments.filter(d => facilityIds.includes(d.facility_id));
-    }
-    if (selectedAccess.regions.size > 0) {
+      result = departments.filter(d => facilityIds.includes(d.facility_id));
+    } else if (selectedAccess.regions.size > 0) {
       const facilityIds = facilities
         .filter(f => f.region && selectedAccess.regions.has(f.region))
         .map(f => f.facility_id);
-      return departments.filter(d => facilityIds.includes(d.facility_id));
+      result = departments.filter(d => facilityIds.includes(d.facility_id));
+    } else {
+      result = departments;
     }
-    return departments;
+    // Deduplicate by department_id (same dept can appear across multiple facilities)
+    const seen = new Map<string, typeof departments[0]>();
+    for (const d of result) {
+      if (!seen.has(d.department_id)) seen.set(d.department_id, d);
+    }
+    return Array.from(seen.values());
   }, [departments, facilities, selectedAccess.facilities, selectedAccess.markets, selectedAccess.regions]);
 
   // Filter departments by search
