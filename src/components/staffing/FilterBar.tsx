@@ -151,6 +151,36 @@ export function FilterBar({
     if (selectedFacility !== "all-facilities") {
       return getDepartmentsByFacility(selectedFacility);
     }
+
+    // Market selected → departments from facilities in that market
+    if (selectedMarket !== "all-markets") {
+      const marketFacilityIds = new Set(
+        allFacilities.filter(f => f.market.toLowerCase() === selectedMarket.toLowerCase()).map(f => f.facility_id)
+      );
+      const filteredDepts = allDepartments.filter(d => marketFacilityIds.has(d.facility_id));
+      const seenNames = new Map<string, { department_id: string; department_name: string }>();
+      filteredDepts.forEach(d => {
+        if (!seenNames.has(d.department_name)) {
+          seenNames.set(d.department_name, { department_id: d.department_id, department_name: d.department_name });
+        }
+      });
+      return Array.from(seenNames.values()).sort((a, b) => a.department_name.localeCompare(b.department_name));
+    }
+
+    // Region selected → departments from facilities in that region
+    if (selectedRegion !== "all-regions") {
+      const regionFacilityIds = new Set(
+        allFacilities.filter(f => f.region?.toLowerCase() === selectedRegion.toLowerCase()).map(f => f.facility_id)
+      );
+      const filteredDepts = allDepartments.filter(d => regionFacilityIds.has(d.facility_id));
+      const seenNames = new Map<string, { department_id: string; department_name: string }>();
+      filteredDepts.forEach(d => {
+        if (!seenNames.has(d.department_name)) {
+          seenNames.set(d.department_name, { department_id: d.department_id, department_name: d.department_name });
+        }
+      });
+      return Array.from(seenNames.values()).sort((a, b) => a.department_name.localeCompare(b.department_name));
+    }
     
     // PRIORITY 2: Facility restrictions - show ALL departments in those facilities
     
