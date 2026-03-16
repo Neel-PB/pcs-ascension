@@ -1,25 +1,44 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Audit: Global Filter Hierarchy Cascading
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+### Current Status
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+| Parent → Child | Dropdown Options Cascade? | Store Resets on Change? |
+|---|---|---|
+| Region → Market | Yes | Yes |
+| Region → Facility | Yes | Yes |
+| Market → Facility | Yes | Yes |
+| Facility → Department | Yes | Yes |
+| Market → Submarket | Yes | Yes (market reset clears submarket) |
+| Region → Submarket | No options shown (correct — submarket is market-scoped) | Yes |
+| Facility → Level 2 | Yes | Yes |
+| Facility → PSTAT | Yes | Yes |
+| **Region → Level 2** | **No** — shows ALL values | Yes (store resets) |
+| **Market → Level 2** | **No** — shows ALL values | Yes (store resets) |
+| **Region → PSTAT** | **No** — shows ALL values | Yes (store resets) |
+| **Market → PSTAT** | **No** — shows ALL values | Yes (store resets) |
+| **Submarket → Facility** | **No** — submarket selection doesn't filter facilities | No reset in store |
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+### Gaps Found
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+1. **Level 2 and PSTAT** options don't cascade from Region or Market. When facility is "all-facilities", `getLevel2Options` and `getPstatOptions` return every value in the dataset regardless of the selected region/market.
 
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
-```
+2. **Submarket → Facility** cascading is missing. Selecting a submarket doesn't narrow the facility list. This is a nice-to-have since submarket is an optional filter.
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+### Proposed Fix
+
+**File 1: `src/hooks/useFilterData.ts`**
+- Expand `getLevel2Options` and `getPstatOptions` to accept `region` and `market` parameters. When facility is "all-facilities", filter values by facilities matching the selected market or region.
+
+**File 2: `src/components/staffing/FilterBar.tsx`**
+- Pass `selectedRegion` and `selectedMarket` to the updated `getLevel2Options` and `getPstatOptions` calls.
+- Optionally: filter `availableFacilities` by `selectedSubmarket` when a submarket is active.
+
+**File 3: `src/stores/useFilterStore.ts`**
+- No changes needed — reset logic already clears child filters correctly.
+
+### Scope
+- 2 files changed
+- Level 2 and PSTAT options will properly narrow when a Region or Market is selected
 
