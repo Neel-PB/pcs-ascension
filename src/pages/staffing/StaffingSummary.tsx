@@ -169,6 +169,17 @@ export default function StaffingSummary() {
     pstat: selectedPstat,
   });
 
+  // Fetch employment split for Hired FTEs breakdown
+  const { breakdown: hiredSplitBreakdown } = useEmploymentSplit({
+    region: selectedRegion,
+    market: selectedMarket,
+    facility: selectedFacility,
+    department: selectedDepartment,
+    submarket: selectedSubmarket,
+    level2: selectedLevel2,
+    pstat: selectedPstat,
+  });
+
   const prAgg = useMemo(() => {
     if (!prKpiData?.length) return null;
     return prKpiData.reduce(
