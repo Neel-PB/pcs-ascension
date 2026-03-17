@@ -105,11 +105,8 @@ export function useEmploymentSplit(filters: {
     const total = ftSum + ptSum + prnSum;
     if (total === 0) return { ft: 0, pt: 0, prn: 0 };
 
-    return {
-      ft: Math.floor((ftSum / total) * 100),
-      pt: Math.floor((ptSum / total) * 100),
-      prn: Math.floor((prnSum / total) * 100),
-    };
+    const [ft, pt, prn] = toPercents([ftSum, ptSum, prnSum], total);
+    return { ft, pt, prn };
   }, [query.data]);
 
   return { ...query, breakdown };
