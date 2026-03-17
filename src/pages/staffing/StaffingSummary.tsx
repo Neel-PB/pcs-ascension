@@ -394,7 +394,7 @@ ${fmt(fteVariance)} - ${fmt(openReqs)} = ${fmt(reqVariance)}`,
       const bIndex = fteOrder.indexOf(b.id);
       return aIndex - bIndex;
     });
-  }, [fteOrder, fteKpiValues, ssAgg, nonNursingTarget]);
+  }, [fteOrder, fteKpiValues, ssAgg, nonNursingTarget, hiredSplitBreakdown]);
 
   // Volume KPIs Configuration – wired to patient-volume API
   const volumeKPIs = useMemo(() => {
