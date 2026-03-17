@@ -23,6 +23,7 @@ import { useVolumeOverrides } from "@/hooks/useVolumeOverrides";
 import { usePatientVolume } from "@/hooks/usePatientVolume";
 import { useProductiveResourcesKpi } from "@/hooks/useProductiveResourcesKpi";
 import { useSkillShift } from "@/hooks/useSkillShift";
+import { useEmploymentSplit } from "@/hooks/useEmploymentSplit";
 
 const validTabs = ["summary", "planning", "variance", "forecasts", "volume-settings", "np-settings"];
 
@@ -159,6 +160,17 @@ export default function StaffingSummary() {
 
   // Fetch skill-shift data for FTE KPIs
   const { data: skillShiftData, isLoading: ssLoading } = useSkillShift({
+    region: selectedRegion,
+    market: selectedMarket,
+    facility: selectedFacility,
+    department: selectedDepartment,
+    submarket: selectedSubmarket,
+    level2: selectedLevel2,
+    pstat: selectedPstat,
+  });
+
+  // Fetch employment split for Hired FTEs breakdown
+  const { breakdown: hiredSplitBreakdown } = useEmploymentSplit({
     region: selectedRegion,
     market: selectedMarket,
     facility: selectedFacility,
@@ -313,7 +325,7 @@ Includes:
 • Full-time staff (1.0 FTE each)
 • Part-time staff (0.5, 0.8, etc.)
 • Active employees only (excludes open positions)`,
-        employmentBreakdown: { ft: 62, pt: 23, prn: 15 },
+        employmentBreakdown: hiredSplitBreakdown ?? { ft: 0, pt: 0, prn: 0 },
         breakdownVariant: 'orange' as const,
       },
       {
@@ -382,7 +394,7 @@ ${fmt(fteVariance)} - ${fmt(openReqs)} = ${fmt(reqVariance)}`,
       const bIndex = fteOrder.indexOf(b.id);
       return aIndex - bIndex;
     });
-  }, [fteOrder, fteKpiValues, ssAgg, nonNursingTarget]);
+  }, [fteOrder, fteKpiValues, ssAgg, nonNursingTarget, hiredSplitBreakdown]);
 
   // Volume KPIs Configuration – wired to patient-volume API
   const volumeKPIs = useMemo(() => {
