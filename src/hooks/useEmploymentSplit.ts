@@ -56,6 +56,21 @@ function clean(val: string | undefined | null): string | null {
   return val;
 }
 
+function toPercents(values: number[], total: number): number[] {
+  if (total === 0) return values.map(() => 0);
+  const raw = values.map(v => (v / total) * 100);
+  const floored = raw.map(Math.floor);
+  let remainder = 100 - floored.reduce((a, b) => a + b, 0);
+  const fractions = raw.map((v, i) => ({ i, frac: v - floored[i] }));
+  fractions.sort((a, b) => b.frac - a.frac);
+  for (const { i } of fractions) {
+    if (remainder <= 0) break;
+    floored[i]++;
+    remainder--;
+  }
+  return floored;
+}
+
 export interface EmploymentBreakdownPct {
   ft: number;
   pt: number;
@@ -105,11 +120,8 @@ export function useEmploymentSplit(filters: {
     const total = ftSum + ptSum + prnSum;
     if (total === 0) return { ft: 0, pt: 0, prn: 0 };
 
-    return {
-      ft: Math.floor((ftSum / total) * 100),
-      pt: Math.floor((ptSum / total) * 100),
-      prn: Math.floor((prnSum / total) * 100),
-    };
+    const [ft, pt, prn] = toPercents([ftSum, ptSum, prnSum], total);
+    return { ft, pt, prn };
   }, [query.data]);
 
   return { ...query, breakdown };
