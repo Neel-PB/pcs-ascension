@@ -1,21 +1,25 @@
 
 
-## Fix: Rounding causes percentages to exceed 100%
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-### Problem
-`Math.round` on each percentage independently can produce totals like 89+6+6=101%. 
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### Fix — `src/hooks/useEmploymentSplit.ts`
-Use `Math.floor` instead of `Math.round` to truncate to the first digit. This guarantees the sum never exceeds 100% (it may sum to 99% in edge cases, which is standard practice for floor-based rounding).
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-Replace lines 108-112:
-```typescript
-return {
-  ft: Math.floor((ftSum / total) * 100),
-  pt: Math.floor((ptSum / total) * 100),
-  prn: Math.floor((prnSum / total) * 100),
-};
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
 ```
 
-One line change per value. Single file.
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 

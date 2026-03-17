@@ -106,9 +106,9 @@ export function useEmploymentSplit(filters: {
     if (total === 0) return { ft: 0, pt: 0, prn: 0 };
 
     return {
-      ft: Math.round((ftSum / total) * 100),
-      pt: Math.round((ptSum / total) * 100),
-      prn: Math.round((prnSum / total) * 100),
+      ft: Math.floor((ftSum / total) * 100),
+      pt: Math.floor((ptSum / total) * 100),
+      prn: Math.floor((prnSum / total) * 100),
     };
   }, [query.data]);
 
