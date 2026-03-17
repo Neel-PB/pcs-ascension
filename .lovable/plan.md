@@ -1,25 +1,29 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Replace Static FTE Split with Live API Data
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+### Overview
+Replace the hardcoded `employmentBreakdown: { ft: 62, pt: 23, prn: 15 }` on the Hired FTEs KPI with real data from the new `GET /positions-employment-split` endpoint, aggregated by selected filters.
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+### Changes
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+**New file: `src/hooks/useEmploymentSplit.ts`**
+- Fetch `GET /positions-employment-split` with filter params (region, market, businessUnit, departmentId, submarket, level2, pstat)
+- Uses same auth header pattern as other hooks
+- Returns raw records with `department_id`, `employment_type`, `total_fte`
+- Aggregates client-side: groups by employment_type (Full-Time, Part-Time, PRN), sums `total_fte`, computes percentages using the formula `SUM(type_fte) / SUM(all_fte) * 100`
+- Exposes `{ ft, pt, prn }` percentage object ready for `employmentBreakdown`
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+**Modified: `src/pages/staffing/StaffingSummary.tsx`**
+- Import and call `useEmploymentSplit` with the same filter params as other hooks
+- Compute the `{ ft, pt, prn }` breakdown from the hook result
+- Replace the static `{ ft: 62, pt: 23, prn: 15 }` on `hired-ftes` with the live computed values
+- Keep `target-ftes` breakdown static at `{ ft: 70, pt: 20, prn: 10 }` (that's the target split, not actual)
 
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+### API Contract Assumed
 ```
-
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+GET /positions-employment-split?region=...&market=...&businessUnit=...&departmentId=...
+Response: { data: [{ department_id, employment_type, total_fte, ... }] }
+```
+Employment types expected: `"Full-Time"`, `"Part-Time"`, `"PRN"`
 
