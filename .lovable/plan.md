@@ -1,25 +1,42 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Fix: Ensure FT + PT + PRN always equals exactly 100%
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+### Problem
+`Math.round` can overshoot (101%), `Math.floor` can undershoot (99%). Neither guarantees an exact 100% total.
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+### Solution — Largest Remainder Method
+A standard algorithm used in proportional representation:
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+1. Compute raw percentages (e.g. 88.7, 5.8, 5.5)
+2. Floor each → 88, 5, 5 = 98
+3. Remainder = 100 − 98 = 2
+4. Sort by largest fractional part (0.8, 0.7, 0.5)
+5. Add +1 to the top 2 → 89, 6, 5 = 100 ✓
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+### File: `src/hooks/useEmploymentSplit.ts`
+Replace the three `Math.floor` lines with a largest-remainder helper:
 
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+```typescript
+function toPercents(values: number[], total: number): number[] {
+  if (total === 0) return values.map(() => 0);
+  const raw = values.map(v => (v / total) * 100);
+  const floored = raw.map(Math.floor);
+  let remainder = 100 - floored.reduce((a, b) => a + b, 0);
+  const fractions = raw.map((v, i) => ({ i, frac: v - floored[i] }));
+  fractions.sort((a, b) => b.frac - a.frac);
+  for (const { i } of fractions) {
+    if (remainder <= 0) break;
+    floored[i]++;
+    remainder--;
+  }
+  return floored;
+}
+
+// Usage:
+const [ft, pt, prn] = toPercents([ftSum, ptSum, prnSum], total);
+return { ft, pt, prn };
 ```
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+Single file, ~15 lines added. Always sums to exactly 100%.
 
