@@ -193,7 +193,38 @@ export function KPIChartModal({
           {activeTab === "chart" && (
             <div className="space-y-4">
               <div className="h-[360px]">
-                {isPie && filteredPieData && filteredPieData.length > 0 ? (
+                {isRadial ? (
+                  <div className="flex flex-col items-center justify-center h-full">
+                    <ChartContainer config={radialConfig} className="h-[280px] w-[280px]">
+                      <RadialBarChart
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={90}
+                        outerRadius={130}
+                        startAngle={225}
+                        endAngle={-45}
+                        data={radialData}
+                      >
+                        <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
+                        <RadialBar
+                          dataKey="value"
+                          angleAxisId={0}
+                          cornerRadius={10}
+                          background={{ fill: "hsl(var(--muted))" }}
+                        />
+                        <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central">
+                          <tspan x="50%" dy="-0.5em" className="text-[13px] fill-muted-foreground">Vacancy</tspan>
+                          <tspan x="50%" dy="1.6em" className="text-2xl font-bold fill-foreground">{radialValue.toFixed(1)}%</tspan>
+                        </text>
+                      </RadialBarChart>
+                    </ChartContainer>
+                    <div className="flex items-center gap-6 text-sm text-muted-foreground mt-2">
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "hsl(142 76% 36%)" }} />&lt;10% Good</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "hsl(45 93% 47%)" }} />10–20% Watch</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "hsl(0 84% 60%)" }} />&gt;20% Critical</span>
+                    </div>
+                  </div>
+                ) : isPie && filteredPieData && filteredPieData.length > 0 ? (
                   <div className="flex items-center gap-6 h-[360px]">
                     {/* Donut chart */}
                     <div className="flex-1 h-full min-w-0">
