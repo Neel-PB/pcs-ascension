@@ -603,6 +603,8 @@ export function KPIChartModal({
               )}
             </div>
           )}
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>
