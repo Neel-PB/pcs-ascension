@@ -16,11 +16,12 @@ interface KPIChartModalProps {
   trendValue?: string;
   isNegative?: boolean;
   isHighlighted?: boolean;
-  chartData?: Array<{ value: number }>;
+  chartData?: Array<any>;
   chartType?: "line" | "bar" | "area" | "pie" | "radial";
   breakdownData?: Array<any>;
   decimalPlaces?: number;
   xAxisLabels?: string[];
+  showAllOptions?: boolean;
 }
 
 export function KPIChartModal({
