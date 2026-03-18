@@ -1,25 +1,50 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Clean Up Pie Chart UI
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+### Problem
+The current pie chart has overlapping external labels with messy label lines, too many tiny slices creating visual clutter, and the chart feels off-center and hard to read.
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+### Solution — Clean Donut with Side Legend, No External Labels
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+**File: `src/components/staffing/KPIChartModal.tsx`**
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+1. **Group small slices into "Other"** — any skill mix under 3% of total gets merged into a single "Other" slice, reducing visual noise from 10+ slices to ~4-5 meaningful ones
 
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+2. **Remove all external labels** — no more overlapping text and label lines. The donut center shows "Total" and the value. Users hover for detail via tooltips.
+
+3. **Two-column layout: Chart left, Legend right** — instead of cramming a horizontal legend below, place a vertical legend list on the right side with colored dots, skill name, FTE count, and percentage. This is much easier to scan.
+
+4. **Center the donut properly** — `cx="50%"`, `cy="50%"` with better radius proportions
+
+5. **Refined color palette** — use well-spaced, accessible colors that are distinct even for colorblind users
+
+### Layout sketch
+```text
+┌─────────────────────────────────────────────┐
+│  Open Reqs                  Current: 1,451  │
+│  ┌─────────┐ ┌────────────┐                 │
+│  │  Chart   │ │   Table    │                 │
+│  └─────────┘ └────────────┘                 │
+│                                             │
+│   ┌──────────────┐   ● RN      1,060  73%  │
+│   │              │   ● PCT       305  21%  │
+│   │    Total     │   ● CL        44   3%  │
+│   │    1,451     │   ● Other     42   3%  │
+│   │              │                          │
+│   └──────────────┘                          │
+│                                             │
+│  Total: 1,451                       [Close] │
+└─────────────────────────────────────────────┘
 ```
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+### Changes detail
+- Add `groupedPieData` memo: sort by value desc, group items < 3% into "Other"
+- Remove `label` and `labelLine` props from `<Pie>`
+- Replace `<Legend>` with a custom right-side vertical list showing color dot + name + value + %
+- Use flexbox: chart on left (flex-1), legend list on right (w-48)
+- Increase `outerRadius` to 120, `innerRadius` to 70 for better proportions
+- Table view remains unchanged (already clean)
+
+Single file change: `src/components/staffing/KPIChartModal.tsx`
 
