@@ -267,6 +267,32 @@ export default function StaffingSummary() {
       .sort((a, b) => b.vacancyRate - a.vacancyRate);
   }, [skillShiftData]);
 
+  // Paid FTEs by department for chart options
+  const paidByDept = useMemo(() => {
+    if (!prKpiData?.length) return [];
+    const byDept: Record<string, { paid: number; employed: number; contractor: number; overtime: number; prn: number }> = {};
+    prKpiData.forEach(r => {
+      const dept = r.department_description || 'Unknown';
+      if (!byDept[dept]) byDept[dept] = { paid: 0, employed: 0, contractor: 0, overtime: 0, prn: 0 };
+      byDept[dept].paid += Number(r.paid_fte ?? 0);
+      byDept[dept].employed += Number(r.employed_productive_fte ?? 0);
+      byDept[dept].contractor += Number(r.contractor_fte ?? 0);
+      byDept[dept].overtime += Number(r.overtime_fte ?? 0);
+      byDept[dept].prn += Number(r.total_prn ?? 0);
+    });
+    return Object.entries(byDept)
+      .map(([name, v]) => ({
+        name,
+        paid: Math.round(v.paid * 10) / 10,
+        employed: Math.round(v.employed * 10) / 10,
+        contractor: Math.round(v.contractor * 10) / 10,
+        overtime: Math.round(v.overtime * 10) / 10,
+        prn: Math.round(v.prn * 10) / 10,
+        value: Math.round(v.paid * 10) / 10,
+      }))
+      .sort((a, b) => b.paid - a.paid);
+  }, [prKpiData]);
+
   // Non-nursing target from productive-resources-kpi
   const nonNursingTarget = useMemo(() => {
     if (!prKpiData?.length) return 0;
@@ -593,8 +619,9 @@ Used when:
         id: 'paid-ftes',
         title: "Paid FTEs",
         value: fmt(prAgg?.paid_fte ?? null),
-        chartData: prAgg ? generateGrowthTrend(prAgg.paid_fte * 0.9, prAgg.paid_fte) : [],
+        chartData: paidByDept.length > 0 ? paidByDept : (prAgg ? generateGrowthTrend(prAgg.paid_fte * 0.9, prAgg.paid_fte) : []),
         chartType: "bar" as const,
+        showAllOptions: true,
         delay: 0,
         definition: "Total labor resources the organization actually pays for, regardless of whether those hours are productive or non-productive.",
         calculation: `Total Paid Actual FTEs = Total paid hours / Standard FTE hours
@@ -685,7 +712,7 @@ This metric helps:
       const bIndex = productivityOrder.indexOf(b.id);
       return aIndex - bIndex;
     });
-  }, [productivityOrder, prAgg, prNpPercent]);
+  }, [productivityOrder, prAgg, prNpPercent, paidByDept]);
 
   // Page-level loading guard
   const isInitializing = rbacLoading || (orgScopedLoading && !filtersInitialized);
