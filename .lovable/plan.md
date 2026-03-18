@@ -1,34 +1,25 @@
 
 
-## Fix: Vacancy Rate Modal — Cannot Scroll to Options B & C
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-### Problem
-The Radix `ScrollArea` component wrapping the three chart options does not scroll. This is because Radix ScrollArea requires a concrete height on its viewport to enable scrolling, but the current `flex-1 min-h-0` + inline `maxHeight` combination doesn't propagate correctly through the Radix internals.
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
 ### Solution
-Replace `ScrollArea` with a plain `div` using `overflow-y-auto` and a calculated max-height. This is simpler and guaranteed to scroll.
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-### Changes
-
-**`src/components/staffing/KPIChartModal.tsx`** (line ~199)
-
-Replace:
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
 ```tsx
-<ScrollArea className="flex-1 min-h-0" style={{ maxHeight: 'calc(85vh - 120px)' }}>
-  <div className="space-y-8 pr-4 pb-4">
-    ...
-  </div>
-</ScrollArea>
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
 ```
 
-With:
-```tsx
-<div className="overflow-y-auto pr-1" style={{ maxHeight: 'calc(85vh - 140px)' }}>
-  <div className="space-y-8 pb-4">
-    ...
-  </div>
-</div>
-```
-
-This removes the Radix ScrollArea dependency for this section and uses native browser scrolling, which works reliably with dynamic content heights (Option A's height varies based on department count).
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 
