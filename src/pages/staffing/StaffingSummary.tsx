@@ -414,7 +414,7 @@ export default function StaffingSummary() {
         id: 'vacancy-rate',
         title: "Vacancy Rate",
         value: fmtPct(vacancyRate),
-        chartData: vacancyByDept.length > 0 ? vacancyByDept : (vacancyRate != null ? [{ value: Math.abs(vacancyRate), name: "Vacancy Rate" }] : []),
+        chartData: vacancyBySkillMix.length > 0 ? vacancyBySkillMix : (vacancyRate != null ? [{ value: Math.abs(vacancyRate), name: "Vacancy Rate" }] : []),
         chartType: "bar" as const,
         showAllOptions: true,
         delay: 0,
