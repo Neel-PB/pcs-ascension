@@ -27,7 +27,7 @@ export interface KPICardProps {
   isHighlighted?: boolean;
   delay?: number;
   chartData?: Array<{ value: number }>;
-  chartType?: "line" | "bar" | "area" | "pie";
+  chartType?: "line" | "bar" | "area" | "pie" | "radial";
   definition?: string;
   calculation?: string;
   breakdownData?: Array<any>;
