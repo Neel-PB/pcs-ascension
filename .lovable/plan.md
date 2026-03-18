@@ -1,25 +1,25 @@
 
 
-## Improve Pie Chart Visual Quality
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-Looking at the screenshot, the main issues are: overlapping labels for small slices, cluttered appearance, and the 0% slices adding noise.
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### Changes — `src/components/staffing/KPIChartModal.tsx`
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-1. **Filter out zero-value slices** before rendering — removes "Practice Specialist 0%", "Ops Coordinator 0%" clutter
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-2. **Hide outer labels for slices < 3%** — only show label text for significant slices; tiny ones are still visible in the legend and tooltip
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
 
-3. **Better color palette** — use more distinct, vibrant colors (currently some are too similar)
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+```
 
-4. **Increase chart height** from 300px to 360px to give labels more room
-
-5. **Custom label rendering** — position labels with better offset to avoid overlap; use a custom `renderLabel` function that returns null for tiny slices
-
-6. **Legend layout** — switch to a horizontal wrap layout below the chart with colored dots, more compact than the current single-row approach
-
-7. **Center label in donut hole** — show the total FTE value centered inside the donut ring for quick reference
-
-### Single file change
-`src/components/staffing/KPIChartModal.tsx` — pie chart rendering section (~lines 170-210)
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 

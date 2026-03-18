@@ -41,15 +41,42 @@ export function KPIChartModal({
   const [activeTab, setActiveTab] = useState("chart");
 
   const PIE_COLORS = [
-    "hsl(var(--primary))",
-    "hsl(142 76% 36%)",
+    "hsl(217 91% 60%)",
+    "hsl(142 71% 45%)",
     "hsl(24 95% 53%)",
     "hsl(262 83% 58%)",
-    "hsl(198 93% 60%)",
     "hsl(340 75% 55%)",
     "hsl(45 93% 47%)",
+    "hsl(198 93% 50%)",
     "hsl(160 60% 45%)",
   ];
+
+  const isPie = chartType === "pie";
+
+  // Filter out zero-value slices for pie charts
+  const filteredPieData = useMemo(() => {
+    if (!isPie || !chartData) return chartData;
+    return chartData.filter((d: any) => d.value > 0);
+  }, [isPie, chartData]);
+
+  // Custom label renderer — hide labels for slices < 3%
+  const renderPieLabel = ({ name, percent, x, y }: any) => {
+    if (percent < 0.03) return null;
+    const RADIAN = Math.PI / 180;
+    const cos = Math.cos(-RADIAN * 0);
+    const textAnchor = x > 200 ? "start" : "end";
+    return (
+      <text
+        x={x}
+        y={y}
+        textAnchor={textAnchor}
+        dominantBaseline="central"
+        className="text-[11px] fill-foreground"
+      >
+        {`${name} ${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
 
   const getChartColor = () => {
     if (isNegative) return "hsl(24 95% 53%)";
@@ -67,18 +94,16 @@ export function KPIChartModal({
   const formatValue = (val: number) => val.toLocaleString(undefined, { maximumFractionDigits: decimalPlaces });
   const formatAxisTick = (val: number) => val >= 1000 ? `${(val / 1000).toLocaleString(undefined, { maximumFractionDigits: 0 })}K` : val.toString();
 
-  const isPie = chartType === "pie";
-
   // For pie charts, build a dynamic ChartConfig from named data items
   const pieConfig = useMemo(() => {
-    if (!isPie || !chartData) return {} as ChartConfig;
+    if (!isPie || !filteredPieData) return {} as ChartConfig;
     const config: ChartConfig = {};
-    chartData.forEach((item: any, i: number) => {
+    filteredPieData.forEach((item: any, i: number) => {
       const key = item.name || `slice-${i}`;
       config[key] = { label: key, color: PIE_COLORS[i % PIE_COLORS.length] };
     });
     return config;
-  }, [isPie, chartData]);
+  }, [isPie, filteredPieData]);
 
   const pieTotal = useMemo(() => {
     if (!isPie || !chartData) return 0;
@@ -166,9 +191,9 @@ export function KPIChartModal({
 
           {activeTab === "chart" && (
             <div className="space-y-4">
-              <div className="h-[300px]">
-                {isPie && chartData && chartData.length > 0 ? (
-                  <ChartContainer config={pieConfig} className="h-[300px] w-full">
+              <div className="h-[360px]">
+                {isPie && filteredPieData && filteredPieData.length > 0 ? (
+                  <ChartContainer config={pieConfig} className="h-[360px] w-full">
                     <PieChart>
                       <ChartTooltip
                         content={
@@ -183,24 +208,30 @@ export function KPIChartModal({
                         }
                       />
                       <Pie
-                        data={chartData}
+                        data={filteredPieData}
                         dataKey="value"
                         nameKey="name"
                         cx="50%"
-                        cy="50%"
-                        outerRadius={100}
-                        innerRadius={50}
+                        cy="45%"
+                        outerRadius={110}
+                        innerRadius={60}
                         paddingAngle={2}
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        label={renderPieLabel}
                         labelLine={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1 }}
                       >
-                        {chartData.map((_: any, i: number) => (
+                        {filteredPieData.map((_: any, i: number) => (
                           <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                         ))}
                       </Pie>
+                      {/* Center total label */}
+                      <text x="50%" y="45%" textAnchor="middle" dominantBaseline="central">
+                        <tspan x="50%" dy="-0.6em" className="text-[11px] fill-muted-foreground">Total</tspan>
+                        <tspan x="50%" dy="1.4em" className="text-base font-semibold fill-foreground">{formatValue(pieTotal)}</tspan>
+                      </text>
                       <Legend
                         verticalAlign="bottom"
-                        height={36}
+                        layout="horizontal"
+                        wrapperStyle={{ paddingTop: 8 }}
                         formatter={(val: string) => <span className="text-xs text-foreground">{val}</span>}
                       />
                     </PieChart>
@@ -324,7 +355,7 @@ export function KPIChartModal({
           {activeTab === "table" && (
             <div className="space-y-4">
               <div className="h-[300px]">
-                {isPie && chartData && chartData.length > 0 ? (
+                {isPie && filteredPieData && filteredPieData.length > 0 ? (
                   <div className="rounded-lg border overflow-hidden h-full">
                     <ScrollArea className="h-full">
                       <div 
@@ -335,7 +366,7 @@ export function KPIChartModal({
                         <div className="px-4 py-3 text-right font-semibold text-sm">FTE</div>
                         <div className="px-4 py-3 text-right font-semibold text-sm">%</div>
                       </div>
-                      {chartData.map((item: any, index: number) => (
+                      {filteredPieData.map((item: any, index: number) => (
                         <div
                           key={index}
                           className="grid border-b hover:bg-muted/50 transition-colors"
