@@ -39,6 +39,18 @@ export function KPIChartModal({
   xAxisLabels,
 }: KPIChartModalProps) {
   const [activeTab, setActiveTab] = useState("chart");
+
+  const PIE_COLORS = [
+    "hsl(var(--primary))",
+    "hsl(142 76% 36%)",
+    "hsl(24 95% 53%)",
+    "hsl(262 83% 58%)",
+    "hsl(198 93% 60%)",
+    "hsl(340 75% 55%)",
+    "hsl(45 93% 47%)",
+    "hsl(160 60% 45%)",
+  ];
+
   const getChartColor = () => {
     if (isNegative) return "hsl(24 95% 53%)";
     if (isHighlighted) return "hsl(142 76% 36%)";
@@ -55,8 +67,26 @@ export function KPIChartModal({
   const formatValue = (val: number) => val.toLocaleString(undefined, { maximumFractionDigits: decimalPlaces });
   const formatAxisTick = (val: number) => val >= 1000 ? `${(val / 1000).toLocaleString(undefined, { maximumFractionDigits: 0 })}K` : val.toString();
 
-  // Calculate statistics if data exists
-  const stats = chartData ? {
+  const isPie = chartType === "pie";
+
+  // For pie charts, build a dynamic ChartConfig from named data items
+  const pieConfig = useMemo(() => {
+    if (!isPie || !chartData) return {} as ChartConfig;
+    const config: ChartConfig = {};
+    chartData.forEach((item: any, i: number) => {
+      const key = item.name || `slice-${i}`;
+      config[key] = { label: key, color: PIE_COLORS[i % PIE_COLORS.length] };
+    });
+    return config;
+  }, [isPie, chartData]);
+
+  const pieTotal = useMemo(() => {
+    if (!isPie || !chartData) return 0;
+    return chartData.reduce((sum, d) => sum + d.value, 0);
+  }, [isPie, chartData]);
+
+  // Calculate statistics if data exists (skip for pie)
+  const stats = (!isPie && chartData) ? {
     high: formatValue(Math.max(...chartData.map(d => d.value))),
     low: formatValue(Math.min(...chartData.map(d => d.value))),
     average: formatValue(chartData.reduce((sum, d) => sum + d.value, 0) / chartData.length),
