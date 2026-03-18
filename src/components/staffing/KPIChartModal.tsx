@@ -727,7 +727,7 @@ export function KPIChartModal({
                   <>
                 {/* Option A: Horizontal Bar — Vacancy Rate % */}
                 <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-2">Option A: Horizontal Bar — Vacancy Rate % by Department</h4>
+                  <h4 className="text-sm font-semibold text-foreground mb-2"><h4 className="text-sm font-semibold text-foreground mb-2">Option A: Horizontal Bar — Vacancy Rate % by Skill Mix</h4></h4>
                   <div style={{ height: Math.max(200, (chartData?.length || 0) * 32 + 40) }}>
                     <ChartContainer config={{ vacancyRate: { label: "Vacancy Rate %", color: "hsl(var(--primary))" } } satisfies ChartConfig} className="h-full w-full">
                       <BarChart data={chartData} layout="vertical" margin={{ left: 10, right: 30, top: 5, bottom: 5 }}>
