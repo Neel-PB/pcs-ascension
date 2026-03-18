@@ -1,31 +1,25 @@
 
 
-## Fix Productive Resources KPI for Day-of-Week Data Structure
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-The API now returns 7 rows per department (one per `day_of_week`). The current code deduplicates by `market_hierarchy_key|department_id`, keeping only 1 arbitrary day — causing incorrect "random" numbers.
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### Root Causes
-1. **Dedup logic** drops 6 of 7 rows per department
-2. **Interface** doesn't include the new `day_of_week` column
-3. **Aggregations** don't account for the 7-day structure
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-### Aggregation Rules (per user spec)
-- **Additive FTEs** (`paid_fte`, `contractor_fte`, `overtime_fte`, `employed_productive_fte`, `total_prn`): **SUM** across all 7 days
-- **`target_fte`** (department constant repeated per day): **SUM** across 7 days to get dept-level total
-- **NP%** (non-additive ratio): Use **weighted formula** — `SUM(np% × paid_fte) / SUM(paid_fte)` (already implemented correctly in `prAgg`)
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-### Changes
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
 
-**1. `src/hooks/useProductiveResourcesKpi.ts`**
-- Add `day_of_week: string | number` to the `ProductiveResourcesKpiRecord` interface
-- Update dedup key from `market_hierarchy_key|department_id` to `market_hierarchy_key|department_id|day_of_week` so all 7 day-rows are kept
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+```
 
-**2. `src/pages/staffing/StaffingSummary.tsx`**
-- **`prAgg` memo (lines 183-197)**: No structural change needed — it already SUMs all additive FTEs and uses weighted NP%. With dedup fix, it will now correctly sum across all 7 days.
-- **`paidByDept` memo (lines 271-294)**: Same — already SUMs by department. With 7 rows per dept now included, sums will be correct.
-- **`npByDept` memo (lines 297-318)**: Same — already uses weighted NP formula. Will work correctly once all 7 rows flow through.
-- **`nonNursingTarget` memo (lines 321-329)**: Same — already SUMs `target_fte`. With all 7 day-rows, the sum gives the correct dept-level weekly total.
-
-### Summary
-The fix is primarily in the **dedup key** in the hook — once all 7 day-rows pass through, the existing aggregation logic (SUM for additive, weighted for NP%) already produces correct results. Two lines changed total: one interface field addition, one dedup key update.
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 

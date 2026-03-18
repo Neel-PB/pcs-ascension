@@ -29,6 +29,7 @@ export interface ProductiveResourcesKpiRecord {
   load_ts: string;
   employed_productive_fte: number;
   total_prn: number;
+  day_of_week: string | number;
 }
 
 interface ProductiveResourcesKpiFilters {
@@ -71,7 +72,7 @@ async function fetchProductiveResourcesKpi(
   // Deduplicate by composite key
   const seen = new Set<string>();
   return records.filter(r => {
-    const key = `${r.market_hierarchy_key}|${r.department_id}`;
+    const key = `${r.market_hierarchy_key}|${r.department_id}|${r.day_of_week}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
