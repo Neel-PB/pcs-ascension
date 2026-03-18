@@ -776,7 +776,7 @@ export function KPIChartModal({
 
                 {/* Option C: Grouped Bar — Hired vs Target */}
                 <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-2">Option C: Grouped Bar — Hired vs Target FTEs</h4>
+                  <h4 className="text-sm font-semibold text-foreground mb-2">Option C: Grouped Bar — Hired vs Target FTEs by Skill Mix</h4>
                   <div className="h-[280px]">
                     <ChartContainer config={{
                       hired: { label: "Hired FTEs", color: "hsl(217 91% 60%)" },
