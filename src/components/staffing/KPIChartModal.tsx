@@ -51,6 +51,8 @@ export function KPIChartModal({
     "hsl(160 60% 45%)",
   ];
 
+  const isPie = chartType === "pie";
+
   // Filter out zero-value slices for pie charts
   const filteredPieData = useMemo(() => {
     if (!isPie || !chartData) return chartData;
@@ -58,12 +60,11 @@ export function KPIChartModal({
   }, [isPie, chartData]);
 
   // Custom label renderer — hide labels for slices < 3%
-  const renderPieLabel = ({ name, percent, cx, cy, midAngle, outerRadius, x, y }: any) => {
+  const renderPieLabel = ({ name, percent, x, y }: any) => {
     if (percent < 0.03) return null;
     const RADIAN = Math.PI / 180;
-    const sin = Math.sin(-RADIAN * midAngle);
-    const cos = Math.cos(-RADIAN * midAngle);
-    const textAnchor = cos >= 0 ? "start" : "end";
+    const cos = Math.cos(-RADIAN * 0);
+    const textAnchor = x > 200 ? "start" : "end";
     return (
       <text
         x={x}
@@ -92,8 +93,6 @@ export function KPIChartModal({
 
   const formatValue = (val: number) => val.toLocaleString(undefined, { maximumFractionDigits: decimalPlaces });
   const formatAxisTick = (val: number) => val >= 1000 ? `${(val / 1000).toLocaleString(undefined, { maximumFractionDigits: 0 })}K` : val.toString();
-
-  const isPie = chartType === "pie";
 
   // For pie charts, build a dynamic ChartConfig from named data items
   const pieConfig = useMemo(() => {
