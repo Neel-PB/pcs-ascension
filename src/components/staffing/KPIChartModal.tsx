@@ -53,10 +53,17 @@ export function KPIChartModal({
 
   const isPie = chartType === "pie";
 
-  // Filter out zero-value slices for pie charts
+  // Filter out zero-value slices and group small ones into "Other"
   const filteredPieData = useMemo(() => {
     if (!isPie || !chartData) return chartData;
-    return chartData.filter((d: any) => d.value > 0);
+    const nonZero = chartData.filter((d: any) => d.value > 0);
+    const total = nonZero.reduce((sum, d) => sum + d.value, 0);
+    if (total === 0) return nonZero;
+    const threshold = total * 0.03;
+    const major = nonZero.filter((d: any) => d.value >= threshold).sort((a: any, b: any) => b.value - a.value);
+    const minorSum = nonZero.filter((d: any) => d.value < threshold).reduce((sum, d) => sum + d.value, 0);
+    if (minorSum > 0) major.push({ name: "Other", value: minorSum } as any);
+    return major;
   }, [isPie, chartData]);
 
   // Custom label renderer — hide labels for slices < 3%
