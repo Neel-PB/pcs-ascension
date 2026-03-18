@@ -1,24 +1,25 @@
 
 
-## Fix: Vacancy Rate Donut Missing Skill Mix Entries
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-**Problem**: The donut chart groups any skill mix with hired FTEs below 3% of the total into an "Other" bucket, hiding individual entries. The horizontal bar shows all entries, so the donut appears to have less data.
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-**Solution**: Remove the 3% threshold for the Vacancy Rate donut. Show all skill mixes as individual slices since this is skill-mix-level data (not department-level where dozens of entries would clutter). Keep the "Other" grouping only if there are more than ~15 entries to prevent visual noise.
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-### Change in `src/components/staffing/KPIChartModal.tsx`
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-In the Vacancy Rate donut section (around line 756-764):
-- Change the grouping logic: only apply the 3% threshold when there are more than 15 skill mixes; otherwise show all slices individually
-- This ensures the donut always matches the horizontal bar data when the count is manageable
-
-```
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
 // Before
-const threshold = total * 0.03;
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
 
-// After  
-const threshold = skillData.length > 15 ? total * 0.03 : 0;
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
 ```
 
-One line change, one file.
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 
