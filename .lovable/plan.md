@@ -1,25 +1,21 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Change Vacancy Rate Charts from Department to Skill Mix
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+Since users typically have a single department selected, grouping vacancy data by department produces just one bar. The data should instead be grouped by **skill mix** (RN, PCT, Clinical Lead, etc.) which provides meaningful breakdown within a department.
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+### Changes
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+**1. `src/pages/staffing/StaffingSummary.tsx`**
+- Rename `vacancyByDept` → `vacancyBySkillMix`
+- Change aggregation key from `r.department_description` to `r.skill_mix || 'Unknown'`
+- Update the reference in the vacancy-rate KPI config `chartData`
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+**2. `src/components/staffing/KPIChartModal.tsx`**
+- Update all three option headers from "by Department" to "by Skill Mix":
+  - Option A: "Horizontal Bar — Vacancy Rate % by Skill Mix"
+  - Option B: "Stacked Bar — Hired FTEs + Vacancy Gap by Skill Mix"
+  - Option C: "Grouped Bar — Hired vs Target FTEs by Skill Mix"
 
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
-```
-
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+No structural changes to charts — same Recharts components, same color-coding logic, just different grouping key and labels.
 
