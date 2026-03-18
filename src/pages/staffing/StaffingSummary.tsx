@@ -364,8 +364,9 @@ export default function StaffingSummary() {
         id: 'vacancy-rate',
         title: "Vacancy Rate",
         value: fmtPct(vacancyRate),
-        chartData: vacancyRate != null ? [{ value: Math.abs(vacancyRate), name: "Vacancy Rate" }] : [],
-        chartType: "radial" as const,
+        chartData: vacancyByDept.length > 0 ? vacancyByDept : (vacancyRate != null ? [{ value: Math.abs(vacancyRate), name: "Vacancy Rate" }] : []),
+        chartType: "bar" as const,
+        showAllOptions: true,
         delay: 0,
         definition: "Vacancy Rate measures the percentage of Approved budgeted positions that are currently unfilled.",
         calculation: `Vacancy Rate = (FTE Variance / Target FTEs) × 100

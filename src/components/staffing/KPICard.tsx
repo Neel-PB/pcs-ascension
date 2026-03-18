@@ -210,6 +210,7 @@ export function KPICard({
         breakdownData={breakdownData}
         decimalPlaces={decimalPlaces}
         xAxisLabels={xAxisLabels}
+        showAllOptions={showAllOptions}
       />
 
       {/* Info Modal */}
