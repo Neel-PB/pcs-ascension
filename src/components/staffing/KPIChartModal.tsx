@@ -41,15 +41,41 @@ export function KPIChartModal({
   const [activeTab, setActiveTab] = useState("chart");
 
   const PIE_COLORS = [
-    "hsl(var(--primary))",
-    "hsl(142 76% 36%)",
+    "hsl(217 91% 60%)",
+    "hsl(142 71% 45%)",
     "hsl(24 95% 53%)",
     "hsl(262 83% 58%)",
-    "hsl(198 93% 60%)",
     "hsl(340 75% 55%)",
     "hsl(45 93% 47%)",
+    "hsl(198 93% 50%)",
     "hsl(160 60% 45%)",
   ];
+
+  // Filter out zero-value slices for pie charts
+  const filteredPieData = useMemo(() => {
+    if (!isPie || !chartData) return chartData;
+    return chartData.filter((d: any) => d.value > 0);
+  }, [isPie, chartData]);
+
+  // Custom label renderer — hide labels for slices < 3%
+  const renderPieLabel = ({ name, percent, cx, cy, midAngle, outerRadius, x, y }: any) => {
+    if (percent < 0.03) return null;
+    const RADIAN = Math.PI / 180;
+    const sin = Math.sin(-RADIAN * midAngle);
+    const cos = Math.cos(-RADIAN * midAngle);
+    const textAnchor = cos >= 0 ? "start" : "end";
+    return (
+      <text
+        x={x}
+        y={y}
+        textAnchor={textAnchor}
+        dominantBaseline="central"
+        className="text-[11px] fill-foreground"
+      >
+        {`${name} ${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
 
   const getChartColor = () => {
     if (isNegative) return "hsl(24 95% 53%)";
