@@ -38,6 +38,7 @@ export function KPIChartModal({
   breakdownData,
   decimalPlaces = 1,
   xAxisLabels,
+  showAllOptions = false,
 }: KPIChartModalProps) {
   const [activeTab, setActiveTab] = useState("chart");
 
