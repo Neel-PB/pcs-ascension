@@ -53,30 +53,20 @@ export function KPIChartModal({
 
   const isPie = chartType === "pie";
 
-  // Filter out zero-value slices for pie charts
+  // Filter out zero-value slices and group small ones into "Other"
   const filteredPieData = useMemo(() => {
     if (!isPie || !chartData) return chartData;
-    return chartData.filter((d: any) => d.value > 0);
+    const nonZero = chartData.filter((d: any) => d.value > 0);
+    const total = nonZero.reduce((sum, d) => sum + d.value, 0);
+    if (total === 0) return nonZero;
+    const threshold = total * 0.03;
+    const major = nonZero.filter((d: any) => d.value >= threshold).sort((a: any, b: any) => b.value - a.value);
+    const minorSum = nonZero.filter((d: any) => d.value < threshold).reduce((sum, d) => sum + d.value, 0);
+    if (minorSum > 0) major.push({ name: "Other", value: minorSum } as any);
+    return major;
   }, [isPie, chartData]);
 
-  // Custom label renderer — hide labels for slices < 3%
-  const renderPieLabel = ({ name, percent, x, y }: any) => {
-    if (percent < 0.03) return null;
-    const RADIAN = Math.PI / 180;
-    const cos = Math.cos(-RADIAN * 0);
-    const textAnchor = x > 200 ? "start" : "end";
-    return (
-      <text
-        x={x}
-        y={y}
-        textAnchor={textAnchor}
-        dominantBaseline="central"
-        className="text-[11px] fill-foreground"
-      >
-        {`${name} ${(percent * 100).toFixed(0)}%`}
-      </text>
-    );
-  };
+  // No external labels — using side legend instead
 
   const getChartColor = () => {
     if (isNegative) return "hsl(24 95% 53%)";
@@ -193,49 +183,66 @@ export function KPIChartModal({
             <div className="space-y-4">
               <div className="h-[360px]">
                 {isPie && filteredPieData && filteredPieData.length > 0 ? (
-                  <ChartContainer config={pieConfig} className="h-[360px] w-full">
-                    <PieChart>
-                      <ChartTooltip
-                        content={
-                          <ChartTooltipContent
-                            formatter={(val, name) => (
-                              <span>
-                                {name}: {Number(val).toLocaleString(undefined, { maximumFractionDigits: decimalPlaces })} FTE
-                                {pieTotal > 0 ? ` (${((Number(val) / pieTotal) * 100).toFixed(1)}%)` : ''}
-                              </span>
-                            )}
+                  <div className="flex items-center gap-6 h-[360px]">
+                    {/* Donut chart */}
+                    <div className="flex-1 h-full min-w-0">
+                      <ChartContainer config={pieConfig} className="h-full w-full">
+                        <PieChart>
+                          <ChartTooltip
+                            content={
+                              <ChartTooltipContent
+                                formatter={(val, name) => (
+                                  <span>
+                                    {name}: {Number(val).toLocaleString(undefined, { maximumFractionDigits: decimalPlaces })} FTE
+                                    {pieTotal > 0 ? ` (${((Number(val) / pieTotal) * 100).toFixed(1)}%)` : ''}
+                                  </span>
+                                )}
+                              />
+                            }
                           />
-                        }
-                      />
-                      <Pie
-                        data={filteredPieData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="45%"
-                        outerRadius={110}
-                        innerRadius={60}
-                        paddingAngle={2}
-                        label={renderPieLabel}
-                        labelLine={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1 }}
-                      >
-                        {filteredPieData.map((_: any, i: number) => (
-                          <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                        ))}
-                      </Pie>
-                      {/* Center total label */}
-                      <text x="50%" y="45%" textAnchor="middle" dominantBaseline="central">
-                        <tspan x="50%" dy="-0.6em" className="text-[11px] fill-muted-foreground">Total</tspan>
-                        <tspan x="50%" dy="1.4em" className="text-base font-semibold fill-foreground">{formatValue(pieTotal)}</tspan>
-                      </text>
-                      <Legend
-                        verticalAlign="bottom"
-                        layout="horizontal"
-                        wrapperStyle={{ paddingTop: 8 }}
-                        formatter={(val: string) => <span className="text-xs text-foreground">{val}</span>}
-                      />
-                    </PieChart>
-                  </ChartContainer>
+                          <Pie
+                            data={filteredPieData}
+                            dataKey="value"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={120}
+                            innerRadius={70}
+                            paddingAngle={2}
+                            label={false}
+                            labelLine={false}
+                          >
+                            {filteredPieData.map((_: any, i: number) => (
+                              <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                            ))}
+                          </Pie>
+                          {/* Center total label */}
+                          <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central">
+                            <tspan x="50%" dy="-0.6em" className="text-[11px] fill-muted-foreground">Total</tspan>
+                            <tspan x="50%" dy="1.4em" className="text-lg font-semibold fill-foreground">{formatValue(pieTotal)}</tspan>
+                          </text>
+                        </PieChart>
+                      </ChartContainer>
+                    </div>
+                    {/* Side legend */}
+                    <div className="w-48 flex flex-col gap-2 pr-2">
+                      {filteredPieData.map((item: any, i: number) => (
+                        <div key={i} className="flex items-center gap-2 text-sm">
+                          <span
+                            className="w-3 h-3 rounded-full shrink-0"
+                            style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }}
+                          />
+                          <span className="truncate flex-1 text-foreground">{item.name}</span>
+                          <span className="tabular-nums text-muted-foreground shrink-0">
+                            {formatValue(item.value)}
+                          </span>
+                          <span className="tabular-nums text-muted-foreground shrink-0 w-10 text-right text-xs">
+                            {pieTotal > 0 ? `${((item.value / pieTotal) * 100).toFixed(0)}%` : '—'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 ) : enrichedData && enrichedData.length > 0 ? (
                   <ChartContainer config={{ value: { label: title, color: getChartColor() } } satisfies ChartConfig} className="h-[300px] w-full">
                     {chartType === "area" ? (
