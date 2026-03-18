@@ -268,7 +268,7 @@ export function KPIChartModal({
                   </div>
                 </div>
               </div>
-            </ScrollArea>
+            </div>
           ) : (
             <>
           {activeTab === "chart" && (
