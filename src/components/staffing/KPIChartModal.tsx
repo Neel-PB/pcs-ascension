@@ -157,7 +157,7 @@ export function KPIChartModal({
       <DialogContent className={cn("max-h-[85vh] overflow-hidden p-3 flex flex-col gap-0", showAllOptions ? "max-w-4xl" : "max-w-3xl")}>
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 border-b pb-2">
           <div>
-            <DialogTitle className="text-2xl">{title}</DialogTitle>
+            <DialogTitle className="text-xl">{title}</DialogTitle>
             <DialogDescription className="sr-only">
               Chart and table data for {title}
             </DialogDescription>
