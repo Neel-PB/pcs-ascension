@@ -743,7 +743,7 @@ export function VarianceAnalysis({
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xl font-light text-foreground leading-none w-4 text-center">-</span>
-                    <span className="text-muted-foreground">FTE Surplus</span>
+                    <span className="text-muted-foreground">FTE Shortage</span>
                   </div>
                 </div>
                 {/* Download Button */}
