@@ -256,6 +256,14 @@ export default function StaffingSummary() {
       .reduce((sum, r) => sum + Number(r.target_fte ?? 0), 0);
   }, [prKpiData]);
 
+  const hasNursingData = useMemo(() => {
+    if (!skillShiftData?.length) return false;
+    return skillShiftData.some(r => {
+      const nf = String(r.nursing_flag).toLowerCase();
+      return nf === 'y' || nf === 'true' || nf === '1';
+    });
+  }, [skillShiftData]);
+
   // Derived FTE KPI values
   const fteKpiValues = useMemo(() => {
     const hiredFtes = ssAgg?.hired_total_fte ?? null;
