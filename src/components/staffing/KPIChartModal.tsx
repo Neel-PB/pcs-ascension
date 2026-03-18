@@ -154,7 +154,7 @@ export function KPIChartModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn("max-h-[85vh] overflow-hidden p-4 flex flex-col", showAllOptions ? "max-w-4xl" : "max-w-3xl")}>
+      <DialogContent className={cn("max-h-[85vh] overflow-hidden p-3 flex flex-col gap-0", showAllOptions ? "max-w-4xl" : "max-w-3xl")}>
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 border-b">
           <div>
             <DialogTitle className="text-2xl">{title}</DialogTitle>
