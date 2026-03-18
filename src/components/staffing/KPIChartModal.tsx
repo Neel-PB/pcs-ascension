@@ -176,9 +176,9 @@ export function KPIChartModal({
             </div>
             {trend && trendValue && (
               <div className="text-right">
-                <p className="text-sm text-muted-foreground mb-1">Trend</p>
-                <div className="flex items-center gap-2">
-                  <span className={cn("text-2xl font-semibold", getTrendColor())}>
+                <p className="text-xs text-muted-foreground">Trend</p>
+                <div className="flex items-center gap-1.5">
+                  <span className={cn("text-xl font-semibold", getTrendColor())}>
                     {trend === "up" ? "↑" : "↓"} {trendValue}
                   </span>
                 </div>
