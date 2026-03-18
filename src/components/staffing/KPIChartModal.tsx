@@ -355,7 +355,7 @@ export function KPIChartModal({
           {activeTab === "table" && (
             <div className="space-y-4">
               <div className="h-[300px]">
-                {isPie && chartData && chartData.length > 0 ? (
+                {isPie && filteredPieData && filteredPieData.length > 0 ? (
                   <div className="rounded-lg border overflow-hidden h-full">
                     <ScrollArea className="h-full">
                       <div 
@@ -366,7 +366,7 @@ export function KPIChartModal({
                         <div className="px-4 py-3 text-right font-semibold text-sm">FTE</div>
                         <div className="px-4 py-3 text-right font-semibold text-sm">%</div>
                       </div>
-                      {chartData.map((item: any, index: number) => (
+                      {filteredPieData.map((item: any, index: number) => (
                         <div
                           key={index}
                           className="grid border-b hover:bg-muted/50 transition-colors"
