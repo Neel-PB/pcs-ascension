@@ -66,24 +66,7 @@ export function KPIChartModal({
     return major;
   }, [isPie, chartData]);
 
-  // Custom label renderer — hide labels for slices < 3%
-  const renderPieLabel = ({ name, percent, x, y }: any) => {
-    if (percent < 0.03) return null;
-    const RADIAN = Math.PI / 180;
-    const cos = Math.cos(-RADIAN * 0);
-    const textAnchor = x > 200 ? "start" : "end";
-    return (
-      <text
-        x={x}
-        y={y}
-        textAnchor={textAnchor}
-        dominantBaseline="central"
-        className="text-[11px] fill-foreground"
-      >
-        {`${name} ${(percent * 100).toFixed(0)}%`}
-      </text>
-    );
-  };
+  // No external labels — using side legend instead
 
   const getChartColor = () => {
     if (isNegative) return "hsl(24 95% 53%)";
