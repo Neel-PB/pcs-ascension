@@ -154,21 +154,21 @@ export function KPIChartModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn("max-h-[85vh] overflow-hidden p-4 flex flex-col", showAllOptions ? "max-w-4xl" : "max-w-3xl")}>
-        <DialogHeader className="flex flex-row items-center justify-between space-y-0 border-b">
+      <DialogContent className={cn("max-h-[85vh] overflow-hidden p-3 flex flex-col gap-0", showAllOptions ? "max-w-4xl" : "max-w-3xl")}>
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0 border-b pb-2">
           <div>
-            <DialogTitle className="text-2xl">{title}</DialogTitle>
+            <DialogTitle className="text-xl">{title}</DialogTitle>
             <DialogDescription className="sr-only">
               Chart and table data for {title}
             </DialogDescription>
           </div>
           
           {/* Current Value and Trend */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-sm text-muted-foreground mb-1">Current Value</p>
+              <p className="text-xs text-muted-foreground">Current Value</p>
               <p className={cn(
-                "text-3xl font-bold",
+                "text-2xl font-bold",
                 isNegative ? "text-orange-600" : "text-foreground"
               )}>
                 {value}
@@ -176,9 +176,9 @@ export function KPIChartModal({
             </div>
             {trend && trendValue && (
               <div className="text-right">
-                <p className="text-sm text-muted-foreground mb-1">Trend</p>
-                <div className="flex items-center gap-2">
-                  <span className={cn("text-2xl font-semibold", getTrendColor())}>
+                <p className="text-xs text-muted-foreground">Trend</p>
+                <div className="flex items-center gap-1.5">
+                  <span className={cn("text-xl font-semibold", getTrendColor())}>
                     {trend === "up" ? "↑" : "↓"} {trendValue}
                   </span>
                 </div>
@@ -187,7 +187,7 @@ export function KPIChartModal({
           </div>
         </DialogHeader>
         
-        <div className="space-y-3 pt-1 overflow-hidden flex flex-col flex-1 min-h-0">
+        <div className="space-y-2 pt-1 overflow-hidden flex flex-col flex-1 min-h-0">
 
           {/* Toggle for Chart and Table — hidden when showAllOptions */}
           {!showAllOptions && (
@@ -809,8 +809,8 @@ export function KPIChartModal({
           ) : (
             <>
           {activeTab === "chart" && (
-            <div className="space-y-4">
-              <div className="h-[360px]">
+            <div className="space-y-2">
+              <div className="h-[320px]">
                 {isRadial ? (
                   <div className="flex flex-col items-center justify-center h-full">
                     <ChartContainer config={radialConfig} className="h-[280px] w-[280px]">
@@ -843,7 +843,7 @@ export function KPIChartModal({
                     </div>
                   </div>
                 ) : isPie && filteredPieData && filteredPieData.length > 0 ? (
-                  <div className="flex items-center gap-6 h-[360px]">
+                  <div className="flex items-center gap-4 h-[320px]">
                     {/* Donut chart */}
                     <div className="flex-1 h-full min-w-0">
                       <ChartContainer config={pieConfig} className="h-full w-full">
@@ -904,7 +904,7 @@ export function KPIChartModal({
                     </div>
                   </div>
                 ) : enrichedData && enrichedData.length > 0 ? (
-                  <ChartContainer config={{ value: { label: title, color: getChartColor() } } satisfies ChartConfig} className="h-[300px] w-full">
+                  <ChartContainer config={{ value: { label: title, color: getChartColor() } } satisfies ChartConfig} className="h-[280px] w-full">
                     {chartType === "area" ? (
                       <AreaChart data={enrichedData} margin={{ left: -10, right: 10, top: 5, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -999,7 +999,7 @@ export function KPIChartModal({
               )}
               {/* Statistics — pie shows total, others show high/avg/low */}
               {isPie && pieTotal > 0 && (
-                <div className="flex items-center justify-between pt-2 border-t">
+                <div className="flex items-center justify-between pt-1.5 border-t">
                   <div className="text-center">
                     <p className="text-sm text-muted-foreground mb-1">Total</p>
                     <p className="text-xl font-semibold text-foreground">{formatValue(pieTotal)}</p>
@@ -1008,19 +1008,19 @@ export function KPIChartModal({
                 </div>
               )}
               {stats && (
-                <div className="flex items-center justify-between pt-2 border-t">
-                  <div className="grid grid-cols-3 gap-6">
+                <div className="flex items-center justify-between pt-1.5 border-t">
+                  <div className="grid grid-cols-3 gap-4">
                     <div className="text-center">
-                      <p className="text-sm text-muted-foreground mb-1">High</p>
-                      <p className="text-xl font-semibold text-foreground">{stats.high}</p>
+                      <p className="text-xs text-muted-foreground">High</p>
+                      <p className="text-lg font-semibold text-foreground">{stats.high}</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-sm text-muted-foreground mb-1">Average</p>
-                      <p className="text-xl font-semibold text-foreground">{stats.average}</p>
+                      <p className="text-xs text-muted-foreground">Average</p>
+                      <p className="text-lg font-semibold text-foreground">{stats.average}</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-sm text-muted-foreground mb-1">Low</p>
-                      <p className="text-xl font-semibold text-foreground">{stats.low}</p>
+                      <p className="text-xs text-muted-foreground">Low</p>
+                      <p className="text-lg font-semibold text-foreground">{stats.low}</p>
                     </div>
                   </div>
                   <Button onClick={() => onOpenChange(false)}>Close</Button>
