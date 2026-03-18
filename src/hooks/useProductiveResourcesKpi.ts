@@ -72,7 +72,7 @@ async function fetchProductiveResourcesKpi(
   // Deduplicate by composite key
   const seen = new Set<string>();
   return records.filter(r => {
-    const key = `${r.market_hierarchy_key}|${r.department_id}`;
+    const key = `${r.market_hierarchy_key}|${r.department_id}|${r.day_of_week}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
