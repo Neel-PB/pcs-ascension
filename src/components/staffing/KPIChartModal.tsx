@@ -16,11 +16,12 @@ interface KPIChartModalProps {
   trendValue?: string;
   isNegative?: boolean;
   isHighlighted?: boolean;
-  chartData?: Array<{ value: number }>;
+  chartData?: Array<any>;
   chartType?: "line" | "bar" | "area" | "pie" | "radial";
   breakdownData?: Array<any>;
   decimalPlaces?: number;
   xAxisLabels?: string[];
+  showAllOptions?: boolean;
 }
 
 export function KPIChartModal({
@@ -37,6 +38,7 @@ export function KPIChartModal({
   breakdownData,
   decimalPlaces = 1,
   xAxisLabels,
+  showAllOptions = false,
 }: KPIChartModalProps) {
   const [activeTab, setActiveTab] = useState("chart");
 
@@ -146,7 +148,7 @@ export function KPIChartModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden p-4 flex flex-col">
+      <DialogContent className={cn("max-h-[85vh] overflow-hidden p-4 flex flex-col", showAllOptions ? "max-w-4xl" : "max-w-3xl")}>
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 border-b">
           <div>
             <DialogTitle className="text-2xl">{title}</DialogTitle>
@@ -179,17 +181,96 @@ export function KPIChartModal({
           </div>
         </DialogHeader>
         
-        <div className="space-y-3 pt-1 overflow-hidden flex flex-col">
+        <div className="space-y-3 pt-1 overflow-hidden flex flex-col flex-1 min-h-0">
 
-          {/* Toggle for Chart and Table */}
-          <ToggleButtonGroup
-            items={[{ id: "chart", label: "Chart" }, { id: "table", label: "Table" }]}
-            activeId={activeTab}
-            onSelect={setActiveTab}
-            layoutId="kpiChartTab"
-            className="max-w-xs"
-          />
+          {/* Toggle for Chart and Table — hidden when showAllOptions */}
+          {!showAllOptions && (
+            <ToggleButtonGroup
+              items={[{ id: "chart", label: "Chart" }, { id: "table", label: "Table" }]}
+              activeId={activeTab}
+              onSelect={setActiveTab}
+              layoutId="kpiChartTab"
+              className="max-w-xs"
+            />
+          )}
 
+          {/* All 3 Options View */}
+          {showAllOptions ? (
+            <ScrollArea className="flex-1 min-h-0">
+              <div className="space-y-6 pr-4 pb-4">
+                {/* Option A: Horizontal Bar — Vacancy Rate % */}
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground mb-2">Option A: Horizontal Bar — Vacancy Rate % by Department</h4>
+                  <div style={{ height: Math.max(200, (chartData?.length || 0) * 32 + 40) }}>
+                    <ChartContainer config={{ vacancyRate: { label: "Vacancy Rate %", color: "hsl(var(--primary))" } } satisfies ChartConfig} className="h-full w-full">
+                      <BarChart data={chartData} layout="vertical" margin={{ left: 10, right: 30, top: 5, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" horizontal={false} />
+                        <XAxis type="number" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} tickFormatter={(v) => `${v}%`} />
+                        <YAxis type="category" dataKey="name" width={140} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                        <ChartTooltip content={<ChartTooltipContent formatter={(val) => <span>{Number(val).toFixed(1)}%</span>} />} />
+                        <Bar dataKey="vacancyRate" radius={[0, 4, 4, 0]}>
+                          {(chartData || []).map((entry: any, i: number) => (
+                            <Cell
+                              key={i}
+                              fill={entry.vacancyRate < 10 ? "hsl(142 76% 36%)" : entry.vacancyRate < 20 ? "hsl(45 93% 47%)" : "hsl(0 84% 60%)"}
+                            />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ChartContainer>
+                  </div>
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1 ml-2">
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: "hsl(142 76% 36%)" }} />&lt;10% Good</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: "hsl(45 93% 47%)" }} />10–20% Watch</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: "hsl(0 84% 60%)" }} />&gt;20% Critical</span>
+                  </div>
+                </div>
+
+                {/* Option B: Stacked Bar — Hired + Gap */}
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground mb-2">Option B: Stacked Bar — Hired FTEs + Vacancy Gap</h4>
+                  <div className="h-[280px]">
+                    <ChartContainer config={{
+                      hired: { label: "Hired FTEs", color: "hsl(217 91% 60%)" },
+                      gap: { label: "Vacancy Gap", color: "hsl(24 95% 53%)" },
+                    } satisfies ChartConfig} className="h-full w-full">
+                      <BarChart data={chartData} margin={{ left: -10, right: 10, top: 5, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} angle={-35} textAnchor="end" height={70} />
+                        <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} width={45} />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Legend />
+                        <Bar dataKey="hired" stackId="a" fill="hsl(217 91% 60%)" radius={[0, 0, 0, 0]} />
+                        <Bar dataKey="gap" stackId="a" fill="hsl(24 95% 53%)" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ChartContainer>
+                  </div>
+                </div>
+
+                {/* Option C: Grouped Bar — Hired vs Target */}
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground mb-2">Option C: Grouped Bar — Hired vs Target FTEs</h4>
+                  <div className="h-[280px]">
+                    <ChartContainer config={{
+                      hired: { label: "Hired FTEs", color: "hsl(217 91% 60%)" },
+                      target: { label: "Target FTEs", color: "hsl(var(--muted-foreground))" },
+                    } satisfies ChartConfig} className="h-full w-full">
+                      <BarChart data={chartData} margin={{ left: -10, right: 10, top: 5, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} angle={-35} textAnchor="end" height={70} />
+                        <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} width={45} />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Legend />
+                        <Bar dataKey="hired" fill="hsl(217 91% 60%)" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="target" fill="hsl(var(--muted-foreground) / 0.4)" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ChartContainer>
+                  </div>
+                </div>
+              </div>
+            </ScrollArea>
+          ) : (
+            <>
           {activeTab === "chart" && (
             <div className="space-y-4">
               <div className="h-[360px]">
@@ -521,6 +602,8 @@ export function KPIChartModal({
                 </div>
               )}
             </div>
+          )}
+            </>
           )}
         </div>
       </DialogContent>

@@ -245,6 +245,28 @@ export default function StaffingSummary() {
     };
   }, [skillShiftData]);
 
+  // Vacancy rate by department for chart options
+  const vacancyByDept = useMemo(() => {
+    if (!skillShiftData?.length) return [];
+    const byDept: Record<string, { hired: number; target: number }> = {};
+    skillShiftData.forEach(r => {
+      const dept = r.department_description || 'Unknown';
+      if (!byDept[dept]) byDept[dept] = { hired: 0, target: 0 };
+      byDept[dept].hired += Number(r.hired_total_fte ?? 0);
+      byDept[dept].target += Number(r.target_fte_total ?? 0);
+    });
+    return Object.entries(byDept)
+      .map(([name, v]) => ({
+        name,
+        hired: Math.round(v.hired * 10) / 10,
+        target: Math.round(v.target * 10) / 10,
+        gap: Math.round(Math.max(0, v.target - v.hired) * 10) / 10,
+        vacancyRate: v.target > 0 ? Math.round(Math.abs((v.hired - v.target) / v.target) * 1000) / 10 : 0,
+        value: v.target > 0 ? Math.round(Math.abs((v.hired - v.target) / v.target) * 1000) / 10 : 0,
+      }))
+      .sort((a, b) => b.vacancyRate - a.vacancyRate);
+  }, [skillShiftData]);
+
   // Non-nursing target from productive-resources-kpi
   const nonNursingTarget = useMemo(() => {
     if (!prKpiData?.length) return 0;
@@ -342,8 +364,9 @@ export default function StaffingSummary() {
         id: 'vacancy-rate',
         title: "Vacancy Rate",
         value: fmtPct(vacancyRate),
-        chartData: vacancyRate != null ? [{ value: Math.abs(vacancyRate), name: "Vacancy Rate" }] : [],
-        chartType: "radial" as const,
+        chartData: vacancyByDept.length > 0 ? vacancyByDept : (vacancyRate != null ? [{ value: Math.abs(vacancyRate), name: "Vacancy Rate" }] : []),
+        chartType: "bar" as const,
+        showAllOptions: true,
         delay: 0,
         definition: "Vacancy Rate measures the percentage of Approved budgeted positions that are currently unfilled.",
         calculation: `Vacancy Rate = (FTE Variance / Target FTEs) × 100

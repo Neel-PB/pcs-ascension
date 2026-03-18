@@ -31,6 +31,7 @@ export interface KPICardProps {
   definition?: string;
   calculation?: string;
   breakdownData?: Array<any>;
+  showAllOptions?: boolean;
   decimalPlaces?: number;
   xAxisLabels?: string[];
   employmentBreakdown?: EmploymentBreakdown;
@@ -54,6 +55,7 @@ export function KPICard({
   definition = "",
   calculation = "",
   breakdownData,
+  showAllOptions,
   decimalPlaces = 1,
   xAxisLabels,
   employmentBreakdown,
@@ -208,6 +210,7 @@ export function KPICard({
         breakdownData={breakdownData}
         decimalPlaces={decimalPlaces}
         xAxisLabels={xAxisLabels}
+        showAllOptions={showAllOptions}
       />
 
       {/* Info Modal */}
