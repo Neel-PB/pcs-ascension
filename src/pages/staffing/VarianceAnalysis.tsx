@@ -667,7 +667,7 @@ export function VarianceAnalysis({
           <div className="flex items-center gap-4 text-sm" data-tour="variance-legend">
             <div className="flex items-center gap-2">
               <span className="text-xl font-light text-foreground leading-none w-4 text-center">+</span>
-              <span className="text-muted-foreground">FTE Shortage</span>
+              <span className="text-muted-foreground">FTE Surplus</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xl font-light text-foreground leading-none w-4 text-center">-</span>
