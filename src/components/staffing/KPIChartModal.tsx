@@ -1011,16 +1011,16 @@ export function KPIChartModal({
                 <div className="flex items-center justify-between pt-1.5 border-t">
                   <div className="grid grid-cols-3 gap-4">
                     <div className="text-center">
-                      <p className="text-sm text-muted-foreground mb-1">High</p>
-                      <p className="text-xl font-semibold text-foreground">{stats.high}</p>
+                      <p className="text-xs text-muted-foreground">High</p>
+                      <p className="text-lg font-semibold text-foreground">{stats.high}</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-sm text-muted-foreground mb-1">Average</p>
-                      <p className="text-xl font-semibold text-foreground">{stats.average}</p>
+                      <p className="text-xs text-muted-foreground">Average</p>
+                      <p className="text-lg font-semibold text-foreground">{stats.average}</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-sm text-muted-foreground mb-1">Low</p>
-                      <p className="text-xl font-semibold text-foreground">{stats.low}</p>
+                      <p className="text-xs text-muted-foreground">Low</p>
+                      <p className="text-lg font-semibold text-foreground">{stats.low}</p>
                     </div>
                   </div>
                   <Button onClick={() => onOpenChange(false)}>Close</Button>
