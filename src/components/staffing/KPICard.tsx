@@ -31,6 +31,7 @@ export interface KPICardProps {
   definition?: string;
   calculation?: string;
   breakdownData?: Array<any>;
+  showAllOptions?: boolean;
   decimalPlaces?: number;
   xAxisLabels?: string[];
   employmentBreakdown?: EmploymentBreakdown;
