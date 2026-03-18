@@ -757,7 +757,7 @@ export function KPIChartModal({
                 {(() => {
                   const skillData = chartData || [];
                   const total = skillData.reduce((s: number, d: any) => s + Number(d.hired ?? 0), 0);
-                  const threshold = total * 0.03;
+                  const threshold = skillData.length > 15 ? total * 0.03 : 0;
                   const major = skillData.filter((d: any) => Number(d.hired ?? 0) >= threshold).sort((a: any, b: any) => Number(b.hired ?? 0) - Number(a.hired ?? 0));
                   const minorSum = skillData.filter((d: any) => Number(d.hired ?? 0) < threshold).reduce((s: number, d: any) => s + Number(d.hired ?? 0), 0);
                   const pieData = [...major.map((d: any) => ({ name: d.name, value: Math.round(Number(d.hired ?? 0) * 10) / 10 }))];
