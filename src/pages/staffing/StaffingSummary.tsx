@@ -245,17 +245,17 @@ export default function StaffingSummary() {
     };
   }, [skillShiftData]);
 
-  // Vacancy rate by department for chart options
-  const vacancyByDept = useMemo(() => {
+  // Vacancy rate by skill mix for chart options
+  const vacancyBySkillMix = useMemo(() => {
     if (!skillShiftData?.length) return [];
-    const byDept: Record<string, { hired: number; target: number }> = {};
+    const bySkill: Record<string, { hired: number; target: number }> = {};
     skillShiftData.forEach(r => {
-      const dept = r.department_description || 'Unknown';
-      if (!byDept[dept]) byDept[dept] = { hired: 0, target: 0 };
-      byDept[dept].hired += Number(r.hired_total_fte ?? 0);
-      byDept[dept].target += Number(r.target_fte_total ?? 0);
+      const skill = r.skill_mix || 'Unknown';
+      if (!bySkill[skill]) bySkill[skill] = { hired: 0, target: 0 };
+      bySkill[skill].hired += Number(r.hired_total_fte ?? 0);
+      bySkill[skill].target += Number(r.target_fte_total ?? 0);
     });
-    return Object.entries(byDept)
+    return Object.entries(bySkill)
       .map(([name, v]) => ({
         name,
         hired: Math.round(v.hired * 10) / 10,
@@ -414,7 +414,7 @@ export default function StaffingSummary() {
         id: 'vacancy-rate',
         title: "Vacancy Rate",
         value: fmtPct(vacancyRate),
-        chartData: vacancyByDept.length > 0 ? vacancyByDept : (vacancyRate != null ? [{ value: Math.abs(vacancyRate), name: "Vacancy Rate" }] : []),
+        chartData: vacancyBySkillMix.length > 0 ? vacancyBySkillMix : (vacancyRate != null ? [{ value: Math.abs(vacancyRate), name: "Vacancy Rate" }] : []),
         chartType: "bar" as const,
         showAllOptions: true,
         delay: 0,

@@ -727,7 +727,7 @@ export function KPIChartModal({
                   <>
                 {/* Option A: Horizontal Bar — Vacancy Rate % */}
                 <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-2">Option A: Horizontal Bar — Vacancy Rate % by Department</h4>
+                  <h4 className="text-sm font-semibold text-foreground mb-2"><h4 className="text-sm font-semibold text-foreground mb-2">Option A: Horizontal Bar — Vacancy Rate % by Skill Mix</h4></h4>
                   <div style={{ height: Math.max(200, (chartData?.length || 0) * 32 + 40) }}>
                     <ChartContainer config={{ vacancyRate: { label: "Vacancy Rate %", color: "hsl(var(--primary))" } } satisfies ChartConfig} className="h-full w-full">
                       <BarChart data={chartData} layout="vertical" margin={{ left: 10, right: 30, top: 5, bottom: 5 }}>
@@ -755,7 +755,7 @@ export function KPIChartModal({
 
                 {/* Option B: Stacked Bar — Hired + Gap */}
                 <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-2">Option B: Stacked Bar — Hired FTEs + Vacancy Gap</h4>
+                  <h4 className="text-sm font-semibold text-foreground mb-2">Option B: Stacked Bar — Hired FTEs + Vacancy Gap by Skill Mix</h4>
                   <div className="h-[280px]">
                     <ChartContainer config={{
                       hired: { label: "Hired FTEs", color: "hsl(217 91% 60%)" },
@@ -776,7 +776,7 @@ export function KPIChartModal({
 
                 {/* Option C: Grouped Bar — Hired vs Target */}
                 <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-2">Option C: Grouped Bar — Hired vs Target FTEs</h4>
+                  <h4 className="text-sm font-semibold text-foreground mb-2">Option C: Grouped Bar — Hired vs Target FTEs by Skill Mix</h4>
                   <div className="h-[280px]">
                     <ChartContainer config={{
                       hired: { label: "Hired FTEs", color: "hsl(217 91% 60%)" },
