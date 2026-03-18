@@ -727,7 +727,7 @@ export function KPIChartModal({
                   <>
                 {/* Option A: Horizontal Bar — Vacancy Rate % */}
                 <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-2"><h4 className="text-sm font-semibold text-foreground mb-2">Option A: Horizontal Bar — Vacancy Rate % by Skill Mix</h4></h4>
+                  <h4 className="text-sm font-semibold text-foreground mb-2">Option A: Horizontal Bar — Vacancy Rate % by Skill Mix</h4>
                   <div style={{ height: Math.max(200, (chartData?.length || 0) * 32 + 40) }}>
                     <ChartContainer config={{ vacancyRate: { label: "Vacancy Rate %", color: "hsl(var(--primary))" } } satisfies ChartConfig} className="h-full w-full">
                       <BarChart data={chartData} layout="vertical" margin={{ left: 10, right: 30, top: 5, bottom: 5 }}>
@@ -753,47 +753,49 @@ export function KPIChartModal({
                   </div>
                 </div>
 
-                {/* Option B: Stacked Bar — Hired + Gap */}
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-2">Option B: Stacked Bar — Hired FTEs + Vacancy Gap by Skill Mix</h4>
-                  <div className="h-[280px]">
-                    <ChartContainer config={{
-                      hired: { label: "Hired FTEs", color: "hsl(217 91% 60%)" },
-                      gap: { label: "Vacancy Gap", color: "hsl(24 95% 53%)" },
-                    } satisfies ChartConfig} className="h-full w-full">
-                      <BarChart data={chartData} margin={{ left: -10, right: 10, top: 5, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                        <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} angle={-35} textAnchor="end" height={70} />
-                        <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} width={45} />
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <Legend />
-                        <Bar dataKey="hired" stackId="a" fill="hsl(217 91% 60%)" radius={[0, 0, 0, 0]} />
-                        <Bar dataKey="gap" stackId="a" fill="hsl(24 95% 53%)" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ChartContainer>
-                  </div>
-                </div>
-
-                {/* Option C: Grouped Bar — Hired vs Target */}
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-2">Option C: Grouped Bar — Hired vs Target FTEs by Skill Mix</h4>
-                  <div className="h-[280px]">
-                    <ChartContainer config={{
-                      hired: { label: "Hired FTEs", color: "hsl(217 91% 60%)" },
-                      target: { label: "Target FTEs", color: "hsl(var(--muted-foreground))" },
-                    } satisfies ChartConfig} className="h-full w-full">
-                      <BarChart data={chartData} margin={{ left: -10, right: 10, top: 5, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                        <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} angle={-35} textAnchor="end" height={70} />
-                        <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} width={45} />
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <Legend />
-                        <Bar dataKey="hired" fill="hsl(217 91% 60%)" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="target" fill="hsl(var(--muted-foreground) / 0.4)" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ChartContainer>
-                  </div>
-                </div>
+                {/* Option B: Donut — Hired FTEs by Skill Mix */}
+                {(() => {
+                  const skillData = chartData || [];
+                  const total = skillData.reduce((s: number, d: any) => s + Number(d.hired ?? 0), 0);
+                  const threshold = total * 0.03;
+                  const major = skillData.filter((d: any) => Number(d.hired ?? 0) >= threshold).sort((a: any, b: any) => Number(b.hired ?? 0) - Number(a.hired ?? 0));
+                  const minorSum = skillData.filter((d: any) => Number(d.hired ?? 0) < threshold).reduce((s: number, d: any) => s + Number(d.hired ?? 0), 0);
+                  const pieData = [...major.map((d: any) => ({ name: d.name, value: Math.round(Number(d.hired ?? 0) * 10) / 10 }))];
+                  if (minorSum > 0) pieData.push({ name: "Other", value: Math.round(minorSum * 10) / 10 });
+                  const donutConfig: ChartConfig = {};
+                  pieData.forEach((item, i) => { donutConfig[item.name] = { label: item.name, color: PIE_COLORS[i % PIE_COLORS.length] }; });
+                  return (
+                    <div>
+                      <h4 className="text-sm font-semibold text-foreground mb-2">Option B: Donut — Hired FTEs by Skill Mix</h4>
+                      <div className="flex items-center gap-6 h-[320px]">
+                        <div className="flex-1 h-full min-w-0">
+                          <ChartContainer config={donutConfig} className="h-full w-full">
+                            <PieChart>
+                              <ChartTooltip content={<ChartTooltipContent formatter={(val, name) => <span>{name}: {Number(val).toLocaleString(undefined, { maximumFractionDigits: 1 })} FTE {total > 0 ? `(${((Number(val) / total) * 100).toFixed(1)}%)` : ''}</span>} />} />
+                              <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={110} innerRadius={65} paddingAngle={2} label={false} labelLine={false}>
+                                {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                              </Pie>
+                              <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central">
+                                <tspan x="50%" dy="-0.6em" className="text-[11px] fill-muted-foreground">Hired</tspan>
+                                <tspan x="50%" dy="1.4em" className="text-lg font-semibold fill-foreground">{formatValue(total)}</tspan>
+                              </text>
+                            </PieChart>
+                          </ChartContainer>
+                        </div>
+                        <div className="w-52 flex flex-col gap-1.5 pr-2 max-h-[300px] overflow-y-auto">
+                          {pieData.map((item, i) => (
+                            <div key={i} className="flex items-center gap-2 text-sm">
+                              <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
+                              <span className="truncate flex-1 text-foreground">{item.name}</span>
+                              <span className="tabular-nums text-muted-foreground shrink-0">{formatValue(item.value)}</span>
+                              <span className="tabular-nums text-muted-foreground shrink-0 w-10 text-right text-xs">{total > 0 ? `${((item.value / total) * 100).toFixed(0)}%` : '—'}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
                   </>
                 )}
               </div>
