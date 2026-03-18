@@ -52,6 +52,17 @@ export function KPIChartModal({
   ];
 
   const isPie = chartType === "pie";
+  const isRadial = chartType === "radial";
+
+  // Radial gauge helpers
+  const radialValue = isRadial && chartData?.[0] ? chartData[0].value : 0;
+  const radialFillColor = radialValue < 10
+    ? "hsl(142 76% 36%)"
+    : radialValue < 20
+      ? "hsl(45 93% 47%)"
+      : "hsl(0 84% 60%)";
+  const radialData = [{ value: radialValue, fill: radialFillColor }];
+  const radialConfig: ChartConfig = { value: { label: title, color: radialFillColor } };
 
   // Filter out zero-value slices and group small ones into "Other"
   const filteredPieData = useMemo(() => {
