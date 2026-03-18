@@ -55,6 +55,7 @@ export function KPICard({
   definition = "",
   calculation = "",
   breakdownData,
+  showAllOptions,
   decimalPlaces = 1,
   xAxisLabels,
   employmentBreakdown,
