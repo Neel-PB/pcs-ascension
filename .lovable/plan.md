@@ -1,16 +1,25 @@
 
 
-## Fix Variance Analysis Legend
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-**Problem**: The legend in Variance Analysis shows `+ FTE Shortage` and `- FTE Surplus`, which is backwards. Per the variance formula (Hired - Target), positive means surplus and negative means shortage.
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### Changes
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-**`src/pages/staffing/VarianceAnalysis.tsx`** — Two identical legend blocks (lines 669-675 and lines 740-747):
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-Swap the labels:
-- `+` → "FTE Surplus" (was "FTE Shortage")
-- `-` → "FTE Shortage" (was "FTE Surplus")
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
 
-Both the inline header legend and the fullscreen dialog legend will be updated.
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+```
+
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 
