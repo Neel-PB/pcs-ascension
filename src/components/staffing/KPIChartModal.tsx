@@ -487,6 +487,11 @@ export function KPIChartModal({
               </div>
 
               {/* Statistics for table view */}
+              {isRadial && (
+                <div className="flex items-center justify-end pt-2 border-t">
+                  <Button onClick={() => onOpenChange(false)}>Close</Button>
+                </div>
+              )}
               {isPie && pieTotal > 0 && (
                 <div className="flex items-center justify-between pt-2 border-t">
                   <div className="text-center">
