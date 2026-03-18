@@ -755,7 +755,7 @@ export function KPIChartModal({
 
                 {/* Option B: Stacked Bar — Hired + Gap */}
                 <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-2">Option B: Stacked Bar — Hired FTEs + Vacancy Gap</h4>
+                  <h4 className="text-sm font-semibold text-foreground mb-2">Option B: Stacked Bar — Hired FTEs + Vacancy Gap by Skill Mix</h4>
                   <div className="h-[280px]">
                     <ChartContainer config={{
                       hired: { label: "Hired FTEs", color: "hsl(217 91% 60%)" },
