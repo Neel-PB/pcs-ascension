@@ -904,7 +904,7 @@ export function KPIChartModal({
                     </div>
                   </div>
                 ) : enrichedData && enrichedData.length > 0 ? (
-                  <ChartContainer config={{ value: { label: title, color: getChartColor() } } satisfies ChartConfig} className="h-[300px] w-full">
+                  <ChartContainer config={{ value: { label: title, color: getChartColor() } } satisfies ChartConfig} className="h-[280px] w-full">
                     {chartType === "area" ? (
                       <AreaChart data={enrichedData} margin={{ left: -10, right: 10, top: 5, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
