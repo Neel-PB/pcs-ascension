@@ -619,8 +619,9 @@ Used when:
         id: 'paid-ftes',
         title: "Paid FTEs",
         value: fmt(prAgg?.paid_fte ?? null),
-        chartData: prAgg ? generateGrowthTrend(prAgg.paid_fte * 0.9, prAgg.paid_fte) : [],
+        chartData: paidByDept.length > 0 ? paidByDept : (prAgg ? generateGrowthTrend(prAgg.paid_fte * 0.9, prAgg.paid_fte) : []),
         chartType: "bar" as const,
+        showAllOptions: true,
         delay: 0,
         definition: "Total labor resources the organization actually pays for, regardless of whether those hours are productive or non-productive.",
         calculation: `Total Paid Actual FTEs = Total paid hours / Standard FTE hours
