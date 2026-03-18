@@ -1,36 +1,25 @@
 
 
-## Use Pie Charts with Skill-Mix Data for Hired FTEs, Open Reqs, and Target FTEs
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-### Overview
-Add pie chart support to `KPIChartModal` and feed real skill-shift data (aggregated by `skill_mix`) into the Hired FTEs, Open Reqs, and Target FTEs KPI cards. Target FTEs will only include nursing unit records.
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### Changes
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-**1. Modified: `src/components/staffing/KPIChartModal.tsx`**
-- Add `chartType: "pie"` to the type union
-- Import `PieChart`, `Pie`, `Cell` from `recharts`
-- Define a color palette (6-8 distinct colors) for pie slices
-- When `chartType === "pie"`, expect `chartData` items to have `{ value, name }` shape
-- Render a `PieChart` with labeled slices using shadcn `ChartContainer` + `ChartTooltip`
-- Each slice color mapped via the palette; legend shows skill-mix names
-- Skip the High/Average/Low stats for pie charts (not meaningful); show a total instead
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-**2. Modified: `src/pages/staffing/StaffingSummary.tsx`**
-- Add a `useMemo` that aggregates `skillShiftData` by `skill_mix`:
-  - `hiredPieData`: `{ name: skill_mix, value: sum(hired_total_fte) }[]`
-  - `openReqsPieData`: `{ name: skill_mix, value: sum(open_reqs_total_fte) }[]`
-  - `targetPieData`: same but filtered to nursing records only (`nursing_flag`)
-- Filter out entries with value = 0, sort descending by value
-- Wire into KPI configs:
-  - `hired-ftes`: `chartData = hiredPieData`, `chartType = "pie"`
-  - `open-reqs`: `chartData = openReqsPieData`, `chartType = "pie"`
-  - `target-ftes`: `chartData = targetPieData`, `chartType = "pie"`
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
 
-### Pie Chart Design
-- Uses recharts `PieChart` + `Pie` inside shadcn `ChartContainer`
-- Outer labels show skill-mix name + percentage
-- Tooltip shows skill-mix name + FTE value (locale-formatted)
-- Color palette generated dynamically into the `ChartConfig` so shadcn theming works
-- Table view for pie data shows Skill Mix | FTE | % columns
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+```
+
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 

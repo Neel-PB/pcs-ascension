@@ -213,6 +213,38 @@ export default function StaffingSummary() {
     );
   }, [skillShiftData]);
 
+  // Aggregate skill-shift data by skill_mix for pie charts
+  const skillMixPieData = useMemo(() => {
+    if (!skillShiftData?.length) return { hired: [], openReqs: [], target: [] };
+    
+    const bySkill: Record<string, { hired: number; openReqs: number; target: number }> = {};
+    
+    skillShiftData.forEach(r => {
+      const key = r.skill_mix || 'Unknown';
+      if (!bySkill[key]) bySkill[key] = { hired: 0, openReqs: 0, target: 0 };
+      bySkill[key].hired += Number(r.hired_total_fte ?? 0);
+      bySkill[key].openReqs += Number(r.open_reqs_total_fte ?? 0);
+      
+      const nf = String(r.nursing_flag).toLowerCase();
+      const isNursing = nf === 'y' || nf === 'true' || nf === '1';
+      if (isNursing) {
+        bySkill[key].target += Number(r.target_fte_total ?? 0);
+      }
+    });
+
+    const toSorted = (field: 'hired' | 'openReqs' | 'target') =>
+      Object.entries(bySkill)
+        .map(([name, v]) => ({ name, value: Math.round(v[field] * 10) / 10 }))
+        .filter(d => d.value > 0)
+        .sort((a, b) => b.value - a.value);
+
+    return {
+      hired: toSorted('hired'),
+      openReqs: toSorted('openReqs'),
+      target: toSorted('target'),
+    };
+  }, [skillShiftData]);
+
   // Non-nursing target from productive-resources-kpi
   const nonNursingTarget = useMemo(() => {
     if (!prKpiData?.length) return 0;
@@ -315,8 +347,8 @@ Example: If FTE Variance is ${fmt(fteVariance)} and Target is ${fmt(targetFtes)}
         id: 'hired-ftes',
         title: "Hired FTEs",
         value: fmt(hiredFtes),
-        chartData: hiredFtes != null ? generateGrowthTrend(hiredFtes * 0.9, hiredFtes) : [],
-        chartType: "bar" as const,
+        chartData: skillMixPieData.hired.length > 0 ? skillMixPieData.hired : (hiredFtes != null ? generateGrowthTrend(hiredFtes * 0.9, hiredFtes) : []),
+        chartType: skillMixPieData.hired.length > 0 ? "pie" as const : "bar" as const,
         delay: 0.05,
         definition: "Total Full-time, Part-Time and PRNs equivalent labor resources currently employed by the organization (PRNs counted as 0.2 FTEs commitment).",
         calculation: `Hired FTEs = Sum of all active employee FTEs from Skill-Shift data
@@ -332,8 +364,8 @@ Includes:
         id: 'target-ftes',
         title: "Target FTEs",
         value: fmt(targetFtes),
-        chartData: targetFtes != null ? generateSeasonalTrend(targetFtes, 2) : [],
-        chartType: "area" as const,
+        chartData: skillMixPieData.target.length > 0 ? skillMixPieData.target : (targetFtes != null ? generateSeasonalTrend(targetFtes, 2) : []),
+        chartType: skillMixPieData.target.length > 0 ? "pie" as const : "area" as const,
         delay: 0.1,
         definition: "The number of resources needed to meet budgeted staffing levels based on specific type and amount of Unit of Service. Combines nursing targets from Skill-Shift and non-nursing targets from Productive Resources.",
         calculation: `Target FTEs = Nursing Target (Skill-Shift) + Non-Nursing Target (Productive Resources)
@@ -361,8 +393,8 @@ ${fmt(targetFtes)} - ${fmt(hiredFtes)} = ${fmt(fteVariance)}`,
         id: 'open-reqs',
         title: "Open Reqs",
         value: fmt(openReqs),
-        chartData: openReqs != null ? generateVolatileTrend(openReqs, 2) : [],
-        chartType: "bar" as const,
+        chartData: skillMixPieData.openReqs.length > 0 ? skillMixPieData.openReqs : (openReqs != null ? generateVolatileTrend(openReqs, 2) : []),
+        chartType: skillMixPieData.openReqs.length > 0 ? "pie" as const : "bar" as const,
         delay: 0.2,
         decimalPlaces: 0,
         definition: "The number of approved requisitions that have not yet been successfully filled.",
@@ -394,7 +426,7 @@ ${fmt(fteVariance)} - ${fmt(openReqs)} = ${fmt(reqVariance)}`,
       const bIndex = fteOrder.indexOf(b.id);
       return aIndex - bIndex;
     });
-  }, [fteOrder, fteKpiValues, ssAgg, nonNursingTarget, hiredSplitBreakdown]);
+  }, [fteOrder, fteKpiValues, ssAgg, nonNursingTarget, hiredSplitBreakdown, skillMixPieData]);
 
   // Volume KPIs Configuration – wired to patient-volume API
   const volumeKPIs = useMemo(() => {

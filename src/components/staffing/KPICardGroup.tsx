@@ -23,7 +23,7 @@ interface GroupedKPICardProps {
   isHighlighted?: boolean;
   delay?: number;
   chartData?: Array<{ value: number }>;
-  chartType?: "line" | "bar" | "area";
+  chartType?: "line" | "bar" | "area" | "pie";
   definition?: string;
   calculation?: string;
   breakdownData?: Array<any>;

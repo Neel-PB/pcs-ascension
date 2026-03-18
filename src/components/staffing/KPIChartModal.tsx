@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts";
+import { LineChart, Line, BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { ToggleButtonGroup } from "@/components/ui/toggle-button-group";
 import { cn } from "@/lib/utils";
@@ -17,7 +17,7 @@ interface KPIChartModalProps {
   isNegative?: boolean;
   isHighlighted?: boolean;
   chartData?: Array<{ value: number }>;
-  chartType?: "line" | "bar" | "area";
+  chartType?: "line" | "bar" | "area" | "pie";
   breakdownData?: Array<any>;
   decimalPlaces?: number;
   xAxisLabels?: string[];
@@ -39,6 +39,18 @@ export function KPIChartModal({
   xAxisLabels,
 }: KPIChartModalProps) {
   const [activeTab, setActiveTab] = useState("chart");
+
+  const PIE_COLORS = [
+    "hsl(var(--primary))",
+    "hsl(142 76% 36%)",
+    "hsl(24 95% 53%)",
+    "hsl(262 83% 58%)",
+    "hsl(198 93% 60%)",
+    "hsl(340 75% 55%)",
+    "hsl(45 93% 47%)",
+    "hsl(160 60% 45%)",
+  ];
+
   const getChartColor = () => {
     if (isNegative) return "hsl(24 95% 53%)";
     if (isHighlighted) return "hsl(142 76% 36%)";
@@ -55,8 +67,26 @@ export function KPIChartModal({
   const formatValue = (val: number) => val.toLocaleString(undefined, { maximumFractionDigits: decimalPlaces });
   const formatAxisTick = (val: number) => val >= 1000 ? `${(val / 1000).toLocaleString(undefined, { maximumFractionDigits: 0 })}K` : val.toString();
 
-  // Calculate statistics if data exists
-  const stats = chartData ? {
+  const isPie = chartType === "pie";
+
+  // For pie charts, build a dynamic ChartConfig from named data items
+  const pieConfig = useMemo(() => {
+    if (!isPie || !chartData) return {} as ChartConfig;
+    const config: ChartConfig = {};
+    chartData.forEach((item: any, i: number) => {
+      const key = item.name || `slice-${i}`;
+      config[key] = { label: key, color: PIE_COLORS[i % PIE_COLORS.length] };
+    });
+    return config;
+  }, [isPie, chartData]);
+
+  const pieTotal = useMemo(() => {
+    if (!isPie || !chartData) return 0;
+    return chartData.reduce((sum, d) => sum + d.value, 0);
+  }, [isPie, chartData]);
+
+  // Calculate statistics if data exists (skip for pie)
+  const stats = (!isPie && chartData) ? {
     high: formatValue(Math.max(...chartData.map(d => d.value))),
     low: formatValue(Math.min(...chartData.map(d => d.value))),
     average: formatValue(chartData.reduce((sum, d) => sum + d.value, 0) / chartData.length),
@@ -137,7 +167,45 @@ export function KPIChartModal({
           {activeTab === "chart" && (
             <div className="space-y-4">
               <div className="h-[300px]">
-                {enrichedData && enrichedData.length > 0 && (
+                {isPie && chartData && chartData.length > 0 ? (
+                  <ChartContainer config={pieConfig} className="h-[300px] w-full">
+                    <PieChart>
+                      <ChartTooltip
+                        content={
+                          <ChartTooltipContent
+                            formatter={(val, name) => (
+                              <span>
+                                {name}: {Number(val).toLocaleString(undefined, { maximumFractionDigits: decimalPlaces })} FTE
+                                {pieTotal > 0 ? ` (${((Number(val) / pieTotal) * 100).toFixed(1)}%)` : ''}
+                              </span>
+                            )}
+                          />
+                        }
+                      />
+                      <Pie
+                        data={chartData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        innerRadius={50}
+                        paddingAngle={2}
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        labelLine={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1 }}
+                      >
+                        {chartData.map((_: any, i: number) => (
+                          <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Legend
+                        verticalAlign="bottom"
+                        height={36}
+                        formatter={(val: string) => <span className="text-xs text-foreground">{val}</span>}
+                      />
+                    </PieChart>
+                  </ChartContainer>
+                ) : enrichedData && enrichedData.length > 0 ? (
                   <ChartContainer config={{ value: { label: title, color: getChartColor() } } satisfies ChartConfig} className="h-[300px] w-full">
                     {chartType === "area" ? (
                       <AreaChart data={enrichedData} margin={{ left: -10, right: 10, top: 5, bottom: 5 }}>
@@ -218,10 +286,19 @@ export function KPIChartModal({
                       </BarChart>
                     )}
                   </ChartContainer>
-                )}
+                ) : null}
               </div>
 
-              {/* Statistics */}
+              {/* Statistics — pie shows total, others show high/avg/low */}
+              {isPie && pieTotal > 0 && (
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground mb-1">Total</p>
+                    <p className="text-xl font-semibold text-foreground">{formatValue(pieTotal)}</p>
+                  </div>
+                  <Button onClick={() => onOpenChange(false)}>Close</Button>
+                </div>
+              )}
               {stats && (
                 <div className="flex items-center justify-between pt-2 border-t">
                   <div className="grid grid-cols-3 gap-6">
@@ -247,10 +324,36 @@ export function KPIChartModal({
           {activeTab === "table" && (
             <div className="space-y-4">
               <div className="h-[300px]">
-                {enrichedData && enrichedData.length > 0 ? (
+                {isPie && chartData && chartData.length > 0 ? (
                   <div className="rounded-lg border overflow-hidden h-full">
                     <ScrollArea className="h-full">
-                      {/* Header */}
+                      <div 
+                        className="grid sticky top-0 z-10 bg-muted/50 backdrop-blur-sm border-b"
+                        style={{ gridTemplateColumns: '1fr 1fr 1fr' }}
+                      >
+                        <div className="px-4 py-3 text-left font-semibold text-sm">Skill Mix</div>
+                        <div className="px-4 py-3 text-right font-semibold text-sm">FTE</div>
+                        <div className="px-4 py-3 text-right font-semibold text-sm">%</div>
+                      </div>
+                      {chartData.map((item: any, index: number) => (
+                        <div
+                          key={index}
+                          className="grid border-b hover:bg-muted/50 transition-colors"
+                          style={{ gridTemplateColumns: '1fr 1fr 1fr' }}
+                        >
+                          <div className="px-4 py-3 text-left text-sm font-medium flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }} />
+                            {item.name}
+                          </div>
+                          <div className="px-4 py-3 text-right text-sm">{item.value.toLocaleString(undefined, { maximumFractionDigits: decimalPlaces })}</div>
+                          <div className="px-4 py-3 text-right text-sm">{pieTotal > 0 ? `${((item.value / pieTotal) * 100).toFixed(1)}%` : '—'}</div>
+                        </div>
+                      ))}
+                    </ScrollArea>
+                  </div>
+                ) : enrichedData && enrichedData.length > 0 ? (
+                  <div className="rounded-lg border overflow-hidden h-full">
+                    <ScrollArea className="h-full">
                       <div 
                         className="grid sticky top-0 z-10 bg-muted/50 backdrop-blur-sm border-b"
                         style={{ gridTemplateColumns: '1fr 1fr' }}
@@ -258,8 +361,6 @@ export function KPIChartModal({
                         <div className="px-4 py-3 text-left font-semibold text-sm">Period</div>
                         <div className="px-4 py-3 text-right font-semibold text-sm">{title}</div>
                       </div>
-                      
-                      {/* Body */}
                       {enrichedData.map((item, index) => (
                         <div
                           key={index}
@@ -275,7 +376,16 @@ export function KPIChartModal({
                 ) : null}
               </div>
 
-              {/* Statistics */}
+              {/* Statistics for table view */}
+              {isPie && pieTotal > 0 && (
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground mb-1">Total</p>
+                    <p className="text-xl font-semibold text-foreground">{formatValue(pieTotal)}</p>
+                  </div>
+                  <Button onClick={() => onOpenChange(false)}>Close</Button>
+                </div>
+              )}
               {stats && (
                 <div className="flex items-center justify-between pt-2 border-t">
                   <div className="grid grid-cols-3 gap-6">
