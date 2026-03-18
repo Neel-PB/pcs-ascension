@@ -285,6 +285,444 @@ export function KPIChartModal({
                       </div>
                     </div>
                   </>
+                ) : title.toUpperCase().includes("EMPLOYED PRODUCTIVE") ? (
+                  <>
+                    {/* Option A: Donut by Department */}
+                    {(() => {
+                      const deptData = chartData || [];
+                      const total = deptData.reduce((s: number, d: any) => s + Number(d.employed ?? 0), 0);
+                      const threshold = total * 0.03;
+                      const major = deptData.filter((d: any) => Number(d.employed ?? 0) >= threshold).sort((a: any, b: any) => Number(b.employed ?? 0) - Number(a.employed ?? 0));
+                      const minorSum = deptData.filter((d: any) => Number(d.employed ?? 0) < threshold).reduce((s: number, d: any) => s + Number(d.employed ?? 0), 0);
+                      const pieData = [...major.map((d: any) => ({ name: d.name, value: Math.round(Number(d.employed ?? 0) * 10) / 10 }))];
+                      if (minorSum > 0) pieData.push({ name: "Other", value: Math.round(minorSum * 10) / 10 });
+                      const donutConfig: ChartConfig = {};
+                      pieData.forEach((item, i) => { donutConfig[item.name] = { label: item.name, color: PIE_COLORS[i % PIE_COLORS.length] }; });
+                      return (
+                        <div>
+                          <h4 className="text-sm font-semibold text-foreground mb-2">Option A: Donut — Employed Productive FTEs by Department</h4>
+                          <div className="flex items-center gap-6 h-[320px]">
+                            <div className="flex-1 h-full min-w-0">
+                              <ChartContainer config={donutConfig} className="h-full w-full">
+                                <PieChart>
+                                  <ChartTooltip content={<ChartTooltipContent formatter={(val, name) => <span>{name}: {Number(val).toLocaleString(undefined, { maximumFractionDigits: 1 })} FTE {total > 0 ? `(${((Number(val) / total) * 100).toFixed(1)}%)` : ''}</span>} />} />
+                                  <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={110} innerRadius={65} paddingAngle={2} label={false} labelLine={false}>
+                                    {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                                  </Pie>
+                                  <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central">
+                                    <tspan x="50%" dy="-0.6em" className="text-[11px] fill-muted-foreground">Total</tspan>
+                                    <tspan x="50%" dy="1.4em" className="text-lg font-semibold fill-foreground">{formatValue(total)}</tspan>
+                                  </text>
+                                </PieChart>
+                              </ChartContainer>
+                            </div>
+                            <div className="w-52 flex flex-col gap-1.5 pr-2 max-h-[300px] overflow-y-auto">
+                              {pieData.map((item, i) => (
+                                <div key={i} className="flex items-center gap-2 text-sm">
+                                  <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
+                                  <span className="truncate flex-1 text-foreground">{item.name}</span>
+                                  <span className="tabular-nums text-muted-foreground shrink-0">{formatValue(item.value)}</span>
+                                  <span className="tabular-nums text-muted-foreground shrink-0 w-10 text-right text-xs">{total > 0 ? `${((item.value / total) * 100).toFixed(0)}%` : '—'}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Option B: Horizontal Bar */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-foreground mb-2">Option B: Horizontal Bar — Employed Productive FTEs by Department</h4>
+                      <div style={{ height: Math.max(200, (chartData?.length || 0) * 32 + 40) }}>
+                        <ChartContainer config={{ employed: { label: "Employed Productive FTEs", color: "hsl(217 91% 60%)" } } satisfies ChartConfig} className="h-full w-full">
+                          <BarChart data={[...(chartData || [])].sort((a: any, b: any) => b.employed - a.employed)} layout="vertical" margin={{ left: 10, right: 30, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" horizontal={false} />
+                            <XAxis type="number" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                            <YAxis type="category" dataKey="name" width={140} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                            <ChartTooltip content={<ChartTooltipContent formatter={(val) => <span>{Number(val).toLocaleString(undefined, { maximumFractionDigits: 1 })} FTEs</span>} />} />
+                            <Bar dataKey="employed" fill="hsl(217 91% 60%)" radius={[0, 4, 4, 0]} />
+                          </BarChart>
+                        </ChartContainer>
+                      </div>
+                    </div>
+
+                    {/* Option C: Grouped Bar — Employed vs Paid */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-foreground mb-2">Option C: Grouped Bar — Employed Productive vs Total Paid FTEs</h4>
+                      <div className="h-[320px]">
+                        <ChartContainer config={{
+                          employed: { label: "Employed Productive", color: "hsl(217 91% 60%)" },
+                          paid: { label: "Total Paid", color: "hsl(var(--muted-foreground))" },
+                        } satisfies ChartConfig} className="h-full w-full">
+                          <BarChart data={chartData} margin={{ left: -10, right: 10, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} angle={-35} textAnchor="end" height={70} />
+                            <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} width={45} />
+                            <ChartTooltip content={<ChartTooltipContent />} />
+                            <Legend />
+                            <Bar dataKey="employed" fill="hsl(217 91% 60%)" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="paid" fill="hsl(var(--muted-foreground) / 0.4)" radius={[4, 4, 0, 0]} />
+                          </BarChart>
+                        </ChartContainer>
+                      </div>
+                    </div>
+                  </>
+
+                ) : title === "Contract FTEs" ? (
+                  <>
+                    {/* Option A: Horizontal Bar — orange */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-foreground mb-2">Option A: Horizontal Bar — Contract FTEs by Department</h4>
+                      <div style={{ height: Math.max(200, (chartData?.length || 0) * 32 + 40) }}>
+                        <ChartContainer config={{ contractor: { label: "Contract FTEs", color: "hsl(24 95% 53%)" } } satisfies ChartConfig} className="h-full w-full">
+                          <BarChart data={[...(chartData || [])].sort((a: any, b: any) => b.contractor - a.contractor)} layout="vertical" margin={{ left: 10, right: 30, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" horizontal={false} />
+                            <XAxis type="number" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                            <YAxis type="category" dataKey="name" width={140} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                            <ChartTooltip content={<ChartTooltipContent formatter={(val) => <span>{Number(val).toLocaleString(undefined, { maximumFractionDigits: 1 })} FTEs</span>} />} />
+                            <Bar dataKey="contractor" fill="hsl(24 95% 53%)" radius={[0, 4, 4, 0]} />
+                          </BarChart>
+                        </ChartContainer>
+                      </div>
+                    </div>
+
+                    {/* Option B: Grouped Bar — Contractor vs Employed */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-foreground mb-2">Option B: Grouped Bar — Contract vs Employed FTEs</h4>
+                      <div className="h-[320px]">
+                        <ChartContainer config={{
+                          contractor: { label: "Contract", color: "hsl(24 95% 53%)" },
+                          employed: { label: "Employed", color: "hsl(217 91% 60%)" },
+                        } satisfies ChartConfig} className="h-full w-full">
+                          <BarChart data={chartData} margin={{ left: -10, right: 10, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} angle={-35} textAnchor="end" height={70} />
+                            <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} width={45} />
+                            <ChartTooltip content={<ChartTooltipContent />} />
+                            <Legend />
+                            <Bar dataKey="contractor" fill="hsl(24 95% 53%)" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="employed" fill="hsl(217 91% 60%)" radius={[4, 4, 0, 0]} />
+                          </BarChart>
+                        </ChartContainer>
+                      </div>
+                    </div>
+
+                    {/* Option C: Donut */}
+                    {(() => {
+                      const deptData = chartData || [];
+                      const total = deptData.reduce((s: number, d: any) => s + Number(d.contractor ?? 0), 0);
+                      const threshold = total * 0.03;
+                      const major = deptData.filter((d: any) => Number(d.contractor ?? 0) >= threshold).sort((a: any, b: any) => Number(b.contractor ?? 0) - Number(a.contractor ?? 0));
+                      const minorSum = deptData.filter((d: any) => Number(d.contractor ?? 0) < threshold).reduce((s: number, d: any) => s + Number(d.contractor ?? 0), 0);
+                      const pieData = [...major.map((d: any) => ({ name: d.name, value: Math.round(Number(d.contractor ?? 0) * 10) / 10 }))];
+                      if (minorSum > 0) pieData.push({ name: "Other", value: Math.round(minorSum * 10) / 10 });
+                      const donutConfig: ChartConfig = {};
+                      pieData.forEach((item, i) => { donutConfig[item.name] = { label: item.name, color: PIE_COLORS[i % PIE_COLORS.length] }; });
+                      return (
+                        <div>
+                          <h4 className="text-sm font-semibold text-foreground mb-2">Option C: Donut — Contract FTE Distribution</h4>
+                          <div className="flex items-center gap-6 h-[320px]">
+                            <div className="flex-1 h-full min-w-0">
+                              <ChartContainer config={donutConfig} className="h-full w-full">
+                                <PieChart>
+                                  <ChartTooltip content={<ChartTooltipContent formatter={(val, name) => <span>{name}: {Number(val).toLocaleString(undefined, { maximumFractionDigits: 1 })} FTE {total > 0 ? `(${((Number(val) / total) * 100).toFixed(1)}%)` : ''}</span>} />} />
+                                  <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={110} innerRadius={65} paddingAngle={2} label={false} labelLine={false}>
+                                    {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                                  </Pie>
+                                  <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central">
+                                    <tspan x="50%" dy="-0.6em" className="text-[11px] fill-muted-foreground">Total</tspan>
+                                    <tspan x="50%" dy="1.4em" className="text-lg font-semibold fill-foreground">{formatValue(total)}</tspan>
+                                  </text>
+                                </PieChart>
+                              </ChartContainer>
+                            </div>
+                            <div className="w-52 flex flex-col gap-1.5 pr-2 max-h-[300px] overflow-y-auto">
+                              {pieData.map((item, i) => (
+                                <div key={i} className="flex items-center gap-2 text-sm">
+                                  <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
+                                  <span className="truncate flex-1 text-foreground">{item.name}</span>
+                                  <span className="tabular-nums text-muted-foreground shrink-0">{formatValue(item.value)}</span>
+                                  <span className="tabular-nums text-muted-foreground shrink-0 w-10 text-right text-xs">{total > 0 ? `${((item.value / total) * 100).toFixed(0)}%` : '—'}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </>
+
+                ) : title === "Overtime FTEs" ? (
+                  <>
+                    {/* Option A: Color-coded Horizontal Bar */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-foreground mb-2">Option A: Horizontal Bar — Overtime FTEs by Department (Health Status)</h4>
+                      <div style={{ height: Math.max(200, (chartData?.length || 0) * 32 + 40) }}>
+                        <ChartContainer config={{ overtime: { label: "Overtime FTEs", color: "hsl(0 84% 60%)" } } satisfies ChartConfig} className="h-full w-full">
+                          <BarChart data={[...(chartData || [])].sort((a: any, b: any) => b.overtime - a.overtime)} layout="vertical" margin={{ left: 10, right: 30, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" horizontal={false} />
+                            <XAxis type="number" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                            <YAxis type="category" dataKey="name" width={140} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                            <ChartTooltip content={<ChartTooltipContent formatter={(val) => <span>{Number(val).toLocaleString(undefined, { maximumFractionDigits: 1 })} FTEs</span>} />} />
+                            <Bar dataKey="overtime" radius={[0, 4, 4, 0]}>
+                              {[...(chartData || [])].sort((a: any, b: any) => b.overtime - a.overtime).map((entry: any, i: number) => (
+                                <Cell key={i} fill={entry.overtime < 2 ? "hsl(142 76% 36%)" : entry.overtime < 5 ? "hsl(45 93% 47%)" : "hsl(0 84% 60%)"} />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ChartContainer>
+                      </div>
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1 ml-2">
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: "hsl(142 76% 36%)" }} />&lt;2 FTE Good</span>
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: "hsl(45 93% 47%)" }} />2–5 FTE Watch</span>
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: "hsl(0 84% 60%)" }} />&gt;5 FTE Critical</span>
+                      </div>
+                    </div>
+
+                    {/* Option B: Stacked Bar — Overtime vs Regular */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-foreground mb-2">Option B: Stacked Bar — Overtime vs Regular (Employed) FTEs</h4>
+                      <div className="h-[320px]">
+                        <ChartContainer config={{
+                          employed: { label: "Regular (Employed)", color: "hsl(217 91% 60%)" },
+                          overtime: { label: "Overtime", color: "hsl(0 84% 60%)" },
+                        } satisfies ChartConfig} className="h-full w-full">
+                          <BarChart data={chartData} margin={{ left: -10, right: 10, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} angle={-35} textAnchor="end" height={70} />
+                            <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} width={45} />
+                            <ChartTooltip content={<ChartTooltipContent />} />
+                            <Legend />
+                            <Bar dataKey="employed" stackId="a" fill="hsl(217 91% 60%)" radius={[0, 0, 0, 0]} />
+                            <Bar dataKey="overtime" stackId="a" fill="hsl(0 84% 60%)" radius={[4, 4, 0, 0]} />
+                          </BarChart>
+                        </ChartContainer>
+                      </div>
+                    </div>
+
+                    {/* Option C: Donut */}
+                    {(() => {
+                      const deptData = chartData || [];
+                      const total = deptData.reduce((s: number, d: any) => s + Number(d.overtime ?? 0), 0);
+                      const threshold = total * 0.03;
+                      const major = deptData.filter((d: any) => Number(d.overtime ?? 0) >= threshold).sort((a: any, b: any) => Number(b.overtime ?? 0) - Number(a.overtime ?? 0));
+                      const minorSum = deptData.filter((d: any) => Number(d.overtime ?? 0) < threshold).reduce((s: number, d: any) => s + Number(d.overtime ?? 0), 0);
+                      const pieData = [...major.map((d: any) => ({ name: d.name, value: Math.round(Number(d.overtime ?? 0) * 10) / 10 }))];
+                      if (minorSum > 0) pieData.push({ name: "Other", value: Math.round(minorSum * 10) / 10 });
+                      const donutConfig: ChartConfig = {};
+                      pieData.forEach((item, i) => { donutConfig[item.name] = { label: item.name, color: PIE_COLORS[i % PIE_COLORS.length] }; });
+                      return (
+                        <div>
+                          <h4 className="text-sm font-semibold text-foreground mb-2">Option C: Donut — Overtime FTE Distribution</h4>
+                          <div className="flex items-center gap-6 h-[320px]">
+                            <div className="flex-1 h-full min-w-0">
+                              <ChartContainer config={donutConfig} className="h-full w-full">
+                                <PieChart>
+                                  <ChartTooltip content={<ChartTooltipContent formatter={(val, name) => <span>{name}: {Number(val).toLocaleString(undefined, { maximumFractionDigits: 1 })} FTE {total > 0 ? `(${((Number(val) / total) * 100).toFixed(1)}%)` : ''}</span>} />} />
+                                  <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={110} innerRadius={65} paddingAngle={2} label={false} labelLine={false}>
+                                    {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                                  </Pie>
+                                  <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central">
+                                    <tspan x="50%" dy="-0.6em" className="text-[11px] fill-muted-foreground">Total</tspan>
+                                    <tspan x="50%" dy="1.4em" className="text-lg font-semibold fill-foreground">{formatValue(total)}</tspan>
+                                  </text>
+                                </PieChart>
+                              </ChartContainer>
+                            </div>
+                            <div className="w-52 flex flex-col gap-1.5 pr-2 max-h-[300px] overflow-y-auto">
+                              {pieData.map((item, i) => (
+                                <div key={i} className="flex items-center gap-2 text-sm">
+                                  <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
+                                  <span className="truncate flex-1 text-foreground">{item.name}</span>
+                                  <span className="tabular-nums text-muted-foreground shrink-0">{formatValue(item.value)}</span>
+                                  <span className="tabular-nums text-muted-foreground shrink-0 w-10 text-right text-xs">{total > 0 ? `${((item.value / total) * 100).toFixed(0)}%` : '—'}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </>
+
+                ) : title === "Total PRN" ? (
+                  <>
+                    {/* Option A: Donut by Department */}
+                    {(() => {
+                      const deptData = chartData || [];
+                      const total = deptData.reduce((s: number, d: any) => s + Number(d.prn ?? 0), 0);
+                      const threshold = total * 0.03;
+                      const major = deptData.filter((d: any) => Number(d.prn ?? 0) >= threshold).sort((a: any, b: any) => Number(b.prn ?? 0) - Number(a.prn ?? 0));
+                      const minorSum = deptData.filter((d: any) => Number(d.prn ?? 0) < threshold).reduce((s: number, d: any) => s + Number(d.prn ?? 0), 0);
+                      const pieData = [...major.map((d: any) => ({ name: d.name, value: Math.round(Number(d.prn ?? 0) * 10) / 10 }))];
+                      if (minorSum > 0) pieData.push({ name: "Other", value: Math.round(minorSum * 10) / 10 });
+                      const donutConfig: ChartConfig = {};
+                      pieData.forEach((item, i) => { donutConfig[item.name] = { label: item.name, color: PIE_COLORS[i % PIE_COLORS.length] }; });
+                      return (
+                        <div>
+                          <h4 className="text-sm font-semibold text-foreground mb-2">Option A: Donut — PRN FTEs by Department</h4>
+                          <div className="flex items-center gap-6 h-[320px]">
+                            <div className="flex-1 h-full min-w-0">
+                              <ChartContainer config={donutConfig} className="h-full w-full">
+                                <PieChart>
+                                  <ChartTooltip content={<ChartTooltipContent formatter={(val, name) => <span>{name}: {Number(val).toLocaleString(undefined, { maximumFractionDigits: 1 })} FTE {total > 0 ? `(${((Number(val) / total) * 100).toFixed(1)}%)` : ''}</span>} />} />
+                                  <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={110} innerRadius={65} paddingAngle={2} label={false} labelLine={false}>
+                                    {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                                  </Pie>
+                                  <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central">
+                                    <tspan x="50%" dy="-0.6em" className="text-[11px] fill-muted-foreground">Total</tspan>
+                                    <tspan x="50%" dy="1.4em" className="text-lg font-semibold fill-foreground">{formatValue(total)}</tspan>
+                                  </text>
+                                </PieChart>
+                              </ChartContainer>
+                            </div>
+                            <div className="w-52 flex flex-col gap-1.5 pr-2 max-h-[300px] overflow-y-auto">
+                              {pieData.map((item, i) => (
+                                <div key={i} className="flex items-center gap-2 text-sm">
+                                  <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
+                                  <span className="truncate flex-1 text-foreground">{item.name}</span>
+                                  <span className="tabular-nums text-muted-foreground shrink-0">{formatValue(item.value)}</span>
+                                  <span className="tabular-nums text-muted-foreground shrink-0 w-10 text-right text-xs">{total > 0 ? `${((item.value / total) * 100).toFixed(0)}%` : '—'}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Option B: Horizontal Bar */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-foreground mb-2">Option B: Horizontal Bar — PRN FTEs by Department</h4>
+                      <div style={{ height: Math.max(200, (chartData?.length || 0) * 32 + 40) }}>
+                        <ChartContainer config={{ prn: { label: "PRN FTEs", color: "hsl(262 83% 58%)" } } satisfies ChartConfig} className="h-full w-full">
+                          <BarChart data={[...(chartData || [])].sort((a: any, b: any) => b.prn - a.prn)} layout="vertical" margin={{ left: 10, right: 30, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" horizontal={false} />
+                            <XAxis type="number" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                            <YAxis type="category" dataKey="name" width={140} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                            <ChartTooltip content={<ChartTooltipContent formatter={(val) => <span>{Number(val).toLocaleString(undefined, { maximumFractionDigits: 1 })} FTEs</span>} />} />
+                            <Bar dataKey="prn" fill="hsl(262 83% 58%)" radius={[0, 4, 4, 0]} />
+                          </BarChart>
+                        </ChartContainer>
+                      </div>
+                    </div>
+
+                    {/* Option C: Grouped Bar — PRN vs Employed */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-foreground mb-2">Option C: Grouped Bar — PRN vs Employed FTEs</h4>
+                      <div className="h-[320px]">
+                        <ChartContainer config={{
+                          prn: { label: "PRN", color: "hsl(262 83% 58%)" },
+                          employed: { label: "Employed", color: "hsl(217 91% 60%)" },
+                        } satisfies ChartConfig} className="h-full w-full">
+                          <BarChart data={chartData} margin={{ left: -10, right: 10, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} angle={-35} textAnchor="end" height={70} />
+                            <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} width={45} />
+                            <ChartTooltip content={<ChartTooltipContent />} />
+                            <Legend />
+                            <Bar dataKey="prn" fill="hsl(262 83% 58%)" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="employed" fill="hsl(217 91% 60%)" radius={[4, 4, 0, 0]} />
+                          </BarChart>
+                        </ChartContainer>
+                      </div>
+                    </div>
+                  </>
+
+                ) : title === "Total NP%" ? (
+                  <>
+                    {/* Option A: Color-coded Horizontal Bar — NP% */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-foreground mb-2">Option A: Horizontal Bar — NP% by Department (Health Status)</h4>
+                      <div style={{ height: Math.max(200, (chartData?.length || 0) * 32 + 40) }}>
+                        <ChartContainer config={{ npPercent: { label: "NP%", color: "hsl(0 84% 60%)" } } satisfies ChartConfig} className="h-full w-full">
+                          <BarChart data={chartData} layout="vertical" margin={{ left: 10, right: 30, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" horizontal={false} />
+                            <XAxis type="number" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} tickFormatter={(v) => `${v}%`} />
+                            <YAxis type="category" dataKey="name" width={140} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                            <ChartTooltip content={<ChartTooltipContent formatter={(val) => <span>{Number(val).toFixed(1)}%</span>} />} />
+                            <Bar dataKey="npPercent" radius={[0, 4, 4, 0]}>
+                              {(chartData || []).map((entry: any, i: number) => (
+                                <Cell key={i} fill={entry.npPercent < 10 ? "hsl(142 76% 36%)" : entry.npPercent < 15 ? "hsl(45 93% 47%)" : "hsl(0 84% 60%)"} />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ChartContainer>
+                      </div>
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1 ml-2">
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: "hsl(142 76% 36%)" }} />&lt;10% Good</span>
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: "hsl(45 93% 47%)" }} />10–15% Watch</span>
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: "hsl(0 84% 60%)" }} />&gt;15% Critical</span>
+                      </div>
+                    </div>
+
+                    {/* Option B: Grouped Bar — NP Hours vs Productive Hours */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-foreground mb-2">Option B: Grouped Bar — Non-Productive vs Productive Hours by Department</h4>
+                      <div className="h-[320px]">
+                        <ChartContainer config={{
+                          npHours: { label: "Non-Productive", color: "hsl(0 84% 60%)" },
+                          productiveHours: { label: "Productive", color: "hsl(142 76% 36%)" },
+                        } satisfies ChartConfig} className="h-full w-full">
+                          <BarChart data={chartData} margin={{ left: -10, right: 10, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} angle={-35} textAnchor="end" height={70} />
+                            <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} width={45} />
+                            <ChartTooltip content={<ChartTooltipContent />} />
+                            <Legend />
+                            <Bar dataKey="npHours" fill="hsl(0 84% 60%)" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="productiveHours" fill="hsl(142 76% 36%)" radius={[4, 4, 0, 0]} />
+                          </BarChart>
+                        </ChartContainer>
+                      </div>
+                    </div>
+
+                    {/* Option C: Donut — NP Hours Distribution */}
+                    {(() => {
+                      const deptData = chartData || [];
+                      const total = deptData.reduce((s: number, d: any) => s + Number(d.npHours ?? 0), 0);
+                      const threshold = total * 0.03;
+                      const major = deptData.filter((d: any) => Number(d.npHours ?? 0) >= threshold).sort((a: any, b: any) => Number(b.npHours ?? 0) - Number(a.npHours ?? 0));
+                      const minorSum = deptData.filter((d: any) => Number(d.npHours ?? 0) < threshold).reduce((s: number, d: any) => s + Number(d.npHours ?? 0), 0);
+                      const pieData = [...major.map((d: any) => ({ name: d.name, value: Math.round(Number(d.npHours ?? 0) * 10) / 10 }))];
+                      if (minorSum > 0) pieData.push({ name: "Other", value: Math.round(minorSum * 10) / 10 });
+                      const donutConfig: ChartConfig = {};
+                      pieData.forEach((item, i) => { donutConfig[item.name] = { label: item.name, color: PIE_COLORS[i % PIE_COLORS.length] }; });
+                      return (
+                        <div>
+                          <h4 className="text-sm font-semibold text-foreground mb-2">Option C: Donut — Non-Productive Hours Distribution</h4>
+                          <div className="flex items-center gap-6 h-[320px]">
+                            <div className="flex-1 h-full min-w-0">
+                              <ChartContainer config={donutConfig} className="h-full w-full">
+                                <PieChart>
+                                  <ChartTooltip content={<ChartTooltipContent formatter={(val, name) => <span>{name}: {Number(val).toLocaleString(undefined, { maximumFractionDigits: 1 })} FTE {total > 0 ? `(${((Number(val) / total) * 100).toFixed(1)}%)` : ''}</span>} />} />
+                                  <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={110} innerRadius={65} paddingAngle={2} label={false} labelLine={false}>
+                                    {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                                  </Pie>
+                                  <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central">
+                                    <tspan x="50%" dy="-0.6em" className="text-[11px] fill-muted-foreground">Total NP</tspan>
+                                    <tspan x="50%" dy="1.4em" className="text-lg font-semibold fill-foreground">{formatValue(total)}</tspan>
+                                  </text>
+                                </PieChart>
+                              </ChartContainer>
+                            </div>
+                            <div className="w-52 flex flex-col gap-1.5 pr-2 max-h-[300px] overflow-y-auto">
+                              {pieData.map((item, i) => (
+                                <div key={i} className="flex items-center gap-2 text-sm">
+                                  <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
+                                  <span className="truncate flex-1 text-foreground">{item.name}</span>
+                                  <span className="tabular-nums text-muted-foreground shrink-0">{formatValue(item.value)}</span>
+                                  <span className="tabular-nums text-muted-foreground shrink-0 w-10 text-right text-xs">{total > 0 ? `${((item.value / total) * 100).toFixed(0)}%` : '—'}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </>
+
                 ) : (
                   <>
                 {/* Option A: Horizontal Bar — Vacancy Rate % */}
