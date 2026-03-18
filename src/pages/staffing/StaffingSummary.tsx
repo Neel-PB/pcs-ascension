@@ -676,14 +676,21 @@ Used when:
     const fmtPct = (v: number | null | undefined) =>
       v != null ? `${v.toFixed(1)}%` : "—";
 
+    const dowPaidChart = dayOfWeekData.length > 0 ? dayOfWeekData.map(d => ({ value: d.paid_fte, name: d.day })) : [];
+    const dowContractChart = dayOfWeekData.length > 0 ? dayOfWeekData.map(d => ({ value: d.contractor_fte, name: d.day })) : [];
+    const dowOvertimeChart = dayOfWeekData.length > 0 ? dayOfWeekData.map(d => ({ value: d.overtime_fte, name: d.day })) : [];
+    const dowPrnChart = dayOfWeekData.length > 0 ? dayOfWeekData.map(d => ({ value: d.total_prn, name: d.day })) : [];
+    const dowNpChart = dayOfWeekData.length > 0 ? dayOfWeekData.map(d => ({ value: d.npPercent, name: d.day })) : [];
+    const dowEmployedChart = dayOfWeekData.length > 0 ? dayOfWeekData.map(d => ({ value: d.employed_productive_fte, name: d.day })) : [];
+
     const kpis = [
       {
         id: 'paid-ftes',
         title: "Paid FTEs",
         value: fmt(prAgg?.paid_fte ?? null),
-        chartData: paidByDept.length > 0 ? paidByDept : (prAgg ? generateGrowthTrend(prAgg.paid_fte * 0.9, prAgg.paid_fte) : []),
-        chartType: "bar" as const,
-        showAllOptions: true,
+        chartData: dowPaidChart.length > 0 ? dowPaidChart : [],
+        chartType: "area" as const,
+        xAxisLabels: DAY_LABELS_SHORT,
         delay: 0,
         definition: "Total labor resources the organization actually pays for, regardless of whether those hours are productive or non-productive.",
         calculation: `Total Paid Actual FTEs = Total paid hours / Standard FTE hours
@@ -695,9 +702,9 @@ Example: If 7,928 hours were paid in a 2-week period:
         id: 'contract-ftes',
         title: "Contract FTEs",
         value: fmt(prAgg?.contractor_fte ?? null),
-        chartData: paidByDept.length > 0 ? paidByDept : (prAgg ? generateSeasonalTrend(prAgg.contractor_fte, prAgg.contractor_fte * 0.2) : []),
-        chartType: "bar" as const,
-        showAllOptions: true,
+        chartData: dowContractChart.length > 0 ? dowContractChart : [],
+        chartType: "area" as const,
+        xAxisLabels: DAY_LABELS_SHORT,
         delay: 0.05,
         definition: "Total equivalent labor resources supplied by entities that are not Acute Ascension Hospitals, that are paid for and used by the organization.",
         calculation: `Total Contract Actual FTEs = Contract hours worked / Standard FTE hours
@@ -712,9 +719,9 @@ Excludes: Regular staff, PRN staff`,
         id: 'overtime-ftes',
         title: "Overtime FTEs",
         value: fmt(prAgg?.overtime_fte ?? null),
-        chartData: paidByDept.length > 0 ? paidByDept : (prAgg ? generateDeclineTrend(prAgg.overtime_fte * 1.15, prAgg.overtime_fte) : []),
+        chartData: dowOvertimeChart.length > 0 ? dowOvertimeChart : [],
         chartType: "area" as const,
-        showAllOptions: true,
+        xAxisLabels: DAY_LABELS_SHORT,
         delay: 0.1,
         definition: "Total worked hours above regular (FT) commitment the organization actually pays for.",
         calculation: `Total Overtime FTEs = Total overtime hours / Standard FTE hours
@@ -727,9 +734,9 @@ Note: This is the volume equivalent, not cost equivalent`,
         id: 'total-prn',
         title: "Total PRN",
         value: fmt(prAgg?.total_prn ?? null),
-        chartData: paidByDept.length > 0 ? paidByDept : (prAgg ? generateGrowthTrend(prAgg.total_prn * 0.85, prAgg.total_prn) : []),
-        chartType: "bar" as const,
-        showAllOptions: true,
+        chartData: dowPrnChart.length > 0 ? dowPrnChart : [],
+        chartType: "area" as const,
+        xAxisLabels: DAY_LABELS_SHORT,
         delay: 0.15,
         definition: "Total PRNs productive equivalent labor resources the organization actually pays for.",
         calculation: `Total PRN = PRN hours worked / Standard FTE hours
@@ -744,9 +751,9 @@ PRN staff characteristics:
         id: 'total-np',
         title: "Total NP%",
         value: fmtPct(prNpPercent ?? null),
-        chartData: npByDept.length > 0 ? npByDept : (prNpPercent != null ? generateGrowthTrend(prNpPercent * 0.85, prNpPercent) : []),
+        chartData: dowNpChart.length > 0 ? dowNpChart : [],
         chartType: "area" as const,
-        showAllOptions: true,
+        xAxisLabels: DAY_LABELS_SHORT,
         delay: 0.2,
         definition: "The percentage of all paid hours that were not spent directly delivering patient care or performing operational work tied to Patient Volume (e.g., PTO, Holiday Pay, sick leave, education, admin or committee time, Training or onboarding).",
         calculation: `Total NP% = Total non-productive Man hours/ Total Paid hours *100
@@ -760,9 +767,9 @@ Lower NP% indicates better labor efficiency`,
         id: 'total-fullpart-ftes',
         title: "EMPLOYED PRODUCTIVE FTES",
         value: fmt(prAgg?.employed_productive_fte ?? null),
-        chartData: paidByDept.length > 0 ? paidByDept : (prAgg ? generateGrowthTrend(prAgg.employed_productive_fte * 0.9, prAgg.employed_productive_fte) : []),
-        chartType: "bar" as const,
-        showAllOptions: true,
+        chartData: dowEmployedChart.length > 0 ? dowEmployedChart : [],
+        chartType: "area" as const,
+        xAxisLabels: DAY_LABELS_SHORT,
         delay: 0.25,
         definition: "Total Full-time, Part-Time and PRNs productive equivalent labor resources the organization actually pays for.",
         calculation: `Employed Productive FTEs = Sum of all employed productive FTEs
