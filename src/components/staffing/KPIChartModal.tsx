@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { LineChart, Line, BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
+import { LineChart, Line, BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Legend, RadialBarChart, RadialBar, PolarAngleAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { ToggleButtonGroup } from "@/components/ui/toggle-button-group";
 import { cn } from "@/lib/utils";
@@ -17,7 +17,7 @@ interface KPIChartModalProps {
   isNegative?: boolean;
   isHighlighted?: boolean;
   chartData?: Array<{ value: number }>;
-  chartType?: "line" | "bar" | "area" | "pie";
+  chartType?: "line" | "bar" | "area" | "pie" | "radial";
   breakdownData?: Array<any>;
   decimalPlaces?: number;
   xAxisLabels?: string[];
@@ -52,6 +52,17 @@ export function KPIChartModal({
   ];
 
   const isPie = chartType === "pie";
+  const isRadial = chartType === "radial";
+
+  // Radial gauge helpers
+  const radialValue = isRadial && chartData?.[0] ? chartData[0].value : 0;
+  const radialFillColor = radialValue < 10
+    ? "hsl(142 76% 36%)"
+    : radialValue < 20
+      ? "hsl(45 93% 47%)"
+      : "hsl(0 84% 60%)";
+  const radialData = [{ value: radialValue, fill: radialFillColor }];
+  const radialConfig: ChartConfig = { value: { label: title, color: radialFillColor } };
 
   // Filter out zero-value slices and group small ones into "Other"
   const filteredPieData = useMemo(() => {
@@ -182,7 +193,38 @@ export function KPIChartModal({
           {activeTab === "chart" && (
             <div className="space-y-4">
               <div className="h-[360px]">
-                {isPie && filteredPieData && filteredPieData.length > 0 ? (
+                {isRadial ? (
+                  <div className="flex flex-col items-center justify-center h-full">
+                    <ChartContainer config={radialConfig} className="h-[280px] w-[280px]">
+                      <RadialBarChart
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={90}
+                        outerRadius={130}
+                        startAngle={225}
+                        endAngle={-45}
+                        data={radialData}
+                      >
+                        <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
+                        <RadialBar
+                          dataKey="value"
+                          angleAxisId={0}
+                          cornerRadius={10}
+                          background={{ fill: "hsl(var(--muted))" }}
+                        />
+                        <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central">
+                          <tspan x="50%" dy="-0.5em" className="text-[13px] fill-muted-foreground">Vacancy</tspan>
+                          <tspan x="50%" dy="1.6em" className="text-2xl font-bold fill-foreground">{radialValue.toFixed(1)}%</tspan>
+                        </text>
+                      </RadialBarChart>
+                    </ChartContainer>
+                    <div className="flex items-center gap-6 text-sm text-muted-foreground mt-2">
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "hsl(142 76% 36%)" }} />&lt;10% Good</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "hsl(45 93% 47%)" }} />10–20% Watch</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "hsl(0 84% 60%)" }} />&gt;20% Critical</span>
+                    </div>
+                  </div>
+                ) : isPie && filteredPieData && filteredPieData.length > 0 ? (
                   <div className="flex items-center gap-6 h-[360px]">
                     {/* Donut chart */}
                     <div className="flex-1 h-full min-w-0">
@@ -327,6 +369,16 @@ export function KPIChartModal({
                 ) : null}
               </div>
 
+              {/* Statistics — radial shows value + close */}
+              {isRadial && (
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground mb-1">Vacancy Rate</p>
+                    <p className="text-xl font-semibold text-foreground">{radialValue.toFixed(1)}%</p>
+                  </div>
+                  <Button onClick={() => onOpenChange(false)}>Close</Button>
+                </div>
+              )}
               {/* Statistics — pie shows total, others show high/avg/low */}
               {isPie && pieTotal > 0 && (
                 <div className="flex items-center justify-between pt-2 border-t">
@@ -362,7 +414,27 @@ export function KPIChartModal({
           {activeTab === "table" && (
             <div className="space-y-4">
               <div className="h-[300px]">
-                {isPie && filteredPieData && filteredPieData.length > 0 ? (
+                {isRadial ? (
+                  <div className="rounded-lg border overflow-hidden h-full">
+                    <div 
+                      className="grid sticky top-0 z-10 bg-muted/50 backdrop-blur-sm border-b"
+                      style={{ gridTemplateColumns: '1fr 1fr' }}
+                    >
+                      <div className="px-4 py-3 text-left font-semibold text-sm">Metric</div>
+                      <div className="px-4 py-3 text-right font-semibold text-sm">Value</div>
+                    </div>
+                    <div className="grid border-b" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                      <div className="px-4 py-3 text-left text-sm font-medium">Vacancy Rate</div>
+                      <div className="px-4 py-3 text-right text-sm">{radialValue.toFixed(1)}%</div>
+                    </div>
+                    <div className="grid border-b" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                      <div className="px-4 py-3 text-left text-sm font-medium">Status</div>
+                      <div className="px-4 py-3 text-right text-sm font-medium" style={{ color: radialFillColor }}>
+                        {radialValue < 10 ? "Good" : radialValue < 20 ? "Watch" : "Critical"}
+                      </div>
+                    </div>
+                  </div>
+                ) : isPie && filteredPieData && filteredPieData.length > 0 ? (
                   <div className="rounded-lg border overflow-hidden h-full">
                     <ScrollArea className="h-full">
                       <div 
@@ -415,6 +487,11 @@ export function KPIChartModal({
               </div>
 
               {/* Statistics for table view */}
+              {isRadial && (
+                <div className="flex items-center justify-end pt-2 border-t">
+                  <Button onClick={() => onOpenChange(false)}>Close</Button>
+                </div>
+              )}
               {isPie && pieTotal > 0 && (
                 <div className="flex items-center justify-between pt-2 border-t">
                   <div className="text-center">

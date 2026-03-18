@@ -9,7 +9,7 @@ interface KPIData {
   title: string;
   value: string;
   chartData: any[];
-  chartType: 'line' | 'bar' | 'area' | 'pie';
+  chartType: 'line' | 'bar' | 'area' | 'pie' | 'radial';
   delay: number;
   definition: string;
   calculation: string;
