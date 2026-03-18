@@ -347,8 +347,8 @@ Example: If FTE Variance is ${fmt(fteVariance)} and Target is ${fmt(targetFtes)}
         id: 'hired-ftes',
         title: "Hired FTEs",
         value: fmt(hiredFtes),
-        chartData: hiredFtes != null ? generateGrowthTrend(hiredFtes * 0.9, hiredFtes) : [],
-        chartType: "bar" as const,
+        chartData: skillMixPieData.hired.length > 0 ? skillMixPieData.hired : (hiredFtes != null ? generateGrowthTrend(hiredFtes * 0.9, hiredFtes) : []),
+        chartType: skillMixPieData.hired.length > 0 ? "pie" as const : "bar" as const,
         delay: 0.05,
         definition: "Total Full-time, Part-Time and PRNs equivalent labor resources currently employed by the organization (PRNs counted as 0.2 FTEs commitment).",
         calculation: `Hired FTEs = Sum of all active employee FTEs from Skill-Shift data
