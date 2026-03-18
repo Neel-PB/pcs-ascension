@@ -920,7 +920,7 @@ export function KPIChartModal({
                           domain={['auto', 'auto']}
                           width={45}
                         />
-                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <ChartTooltip content={<ChartTooltipContent hideLabel={false} labelFormatter={(label) => label} formatter={(val) => <span className="font-mono font-medium">{Number(val).toLocaleString(undefined, { maximumFractionDigits: 1 })}</span>} hideIndicator />} />
                         <defs>
                           <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor="var(--color-value)" stopOpacity={0.3}/>
