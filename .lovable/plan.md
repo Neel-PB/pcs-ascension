@@ -1,34 +1,25 @@
 
 
-## Simplify FTE KPI Charts to Donut-Only with Skill Shift Breakdown
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-**Goal**: For the 4 FTE KPIs — Vacancy Rate, Hired FTEs, Target FTEs, Open Reqs — show only a single donut chart with skill shift breakdown. Remove the multi-option view.
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### Current State
-- **Hired FTEs, Target FTEs, Open Reqs**: Already use `chartType: "pie"` with skill mix data → renders as donut via the standard `isPie` path. No changes needed.
-- **Vacancy Rate**: Uses `showAllOptions: true` + `chartType: "bar"` → renders the expanded 3-option view (horizontal bar, donut, etc.). This needs to change.
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-### Changes
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-**`src/pages/staffing/StaffingSummary.tsx`** (Vacancy Rate KPI config, ~lines 452-458):
-- Change `chartType` from `"bar"` to `"pie"`
-- Remove `showAllOptions: true`
-- Reshape `chartData` to use `hired` FTEs as the donut `value` (consistent with the existing skill mix donut that shows hired FTE distribution by skill)
-
-```typescript
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
 // Before
-chartData: vacancyBySkillMix.length > 0 ? vacancyBySkillMix : ...,
-chartType: "bar" as const,
-showAllOptions: true,
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
 
 // After
-chartData: vacancyBySkillMix.length > 0 
-  ? vacancyBySkillMix.map(d => ({ name: d.name, value: d.hired })) 
-  : [],
-chartType: "pie" as const,
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
 ```
 
-This routes Vacancy Rate through the existing donut renderer in KPIChartModal (the `isPie` branch at ~line 845), which already handles donut + side legend + center total.
-
-**No changes to KPIChartModal.tsx** — the existing pie/donut rendering path handles everything.
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 
