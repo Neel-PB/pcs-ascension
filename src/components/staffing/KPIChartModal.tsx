@@ -164,11 +164,11 @@ export function KPIChartModal({
           </div>
           
           {/* Current Value and Trend */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-sm text-muted-foreground mb-1">Current Value</p>
+              <p className="text-xs text-muted-foreground">Current Value</p>
               <p className={cn(
-                "text-3xl font-bold",
+                "text-2xl font-bold",
                 isNegative ? "text-orange-600" : "text-foreground"
               )}>
                 {value}
