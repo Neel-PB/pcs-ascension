@@ -712,7 +712,7 @@ This metric helps:
       const bIndex = productivityOrder.indexOf(b.id);
       return aIndex - bIndex;
     });
-  }, [productivityOrder, prAgg, prNpPercent]);
+  }, [productivityOrder, prAgg, prNpPercent, paidByDept]);
 
   // Page-level loading guard
   const isInitializing = rbacLoading || (orgScopedLoading && !filtersInitialized);
