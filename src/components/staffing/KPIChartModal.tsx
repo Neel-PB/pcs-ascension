@@ -124,6 +124,14 @@ export function KPIChartModal({
   const enrichedData = useMemo(() => {
     if (!chartData) return undefined;
     
+    // If data items have a `name` field (e.g. day-of-week labels), use that as period
+    if (chartData.length > 0 && chartData[0].name) {
+      return chartData.map((item) => ({
+        ...item,
+        period: item.name,
+      }));
+    }
+
     // If xAxisLabels provided, take only the last 12 data points
     const dataToUse = xAxisLabels && xAxisLabels.length === 12 
       ? chartData.slice(-12) 
@@ -131,14 +139,12 @@ export function KPIChartModal({
     
     return dataToUse.map((item, index) => {
       if (xAxisLabels && xAxisLabels.length === 12 && chartData.length >= 12) {
-        // Use the month labels for the last 12 points
         return {
           ...item,
           period: xAxisLabels[index],
         };
       }
       
-      // Default to period labels
       return {
         ...item,
         period: `P${index + 1}`,
