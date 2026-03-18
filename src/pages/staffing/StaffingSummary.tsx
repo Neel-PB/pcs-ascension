@@ -293,6 +293,30 @@ export default function StaffingSummary() {
       .sort((a, b) => b.paid - a.paid);
   }, [prKpiData]);
 
+  // NP% by department for Total NP% chart options
+  const npByDept = useMemo(() => {
+    if (!prKpiData?.length) return [];
+    const byDept: Record<string, { weightedNp: number; totalPaid: number }> = {};
+    prKpiData.forEach(r => {
+      const dept = r.department_description || 'Unknown';
+      if (!byDept[dept]) byDept[dept] = { weightedNp: 0, totalPaid: 0 };
+      const paid = Number(r.paid_fte ?? 0);
+      byDept[dept].weightedNp += Number(r.non_productive_percentage ?? 0) * paid;
+      byDept[dept].totalPaid += paid;
+    });
+    return Object.entries(byDept)
+      .filter(([, v]) => v.totalPaid > 0)
+      .map(([name, v]) => ({
+        name,
+        npPercent: Math.round((v.weightedNp / v.totalPaid) * 10) / 10,
+        paidHours: Math.round(v.totalPaid * 10) / 10,
+        npHours: Math.round((v.weightedNp / v.totalPaid / 100) * v.totalPaid * 10) / 10,
+        productiveHours: Math.round((1 - v.weightedNp / v.totalPaid / 100) * v.totalPaid * 10) / 10,
+        value: Math.round((v.weightedNp / v.totalPaid) * 10) / 10,
+      }))
+      .sort((a, b) => b.npPercent - a.npPercent);
+  }, [prKpiData]);
+
   // Non-nursing target from productive-resources-kpi
   const nonNursingTarget = useMemo(() => {
     if (!prKpiData?.length) return 0;
@@ -633,8 +657,9 @@ Example: If 7,928 hours were paid in a 2-week period:
         id: 'contract-ftes',
         title: "Contract FTEs",
         value: fmt(prAgg?.contractor_fte ?? null),
-        chartData: prAgg ? generateSeasonalTrend(prAgg.contractor_fte, prAgg.contractor_fte * 0.2) : [],
+        chartData: paidByDept.length > 0 ? paidByDept : (prAgg ? generateSeasonalTrend(prAgg.contractor_fte, prAgg.contractor_fte * 0.2) : []),
         chartType: "bar" as const,
+        showAllOptions: true,
         delay: 0.05,
         definition: "Total equivalent labor resources supplied by entities that are not Acute Ascension Hospitals, that are paid for and used by the organization.",
         calculation: `Total Contract Actual FTEs = Contract hours worked / Standard FTE hours
@@ -649,8 +674,9 @@ Excludes: Regular staff, PRN staff`,
         id: 'overtime-ftes',
         title: "Overtime FTEs",
         value: fmt(prAgg?.overtime_fte ?? null),
-        chartData: prAgg ? generateDeclineTrend(prAgg.overtime_fte * 1.15, prAgg.overtime_fte) : [],
+        chartData: paidByDept.length > 0 ? paidByDept : (prAgg ? generateDeclineTrend(prAgg.overtime_fte * 1.15, prAgg.overtime_fte) : []),
         chartType: "area" as const,
+        showAllOptions: true,
         delay: 0.1,
         definition: "Total worked hours above regular (FT) commitment the organization actually pays for.",
         calculation: `Total Overtime FTEs = Total overtime hours / Standard FTE hours
@@ -663,8 +689,9 @@ Note: This is the volume equivalent, not cost equivalent`,
         id: 'total-prn',
         title: "Total PRN",
         value: fmt(prAgg?.total_prn ?? null),
-        chartData: prAgg ? generateGrowthTrend(prAgg.total_prn * 0.85, prAgg.total_prn) : [],
+        chartData: paidByDept.length > 0 ? paidByDept : (prAgg ? generateGrowthTrend(prAgg.total_prn * 0.85, prAgg.total_prn) : []),
         chartType: "bar" as const,
+        showAllOptions: true,
         delay: 0.15,
         definition: "Total PRNs productive equivalent labor resources the organization actually pays for.",
         calculation: `Total PRN = PRN hours worked / Standard FTE hours
@@ -679,8 +706,9 @@ PRN staff characteristics:
         id: 'total-np',
         title: "Total NP%",
         value: fmtPct(prNpPercent ?? null),
-        chartData: prNpPercent != null ? generateGrowthTrend(prNpPercent * 0.85, prNpPercent) : [],
+        chartData: npByDept.length > 0 ? npByDept : (prNpPercent != null ? generateGrowthTrend(prNpPercent * 0.85, prNpPercent) : []),
         chartType: "area" as const,
+        showAllOptions: true,
         delay: 0.2,
         definition: "The percentage of all paid hours that were not spent directly delivering patient care or performing operational work tied to Patient Volume (e.g., PTO, Holiday Pay, sick leave, education, admin or committee time, Training or onboarding).",
         calculation: `Total NP% = Total non-productive Man hours/ Total Paid hours *100
@@ -694,8 +722,9 @@ Lower NP% indicates better labor efficiency`,
         id: 'total-fullpart-ftes',
         title: "EMPLOYED PRODUCTIVE FTES",
         value: fmt(prAgg?.employed_productive_fte ?? null),
-        chartData: prAgg ? generateGrowthTrend(prAgg.employed_productive_fte * 0.9, prAgg.employed_productive_fte) : [],
+        chartData: paidByDept.length > 0 ? paidByDept : (prAgg ? generateGrowthTrend(prAgg.employed_productive_fte * 0.9, prAgg.employed_productive_fte) : []),
         chartType: "bar" as const,
+        showAllOptions: true,
         delay: 0.25,
         definition: "Total Full-time, Part-Time and PRNs productive equivalent labor resources the organization actually pays for.",
         calculation: `Employed Productive FTEs = Sum of all employed productive FTEs
@@ -712,7 +741,7 @@ This metric helps:
       const bIndex = productivityOrder.indexOf(b.id);
       return aIndex - bIndex;
     });
-  }, [productivityOrder, prAgg, prNpPercent, paidByDept]);
+  }, [productivityOrder, prAgg, prNpPercent, paidByDept, npByDept]);
 
   // Page-level loading guard
   const isInitializing = rbacLoading || (orgScopedLoading && !filtersInitialized);
