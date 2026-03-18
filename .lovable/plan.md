@@ -1,25 +1,39 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Vacancy Rate Chart — Better Options
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+### Available Data
+Each `skillShiftData` record has `department_description`, `market`, `skill_mix`, `hired_total_fte`, `target_fte_total`, and `open_reqs_total_fte`. So we can compute **vacancy rate per department** (or per market/skill).
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+### Chart Recommendations
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+**Option A — Horizontal Bar Chart by Department** (Recommended)
+- One bar per department showing its vacancy rate %
+- Bars color-coded: green (<10%), amber (10-20%), red (>20%)
+- Sorted highest vacancy first — instantly shows problem areas
+- Best fit because: multiple departments, single metric, easy comparison
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+**Option B — Stacked Bar: Hired vs Gap by Department**
+- Each department gets a stacked bar: green = hired FTEs, red/orange = vacancy gap
+- Total bar height = target FTEs
+- Shows both absolute staffing levels AND the gap visually
 
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+**Option C — Grouped Bar: Hired vs Target by Department**
+- Side-by-side bars per department (hired in blue, target in gray)
+- The visual difference IS the vacancy
+- Cleaner when you want to see both numbers explicitly
+
+### Formula (unchanged)
+```
+Per-department Vacancy Rate = |(Hired FTEs - Target FTEs) / Target FTEs| × 100
 ```
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+### Implementation
+- Group `skillShiftData` by `department_description`
+- Compute vacancy rate per group
+- Pass as `chartData` array to `KPIChartModal`
+- Add horizontal bar rendering in `KPIChartModal.tsx` (using Recharts `BarChart` with `layout="vertical"`)
+- Update vacancy-rate config: `chartType: "bar"`, pass department-level data
+
+Which option do you prefer?
 
