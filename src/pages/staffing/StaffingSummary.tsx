@@ -213,6 +213,38 @@ export default function StaffingSummary() {
     );
   }, [skillShiftData]);
 
+  // Aggregate skill-shift data by skill_mix for pie charts
+  const skillMixPieData = useMemo(() => {
+    if (!skillShiftData?.length) return { hired: [], openReqs: [], target: [] };
+    
+    const bySkill: Record<string, { hired: number; openReqs: number; target: number }> = {};
+    
+    skillShiftData.forEach(r => {
+      const key = r.skill_mix || 'Unknown';
+      if (!bySkill[key]) bySkill[key] = { hired: 0, openReqs: 0, target: 0 };
+      bySkill[key].hired += Number(r.hired_total_fte ?? 0);
+      bySkill[key].openReqs += Number(r.open_reqs_total_fte ?? 0);
+      
+      const nf = String(r.nursing_flag).toLowerCase();
+      const isNursing = nf === 'y' || nf === 'true' || nf === '1';
+      if (isNursing) {
+        bySkill[key].target += Number(r.target_fte_total ?? 0);
+      }
+    });
+
+    const toSorted = (field: 'hired' | 'openReqs' | 'target') =>
+      Object.entries(bySkill)
+        .map(([name, v]) => ({ name, value: Math.round(v[field] * 10) / 10 }))
+        .filter(d => d.value > 0)
+        .sort((a, b) => b.value - a.value);
+
+    return {
+      hired: toSorted('hired'),
+      openReqs: toSorted('openReqs'),
+      target: toSorted('target'),
+    };
+  }, [skillShiftData]);
+
   // Non-nursing target from productive-resources-kpi
   const nonNursingTarget = useMemo(() => {
     if (!prKpiData?.length) return 0;
