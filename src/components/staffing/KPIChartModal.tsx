@@ -96,14 +96,14 @@ export function KPIChartModal({
 
   // For pie charts, build a dynamic ChartConfig from named data items
   const pieConfig = useMemo(() => {
-    if (!isPie || !chartData) return {} as ChartConfig;
+    if (!isPie || !filteredPieData) return {} as ChartConfig;
     const config: ChartConfig = {};
-    chartData.forEach((item: any, i: number) => {
+    filteredPieData.forEach((item: any, i: number) => {
       const key = item.name || `slice-${i}`;
       config[key] = { label: key, color: PIE_COLORS[i % PIE_COLORS.length] };
     });
     return config;
-  }, [isPie, chartData]);
+  }, [isPie, filteredPieData]);
 
   const pieTotal = useMemo(() => {
     if (!isPie || !chartData) return 0;
