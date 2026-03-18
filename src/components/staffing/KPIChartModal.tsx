@@ -196,8 +196,8 @@ export function KPIChartModal({
 
           {/* All 3 Options View */}
           {showAllOptions ? (
-            <ScrollArea className="flex-1 min-h-0">
-              <div className="space-y-6 pr-4 pb-4">
+            <ScrollArea className="flex-1 min-h-0" style={{ maxHeight: 'calc(85vh - 120px)' }}>
+              <div className="space-y-8 pr-4 pb-4">
                 {/* Option A: Horizontal Bar — Vacancy Rate % */}
                 <div>
                   <h4 className="text-sm font-semibold text-foreground mb-2">Option A: Horizontal Bar — Vacancy Rate % by Department</h4>
