@@ -1,25 +1,15 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Fix Eye Icon Position for Variance KPI Cards
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+### Problem
+When removing chart data from FTE Variance and REQ Variance cards, the eye icon stays vertically centered (`top-1/2 -translate-y-1/2`). User wants it at the **bottom-right**, matching its current visual position when both icons are stacked (chart on top, eye on bottom).
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+### Changes
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+**`src/pages/staffing/StaffingSummary.tsx`**
+- Set `chartData: []` for `fte-variance` and `req-variance` KPI configs to remove chart icon
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
-```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
-
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
-```
-
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+**`src/components/staffing/KPICard.tsx`** (line ~101)
+- Change the icon container positioning from `top-1/2 -translate-y-1/2` to `bottom-3 right-4` so icons anchor to the bottom-right instead of vertically centering. This keeps the eye icon in the same visual spot whether the chart icon is present or not.
 
