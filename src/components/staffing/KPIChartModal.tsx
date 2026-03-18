@@ -191,9 +191,9 @@ export function KPIChartModal({
 
           {activeTab === "chart" && (
             <div className="space-y-4">
-              <div className="h-[300px]">
-                {isPie && chartData && chartData.length > 0 ? (
-                  <ChartContainer config={pieConfig} className="h-[300px] w-full">
+              <div className="h-[360px]">
+                {isPie && filteredPieData && filteredPieData.length > 0 ? (
+                  <ChartContainer config={pieConfig} className="h-[360px] w-full">
                     <PieChart>
                       <ChartTooltip
                         content={
@@ -208,24 +208,30 @@ export function KPIChartModal({
                         }
                       />
                       <Pie
-                        data={chartData}
+                        data={filteredPieData}
                         dataKey="value"
                         nameKey="name"
                         cx="50%"
-                        cy="50%"
-                        outerRadius={100}
-                        innerRadius={50}
+                        cy="45%"
+                        outerRadius={110}
+                        innerRadius={60}
                         paddingAngle={2}
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        label={renderPieLabel}
                         labelLine={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1 }}
                       >
-                        {chartData.map((_: any, i: number) => (
+                        {filteredPieData.map((_: any, i: number) => (
                           <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                         ))}
                       </Pie>
+                      {/* Center total label */}
+                      <text x="50%" y="45%" textAnchor="middle" dominantBaseline="central">
+                        <tspan x="50%" dy="-0.6em" className="text-[11px] fill-muted-foreground">Total</tspan>
+                        <tspan x="50%" dy="1.4em" className="text-base font-semibold fill-foreground">{formatValue(pieTotal)}</tspan>
+                      </text>
                       <Legend
                         verticalAlign="bottom"
-                        height={36}
+                        layout="horizontal"
+                        wrapperStyle={{ paddingTop: 8 }}
                         formatter={(val: string) => <span className="text-xs text-foreground">{val}</span>}
                       />
                     </PieChart>
