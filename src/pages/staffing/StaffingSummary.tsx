@@ -364,8 +364,8 @@ Includes:
         id: 'target-ftes',
         title: "Target FTEs",
         value: fmt(targetFtes),
-        chartData: targetFtes != null ? generateSeasonalTrend(targetFtes, 2) : [],
-        chartType: "area" as const,
+        chartData: skillMixPieData.target.length > 0 ? skillMixPieData.target : (targetFtes != null ? generateSeasonalTrend(targetFtes, 2) : []),
+        chartType: skillMixPieData.target.length > 0 ? "pie" as const : "area" as const,
         delay: 0.1,
         definition: "The number of resources needed to meet budgeted staffing levels based on specific type and amount of Unit of Service. Combines nursing targets from Skill-Shift and non-nursing targets from Productive Resources.",
         calculation: `Target FTEs = Nursing Target (Skill-Shift) + Non-Nursing Target (Productive Resources)
