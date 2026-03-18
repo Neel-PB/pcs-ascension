@@ -414,7 +414,27 @@ export function KPIChartModal({
           {activeTab === "table" && (
             <div className="space-y-4">
               <div className="h-[300px]">
-                {isPie && filteredPieData && filteredPieData.length > 0 ? (
+                {isRadial ? (
+                  <div className="rounded-lg border overflow-hidden h-full">
+                    <div 
+                      className="grid sticky top-0 z-10 bg-muted/50 backdrop-blur-sm border-b"
+                      style={{ gridTemplateColumns: '1fr 1fr' }}
+                    >
+                      <div className="px-4 py-3 text-left font-semibold text-sm">Metric</div>
+                      <div className="px-4 py-3 text-right font-semibold text-sm">Value</div>
+                    </div>
+                    <div className="grid border-b" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                      <div className="px-4 py-3 text-left text-sm font-medium">Vacancy Rate</div>
+                      <div className="px-4 py-3 text-right text-sm">{radialValue.toFixed(1)}%</div>
+                    </div>
+                    <div className="grid border-b" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                      <div className="px-4 py-3 text-left text-sm font-medium">Status</div>
+                      <div className="px-4 py-3 text-right text-sm font-medium" style={{ color: radialFillColor }}>
+                        {radialValue < 10 ? "Good" : radialValue < 20 ? "Watch" : "Critical"}
+                      </div>
+                    </div>
+                  </div>
+                ) : isPie && filteredPieData && filteredPieData.length > 0 ? (
                   <div className="rounded-lg border overflow-hidden h-full">
                     <ScrollArea className="h-full">
                       <div 
