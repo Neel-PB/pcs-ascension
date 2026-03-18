@@ -167,7 +167,45 @@ export function KPIChartModal({
           {activeTab === "chart" && (
             <div className="space-y-4">
               <div className="h-[300px]">
-                {enrichedData && enrichedData.length > 0 && (
+                {isPie && chartData && chartData.length > 0 ? (
+                  <ChartContainer config={pieConfig} className="h-[300px] w-full">
+                    <PieChart>
+                      <ChartTooltip
+                        content={
+                          <ChartTooltipContent
+                            formatter={(val, name) => (
+                              <span>
+                                {name}: {Number(val).toLocaleString(undefined, { maximumFractionDigits: decimalPlaces })} FTE
+                                {pieTotal > 0 ? ` (${((Number(val) / pieTotal) * 100).toFixed(1)}%)` : ''}
+                              </span>
+                            )}
+                          />
+                        }
+                      />
+                      <Pie
+                        data={chartData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        innerRadius={50}
+                        paddingAngle={2}
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        labelLine={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1 }}
+                      >
+                        {chartData.map((_: any, i: number) => (
+                          <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Legend
+                        verticalAlign="bottom"
+                        height={36}
+                        formatter={(val: string) => <span className="text-xs text-foreground">{val}</span>}
+                      />
+                    </PieChart>
+                  </ChartContainer>
+                ) : enrichedData && enrichedData.length > 0 ? (
                   <ChartContainer config={{ value: { label: title, color: getChartColor() } } satisfies ChartConfig} className="h-[300px] w-full">
                     {chartType === "area" ? (
                       <AreaChart data={enrichedData} margin={{ left: -10, right: 10, top: 5, bottom: 5 }}>
@@ -248,10 +286,19 @@ export function KPIChartModal({
                       </BarChart>
                     )}
                   </ChartContainer>
-                )}
+                ) : null}
               </div>
 
-              {/* Statistics */}
+              {/* Statistics — pie shows total, others show high/avg/low */}
+              {isPie && pieTotal > 0 && (
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground mb-1">Total</p>
+                    <p className="text-xl font-semibold text-foreground">{formatValue(pieTotal)}</p>
+                  </div>
+                  <Button onClick={() => onOpenChange(false)}>Close</Button>
+                </div>
+              )}
               {stats && (
                 <div className="flex items-center justify-between pt-2 border-t">
                   <div className="grid grid-cols-3 gap-6">
@@ -277,10 +324,36 @@ export function KPIChartModal({
           {activeTab === "table" && (
             <div className="space-y-4">
               <div className="h-[300px]">
-                {enrichedData && enrichedData.length > 0 ? (
+                {isPie && chartData && chartData.length > 0 ? (
                   <div className="rounded-lg border overflow-hidden h-full">
                     <ScrollArea className="h-full">
-                      {/* Header */}
+                      <div 
+                        className="grid sticky top-0 z-10 bg-muted/50 backdrop-blur-sm border-b"
+                        style={{ gridTemplateColumns: '1fr 1fr 1fr' }}
+                      >
+                        <div className="px-4 py-3 text-left font-semibold text-sm">Skill Mix</div>
+                        <div className="px-4 py-3 text-right font-semibold text-sm">FTE</div>
+                        <div className="px-4 py-3 text-right font-semibold text-sm">%</div>
+                      </div>
+                      {chartData.map((item: any, index: number) => (
+                        <div
+                          key={index}
+                          className="grid border-b hover:bg-muted/50 transition-colors"
+                          style={{ gridTemplateColumns: '1fr 1fr 1fr' }}
+                        >
+                          <div className="px-4 py-3 text-left text-sm font-medium flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }} />
+                            {item.name}
+                          </div>
+                          <div className="px-4 py-3 text-right text-sm">{item.value.toLocaleString(undefined, { maximumFractionDigits: decimalPlaces })}</div>
+                          <div className="px-4 py-3 text-right text-sm">{pieTotal > 0 ? `${((item.value / pieTotal) * 100).toFixed(1)}%` : '—'}</div>
+                        </div>
+                      ))}
+                    </ScrollArea>
+                  </div>
+                ) : enrichedData && enrichedData.length > 0 ? (
+                  <div className="rounded-lg border overflow-hidden h-full">
+                    <ScrollArea className="h-full">
                       <div 
                         className="grid sticky top-0 z-10 bg-muted/50 backdrop-blur-sm border-b"
                         style={{ gridTemplateColumns: '1fr 1fr' }}
@@ -288,8 +361,6 @@ export function KPIChartModal({
                         <div className="px-4 py-3 text-left font-semibold text-sm">Period</div>
                         <div className="px-4 py-3 text-right font-semibold text-sm">{title}</div>
                       </div>
-                      
-                      {/* Body */}
                       {enrichedData.map((item, index) => (
                         <div
                           key={index}
@@ -305,7 +376,16 @@ export function KPIChartModal({
                 ) : null}
               </div>
 
-              {/* Statistics */}
+              {/* Statistics for table view */}
+              {isPie && pieTotal > 0 && (
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground mb-1">Total</p>
+                    <p className="text-xl font-semibold text-foreground">{formatValue(pieTotal)}</p>
+                  </div>
+                  <Button onClick={() => onOpenChange(false)}>Close</Button>
+                </div>
+              )}
               {stats && (
                 <div className="flex items-center justify-between pt-2 border-t">
                   <div className="grid grid-cols-3 gap-6">
