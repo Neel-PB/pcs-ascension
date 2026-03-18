@@ -293,6 +293,30 @@ export default function StaffingSummary() {
       .sort((a, b) => b.paid - a.paid);
   }, [prKpiData]);
 
+  // NP% by department for Total NP% chart options
+  const npByDept = useMemo(() => {
+    if (!prKpiData?.length) return [];
+    const byDept: Record<string, { weightedNp: number; totalPaid: number }> = {};
+    prKpiData.forEach(r => {
+      const dept = r.department_description || 'Unknown';
+      if (!byDept[dept]) byDept[dept] = { weightedNp: 0, totalPaid: 0 };
+      const paid = Number(r.paid_fte ?? 0);
+      byDept[dept].weightedNp += Number(r.non_productive_percentage ?? 0) * paid;
+      byDept[dept].totalPaid += paid;
+    });
+    return Object.entries(byDept)
+      .filter(([, v]) => v.totalPaid > 0)
+      .map(([name, v]) => ({
+        name,
+        npPercent: Math.round((v.weightedNp / v.totalPaid) * 10) / 10,
+        paidHours: Math.round(v.totalPaid * 10) / 10,
+        npHours: Math.round((v.weightedNp / v.totalPaid / 100) * v.totalPaid * 10) / 10,
+        productiveHours: Math.round((1 - v.weightedNp / v.totalPaid / 100) * v.totalPaid * 10) / 10,
+        value: Math.round((v.weightedNp / v.totalPaid) * 10) / 10,
+      }))
+      .sort((a, b) => b.npPercent - a.npPercent);
+  }, [prKpiData]);
+
   // Non-nursing target from productive-resources-kpi
   const nonNursingTarget = useMemo(() => {
     if (!prKpiData?.length) return 0;
