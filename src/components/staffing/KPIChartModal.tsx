@@ -66,17 +66,12 @@ export function KPIChartModal({
   const radialData = [{ value: radialValue, fill: radialFillColor }];
   const radialConfig: ChartConfig = { value: { label: title, color: radialFillColor } };
 
-  // Filter out zero-value slices and group small ones into "Other"
+  // Filter out zero-value slices — show all individual skill categories
   const filteredPieData = useMemo(() => {
     if (!isPie || !chartData) return chartData;
-    const nonZero = chartData.filter((d: any) => d.value > 0);
-    const total = nonZero.reduce((sum, d) => sum + d.value, 0);
-    if (total === 0) return nonZero;
-    const threshold = total * 0.03;
-    const major = nonZero.filter((d: any) => d.value >= threshold).sort((a: any, b: any) => b.value - a.value);
-    const minorSum = nonZero.filter((d: any) => d.value < threshold).reduce((sum, d) => sum + d.value, 0);
-    if (minorSum > 0) major.push({ name: "Other", value: minorSum } as any);
-    return major;
+    return chartData
+      .filter((d: any) => d.value > 0)
+      .sort((a: any, b: any) => b.value - a.value);
   }, [isPie, chartData]);
 
   // No external labels — using side legend instead
