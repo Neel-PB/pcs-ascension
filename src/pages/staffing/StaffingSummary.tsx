@@ -538,10 +538,10 @@ Combined: ${fmt(targetFtes)}`,
         chartType: "area" as const,
         delay: 0.15,
         definition: "Variance between Hired FTEs and Target FTEs.",
-        calculation: `FTE Variance = Target FTEs - Hired FTEs
+        calculation: `FTE Variance = Hired FTEs - Target FTEs
 
-Example: If target is ${fmt(targetFtes)} and hired is ${fmt(hiredFtes)}:
-${fmt(targetFtes)} - ${fmt(hiredFtes)} = ${fmt(fteVariance)}`,
+Example: If hired is ${fmt(hiredFtes)} and target is ${fmt(targetFtes)}:
+${fmt(hiredFtes)} - ${fmt(targetFtes)} = ${fmt(fteVariance)}`,
       },
       {
         id: 'open-reqs',

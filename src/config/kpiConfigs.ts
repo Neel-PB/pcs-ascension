@@ -103,12 +103,12 @@ Determined by:
       chartType: "area",
       delay: 0.15,
       definition: "Variance between Hired FTEs and Target FTEs.",
-      calculation: `FTE Variance = Target FTEs - Hired FTEs
+      calculation: `FTE Variance = Hired FTEs - Target FTEs
 
 Example: If target is 43.4 and hired is 40.9:
-43.4 - 40.9 = 2.5 FTE shortage
+40.9 - 43.4 = -2.5 FTE shortage
 
-A positive value indicates understaffing.`,
+A negative value indicates understaffing.`,
     },
     {
       id: 'open-reqs',
