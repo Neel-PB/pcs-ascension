@@ -833,64 +833,66 @@ export function KPIChartModal({
                     </div>
                   </div>
                 ) : isPie && filteredPieData && filteredPieData.length > 0 ? (
-                  <div className="flex items-center justify-center gap-4 h-[300px]">
-                    {/* Donut chart */}
-                    <div className="flex-1 h-full min-w-0 flex items-center justify-center">
-                      <ChartContainer config={pieConfig} className="h-full w-full max-w-[320px]">
-                        <PieChart>
-                          <ChartTooltip
-                            content={
-                              <ChartTooltipContent
-                                formatter={(val, name) => (
-                                  <span>
-                                    {name}: {Number(val).toLocaleString(undefined, { maximumFractionDigits: decimalPlaces })} FTE
-                                    {pieTotal > 0 ? ` (${((Number(val) / pieTotal) * 100).toFixed(1)}%)` : ''}
-                                  </span>
-                                )}
-                              />
-                            }
-                          />
-                          <Pie
-                            data={filteredPieData}
-                            dataKey="value"
-                            nameKey="name"
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={120}
-                            innerRadius={70}
-                            paddingAngle={2}
-                            label={false}
-                            labelLine={false}
-                          >
-                            {filteredPieData.map((_: any, i: number) => (
-                              <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                            ))}
-                          </Pie>
-                          {/* Center total label */}
-                          <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central">
-                            <tspan x="50%" dy="-0.6em" className="text-[11px] fill-muted-foreground">Total</tspan>
-                            <tspan x="50%" dy="1.4em" className="text-lg font-semibold fill-foreground">{formatValue(pieTotal)}</tspan>
-                          </text>
-                        </PieChart>
-                      </ChartContainer>
-                    </div>
-                    {/* Side legend */}
-                    <div className="w-48 flex flex-col gap-2 pr-2">
-                      {filteredPieData.map((item: any, i: number) => (
-                        <div key={i} className="flex items-center gap-2 text-sm">
-                          <span
-                            className="w-3 h-3 rounded-full shrink-0"
-                            style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }}
-                          />
-                          <span className="truncate flex-1 text-foreground">{item.name}</span>
-                          <span className="tabular-nums text-muted-foreground shrink-0">
-                            {formatValue(item.value)}
-                          </span>
-                          <span className="tabular-nums text-muted-foreground shrink-0 w-10 text-right text-xs">
-                            {pieTotal > 0 ? `${((item.value / pieTotal) * 100).toFixed(0)}%` : '—'}
-                          </span>
-                        </div>
-                      ))}
+                  <div className="h-[300px] w-full flex justify-center">
+                    <div className="inline-flex max-w-full items-center justify-center gap-6">
+                      {/* Donut chart */}
+                      <div className="w-[320px] h-[300px] shrink-0 flex items-center justify-center">
+                        <ChartContainer config={pieConfig} className="h-full w-full">
+                          <PieChart>
+                            <ChartTooltip
+                              content={
+                                <ChartTooltipContent
+                                  formatter={(val, name) => (
+                                    <span>
+                                      {name}: {Number(val).toLocaleString(undefined, { maximumFractionDigits: decimalPlaces })} FTE
+                                      {pieTotal > 0 ? ` (${((Number(val) / pieTotal) * 100).toFixed(1)}%)` : ''}
+                                    </span>
+                                  )}
+                                />
+                              }
+                            />
+                            <Pie
+                              data={filteredPieData}
+                              dataKey="value"
+                              nameKey="name"
+                              cx="50%"
+                              cy="50%"
+                              outerRadius={120}
+                              innerRadius={70}
+                              paddingAngle={2}
+                              label={false}
+                              labelLine={false}
+                            >
+                              {filteredPieData.map((_: any, i: number) => (
+                                <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                              ))}
+                            </Pie>
+                            {/* Center total label */}
+                            <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central">
+                              <tspan x="50%" dy="-0.6em" className="text-[11px] fill-muted-foreground">Total</tspan>
+                              <tspan x="50%" dy="1.4em" className="text-lg font-semibold fill-foreground">{formatValue(pieTotal)}</tspan>
+                            </text>
+                          </PieChart>
+                        </ChartContainer>
+                      </div>
+                      {/* Side legend */}
+                      <div className="w-48 shrink-0 flex flex-col gap-2">
+                        {filteredPieData.map((item: any, i: number) => (
+                          <div key={i} className="flex items-center gap-2 text-sm">
+                            <span
+                              className="w-3 h-3 rounded-full shrink-0"
+                              style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }}
+                            />
+                            <span className="truncate flex-1 text-foreground">{item.name}</span>
+                            <span className="tabular-nums text-muted-foreground shrink-0">
+                              {formatValue(item.value)}
+                            </span>
+                            <span className="tabular-nums text-muted-foreground shrink-0 w-10 text-right text-xs">
+                              {pieTotal > 0 ? `${((item.value / pieTotal) * 100).toFixed(0)}%` : '—'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 ) : enrichedData && enrichedData.length > 0 ? (
