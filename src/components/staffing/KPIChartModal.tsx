@@ -989,7 +989,7 @@ export function KPIChartModal({
               )}
               {/* Statistics — pie shows total, others show high/avg/low */}
               {isPie && pieTotal > 0 && (
-                <div className="flex items-center justify-between pt-1.5 border-t">
+                <div className="flex items-center justify-between pt-2 border-t mt-1">
                   <div className="text-center">
                     <p className="text-sm text-muted-foreground mb-1">Total</p>
                     <p className="text-xl font-semibold text-foreground">{formatValue(pieTotal)}</p>
