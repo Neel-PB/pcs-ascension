@@ -979,7 +979,7 @@ export function KPIChartModal({
 
               {/* Statistics — radial shows value + close */}
               {isRadial && (
-                <div className="flex items-center justify-between pt-2 border-t">
+                <div className="flex items-center justify-between pt-2 border-t mt-1">
                   <div className="text-center">
                     <p className="text-sm text-muted-foreground mb-1">Vacancy Rate</p>
                     <p className="text-xl font-semibold text-foreground">{radialValue.toFixed(1)}%</p>
