@@ -998,7 +998,7 @@ export function KPIChartModal({
                 </div>
               )}
               {stats && (
-                <div className="flex items-center justify-between pt-1.5 border-t">
+                <div className="flex items-center justify-between pt-2 border-t mt-1">
                   <div className="grid grid-cols-3 gap-4">
                     <div className="text-center">
                       <p className="text-xs text-muted-foreground">High</p>
