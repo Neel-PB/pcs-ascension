@@ -221,7 +221,7 @@ export default function StaffingSummary() {
     const bySkill: Record<string, { hired: number; openReqs: number; target: number }> = {};
     
     skillShiftData.forEach(r => {
-      const key = r.skill_mix || 'Unknown';
+      const key = r.skill_mix || r.broader_skill_mix_category || 'Other';
       if (!bySkill[key]) bySkill[key] = { hired: 0, openReqs: 0, target: 0 };
       bySkill[key].hired += Number(r.hired_total_fte ?? 0);
       bySkill[key].openReqs += Number(r.open_reqs_total_fte ?? 0);
