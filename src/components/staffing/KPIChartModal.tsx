@@ -907,7 +907,7 @@ export function KPIChartModal({
                           className="text-xs"
                           tick={{ fill: "hsl(var(--muted-foreground))" }}
                           tickFormatter={formatAxisTick}
-                          domain={['auto', 'auto']}
+                          domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.2)]}
                           width={45}
                         />
                         <ChartTooltip content={<ChartTooltipContent hideLabel={false} labelFormatter={(label) => label} formatter={(val) => <span className="font-mono font-medium">{Number(val).toLocaleString(undefined, { maximumFractionDigits: 1 })}</span>} hideIndicator />} />
@@ -937,7 +937,7 @@ export function KPIChartModal({
                           className="text-xs"
                           tick={{ fill: "hsl(var(--muted-foreground))" }}
                           tickFormatter={formatAxisTick}
-                          domain={['auto', 'auto']}
+                          domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.2)]}
                           width={45}
                         />
                         <ChartTooltip content={<ChartTooltipContent />} />
@@ -962,7 +962,7 @@ export function KPIChartModal({
                           className="text-xs"
                           tick={{ fill: "hsl(var(--muted-foreground))" }}
                           tickFormatter={formatAxisTick}
-                          domain={['auto', 'auto']}
+                          domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.2)]}
                           width={45}
                         />
                         <ChartTooltip content={<ChartTooltipContent />} />
