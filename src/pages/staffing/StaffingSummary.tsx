@@ -568,10 +568,10 @@ Excludes: Filled positions, withdrawn postings`,
         chartType: "line" as const,
         delay: 0.25,
         definition: "The difference between FTE Variance and Open Requisitions (FTE Variance + Open Requisitions). Shows remaining staffing gap after accounting for open requisitions.",
-        calculation: `Requisition Variance = FTE Variance - Open Requisitions
+        calculation: `Requisition Variance = FTE Variance + Open Requisitions
 
 Example: If FTE Variance is ${fmt(fteVariance)} and Open Requisitions is ${fmt(openReqs)}:
-${fmt(fteVariance)} - ${fmt(openReqs)} = ${fmt(reqVariance)}`,
+${fmt(fteVariance)} + ${fmt(openReqs)} = ${fmt(reqVariance)}`,
       },
     ];
 
