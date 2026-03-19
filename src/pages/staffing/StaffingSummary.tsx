@@ -600,10 +600,10 @@ ${fmt(fteVariance)} - ${fmt(openReqs)} = ${fmt(reqVariance)}`,
         id: '12m-monthly',
         title: "12M Average",
         value: fmt(mthly12),
-        chartData: mthly12 != null ? generateGrowthTrend(mthly12 * 0.9, mthly12, 12) : [],
+        chartData: monthlyTrend.length > 0 ? monthlyTrend : (mthly12 != null ? generateGrowthTrend(mthly12 * 0.9, mthly12, 12) : []),
         chartType: "area" as const,
         delay: 0,
-        xAxisLabels: monthLabels,
+        xAxisLabels: volLabels,
         definition: "Rolling 12-Month Average Monthly Volume represents the average number of patient encounters, procedures, or units of service delivered per month over the immediately preceding 12 months.",
         calculation: `12M Avg Monthly = Sum of monthly volumes over 12 months / 12
 
