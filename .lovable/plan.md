@@ -1,25 +1,25 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Fix: Show All Skill Mix Categories in FTE Charts
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+**Problem**: The KPI chart modal (line 69-80 in `KPIChartModal.tsx`) has a 3% threshold that groups any skill with value below 3% of total into a single "Other" bucket. This collapses skills like ANM, Director, Manager, Ops Coordinator, Practice Specialist, Clerk into "Other" — leaving only RN, PCT, CL, and Other visible.
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+**Solution**: Remove or relax the small-slice grouping threshold so all individual skill types appear in the donut chart.
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+### Change
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+**File: `src/components/staffing/KPIChartModal.tsx`** (lines 69-80)
+
+Update `filteredPieData` to show all non-zero slices without grouping small ones into "Other":
+
 ```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
-
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+const filteredPieData = useMemo(() => {
+  if (!isPie || !chartData) return chartData;
+  return chartData
+    .filter((d: any) => d.value > 0)
+    .sort((a: any, b: any) => b.value - a.value);
+}, [isPie, chartData]);
 ```
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+This removes the 3% threshold logic entirely, ensuring every skill (RN, PCT, CL, ANM, Director, Manager, Ops Coordinator, Practice Specialist, Clerk, etc.) gets its own slice in the donut chart with its own legend entry.
 
