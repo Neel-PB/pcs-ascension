@@ -229,10 +229,14 @@ export function useFilterData() {
     return submarkets.sort();
   };
 
-  // Helper: get unique Level 2 values, cascading by facility > market > region
-  const getLevel2Options = (facilityId: string | null, marketName?: string | null, regionName?: string | null) => {
+  // Helper: get unique Level 2 values, cascading by department > facility > market > region
+  const getLevel2Options = (facilityId: string | null, marketName?: string | null, regionName?: string | null, departmentId?: string | null) => {
     let filtered = level2Values;
-    if (facilityId && facilityId !== "all-facilities") {
+    if (departmentId && departmentId !== "all-departments") {
+      filtered = level2Values.filter((v) => v.department_id === departmentId && (
+        !facilityId || facilityId === "all-facilities" || v.facility_id === facilityId
+      ));
+    } else if (facilityId && facilityId !== "all-facilities") {
       filtered = level2Values.filter((v) => v.facility_id === facilityId);
     } else if (marketName && marketName !== "all-markets") {
       const marketFacilityIds = new Set(
@@ -248,10 +252,14 @@ export function useFilterData() {
     return [...new Set(filtered.map((v) => v.level_2))].sort();
   };
 
-  // Helper: get unique PSTAT/UoS values, cascading by facility > market > region
-  const getPstatOptions = (facilityId: string | null, marketName?: string | null, regionName?: string | null) => {
+  // Helper: get unique PSTAT/UoS values, cascading by department > facility > market > region
+  const getPstatOptions = (facilityId: string | null, marketName?: string | null, regionName?: string | null, departmentId?: string | null) => {
     let filtered = pstatValues;
-    if (facilityId && facilityId !== "all-facilities") {
+    if (departmentId && departmentId !== "all-departments") {
+      filtered = pstatValues.filter((v) => v.department_id === departmentId && (
+        !facilityId || facilityId === "all-facilities" || v.facility_id === facilityId
+      ));
+    } else if (facilityId && facilityId !== "all-facilities") {
       filtered = pstatValues.filter((v) => v.facility_id === facilityId);
     } else if (marketName && marketName !== "all-markets") {
       const marketFacilityIds = new Set(
