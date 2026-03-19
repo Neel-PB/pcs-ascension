@@ -102,7 +102,7 @@ Determined by:
       chartData: generateGrowthTrend(1.7, 2.5),
       chartType: "area",
       delay: 0.15,
-      definition: "Variance between Hired FTEs and Target FTEs.",
+      definition: "The difference between Hired FTEs and Target FTEs (Hired FTEs − Target FTEs). A negative value indicates understaffing.",
       calculation: `FTE Variance = Hired FTEs - Target FTEs
 
 Example: If target is 43.4 and hired is 40.9:

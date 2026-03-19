@@ -537,7 +537,7 @@ Combined: ${fmt(targetFtes)}`,
         chartData: [],
         chartType: "area" as const,
         delay: 0.15,
-        definition: "Variance between Hired FTEs and Target FTEs.",
+        definition: "The difference between Hired FTEs and Target FTEs (Hired FTEs − Target FTEs). A negative value indicates understaffing.",
         calculation: `FTE Variance = Hired FTEs - Target FTEs
 
 Example: If hired is ${fmt(hiredFtes)} and target is ${fmt(targetFtes)}:
