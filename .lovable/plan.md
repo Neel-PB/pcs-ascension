@@ -1,25 +1,26 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Fix: Y-Axis Domain for Volume and Productive Resources Charts
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+**Problem**: Area/line/bar charts in the KPI modals use `domain={['auto', 'auto']}` on the YAxis, which means:
+- The Y-axis may not start at 0 (misleading visual scale)
+- The max value has no headroom, so the highest data point touches the top edge
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+**Solution**: Change the YAxis `domain` to start at 0 and extend to max value + 20%.
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+### Change
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+**File: `src/components/staffing/KPIChartModal.tsx`**
+
+Update the YAxis `domain` prop in three locations (area chart ~line 910, line chart ~line 940, bar chart ~line 965):
+
 ```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+// Before (all three):
+domain={['auto', 'auto']}
 
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+// After (all three):
+domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.2)]}
 ```
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+This ensures every Volume and Productive Resources trend chart starts from 0 and has 20% headroom above the highest value. The chart heights remain unchanged unless further adjustment is requested.
 
