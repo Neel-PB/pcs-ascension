@@ -177,7 +177,7 @@ export function KPIChartModal({
           </div>
         </DialogHeader>
         
-        <div className="space-y-2 pt-1 overflow-hidden flex flex-col flex-1 min-h-0">
+        <div className="space-y-3 pt-0 overflow-hidden flex flex-col flex-1 min-h-0">
 
           {/* Toggle for Chart and Table — hidden when showAllOptions */}
           {!showAllOptions && (
