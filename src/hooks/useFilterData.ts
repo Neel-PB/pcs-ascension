@@ -29,11 +29,13 @@ export interface Department {
 
 export interface Level2Value {
   facility_id: string;
+  department_id: string;
   level_2: string;
 }
 
 export interface PstatValue {
   facility_id: string;
+  department_id: string;
   unit_of_service: string;
 }
 
@@ -108,23 +110,25 @@ function transformFlatRows(rows: FlatFilterRow[]): FilterDataResult {
       });
     }
 
-    // Level 2 values (dedupe by level_2 + business_unit)
+    // Level 2 values (dedupe by level_2 + business_unit + department_id)
     if (row.level_2) {
-      const l2Key = `${row.level_2}|${row.business_unit}`;
+      const l2Key = `${row.level_2}|${row.business_unit}|${row.department_id}`;
       if (!level2Map.has(l2Key)) {
         level2Map.set(l2Key, {
           facility_id: row.business_unit,
+          department_id: row.department_id,
           level_2: row.level_2,
         });
       }
     }
 
-    // PSTAT / Unit of Service values (dedupe by unit_of_service + business_unit)
+    // PSTAT / Unit of Service values (dedupe by unit_of_service + business_unit + department_id)
     if (row.unit_of_service) {
-      const pstatKey = `${row.unit_of_service}|${row.business_unit}`;
+      const pstatKey = `${row.unit_of_service}|${row.business_unit}|${row.department_id}`;
       if (!pstatMap.has(pstatKey)) {
         pstatMap.set(pstatKey, {
           facility_id: row.business_unit,
+          department_id: row.department_id,
           unit_of_service: row.unit_of_service,
         });
       }
@@ -225,10 +229,14 @@ export function useFilterData() {
     return submarkets.sort();
   };
 
-  // Helper: get unique Level 2 values, cascading by facility > market > region
-  const getLevel2Options = (facilityId: string | null, marketName?: string | null, regionName?: string | null) => {
+  // Helper: get unique Level 2 values, cascading by department > facility > market > region
+  const getLevel2Options = (facilityId: string | null, marketName?: string | null, regionName?: string | null, departmentId?: string | null) => {
     let filtered = level2Values;
-    if (facilityId && facilityId !== "all-facilities") {
+    if (departmentId && departmentId !== "all-departments") {
+      filtered = level2Values.filter((v) => v.department_id === departmentId && (
+        !facilityId || facilityId === "all-facilities" || v.facility_id === facilityId
+      ));
+    } else if (facilityId && facilityId !== "all-facilities") {
       filtered = level2Values.filter((v) => v.facility_id === facilityId);
     } else if (marketName && marketName !== "all-markets") {
       const marketFacilityIds = new Set(
@@ -244,10 +252,14 @@ export function useFilterData() {
     return [...new Set(filtered.map((v) => v.level_2))].sort();
   };
 
-  // Helper: get unique PSTAT/UoS values, cascading by facility > market > region
-  const getPstatOptions = (facilityId: string | null, marketName?: string | null, regionName?: string | null) => {
+  // Helper: get unique PSTAT/UoS values, cascading by department > facility > market > region
+  const getPstatOptions = (facilityId: string | null, marketName?: string | null, regionName?: string | null, departmentId?: string | null) => {
     let filtered = pstatValues;
-    if (facilityId && facilityId !== "all-facilities") {
+    if (departmentId && departmentId !== "all-departments") {
+      filtered = pstatValues.filter((v) => v.department_id === departmentId && (
+        !facilityId || facilityId === "all-facilities" || v.facility_id === facilityId
+      ));
+    } else if (facilityId && facilityId !== "all-facilities") {
       filtered = pstatValues.filter((v) => v.facility_id === facilityId);
     } else if (marketName && marketName !== "all-markets") {
       const marketFacilityIds = new Set(

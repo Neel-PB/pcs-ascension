@@ -94,8 +94,8 @@ export function FilterBar({
     : getSubfilterPermissions();
 
   // Dynamic PSTAT and Level 2 options from API, cascading by facility > market > region
-  const pstatOptions = getPstatOptions(selectedFacility, selectedMarket, selectedRegion);
-  const level2Options = getLevel2Options(selectedFacility, selectedMarket, selectedRegion);
+  const pstatOptions = getPstatOptions(selectedFacility, selectedMarket, selectedRegion, selectedDepartment);
+  const level2Options = getLevel2Options(selectedFacility, selectedMarket, selectedRegion, selectedDepartment);
 
   // Get available options based on org restrictions OR full data
   // For markets: use restricted if user has market restrictions, otherwise cascade from region

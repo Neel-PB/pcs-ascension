@@ -1,28 +1,25 @@
 
 
-## Fix Level 2 and PSTAT Filters to Cascade by Department
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-**Problem**: When a department is selected, Level 2 and PSTAT dropdowns still show all values for that facility instead of narrowing to the single value mapped to that department. The API flat rows contain `department_id` alongside `level_2` and `unit_of_service`, but this association is discarded during transformation.
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-### Changes
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-**1. `src/hooks/useFilterData.ts`** — Store `department_id` in Level2/PSTAT data and add department filtering
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-- Add `department_id` to `Level2Value` and `PstatValue` interfaces
-- Update `transformFlatRows` to capture `department_id` in level2 and pstat maps, using finer dedupe keys (`level_2|business_unit|department_id` and `unit_of_service|business_unit|department_id`)
-- Update `getLevel2Options` and `getPstatOptions` to accept an optional `departmentId` parameter. When set (and not "all-departments"), filter by `department_id` first, before falling through to facility/market/region cascading
-
-**2. `src/components/staffing/FilterBar.tsx`** (line 97-98) — Pass `selectedDepartment` to helpers
-
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
 ```tsx
 // Before
-const pstatOptions = getPstatOptions(selectedFacility, selectedMarket, selectedRegion);
-const level2Options = getLevel2Options(selectedFacility, selectedMarket, selectedRegion);
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
 
 // After
-const pstatOptions = getPstatOptions(selectedFacility, selectedMarket, selectedRegion, selectedDepartment);
-const level2Options = getLevel2Options(selectedFacility, selectedMarket, selectedRegion, selectedDepartment);
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
 ```
 
-Since department selection requires a facility to be selected first, the department filter naturally works alongside the facility filter — the department narrows results within the already-selected facility.
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 
