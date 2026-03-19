@@ -1,28 +1,25 @@
 
 
-## Fix: KPI Chart Modal Spacing
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-**Issues identified from the screenshot (12M Average modal):**
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-1. **Title-to-tabs divider spacing** — The `border-b` on the header and the toggle tabs below have inconsistent gaps
-2. **Below tabs gap** — No breathing room between the Chart/Table toggle and the chart itself
-3. **Excess space below chart** — The chart container (`h-[320px]` wrapper with `h-[280px]` chart) leaves ~40px dead space; the stats footer also has unnecessary padding
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-**File: `src/components/staffing/KPIChartModal.tsx`**
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-### Changes
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+```tsx
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
 
-1. **Line 147** — DialogContent: change `gap-0` to `gap-2` for consistent vertical rhythm between header, tabs, and chart area
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+```
 
-2. **Line 180** — Content wrapper: change `space-y-2 pt-1` to `space-y-3 pt-0` to add proper gap below tabs while removing redundant top padding
-
-3. **Line 802-803** — Chart tab container: change `space-y-2` to `space-y-1` and reduce the outer chart div from `h-[320px]` to `h-[300px]` to eliminate dead space below the chart for non-pie types
-
-4. **Line 897** — Area/Line/Bar chart container: increase from `h-[280px]` to `h-[290px]` so the chart fills more of the container, reducing the gap between chart bottom and stats
-
-5. **Lines 1001, 992, 982** — Stats footers: change `pt-1.5`/`pt-2` to `pt-2` consistently and ensure `border-t` divider has matching spacing to the header divider
-
-6. **Line 148** — Header: change `pb-2` to `pb-3` so the title divider spacing matches what will be below the tabs
-
-These changes tighten the vertical layout: consistent divider gaps, proper spacing below tabs, and chart fills available space without dead whitespace below it.
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 

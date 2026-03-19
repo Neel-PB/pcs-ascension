@@ -144,8 +144,8 @@ export function KPIChartModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn("max-h-[85vh] overflow-hidden p-3 flex flex-col gap-0", showAllOptions ? "max-w-4xl" : "max-w-3xl")}>
-        <DialogHeader className="flex flex-row items-center justify-between space-y-0 border-b pb-2">
+      <DialogContent className={cn("max-h-[85vh] overflow-hidden p-3 flex flex-col gap-2", showAllOptions ? "max-w-4xl" : "max-w-3xl")}>
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0 border-b pb-3">
           <div>
             <DialogTitle className="text-xl">{title}</DialogTitle>
             <DialogDescription className="sr-only">
@@ -177,7 +177,7 @@ export function KPIChartModal({
           </div>
         </DialogHeader>
         
-        <div className="space-y-2 pt-1 overflow-hidden flex flex-col flex-1 min-h-0">
+        <div className="space-y-3 pt-0 overflow-hidden flex flex-col flex-1 min-h-0">
 
           {/* Toggle for Chart and Table — hidden when showAllOptions */}
           {!showAllOptions && (
@@ -799,8 +799,8 @@ export function KPIChartModal({
           ) : (
             <>
           {activeTab === "chart" && (
-            <div className="space-y-2">
-              <div className="h-[320px]">
+            <div className="space-y-1">
+              <div className="h-[300px]">
                 {isRadial ? (
                   <div className="flex flex-col items-center justify-center h-full">
                     <ChartContainer config={radialConfig} className="h-[280px] w-[280px]">
@@ -894,7 +894,7 @@ export function KPIChartModal({
                     </div>
                   </div>
                 ) : enrichedData && enrichedData.length > 0 ? (
-                  <ChartContainer config={{ value: { label: title, color: getChartColor() } } satisfies ChartConfig} className="h-[280px] w-full">
+                  <ChartContainer config={{ value: { label: title, color: getChartColor() } } satisfies ChartConfig} className="h-[290px] w-full">
                     {chartType === "area" ? (
                       <AreaChart data={enrichedData} margin={{ left: -10, right: 10, top: 5, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -979,7 +979,7 @@ export function KPIChartModal({
 
               {/* Statistics — radial shows value + close */}
               {isRadial && (
-                <div className="flex items-center justify-between pt-2 border-t">
+                <div className="flex items-center justify-between pt-2 border-t mt-1">
                   <div className="text-center">
                     <p className="text-sm text-muted-foreground mb-1">Vacancy Rate</p>
                     <p className="text-xl font-semibold text-foreground">{radialValue.toFixed(1)}%</p>
@@ -989,7 +989,7 @@ export function KPIChartModal({
               )}
               {/* Statistics — pie shows total, others show high/avg/low */}
               {isPie && pieTotal > 0 && (
-                <div className="flex items-center justify-between pt-1.5 border-t">
+                <div className="flex items-center justify-between pt-2 border-t mt-1">
                   <div className="text-center">
                     <p className="text-sm text-muted-foreground mb-1">Total</p>
                     <p className="text-xl font-semibold text-foreground">{formatValue(pieTotal)}</p>
@@ -998,7 +998,7 @@ export function KPIChartModal({
                 </div>
               )}
               {stats && (
-                <div className="flex items-center justify-between pt-1.5 border-t">
+                <div className="flex items-center justify-between pt-2 border-t mt-1">
                   <div className="grid grid-cols-3 gap-4">
                     <div className="text-center">
                       <p className="text-xs text-muted-foreground">High</p>
