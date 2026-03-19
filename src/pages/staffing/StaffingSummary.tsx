@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import { format } from "date-fns";
 import { ToggleButtonGroup } from "@/components/ui/toggle-button-group";
 import { FilterBar } from "@/components/staffing/FilterBar";
 import PositionPlanning from "./PositionPlanning";
@@ -417,6 +418,39 @@ export default function StaffingSummary() {
     };
   }, [pvFilteredRecords]);
 
+  // Aggregate last_12_month_volume_stats into real trend data
+  const { monthlyTrend, dailyTrend, trendLabels } = useMemo(() => {
+    const empty = { monthlyTrend: [] as { value: number }[], dailyTrend: [] as { value: number }[], trendLabels: [] as string[] };
+    if (!pvFilteredRecords.length) return empty;
+
+    // Collect all stats across records, keyed by year_month
+    const byMonth: Record<string, { mthly: number; dly: number }> = {};
+
+    pvFilteredRecords.forEach(r => {
+      let stats = r.last_12_month_volume_stats;
+      if (!stats) return;
+      if (typeof stats === 'string') {
+        try { stats = JSON.parse(stats); } catch { return; }
+      }
+      if (!Array.isArray(stats)) return;
+      stats.forEach((s: { year_month: string; patient_volume_dly: number; patient_volume_mthly: number }) => {
+        if (!s.year_month) return;
+        if (!byMonth[s.year_month]) byMonth[s.year_month] = { mthly: 0, dly: 0 };
+        byMonth[s.year_month].mthly += Number(s.patient_volume_mthly ?? 0);
+        byMonth[s.year_month].dly += Number(s.patient_volume_dly ?? 0);
+      });
+    });
+
+    const sorted = Object.entries(byMonth).sort(([a], [b]) => a.localeCompare(b));
+    if (!sorted.length) return empty;
+
+    return {
+      monthlyTrend: sorted.map(([, v]) => ({ value: Math.round(v.mthly * 100) / 100 })),
+      dailyTrend: sorted.map(([, v]) => ({ value: Math.round(v.dly * 100) / 100 })),
+      trendLabels: sorted.map(([ym]) => format(new Date(ym), "MMM''yy")),
+    };
+  }, [pvFilteredRecords]);
+
   // Determine override KPI value based on department selection
   const overrideKpiData = useMemo(() => {
     if (selectedDepartment === "all-departments") {
@@ -551,6 +585,7 @@ ${fmt(fteVariance)} - ${fmt(openReqs)} = ${fmt(reqVariance)}`,
   // Volume KPIs Configuration – wired to patient-volume API
   const volumeKPIs = useMemo(() => {
     const monthLabels = generateLast12MonthLabels();
+    const volLabels = trendLabels.length > 0 ? trendLabels : monthLabels;
     const fmt = (v: number | null | undefined) =>
       v != null ? v.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "—";
 
@@ -565,10 +600,10 @@ ${fmt(fteVariance)} - ${fmt(openReqs)} = ${fmt(reqVariance)}`,
         id: '12m-monthly',
         title: "12M Average",
         value: fmt(mthly12),
-        chartData: mthly12 != null ? generateGrowthTrend(mthly12 * 0.9, mthly12, 12) : [],
+        chartData: monthlyTrend.length > 0 ? monthlyTrend : (mthly12 != null ? generateGrowthTrend(mthly12 * 0.9, mthly12, 12) : []),
         chartType: "area" as const,
         delay: 0,
-        xAxisLabels: monthLabels,
+        xAxisLabels: volLabels,
         definition: "Rolling 12-Month Average Monthly Volume represents the average number of patient encounters, procedures, or units of service delivered per month over the immediately preceding 12 months.",
         calculation: `12M Avg Monthly = Sum of monthly volumes over 12 months / 12
 
@@ -579,10 +614,10 @@ Example: If total volume over 12 months is 7,602:
         id: '12m-daily',
         title: "12M Daily Average",
         value: fmt(dly12),
-        chartData: dly12 != null ? generateGrowthTrend(dly12 * 0.9, dly12, 12) : [],
+        chartData: dailyTrend.length > 0 ? dailyTrend : (dly12 != null ? generateGrowthTrend(dly12 * 0.9, dly12, 12) : []),
         chartType: "area" as const,
         delay: 0.05,
-        xAxisLabels: monthLabels,
+        xAxisLabels: volLabels,
         definition: "12-Month Average Daily Volume represents the average number of patient encounters, procedures, or units of service delivered per day over the past 12 months.",
         calculation: `12M Avg Daily = Total volume over 12 months / Total working days
 
@@ -593,10 +628,10 @@ Example: If total volume is 7,602 over 365 days:
         id: '3m-low',
         title: "3M Low",
         value: fmt(low3),
-        chartData: low3 != null ? generateVolatileTrend(low3, 3, 12) : [],
+        chartData: dailyTrend.length > 0 ? dailyTrend : (low3 != null ? generateVolatileTrend(low3, 3, 12) : []),
         chartType: "area" as const,
         delay: 0.1,
-        xAxisLabels: monthLabels,
+        xAxisLabels: volLabels,
         definition: "3-Month Average Lowest Volume shows the average daily volume recorded during the three months with the lowest total volume in the immediately preceding 12 months. This value is used to determine minimum staffing requirements.",
         calculation: `3M Avg Lowest = Average daily volume during the 3 lowest-volume months in past 12 months
 
@@ -609,10 +644,10 @@ Calculated by:
         id: '3m-high',
         title: "3M High",
         value: fmt(high3),
-        chartData: high3 != null ? generateVolatileTrend(high3, 5, 12) : [],
+        chartData: dailyTrend.length > 0 ? dailyTrend : (high3 != null ? generateVolatileTrend(high3, 5, 12) : []),
         chartType: "bar" as const,
         delay: 0.15,
-        xAxisLabels: monthLabels,
+        xAxisLabels: volLabels,
         definition: "3-Month Average Highest Volume shows the average daily volume recorded during the three months with the highest total volume in the immediately preceding 12 months. This value is used to determine maximum capacity or peak staffing requirements.",
         calculation: `3M Avg Highest = Average daily volume during the 3 highest-volume months in past 12 months
 
@@ -626,10 +661,10 @@ Calculated by:
         title: "Target Vol",
         value: fmt(targetVol),
         isHighlighted: !overrideKpiData.isActive,
-        chartData: targetVol != null ? generateSeasonalTrend(targetVol, targetVol * 0.15, 12) : [],
+        chartData: monthlyTrend.length > 0 ? monthlyTrend : (targetVol != null ? generateSeasonalTrend(targetVol, targetVol * 0.15, 12) : []),
         chartType: "area" as const,
         delay: 0.2,
-        xAxisLabels: monthLabels,
+        xAxisLabels: volLabels,
         definition: "Target Volume represents the expected daily volume used for staffing calculations and planning. This is typically based on historical trends and projected growth.",
         calculation: `Target Volume = Forecasted daily volume based on historical data and growth projections
 
@@ -668,7 +703,7 @@ Used when:
       const bIndex = volumeOrder.indexOf(b.id);
       return aIndex - bIndex;
     });
-  }, [volumeOrder, overrideKpiData, pvAgg, selectedDepartment]);
+  }, [volumeOrder, overrideKpiData, pvAgg, selectedDepartment, monthlyTrend, dailyTrend, trendLabels]);
 
   // Productivity KPIs Configuration – wired to productive-resources-kpi API
   const productivityKPIs = useMemo(() => {
