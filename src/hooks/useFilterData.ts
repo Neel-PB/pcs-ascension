@@ -29,11 +29,13 @@ export interface Department {
 
 export interface Level2Value {
   facility_id: string;
+  department_id: string;
   level_2: string;
 }
 
 export interface PstatValue {
   facility_id: string;
+  department_id: string;
   unit_of_service: string;
 }
 
