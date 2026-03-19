@@ -132,24 +132,19 @@ export function KPIChartModal({
       }));
     }
 
-    // If xAxisLabels provided, take only the last 12 data points
-    const dataToUse = xAxisLabels && xAxisLabels.length === 12 
-      ? chartData.slice(-12) 
-      : chartData;
-    
-    return dataToUse.map((item, index) => {
-      if (xAxisLabels && xAxisLabels.length === 12 && chartData.length >= 12) {
-        return {
-          ...item,
-          period: xAxisLabels[index],
-        };
-      }
-      
-      return {
+    // Use real month labels whenever available
+    if (xAxisLabels && xAxisLabels.length > 0) {
+      const dataToUse = chartData.slice(-xAxisLabels.length);
+      return dataToUse.map((item, index) => ({
         ...item,
-        period: `P${index + 1}`,
-      };
-    });
+        period: xAxisLabels[index] ?? `P${index + 1}`,
+      }));
+    }
+
+    return chartData.map((item, index) => ({
+      ...item,
+      period: `P${index + 1}`,
+    }));
   }, [chartData, xAxisLabels]);
 
   return (
