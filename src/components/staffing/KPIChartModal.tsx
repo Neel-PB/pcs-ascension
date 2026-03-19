@@ -799,8 +799,8 @@ export function KPIChartModal({
           ) : (
             <>
           {activeTab === "chart" && (
-            <div className="space-y-2">
-              <div className="h-[320px]">
+            <div className="space-y-1">
+              <div className="h-[300px]">
                 {isRadial ? (
                   <div className="flex flex-col items-center justify-center h-full">
                     <ChartContainer config={radialConfig} className="h-[280px] w-[280px]">
