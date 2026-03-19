@@ -1,25 +1,41 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Fix: Center-Align Donut/Pie Chart in KPI Modal
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+**Problem**: The donut chart appears left-aligned because it fills the entire `flex-1` container width while the legend sits in a fixed `w-48` column on the right. The pie is centered within its own SVG but not visually centered in the modal.
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+**Solution**: Center the donut chart within its flex container using flexbox centering, and cap the chart width so it doesn't stretch across the full available space.
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+### Change
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+**File: `src/components/staffing/KPIChartModal.tsx`**
+
+**Line 836** — Update the pie/donut flex container layout:
 ```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+// Before:
+<div className="flex items-center gap-4 h-[320px]">
 
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+// After:
+<div className="flex items-center justify-center gap-4 h-[300px]">
 ```
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+**Line 838** — Constrain the chart container so it doesn't stretch too wide, keeping the donut visually centered:
+```tsx
+// Before:
+<div className="flex-1 h-full min-w-0">
+
+// After:
+<div className="flex-1 h-full min-w-0 flex items-center justify-center">
+```
+
+**Line 839** — Cap the ChartContainer max-width so the donut stays compact:
+```tsx
+// Before:
+<ChartContainer config={pieConfig} className="h-full w-full">
+
+// After:
+<ChartContainer config={pieConfig} className="h-full w-full max-w-[320px]">
+```
+
+These three changes ensure the donut chart is visually centered within the modal, with the legend remaining on the right side.
 
