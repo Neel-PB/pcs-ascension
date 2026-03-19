@@ -628,10 +628,10 @@ Example: If total volume is 7,602 over 365 days:
         id: '3m-low',
         title: "3M Low",
         value: fmt(low3),
-        chartData: low3 != null ? generateVolatileTrend(low3, 3, 12) : [],
+        chartData: dailyTrend.length > 0 ? dailyTrend : (low3 != null ? generateVolatileTrend(low3, 3, 12) : []),
         chartType: "area" as const,
         delay: 0.1,
-        xAxisLabels: monthLabels,
+        xAxisLabels: volLabels,
         definition: "3-Month Average Lowest Volume shows the average daily volume recorded during the three months with the lowest total volume in the immediately preceding 12 months. This value is used to determine minimum staffing requirements.",
         calculation: `3M Avg Lowest = Average daily volume during the 3 lowest-volume months in past 12 months
 
