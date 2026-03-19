@@ -962,7 +962,7 @@ export function KPIChartModal({
                           className="text-xs"
                           tick={{ fill: "hsl(var(--muted-foreground))" }}
                           tickFormatter={formatAxisTick}
-                          domain={['auto', 'auto']}
+                          domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.2)]}
                           width={45}
                         />
                         <ChartTooltip content={<ChartTooltipContent />} />
