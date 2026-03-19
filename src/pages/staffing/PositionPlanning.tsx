@@ -61,6 +61,17 @@ interface GroupedVarianceData {
   isExpanded?: boolean;
 }
 
+function toTitleCase(str: string): string {
+  return str.replace(/\b\w/g, c => c.toUpperCase());
+}
+
+const SKILL_CATEGORY_ORDER = [
+  'clinical staff',
+  'support staff',
+  'overheads',
+  'other',
+];
+
 // Build skill groups dynamically from API data based on broader_skill_mix_category
 function buildSkillGroups(records: SkillShiftRecord[]): SkillGroup[] {
   const categoryMap = new Map<string, Set<string>>();
@@ -69,12 +80,18 @@ function buildSkillGroups(records: SkillShiftRecord[]): SkillGroup[] {
     if (!categoryMap.has(cat)) categoryMap.set(cat, new Set());
     categoryMap.get(cat)!.add(r.skill_mix);
   });
-  return Array.from(categoryMap.entries()).map(([cat, skills]) => ({
-    id: cat.toLowerCase().replace(/\s+/g, '_'),
-    name: cat,
-    skills: Array.from(skills),
-    defaultExpanded: false,
-  }));
+  return Array.from(categoryMap.entries())
+    .map(([cat, skills]) => ({
+      id: cat.toLowerCase().replace(/\s+/g, '_'),
+      name: toTitleCase(cat),
+      skills: Array.from(skills),
+      defaultExpanded: false,
+    }))
+    .sort((a, b) => {
+      const aIdx = SKILL_CATEGORY_ORDER.indexOf(a.id.replace(/_/g, ' '));
+      const bIdx = SKILL_CATEGORY_ORDER.indexOf(b.id.replace(/_/g, ' '));
+      return (aIdx === -1 ? 999 : aIdx) - (bIdx === -1 ? 999 : bIdx);
+    });
 }
 
 // Map API records to VarianceData for a given view mode
