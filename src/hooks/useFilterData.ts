@@ -110,23 +110,25 @@ function transformFlatRows(rows: FlatFilterRow[]): FilterDataResult {
       });
     }
 
-    // Level 2 values (dedupe by level_2 + business_unit)
+    // Level 2 values (dedupe by level_2 + business_unit + department_id)
     if (row.level_2) {
-      const l2Key = `${row.level_2}|${row.business_unit}`;
+      const l2Key = `${row.level_2}|${row.business_unit}|${row.department_id}`;
       if (!level2Map.has(l2Key)) {
         level2Map.set(l2Key, {
           facility_id: row.business_unit,
+          department_id: row.department_id,
           level_2: row.level_2,
         });
       }
     }
 
-    // PSTAT / Unit of Service values (dedupe by unit_of_service + business_unit)
+    // PSTAT / Unit of Service values (dedupe by unit_of_service + business_unit + department_id)
     if (row.unit_of_service) {
-      const pstatKey = `${row.unit_of_service}|${row.business_unit}`;
+      const pstatKey = `${row.unit_of_service}|${row.business_unit}|${row.department_id}`;
       if (!pstatMap.has(pstatKey)) {
         pstatMap.set(pstatKey, {
           facility_id: row.business_unit,
+          department_id: row.department_id,
           unit_of_service: row.unit_of_service,
         });
       }
