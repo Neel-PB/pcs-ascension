@@ -661,10 +661,10 @@ Calculated by:
         title: "Target Vol",
         value: fmt(targetVol),
         isHighlighted: !overrideKpiData.isActive,
-        chartData: targetVol != null ? generateSeasonalTrend(targetVol, targetVol * 0.15, 12) : [],
+        chartData: monthlyTrend.length > 0 ? monthlyTrend : (targetVol != null ? generateSeasonalTrend(targetVol, targetVol * 0.15, 12) : []),
         chartType: "area" as const,
         delay: 0.2,
-        xAxisLabels: monthLabels,
+        xAxisLabels: volLabels,
         definition: "Target Volume represents the expected daily volume used for staffing calculations and planning. This is typically based on historical trends and projected growth.",
         calculation: `Target Volume = Forecasted daily volume based on historical data and growth projections
 
