@@ -585,6 +585,7 @@ ${fmt(fteVariance)} - ${fmt(openReqs)} = ${fmt(reqVariance)}`,
   // Volume KPIs Configuration – wired to patient-volume API
   const volumeKPIs = useMemo(() => {
     const monthLabels = generateLast12MonthLabels();
+    const volLabels = trendLabels.length > 0 ? trendLabels : monthLabels;
     const fmt = (v: number | null | undefined) =>
       v != null ? v.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "—";
 
