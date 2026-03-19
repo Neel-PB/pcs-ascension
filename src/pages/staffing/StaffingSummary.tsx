@@ -418,6 +418,39 @@ export default function StaffingSummary() {
     };
   }, [pvFilteredRecords]);
 
+  // Aggregate last_12_month_volume_stats into real trend data
+  const { monthlyTrend, dailyTrend, trendLabels } = useMemo(() => {
+    const empty = { monthlyTrend: [] as { value: number }[], dailyTrend: [] as { value: number }[], trendLabels: [] as string[] };
+    if (!pvFilteredRecords.length) return empty;
+
+    // Collect all stats across records, keyed by year_month
+    const byMonth: Record<string, { mthly: number; dly: number }> = {};
+
+    pvFilteredRecords.forEach(r => {
+      let stats = r.last_12_month_volume_stats;
+      if (!stats) return;
+      if (typeof stats === 'string') {
+        try { stats = JSON.parse(stats); } catch { return; }
+      }
+      if (!Array.isArray(stats)) return;
+      stats.forEach((s: { year_month: string; patient_volume_dly: number; patient_volume_mthly: number }) => {
+        if (!s.year_month) return;
+        if (!byMonth[s.year_month]) byMonth[s.year_month] = { mthly: 0, dly: 0 };
+        byMonth[s.year_month].mthly += Number(s.patient_volume_mthly ?? 0);
+        byMonth[s.year_month].dly += Number(s.patient_volume_dly ?? 0);
+      });
+    });
+
+    const sorted = Object.entries(byMonth).sort(([a], [b]) => a.localeCompare(b));
+    if (!sorted.length) return empty;
+
+    return {
+      monthlyTrend: sorted.map(([, v]) => ({ value: Math.round(v.mthly * 100) / 100 })),
+      dailyTrend: sorted.map(([, v]) => ({ value: Math.round(v.dly * 100) / 100 })),
+      trendLabels: sorted.map(([ym]) => format(new Date(ym), "MMM''yy")),
+    };
+  }, [pvFilteredRecords]);
+
   // Determine override KPI value based on department selection
   const overrideKpiData = useMemo(() => {
     if (selectedDepartment === "all-departments") {
