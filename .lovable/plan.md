@@ -1,25 +1,42 @@
 
 
-## Fix: Two horizontal scrollbars in Employee and Contractor tables
+## Fix: Use Real Month Labels Instead of P1, P2 in KPI Chart Modals
 
-### Root Cause
-There are two nested elements with `overflow-x-auto`:
-1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
-2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
+**Problem**: The KPI chart modal X-axis shows "P1, P2..." instead of actual month names (e.g., "Mar'25", "Apr'25") because the label-matching logic requires exactly 12 labels matching exactly 12 data points. Real data may have fewer months (e.g., 11).
 
-Both create their own horizontal scrollbar, resulting in two visible scrollbars.
+### Change
 
-### Solution
-Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
+**File: `src/components/staffing/KPIChartModal.tsx`** (lines 135-152)
 
-**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
+Update the `enrichedData` logic to use `xAxisLabels` whenever the label count matches the data count, instead of hardcoding `=== 12`:
+
 ```tsx
-// Before
-className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+// Before: only works when exactly 12 labels and 12+ data points
+const dataToUse = xAxisLabels && xAxisLabels.length === 12 
+  ? chartData.slice(-12) 
+  : chartData;
 
-// After
-className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+return dataToUse.map((item, index) => {
+  if (xAxisLabels && xAxisLabels.length === 12 && chartData.length >= 12) {
+    return { ...item, period: xAxisLabels[index] };
+  }
+  return { ...item, period: `P${index + 1}` };
+});
+
+// After: use labels whenever they match data length
+if (xAxisLabels && xAxisLabels.length > 0) {
+  const dataToUse = chartData.slice(-xAxisLabels.length);
+  return dataToUse.map((item, index) => ({
+    ...item,
+    period: xAxisLabels[index] ?? `P${index + 1}`,
+  }));
+}
+
+return chartData.map((item, index) => ({
+  ...item,
+  period: `P${index + 1}`,
+}));
 ```
 
-The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
+This ensures that when `trendLabels` (e.g., `["Mar'25", "Apr'25", ...]`) are passed from StaffingSummary, they appear on the X-axis regardless of whether there are 11 or 12 months of data.
 
