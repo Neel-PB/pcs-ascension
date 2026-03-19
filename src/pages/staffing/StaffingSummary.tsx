@@ -614,10 +614,10 @@ Example: If total volume over 12 months is 7,602:
         id: '12m-daily',
         title: "12M Daily Average",
         value: fmt(dly12),
-        chartData: dly12 != null ? generateGrowthTrend(dly12 * 0.9, dly12, 12) : [],
+        chartData: dailyTrend.length > 0 ? dailyTrend : (dly12 != null ? generateGrowthTrend(dly12 * 0.9, dly12, 12) : []),
         chartType: "area" as const,
         delay: 0.05,
-        xAxisLabels: monthLabels,
+        xAxisLabels: volLabels,
         definition: "12-Month Average Daily Volume represents the average number of patient encounters, procedures, or units of service delivered per day over the past 12 months.",
         calculation: `12M Avg Daily = Total volume over 12 months / Total working days
 
