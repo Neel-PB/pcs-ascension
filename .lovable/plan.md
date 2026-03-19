@@ -1,62 +1,25 @@
 
 
-## Fix: Consistent Skill Group Order and Title Case in Planned/Active Resources
+## Fix: Two horizontal scrollbars in Employee and Contractor tables
 
-**Problem**: The skill category rows (overheads, support staff, clinical staff, other) appear in arbitrary order depending on the API response, and their names are not consistently capitalized (e.g., "overheads" instead of "Overheads").
+### Root Cause
+There are two nested elements with `overflow-x-auto`:
+1. **Parent container** in `EditableTable.tsx` (line 247): `overflow-x-auto`
+2. **VirtualizedTableBody** (line 41): `overflow-x-auto` (added in the previous fix)
 
-**Solution**: Apply a fixed display order and title-case formatting to the `buildSkillGroups` function.
+Both create their own horizontal scrollbar, resulting in two visible scrollbars.
 
-### Changes
+### Solution
+Remove `overflow-x-auto` from the `VirtualizedTableBody` container and let the parent in `EditableTable.tsx` handle all horizontal scrolling. The body should only scroll vertically.
 
-**File: `src/pages/staffing/PositionPlanning.tsx`**
-
-1. **Add a title-case helper** near the top:
+**File: `src/components/editable-table/VirtualizedTableBody.tsx`** (line 41):
 ```tsx
-function toTitleCase(str: string): string {
-  return str.replace(/\b\w/g, c => c.toUpperCase());
-}
+// Before
+className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain"
+
+// After
+className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
 ```
 
-2. **Define a fixed category order** constant:
-```tsx
-const SKILL_CATEGORY_ORDER = [
-  'clinical staff',
-  'support staff',
-  'overheads',
-  'other',
-];
-```
-
-3. **Update `buildSkillGroups`** (lines 65-78): Apply title-case to category names and sort the output array according to the fixed order. Unknown categories appear at the end.
-
-```tsx
-function buildSkillGroups(records: SkillShiftRecord[]): SkillGroup[] {
-  const categoryMap = new Map<string, Set<string>>();
-  records.forEach(r => {
-    const cat = r.broader_skill_mix_category || 'Other';
-    if (!categoryMap.has(cat)) categoryMap.set(cat, new Set());
-    categoryMap.get(cat)!.add(r.skill_mix);
-  });
-
-  return Array.from(categoryMap.entries())
-    .map(([cat, skills]) => ({
-      id: cat.toLowerCase().replace(/\s+/g, '_'),
-      name: toTitleCase(cat),
-      skills: Array.from(skills),
-      defaultExpanded: false,
-    }))
-    .sort((a, b) => {
-      const aIdx = SKILL_CATEGORY_ORDER.indexOf(a.id.replace(/_/g, ' '));
-      const bIdx = SKILL_CATEGORY_ORDER.indexOf(b.id.replace(/_/g, ' '));
-      const aOrder = aIdx === -1 ? 999 : aIdx;
-      const bOrder = bIdx === -1 ? 999 : bIdx;
-      return aOrder - bOrder;
-    });
-}
-```
-
-This ensures:
-- Rows always appear in the order: Clinical Staff, Support Staff, Overheads, Other
-- All category names use title case (first letter of each word capitalized)
-- Consistent across all filter combinations
+The parent container in `EditableTable.tsx` already has `overflow-x-auto`, which handles horizontal scrolling for both the header and body together. This also keeps them in sync (no separate horizontal scroll contexts).
 
