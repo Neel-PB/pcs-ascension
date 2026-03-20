@@ -247,8 +247,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     sessionStorage.removeItem("nestjs_must_change_password");
   }, []);
 
+  const checkEmail = useCallback(async (email: string): Promise<{ exists: boolean; registered: boolean }> => {
+    try {
+      const data = await apiFetch(`/auth/check-email?email=${encodeURIComponent(email)}`);
+      return { exists: !!data.exists, registered: !!data.registered };
+    } catch {
+      return { exists: false, registered: false };
+    }
+  }, []);
+
+  const setInitialPassword = useCallback(async (email: string, password: string) => {
+    try {
+      const data = await apiFetch("/auth/set-initial-password", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
+
+      const appUser: AppUser = {
+        id: data.user?.id || "",
+        email: data.user?.email || email,
+        firstName: data.user?.firstName || data.user?.first_name || "",
+        lastName: data.user?.lastName || data.user?.last_name || "",
+        role: data.user?.role || "user",
+      };
+
+      sessionStorage.setItem("nestjs_token", data.access_token);
+      sessionStorage.setItem("nestjs_user", JSON.stringify(appUser));
+      sessionStorage.removeItem("nestjs_must_change_password");
+      setMustChangePassword(false);
+      setUser(appUser);
+
+      // Silent Supabase session for RLS
+      try {
+        await supabase.auth.signInWithPassword({ email, password });
+      } catch {
+        console.warn("Silent Supabase session failed");
+      }
+
+      toast.success("Password set successfully!");
+      return { data };
+    } catch (err: any) {
+      toast.error(err.message || "Failed to set password");
+      return { error: err };
+    }
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, loading, mustChangePassword, signUp, signIn, signInWithMicrosoft, signOut, clearMustChangePassword }}>
+    <AuthContext.Provider value={{ user, loading, mustChangePassword, checkEmail, setInitialPassword, signUp, signIn, signInWithMicrosoft, signOut, clearMustChangePassword }}>
       {children}
     </AuthContext.Provider>
   );
