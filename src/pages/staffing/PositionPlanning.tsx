@@ -120,9 +120,9 @@ function mapRecordsToVariance(records: SkillShiftRecord[], mode: 'planned' | 'ac
       existing.reqsDay += rDay;
       existing.reqsNight += rNight;
       existing.reqsTotal += rTotal;
-      existing.varianceDay = existing.targetDay - existing.hiredDay - existing.reqsDay;
-      existing.varianceNight = existing.targetNight - existing.hiredNight - existing.reqsNight;
-      existing.varianceTotal = existing.targetTotal - existing.hiredTotal - existing.reqsTotal;
+      existing.varianceDay = existing.hiredDay - existing.targetDay + existing.reqsDay;
+      existing.varianceNight = existing.hiredNight - existing.targetNight + existing.reqsNight;
+      existing.varianceTotal = existing.hiredTotal - existing.targetTotal + existing.reqsTotal;
     } else {
       skillMap.set(r.skill_mix, {
         skill: r.skill_mix,
