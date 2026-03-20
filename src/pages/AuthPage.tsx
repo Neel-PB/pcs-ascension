@@ -34,7 +34,7 @@ export default function AuthPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
 
-  if (user || msalUser) {
+  if (user) {
     return null;
   }
 
