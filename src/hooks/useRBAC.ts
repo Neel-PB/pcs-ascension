@@ -73,7 +73,7 @@ export function useRBAC() {
     });
 
     return permissionSet;
-  }, [roles, permissionOverrides]);
+  }, [effectiveRoles, permissionOverrides]);
 
   const hasPermission = useCallback((permission: string): boolean => {
     return effectivePermissions.has(permission as PermissionKey);
