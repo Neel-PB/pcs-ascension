@@ -1,10 +1,9 @@
 import { lazy, Suspense, useEffect } from "react";
-import { useLocation, Navigate as NavigateComp } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { useAuth } from "@/hooks/useAuth";
