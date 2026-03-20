@@ -166,18 +166,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const msalResult = await loginWithMicrosoft();
 
-      const response = await fetch(`${API_BASE_URL}/auth/msal`, {
+      const data = await apiFetch<any>("/auth/msal", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken: msalResult.idToken }),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Authentication failed");
-      }
-
-      const data = await response.json();
 
       const appUser: AppUser = {
         id: data.user?.id || "",
