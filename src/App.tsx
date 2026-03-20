@@ -85,7 +85,7 @@ const AppContent = () => {
 
   // Force password change redirect
   if (!loading && user && mustChangePassword && location.pathname !== "/auth/setup-password") {
-    return <NavigateComp to="/auth/setup-password" replace />;
+    return <Navigate to="/auth/setup-password" replace />;
   }
 
   return (
