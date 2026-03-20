@@ -186,11 +186,37 @@ export function DraggableKPISection({ title, kpis, dragHandleProps, volumeBreakd
           )}
         </div>
       )}
-      {/* Volume UOS Breakdown Badge */}
+      {/* Volume UOS Breakdown Badge with 6-column connectors */}
       {volumeBreakdown && volumeBreakdown.length > 0 && (
-        <div className="flex justify-center">
-          <div className="flex flex-col items-center">
-            <div className="w-0.5 bg-primary/60" style={{ height: '16px' }} />
+        <div className="hidden xl:grid grid-cols-6 relative z-10" style={{ gap: 'inherit', marginTop: '0' }}>
+          {/* Row 1: Vertical drops from each of the 6 columns */}
+          <div className="col-span-6 grid grid-cols-6" style={{ gap: 'inherit' }}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={`vol-drop-${i}`} className="flex justify-center">
+                <div className="w-0.5 h-2 bg-primary/60 dark:bg-primary/70" />
+              </div>
+            ))}
+          </div>
+          {/* Row 2: Horizontal bar from col 1 center to col 6 center */}
+          <div className="col-span-6 grid grid-cols-6" style={{ gap: 'inherit' }}>
+            <div className="flex items-start">
+              <div className="w-1/2" />
+              <div className="w-1/2 h-0.5 bg-primary/60 dark:bg-primary/70" />
+            </div>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={`vol-hbar-${i}`} className="h-0.5 bg-primary/60 dark:bg-primary/70" />
+            ))}
+            <div className="flex items-start">
+              <div className="w-1/2 h-0.5 bg-primary/60 dark:bg-primary/70" />
+              <div className="w-1/2" />
+            </div>
+          </div>
+          {/* Row 3: Single centered vertical line down to badge */}
+          <div className="col-span-6 flex justify-center">
+            <div className="w-0.5 h-1.5 bg-primary/60 dark:bg-primary/70" />
+          </div>
+          {/* Row 4: Blue pill badge */}
+          <div className="col-span-6 flex justify-center">
             <div
               onClick={() => setShowVolumeBreakdownModal(true)}
               className={cn(
