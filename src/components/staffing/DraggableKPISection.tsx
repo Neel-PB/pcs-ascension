@@ -30,6 +30,7 @@ interface DraggableKPISectionProps {
   title: string;
   kpis: KPIData[];
   dragHandleProps?: DragHandleProps;
+  volumeBreakdown?: Array<{ label: string; value: number }>;
 }
 
 // Only Hired FTEs and Open Reqs get rounded-b-none (not FTE Variance)
