@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback,
 import { QueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { loginWithMicrosoft } from "@/lib/msalAuth";
+import { apiFetch } from "@/lib/apiFetch";
 import { toast } from "sonner";
 
 export interface AppUser {
@@ -26,21 +27,6 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
-
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
-
-async function apiFetch(path: string, options: RequestInit = {}) {
-  const token = sessionStorage.getItem("nestjs_token");
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...(options.headers as Record<string, string> || {}),
-  };
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-  const res = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || `Request failed (${res.status})`);
-  return data;
-}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null);
@@ -180,18 +166,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const msalResult = await loginWithMicrosoft();
 
-      const response = await fetch(`${API_BASE_URL}/auth/msal`, {
+      const data = await apiFetch<any>("/auth/msal", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken: msalResult.idToken }),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Authentication failed");
-      }
-
-      const data = await response.json();
 
       const appUser: AppUser = {
         id: data.user?.id || "",

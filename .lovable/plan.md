@@ -1,64 +1,87 @@
 
 
-## Unblock Login: Migrate Critical Auth/RBAC Hooks to NestJS
+## Replace Supabase Auth with NestJS Auth
 
-### Problem
-After NestJS login, the silent Supabase session fails because users don't exist in Supabase Auth. This means `auth.uid()` is null, so all Supabase RLS queries return empty data. Result: no roles → no filter permissions → filters hidden, no profile, no access scope.
+### Overview
+Route all credential flows (signIn, signUp, signOut) through NestJS API while silently maintaining a Supabase session so the 23+ files using RLS-protected data queries continue to work.
 
-### Scope (login only — not feedback, messages, etc.)
-Only 4 hooks need to migrate to make login → filters → data work:
+### Changes
 
-| Hook | Currently queries | Needs NestJS endpoint |
-|------|------------------|-----------------------|
-| `useRBAC` | `user_roles` + `role_permissions` | `GET /users/:id/roles` + `GET /role-permissions` |
-| `useUserRoles` | `user_roles` | `GET /users/:id/roles` |
-| `useUserProfile` | `profiles` | `GET /auth/me` (already exists) |
-| `useUserOrgAccess` | `user_organization_access` | `GET /users/:id/access-scope` |
+**1. `src/contexts/AuthContext.tsx`** — Major rewrite
 
-### NestJS Endpoints Needed (prompt for your team)
+- Add `AppUser` interface: `{ id, email, firstName, lastName, role }`
+- Add `mustChangePassword` state flag
+- **`signIn`**: Call `POST ${API_BASE_URL}/auth/login`. Store NestJS JWT + user in `sessionStorage`. If `must_change_password` is true, set flag. Silently call `supabase.auth.signInWithPassword` with same credentials to keep RLS queries working.
+- **`signUp`**: Call `POST ${API_BASE_URL}/auth/register`. Store NestJS JWT. Silently create Supabase session with same credentials.
+- **`signOut`**: Clear `sessionStorage` (NestJS JWT, user, MSAL tokens). Call `supabase.auth.signOut`. Clear query cache.
+- **On mount**: Check `sessionStorage` for stored NestJS user/JWT. Validate via `GET ${API_BASE_URL}/auth/me` with Bearer token. If valid, set user state. Supabase session restores itself via `onAuthStateChange`.
+- Expose `mustChangePassword` in context type.
+- Keep `signInWithMicrosoft` as-is but also store JWT from its response consistently.
+- **`checkEmail`**: Call `GET ${API_BASE_URL}/auth/check-email?email=...` to determine if user exists and is registered.
+- **`setInitialPassword`**: Call `POST ${API_BASE_URL}/auth/set-initial-password` for first-time password setup.
+
+**2. `src/pages/AuthPage.tsx`** — Multi-step login flow
+
+- Single-card state machine: `email` → `unauthorized` | `password` | `setup`
+- Step email: email input + Continue button, Microsoft SSO above
+- Step unauthorized: error card with support contact
+- Step password: email (readonly) + password + Sign In
+- Step setup: email (readonly) + create/confirm password + Set Password
+
+**3. `src/pages/SetupPasswordPage.tsx`**
+
+- Replace `supabase.auth.updateUser({ password })` with `POST ${API_BASE_URL}/auth/change-password` using Bearer token from `sessionStorage`.
+- On success, clear `mustChangePassword` flag in context and navigate to `/`.
+
+**4. `src/App.tsx`**
+
+- Read `mustChangePassword` from auth context.
+- In `AppContent`, if user is logged in and `mustChangePassword` is true, redirect all routes to `/auth/setup-password`.
+
+**5. No changes needed**
+- `DemoLogin.tsx` — already calls `signIn()` from context (no longer rendered on AuthPage)
+- `ShellLayout.tsx` — already checks `user` from `useAuth()`
+
+### Data Access Strategy
+Supabase client stays for all data queries. The silent `supabase.auth.signInWithPassword` call after NestJS login ensures `auth.uid()` is populated for RLS. Users never see Supabase auth — NestJS is the authority.
+
+### Critical Hooks Migrated to NestJS (Phase 1)
+
+**6. `src/lib/apiFetch.ts`** — Shared API helper
+- Extracted from AuthContext, reads `nestjs_token` from sessionStorage, prepends `VITE_API_BASE_URL`.
+
+**7. `src/hooks/useRBAC.ts`** — Migrated to NestJS
+- Roles: `GET /users/:id/roles`
+- Permission overrides: `GET /role-permissions`
+
+**8. `src/hooks/useUserRoles.ts`** — Migrated to NestJS
+- `GET /users/:id/roles`
+
+**9. `src/hooks/useUserProfile.ts`** — Migrated to NestJS
+- `GET /auth/me` (maps NestJS response to profile shape)
+
+**10. `src/hooks/useUserOrgAccess.ts`** — Migrated to NestJS
+- `GET /users/:id/access-scope`
+
+### NestJS Endpoints Required
 
 ```text
+GET /auth/check-email?email=user@domain.com
+  Returns: { exists: boolean, registered: boolean }
+
+POST /auth/set-initial-password
+  Body: { email, password }
+  Returns: { access_token, user }
+
 GET /users/:id/roles
   Auth: Bearer token
   Returns: { roles: ["admin", "labor_team", ...] }
-  Logic: SELECT role FROM user_roles WHERE user_id = :id
 
 GET /users/:id/access-scope
   Auth: Bearer token
   Returns: { assignments: [{ region, market, facility_id, facility_name, department_id, department_name }] }
-  Logic: SELECT * FROM user_organization_access WHERE user_id = :id
-  If no rows → user has unrestricted access
 
 GET /role-permissions
   Auth: Bearer token
   Returns: [{ role, permission_key, permission_value }]
-  Logic: SELECT * FROM role_permissions
 ```
-
-**`GET /auth/me` already exists** — just ensure it returns `{ id, email, firstName, lastName, role }`.
-
-### Frontend Changes (Lovable implements)
-
-**1. `src/hooks/useRBAC.ts`**
-- Replace `supabase.from('user_roles')` with `GET /users/${userId}/roles`
-- Replace `supabase.from('role_permissions')` with `GET /role-permissions`
-- Use Bearer token from `sessionStorage.getItem('nestjs_token')`
-
-**2. `src/hooks/useUserRoles.ts`**
-- Replace `supabase.from('user_roles')` with `GET /users/${userId}/roles`
-
-**3. `src/hooks/useUserProfile.ts`**
-- Replace `supabase.from('profiles')` with `GET /auth/me` (user data already comes from NestJS)
-
-**4. `src/hooks/useUserOrgAccess.ts`**
-- Replace `supabase.from('user_organization_access')` with `GET /users/${userId}/access-scope`
-
-**5. Create `src/lib/apiFetch.ts`**
-- Extract the `apiFetch` helper from `AuthContext.tsx` into a shared utility so all hooks can use it
-
-### What This Unlocks
-Once these 4 hooks use NestJS, login → RBAC loads → filter permissions resolve → filters appear → existing NestJS data endpoints (positions, volumes, filters) work. The app becomes functional for logged-in users.
-
-### What's NOT in scope
-Feedback, notifications, messages, comments, volume overrides, forecast positions, employee feed, app settings, user admin CRUD — all deferred to later phases.
-
