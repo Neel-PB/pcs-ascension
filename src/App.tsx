@@ -82,6 +82,13 @@ const AppContent = () => {
     return () => clearTimeout(timer);
   }, [user, loading, onboardingChecked, startFullTour, markOnboardingComplete, setOnboardingChecked]);
 
+  const location = useLocation();
+
+  // Force password change redirect
+  if (!loading && user && mustChangePassword && location.pathname !== "/auth/setup-password") {
+    return <NavigateComp to="/auth/setup-password" replace />;
+  }
+
   return (
     <>
       <Routes>
@@ -101,7 +108,7 @@ const AppContent = () => {
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<ShellLayout><NotFound /></ShellLayout>} />
       </Routes>
-      {!loading && user && (
+      {!loading && user && !mustChangePassword && (
         <Suspense fallback={null}>
           {uiSettings?.showFeedbackTrigger !== false && <FeedbackTrigger enableScreenshotCapture={uiSettings?.enableScreenshotCapture !== false} />}
           {uiSettings?.showFeedbackTrigger !== false && <FeedbackPanel />}
