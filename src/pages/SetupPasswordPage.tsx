@@ -1,29 +1,28 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "@/lib/icons";
+import { useAuth } from "@/hooks/useAuth";
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
 
 export default function SetupPasswordPage() {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { clearMustChangePassword } = useAuth();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // No auto-redirect - let user set password first
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    // Validation
     if (password.length < 8) {
       setError("Password must be at least 8 characters long");
       return;
@@ -37,19 +36,24 @@ export default function SetupPasswordPage() {
     setIsLoading(true);
 
     try {
-      // Update the user's password
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: password,
+      const token = sessionStorage.getItem("nestjs_token");
+      const res = await fetch(`${API_BASE_URL}/auth/change-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ newPassword: password }),
       });
 
-      if (updateError) throw updateError;
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || "Failed to set password");
 
-      toast.success("Password set successfully! You can now sign in.");
-      
-      // Redirect to home page
-      navigate('/');
+      clearMustChangePassword();
+      toast.success("Password set successfully! You can now use the app.");
+      navigate("/");
     } catch (err: any) {
-      console.error('Error setting password:', err);
+      console.error("Error setting password:", err);
       setError(err.message || "Failed to set password. Please try again.");
       toast.error("Failed to set password");
     } finally {
