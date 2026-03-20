@@ -227,7 +227,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps, volumeBreakd
             >
               <Info className="h-3 w-3 shrink-0 text-primary" />
               <span className="font-medium text-primary">
-                {volumeBreakdown.map(d => `${d.label}: ${d.value.toLocaleString()}`).join(' · ')}
+                Viewing: {volumeBreakdown.map(d => d.label).join(' · ')}
               </span>
             </div>
           </div>
