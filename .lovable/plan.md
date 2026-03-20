@@ -1,26 +1,19 @@
 
 
-## Remove Hardcoded Deployed URL from apiFetch.ts
+## Fix: Set `.env` to localhost
 
-### Change
-**`src/lib/apiFetch.ts`** — Remove `DEPLOYED_API` constant and simplify to only use the env variable. If no env var is set, API calls will simply fail (no silent fallback to a hardcoded URL).
-
-```ts
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
-
-export async function apiFetch<T = any>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = sessionStorage.getItem("nestjs_token");
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...(options.headers as Record<string, string> || {}),
-  };
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-  const res = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || `Request failed (${res.status})`);
-  return data as T;
-}
+The `.env` file in the Lovable project currently contains:
+```
+VITE_API_BASE_URL=https://ascension-api-213151693504.us-central1.run.app
 ```
 
-Removes the `DEPLOYED_API` constant, `isLocalApi`, `isLocalOrigin`, and all fallback logic. The app uses exactly what `VITE_API_BASE_URL` is set to — nothing else.
+You want it to be:
+```
+VITE_API_BASE_URL=http://127.0.0.1:8080
+```
+
+### Change
+**`.env`** line 4 — change to `http://127.0.0.1:8080`
+
+Note: This will make the Lovable cloud preview fail on API calls (since it can't reach your localhost), but your local dev will work correctly. The `apiFetch.ts` is already correct — it uses exactly what's in the env.
 
