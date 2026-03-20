@@ -36,9 +36,10 @@ interface DraggableKPISectionProps {
 // Only Hired FTEs and Open Reqs get rounded-b-none (not FTE Variance)
 const BREAKDOWN_CONNECTED_IDS = ['hired-ftes', 'open-reqs'];
 
-export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableKPISectionProps) {
+export function DraggableKPISection({ title, kpis, dragHandleProps, volumeBreakdown }: DraggableKPISectionProps) {
   const [showBreakdownModal, setShowBreakdownModal] = useState(false);
   const [showTargetBreakdownModal, setShowTargetBreakdownModal] = useState(false);
+  const [showVolumeBreakdownModal, setShowVolumeBreakdownModal] = useState(false);
 
   // Get the shared breakdown from hired-ftes
   const hiredFtesKpi = kpis.find(k => k.id === 'hired-ftes');
