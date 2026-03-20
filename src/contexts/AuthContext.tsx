@@ -1,106 +1,183 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from "react";
-import { User, Session } from "@supabase/supabase-js";
 import { QueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { loginWithMicrosoft } from "@/lib/msalAuth";
 import { toast } from "sonner";
 
-interface MsalUser {
+export interface AppUser {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
+  role: string;
 }
 
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  msalUser: MsalUser | null;
+  user: AppUser | null;
   loading: boolean;
+  mustChangePassword: boolean;
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ data?: any; error?: any }>;
   signIn: (email: string, password: string) => Promise<{ data?: any; error?: any }>;
   signInWithMicrosoft: () => Promise<{ data?: any; error?: any }>;
   signOut: (queryClient?: QueryClient) => Promise<{ error: any | null }>;
+  clearMustChangePassword: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
+
+async function apiFetch(path: string, options: RequestInit = {}) {
+  const token = sessionStorage.getItem("nestjs_token");
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options.headers as Record<string, string> || {}),
+  };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const res = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.message || `Request failed (${res.status})`);
+  return data;
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [msalUser, setMsalUser] = useState<MsalUser | null>(() => {
-    const stored = sessionStorage.getItem("msal_user");
-    return stored ? JSON.parse(stored) : null;
-  });
+  const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mustChangePassword, setMustChangePassword] = useState(false);
   const isSigningOutRef = useRef(false);
 
+  // Restore session on mount
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (isSigningOutRef.current) return;
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
+    const restore = async () => {
+      const storedUser = sessionStorage.getItem("nestjs_user");
+      const storedToken = sessionStorage.getItem("nestjs_token");
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!isSigningOutRef.current) {
-        setSession(session);
-        setUser(session?.user ?? null);
+      if (storedUser && storedToken) {
+        try {
+          const data = await apiFetch("/auth/me");
+          const appUser: AppUser = {
+            id: data.id,
+            email: data.email,
+            firstName: data.firstName || data.first_name || "",
+            lastName: data.lastName || data.last_name || "",
+            role: data.role || "user",
+          };
+          setUser(appUser);
+          sessionStorage.setItem("nestjs_user", JSON.stringify(appUser));
+
+          const mustChange = sessionStorage.getItem("nestjs_must_change_password") === "true";
+          setMustChangePassword(mustChange);
+        } catch {
+          // Token invalid — clear
+          sessionStorage.removeItem("nestjs_token");
+          sessionStorage.removeItem("nestjs_user");
+          sessionStorage.removeItem("nestjs_must_change_password");
+        }
       }
-      // Also check for stored MSAL session
-      if (!session && !msalUser) {
-        setLoading(false);
-      } else {
-        setLoading(false);
-      }
+
+      // Also let Supabase restore its own session (for RLS data queries)
+      // No action needed — supabase client auto-restores from localStorage
+      setLoading(false);
+    };
+
+    restore();
+  }, []);
+
+  // Keep Supabase onAuthStateChange for RLS session awareness
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      // We don't set user from Supabase — NestJS is authority
+      // This just keeps Supabase session alive for data queries
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = useCallback(async (email: string, password: string, firstName: string, lastName: string) => {
-    const redirectUrl = `${window.location.origin}/`;
+  const signIn = useCallback(async (email: string, password: string) => {
+    try {
+      const data = await apiFetch("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: { first_name: firstName, last_name: lastName },
-      },
-    });
+      const appUser: AppUser = {
+        id: data.user?.id || "",
+        email: data.user?.email || email,
+        firstName: data.user?.firstName || data.user?.first_name || "",
+        lastName: data.user?.lastName || data.user?.last_name || "",
+        role: data.user?.role || "user",
+      };
 
-    if (error) {
-      toast.error(error.message);
-      return { error };
+      sessionStorage.setItem("nestjs_token", data.access_token);
+      sessionStorage.setItem("nestjs_user", JSON.stringify(appUser));
+
+      if (data.must_change_password) {
+        sessionStorage.setItem("nestjs_must_change_password", "true");
+        setMustChangePassword(true);
+      } else {
+        sessionStorage.removeItem("nestjs_must_change_password");
+        setMustChangePassword(false);
+      }
+
+      setUser(appUser);
+
+      // Silent Supabase session for RLS-protected data queries
+      try {
+        await supabase.auth.signInWithPassword({ email, password });
+      } catch {
+        // Non-critical — data queries may fail but auth works
+        console.warn("Silent Supabase session failed — RLS queries may be affected");
+      }
+
+      toast.success("Signed in successfully!");
+      return { data };
+    } catch (err: any) {
+      toast.error(err.message || "Sign-in failed");
+      return { error: err };
     }
-
-    toast.success("Account created successfully!");
-    return { data };
   }, []);
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const signUp = useCallback(async (email: string, password: string, firstName: string, lastName: string) => {
+    try {
+      const data = await apiFetch("/auth/register", {
+        method: "POST",
+        body: JSON.stringify({ email, password, firstName, lastName }),
+      });
 
-    if (error) {
-      toast.error(error.message);
-      return { error };
+      const appUser: AppUser = {
+        id: data.user?.id || "",
+        email: data.user?.email || email,
+        firstName: data.user?.firstName || firstName,
+        lastName: data.user?.lastName || lastName,
+        role: data.user?.role || "user",
+      };
+
+      sessionStorage.setItem("nestjs_token", data.access_token);
+      sessionStorage.setItem("nestjs_user", JSON.stringify(appUser));
+      setUser(appUser);
+
+      // Silent Supabase session
+      try {
+        await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { first_name: firstName, last_name: lastName } },
+        });
+      } catch {
+        console.warn("Silent Supabase signup failed");
+      }
+
+      toast.success("Account created successfully!");
+      return { data };
+    } catch (err: any) {
+      toast.error(err.message || "Sign-up failed");
+      return { error: err };
     }
-
-    toast.success("Signed in successfully!");
-    return { data };
   }, []);
 
   const signInWithMicrosoft = useCallback(async () => {
     try {
       const msalResult = await loginWithMicrosoft();
 
-      // Send the ID token to your NestJS API for verification
       const response = await fetch(`${API_BASE_URL}/auth/msal`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -114,20 +191,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await response.json();
 
-      // Store the MSAL user info and token
-      const msalUserData: MsalUser = {
+      const appUser: AppUser = {
         id: data.user?.id || "",
         email: data.user?.email || msalResult.email,
         firstName: data.user?.firstName || msalResult.firstName,
         lastName: data.user?.lastName || msalResult.lastName,
+        role: data.user?.role || "user",
       };
 
-      setMsalUser(msalUserData);
-      sessionStorage.setItem("msal_user", JSON.stringify(msalUserData));
-
       if (data.access_token) {
+        sessionStorage.setItem("nestjs_token", data.access_token);
         sessionStorage.setItem("msal_access_token", data.access_token);
       }
+      sessionStorage.setItem("nestjs_user", JSON.stringify(appUser));
+      sessionStorage.setItem("msal_user", JSON.stringify(appUser));
+      setUser(appUser);
 
       toast.success("Signed in with Microsoft successfully!");
       return { data };
@@ -145,27 +223,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (queryClient) queryClient.clear();
 
-    setSession(null);
     setUser(null);
-    setMsalUser(null);
+    setMustChangePassword(false);
+
+    sessionStorage.removeItem("nestjs_token");
+    sessionStorage.removeItem("nestjs_user");
+    sessionStorage.removeItem("nestjs_must_change_password");
     sessionStorage.removeItem("msal_user");
     sessionStorage.removeItem("msal_access_token");
 
-    const { error } = await supabase.auth.signOut({ scope: "local" });
-
-    if (error && !error.message?.includes("session")) {
-      toast.error(error.message);
-      isSigningOutRef.current = false;
-      return { error };
-    }
+    // Clear Supabase session too
+    await supabase.auth.signOut({ scope: "local" }).catch(() => {});
 
     toast.success("Signed out successfully!");
     setTimeout(() => { isSigningOutRef.current = false; }, 200);
     return { error: null };
   }, []);
 
+  const clearMustChangePassword = useCallback(() => {
+    setMustChangePassword(false);
+    sessionStorage.removeItem("nestjs_must_change_password");
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, session, msalUser, loading, signUp, signIn, signInWithMicrosoft, signOut }}>
+    <AuthContext.Provider value={{ user, loading, mustChangePassword, signUp, signIn, signInWithMicrosoft, signOut, clearMustChangePassword }}>
       {children}
     </AuthContext.Provider>
   );

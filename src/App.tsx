@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { useAuth } from "@/hooks/useAuth";
@@ -49,7 +49,7 @@ const PageLoader = () => (
 );
 
 const AppContent = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, mustChangePassword } = useAuth();
   const { hasPermission } = useRBAC();
   const { onboardingChecked, startFullTour, markOnboardingComplete, setOnboardingChecked } = useTourStore();
   
@@ -81,6 +81,13 @@ const AppContent = () => {
     return () => clearTimeout(timer);
   }, [user, loading, onboardingChecked, startFullTour, markOnboardingComplete, setOnboardingChecked]);
 
+  const location = useLocation();
+
+  // Force password change redirect
+  if (!loading && user && mustChangePassword && location.pathname !== "/auth/setup-password") {
+    return <Navigate to="/auth/setup-password" replace />;
+  }
+
   return (
     <>
       <Routes>
@@ -100,7 +107,7 @@ const AppContent = () => {
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<ShellLayout><NotFound /></ShellLayout>} />
       </Routes>
-      {!loading && user && (
+      {!loading && user && !mustChangePassword && (
         <Suspense fallback={null}>
           {uiSettings?.showFeedbackTrigger !== false && <FeedbackTrigger enableScreenshotCapture={uiSettings?.enableScreenshotCapture !== false} />}
           {uiSettings?.showFeedbackTrigger !== false && <FeedbackPanel />}

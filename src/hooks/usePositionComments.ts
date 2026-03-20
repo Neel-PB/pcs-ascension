@@ -115,11 +115,11 @@ export function usePositionComments(positionId: string) {
 
 export function useAddPositionComment() {
   const queryClient = useQueryClient();
-  const { user, msalUser } = useAuthContext();
+  const { user } = useAuthContext();
 
   return useMutation({
     mutationFn: async ({ positionId, content, overrideId }: { positionId: string; content: string; overrideId?: string }) => {
-      const currentUserId = user?.id || msalUser?.id;
+      const currentUserId = user?.id;
       if (!currentUserId) throw new Error("Not authenticated");
       const headers = getApiHeaders();
 

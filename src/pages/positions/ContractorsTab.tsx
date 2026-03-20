@@ -33,8 +33,8 @@ interface ContractorsTabProps {
 export function ContractorsTab({
   selectedRegion, selectedMarket, selectedFacility, selectedPstat, selectedLevel2, selectedDepartment,
 }: ContractorsTabProps) {
-  const { user, msalUser } = useAuthContext();
-  const currentUserId = user?.id || msalUser?.id;
+  const { user } = useAuthContext();
+  const currentUserId = user?.id;
   useCheckExpiredFte();
 
   const { data: contractors, isFetching } = usePositionsByFlag('contractor_flag', {

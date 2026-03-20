@@ -521,9 +521,7 @@ export function UnifiedEmployeeFeed() {
         posts.map((post, index) => {
           const isLiked = user?.id ? post.likes.includes(user.id) : false;
           const commentsOpen = showComments[post.id] || false;
-          const authorAvatarSrc = post.user_id === user?.id
-            ? (user?.user_metadata?.avatar_url || post.author?.avatar_url)
-            : post.author?.avatar_url;
+          const authorAvatarSrc = post.author?.avatar_url;
 
           return (
             <div key={post.id} className="p-6 border-t border-border/50 bg-card">
@@ -739,9 +737,9 @@ export function UnifiedEmployeeFeed() {
 
                   <div className="flex gap-2.5">
                     <Avatar className="h-8 w-8 flex-shrink-0">
-                      <AvatarImage src={resolveAvatarUrl(user?.user_metadata?.avatar_url, user?.user_metadata?.first_name, user?.user_metadata?.last_name)} />
+                      <AvatarImage src={resolveAvatarUrl(undefined, user?.firstName, user?.lastName)} />
                       <AvatarFallback className="text-xs">
-                        {user?.user_metadata?.first_name?.[0]}{user?.user_metadata?.last_name?.[0]}
+                        {user?.firstName?.[0]}{user?.lastName?.[0]}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 flex gap-2">
