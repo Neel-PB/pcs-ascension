@@ -32,7 +32,13 @@ export function useRBAC() {
     },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
+
+  // Fallback: if API roles empty, use role from auth context
+  const effectiveRoles: AppRole[] = roles.length > 0
+    ? roles
+    : (user?.role ? [user.role as AppRole] : []);
 
   // Fetch permission overrides from NestJS
   const { data: permissionOverrides, isLoading: permissionsLoading } = useQuery({
@@ -42,13 +48,14 @@ export function useRBAC() {
       return data;
     },
     staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
   // Calculate effective permissions for user's roles
   const effectivePermissions = useMemo(() => {
     const permissionSet = new Set<PermissionKey>();
 
-    roles.forEach(role => {
+    effectiveRoles.forEach(role => {
       const defaults = DEFAULT_ROLE_PERMISSIONS[role] || [];
       defaults.forEach(p => permissionSet.add(p));
 
@@ -66,15 +73,15 @@ export function useRBAC() {
     });
 
     return permissionSet;
-  }, [roles, permissionOverrides]);
+  }, [effectiveRoles, permissionOverrides]);
 
   const hasPermission = useCallback((permission: string): boolean => {
     return effectivePermissions.has(permission as PermissionKey);
   }, [effectivePermissions]);
 
   const hasRole = useCallback((role: AppRole): boolean => {
-    return roles.includes(role);
-  }, [roles]);
+    return effectiveRoles.includes(role);
+  }, [effectiveRoles]);
 
   const getFilterPermissions = useCallback(() => ({
     region: effectivePermissions.has('filters.region'),
@@ -94,7 +101,7 @@ export function useRBAC() {
   return {
     hasPermission,
     hasRole,
-    roles,
+    roles: effectiveRoles,
     loading,
     userId,
     effectivePermissions: Array.from(effectivePermissions),
