@@ -75,6 +75,7 @@ function DraggableSection({ section }: { section: SectionData }) {
         title={section.title}
         kpis={section.kpis}
         dragHandleProps={{ attributes, listeners }}
+        volumeBreakdown={section.volumeBreakdown}
       />
     </div>
   );
