@@ -16,6 +16,8 @@ interface AuthContextType {
   user: AppUser | null;
   loading: boolean;
   mustChangePassword: boolean;
+  checkEmail: (email: string) => Promise<{ exists: boolean; registered: boolean }>;
+  setInitialPassword: (email: string, password: string) => Promise<{ data?: any; error?: any }>;
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ data?: any; error?: any }>;
   signIn: (email: string, password: string) => Promise<{ data?: any; error?: any }>;
   signInWithMicrosoft: () => Promise<{ data?: any; error?: any }>;
