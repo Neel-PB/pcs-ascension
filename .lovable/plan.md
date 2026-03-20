@@ -1,173 +1,49 @@
 
 
-## NestJS Seed Data Requirements
+## Fix: FilterBar Missing After Login
 
-### What You Need
+### Root Cause
 
-Your frontend's `rbacConfig.ts` defines the exact role-permission matrix. Here's everything your NestJS seed must contain:
+Two issues are causing the missing filter bar:
 
----
+**Issue 1: `VITE_API_BASE_URL` is `http://127.0.0.1:8080`**
+The Lovable preview runs in the cloud, so requests to `127.0.0.1` fail. All NestJS API calls (`/users/:id/roles`, `/role-permissions`, `/auth/me`) fail with "Failed to fetch". The env var needs to be set to your deployed NestJS URL: `https://ascension-api-213151693504.us-central1.run.app`
 
-### 1. `users` table — Admin seed (already done)
+**Issue 2: No fallback when roles API fails**
+When `GET /users/:id/roles` fails, `useRBAC` returns `roles = []` (empty array). The permission calculation loop iterates over zero roles → zero permissions → all filter dropdowns hidden. The user's role IS available from the login response (`AppUser.role = "admin"`) but `useRBAC` ignores it.
 
-```sql
-INSERT INTO users (email, password_hash, first_name, last_name, must_change_password, is_active, role)
-VALUES ('admin@particleblack.com', '$2b$10$<bcrypt_hash_of_password>', 'Admin', 'PB', true, true, 'admin');
+### Fix Plan
+
+**1. `src/hooks/useRBAC.ts`** — Add fallback to auth context role
+- When the roles API call fails or returns empty, fall back to `user.role` from `AuthContext`
+- This ensures that if the user logged in successfully (NestJS returned `role: "admin"`), RBAC still works even if the `/users/:id/roles` endpoint is unreachable
+
+```
+// Effective roles: API data, or fallback to auth context role
+const effectiveRoles = roles.length > 0 
+  ? roles 
+  : (user?.role ? [user.role as AppRole] : []);
 ```
 
----
+Then use `effectiveRoles` instead of `roles` in the permission calculation and `hasRole`.
 
-### 2. `user_roles` table — Admin gets admin role
+**2. `src/hooks/useUserRoles.ts`** — Same fallback pattern
+- Accept an optional `fallbackRole` parameter from auth context
 
-```sql
-INSERT INTO user_roles (user_id, role)
-VALUES ('<admin_user_id>', 'admin');
-```
+**3. `src/hooks/useRBAC.ts` and `src/hooks/useUserOrgAccess.ts`** — Graceful error handling
+- Add `retry: 1` to react-query options so failed API calls don't retry infinitely
+- Add `placeholderData` or handle error state so the UI doesn't hang
 
----
+**4. Environment variable**
+- Set `VITE_API_BASE_URL` to `https://ascension-api-213151693504.us-central1.run.app` (your deployed NestJS backend)
 
-### 3. `user_organization_access` — No rows for admin
+### What This Fixes
+- FilterBar appears immediately after login using the role from the login response
+- Even if the roles/permissions API endpoints are temporarily unreachable, the hardcoded defaults for the user's role kick in
+- No more infinite retry loops visible in network tab
 
-When a user has **no rows** in this table, the frontend treats them as having **unrestricted access** (all regions, markets, facilities, departments). So admin needs no seed here.
-
----
-
-### 4. `role_permissions` table — Full seed
-
-This is the critical missing piece. The frontend falls back to hardcoded defaults in `rbacConfig.ts`, but your NestJS `GET /role-permissions` endpoint needs to return this data. Seed all 21 permission keys × 6 active roles:
-
-```sql
--- All 21 permission keys:
--- admin.access, feedback.access, staffing.access, positions.access,
--- analytics.access, reports.access, support.access,
--- settings.volume_override, settings.np_override,
--- filters.region, filters.market, filters.facility, filters.department,
--- filters.submarket, filters.level2, filters.pstat,
--- approvals.positions_to_open, approvals.positions_to_close,
--- approvals.volume_override, approvals.np_override, approvals.feedback,
--- support.add_faq
-
--- ADMIN — all 22 permissions (true)
-INSERT INTO role_permissions (role, permission_key, permission_value) VALUES
-('admin', 'admin.access', 'true'),
-('admin', 'feedback.access', 'true'),
-('admin', 'staffing.access', 'true'),
-('admin', 'positions.access', 'true'),
-('admin', 'analytics.access', 'true'),
-('admin', 'reports.access', 'true'),
-('admin', 'support.access', 'true'),
-('admin', 'settings.volume_override', 'true'),
-('admin', 'settings.np_override', 'true'),
-('admin', 'filters.region', 'true'),
-('admin', 'filters.market', 'true'),
-('admin', 'filters.facility', 'true'),
-('admin', 'filters.department', 'true'),
-('admin', 'filters.submarket', 'true'),
-('admin', 'filters.level2', 'true'),
-('admin', 'filters.pstat', 'true'),
-('admin', 'approvals.positions_to_open', 'true'),
-('admin', 'approvals.positions_to_close', 'true'),
-('admin', 'approvals.volume_override', 'true'),
-('admin', 'approvals.np_override', 'true'),
-('admin', 'approvals.feedback', 'true'),
-('admin', 'support.add_faq', 'true');
-
--- LABOR_TEAM — same as admin (all true)
-INSERT INTO role_permissions (role, permission_key, permission_value) VALUES
-('labor_team', 'admin.access', 'true'),
-('labor_team', 'feedback.access', 'true'),
-('labor_team', 'staffing.access', 'true'),
-('labor_team', 'positions.access', 'true'),
-('labor_team', 'analytics.access', 'true'),
-('labor_team', 'reports.access', 'true'),
-('labor_team', 'support.access', 'true'),
-('labor_team', 'settings.volume_override', 'true'),
-('labor_team', 'settings.np_override', 'true'),
-('labor_team', 'filters.region', 'true'),
-('labor_team', 'filters.market', 'true'),
-('labor_team', 'filters.facility', 'true'),
-('labor_team', 'filters.department', 'true'),
-('labor_team', 'filters.submarket', 'true'),
-('labor_team', 'filters.level2', 'true'),
-('labor_team', 'filters.pstat', 'true'),
-('labor_team', 'approvals.positions_to_open', 'true'),
-('labor_team', 'approvals.positions_to_close', 'true'),
-('labor_team', 'approvals.volume_override', 'true'),
-('labor_team', 'approvals.np_override', 'true'),
-('labor_team', 'approvals.feedback', 'true'),
-('labor_team', 'support.add_faq', 'true');
-
--- LEADERSHIP — no admin, feedback, settings, approvals
-INSERT INTO role_permissions (role, permission_key, permission_value) VALUES
-('leadership', 'staffing.access', 'true'),
-('leadership', 'positions.access', 'true'),
-('leadership', 'analytics.access', 'true'),
-('leadership', 'reports.access', 'true'),
-('leadership', 'support.access', 'true'),
-('leadership', 'filters.region', 'true'),
-('leadership', 'filters.market', 'true'),
-('leadership', 'filters.facility', 'true'),
-('leadership', 'filters.department', 'true'),
-('leadership', 'filters.submarket', 'true'),
-('leadership', 'filters.level2', 'true'),
-('leadership', 'filters.pstat', 'true');
-
--- CNO — same as leadership
-INSERT INTO role_permissions (role, permission_key, permission_value) VALUES
-('cno', 'staffing.access', 'true'),
-('cno', 'positions.access', 'true'),
-('cno', 'analytics.access', 'true'),
-('cno', 'reports.access', 'true'),
-('cno', 'support.access', 'true'),
-('cno', 'filters.region', 'true'),
-('cno', 'filters.market', 'true'),
-('cno', 'filters.facility', 'true'),
-('cno', 'filters.department', 'true'),
-('cno', 'filters.submarket', 'true'),
-('cno', 'filters.level2', 'true'),
-('cno', 'filters.pstat', 'true');
-
--- DIRECTOR — facility + department only, no subfilters
-INSERT INTO role_permissions (role, permission_key, permission_value) VALUES
-('director', 'staffing.access', 'true'),
-('director', 'positions.access', 'true'),
-('director', 'analytics.access', 'true'),
-('director', 'reports.access', 'true'),
-('director', 'support.access', 'true'),
-('director', 'filters.facility', 'true'),
-('director', 'filters.department', 'true');
-
--- MANAGER — department only
-INSERT INTO role_permissions (role, permission_key, permission_value) VALUES
-('manager', 'staffing.access', 'true'),
-('manager', 'positions.access', 'true'),
-('manager', 'analytics.access', 'true'),
-('manager', 'reports.access', 'true'),
-('manager', 'support.access', 'true'),
-('manager', 'filters.department', 'true');
-```
-
----
-
-### Summary Table
-
-| Role | Modules | Filters | Subfilters | Settings | Approvals |
-|------|---------|---------|------------|----------|-----------|
-| admin | ALL 7 | ALL 4 | ALL 3 | ALL 2 | ALL 5 + FAQ |
-| labor_team | ALL 7 | ALL 4 | ALL 3 | ALL 2 | ALL 5 + FAQ |
-| leadership | 5 (no admin, feedback) | ALL 4 | ALL 3 | none | none |
-| cno | 5 (no admin, feedback) | ALL 4 | ALL 3 | none | none |
-| director | 5 (no admin, feedback) | facility, dept | none | none | none |
-| manager | 5 (no admin, feedback) | dept only | none | none | none |
-
-### How the Frontend Uses This
-
-1. `GET /users/:id/roles` returns e.g. `["admin"]`
-2. `GET /role-permissions` returns the full matrix above
-3. Frontend merges: starts with hardcoded defaults from `rbacConfig.ts`, then applies overrides from the API response
-4. If API returns nothing, hardcoded defaults still work — so the seed is optional but recommended for consistency
-
-### No Frontend Changes Needed
-
-This is purely a NestJS seed task. Copy the SQL above into your `seed.ts`.
+### Files Changed
+- `src/hooks/useRBAC.ts` — fallback to `user.role`, add `retry: 1`
+- `src/hooks/useUserRoles.ts` — fallback to `user.role`
+- `src/hooks/useUserOrgAccess.ts` — add `retry: 1`
 
