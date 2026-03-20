@@ -133,11 +133,11 @@ Excludes: Filled positions, withdrawn postings`,
       chartData: generateGrowthTrend(1.3, 2.5),
       chartType: "line",
       delay: 0.25,
-      definition: "The difference between FTE Variance and Open Requisitions (FTE Variance + Open Requisitions). Shows remaining staffing gap after accounting for open requisitions.",
-      calculation: `Requisition Variance = FTE Variance + Open Requisitions
+      definition: "The remaining staffing gap after accounting for open requisitions. Calculated as Hired FTEs − Target FTEs + Open Requisitions. A negative value indicates understaffing even after considering active recruitment.",
+      calculation: `Requisition Variance = Hired FTEs - Target FTEs + Open Requisitions
 
-Example: If FTE Variance is 2.5 and Open Requisitions is 5:
-2.5 + 5 = 7.5`,
+Example: If Hired FTEs is 100, Target FTEs is 105, and Open Requisitions is 3:
+100 - 105 + 3 = -2.0`,
     },
   ];
 };
