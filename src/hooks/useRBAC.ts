@@ -32,7 +32,13 @@ export function useRBAC() {
     },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
+
+  // Fallback: if API roles empty, use role from auth context
+  const effectiveRoles: AppRole[] = roles.length > 0
+    ? roles
+    : (user?.role ? [user.role as AppRole] : []);
 
   // Fetch permission overrides from NestJS
   const { data: permissionOverrides, isLoading: permissionsLoading } = useQuery({
