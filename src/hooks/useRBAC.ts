@@ -48,6 +48,7 @@ export function useRBAC() {
       return data;
     },
     staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
   // Calculate effective permissions for user's roles
