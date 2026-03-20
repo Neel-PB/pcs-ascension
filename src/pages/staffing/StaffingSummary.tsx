@@ -907,6 +907,7 @@ This metric helps:
                     id: 'volume',
                     title: 'Volume',
                     kpis: volumeKPIs.filter(k => isKpiVisible(k.id, roles)),
+                    volumeBreakdown,
                   },
                   ...(productivityKPIs.some(k => isKpiVisible(k.id, roles))
                     ? [{
