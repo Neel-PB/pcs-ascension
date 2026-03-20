@@ -45,6 +45,24 @@ Route all credential flows (signIn, signUp, signOut) through NestJS API while si
 ### Data Access Strategy
 Supabase client stays for all data queries. The silent `supabase.auth.signInWithPassword` call after NestJS login ensures `auth.uid()` is populated for RLS. Users never see Supabase auth — NestJS is the authority.
 
+### Critical Hooks Migrated to NestJS (Phase 1)
+
+**6. `src/lib/apiFetch.ts`** — Shared API helper
+- Extracted from AuthContext, reads `nestjs_token` from sessionStorage, prepends `VITE_API_BASE_URL`.
+
+**7. `src/hooks/useRBAC.ts`** — Migrated to NestJS
+- Roles: `GET /users/:id/roles`
+- Permission overrides: `GET /role-permissions`
+
+**8. `src/hooks/useUserRoles.ts`** — Migrated to NestJS
+- `GET /users/:id/roles`
+
+**9. `src/hooks/useUserProfile.ts`** — Migrated to NestJS
+- `GET /auth/me` (maps NestJS response to profile shape)
+
+**10. `src/hooks/useUserOrgAccess.ts`** — Migrated to NestJS
+- `GET /users/:id/access-scope`
+
 ### NestJS Endpoints Required
 
 ```text
@@ -54,4 +72,16 @@ GET /auth/check-email?email=user@domain.com
 POST /auth/set-initial-password
   Body: { email, password }
   Returns: { access_token, user }
+
+GET /users/:id/roles
+  Auth: Bearer token
+  Returns: { roles: ["admin", "labor_team", ...] }
+
+GET /users/:id/access-scope
+  Auth: Bearer token
+  Returns: { assignments: [{ region, market, facility_id, facility_name, department_id, department_name }] }
+
+GET /role-permissions
+  Auth: Bearer token
+  Returns: [{ role, permission_key, permission_value }]
 ```
