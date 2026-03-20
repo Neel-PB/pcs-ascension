@@ -1,27 +1,27 @@
 
 
-## Change Volume Badge Text to "Viewing: [UOS names]"
+## Equalize KPI Card Padding
 
-### What Changes
-**File: `src/components/staffing/DraggableKPISection.tsx`** — Line 229-231
+### Problem
+Currently `CardContent` uses `p-3 pr-9` — the right side has extra padding (36px) to make room for the action icons, while top/bottom/left are 12px. This creates uneven visual spacing.
 
-Replace the current badge text that shows values (`Pat Days + Obs: 12,400 · Total Pat Days + Obs: 8,200`) with just the UOS names prefixed by "Viewing:":
+### Solution
+**File: `src/components/staffing/KPICard.tsx`** — Line 96
 
+Change `p-3 pr-9` to `p-3` (uniform 12px on all sides) and reposition the action icons to sit inside the card with absolute positioning that works within the uniform padding. The icons already use `absolute right-3 bottom-3`, so they'll overlap slightly with content — we keep that but ensure the value text doesn't run into icons by adding a small `pr-6` or using `max-w` on the value text instead.
+
+Actually, the cleaner approach: use uniform `p-4` (16px all sides) for better visual balance, and keep the icons absolutely positioned at `right-2 bottom-2`. The title and value text naturally won't extend to the far right edge.
+
+**Change:**
 ```
-Viewing: Pat Days + Obs · Pat Days + Obs _ Newborn · Total Pat Days + Obs
-```
+// Line 96: from
+p-3 pr-9 relative flex flex-col justify-center min-h-[90px]
 
-No values shown in the badge — just the unit-of-service type names. The modal (opened on click) will continue to show the detailed values.
-
-### Technical Detail
-Change line 230 from:
-```tsx
-{volumeBreakdown.map(d => `${d.label}: ${d.value.toLocaleString()}`).join(' · ')}
-```
-to:
-```tsx
-Viewing: {volumeBreakdown.map(d => d.label).join(' · ')}
+// to
+p-4 relative flex flex-col justify-center min-h-[90px]
 ```
 
-Single line change. Modal remains unchanged.
+Also update icon positioning from `right-3 bottom-3` to `right-2 bottom-2` to stay proportional within the uniform padding.
+
+Single file, two line changes.
 
