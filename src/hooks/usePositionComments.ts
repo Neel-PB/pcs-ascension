@@ -115,7 +115,7 @@ export function usePositionComments(positionId: string) {
 
 export function useAddPositionComment() {
   const queryClient = useQueryClient();
-  const { user, msalUser } = useAuthContext();
+  const { user } = useAuthContext();
 
   return useMutation({
     mutationFn: async ({ positionId, content, overrideId }: { positionId: string; content: string; overrideId?: string }) => {
