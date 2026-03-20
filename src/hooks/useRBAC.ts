@@ -55,7 +55,7 @@ export function useRBAC() {
   const effectivePermissions = useMemo(() => {
     const permissionSet = new Set<PermissionKey>();
 
-    roles.forEach(role => {
+    effectiveRoles.forEach(role => {
       const defaults = DEFAULT_ROLE_PERMISSIONS[role] || [];
       defaults.forEach(p => permissionSet.add(p));
 
