@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import type { Facility, Department } from "./useFilterData";
+import { apiFetch } from "@/lib/apiFetch";
 
 export interface AccessScopeFlat {
   regions: string[];
@@ -8,7 +7,6 @@ export interface AccessScopeFlat {
   facilities: { facilityId: string; facilityName: string }[];
   departments: { departmentId: string; departmentName: string; facilityId?: string }[];
   
-  // Quick lookup flags - true means there ARE restrictions at this level
   hasRegionRestriction: boolean;
   hasMarketRestriction: boolean;
   hasFacilityRestriction: boolean;
@@ -18,44 +16,38 @@ export interface AccessScopeFlat {
 // Backward compatibility alias
 export type OrgAccessFlat = AccessScopeFlat;
 
+interface AccessAssignment {
+  region?: string | null;
+  market?: string | null;
+  facility_id?: string | null;
+  facility_name?: string | null;
+  department_id?: string | null;
+  department_name?: string | null;
+}
+
 export function useUserAccessScope(userId?: string) {
   const { data: accessScope, isLoading } = useQuery({
     queryKey: ['user-access-scope', userId],
     queryFn: async () => {
       if (!userId) return null;
 
-      const { data, error } = await supabase
-        .from('user_organization_access')
-        .select('*')
-        .eq('user_id', userId);
+      const data = await apiFetch<{ assignments: AccessAssignment[] }>(`/users/${userId}/access-scope`);
+      const assignments = data.assignments || [];
 
-      if (error) throw error;
+      // If no assignments, user has unrestricted access
+      if (assignments.length === 0) return null;
 
-      // If no records, user has access to all (no restrictions)
-      if (!data || data.length === 0) {
-        return null;
-      }
-
-      // Extract unique values at each level independently (FLAT structure)
       const regions = new Set<string>();
       const markets = new Set<string>();
-      const facilities = new Map<string, string>(); // facilityId -> facilityName
-      const departments = new Map<string, { name: string; facilityId?: string }>(); // departmentId -> {name, facilityId}
+      const facilities = new Map<string, string>();
+      const departments = new Map<string, { name: string; facilityId?: string }>();
       
-      data.forEach((access) => {
-        // Handle region field
-        if (access.region) {
-          regions.add(access.region);
-        }
-        
-        if (access.market) {
-          markets.add(access.market);
-        }
-        
+      assignments.forEach((access) => {
+        if (access.region) regions.add(access.region);
+        if (access.market) markets.add(access.market);
         if (access.facility_id && access.facility_name) {
           facilities.set(access.facility_id, access.facility_name);
         }
-        
         if (access.department_id && access.department_name) {
           departments.set(access.department_id, {
             name: access.department_name,
@@ -76,8 +68,6 @@ export function useUserAccessScope(userId?: string) {
           departmentName: name,
           facilityId,
         })),
-        
-        // Restriction flags: true if there are specific assignments at this level
         hasRegionRestriction: regions.size > 0,
         hasMarketRestriction: markets.size > 0,
         hasFacilityRestriction: facilities.size > 0,
@@ -93,7 +83,6 @@ export function useUserAccessScope(userId?: string) {
     accessScope,
     isLoading,
     hasUnrestrictedAccess: accessScope === null,
-    // Backward compatibility aliases
     orgAccess: accessScope,
   };
 }

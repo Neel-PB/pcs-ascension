@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { apiFetch } from "@/lib/apiFetch";
 import { 
   DEFAULT_ROLE_PERMISSIONS, 
   type AppRole, 
@@ -19,52 +19,39 @@ interface RolePermissionOverride {
 }
 
 export function useRBAC() {
-  // Use centralized auth context instead of separate getUser() call
   const { user } = useAuth();
   const userId = user?.id ?? null;
 
-  // Fetch user roles with React Query
+  // Fetch user roles from NestJS
   const { data: roles = [], isLoading: rolesLoading } = useQuery({
     queryKey: ['user-roles', userId],
     queryFn: async () => {
       if (!userId) return [];
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId);
-
-      if (error) throw error;
-      return data?.map(r => r.role as AppRole) || [];
+      const data = await apiFetch<{ roles: string[] }>(`/users/${userId}/roles`);
+      return (data.roles || []) as AppRole[];
     },
     enabled: !!userId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
-  // Fetch permission overrides with React Query
+  // Fetch permission overrides from NestJS
   const { data: permissionOverrides, isLoading: permissionsLoading } = useQuery({
     queryKey: ['role-permissions'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('role_permissions')
-        .select('*');
-
-      if (error) throw error;
-      return data as RolePermissionOverride[];
+      const data = await apiFetch<RolePermissionOverride[]>('/role-permissions');
+      return data;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
   // Calculate effective permissions for user's roles
   const effectivePermissions = useMemo(() => {
     const permissionSet = new Set<PermissionKey>();
 
-    // For each role the user has, get its effective permissions
     roles.forEach(role => {
-      // Start with defaults
       const defaults = DEFAULT_ROLE_PERMISSIONS[role] || [];
       defaults.forEach(p => permissionSet.add(p));
 
-      // Apply overrides
       if (permissionOverrides) {
         permissionOverrides
           .filter(o => o.role === role)
@@ -82,41 +69,25 @@ export function useRBAC() {
   }, [roles, permissionOverrides]);
 
   const hasPermission = useCallback((permission: string): boolean => {
-    const permissionKey = permission as PermissionKey;
-    return effectivePermissions.has(permissionKey);
+    return effectivePermissions.has(permission as PermissionKey);
   }, [effectivePermissions]);
 
   const hasRole = useCallback((role: AppRole): boolean => {
     return roles.includes(role);
   }, [roles]);
 
-  // Get filter permissions
-  const getFilterPermissions = useCallback((): {
-    region: boolean;
-    market: boolean;
-    facility: boolean;
-    department: boolean;
-  } => {
-    return {
-      region: effectivePermissions.has('filters.region'),
-      market: effectivePermissions.has('filters.market'),
-      facility: effectivePermissions.has('filters.facility'),
-      department: effectivePermissions.has('filters.department'),
-    };
-  }, [effectivePermissions]);
+  const getFilterPermissions = useCallback(() => ({
+    region: effectivePermissions.has('filters.region'),
+    market: effectivePermissions.has('filters.market'),
+    facility: effectivePermissions.has('filters.facility'),
+    department: effectivePermissions.has('filters.department'),
+  }), [effectivePermissions]);
 
-  // Get sub-filter permissions
-  const getSubfilterPermissions = useCallback((): {
-    submarket: boolean;
-    level2: boolean;
-    pstat: boolean;
-  } => {
-    return {
-      submarket: effectivePermissions.has('filters.submarket'),
-      level2: effectivePermissions.has('filters.level2'),
-      pstat: effectivePermissions.has('filters.pstat'),
-    };
-  }, [effectivePermissions]);
+  const getSubfilterPermissions = useCallback(() => ({
+    submarket: effectivePermissions.has('filters.submarket'),
+    level2: effectivePermissions.has('filters.level2'),
+    pstat: effectivePermissions.has('filters.pstat'),
+  }), [effectivePermissions]);
 
   const loading = rolesLoading || permissionsLoading;
 
