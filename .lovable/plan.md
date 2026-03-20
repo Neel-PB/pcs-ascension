@@ -1,74 +1,57 @@
 
 
-## Multi-Step Login Flow
+## Replace Supabase Auth with NestJS Auth
 
-### The Workflow
-The login page becomes a single-card, step-by-step flow — no tabs, no signup form, no demo login panel.
+### Overview
+Route all credential flows (signIn, signUp, signOut) through NestJS API while silently maintaining a Supabase session so the 23+ files using RLS-protected data queries continue to work.
 
-**Step 1 — Email only**
-- Single email input + "Continue" button
-- On submit, call NestJS `GET /auth/check-email?email=xxx`
+### Changes
 
-**Step 2a — Unauthorized**
-- If API returns `{ exists: false }`: show error message "You are not authorized. Contact pcssupport@particleblack.com"
+**1. `src/contexts/AuthContext.tsx`** — Major rewrite
 
-**Step 2b — Registered user (has password)**
-- If `{ exists: true, registered: true }`: show password input + "Sign In" button
-- Calls `POST /auth/login`
+- Add `AppUser` interface: `{ id, email, firstName, lastName, role }`
+- Add `mustChangePassword` state flag
+- **`signIn`**: Call `POST ${API_BASE_URL}/auth/login`. Store NestJS JWT + user in `sessionStorage`. If `must_change_password` is true, set flag. Silently call `supabase.auth.signInWithPassword` with same credentials to keep RLS queries working.
+- **`signUp`**: Call `POST ${API_BASE_URL}/auth/register`. Store NestJS JWT. Silently create Supabase session with same credentials.
+- **`signOut`**: Clear `sessionStorage` (NestJS JWT, user, MSAL tokens). Call `supabase.auth.signOut`. Clear query cache.
+- **On mount**: Check `sessionStorage` for stored NestJS user/JWT. Validate via `GET ${API_BASE_URL}/auth/me` with Bearer token. If valid, set user state. Supabase session restores itself via `onAuthStateChange`.
+- Expose `mustChangePassword` in context type.
+- Keep `signInWithMicrosoft` as-is but also store JWT from its response consistently.
+- **`checkEmail`**: Call `GET ${API_BASE_URL}/auth/check-email?email=...` to determine if user exists and is registered.
+- **`setInitialPassword`**: Call `POST ${API_BASE_URL}/auth/set-initial-password` for first-time password setup.
 
-**Step 2c — Unregistered user (admin created, no password yet)**
-- If `{ exists: true, registered: false }`: show "Create Password" + "Confirm Password" inputs + "Set Password" button
-- Calls `POST /auth/set-initial-password` (or `/auth/register-password`) with email + password
+**2. `src/pages/AuthPage.tsx`** — Multi-step login flow
 
-### NestJS Endpoints Needed
+- Single-card state machine: `email` → `unauthorized` | `password` | `setup`
+- Step email: email input + Continue button, Microsoft SSO above
+- Step unauthorized: error card with support contact
+- Step password: email (readonly) + password + Sign In
+- Step setup: email (readonly) + create/confirm password + Set Password
 
-```text
-GET /auth/check-email?email=user@example.com
-Returns: { exists: boolean, registered: boolean }
-- exists: true if user record exists in DB (admin added them)
-- registered: true if user has a password_hash set
+**3. `src/pages/SetupPasswordPage.tsx`**
 
-POST /auth/set-initial-password
-Body: { email, password }
-- Only works if user exists but has no password yet
-- Hashes password, sets must_change_password=false
-- Returns { access_token, user }
-```
+- Replace `supabase.auth.updateUser({ password })` with `POST ${API_BASE_URL}/auth/change-password` using Bearer token from `sessionStorage`.
+- On success, clear `mustChangePassword` flag in context and navigate to `/`.
 
-### Frontend Changes
+**4. `src/App.tsx`**
 
-**`src/pages/AuthPage.tsx`** — Full rewrite
-- Remove Tabs, SignUp form, DemoLogin card
-- State machine: `step = 'email' | 'unauthorized' | 'password' | 'setup'`
-- Step email: email input + Continue button, calls check-email API
-- Step unauthorized: error card with support email
-- Step password: email (readonly) + password input + Sign In button
-- Step setup: email (readonly) + password + confirm password + Set Password button
-- Microsoft SSO button stays at the top
-- Back button to return to email step from any sub-step
+- Read `mustChangePassword` from auth context.
+- In `AppContent`, if user is logged in and `mustChangePassword` is true, redirect all routes to `/auth/setup-password`.
 
-**`src/contexts/AuthContext.tsx`** — Add `checkEmail` and `setInitialPassword` methods
-- `checkEmail(email)`: calls `GET /auth/check-email?email=...`, returns `{ exists, registered }`
-- `setInitialPassword(email, password)`: calls `POST /auth/set-initial-password`, stores JWT + user
+**5. No changes needed**
+- `DemoLogin.tsx` — already calls `signIn()` from context (no longer rendered on AuthPage)
+- `ShellLayout.tsx` — already checks `user` from `useAuth()`
 
-**No other files change** — DemoLogin component stays but is no longer rendered on AuthPage.
+### Data Access Strategy
+Supabase client stays for all data queries. The silent `supabase.auth.signInWithPassword` call after NestJS login ensures `auth.uid()` is populated for RLS. Users never see Supabase auth — NestJS is the authority.
 
-### NestJS Prompt for Your Team
+### NestJS Endpoints Required
 
 ```text
 GET /auth/check-email?email=user@domain.com
-  - Look up user by email in users table
-  - Return { exists: boolean, registered: boolean }
-  - registered = true if password_hash is NOT NULL
-  - No auth required (public endpoint)
+  Returns: { exists: boolean, registered: boolean }
 
 POST /auth/set-initial-password
   Body: { email, password }
-  - Find user by email
-  - If user doesn't exist → 404
-  - If user already has password_hash → 409 "Already registered"
-  - Hash password with bcrypt, save to password_hash
-  - Set must_change_password = false
-  - Sign JWT, return { access_token, user }
+  Returns: { access_token, user }
 ```
-
