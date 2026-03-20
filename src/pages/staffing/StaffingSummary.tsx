@@ -407,6 +407,20 @@ export default function StaffingSummary() {
       : patientVolumeData;
   }, [patientVolumeData, selectedDepartment, ROLLUP_PSTATS]);
 
+  // Volume breakdown by unit_of_service for badge display
+  const volumeBreakdown = useMemo(() => {
+    if (!pvFilteredRecords.length) return undefined;
+    const byUos: Record<string, number> = {};
+    pvFilteredRecords.forEach(r => {
+      const uos = r.unit_of_service || 'Unknown';
+      byUos[uos] = (byUos[uos] || 0) + Number(r.target_volume ?? 0);
+    });
+    return Object.entries(byUos)
+      .map(([label, value]) => ({ label, value: Math.round(value * 100) / 100 }))
+      .filter(d => d.value > 0)
+      .sort((a, b) => b.value - a.value);
+  }, [pvFilteredRecords]);
+
   const pvAgg = useMemo(() => {
     if (!pvFilteredRecords.length) return null;
     return {
