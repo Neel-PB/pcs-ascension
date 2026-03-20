@@ -77,6 +77,7 @@ export function useUserAccessScope(userId?: string) {
       return flatAccess;
     },
     enabled: !!userId,
+    retry: 1,
   });
 
   return {

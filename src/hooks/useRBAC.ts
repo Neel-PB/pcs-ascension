@@ -101,7 +101,7 @@ export function useRBAC() {
   return {
     hasPermission,
     hasRole,
-    roles,
+    roles: effectiveRoles,
     loading,
     userId,
     effectivePermissions: Array.from(effectivePermissions),
