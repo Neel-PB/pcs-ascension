@@ -17,22 +17,41 @@ Route all credential flows (signIn, signUp, signOut) through NestJS API while si
 - **On mount**: Check `sessionStorage` for stored NestJS user/JWT. Validate via `GET ${API_BASE_URL}/auth/me` with Bearer token. If valid, set user state. Supabase session restores itself via `onAuthStateChange`.
 - Expose `mustChangePassword` in context type.
 - Keep `signInWithMicrosoft` as-is but also store JWT from its response consistently.
+- **`checkEmail`**: Call `GET ${API_BASE_URL}/auth/check-email?email=...` to determine if user exists and is registered.
+- **`setInitialPassword`**: Call `POST ${API_BASE_URL}/auth/set-initial-password` for first-time password setup.
 
-**2. `src/pages/SetupPasswordPage.tsx`**
+**2. `src/pages/AuthPage.tsx`** — Multi-step login flow
+
+- Single-card state machine: `email` → `unauthorized` | `password` | `setup`
+- Step email: email input + Continue button, Microsoft SSO above
+- Step unauthorized: error card with support contact
+- Step password: email (readonly) + password + Sign In
+- Step setup: email (readonly) + create/confirm password + Set Password
+
+**3. `src/pages/SetupPasswordPage.tsx`**
 
 - Replace `supabase.auth.updateUser({ password })` with `POST ${API_BASE_URL}/auth/change-password` using Bearer token from `sessionStorage`.
 - On success, clear `mustChangePassword` flag in context and navigate to `/`.
 
-**3. `src/App.tsx`**
+**4. `src/App.tsx`**
 
 - Read `mustChangePassword` from auth context.
 - In `AppContent`, if user is logged in and `mustChangePassword` is true, redirect all routes to `/auth/setup-password`.
 
-**4. No changes needed**
-- `AuthPage.tsx` — already calls `signIn`/`signUp` from context
-- `DemoLogin.tsx` — already calls `signIn()` from context
+**5. No changes needed**
+- `DemoLogin.tsx` — already calls `signIn()` from context (no longer rendered on AuthPage)
 - `ShellLayout.tsx` — already checks `user` from `useAuth()`
 
 ### Data Access Strategy
 Supabase client stays for all data queries. The silent `supabase.auth.signInWithPassword` call after NestJS login ensures `auth.uid()` is populated for RLS. Users never see Supabase auth — NestJS is the authority.
 
+### NestJS Endpoints Required
+
+```text
+GET /auth/check-email?email=user@domain.com
+  Returns: { exists: boolean, registered: boolean }
+
+POST /auth/set-initial-password
+  Body: { email, password }
+  Returns: { access_token, user }
+```
