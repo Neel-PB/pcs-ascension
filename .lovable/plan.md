@@ -1,30 +1,23 @@
 
 
-## Volume KPI Unit-of-Service Breakdown Badge
+## Volume UOS Badge — Connect All 6 KPIs
 
-### What We're Building
-A breakdown badge below the Volume KPI section (similar to the Hired + Open Reqs FT/PT/PRN badge) that shows volume split by the 3 unit-of-service types in primary blue color:
-- **Pat Days + Obs**
-- **Pat Days + Obs + Newborn Days**  
-- **Total Pat Days + Obs**
+### Current State
+The Volume breakdown badge sits centered below the grid with a single vertical connector line. The user wants it to mirror the Hired+Open Reqs pattern: vertical connector lines dropping from **all 6** Volume KPI columns, joined by a horizontal bar, then a single line down to the badge.
 
-Each will show its target volume value. The badge uses the primary blue (`text-primary`, `bg-primary/10`) color scheme instead of the green/orange/red used for FTE badges.
+### Changes
 
-### Technical Changes
+**File: `src/components/staffing/DraggableKPISection.tsx`**
 
-**1. `src/pages/staffing/StaffingSummary.tsx`**
-- Compute per-UOS volume breakdown from `pvFilteredRecords` — group by `unit_of_service` and sum `target_volume` for each
-- Pass this breakdown data as a new `volumeBreakdown` prop on the volume section KPIs
+Replace the current simple centered Volume badge (lines 189-208) with a full-width grid-based connector layout:
 
-**2. `src/components/staffing/DraggableKPISection.tsx`**
-- Accept a new optional `volumeBreakdown` prop: `Array<{ label: string; value: number }>`
-- When present (for the Volume section), render a blue-themed breakdown badge below the KPI grid, similar to the existing FT/PT/PRN badge
-- Uses `bg-primary/10`, `text-primary` color scheme
-- Shows each UOS name and its volume value (e.g., "Pat Days + Obs: 12.4 · Total Pat Days + Obs: 8.2 · Newborn: 0.6")
-- Clicking opens a modal with detailed UOS volume breakdown
+1. Use `hidden xl:grid grid-cols-6` (matching the KPI grid) with `marginTop: 0`
+2. Place the badge as `col-span-6`
+3. Render the connector structure inside:
+   - **Row 1** (grid-cols-6): A short vertical line (`w-0.5 h-2 bg-primary/60`) dropping from the center of each of the 6 columns
+   - **Row 2** (grid-cols-6): A horizontal line spanning from column 1 center to column 6 center (using the same half-width trick as the Hired+Open Reqs pattern — first column: right half filled, middle columns: full width, last column: left half filled)
+   - **Row 3**: Single centered vertical line (`w-0.5 h-1.5`) down to badge
+   - **Row 4**: The blue pill badge (same as current)
 
-**3. Visual Design**
-- Blue connector line from volume KPIs down to badge (matching the green/orange connector pattern)
-- Pill-shaped badge with Info icon, primary blue background tint
-- Modal showing all 3 UOS types with their volume values
+All connector lines use `bg-primary/60 dark:bg-primary/70` to match the blue theme.
 
