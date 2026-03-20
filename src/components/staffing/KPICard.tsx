@@ -93,14 +93,14 @@ export function KPICard({
             className
           )}
         >
-          <CardContent className="p-4 pr-10 relative flex flex-col justify-center min-h-[90px]">
+          <CardContent className="p-3 pr-9 relative flex flex-col justify-center min-h-[90px]">
             {/* Title */}
             <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-0.5">
               {title}
             </h3>
 
             {/* Action Icons - Vertically Centered */}
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center gap-1">
+            <div className="absolute right-3 top-3 flex flex-col items-center gap-1">
               {chartData && chartData.length > 0 && (
                 <button
                   onClick={() => setShowChartModal(true)}
