@@ -1,35 +1,26 @@
 
 
-## Fix: Support Both Local Dev and Lovable Preview
+## Remove Hardcoded Deployed URL from apiFetch.ts
 
-### The Problem
-The `.env` file serves both your local dev and Lovable's cloud preview. `localhost` works locally but not in Lovable preview. The deployed URL works in preview but you want local for dev.
+### Change
+**`src/lib/apiFetch.ts`** — Remove `DEPLOYED_API` constant and simplify to only use the env variable. If no env var is set, API calls will simply fail (no silent fallback to a hardcoded URL).
 
-### Solution
-Hardcode the deployed URL as a **fallback** in `apiFetch.ts`. The `.env` value takes priority, so:
-- Locally: set `VITE_API_BASE_URL=http://127.0.0.1:8080` in your `.env` — it works
-- Lovable preview: if the env var points to localhost or is empty, fall back to the deployed URL
-
-### Changes
-
-**`src/lib/apiFetch.ts`** — Add localhost detection + fallback
 ```ts
-const DEPLOYED_API = "https://ascension-api-213151693504.us-central1.run.app";
-const envUrl = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
 
-// If env points to localhost but we're running in a non-localhost origin, use deployed URL
-const isLocalApi = envUrl.includes("127.0.0.1") || envUrl.includes("localhost");
-const isLocalOrigin = typeof window !== "undefined" && window.location.hostname === "localhost";
-const API_BASE_URL = (isLocalApi && !isLocalOrigin) ? DEPLOYED_API : (envUrl || DEPLOYED_API);
+export async function apiFetch<T = any>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = sessionStorage.getItem("nestjs_token");
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options.headers as Record<string, string> || {}),
+  };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const res = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.message || `Request failed (${res.status})`);
+  return data as T;
+}
 ```
 
-**`.env`** — Set back to localhost for your local dev
-```
-VITE_API_BASE_URL=http://127.0.0.1:8080
-```
-
-### Result
-- Your local dev hits `localhost:8080`
-- Lovable preview automatically uses the deployed URL
-- No manual env switching needed
+Removes the `DEPLOYED_API` constant, `isLocalApi`, `isLocalOrigin`, and all fallback logic. The app uses exactly what `VITE_API_BASE_URL` is set to — nothing else.
 
