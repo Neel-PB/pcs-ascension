@@ -23,7 +23,7 @@ const signUpEmailSchema = z.string().email('Invalid email address').refine(
 
 export default function AuthPage() {
   const navigate = useNavigate();
-  const { signIn, signUp, signInWithMicrosoft, user, msalUser } = useAuth();
+  const { signIn, signUp, signInWithMicrosoft, user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isMsalLoading, setIsMsalLoading] = useState(false);
 
