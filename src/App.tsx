@@ -49,7 +49,7 @@ const PageLoader = () => (
 );
 
 const AppContent = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, mustChangePassword } = useAuth();
   const { hasPermission } = useRBAC();
   const { onboardingChecked, startFullTour, markOnboardingComplete, setOnboardingChecked } = useTourStore();
   
