@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect } from "react";
+import { useLocation, Navigate as NavigateComp } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "next-themes";
