@@ -34,6 +34,7 @@ interface SectionData {
   id: string;
   title: string;
   kpis: KPIData[];
+  volumeBreakdown?: Array<{ label: string; value: number }>;
 }
 
 interface DragHandleProps {
