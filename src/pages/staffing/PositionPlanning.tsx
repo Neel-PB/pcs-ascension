@@ -135,9 +135,9 @@ function mapRecordsToVariance(records: SkillShiftRecord[], mode: 'planned' | 'ac
         reqsDay: rDay,
         reqsNight: rNight,
         reqsTotal: rTotal,
-        varianceDay: tDay - hDay - rDay,
-        varianceNight: tNight - hNight - rNight,
-        varianceTotal: tTotal - hTotal - rTotal,
+        varianceDay: hDay - tDay + rDay,
+        varianceNight: hNight - tNight + rNight,
+        varianceTotal: hTotal - tTotal + rTotal,
       });
     }
   });
