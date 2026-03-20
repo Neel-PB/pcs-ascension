@@ -80,8 +80,8 @@ export function useRBAC() {
   }, [effectivePermissions]);
 
   const hasRole = useCallback((role: AppRole): boolean => {
-    return roles.includes(role);
-  }, [roles]);
+    return effectiveRoles.includes(role);
+  }, [effectiveRoles]);
 
   const getFilterPermissions = useCallback(() => ({
     region: effectivePermissions.has('filters.region'),
