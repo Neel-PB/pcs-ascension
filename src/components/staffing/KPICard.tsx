@@ -100,7 +100,7 @@ export function KPICard({
             </h3>
 
             {/* Action Icons - Vertically Centered */}
-            <div className="absolute right-3 top-3 flex flex-col items-center gap-1">
+            <div className="absolute right-3 bottom-3 flex flex-col items-center gap-1">
               {chartData && chartData.length > 0 && (
                 <button
                   onClick={() => setShowChartModal(true)}
