@@ -30,14 +30,16 @@ interface DraggableKPISectionProps {
   title: string;
   kpis: KPIData[];
   dragHandleProps?: DragHandleProps;
+  volumeBreakdown?: Array<{ label: string; value: number }>;
 }
 
 // Only Hired FTEs and Open Reqs get rounded-b-none (not FTE Variance)
 const BREAKDOWN_CONNECTED_IDS = ['hired-ftes', 'open-reqs'];
 
-export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableKPISectionProps) {
+export function DraggableKPISection({ title, kpis, dragHandleProps, volumeBreakdown }: DraggableKPISectionProps) {
   const [showBreakdownModal, setShowBreakdownModal] = useState(false);
   const [showTargetBreakdownModal, setShowTargetBreakdownModal] = useState(false);
+  const [showVolumeBreakdownModal, setShowVolumeBreakdownModal] = useState(false);
 
   // Get the shared breakdown from hired-ftes
   const hiredFtesKpi = kpis.find(k => k.id === 'hired-ftes');
@@ -184,8 +186,62 @@ export function DraggableKPISection({ title, kpis, dragHandleProps }: DraggableK
           )}
         </div>
       )}
+      {/* Volume UOS Breakdown Badge */}
+      {volumeBreakdown && volumeBreakdown.length > 0 && (
+        <div className="flex justify-center">
+          <div className="flex flex-col items-center">
+            <div className="w-0.5 bg-primary/60" style={{ height: '16px' }} />
+            <div
+              onClick={() => setShowVolumeBreakdownModal(true)}
+              className={cn(
+                "flex items-center justify-center gap-2 px-3 py-1.5 rounded-full text-xs",
+                "cursor-pointer transition-shadow duration-200 hover:shadow-md whitespace-nowrap",
+                "bg-primary/10 dark:bg-primary/20 hover:shadow-primary/30"
+              )}
+            >
+              <Info className="h-3 w-3 shrink-0 text-primary" />
+              <span className="font-medium text-primary">
+                {volumeBreakdown.map(d => `${d.label}: ${d.value.toLocaleString()}`).join(' · ')}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Employment Type Split Modal */}
+      {/* Volume UOS Breakdown Modal */}
+      <Dialog open={showVolumeBreakdownModal} onOpenChange={setShowVolumeBreakdownModal}>
+        <DialogContent className="sm:max-w-md border-border/20 focus:outline-none focus-visible:outline-none focus-visible:ring-0 z-[100]">
+          <DialogHeader>
+            <DialogTitle>Volume by Unit of Service</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Target volume breakdown by unit of service type for the current filter selection:
+            </p>
+            <div className="p-4 bg-primary/5 rounded-lg">
+              <h4 className="text-sm font-medium mb-3 text-primary">Unit of Service Breakdown</h4>
+              <div className="space-y-2">
+                {volumeBreakdown?.map(({ label, value }) => (
+                  <div key={label} className="flex items-center justify-between text-sm">
+                    <span>{label}</span>
+                    <span className="font-medium text-primary">{value.toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+              {volumeBreakdown && volumeBreakdown.length > 1 && (
+                <div className="mt-3 pt-3 border-t border-border/30 flex items-center justify-between text-sm font-medium">
+                  <span>Total</span>
+                  <span className="text-primary">
+                    {volumeBreakdown.reduce((s, d) => s + d.value, 0).toLocaleString()}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+
       <Dialog open={showBreakdownModal} onOpenChange={setShowBreakdownModal}>
         <DialogContent className="sm:max-w-md border-border/20 focus:outline-none focus-visible:outline-none focus-visible:ring-0 z-[100]">
           <DialogHeader>
