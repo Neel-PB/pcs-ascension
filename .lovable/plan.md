@@ -1,26 +1,22 @@
 
 
-## Fix: Proper Scroll Heights for Access Scope Dialog
+## Fix: Department Section Not Visible in Access Scope Dialog
 
-### Problem
-With all `max-h` removed, sections with many items (Facility ~30, Department ~339) make the dialog content taller than the viewport. The `ScrollArea` wrapping the content doesn't have proper height constraints, so it overflows and clips Facility/Department entirely.
+### Root Cause
+The `ScrollArea` (line 177) has `className="flex-1 px-6"` but Radix ScrollArea needs an explicit height constraint to actually scroll. With `flex-1` inside a `flex flex-col` container capped at `max-h-[90vh]`, the ScrollArea viewport doesn't properly constrain, so content beyond the visible area (Department section) gets clipped without a scrollbar appearing.
 
-### Solution
-Give each section appropriate height limits based on item count:
-- **Region** (2 items): No constraint — show all
-- **Market** (~12 items): Cap at `max-h-[200px]` with its own scroll
-- **Facility** (~30 items): Cap at `max-h-[240px]` with its own scroll
-- **Department** (~339 items): Cap at `max-h-[280px]` with its own scroll
+### Fix: `src/components/admin/AccessScopeDialog.tsx`
 
-This way all four sections are always visible on screen, each with internal scrolling for long lists. The outer `ScrollArea` stays as a safety net.
+1. **Line 177** — Add `overflow-hidden` to the ScrollArea wrapper and ensure it can shrink: change `flex-1 px-6` to `flex-1 min-h-0 px-6`. The `min-h-0` is critical — it allows the flex child to shrink below its content size, enabling the Radix ScrollArea viewport to activate scrolling.
 
-### Change: `src/components/admin/AccessScopeDialog.tsx`
+Single line change:
+```tsx
+// Before
+<ScrollArea className="flex-1 px-6">
 
-1. **Line 169** — Increase dialog max height: `max-h-[90vh]` (from 85vh) for more room
-2. **Line 186** — Region container: keep as-is (no max-h, only 2 items)
-3. **Line 212** — Market container: add `max-h-[200px] overflow-y-auto`
-4. **Line 251** — Facility list container: add `max-h-[240px] overflow-y-auto`
-5. **Line 294** — Department list container: add `max-h-[280px] overflow-y-auto`
+// After  
+<ScrollArea className="flex-1 min-h-0 px-6">
+```
 
-Each scrollable section gets its own internal scroll so all four sections remain visible and accessible within the dialog.
+This is a classic flexbox issue: flex children default to `min-height: auto` which prevents them from shrinking below content size, breaking scroll containers.
 
