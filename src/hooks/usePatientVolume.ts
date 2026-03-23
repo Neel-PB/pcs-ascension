@@ -48,6 +48,7 @@ export interface PatientVolumeRecord {
     year_month: string;
     patient_volume_dly: number;
     patient_volume_mthly: number;
+    patient_volume_low_high: number;
   }> | string | null;
 }
 

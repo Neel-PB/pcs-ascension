@@ -665,7 +665,7 @@ Calculated by:
         id: '3m-high',
         title: "3M High",
         value: fmt(high3),
-        chartData: dailyTrend.length > 0 ? dailyTrend : (high3 != null ? generateVolatileTrend(high3, 5, 12) : []),
+        chartData: lowHighTrend.length > 0 ? lowHighTrend : (high3 != null ? generateVolatileTrend(high3, 5, 12) : []),
         chartType: "bar" as const,
         delay: 0.15,
         xAxisLabels: volLabels,
