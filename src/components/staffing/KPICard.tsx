@@ -41,6 +41,7 @@ export interface KPICardProps {
   className?: string;
   dataTourChart?: string;
   dataTourInfo?: string;
+  customChartContent?: React.ReactNode;
 }
 
 export function KPICard({
