@@ -98,7 +98,11 @@ export function useOrgScopedFilters(): AccessScopedFiltersResult {
     // Markets
     const availableMarkets = accessScope.hasMarketRestriction
       ? accessScope.markets
-      : markets.map(m => m.market);
+      : accessScope.hasRegionRestriction
+        ? markets.filter(m => m.region && accessScope.regions.some(r => 
+            r.toLowerCase() === m.region?.toLowerCase()
+          )).map(m => m.market)
+        : markets.map(m => m.market);
     
     // Facilities - map to full Facility objects from filter data
     // If filter data hasn't loaded yet but we have Access Scope, use Access Scope data directly
