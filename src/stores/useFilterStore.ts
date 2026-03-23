@@ -89,15 +89,10 @@ export const useFilterStore = create<FilterState>((set, get) => ({
 
     const updates: Partial<FilterState> = { filtersInitialized: true };
 
-    // For hidden filters, force-apply Access Scope defaults
-    if (!filterPerms.region && defaults.region !== ALL_REGIONS) {
+    // Apply defaults for all filters with restrictions (visible or hidden)
+    if (defaults.region !== ALL_REGIONS) {
       updates.selectedRegion = defaults.region;
     }
-    if (!filterPerms.market && defaults.market !== ALL_MARKETS) {
-      updates.selectedMarket = defaults.market;
-    }
-
-    // Apply defaults for visible filters with restrictions
     if (defaults.market !== ALL_MARKETS) {
       updates.selectedMarket = defaults.market;
     }
