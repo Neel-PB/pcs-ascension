@@ -379,7 +379,7 @@ export function FilterBar({
                   role="combobox"
                   aria-expanded={facilityOpen}
                   disabled={isFacilityDisabled}
-                  className={`${isCompact ? 'w-[160px]' : 'w-[250px]'} rounded-lg justify-between bg-background border-2 border-input px-4 py-3 h-auto text-sm font-normal transition-colors ${facilityOpen ? 'border-primary' : ''} ${isFacilityDisabled ? 'pr-8' : ''}`}
+                  className={`${isCompact ? 'w-[160px]' : 'w-[250px]'} rounded-lg justify-between bg-background border-2 border-input px-4 py-2 h-auto text-sm font-normal transition-colors ${facilityOpen ? 'border-primary' : ''} ${isFacilityDisabled ? 'pr-8' : ''}`}
                 >
                   <span className="truncate">
                     {selectedFacility === "all-facilities"
@@ -469,7 +469,7 @@ export function FilterBar({
                   role="combobox"
                   aria-expanded={departmentOpen}
                   disabled={isDepartmentDisabled}
-                  className={`${isCompact ? 'w-[140px]' : 'w-[180px]'} rounded-lg justify-between bg-background border-2 border-input px-4 py-3 h-auto text-sm font-normal transition-colors ${departmentOpen ? 'border-primary' : ''} ${isDepartmentDisabled ? 'pr-8' : ''}`}
+                  className={`${isCompact ? 'w-[140px]' : 'w-[180px]'} rounded-lg justify-between bg-background border-2 border-input px-4 py-2 h-auto text-sm font-normal transition-colors ${departmentOpen ? 'border-primary' : ''} ${isDepartmentDisabled ? 'pr-8' : ''}`}
                 >
                   <span className="truncate">
                     {selectedDepartment === "all-departments"
