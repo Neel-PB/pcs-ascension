@@ -185,8 +185,8 @@ export function KPIChartModal({
         
         <div className="space-y-3 pt-0 overflow-hidden flex flex-col flex-1 min-h-0">
 
-          {/* Toggle for Chart and Table — hidden when showAllOptions */}
-          {!showAllOptions && (
+          {/* Toggle for Chart and Table — hidden when showAllOptions or customChartContent */}
+          {!showAllOptions && !customChartContent && (
             <ToggleButtonGroup
               items={[{ id: "chart", label: "Chart" }, { id: "table", label: "Table" }]}
               activeId={activeTab}
