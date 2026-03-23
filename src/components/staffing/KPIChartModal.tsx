@@ -1280,6 +1280,59 @@ export function KPIChartModal({
                       </div>
                     );
                   })()
+                ) : isNestedPie && chartData ? (
+                  (() => {
+                    const groups = chartData as any[];
+                    const allSkills = Array.from(new Set<string>(
+                      groups.flatMap((g: any) => [
+                        ...(g.inner?.slices || []).map((s: any) => s.name),
+                        ...(g.outer?.slices || []).map((s: any) => s.name),
+                      ])
+                    ));
+                    const skillColorMap: Record<string, string> = {};
+                    allSkills.forEach((name, i) => { skillColorMap[name] = PIE_COLORS[i % PIE_COLORS.length]; });
+
+                    return (
+                      <div className="rounded-lg border overflow-hidden h-full">
+                        <ScrollArea className="h-full">
+                          <div
+                            className="grid sticky top-0 z-10 bg-muted/50 backdrop-blur-sm border-b"
+                            style={{ gridTemplateColumns: '1.2fr 0.8fr 0.8fr 0.8fr 0.8fr' }}
+                          >
+                            <div className="px-4 py-3 text-left font-semibold text-sm">Skill Mix</div>
+                            <div className="px-4 py-3 text-right font-semibold text-sm">Nrs Day</div>
+                            <div className="px-4 py-3 text-right font-semibold text-sm">Nrs Night</div>
+                            <div className="px-4 py-3 text-right font-semibold text-sm">Non-Nrs Day</div>
+                            <div className="px-4 py-3 text-right font-semibold text-sm">Non-Nrs Night</div>
+                          </div>
+                          {allSkills.map((skill, idx) => {
+                            const nrsGroup = groups.find((g: any) => g.category === 'Nursing');
+                            const nonNrsGroup = groups.find((g: any) => g.category === 'Non-Nursing');
+                            const nrsDay = nrsGroup?.inner?.slices?.find((s: any) => s.name === skill)?.value ?? 0;
+                            const nrsNight = nrsGroup?.outer?.slices?.find((s: any) => s.name === skill)?.value ?? 0;
+                            const nonNrsDay = nonNrsGroup?.inner?.slices?.find((s: any) => s.name === skill)?.value ?? 0;
+                            const nonNrsNight = nonNrsGroup?.outer?.slices?.find((s: any) => s.name === skill)?.value ?? 0;
+                            return (
+                              <div
+                                key={skill}
+                                className="grid border-b hover:bg-muted/50 transition-colors"
+                                style={{ gridTemplateColumns: '1.2fr 0.8fr 0.8fr 0.8fr 0.8fr' }}
+                              >
+                                <div className="px-4 py-3 text-left text-sm font-medium flex items-center gap-2">
+                                  <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: skillColorMap[skill] }} />
+                                  {skill}
+                                </div>
+                                <div className="px-4 py-3 text-right text-sm">{formatValue(nrsDay)}</div>
+                                <div className="px-4 py-3 text-right text-sm">{formatValue(nrsNight)}</div>
+                                <div className="px-4 py-3 text-right text-sm">{formatValue(nonNrsDay)}</div>
+                                <div className="px-4 py-3 text-right text-sm">{formatValue(nonNrsNight)}</div>
+                              </div>
+                            );
+                          })}
+                        </ScrollArea>
+                      </div>
+                    );
+                  })()
                 ) : isPie && filteredPieData && filteredPieData.length > 0 ? (
                   <div className="rounded-lg border overflow-hidden h-full">
                     <ScrollArea className="h-full">
