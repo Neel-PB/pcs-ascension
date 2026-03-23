@@ -174,27 +174,6 @@ export default function AccessControlPage() {
         </motion.div>
       </AnimatePresence>
 
-      {/* Role Form Dialog */}
-      <RoleFormDialog
-        open={isRoleFormOpen}
-        onOpenChange={(open) => {
-          setIsRoleFormOpen(open);
-          if (!open) setSelectedRoleForEdit(null);
-        }}
-        role={selectedRoleForEdit}
-        onSubmit={handleRoleFormSubmit}
-        isLoading={createRole.isPending || updateRole.isPending}
-      />
-
-      {/* Permission Form Dialog */}
-      <PermissionFormDialog
-        open={isPermissionFormOpen}
-        onOpenChange={setIsPermissionFormOpen}
-        permission={null}
-        categories={categories.length > 0 ? categories : ["modules", "settings", "filters", "subfilters", "approvals"]}
-        onSubmit={handlePermissionFormSubmit}
-        isLoading={createPermission.isPending}
-      />
     </div>
   );
 }

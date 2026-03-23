@@ -162,7 +162,7 @@ function CompactPermissionRow({
                 checked={isEnabled}
                 onCheckedChange={onToggle}
                 disabled={isUpdating}
-                className="h-3.5 w-3.5"
+                className="h-4 w-4"
               />
               <span className="text-sm truncate">{label}</span>
               {isPending ? (
