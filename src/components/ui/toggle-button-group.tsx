@@ -32,7 +32,7 @@ export function ToggleButtonGroup({
             key={item.id}
             onClick={() => onSelect(item.id)}
             className={cn(
-              "relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-full px-5 py-2 text-sm font-medium transition-colors whitespace-nowrap",
+              "relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-full px-5 py-1.5 text-sm font-medium transition-colors whitespace-nowrap",
               isActive
                 ? "text-primary-foreground"
                 : "text-foreground hover:bg-muted/50"
