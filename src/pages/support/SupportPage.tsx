@@ -28,6 +28,7 @@ export default function SupportPage() {
   const [newFaqAnswer, setNewFaqAnswer] = useState("");
 
   const { hasPermission, userId } = useRBAC();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const tabs = [
