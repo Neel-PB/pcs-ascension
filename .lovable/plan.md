@@ -1,94 +1,19 @@
 
 
-## Redesign Access Scope: Replace Popovers with a Dialog
+## Fix: Make Entire Dialog Scroll as One Unit
 
 ### Problem
-The current Access Scope uses small popovers that open/close awkwardly inside the sheet — they clip, overlap, and feel cramped. For Facility and Department (which have long searchable lists), popovers are especially poor.
+Each section (Region, Market, Facility, Department) has its own `max-h-[140px]`/`max-h-[160px]`/`max-h-[200px]` with `overflow-y-auto`, creating nested scroll areas inside the outer `ScrollArea`. This clips content within each section individually — facilities and departments get cut off even though the dialog has room.
 
-### Solution
-Replace the entire Access Scope section with a **single "Configure Access" button** that opens a **full Dialog** with all four levels (Region, Market, Facility, Department) in a clean tabbed or stacked layout with plenty of room.
+### Fix
+Remove the `max-h` and `overflow-y-auto` from all four inner section containers. Let the outer `ScrollArea` handle all scrolling so the entire dialog content scrolls as one continuous list.
 
-### Changes
+### Change: `src/components/admin/AccessScopeDialog.tsx`
 
-**1. New component: `src/components/admin/AccessScopeDialog.tsx`**
-- A `Dialog` with title "Configure Access Scope"
-- Four sections stacked vertically inside a `ScrollArea`:
-  - **Region** — checkbox list (compact, few items)
-  - **Market** — checkbox list, cascaded by selected regions
-  - **Facility** — searchable checkbox list with Name + ID columns
-  - **Department** — searchable checkbox list with Name + ID columns
-- Each section has a header with icon + count badge showing selected items
-- "Clear All" and "Done" buttons in the dialog footer
-- All the cascading filter logic moves here (from current AccessScopeManager)
-- On "Done", calls `onAccessChange(data)` callback
+- **Line 186**: Region container — remove `max-h-[140px] overflow-y-auto`
+- **Line 212**: Market container — remove `max-h-[160px] overflow-y-auto`  
+- **Line 251**: Facility list — remove `max-h-[200px] overflow-y-auto`
+- **Line 294**: Department list — remove `max-h-[200px] overflow-y-auto`
 
-**2. Simplify `src/components/admin/AccessScopeManager.tsx`**
-- Becomes a thin wrapper: shows a summary of current selections + a "Configure" button that opens the dialog
-- Summary shows: "No restrictions" or chips/badges for selected items grouped by level
-- Remove all Popover/Command/MultiSelectChips usage
-- Remove Supabase direct queries — use `apiFetch` for edit mode (fetch from `GET /users/:id`)
-- Remove `window.__accessScopeSave` hack
-
-**3. `src/components/admin/UserFormSheet.tsx`**
-- Names side-by-side (2-column grid)
-- Tighten spacing to `space-y-4`
-- Add separator between user fields and access scope section
-- Access scope shows as summary + "Configure" button (much cleaner in the sheet)
-
-### Visual Result
-```text
-Sheet:
-┌─────────────────────────────┐
-│ ┌──────────┐ ┌──────────┐   │
-│ │First Name│ │Last Name │   │
-│ └──────────┘ └──────────┘   │
-│ ┌───────────────────────┐   │
-│ │ Email                 │   │
-│ └───────────────────────┘   │
-│ ┌───────────────────────┐   │
-│ │ Role            ▾     │   │
-│ └───────────────────────┘   │
-│ ─────────────────────────── │
-│ Access Scope                │
-│ No restrictions applied     │
-│ [Configure Access...]       │
-│                             │
-│  [Cancel]   [Send Invite]   │
-└─────────────────────────────┘
-
-Dialog (on clicking "Configure Access"):
-┌───────────────────────────────────┐
-│ Configure Access Scope        [X] │
-├───────────────────────────────────┤
-│ 🌐 Region                    (2) │
-│ ┌─────────────────────────────┐   │
-│ │ ☑ East  ☑ West  ☐ Central  │   │
-│ └─────────────────────────────┘   │
-│                                   │
-│ 📍 Market                    (1) │
-│ ┌─────────────────────────────┐   │
-│ │ ☑ Florida  ☐ Texas  ...    │   │
-│ └─────────────────────────────┘   │
-│                                   │
-│ 🏢 Facility        [Search...]   │
-│ ┌─────────────────────────────┐   │
-│ │ ☑ St. Vincent   │ FAC-001  │   │
-│ │ ☐ Sacred Heart  │ FAC-002  │   │
-│ └─────────────────────────────┘   │
-│                                   │
-│ 📑 Department      [Search...]   │
-│ ┌─────────────────────────────┐   │
-│ │ ☑ Nursing       │ DEP-001  │   │
-│ │ ☐ Radiology     │ DEP-002  │   │
-│ └─────────────────────────────┘   │
-├───────────────────────────────────┤
-│       [Clear All]    [Done]       │
-└───────────────────────────────────┘
-```
-
-### What stays the same
-- Cascading filter logic (Region filters Markets, Markets filter Facilities, etc.)
-- `AccessScopeData` interface — same shape passed to parent
-- `useFilterData` hook for org hierarchy data
-- Selection highlight style (bg-primary/15, border-primary/30)
+All four become simple `space-y-0.5 p-1` containers that expand to show all items, and the outer `ScrollArea` (line 177) handles the full-dialog scroll.
 
