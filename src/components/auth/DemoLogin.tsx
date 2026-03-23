@@ -20,7 +20,6 @@ const ROLE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
   admin: ShieldCheck,
   labor_team: Users,
   leadership: Crown,
-  cno: Building2,
   director: UserCog,
   manager: Briefcase,
 };

@@ -10,7 +10,6 @@ const DEMO_USERS = [
   { email: "demo.admin@ascension.org", role: "admin", firstName: "Demo", lastName: "Admin" },
   { email: "demo.labor@ascension.org", role: "labor_team", firstName: "Demo", lastName: "Labor" },
   { email: "demo.leadership@ascension.org", role: "leadership", firstName: "Demo", lastName: "Leadership" },
-  { email: "demo.cno@ascension.org", role: "cno", firstName: "Demo", lastName: "CNO" },
   { email: "demo.director@ascension.org", role: "director", firstName: "Demo", lastName: "Director" },
   { email: "demo.manager@ascension.org", role: "manager", firstName: "Demo", lastName: "Manager" },
 ];

@@ -362,7 +362,6 @@ export const MANAGEABLE_ROLES: AppRole[] = [
   "admin",
   "labor_team",
   "leadership",
-  "cno",
   "director",
   "manager",
 ];
