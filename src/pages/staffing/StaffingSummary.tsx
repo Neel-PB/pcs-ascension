@@ -635,8 +635,8 @@ ${fmt(hiredFtes)} - ${fmt(targetFtes)} = ${fmt(fteVariance)}`,
           ? [
               {
                 category: 'Nursing',
-                inner: { shift: 'Day', slices: skillMixPieData.openReqsDayNursing, total: Math.round(skillMixPieData.openReqsDayNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
-                outer: { shift: 'Night', slices: skillMixPieData.openReqsNightNursing, total: Math.round(skillMixPieData.openReqsNightNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+                inner: { shift: 'Night', slices: skillMixPieData.openReqsNightNursing, total: Math.round(skillMixPieData.openReqsNightNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+                outer: { shift: 'Day', slices: skillMixPieData.openReqsDayNursing, total: Math.round(skillMixPieData.openReqsDayNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
               },
               {
                 category: 'Non-Nursing',
