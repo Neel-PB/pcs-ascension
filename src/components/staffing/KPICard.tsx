@@ -34,6 +34,7 @@ export interface KPICardProps {
   showAllOptions?: boolean;
   decimalPlaces?: number;
   xAxisLabels?: string[];
+  highlightPoints?: 'lowest-3' | 'highest-3';
   employmentBreakdown?: EmploymentBreakdown;
   breakdownVariant?: 'green' | 'red' | 'orange';
   dataTour?: string;
@@ -58,6 +59,7 @@ export function KPICard({
   showAllOptions,
   decimalPlaces = 1,
   xAxisLabels,
+  highlightPoints,
   employmentBreakdown,
   breakdownVariant,
   dataTour,
@@ -211,6 +213,7 @@ export function KPICard({
         decimalPlaces={decimalPlaces}
         xAxisLabels={xAxisLabels}
         showAllOptions={showAllOptions}
+        highlightPoints={highlightPoints}
       />
 
       {/* Info Modal */}

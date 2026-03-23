@@ -22,6 +22,7 @@ interface KPIChartModalProps {
   decimalPlaces?: number;
   xAxisLabels?: string[];
   showAllOptions?: boolean;
+  highlightPoints?: 'lowest-3' | 'highest-3';
 }
 
 export function KPIChartModal({
@@ -39,6 +40,7 @@ export function KPIChartModal({
   decimalPlaces = 1,
   xAxisLabels,
   showAllOptions = false,
+  highlightPoints,
 }: KPIChartModalProps) {
   const [activeTab, setActiveTab] = useState("chart");
 
@@ -1086,6 +1088,18 @@ export function KPIChartModal({
                           stroke="var(--color-value)"
                           strokeWidth={3}
                           fill="url(#chartGradient)"
+                          dot={(props: any) => {
+                            if (!highlightPoints || !enrichedData) return <circle r={0} cx={props.cx} cy={props.cy} />;
+                            const sorted = [...enrichedData]
+                              .map((d, i) => ({ val: d.value, i }))
+                              .sort((a, b) => highlightPoints === 'lowest-3' ? a.val - b.val : b.val - a.val);
+                            const indices = sorted.slice(0, 3).map(x => x.i);
+                            if (indices.includes(props.index)) {
+                              const color = highlightPoints === 'lowest-3' ? 'hsl(var(--destructive))' : 'hsl(142 71% 45%)';
+                              return <circle cx={props.cx} cy={props.cy} r={5} fill={color} stroke="white" strokeWidth={2} />;
+                            }
+                            return <circle r={0} cx={props.cx} cy={props.cy} />;
+                          }}
                         />
                       </AreaChart>
                     ) : chartType === "line" ? (
