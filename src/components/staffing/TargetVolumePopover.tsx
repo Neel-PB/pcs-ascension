@@ -113,7 +113,7 @@ export function TargetVolumePopover({
           </div>
         </div>
       </PopoverTrigger>
-      <PopoverContent className="w-[420px] p-3" align="start">
+      <PopoverContent className="w-[520px] p-3" align="start">
         {hasEnoughData && chartData.length > 0 ? (
           <>
             {/* Line Chart with highlighted lowest 3 months */}
