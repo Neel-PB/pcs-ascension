@@ -146,7 +146,7 @@ export function KPIChartModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn("max-h-[85vh] overflow-hidden p-3 flex flex-col gap-2", isNestedPie ? "max-w-5xl" : (Array.isArray(chartData) && chartData.length >= 20) ? "max-w-5xl" : showAllOptions ? "max-w-4xl" : "max-w-3xl")}>
+      <DialogContent className={cn("max-h-[85vh] overflow-hidden p-3 flex flex-col gap-2", "max-w-5xl")}>
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 border-b pb-3">
           <div>
             <DialogTitle className="text-xl">{title}</DialogTitle>
