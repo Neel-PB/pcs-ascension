@@ -18,7 +18,7 @@ export default function AdminPage() {
   const { hasPermission, loading } = useRBAC();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const validTabs = ["users", "feed", "access-control", "audit-log", "settings"];
+  const validTabs = ["users", "feed", "access-control", "settings"];
 
   const [activeTab, setActiveTab] = useState(
     tabParam && validTabs.includes(tabParam) ? tabParam : "users"
