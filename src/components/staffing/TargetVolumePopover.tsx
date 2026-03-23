@@ -60,7 +60,7 @@ export function TargetVolumePopover({
       const m = d.month.includes('-') ? d.month : `${d.month.slice(0, 4)}-${d.month.slice(4)}`;
       const parsed = parseISO(m + '-01');
       return {
-        month: isNaN(parsed.getTime()) ? d.month : format(parsed, "MMM"),
+        month: isNaN(parsed.getTime()) ? d.month : format(parsed, "MMM''yy"),
         fullMonth: d.month,
         volume: Math.round(d.volume),
         isLowest: lowestThreeMonths.includes(d.month),
@@ -113,17 +113,19 @@ export function TargetVolumePopover({
           </div>
         </div>
       </PopoverTrigger>
-      <PopoverContent className="w-[420px] p-3" align="start">
+      <PopoverContent className="w-[520px] p-3" align="start">
         {hasEnoughData && chartData.length > 0 ? (
           <>
             {/* Line Chart with highlighted lowest 3 months */}
             <div className="h-44 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={chartData} margin={{ top: 5, right: 15, left: 0, bottom: 5 }}>
+                <ComposedChart data={chartData} margin={{ top: 5, right: 15, left: 0, bottom: 40 }}>
                   <XAxis 
                     dataKey="month" 
-                    tick={{ fontSize: 10 }} 
+                    tick={{ fontSize: 9 }} 
                     interval={0}
+                    angle={-45}
+                    textAnchor="end"
                     axisLine={{ stroke: 'hsl(var(--border))' }}
                     tickLine={{ stroke: 'hsl(var(--border))' }}
                   />
