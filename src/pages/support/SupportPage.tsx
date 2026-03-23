@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Play, FileText, AlertCircle, MessageSquare, ExternalLink, Plus } from "@/lib/icons";
 import { toast } from "sonner";
 import { UserGuidesTab } from "@/components/support/UserGuidesTab";
+import { useAuth } from "@/hooks/useAuth";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { useRBAC } from "@/hooks/useRBAC";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
