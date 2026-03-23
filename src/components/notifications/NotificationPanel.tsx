@@ -7,7 +7,8 @@ import {
   SheetHeader,
   SheetFooter 
 } from "@/components/ui/sheet";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ToggleButtonGroup } from "@/components/ui/toggle-button-group";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { AttachmentDisplay } from "@/components/feed/AttachmentDisplay";
 import {
