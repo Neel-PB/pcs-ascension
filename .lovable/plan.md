@@ -1,22 +1,18 @@
 
 
-## Fix Missing Chart in Volume Settings Target Volume Popover
+## Simplify Target Volume Popover: Chart Only
 
-### Problem
-The `TargetVolumePopover` shows no chart because the `historical_months_data` field is never populated in the Volume Settings table data. The `SettingsTab.tsx` maps patient-volume API records to `VolumeOverrideRow` but omits parsing `last_12_month_volume_stats` into the `historical_months_data` array. The popover receives an empty array, so `chartData` is empty and the chart doesn't render.
+### What
+Strip the `TargetVolumePopover` down to just the chart and legend. Remove the spread percentage indicator, calculation detail cards (N-Mo Avg vs 3-Mo Low), and reasoning text below the separator.
 
-### Fix
+### Changes
 
-#### `src/pages/staffing/SettingsTab.tsx`
-In the `tableData` useMemo (around line 56-95), parse `record.last_12_month_volume_stats` into `historical_months_data`:
-
-1. Parse `last_12_month_volume_stats` (it can be a string or array) into an array of `{ month, volume, daysInMonth }` objects
-2. Use `patient_volume_mthly` as the volume and derive `daysInMonth` from each `year_month`
-3. Also derive `lowest_three_months` by sorting months by daily volume ascending and taking the first 3
-4. Compute `spread_percentage` and `used_three_month_low` from the existing `dly_avg_volume_12mth` and `dly_avg_volume_3mth_low` fields
-
-This ensures the popover receives real chart data and renders the historical volume line chart with highlighted lowest-3 months and reference lines.
+#### `src/components/staffing/TargetVolumePopover.tsx`
+- **Remove lines 232-290**: Everything after the legend — the `<Separator>`, the calculation details grid (N-Mo Avg / 3-Mo Low cards), spread indicator, and reasoning text
+- **Remove unused imports**: `Separator`, `Check` (if only used in removed section)
+- **Remove unused props from interface & destructure**: `spreadPercentage`, `usedThreeMonthLow`, `spreadThreshold` — keep only what the chart needs (`historicalMonthsData`, `historicalMonthsCount`, `targetVolume`, `minMonthsForTarget`, `threeMonthLowAvg`, `nMonthAvg`, `lowestThreeMonths`)
+- The chart with reference lines (N-mo avg dashed line, 3-mo low dashed line), highlighted lowest-3 dots, and the legend all stay as-is
 
 ### Files Changed
-- `src/pages/staffing/SettingsTab.tsx`
+- `src/components/staffing/TargetVolumePopover.tsx`
 
