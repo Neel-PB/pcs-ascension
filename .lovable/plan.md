@@ -1,32 +1,27 @@
 
 
-## Fix 401 Errors: Replace `msal_access_token` with `nestjs_token`
+## RBAC Page: Remove Action Buttons & Fix Checkbox Sizing
 
-### Problem
-After migrating auth from MSAL to NestJS, all data-fetching hooks still read `sessionStorage.getItem("msal_access_token")` for the Bearer token. The login flow stores the token as `nestjs_token`, so these hooks send no Authorization header → 401 Unauthorized.
+### Changes
 
-### Solution
-Replace every occurrence of `msal_access_token` with `nestjs_token` across all hooks that call the NestJS API.
+#### 1. `src/pages/admin/AccessControlPage.tsx` — Remove "+ Permission" and "+ Role" buttons
+**Lines 163-184**: Remove the separator div and the action buttons block entirely (the `<div className="h-6 w-px bg-border" />` and the `<div className="flex items-center gap-2" data-tour="admin-rbac-actions">` with both buttons).
 
-### Files Changed (16 files)
-- `src/hooks/useSkillShift.ts`
-- `src/hooks/usePatientVolume.ts`
-- `src/hooks/useProductiveResourcesKpi.ts`
-- `src/hooks/useEmploymentSplit.ts`
-- `src/hooks/useFilterData.ts`
-- `src/hooks/usePositionsByFlag.ts`
-- `src/hooks/useNPOverrides.ts`
-- `src/hooks/useVolumeOverrides.ts`
-- `src/hooks/useVolumeOverrideComments.ts`
-- `src/hooks/useUpdateActualFte.ts`
-- `src/hooks/useUpdateShiftOverride.ts`
-- `src/hooks/useCheckExpiredFte.ts`
-- `src/hooks/useCheckExpiredOverrides.ts`
-- `src/hooks/usePositionComments.ts`
-- `src/hooks/useRegionVolumeData.ts` (if applicable)
-- `src/hooks/useHistoricalVolumeAnalysis.ts` (if applicable)
+Also remove the related state, handlers, and dialog components:
+- `isPermissionFormOpen` state and `setIsPermissionFormOpen`
+- `isRoleFormOpen` state, `setIsRoleFormOpen`, `selectedRoleForEdit`
+- `handleRoleFormSubmit` and `handlePermissionFormSubmit` functions
+- `RoleFormDialog` and `PermissionFormDialog` components at the bottom
+- Their imports: `RoleFormDialog`, `PermissionFormDialog`, `Plus`
+- Remove `createRole`, `updateRole` from `useDynamicRoles` destructure
+- Remove `createPermission` from `usePermissions` destructure
 
-Each file: change `sessionStorage.getItem("msal_access_token")` → `sessionStorage.getItem("nestjs_token")`
+#### 2. `src/components/admin/RoleDetailView.tsx` — Fix checkbox size
+**Line 165**: The checkbox has `className="h-3.5 w-3.5"` which makes it 14px — too small, causing the check icon to look cramped/odd. Change to `h-4 w-4` (16px) for proper proportions matching the default checkbox size.
 
-Also keep the cleanup of `msal_access_token` in `signOut` (AuthContext) for backwards compatibility with any lingering sessions.
+Also check `PermissionMatrix.tsx` for similar checkbox sizing issues.
+
+### Files Changed
+- `src/pages/admin/AccessControlPage.tsx`
+- `src/components/admin/RoleDetailView.tsx`
 
