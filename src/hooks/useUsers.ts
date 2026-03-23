@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { apiFetch } from "@/lib/apiFetch";
 import { toast } from "sonner";
 
 export type UserRole = 'admin' | 'labor_team' | 'leadership' | 'cno' | 'director' | 'manager' | 'nurse_manager' | 'moderator' | 'user';
@@ -15,53 +15,46 @@ export interface UserWithProfile {
   roles: UserRole[];
 }
 
+interface ApiUser {
+  id: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  is_active: boolean;
+  must_change_password: boolean;
+  role: string;
+  created_at: string;
+  updated_at: string;
+  roles: { id: string; role: string }[];
+  accessScope: any[];
+}
+
+function mapApiUser(u: ApiUser): UserWithProfile {
+  const roles = u.roles?.map(r => r.role as UserRole) || [];
+  return {
+    id: u.id,
+    email: u.email || '',
+    first_name: u.first_name,
+    last_name: u.last_name,
+    avatar_url: null,
+    bio: null,
+    created_at: u.created_at,
+    roles: roles.length > 0 ? roles : ['user' as UserRole],
+  };
+}
+
 export function useUsers() {
   const queryClient = useQueryClient();
 
-  // Fetch all users with their profiles and roles
   const { data: users, isLoading, error } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
-      // First get all profiles
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (profilesError) throw profilesError;
-
-      // Then get all user roles
-      const { data: userRoles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('*');
-
-      if (rolesError) throw rolesError;
-
-      // Combine the data - fetch ALL roles for each user
-      const usersWithRoles: UserWithProfile[] = profiles.map(profile => {
-        const userRolesList = userRoles.filter(ur => ur.user_id === profile.id);
-        const roles = userRolesList.map(ur => ur.role as UserRole);
-
-        return {
-          id: profile.id,
-          email: profile.email || '',
-          first_name: profile.first_name,
-          last_name: profile.last_name,
-          avatar_url: profile.avatar_url,
-          bio: profile.bio,
-          created_at: profile.created_at,
-          roles: roles.length > 0 ? roles : ['labor_team' as UserRole],
-        };
-      });
-
-      return usersWithRoles;
+      const response = await apiFetch<ApiUser[] | { data: ApiUser[] }>('/users');
+      const list = Array.isArray(response) ? response : (response.data || []);
+      return list.map(mapApiUser);
     },
   });
 
-  // Realtime subscriptions are now handled by useRealtimeSubscriptions hook
-  // No need for individual channels here
-
-  // Invite user mutation
   const createUser = useMutation({
     mutationFn: async (userData: {
       email: string;
@@ -69,31 +62,19 @@ export function useUsers() {
       lastName: string;
       roles: UserRole[];
       bio?: string;
-      accessScope?: {
-        regions: string[];
-        markets: string[];
-        facilities: { facility_id: string; facility_name: string; market?: string }[];
-        departments: { department_id: string; department_name: string; facility_id?: string; facility_name?: string; market?: string }[];
-      } | null;
+      accessScope?: any;
     }) => {
-      const { data, error } = await supabase.functions.invoke('invite-user', {
-        body: {
+      return apiFetch('/users', {
+        method: 'POST',
+        body: JSON.stringify({
           email: userData.email,
-          firstName: userData.firstName,
-          lastName: userData.lastName,
+          first_name: userData.firstName,
+          last_name: userData.lastName,
           roles: userData.roles,
           bio: userData.bio,
           accessScope: userData.accessScope,
-        },
-        headers: {
-          'Origin': window.location.origin,
-        },
+        }),
       });
-
-      if (error) throw error;
-      if (!data?.success) throw new Error(data?.error || 'Failed to invite user');
-
-      return data.user;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -104,7 +85,6 @@ export function useUsers() {
     },
   });
 
-  // Update user mutation
   const updateUser = useMutation({
     mutationFn: async (userData: {
       userId: string;
@@ -113,39 +93,15 @@ export function useUsers() {
       bio?: string;
       roles: UserRole[];
     }) => {
-      // Update profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
+      return apiFetch(`/users/${userData.userId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
           first_name: userData.firstName,
           last_name: userData.lastName,
-          bio: userData.bio || null,
-        })
-        .eq('id', userData.userId);
-
-      if (profileError) throw profileError;
-
-      // Update roles (delete old and insert new)
-      const { error: deleteError } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userData.userId);
-
-      if (deleteError) throw deleteError;
-
-      // Insert all new roles
-      if (userData.roles.length > 0) {
-        const roleInserts = userData.roles.map(role => ({
-          user_id: userData.userId,
-          role: role,
-        }));
-        
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert(roleInserts);
-
-        if (roleError) throw roleError;
-      }
+          bio: userData.bio,
+          roles: userData.roles,
+        }),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -156,14 +112,9 @@ export function useUsers() {
     },
   });
 
-  // Delete user mutation
   const deleteUser = useMutation({
     mutationFn: async (userId: string) => {
-      const { error } = await supabase.functions.invoke('delete-user', {
-        body: { userId },
-      });
-
-      if (error) throw error;
+      return apiFetch(`/users/${userId}`, { method: 'DELETE' });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
