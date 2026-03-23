@@ -70,6 +70,14 @@ export const LEGACY_ROLES: Role[] = [
     sort_order: 101,
   },
   {
+    id: "core-cno",
+    name: "cno",
+    label: "CNO",
+    description: "Chief Nursing Officer with configurable filter access, excluded from Admin, Feedback, and Settings",
+    is_system: true,
+    sort_order: 102,
+  },
+  {
     id: "core-nurse_manager",
     name: "nurse_manager",
     label: "Nurse Manager (Legacy)",
