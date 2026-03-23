@@ -1,33 +1,34 @@
 
 
-## Remove Label Rotation, Widen Modal for Horizontal Labels
+## Fix Nested Donut Chart Size and Inner/Outer Ring Spacing
 
 ### Problem
-The 28-day chart x-axis labels are rotated at -45 degrees. Instead, the modal should be wider so labels fit horizontally without rotation.
+The nested donut charts (Hired FTEs, Open Reqs) appear too small and cramped. The inner ring (Night) and outer ring (Day) are too close together, and the overall chart doesn't fill the available space well in the widened modal.
 
 ### Changes
 
 **`src/components/staffing/KPIChartModal.tsx`**
 
-1. **Line 149** — Widen dialog from `max-w-5xl` to `max-w-[95vw]` so it uses nearly the full viewport width, giving enough horizontal space for 28 labels:
-   ```typescript
-   "max-w-[95vw]"
-   ```
-
-2. **Lines 1065-1070, 1099-1104, 1128-1133** — Remove rotation from all three area chart XAxis instances. Change from angled to horizontal:
+1. **Line 932** — Increase the chart container from `220x220` to `280x280`:
    ```typescript
    // Before
-   tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9 }}
-   interval={0}
-   angle={-45}
-   textAnchor="end"
-   height={50}
-
+   <div className="w-[220px] h-[220px]">
+   
    // After
-   tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9 }}
-   interval={0}
+   <div className="w-[280px] h-[280px]">
    ```
-   Remove `angle`, `textAnchor`, and `height` props — defaults will render labels horizontally.
+
+2. **Line 947** — Increase inner ring radii (Night) from `outerRadius={50} innerRadius={25}` to `outerRadius={65} innerRadius={35}`:
+   ```typescript
+   <Pie ... outerRadius={65} innerRadius={35} ...>
+   ```
+
+3. **Line 954** — Increase outer ring radii (Day) from `outerRadius={85} innerRadius={60}` to `outerRadius={120} innerRadius={80}`:
+   ```typescript
+   <Pie ... outerRadius={120} innerRadius={80} ...>
+   ```
+
+This creates more visual separation between the inner (Night) and outer (Day) rings and makes the charts fill the wider modal properly.
 
 ### Files Changed
 - `src/components/staffing/KPIChartModal.tsx`
