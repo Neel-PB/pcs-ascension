@@ -318,34 +318,38 @@ export default function StaffingSummary() {
       .sort((a, b) => b.npPercent - a.npPercent);
   }, [prKpiData]);
 
-  // Day-of-week aggregation for Productive Resources area charts
-  const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const DAY_LABELS_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  // 28-day daily trend aggregation for Productive Resources area charts
+  const { dailyTrendData, dailyTrendLabels } = useMemo(() => {
+    if (!prKpiData?.length) return { dailyTrendData: [], dailyTrendLabels: [] as string[] };
 
-  const dayOfWeekData = useMemo(() => {
-    if (!prKpiData?.length) return [];
-    const byDay: Record<string, { paid: number; contractor: number; overtime: number; prn: number; employed: number; npWeighted: number; totalPaid: number }> = {};
-    DAY_ORDER.forEach(d => { byDay[d] = { paid: 0, contractor: 0, overtime: 0, prn: 0, employed: 0, npWeighted: 0, totalPaid: 0 }; });
-
+    // Group by date
+    const byDate: Record<string, { paid: number; contractor: number; overtime: number; prn: number; employed: number; npWeighted: number; totalPaid: number }> = {};
     prKpiData.forEach(r => {
-      const raw = String(r.day_of_week ?? '').trim();
-      // Normalise: could be "Monday", "monday", "1", etc.
-      const day = DAY_ORDER.find(d => d.toLowerCase() === raw.toLowerCase()) ?? raw;
-      if (!byDay[day]) return; // skip unknown
+      const dateKey = String(r.date ?? '').trim();
+      if (!dateKey) return;
+      if (!byDate[dateKey]) byDate[dateKey] = { paid: 0, contractor: 0, overtime: 0, prn: 0, employed: 0, npWeighted: 0, totalPaid: 0 };
       const paid = Number(r.paid_fte ?? 0);
-      byDay[day].paid += paid;
-      byDay[day].contractor += Number(r.contractor_fte ?? 0);
-      byDay[day].overtime += Number(r.overtime_fte ?? 0);
-      byDay[day].prn += Number(r.total_prn ?? 0);
-      byDay[day].employed += Number(r.employed_productive_fte ?? 0);
-      byDay[day].npWeighted += Number(r.non_productive_percentage ?? 0) * paid;
-      byDay[day].totalPaid += paid;
+      byDate[dateKey].paid += paid;
+      byDate[dateKey].contractor += Number(r.contractor_fte ?? 0);
+      byDate[dateKey].overtime += Number(r.overtime_fte ?? 0);
+      byDate[dateKey].prn += Number(r.total_prn ?? 0);
+      byDate[dateKey].employed += Number(r.employed_productive_fte ?? 0);
+      byDate[dateKey].npWeighted += Number(r.non_productive_percentage ?? 0) * paid;
+      byDate[dateKey].totalPaid += paid;
     });
 
-    return DAY_ORDER.map((day, i) => {
-      const d = byDay[day];
+    // Sort chronologically
+    const sortedDates = Object.keys(byDate).sort((a, b) => a.localeCompare(b));
+
+    const labels = sortedDates.map(d => {
+      const parsed = new Date(d);
+      return !isNaN(parsed.getTime()) ? format(parsed, 'M/d') : d;
+    });
+
+    const data = sortedDates.map(dateKey => {
+      const d = byDate[dateKey];
       return {
-        day: DAY_LABELS_SHORT[i],
+        day: dateKey,
         paid_fte: Math.round(d.paid * 10) / 10,
         contractor_fte: Math.round(d.contractor * 10) / 10,
         overtime_fte: Math.round(d.overtime * 10) / 10,
@@ -354,6 +358,8 @@ export default function StaffingSummary() {
         npPercent: d.totalPaid > 0 ? Math.round((d.npWeighted / d.totalPaid) * 10) / 10 : 0,
       };
     });
+
+    return { dailyTrendData: data, dailyTrendLabels: labels };
   }, [prKpiData]);
 
   // Non-nursing target from productive-resources-kpi
@@ -725,12 +731,12 @@ Used when:
     const fmtPct = (v: number | null | undefined) =>
       v != null ? `${v.toFixed(1)}%` : "—";
 
-    const dowPaidChart = dayOfWeekData.length > 0 ? dayOfWeekData.map(d => ({ value: d.paid_fte, name: d.day })) : [];
-    const dowContractChart = dayOfWeekData.length > 0 ? dayOfWeekData.map(d => ({ value: d.contractor_fte, name: d.day })) : [];
-    const dowOvertimeChart = dayOfWeekData.length > 0 ? dayOfWeekData.map(d => ({ value: d.overtime_fte, name: d.day })) : [];
-    const dowPrnChart = dayOfWeekData.length > 0 ? dayOfWeekData.map(d => ({ value: d.total_prn, name: d.day })) : [];
-    const dowNpChart = dayOfWeekData.length > 0 ? dayOfWeekData.map(d => ({ value: d.npPercent, name: d.day })) : [];
-    const dowEmployedChart = dayOfWeekData.length > 0 ? dayOfWeekData.map(d => ({ value: d.employed_productive_fte, name: d.day })) : [];
+    const dowPaidChart = dailyTrendData.length > 0 ? dailyTrendData.map(d => ({ value: d.paid_fte, name: d.day })) : [];
+    const dowContractChart = dailyTrendData.length > 0 ? dailyTrendData.map(d => ({ value: d.contractor_fte, name: d.day })) : [];
+    const dowOvertimeChart = dailyTrendData.length > 0 ? dailyTrendData.map(d => ({ value: d.overtime_fte, name: d.day })) : [];
+    const dowPrnChart = dailyTrendData.length > 0 ? dailyTrendData.map(d => ({ value: d.total_prn, name: d.day })) : [];
+    const dowNpChart = dailyTrendData.length > 0 ? dailyTrendData.map(d => ({ value: d.npPercent, name: d.day })) : [];
+    const dowEmployedChart = dailyTrendData.length > 0 ? dailyTrendData.map(d => ({ value: d.employed_productive_fte, name: d.day })) : [];
 
     const kpis = [
       {
@@ -739,7 +745,7 @@ Used when:
         value: fmt(prAgg?.paid_fte ?? null),
         chartData: dowPaidChart.length > 0 ? dowPaidChart : [],
         chartType: "area" as const,
-        xAxisLabels: DAY_LABELS_SHORT,
+        xAxisLabels: dailyTrendLabels,
         delay: 0,
         definition: "Total labor resources the organization actually pays for, regardless of whether those hours are productive or non-productive.",
         calculation: `Total Paid Actual FTEs = Total paid hours / Standard FTE hours
@@ -753,7 +759,7 @@ Example: If 7,928 hours were paid in a 2-week period:
         value: fmt(prAgg?.contractor_fte ?? null),
         chartData: dowContractChart.length > 0 ? dowContractChart : [],
         chartType: "area" as const,
-        xAxisLabels: DAY_LABELS_SHORT,
+        xAxisLabels: dailyTrendLabels,
         delay: 0.05,
         definition: "Total equivalent labor resources supplied by entities that are not Acute Ascension Hospitals, that are paid for and used by the organization.",
         calculation: `Total Contract Actual FTEs = Contract hours worked / Standard FTE hours
@@ -770,7 +776,7 @@ Excludes: Regular staff, PRN staff`,
         value: fmt(prAgg?.overtime_fte ?? null),
         chartData: dowOvertimeChart.length > 0 ? dowOvertimeChart : [],
         chartType: "area" as const,
-        xAxisLabels: DAY_LABELS_SHORT,
+        xAxisLabels: dailyTrendLabels,
         delay: 0.1,
         definition: "Total worked hours above regular (FT) commitment the organization actually pays for.",
         calculation: `Total Overtime FTEs = Total overtime hours / Standard FTE hours
@@ -785,7 +791,7 @@ Note: This is the volume equivalent, not cost equivalent`,
         value: fmt(prAgg?.total_prn ?? null),
         chartData: dowPrnChart.length > 0 ? dowPrnChart : [],
         chartType: "area" as const,
-        xAxisLabels: DAY_LABELS_SHORT,
+        xAxisLabels: dailyTrendLabels,
         delay: 0.15,
         definition: "Total PRNs productive equivalent labor resources the organization actually pays for.",
         calculation: `Total PRN = PRN hours worked / Standard FTE hours
@@ -802,7 +808,7 @@ PRN staff characteristics:
         value: fmtPct(prNpPercent ?? null),
         chartData: dowNpChart.length > 0 ? dowNpChart : [],
         chartType: "area" as const,
-        xAxisLabels: DAY_LABELS_SHORT,
+        xAxisLabels: dailyTrendLabels,
         delay: 0.2,
         definition: "The percentage of all paid hours that were not spent directly delivering patient care or performing operational work tied to Patient Volume (e.g., PTO, Holiday Pay, sick leave, education, admin or committee time, Training or onboarding).",
         calculation: `Total NP% = Total non-productive Man hours/ Total Paid hours *100
@@ -818,7 +824,7 @@ Lower NP% indicates better labor efficiency`,
         value: fmt(prAgg?.employed_productive_fte ?? null),
         chartData: dowEmployedChart.length > 0 ? dowEmployedChart : [],
         chartType: "area" as const,
-        xAxisLabels: DAY_LABELS_SHORT,
+        xAxisLabels: dailyTrendLabels,
         delay: 0.25,
         definition: "Total Full-time, Part-Time and PRNs productive equivalent labor resources the organization actually pays for.",
         calculation: `Employed Productive FTEs = Sum of all employed productive FTEs
@@ -835,7 +841,7 @@ This metric helps:
       const bIndex = productivityOrder.indexOf(b.id);
       return aIndex - bIndex;
     });
-  }, [productivityOrder, prAgg, prNpPercent, dayOfWeekData]);
+  }, [productivityOrder, prAgg, prNpPercent, dailyTrendData, dailyTrendLabels]);
 
   // Page-level loading guard
   const isInitializing = rbacLoading || (orgScopedLoading && !filtersInitialized);
