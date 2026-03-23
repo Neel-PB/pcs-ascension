@@ -1,25 +1,37 @@
 
 
-## Set Minimum Width for All KPI Chart Modals
+## Show All 28 X-Axis Labels Without Skipping
 
 ### Problem
-Volume and Productive Resources charts look congested in narrower modals. The current logic only widens for `nested-pie` or 20+ data points, leaving other chart types (pie, area with fewer points, volume trends) in `max-w-3xl` which is too narrow.
+Recharts auto-hides overlapping tick labels, so some dates like `02/15`, `02/17` get dropped. The user wants every single day visible. The modal is already `max-w-5xl` but the XAxis needs to be forced to show all ticks with smaller font and angled labels.
 
 ### Change
 
-**`src/components/staffing/KPIChartModal.tsx`** — Line 149
+**`src/components/staffing/KPIChartModal.tsx`** — XAxis for area charts (~line 1063)
 
-Replace the conditional width logic with a single consistent minimum width for all chart modals:
+Add `interval={0}`, reduce font size, and angle the labels so all 28 fit:
 
 ```typescript
-// Before (conditional)
-isNestedPie ? "max-w-5xl" : (Array.isArray(chartData) && chartData.length >= 20) ? "max-w-5xl" : showAllOptions ? "max-w-4xl" : "max-w-3xl"
+// Before
+<XAxis 
+  dataKey="period" 
+  className="text-xs"
+  tick={{ fill: "hsl(var(--muted-foreground))" }}
+/>
 
-// After — max-w-5xl for all modals
-"max-w-5xl"
+// After
+<XAxis 
+  dataKey="period" 
+  className="text-xs"
+  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9 }}
+  interval={0}
+  angle={-45}
+  textAnchor="end"
+  height={50}
+/>
 ```
 
-This gives every chart type (area trends, pie/donut, dual-pie, nested-pie, volume charts) enough room to render clearly without congestion.
+`interval={0}` forces Recharts to render every single tick label. The `-45` angle and smaller font ensure they don't overlap across 28 data points.
 
 ### Files Changed
 - `src/components/staffing/KPIChartModal.tsx`
