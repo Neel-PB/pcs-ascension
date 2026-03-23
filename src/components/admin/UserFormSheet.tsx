@@ -7,12 +7,6 @@ import {
   SheetContent,
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { ChevronDown } from "@/lib/icons";
 import { AccessScopeManager, type AccessScopeData } from "./AccessScopeManager";
 import {
   Form,
@@ -23,18 +17,22 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { MultiSelectChips, type MultiSelectOption } from "@/components/ui/multi-select-chips";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useDynamicRoles } from "@/hooks/useDynamicRoles";
-import type { UserWithProfile, UserRole } from "@/hooks/useUsers";
+import type { UserWithProfile } from "@/hooks/useUsers";
 
 const userFormSchema = z.object({
   firstName: z.string().min(1, "First name is required").max(100),
   lastName: z.string().min(1, "Last name is required").max(100),
   email: z.string().email("Invalid email address").max(255),
-  roles: z.array(z.string()).min(1, "At least one role is required"),
-  bio: z.string().max(500).optional(),
+  role: z.string().min(1, "Role is required"),
 });
 
 type UserFormValues = z.infer<typeof userFormSchema>;
@@ -56,10 +54,8 @@ export function UserFormSheet({
 }: UserFormSheetProps) {
   const isEditMode = !!user;
   const { manageableRoles, isLoading: rolesLoading } = useDynamicRoles();
-  const [orgAccessOpen, setOrgAccessOpen] = useState(false);
   const [pendingAccessScope, setPendingAccessScope] = useState<AccessScopeData | null>(null);
-  
-  // Handle access scope changes from AccessScopeManager
+
   const handleAccessChange = useCallback((data: AccessScopeData) => {
     setPendingAccessScope(data);
   }, []);
@@ -70,75 +66,63 @@ export function UserFormSheet({
       firstName: "",
       lastName: "",
       email: "",
-      roles: ["labor_team"],
-      bio: "",
+      role: "user",
     },
   });
 
-  // Reset form when user changes
   useEffect(() => {
     if (user) {
       form.reset({
         firstName: user.first_name || "",
         lastName: user.last_name || "",
         email: user.email || "",
-        roles: user.roles.length > 0 ? user.roles : ["labor_team"],
-        bio: user.bio || "",
+        role: user.role || "user",
       });
     } else {
       form.reset({
         firstName: "",
         lastName: "",
         email: "",
-        roles: ["labor_team"],
-        bio: "",
+        role: "user",
       });
-      // Reset pending access scope for new user
       setPendingAccessScope(null);
     }
   }, [user, form]);
 
   const handleSubmit = async (data: UserFormValues) => {
     if (isEditMode) {
-      // Trigger access scope save if available
       if ((window as any).__accessScopeSave) {
         await (window as any).__accessScopeSave();
       }
-      
       onSubmit({
         userId: user.id,
         firstName: data.firstName,
         lastName: data.lastName,
-        bio: data.bio,
-        roles: data.roles,
+        role: data.role,
       });
     } else {
-      // Include access scope data for new user
       onSubmit({
         email: data.email,
         firstName: data.firstName,
         lastName: data.lastName,
-        bio: data.bio,
-        roles: data.roles,
+        role: data.role,
         accessScope: pendingAccessScope,
       });
     }
   };
 
-  // Build role options for MultiSelectChips
-  const roleOptions: MultiSelectOption[] = manageableRoles
+  const roleOptions = manageableRoles
     .filter((role) => role.name && role.name.trim() !== '')
     .map((role) => ({
       value: role.name,
       label: role.label,
       description: role.description || undefined,
-      isSystem: role.is_system,
     }));
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent 
-        className="w-full sm:max-w-xl flex h-full flex-col p-0" 
+      <SheetContent
+        className="w-full sm:max-w-xl flex h-full flex-col p-0"
         hideCloseButton
       >
         <div
@@ -150,7 +134,7 @@ export function UserFormSheet({
           </h2>
           <p className="text-sm text-muted-foreground">
             {isEditMode
-              ? 'Update user information and roles'
+              ? 'Update user information and role'
               : 'Send an invitation email to create a new user account'}
           </p>
         </div>
@@ -208,57 +192,38 @@ export function UserFormSheet({
 
                 <FormField
                   control={form.control}
-                  name="roles"
+                  name="role"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Roles</FormLabel>
-                      <FormControl>
-                        <MultiSelectChips
-                          options={roleOptions}
-                          selected={field.value}
-                          onChange={field.onChange}
-                          placeholder="Search roles..."
-                          addButtonText="Add Role"
-                          emptyText="No roles selected"
-                        />
-                      </FormControl>
+                      <FormLabel>Role</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a role" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {roleOptions.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="bio"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Bio (Optional)</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Tell us about this user..."
-                          className="resize-none"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Organization Access Section - Show for both create and edit modes */}
-                <Collapsible open={orgAccessOpen} onOpenChange={setOrgAccessOpen} data-tour="admin-users-scope">
-                  <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:underline">
-                    <span>Access Scope Restrictions</span>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${orgAccessOpen ? 'rotate-180' : ''}`} />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="pt-2">
-                    <AccessScopeManager 
-                      userId={user?.id} 
-                      isEditMode={isEditMode}
-                      onAccessChange={!isEditMode ? handleAccessChange : undefined}
-                    />
-                  </CollapsibleContent>
-                </Collapsible>
+                {/* Access Scope Section - always visible */}
+                <div data-tour="admin-users-scope">
+                  <h4 className="text-sm font-medium mb-2">Access Scope Restrictions</h4>
+                  <AccessScopeManager
+                    userId={user?.id}
+                    isEditMode={isEditMode}
+                    onAccessChange={!isEditMode ? handleAccessChange : undefined}
+                  />
+                </div>
               </div>
             </ScrollArea>
 

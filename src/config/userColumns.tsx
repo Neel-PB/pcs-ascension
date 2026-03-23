@@ -77,24 +77,20 @@ export const createUserColumns = (
     ),
   },
   {
-    id: 'roles',
-    label: 'Roles',
+    id: 'role',
+    label: 'Role',
     type: 'custom',
     width: 200,
     minWidth: 160,
     sortable: true,
     resizable: false,
     draggable: true,
-    getValue: (row) => (row.roles || []).map(getRoleDisplayName).join(', '),
+    getValue: (row) => getRoleDisplayName(row.role || 'user'),
     renderCell: (row) => (
-      <CellButton className="flex items-center gap-1 flex-wrap">
-        {(row.roles || []).length > 0 ? (
-          <span className="text-xs font-medium uppercase text-muted-foreground">
-            {row.roles.map(getRoleDisplayName).join(', ')}
-          </span>
-        ) : (
-          <span className="text-xs font-medium uppercase text-muted-foreground">No Role</span>
-        )}
+      <CellButton className="flex items-center gap-1">
+        <span className="text-xs font-medium uppercase text-muted-foreground">
+          {getRoleDisplayName(row.role || 'user')}
+        </span>
       </CellButton>
     ),
   },

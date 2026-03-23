@@ -47,9 +47,9 @@ export default function UsersManagement() {
         valA = (a.email || '').toLowerCase();
         valB = (b.email || '').toLowerCase();
         break;
-      case 'roles':
-        valA = (a.roles || []).join(',').toLowerCase();
-        valB = (b.roles || []).join(',').toLowerCase();
+      case 'role':
+        valA = (a.role || '').toLowerCase();
+        valB = (b.role || '').toLowerCase();
         break;
       case 'created_at':
         valA = a.created_at || '';

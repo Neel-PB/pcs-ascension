@@ -10,9 +10,8 @@ export interface UserWithProfile {
   first_name: string | null;
   last_name: string | null;
   avatar_url: string | null;
-  bio: string | null;
   created_at: string;
-  roles: UserRole[];
+  role: UserRole;
 }
 
 interface ApiUser {
@@ -30,16 +29,15 @@ interface ApiUser {
 }
 
 function mapApiUser(u: ApiUser): UserWithProfile {
-  const roles = u.roles?.map(r => r.role as UserRole) || [];
+  const role = u.roles?.[0]?.role || u.role || 'user';
   return {
     id: u.id,
     email: u.email || '',
     first_name: u.first_name,
     last_name: u.last_name,
     avatar_url: null,
-    bio: null,
     created_at: u.created_at,
-    roles: roles.length > 0 ? roles : ['user' as UserRole],
+    role: role as UserRole,
   };
 }
 
@@ -60,8 +58,7 @@ export function useUsers() {
       email: string;
       firstName: string;
       lastName: string;
-      roles: UserRole[];
-      bio?: string;
+      role: string;
       accessScope?: any;
     }) => {
       return apiFetch('/users', {
@@ -70,8 +67,7 @@ export function useUsers() {
           email: userData.email,
           first_name: userData.firstName,
           last_name: userData.lastName,
-          roles: userData.roles,
-          bio: userData.bio,
+          role: userData.role,
           accessScope: userData.accessScope,
         }),
       });
@@ -90,16 +86,14 @@ export function useUsers() {
       userId: string;
       firstName: string;
       lastName: string;
-      bio?: string;
-      roles: UserRole[];
+      role: string;
     }) => {
       return apiFetch(`/users/${userData.userId}`, {
         method: 'PATCH',
         body: JSON.stringify({
           first_name: userData.firstName,
           last_name: userData.lastName,
-          bio: userData.bio,
-          roles: userData.roles,
+          role: userData.role,
         }),
       });
     },
