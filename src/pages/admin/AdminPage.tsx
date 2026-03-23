@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import UsersManagement from "./UsersManagement";
 import AccessControlPage from "./AccessControlPage";
-import RBACAuditLog from "./RBACAuditLog";
+
 import { FeedComposer } from "@/components/messaging/FeedComposer";
 import { FeedHistory } from "@/components/feed/FeedHistory";
 import { Button } from "@/components/ui/button";
