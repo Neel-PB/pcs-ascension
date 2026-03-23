@@ -70,6 +70,38 @@ export function SettingsTab({ selectedRegion, selectedMarket, selectedFacility }
         ?? record.edited_expiry_date
         ?? null;
 
+      // Parse last_12_month_volume_stats into historical_months_data
+      let statsArray: Array<{ year_month: string; patient_volume_mthly: number; patient_volume_dly: number }> = [];
+      const rawStats = record.last_12_month_volume_stats;
+      if (rawStats) {
+        try {
+          statsArray = typeof rawStats === 'string' ? JSON.parse(rawStats) : rawStats;
+        } catch { /* ignore parse errors */ }
+      }
+
+      const historicalMonthsData = statsArray.map(s => ({
+        month: s.year_month,
+        volume: Number(s.patient_volume_mthly ?? 0),
+        daysInMonth: getDaysInMonth(new Date(s.year_month + '-01')),
+      }));
+
+      // Identify lowest 3 months by daily average
+      const lowestThree = [...historicalMonthsData]
+        .sort((a, b) => (a.volume / (a.daysInMonth || 1)) - (b.volume / (b.daysInMonth || 1)))
+        .slice(0, 3)
+        .map(m => m.month);
+
+      // Spread & used_three_month_low
+      const nMonthAvg = record.dly_avg_volume_12mth != null ? Number(record.dly_avg_volume_12mth) : null;
+      const threeMonthLowAvg = record.dly_avg_volume_3mth_low != null ? Number(record.dly_avg_volume_3mth_low) : null;
+      let spreadPct: number | null = null;
+      let usedThreeMonthLow = false;
+      if (nMonthAvg && threeMonthLowAvg && nMonthAvg > 0) {
+        spreadPct = Math.round(((nMonthAvg - threeMonthLowAvg) / nMonthAvg) * 100);
+        const threshold = config?.spread_threshold ?? 15;
+        usedThreeMonthLow = spreadPct <= threshold;
+      }
+
       return {
         id: override?.id || `dept-${record.department_id}`,
         department_id: record.department_id,
@@ -82,16 +114,17 @@ export function SettingsTab({ selectedRegion, selectedMarket, selectedFacility }
         facility_name: record.business_unit_description || '',
         // Historical analysis from patient-volume API
         historical_months_count: totalValidMonths,
+        historical_months_data: historicalMonthsData,
         target_volume: Number(record.target_volume ?? 0) || null,
         override_mandatory: overrideMandatory,
         max_allowed_expiry_date: maxAllowedExpiry,
         category,
         // 3-month low fields
-        three_month_low_avg: record.dly_avg_volume_3mth_low != null ? Number(record.dly_avg_volume_3mth_low) : null,
-        n_month_avg: record.dly_avg_volume_12mth != null ? Number(record.dly_avg_volume_12mth) : null,
-        spread_percentage: null,
-        used_three_month_low: false,
-        lowest_three_months: [],
+        three_month_low_avg: threeMonthLowAvg,
+        n_month_avg: nMonthAvg,
+        spread_percentage: spreadPct,
+        used_three_month_low: usedThreeMonthLow,
+        lowest_three_months: lowestThree,
       };
     });
   }, [patientVolumeData, overrides, pendingOverrides, selectedMarket, selectedFacility, config]);
