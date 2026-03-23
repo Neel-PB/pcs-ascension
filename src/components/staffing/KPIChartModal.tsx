@@ -23,6 +23,7 @@ interface KPIChartModalProps {
   xAxisLabels?: string[];
   showAllOptions?: boolean;
   highlightPoints?: 'lowest-3' | 'highest-3';
+  customChartContent?: React.ReactNode;
 }
 
 export function KPIChartModal({
@@ -41,6 +42,7 @@ export function KPIChartModal({
   xAxisLabels,
   showAllOptions = false,
   highlightPoints,
+  customChartContent,
 }: KPIChartModalProps) {
   const [activeTab, setActiveTab] = useState("chart");
 
@@ -183,8 +185,8 @@ export function KPIChartModal({
         
         <div className="space-y-3 pt-0 overflow-hidden flex flex-col flex-1 min-h-0">
 
-          {/* Toggle for Chart and Table — hidden when showAllOptions */}
-          {!showAllOptions && (
+          {/* Toggle for Chart and Table — hidden when showAllOptions or customChartContent */}
+          {!showAllOptions && !customChartContent && (
             <ToggleButtonGroup
               items={[{ id: "chart", label: "Chart" }, { id: "table", label: "Table" }]}
               activeId={activeTab}
@@ -194,8 +196,10 @@ export function KPIChartModal({
             />
           )}
 
-          {/* All 3 Options View */}
-          {showAllOptions ? (
+          {/* Custom chart content override */}
+          {customChartContent ? (
+            <div className="h-[350px] w-full">{customChartContent}</div>
+          ) : showAllOptions ? (
             <div className="overflow-y-auto pr-1" style={{ maxHeight: 'calc(85vh - 140px)' }}>
               <div className="space-y-8 pb-4">
                 {title === "Paid FTEs" ? (

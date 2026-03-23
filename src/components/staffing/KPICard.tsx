@@ -41,6 +41,7 @@ export interface KPICardProps {
   className?: string;
   dataTourChart?: string;
   dataTourInfo?: string;
+  customChartContent?: React.ReactNode;
 }
 
 export function KPICard({
@@ -66,6 +67,7 @@ export function KPICard({
   className,
   dataTourChart,
   dataTourInfo,
+  customChartContent,
 }: KPICardProps) {
   const [showChartModal, setShowChartModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
@@ -214,6 +216,7 @@ export function KPICard({
         xAxisLabels={xAxisLabels}
         showAllOptions={showAllOptions}
         highlightPoints={highlightPoints}
+        customChartContent={customChartContent}
       />
 
       {/* Info Modal */}

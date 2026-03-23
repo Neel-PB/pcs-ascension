@@ -17,6 +17,7 @@ interface WorkforceKPICardProps {
   xAxisLabels?: string[];
   decimalPlaces?: number;
   highlightPoints?: 'lowest-3' | 'highest-3';
+  customChartContent?: React.ReactNode;
 }
 
 export const WorkforceKPICard = ({ 
@@ -33,6 +34,7 @@ export const WorkforceKPICard = ({
   xAxisLabels,
   decimalPlaces = 1,
   highlightPoints,
+  customChartContent,
 }: WorkforceKPICardProps) => {
   const [showChartModal, setShowChartModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
@@ -96,6 +98,7 @@ export const WorkforceKPICard = ({
         xAxisLabels={xAxisLabels}
         decimalPlaces={decimalPlaces}
         highlightPoints={highlightPoints}
+        customChartContent={customChartContent}
       />
 
       {/* Info Modal */}
