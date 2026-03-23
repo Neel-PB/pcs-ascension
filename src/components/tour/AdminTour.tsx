@@ -5,7 +5,6 @@ import {
   adminUsersTourSteps,
   adminFeedTourSteps,
   adminRbacTourSteps,
-  adminAuditTourSteps,
   adminSettingsTourSteps,
 } from './tourSteps';
 import { TourTooltip } from './TourTooltip';
