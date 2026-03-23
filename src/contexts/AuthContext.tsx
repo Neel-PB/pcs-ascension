@@ -20,7 +20,7 @@ interface AuthContextType {
   setInitialPassword: (email: string, password: string) => Promise<{ data?: any; error?: any }>;
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ data?: any; error?: any }>;
   signIn: (email: string, password: string) => Promise<{ data?: any; error?: any }>;
-  signInWithMicrosoft: () => Promise<{ data?: any; error?: any }>;
+  signOut: (queryClient?: QueryClient) => Promise<{ error: any | null }>;
   signOut: (queryClient?: QueryClient) => Promise<{ error: any | null }>;
   clearMustChangePassword: () => void;
 }
