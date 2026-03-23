@@ -11,12 +11,11 @@ import { TourTooltip } from './TourTooltip';
 import { getNextSection, injectSectionMetadata } from './tourConfig';
 import { useMemo } from 'react';
 
-const TAB_SEQUENCE = ['users', 'feed', 'access-control', 'audit-log', 'settings'];
+const TAB_SEQUENCE = ['users', 'feed', 'access-control', 'settings'];
 const TOUR_KEY_MAP: Record<string, string> = {
   users: 'admin-users',
   feed: 'admin-feed',
   'access-control': 'admin-access-control',
-  'audit-log': 'admin-audit-log',
   settings: 'admin-settings',
 };
 
