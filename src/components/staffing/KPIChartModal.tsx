@@ -1231,6 +1231,19 @@ export function KPIChartModal({
                   <Button onClick={() => onOpenChange(false)}>Close</Button>
                 </div>
               )}
+              {isDualPie && chartData && (
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <div className="grid grid-cols-2 gap-6">
+                    {(chartData as any[]).map((group: any) => (
+                      <div key={group.shift} className="text-center">
+                        <p className="text-xs text-muted-foreground">{group.shift} Total</p>
+                        <p className="text-lg font-semibold text-foreground">{formatValue(group.total)}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <Button onClick={() => onOpenChange(false)}>Close</Button>
+                </div>
+              )}
               {stats && (
                 <div className="flex items-center justify-between pt-2 border-t">
                   <div className="grid grid-cols-3 gap-6">
