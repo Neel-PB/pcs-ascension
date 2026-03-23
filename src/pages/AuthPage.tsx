@@ -106,18 +106,6 @@ export default function AuthPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Microsoft SSO — always visible on email step */}
-            {step === "email" && (
-              <>
-                <MicrosoftSignInButton onClick={handleMicrosoftSignIn} isLoading={isMsalLoading} disabled={isLoading} />
-                <div className="relative my-4">
-                  <Separator />
-                  <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-3 text-xs text-muted-foreground">
-                    or
-                  </span>
-                </div>
-              </>
-            )}
 
             {/* Back button for non-email steps */}
             {step !== "email" && (
