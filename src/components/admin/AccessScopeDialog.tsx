@@ -166,7 +166,7 @@ export function AccessScopeDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col p-0">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col p-0">
         <DialogHeader className="px-6 pt-6 pb-2">
           <DialogTitle>Configure Access Scope</DialogTitle>
           <DialogDescription>
@@ -209,7 +209,7 @@ export function AccessScopeDialog({
                 label="Market"
                 count={access.markets.size}
               />
-              <div className="space-y-0.5 rounded-md border border-border/50 p-1">
+              <div className="max-h-[200px] overflow-y-auto space-y-0.5 rounded-md border border-border/50 p-1">
                 {filteredMarkets.map((m) => (
                   <CheckboxRow
                     key={m.market}
@@ -248,7 +248,7 @@ export function AccessScopeDialog({
                     />
                   </div>
                 </div>
-                <div className="space-y-0.5 p-1">
+                <div className="max-h-[240px] overflow-y-auto space-y-0.5 p-1">
                   {searchedFacilities.map((f) => (
                     <CheckboxRow
                       key={f.facility_id}
@@ -291,7 +291,7 @@ export function AccessScopeDialog({
                     />
                   </div>
                 </div>
-                <div className="space-y-0.5 p-1">
+                <div className="max-h-[280px] overflow-y-auto space-y-0.5 p-1">
                   {searchedDepartments.map((d) => (
                     <CheckboxRow
                       key={d.department_id}
