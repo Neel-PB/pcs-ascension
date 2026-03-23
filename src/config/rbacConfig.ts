@@ -20,7 +20,7 @@ export const CORE_ROLES: Role[] = [
   {
     id: "core-labor_team",
     name: "labor_team",
-    label: "Labor Management",
+    label: "Labor Team",
     description: "Full access to all modules, filters, and settings",
     is_system: true,
     sort_order: 2,
@@ -332,7 +332,7 @@ export const ROLE_METADATA: Record<AppRole, { label: string; description: string
     description: "Basic user role with limited access" 
   },
   labor_team: { 
-    label: "Labor Management", 
+    label: "Labor Team", 
     description: "Full access to all modules, filters, and settings" 
   },
   leadership: { 
