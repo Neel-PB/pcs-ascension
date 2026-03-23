@@ -332,6 +332,7 @@ export function AccessScopeManager({ userId, isEditMode, onAccessChange }: Acces
           selected={selectedAccess[config.key]}
           onDone={(newSelected) => handleLevelDone(config.key, newSelected)}
           searchable={config.searchable}
+          size={config.size}
         />
       ))}
     </div>
