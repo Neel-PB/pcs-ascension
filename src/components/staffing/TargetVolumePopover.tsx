@@ -63,8 +63,12 @@ export function TargetVolumePopover({
   // Prepare chart data - format months as "Jan", "Feb", etc., oldest to newest
   const chartData = [...historicalMonthsData]
     .reverse()
-    .map((d) => ({
-      month: format(parseISO(d.month + "-01"), "MMM"),
+    .map((d) => {
+      // Normalise month string: "202301" → "2023-01", "2023-01" stays as-is
+      const m = d.month.includes('-') ? d.month : `${d.month.slice(0, 4)}-${d.month.slice(4)}`;
+      const parsed = parseISO(m + '-01');
+      return {
+      month: isNaN(parsed.getTime()) ? d.month : format(parsed, "MMM"),
       fullMonth: d.month,
       volume: Math.round(d.volume),
       isLowest: lowestThreeMonths.includes(d.month),
