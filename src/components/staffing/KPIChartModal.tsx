@@ -1095,7 +1095,7 @@ export function KPIChartModal({
                               .sort((a, b) => highlightPoints === 'lowest-3' ? a.val - b.val : b.val - a.val);
                             const indices = sorted.slice(0, 3).map(x => x.i);
                             if (indices.includes(props.index)) {
-                              const color = highlightPoints === 'lowest-3' ? 'hsl(var(--destructive))' : 'hsl(142 71% 45%)';
+                              const color = highlightPoints === 'lowest-3' ? 'hsl(25 95% 53%)' : 'hsl(142 71% 45%)';
                               return <circle cx={props.cx} cy={props.cy} r={5} fill={color} stroke="white" strokeWidth={2} />;
                             }
                             return <circle r={0} cx={props.cx} cy={props.cy} />;
