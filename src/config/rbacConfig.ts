@@ -20,7 +20,7 @@ export const CORE_ROLES: Role[] = [
   {
     id: "core-labor_team",
     name: "labor_team",
-    label: "Labor Management",
+    label: "Labor Team",
     description: "Full access to all modules, filters, and settings",
     is_system: true,
     sort_order: 2,
