@@ -19,7 +19,6 @@ import {
   TrendingDown, 
   TrendingUp, 
   CheckCircle,
-  Check
 } from "@/lib/icons";
 import { 
   getHistoricalDataBadgeColor, 
