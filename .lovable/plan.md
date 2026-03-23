@@ -1,56 +1,47 @@
 
 
-## Dual Day/Night Donut Charts for Vacancy Rate & Target FTEs
+## Fix: Table Tab and Stats for Dual-Pie (Vacancy Rate & Target FTEs)
 
-### Summary
-Replace the single donut chart for **Vacancy Rate** and **Target FTEs** KPI modals with two side-by-side donut charts — one for Day shift and one for Night shift — both broken down by skill mix. The `SkillShiftRecord` already provides `hired_day_fte`, `hired_night_fte`, `target_fte_day`, `target_fte_night` fields.
+### Problem
+1. **Table tab** has no `dual-pie` handler — when clicking "Table", it falls through to the generic period/value table which doesn't work with the `[{ shift, slices, total }]` data shape
+2. **Stats footer** still shows High/Average/Low for dual-pie because the `stats` calculation (line 113) doesn't exclude `dual-pie`
 
 ### Changes
 
-#### 1. `src/pages/staffing/StaffingSummary.tsx` — Build Day/Night breakdowns
+#### `src/components/staffing/KPIChartModal.tsx`
 
-Update the `skillMixPieData` useMemo (~line 220) to also produce day/night variants:
-- `hired_day`, `hired_night` — from `hired_day_fte`, `hired_night_fte`
-- `target_day`, `target_night` — from `target_fte_day`, `target_fte_night`
-
-Update `vacancyBySkillMix` to also produce day/night vacancy data using the day/night hired and target values.
-
-Pass these as `chartData` in a new structure for `vacancy-rate` and `target-ftes` KPI configs. Use a new `chartType` value (e.g., `"dual-pie"`) to signal the modal to render two side-by-side donuts.
-
-The chartData shape for dual-pie:
+**1. Fix stats calculation (line 113)**
+Exclude `dual-pie` from stats:
 ```typescript
-chartData: [
-  { shift: 'day', slices: [{ name: 'RN', value: 5.2 }, ...], total: 12.5 },
-  { shift: 'night', slices: [{ name: 'RN', value: 3.1 }, ...], total: 8.0 },
-]
+const stats = (!isPie && !isDualPie && chartData) ? { ... } : null;
 ```
 
-#### 2. `src/components/staffing/KPIChartModal.tsx` — Render dual-pie layout
+**2. Add dual-pie handler in Table tab (after line 1107)**
+Insert a new branch before the `isPie` check in the table section:
 
-Add a `"dual-pie"` chart type handler:
-- Renders two donuts side-by-side, each with a "Day" / "Night" label above
-- Each donut shows skill mix breakdown with center total
-- Shared color palette and legend below both charts
-- Reuses existing PIE_COLORS and tooltip patterns
+```
+isDualPie && chartData → render a table with columns:
+  Skill Mix | Day FTE | Day % | Night FTE | Night %
+```
 
+Each row comes from the union of slice names across both shift groups. Totals row at the bottom.
+
+**3. Add dual-pie total footer in Table tab stats section**
+Show combined Day/Night totals instead of High/Avg/Low:
+```
+Day Total: X  |  Night Total: Y  |  [Close]
+```
+
+### Layout
 ```text
-┌─────────────────────────────────────────┐
-│  Vacancy Rate                    12.5%  │
-├─────────────────────────────────────────┤
-│   ┌──── Day ────┐  ┌──── Night ───┐    │
-│   │   (donut)   │  │   (donut)    │    │
-│   │  total: X   │  │  total: Y    │    │
-│   └─────────────┘  └──────────────┘    │
-│         [shared legend below]           │
-└─────────────────────────────────────────┘
+Table Tab for dual-pie:
+┌────────────┬──────────┬───────┬───────────┬────────┐
+│ Skill Mix  │ Day FTE  │ Day % │ Night FTE │ Night% │
+├────────────┼──────────┼───────┼───────────┼────────┤
+│ RN         │  5.2     │ 41.6% │   3.1     │  38.8% │
+│ PCT        │  2.0     │ 16.0% │   1.5     │  18.8% │
+│ ...        │          │       │           │        │
+└────────────┴──────────┴───────┴───────────┴────────┘
+  Day Total: 12.5    Night Total: 8.0     [Close]
 ```
-
-#### 3. `src/components/staffing/KPIChartModal.tsx` — Update type
-Add `"dual-pie"` to the `chartType` prop union: `"line" | "bar" | "area" | "pie" | "radial" | "dual-pie"`
-
-### Technical Details
-- The `SkillShiftRecord` interface already has all needed day/night fields
-- For Vacancy Rate donuts: each slice shows `hired_day_fte` / `hired_night_fte` by skill (same as current single donut but split)
-- For Target FTEs donuts: each slice shows `target_fte_day` / `target_fte_night` by skill
-- Nursing flag filtering still applies for target data
 
