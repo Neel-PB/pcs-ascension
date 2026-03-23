@@ -134,7 +134,7 @@ export function SettingsTab({ selectedRegion, selectedMarket, selectedFacility }
       department_name: row.department_name,
       override_volume: volumeToSave,
       expiry_date: date,
-      region: selectedRegion || '',
+      region: derivedRegion,
     });
 
     setPendingOverrides(prev => {

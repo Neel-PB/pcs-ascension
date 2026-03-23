@@ -46,10 +46,14 @@ export function NPSettingsTab({ selectedRegion, selectedMarket, selectedFacility
     return patientVolumeData[0]?.business_unit_description || '';
   }, [patientVolumeData]);
 
-  // Derive region from patient volume data
+  // Derive region/market from patient volume data to avoid storing sentinel values
   const region = useMemo(() => {
-    return patientVolumeData[0]?.region || selectedRegion || '';
+    return patientVolumeData[0]?.region || (selectedRegion !== 'all-regions' ? selectedRegion : '');
   }, [patientVolumeData, selectedRegion]);
+
+  const derivedMarket = useMemo(() => {
+    return patientVolumeData[0]?.market || (selectedMarket !== 'all-markets' ? selectedMarket : '');
+  }, [patientVolumeData, selectedMarket]);
 
   // Merge departments with overrides and pending values
   const tableData = useMemo((): NPOverrideRow[] => {
