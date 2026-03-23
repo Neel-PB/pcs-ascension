@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from "react";
 import { QueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { loginWithMicrosoft } from "@/lib/msalAuth";
 import { apiFetch } from "@/lib/apiFetch";
 import { toast } from "sonner";
 
