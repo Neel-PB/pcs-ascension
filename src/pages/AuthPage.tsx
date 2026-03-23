@@ -14,14 +14,13 @@ type AuthStep = "email" | "unauthorized" | "password" | "setup";
 
 export default function AuthPage() {
   const navigate = useNavigate();
-  const { signIn, signInWithMicrosoft, checkEmail, setInitialPassword, user } = useAuth();
+  const { signIn, checkEmail, setInitialPassword, user } = useAuth();
 
   const [step, setStep] = useState<AuthStep>("email");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isMsalLoading, setIsMsalLoading] = useState(false);
 
   if (user) return null;
 
