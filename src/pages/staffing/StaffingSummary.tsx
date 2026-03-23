@@ -892,6 +892,7 @@ Determined by:
 • Seasonal adjustment factors
 • Strategic growth targets
 • Market conditions`,
+        customChartContent: targetVolChartContent,
       },
       {
         id: 'override-vol',
