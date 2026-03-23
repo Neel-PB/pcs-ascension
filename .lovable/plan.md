@@ -1,29 +1,26 @@
 
 
-## Swap Inner/Outer Rings + Move Ring Labels to Shared Legend
+## Set Minimum Width for All KPI Chart Modals
 
-### Changes
+### Problem
+Volume and Productive Resources charts look congested in narrower modals. The current logic only widens for `nested-pie` or 20+ data points, leaving other chart types (pie, area with fewer points, volume trends) in `max-w-3xl` which is too narrow.
 
-#### 1. `src/pages/staffing/StaffingSummary.tsx` — Swap inner/outer assignments
+### Change
 
-For both Hired FTEs (~lines 570-579) and Open Reqs (~lines 636-645), swap so **Night = inner, Day = outer**:
-```
-inner: { shift: 'Night', slices: ...Night..., total: ... }
-outer: { shift: 'Day', slices: ...Day..., total: ... }
-```
+**`src/components/staffing/KPIChartModal.tsx`** — Line 149
 
-#### 2. `src/components/staffing/KPIChartModal.tsx` — Move ring labels to legend row
+Replace the conditional width logic with a single consistent minimum width for all chart modals:
 
-**Remove** the per-chart "Inner: Day (value) / Outer: Night (value)" text block next to each donut (lines 967-970).
+```typescript
+// Before (conditional)
+isNestedPie ? "max-w-5xl" : (Array.isArray(chartData) && chartData.length >= 20) ? "max-w-5xl" : showAllOptions ? "max-w-4xl" : "max-w-3xl"
 
-**Add** a second legend row below the skill-mix legend showing ring meaning without values:
-```
-● Inner: Night   ○ Outer: Day
+// After — max-w-5xl for all modals
+"max-w-5xl"
 ```
 
-Use two small concentric ring icons (or simple styled spans) to indicate inner vs outer. No FTE values — those are already in the footer totals.
+This gives every chart type (area trends, pie/donut, dual-pie, nested-pie, volume charts) enough room to render clearly without congestion.
 
 ### Files Changed
-- `src/pages/staffing/StaffingSummary.tsx`
 - `src/components/staffing/KPIChartModal.tsx`
 
