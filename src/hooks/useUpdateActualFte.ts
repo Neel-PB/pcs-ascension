@@ -27,7 +27,7 @@ export function useUpdateActualFte() {
 
   return useMutation({
     mutationFn: async (params: UpdateActualFteParams) => {
-      const token = sessionStorage.getItem("msal_access_token");
+      const token = sessionStorage.getItem("nestjs_token");
       const headers: Record<string, string> = { "Content-Type": "application/json" };
       if (token) headers["Authorization"] = `Bearer ${token}`;
 
@@ -90,7 +90,7 @@ export function useUpdateActualFte() {
     onSuccess: async (updatedData) => {
       // Post structured activity comment separately
       try {
-        const token = sessionStorage.getItem("msal_access_token");
+        const token = sessionStorage.getItem("nestjs_token");
         const headers: Record<string, string> = { "Content-Type": "application/json" };
         if (token) headers["Authorization"] = `Bearer ${token}`;
 

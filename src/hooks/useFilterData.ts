@@ -146,7 +146,7 @@ function transformFlatRows(rows: FlatFilterRow[]): FilterDataResult {
 }
 
 export function useFilterData() {
-  const token = sessionStorage.getItem("msal_access_token");
+  const token = sessionStorage.getItem("nestjs_token");
 
   const { data, isLoading } = useQuery({
     queryKey: ["all-filter-data", token ? "authenticated" : "anonymous"],

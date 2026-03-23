@@ -75,7 +75,7 @@ async function fetchAllOverrides(headers: Record<string, string>): Promise<Map<s
 }
 
 export function usePositionsByFlag(flag: string, filters: UsePositionsByFlagFilters) {
-  const token = sessionStorage.getItem("msal_access_token");
+  const token = sessionStorage.getItem("nestjs_token");
 
   return useQuery({
     queryKey: [

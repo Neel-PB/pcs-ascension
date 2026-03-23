@@ -38,7 +38,7 @@ export function usePositionCommentCounts(positionIds: string[]) {
         return new Map<string, number>();
       }
 
-      const token = sessionStorage.getItem("msal_access_token");
+      const token = sessionStorage.getItem("nestjs_token");
       const headers: Record<string, string> = { "Content-Type": "application/json" };
       if (token) headers["Authorization"] = `Bearer ${token}`;
 

@@ -22,7 +22,7 @@ export function useUpdateShiftOverride() {
       previousOverride?: string | null;
       updatedBy?: string;
     }) => {
-      const token = sessionStorage.getItem("msal_access_token");
+      const token = sessionStorage.getItem("nestjs_token");
       const headers: Record<string, string> = { "Content-Type": "application/json" };
       if (token) headers["Authorization"] = `Bearer ${token}`;
 
@@ -74,7 +74,7 @@ export function useUpdateShiftOverride() {
     onSuccess: async (updatedData) => {
       // Post structured activity comment separately
       try {
-        const token = sessionStorage.getItem("msal_access_token");
+        const token = sessionStorage.getItem("nestjs_token");
         const headers: Record<string, string> = { "Content-Type": "application/json" };
         if (token) headers["Authorization"] = `Bearer ${token}`;
 
