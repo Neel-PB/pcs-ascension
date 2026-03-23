@@ -248,7 +248,7 @@ export function AccessScopeDialog({
                     />
                   </div>
                 </div>
-                <div className="space-y-0.5 max-h-[200px] overflow-y-auto p-1">
+                <div className="space-y-0.5 p-1">
                   {searchedFacilities.map((f) => (
                     <CheckboxRow
                       key={f.facility_id}
