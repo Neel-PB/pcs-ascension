@@ -29,7 +29,7 @@ export interface ProductiveResourcesKpiRecord {
   load_ts: string;
   employed_productive_fte: number;
   total_prn: number;
-  day_of_week: string | number;
+  date: string;
 }
 
 interface ProductiveResourcesKpiFilters {
