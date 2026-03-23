@@ -93,25 +93,18 @@ export default function UsersManagement() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden gap-4">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h3 className="text-lg font-semibold">Users</h3>
-          <p className="text-sm text-muted-foreground">
-            Manage user accounts and permissions
-          </p>
+      <div className="flex items-center gap-4">
+        <div className="flex-1" data-tour="admin-users-search">
+          <SearchField
+            placeholder="Search by name or email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
-        <Button onClick={handleAddUser} className="flex items-center gap-2" data-tour="admin-users-add">
+        <Button onClick={handleAddUser} className="flex items-center gap-2 flex-shrink-0" data-tour="admin-users-add">
           <UserPlus className="h-4 w-4" />
           Add User
         </Button>
-      </div>
-
-      <div data-tour="admin-users-search">
-        <SearchField
-          placeholder="Search by name or email..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
       </div>
 
       <p className="text-xs text-muted-foreground">
