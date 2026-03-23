@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/apiFetch";
 
-export type UserRole = 'admin' | 'labor_team' | 'leadership' | 'cno' | 'director' | 'manager' | 'nurse_manager' | 'moderator' | 'user';
+export type UserRole = 'admin' | 'labor_team' | 'leadership' | 'director' | 'manager' | 'nurse_manager' | 'moderator' | 'user';
 
 export function useUserRoles(userId?: string) {
   const { data: roles, isLoading } = useQuery({
@@ -14,7 +14,7 @@ export function useUserRoles(userId?: string) {
     enabled: !!userId,
   });
 
-  const availableRoles: UserRole[] = ['admin', 'labor_team', 'leadership', 'cno', 'director', 'manager'];
+  const availableRoles: UserRole[] = ['admin', 'labor_team', 'leadership', 'director', 'manager'];
 
   return {
     roles: roles || [],
