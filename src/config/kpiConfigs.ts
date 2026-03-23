@@ -202,7 +202,7 @@ Used for:
       title: "3M High",
       value: "28.4",
       chartData: generateVolatileTrend(28.4, 5),
-      chartType: "bar",
+      chartType: "area",
       delay: 0.15,
       xAxisLabels: monthLabels,
       definition: "3-Month Average Highest Volume for peak staffing requirements.",
