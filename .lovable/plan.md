@@ -1,22 +1,32 @@
 
 
-## Remove Microsoft Sign-In from Login Page
+## Fix 401 Errors: Replace `msal_access_token` with `nestjs_token`
 
-### Changes
+### Problem
+After migrating auth from MSAL to NestJS, all data-fetching hooks still read `sessionStorage.getItem("msal_access_token")` for the Bearer token. The login flow stores the token as `nestjs_token`, so these hooks send no Authorization header → 401 Unauthorized.
 
-#### 1. `src/pages/AuthPage.tsx`
-- Remove the `MicrosoftSignInButton` import (line 13)
-- Remove `signInWithMicrosoft` from the `useAuth()` destructure (line 19)
-- Remove `isMsalLoading` state (line 26)
-- Remove `handleMicrosoftSignIn` function (lines 78-86)
-- Remove the Microsoft SSO block on the email step (lines 121-132): the button, separator, and "or" divider
+### Solution
+Replace every occurrence of `msal_access_token` with `nestjs_token` across all hooks that call the NestJS API.
 
-#### 2. Cleanup (optional, no functional impact)
-- `src/components/auth/MicrosoftSignInButton.tsx` — can be deleted
-- `src/lib/msalAuth.ts` — can be deleted  
-- `src/config/msalConfig.ts` — can be deleted
-- `signInWithMicrosoft` in `AuthContext.tsx` — can be removed later
+### Files Changed (16 files)
+- `src/hooks/useSkillShift.ts`
+- `src/hooks/usePatientVolume.ts`
+- `src/hooks/useProductiveResourcesKpi.ts`
+- `src/hooks/useEmploymentSplit.ts`
+- `src/hooks/useFilterData.ts`
+- `src/hooks/usePositionsByFlag.ts`
+- `src/hooks/useNPOverrides.ts`
+- `src/hooks/useVolumeOverrides.ts`
+- `src/hooks/useVolumeOverrideComments.ts`
+- `src/hooks/useUpdateActualFte.ts`
+- `src/hooks/useUpdateShiftOverride.ts`
+- `src/hooks/useCheckExpiredFte.ts`
+- `src/hooks/useCheckExpiredOverrides.ts`
+- `src/hooks/usePositionComments.ts`
+- `src/hooks/useRegionVolumeData.ts` (if applicable)
+- `src/hooks/useHistoricalVolumeAnalysis.ts` (if applicable)
 
-### Files Changed
-- `src/pages/AuthPage.tsx`
+Each file: change `sessionStorage.getItem("msal_access_token")` → `sessionStorage.getItem("nestjs_token")`
+
+Also keep the cleanup of `msal_access_token` in `signOut` (AuthContext) for backwards compatibility with any lingering sessions.
 
