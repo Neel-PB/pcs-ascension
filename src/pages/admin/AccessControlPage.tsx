@@ -153,19 +153,11 @@ export default function AccessControlPage() {
           {viewMode === "matrix" && (
             <PermissionMatrix
               roles={displayRoles}
-              onEditRole={(role) => {
-                setSelectedRoleForEdit(role);
-                setIsRoleFormOpen(true);
-              }}
             />
           )}
           {viewMode === "detail" && (
             <RoleDetailView
               roles={displayRoles}
-              onEditRole={(role) => {
-                setSelectedRoleForEdit(role);
-                setIsRoleFormOpen(true);
-              }}
             />
           )}
           {viewMode === "list" && (
