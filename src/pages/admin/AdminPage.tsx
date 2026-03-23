@@ -82,7 +82,6 @@ export default function AdminPage() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden gap-4">
-      <AdminTour activeTab={activeTab} onTabChange={setActiveTab} />
       <div className="flex justify-center shrink-0" data-tour="admin-tabs">
         <ToggleButtonGroup
           items={tabs}
@@ -112,6 +111,7 @@ export default function AdminPage() {
         
         {activeTab === "settings" && <UISettings />}
       </div>
+      <AdminTour activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
 }
