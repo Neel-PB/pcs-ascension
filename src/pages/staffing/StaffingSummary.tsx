@@ -569,8 +569,8 @@ Example: If FTE Variance is ${fmt(fteVariance)} and Target is ${fmt(targetFtes)}
           ? [
               {
                 category: 'Nursing',
-                inner: { shift: 'Day', slices: skillMixPieData.hiredDayNursing, total: Math.round(skillMixPieData.hiredDayNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
-                outer: { shift: 'Night', slices: skillMixPieData.hiredNightNursing, total: Math.round(skillMixPieData.hiredNightNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+                inner: { shift: 'Night', slices: skillMixPieData.hiredNightNursing, total: Math.round(skillMixPieData.hiredNightNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+                outer: { shift: 'Day', slices: skillMixPieData.hiredDayNursing, total: Math.round(skillMixPieData.hiredDayNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
               },
               {
                 category: 'Non-Nursing',
