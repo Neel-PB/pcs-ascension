@@ -1,19 +1,16 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Grid3X3, List, LayoutPanelLeft } from "@/lib/icons";
-import { Button } from "@/components/ui/button";
+import { Grid3X3, List, LayoutPanelLeft } from "@/lib/icons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useDynamicRoles } from "@/hooks/useDynamicRoles";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
-import { RoleFormDialog } from "@/components/admin/RoleFormDialog";
-import { PermissionFormDialog } from "@/components/admin/PermissionFormDialog";
 import { PermissionMatrix } from "@/components/admin/PermissionMatrix";
 import { RoleDetailView } from "@/components/admin/RoleDetailView";
 import { PermissionListView } from "@/components/admin/PermissionListView";
 import { CORE_ROLES } from "@/config/rbacConfig";
-import type { Role } from "@/types/rbac";
+
 import {
   Tooltip,
   TooltipContent,
@@ -25,22 +22,16 @@ type ViewMode = "matrix" | "detail" | "list";
 
 export default function AccessControlPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("detail");
-  const [isRoleFormOpen, setIsRoleFormOpen] = useState(false);
-  const [isPermissionFormOpen, setIsPermissionFormOpen] = useState(false);
-  const [selectedRoleForEdit, setSelectedRoleForEdit] = useState<Role | null>(null);
+  
 
   const {
     manageableRoles: dynamicRoles,
     isLoading: rolesLoading,
-    createRole,
-    updateRole,
   } = useDynamicRoles();
 
   const {
     permissions,
-    categories,
     isLoading: permissionsLoading,
-    createPermission,
     corePermissions,
   } = usePermissions();
 
@@ -57,20 +48,6 @@ export default function AccessControlPage() {
   const displayRoles = dynamicRoles.length > 0 ? dynamicRoles : CORE_ROLES;
   const displayPermissions = permissions.length > 0 ? permissions : corePermissions;
 
-  const handleRoleFormSubmit = async (data: { name: string; label: string; description?: string }) => {
-    if (selectedRoleForEdit) {
-      await updateRole.mutateAsync({ id: selectedRoleForEdit.id, data });
-    } else {
-      await createRole.mutateAsync(data);
-    }
-    setIsRoleFormOpen(false);
-    setSelectedRoleForEdit(null);
-  };
-
-  const handlePermissionFormSubmit = async (data: { key: string; label: string; description?: string; category: string }) => {
-    await createPermission.mutateAsync(data);
-    setIsPermissionFormOpen(false);
-  };
 
   // Only show skeleton if critical data (permission mappings) is still loading
   if (isLoading) {
@@ -160,31 +137,6 @@ export default function AccessControlPage() {
             </ToggleGroup>
           </TooltipProvider>
 
-          <div className="h-6 w-px bg-border" />
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2" data-tour="admin-rbac-actions">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsPermissionFormOpen(true)}
-              className="flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Permission
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => {
-                setSelectedRoleForEdit(null);
-                setIsRoleFormOpen(true);
-              }}
-              className="flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Role
-            </Button>
-          </div>
         </div>
       </div>
 
@@ -201,19 +153,11 @@ export default function AccessControlPage() {
           {viewMode === "matrix" && (
             <PermissionMatrix
               roles={displayRoles}
-              onEditRole={(role) => {
-                setSelectedRoleForEdit(role);
-                setIsRoleFormOpen(true);
-              }}
             />
           )}
           {viewMode === "detail" && (
             <RoleDetailView
               roles={displayRoles}
-              onEditRole={(role) => {
-                setSelectedRoleForEdit(role);
-                setIsRoleFormOpen(true);
-              }}
             />
           )}
           {viewMode === "list" && (
@@ -222,27 +166,6 @@ export default function AccessControlPage() {
         </motion.div>
       </AnimatePresence>
 
-      {/* Role Form Dialog */}
-      <RoleFormDialog
-        open={isRoleFormOpen}
-        onOpenChange={(open) => {
-          setIsRoleFormOpen(open);
-          if (!open) setSelectedRoleForEdit(null);
-        }}
-        role={selectedRoleForEdit}
-        onSubmit={handleRoleFormSubmit}
-        isLoading={createRole.isPending || updateRole.isPending}
-      />
-
-      {/* Permission Form Dialog */}
-      <PermissionFormDialog
-        open={isPermissionFormOpen}
-        onOpenChange={setIsPermissionFormOpen}
-        permission={null}
-        categories={categories.length > 0 ? categories : ["modules", "settings", "filters", "subfilters", "approvals"]}
-        onSubmit={handlePermissionFormSubmit}
-        isLoading={createPermission.isPending}
-      />
     </div>
   );
 }

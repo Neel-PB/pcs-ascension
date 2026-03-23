@@ -40,7 +40,7 @@ type PendingChanges = Map<AppRole, Map<PermissionKey, boolean>>;
 
 interface PermissionMatrixProps {
   roles: Role[];
-  onEditRole: (role: Role) => void;
+  onEditRole?: (role: Role) => void;
 }
 
 const CATEGORY_ORDER = ["modules", "settings", "filters", "subfilters", "approvals", "support"];
