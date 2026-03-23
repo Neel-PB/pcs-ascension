@@ -14,11 +14,14 @@ import { useRBAC } from "@/hooks/useRBAC";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+const GOOGLE_CHAT_WEBHOOK_URL = "https://chat.googleapis.com/v1/spaces/AAQANHVwNj8/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=kCFviCb1lEHdQ2uobep6zSXuomIdNtrLaifZBB00YqY";
+
 export default function SupportPage() {
   const [activeTab, setActiveTab] = useState("guides");
   const { inputValue: searchQuery, debouncedValue: debouncedSearch, setInputValue: setSearchQuery } = useDebouncedSearch();
   const [issueTitle, setIssueTitle] = useState("");
   const [issueDescription, setIssueDescription] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAddFaqDialog, setShowAddFaqDialog] = useState(false);
   const [newFaqQuestion, setNewFaqQuestion] = useState("");
   const [newFaqAnswer, setNewFaqAnswer] = useState("");
@@ -34,13 +37,32 @@ export default function SupportPage() {
     { id: "report", label: "Report Issue" },
   ];
 
-  const handleSubmitIssue = (e: React.FormEvent) => {
+  const handleSubmitIssue = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Issue Submitted", {
-      description: "Your issue has been reported. Our support team will contact you soon.",
-    });
-    setIssueTitle("");
-    setIssueDescription("");
+    setIsSubmitting(true);
+    try {
+      const timestamp = new Date().toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
+      const payload = {
+        text: `🚨 *New Issue Reported*\n\n*Title:* ${issueTitle}\n*Description:* ${issueDescription}\n*Submitted:* ${timestamp}`,
+      };
+      const res = await fetch(GOOGLE_CHAT_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json; charset=UTF-8" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Failed to send");
+      toast.success("Issue Submitted", {
+        description: "Your issue has been reported to the support team.",
+      });
+      setIssueTitle("");
+      setIssueDescription("");
+    } catch {
+      toast.error("Failed to submit issue", {
+        description: "Please try again or contact support directly.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Fetch DB FAQs
@@ -306,9 +328,9 @@ export default function SupportPage() {
               />
             </div>
             <div className="flex gap-3">
-              <Button type="submit" className="gap-2">
+              <Button type="submit" className="gap-2" disabled={isSubmitting}>
                 <FileText className="h-4 w-4" />
-                Submit Issue
+                {isSubmitting ? "Submitting..." : "Submit Issue"}
               </Button>
               <Button type="button" variant="outline" className="gap-2">
                 <ExternalLink className="h-4 w-4" />
