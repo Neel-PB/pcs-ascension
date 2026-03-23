@@ -907,8 +907,8 @@ export function KPIChartModal({
                     legendItems.forEach((name, i) => { skillColorMap[name] = PIE_COLORS[i % PIE_COLORS.length]; });
 
                     return (
-                      <ScrollArea className="h-full">
-                        <div className="space-y-4">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="flex flex-row items-start justify-center gap-8 w-full">
                           {groups.map((group: any, gi: number) => {
                             const innerSlices = (group.inner?.slices || []).filter((s: any) => s.value > 0).sort((a: any, b: any) => b.value - a.value);
                             const outerSlices = (group.outer?.slices || []).filter((s: any) => s.value > 0).sort((a: any, b: any) => b.value - a.value);
@@ -923,14 +923,13 @@ export function KPIChartModal({
                               }
                             });
 
-                            // Skip categories with no data
                             if (innerSlices.length === 0 && outerSlices.length === 0) return null;
 
                             return (
-                              <div key={gi}>
-                                <p className="text-sm font-semibold text-foreground mb-2 text-center">{group.category}</p>
-                                <div className="flex items-center justify-center gap-6">
-                                  <div className="w-[240px] h-[240px]">
+                              <div key={gi} className="flex flex-col items-center">
+                                <p className="text-sm font-semibold text-foreground mb-2">{group.category}</p>
+                                <div className="flex items-center gap-4">
+                                  <div className="w-[220px] h-[220px]">
                                     <ChartContainer config={nestedConfig} className="h-full w-full">
                                       <PieChart>
                                         <ChartTooltip
@@ -944,17 +943,15 @@ export function KPIChartModal({
                                             />
                                           }
                                         />
-                                        {/* Inner ring — Day */}
                                         {innerSlices.length > 0 && (
-                                          <Pie data={innerSlices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={55} innerRadius={30} paddingAngle={2} label={false} labelLine={false}>
+                                          <Pie data={innerSlices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={50} innerRadius={25} paddingAngle={2} label={false} labelLine={false}>
                                             {innerSlices.map((s: any) => (
                                               <Cell key={s.name} fill={skillColorMap[s.name] || PIE_COLORS[0]} />
                                             ))}
                                           </Pie>
                                         )}
-                                        {/* Outer ring — Night */}
                                         {outerSlices.length > 0 && (
-                                          <Pie data={outerSlices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={95} innerRadius={65} paddingAngle={2} label={false} labelLine={false}>
+                                          <Pie data={outerSlices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={85} innerRadius={60} paddingAngle={2} label={false} labelLine={false}>
                                             {outerSlices.map((s: any) => (
                                               <Cell key={s.name} fill={skillColorMap[s.name] || PIE_COLORS[0]} />
                                             ))}
@@ -968,24 +965,24 @@ export function KPIChartModal({
                                     </ChartContainer>
                                   </div>
                                   <div className="flex flex-col gap-1 text-xs">
-                                    <p className="text-muted-foreground font-medium mb-0.5">Inner: {group.inner?.shift} ({formatValue(innerTotal)})</p>
-                                    <p className="text-muted-foreground font-medium mb-0.5">Outer: {group.outer?.shift} ({formatValue(outerTotal)})</p>
+                                    <p className="text-muted-foreground font-medium">Inner: {group.inner?.shift} ({formatValue(innerTotal)})</p>
+                                    <p className="text-muted-foreground font-medium">Outer: {group.outer?.shift} ({formatValue(outerTotal)})</p>
                                   </div>
                                 </div>
                               </div>
                             );
                           })}
-                          {/* Shared legend */}
-                          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 pt-1 border-t">
-                            {legendItems.map((name) => (
-                              <div key={name} className="flex items-center gap-1.5 text-sm">
-                                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: skillColorMap[name] }} />
-                                <span className="text-foreground">{name}</span>
-                              </div>
-                            ))}
-                          </div>
                         </div>
-                      </ScrollArea>
+                        {/* Single shared legend */}
+                        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 pt-2 border-t w-full">
+                          {legendItems.map((name) => (
+                            <div key={name} className="flex items-center gap-1.5 text-sm">
+                              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: skillColorMap[name] }} />
+                              <span className="text-foreground">{name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     );
                   })()
                 ) : isPie && filteredPieData && filteredPieData.length > 0 ? (
