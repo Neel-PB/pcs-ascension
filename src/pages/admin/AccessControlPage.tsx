@@ -10,7 +10,7 @@ import { PermissionMatrix } from "@/components/admin/PermissionMatrix";
 import { RoleDetailView } from "@/components/admin/RoleDetailView";
 import { PermissionListView } from "@/components/admin/PermissionListView";
 import { CORE_ROLES } from "@/config/rbacConfig";
-import type { Role } from "@/types/rbac";
+
 import {
   Tooltip,
   TooltipContent,
