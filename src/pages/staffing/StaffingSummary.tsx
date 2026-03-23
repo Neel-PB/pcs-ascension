@@ -517,7 +517,121 @@ export default function StaffingSummary() {
     };
   }, [pvFilteredRecords]);
 
-  // Determine override KPI value based on department selection
+  // Target volume chart data — same chart as TargetVolumePopover
+  const targetVolChartContent = useMemo(() => {
+    if (!pvFilteredRecords.length) return undefined;
+
+    // Collect monthly volumes keyed by year_month
+    const byMonth: Record<string, { volume: number; days: number }> = {};
+    pvFilteredRecords.forEach(r => {
+      let stats = r.last_12_month_volume_stats;
+      if (!stats) return;
+      if (typeof stats === 'string') {
+        try { stats = JSON.parse(stats); } catch { return; }
+      }
+      if (!Array.isArray(stats)) return;
+      stats.forEach((s: any) => {
+        if (!s.year_month) return;
+        if (!byMonth[s.year_month]) byMonth[s.year_month] = { volume: 0, days: 0 };
+        byMonth[s.year_month].volume += Number(s.patient_volume_mthly ?? 0);
+        byMonth[s.year_month].days += Number(s.days_in_month ?? 30);
+      });
+    });
+
+    const sorted = Object.entries(byMonth).sort(([a], [b]) => a.localeCompare(b));
+    if (sorted.length < 3) return undefined;
+
+    // Find lowest 3 months by daily volume
+    const withDaily = sorted.map(([ym, d]) => ({
+      ym,
+      volume: Math.round(d.volume),
+      dailyVol: d.days > 0 ? d.volume / d.days : 0,
+    }));
+    const sortedByDaily = [...withDaily].sort((a, b) => a.dailyVol - b.dailyVol);
+    const lowest3Set = new Set(sortedByDaily.slice(0, 3).map(d => d.ym));
+
+    const nMonthAvg = pvAgg?.dly_avg_volume_12mth ?? null;
+    const threeMonthLowAvg = pvAgg?.dly_avg_volume_3mth_low ?? null;
+
+    const chartData = withDaily.map(d => ({
+      month: format(parseISO(d.ym + "-01"), "MMM"),
+      volume: d.volume,
+      isLowest: lowest3Set.has(d.ym),
+    }));
+
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <ComposedChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
+          <XAxis
+            dataKey="month"
+            tick={{ fontSize: 10 }}
+            interval={0}
+            axisLine={{ stroke: 'hsl(var(--border))' }}
+            tickLine={{ stroke: 'hsl(var(--border))' }}
+          />
+          <YAxis
+            tick={{ fontSize: 10 }}
+            width={45}
+            axisLine={{ stroke: 'hsl(var(--border))' }}
+            tickLine={{ stroke: 'hsl(var(--border))' }}
+            tickFormatter={(value: number) =>
+              value >= 1000
+                ? `${(value / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })}k`
+                : value.toLocaleString()
+            }
+          />
+          <Tooltip
+            contentStyle={{
+              backgroundColor: 'hsl(var(--popover))',
+              border: '1px solid hsl(var(--border))',
+              borderRadius: '6px',
+              fontSize: '12px',
+            }}
+            formatter={(value: number, _name: string, props: any) => {
+              const isLowest = props.payload?.isLowest;
+              return [
+                <span key="value">
+                  {value.toLocaleString()}
+                  {isLowest && <span className="ml-1 text-orange-500">(Low 3)</span>}
+                </span>,
+                'Volume',
+              ];
+            }}
+          />
+          {nMonthAvg != null && (
+            <ReferenceLine y={nMonthAvg} stroke="hsl(var(--primary))" strokeDasharray="5 5" strokeWidth={1.5} />
+          )}
+          {threeMonthLowAvg != null && (
+            <ReferenceLine y={threeMonthLowAvg} stroke="hsl(25 95% 53%)" strokeDasharray="3 3" strokeWidth={1.5} />
+          )}
+          <Line
+            type="monotone"
+            dataKey="volume"
+            stroke="hsl(142 71% 45%)"
+            strokeWidth={2}
+            dot={(props: any) => {
+              const { cx, cy, payload } = props;
+              const isLowest = payload?.isLowest;
+              return (
+                <circle
+                  key={`dot-${cx}-${cy}`}
+                  cx={cx}
+                  cy={cy}
+                  r={isLowest ? 5 : 3}
+                  fill={isLowest ? 'hsl(25 95% 53%)' : 'hsl(142 71% 45%)'}
+                  stroke={isLowest ? 'hsl(25 95% 40%)' : 'none'}
+                  strokeWidth={isLowest ? 2 : 0}
+                />
+              );
+            }}
+            activeDot={{ r: 5 }}
+          />
+        </ComposedChart>
+      </ResponsiveContainer>
+    );
+  }, [pvFilteredRecords, pvAgg]);
+
+
   const overrideKpiData = useMemo(() => {
     if (selectedDepartment === "all-departments") {
       return { value: "Select Department", hasData: false, isActive: false };
