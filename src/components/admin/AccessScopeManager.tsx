@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Globe, MapPin, Building2, Layers, Settings2, X } from "@/lib/icons";
+import { Globe, MapPin, Building2, Layers, ChevronRight, X } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useFilterData } from "@/hooks/useFilterData";
 import { apiFetch } from "@/lib/apiFetch";
-import { AccessScopeDialog } from "./AccessScopeDialog";
+import { AccessScopeLevelDialog, type ScopeItem } from "./AccessScopeLevelDialog";
+import { cn } from "@/lib/utils";
 
 export interface SelectedAccess {
   regions: Set<string>;
@@ -26,6 +27,45 @@ interface AccessScopeManagerProps {
   onAccessChange?: (data: AccessScopeData) => void;
 }
 
+type ScopeLevel = "regions" | "markets" | "facilities" | "departments";
+
+const LEVEL_CONFIG: {
+  key: ScopeLevel;
+  label: string;
+  icon: React.ReactNode;
+  description: string;
+  searchable: boolean;
+}[] = [
+  {
+    key: "regions",
+    label: "Region",
+    icon: <Globe className="h-4 w-4" />,
+    description: "Select regions to restrict access",
+    searchable: false,
+  },
+  {
+    key: "markets",
+    label: "Market",
+    icon: <MapPin className="h-4 w-4" />,
+    description: "Select markets to restrict access",
+    searchable: false,
+  },
+  {
+    key: "facilities",
+    label: "Facility",
+    icon: <Building2 className="h-4 w-4" />,
+    description: "Select facilities to restrict access",
+    searchable: true,
+  },
+  {
+    key: "departments",
+    label: "Department",
+    icon: <Layers className="h-4 w-4" />,
+    description: "Select departments to restrict access",
+    searchable: true,
+  },
+];
+
 export function AccessScopeManager({ userId, isEditMode, onAccessChange }: AccessScopeManagerProps) {
   const [selectedAccess, setSelectedAccess] = useState<SelectedAccess>({
     regions: new Set(),
@@ -33,10 +73,10 @@ export function AccessScopeManager({ userId, isEditMode, onAccessChange }: Acces
     facilities: new Set(),
     departments: new Set(),
   });
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [openLevel, setOpenLevel] = useState<ScopeLevel | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { facilities, departments, isLoading: filterLoading } = useFilterData();
+  const { regions, markets, facilities, departments, isLoading: filterLoading } = useFilterData();
 
   // Fetch existing access scope for edit mode
   useEffect(() => {
@@ -95,49 +135,77 @@ export function AccessScopeManager({ userId, isEditMode, onAccessChange }: Acces
     }
   }, [selectedAccess, buildAccessData, onAccessChange]);
 
-  const handleDialogDone = (newAccess: SelectedAccess) => {
-    setSelectedAccess(newAccess);
+  // Cascading items for each level
+  const levelItems = useMemo((): Record<ScopeLevel, ScopeItem[]> => {
+    // Regions — always show all
+    const regionItems: ScopeItem[] = regions.map((r) => ({
+      id: r.region,
+      label: r.region,
+    }));
+
+    // Markets — filtered by selected regions
+    const filteredMarkets =
+      selectedAccess.regions.size === 0
+        ? markets
+        : markets.filter((m) => m.region && selectedAccess.regions.has(m.region));
+    const marketItems: ScopeItem[] = filteredMarkets.map((m) => ({
+      id: m.market,
+      label: m.market,
+      sublabel: m.region || undefined,
+    }));
+
+    // Facilities — filtered by selected markets > regions
+    let filteredFacs = facilities;
+    if (selectedAccess.markets.size > 0) {
+      filteredFacs = facilities.filter((f) => selectedAccess.markets.has(f.market));
+    } else if (selectedAccess.regions.size > 0) {
+      filteredFacs = facilities.filter((f) => f.region && selectedAccess.regions.has(f.region));
+    }
+    const facilityItems: ScopeItem[] = filteredFacs.map((f) => ({
+      id: f.facility_id,
+      label: f.facility_name,
+      sublabel: f.facility_id,
+    }));
+
+    // Departments — filtered by selected facilities > markets > regions, deduplicated
+    let filteredDepts = departments;
+    if (selectedAccess.facilities.size > 0) {
+      filteredDepts = departments.filter((d) => selectedAccess.facilities.has(d.facility_id));
+    } else if (selectedAccess.markets.size > 0) {
+      const fIds = facilities
+        .filter((f) => selectedAccess.markets.has(f.market))
+        .map((f) => f.facility_id);
+      filteredDepts = departments.filter((d) => fIds.includes(d.facility_id));
+    } else if (selectedAccess.regions.size > 0) {
+      const fIds = facilities
+        .filter((f) => f.region && selectedAccess.regions.has(f.region))
+        .map((f) => f.facility_id);
+      filteredDepts = departments.filter((d) => fIds.includes(d.facility_id));
+    }
+    // Deduplicate by department_id
+    const seen = new Map<string, (typeof departments)[0]>();
+    for (const d of filteredDepts) {
+      if (!seen.has(d.department_id)) seen.set(d.department_id, d);
+    }
+    const deptItems: ScopeItem[] = Array.from(seen.values()).map((d) => ({
+      id: d.department_id,
+      label: d.department_name,
+      sublabel: d.department_id,
+    }));
+
+    return {
+      regions: regionItems,
+      markets: marketItems,
+      facilities: facilityItems,
+      departments: deptItems,
+    };
+  }, [regions, markets, facilities, departments, selectedAccess]);
+
+  const handleLevelDone = (level: ScopeLevel, newSelected: Set<string>) => {
+    setSelectedAccess((prev) => ({ ...prev, [level]: newSelected }));
   };
 
-  const totalSelected =
-    selectedAccess.regions.size +
-    selectedAccess.markets.size +
-    selectedAccess.facilities.size +
-    selectedAccess.departments.size;
-
-  // Build summary chips
-  const summaryItems = useMemo(() => {
-    const items: { icon: React.ReactNode; label: string; key: string; level: keyof SelectedAccess; value: string }[] = [];
-    selectedAccess.regions.forEach((r) =>
-      items.push({ icon: <Globe className="h-3 w-3" />, label: r, key: `r-${r}`, level: "regions", value: r })
-    );
-    selectedAccess.markets.forEach((m) =>
-      items.push({ icon: <MapPin className="h-3 w-3" />, label: m, key: `m-${m}`, level: "markets", value: m })
-    );
-    selectedAccess.facilities.forEach((fid) => {
-      const f = facilities.find((x) => x.facility_id === fid);
-      items.push({
-        icon: <Building2 className="h-3 w-3" />,
-        label: f?.facility_name || fid,
-        key: `f-${fid}`,
-        level: "facilities",
-        value: fid,
-      });
-    });
-    selectedAccess.departments.forEach((did) => {
-      const d = departments.find((x) => x.department_id === did);
-      items.push({
-        icon: <Layers className="h-3 w-3" />,
-        label: d?.department_name || did,
-        key: `d-${did}`,
-        level: "departments",
-        value: did,
-      });
-    });
-    return items;
-  }, [selectedAccess, facilities, departments]);
-
-  const removeItem = (level: keyof SelectedAccess, value: string) => {
+  const removeItem = (level: ScopeLevel, value: string) => {
     setSelectedAccess((prev) => {
       const next = new Set(prev[level]);
       next.delete(value);
@@ -145,55 +213,122 @@ export function AccessScopeManager({ userId, isEditMode, onAccessChange }: Acces
     });
   };
 
+  // Resolve display names for chips
+  const getDisplayName = (level: ScopeLevel, id: string): string => {
+    if (level === "regions" || level === "markets") return id;
+    if (level === "facilities") {
+      const f = facilities.find((x) => x.facility_id === id);
+      return f?.facility_name || id;
+    }
+    const d = departments.find((x) => x.department_id === id);
+    return d?.department_name || id;
+  };
+
   if (filterLoading || isLoading) {
     return <div className="text-sm text-muted-foreground py-2">Loading...</div>;
   }
 
   return (
-    <div className="space-y-3">
-      {totalSelected === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          No restrictions — user can access all data.
-        </p>
-      ) : (
-        <div className="flex flex-wrap gap-1.5">
-          {summaryItems.map((item) => (
-            <Badge
-              key={item.key}
-              variant="secondary"
-              className="pl-1.5 pr-1 py-0.5 flex items-center gap-1 text-xs"
+    <div className="space-y-1.5">
+      {LEVEL_CONFIG.map((config) => {
+        const count = selectedAccess[config.key].size;
+        const selectedIds = Array.from(selectedAccess[config.key]);
+
+        return (
+          <div key={config.key}>
+            {/* Level row */}
+            <button
+              type="button"
+              onClick={() => setOpenLevel(config.key)}
+              className={cn(
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-colors text-left",
+                count > 0
+                  ? "border-primary/30 bg-primary/5 hover:bg-primary/10"
+                  : "border-border hover:bg-muted/50"
+              )}
             >
-              {item.icon}
-              <span className="max-w-[120px] truncate">{item.label}</span>
-              <button
-                type="button"
-                onClick={() => removeItem(item.level, item.value)}
-                className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
+              <div
+                className={cn(
+                  "flex items-center justify-center h-8 w-8 rounded-md shrink-0",
+                  count > 0 ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+                )}
               >
-                <X className="h-2.5 w-2.5" />
-              </button>
-            </Badge>
-          ))}
-        </div>
-      )}
+                {config.icon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{config.label}</span>
+                  {count > 0 && (
+                    <Badge variant="secondary" className="h-5 px-1.5 text-xs font-semibold">
+                      {count}
+                    </Badge>
+                  )}
+                </div>
+                {count === 0 ? (
+                  <span className="text-xs text-muted-foreground">All {config.label.toLowerCase()}s</span>
+                ) : (
+                  <span className="text-xs text-muted-foreground truncate block">
+                    {selectedIds
+                      .slice(0, 3)
+                      .map((id) => getDisplayName(config.key, id))
+                      .join(", ")}
+                    {selectedIds.length > 3 && ` +${selectedIds.length - 3} more`}
+                  </span>
+                )}
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+            </button>
 
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="gap-1.5"
-        onClick={() => setDialogOpen(true)}
-      >
-        <Settings2 className="h-3.5 w-3.5" />
-        Configure Access
-      </Button>
+            {/* Selected chips (if any) */}
+            {count > 0 && (
+              <div className="flex flex-wrap gap-1 mt-1.5 ml-11">
+                {selectedIds.slice(0, 6).map((id) => (
+                  <Badge
+                    key={id}
+                    variant="secondary"
+                    className="pl-1.5 pr-1 py-0.5 flex items-center gap-1 text-xs"
+                  >
+                    <span className="max-w-[100px] truncate">{getDisplayName(config.key, id)}</span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeItem(config.key, id);
+                      }}
+                      className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
+                    >
+                      <X className="h-2.5 w-2.5" />
+                    </button>
+                  </Badge>
+                ))}
+                {selectedIds.length > 6 && (
+                  <Badge variant="outline" className="text-xs py-0.5">
+                    +{selectedIds.length - 6} more
+                  </Badge>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
 
-      <AccessScopeDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        initialAccess={selectedAccess}
-        onDone={handleDialogDone}
-      />
+      {/* Per-level dialogs */}
+      {LEVEL_CONFIG.map((config) => (
+        <AccessScopeLevelDialog
+          key={config.key}
+          open={openLevel === config.key}
+          onOpenChange={(isOpen) => {
+            if (!isOpen) setOpenLevel(null);
+          }}
+          title={config.label}
+          description={config.description}
+          icon={config.icon}
+          items={levelItems[config.key]}
+          selected={selectedAccess[config.key]}
+          onDone={(newSelected) => handleLevelDone(config.key, newSelected)}
+          searchable={config.searchable}
+        />
+      ))}
     </div>
   );
 }
