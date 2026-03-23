@@ -219,67 +219,6 @@ export function TargetVolumePopover({
                 <span>3-Mo Low</span>
               </div>
             </div>
-            
-            {/* Separator */}
-            <Separator className="my-3" />
-            
-            {/* Calculation Details */}
-            <div className="space-y-2">
-              {/* Both calculation methods */}
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className={cn(
-                  "p-2 rounded-md border",
-                  !usedThreeMonthLow ? "bg-primary/10 border-primary" : "bg-muted/50 border-border"
-                )}>
-                  <div className="flex items-center gap-1 mb-1">
-                    <span className="font-medium">{historicalMonthsCount}-Mo Avg</span>
-                    {!usedThreeMonthLow && <Check className="h-3 w-3 text-primary" />}
-                  </div>
-                  <span className="text-sm font-semibold">{formatVolume(nMonthAvg)}</span>
-                </div>
-                <div className={cn(
-                  "p-2 rounded-md border",
-                  usedThreeMonthLow ? "bg-orange-500/10 border-orange-500" : "bg-muted/50 border-border"
-                )}>
-                  <div className="flex items-center gap-1 mb-1">
-                    <span className="font-medium">3-Mo Low Avg</span>
-                    {usedThreeMonthLow && <Check className="h-3 w-3 text-orange-500" />}
-                  </div>
-                  <span className="text-sm font-semibold">{formatVolume(threeMonthLowAvg)}</span>
-                </div>
-              </div>
-              
-              {/* Spread indicator */}
-              {spreadPercentage !== null && spreadPercentage !== undefined && (
-                <div className={cn(
-                  "flex items-center justify-between p-2 rounded-md text-xs",
-                  spreadPercentage <= spreadThreshold ? "bg-green-500/10" : "bg-yellow-500/10"
-                )}>
-                  <span className="text-muted-foreground">Spread</span>
-                  <div className="flex items-center gap-2">
-                    <span className={cn(
-                      "font-semibold",
-                      spreadPercentage <= spreadThreshold ? "text-green-600" : "text-yellow-600"
-                    )}>
-                      {spreadPercentage.toFixed(1)}%
-                    </span>
-                    <span className="text-muted-foreground">
-                      (threshold: {spreadThreshold}%)
-                    </span>
-                  </div>
-                </div>
-              )}
-              
-              {/* Reasoning text */}
-              <p className="text-xs text-muted-foreground pt-1">
-                {usedThreeMonthLow 
-                  ? `Using 3-month low average (spread ${spreadPercentage?.toFixed(1)}% ≤ ${spreadThreshold}% threshold)`
-                  : spreadPercentage !== null && spreadPercentage !== undefined
-                    ? `Using ${historicalMonthsCount}-month average (spread ${spreadPercentage.toFixed(1)}% > ${spreadThreshold}% threshold)`
-                    : `${historicalMonthsCount} months of historical data available`
-                }
-              </p>
-            </div>
           </>
         ) : (
           <p className="text-xs text-muted-foreground">
