@@ -88,10 +88,7 @@ export const createVolumeOverrideColumns = (
           minMonthsForTarget={config?.min_months_for_target ?? 3}
           threeMonthLowAvg={row.three_month_low_avg}
           nMonthAvg={row.n_month_avg}
-          spreadPercentage={row.spread_percentage}
-          usedThreeMonthLow={row.used_three_month_low}
           lowestThreeMonths={row.lowest_three_months}
-          spreadThreshold={config?.spread_threshold ?? 15}
         />
       );
     },
