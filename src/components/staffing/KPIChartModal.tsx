@@ -964,10 +964,6 @@ export function KPIChartModal({
                                       </PieChart>
                                     </ChartContainer>
                                   </div>
-                                  <div className="flex flex-col gap-1 text-xs">
-                                    <p className="text-muted-foreground font-medium">Inner: {group.inner?.shift} ({formatValue(innerTotal)})</p>
-                                    <p className="text-muted-foreground font-medium">Outer: {group.outer?.shift} ({formatValue(outerTotal)})</p>
-                                  </div>
                                 </div>
                               </div>
                             );
