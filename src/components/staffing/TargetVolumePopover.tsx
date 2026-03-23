@@ -36,13 +36,9 @@ interface TargetVolumePopoverProps {
   historicalMonthsData: HistoricalMonthData[];
   targetVolume: number | null;
   minMonthsForTarget: number;
-  // New props for 3-month low logic
   threeMonthLowAvg?: number | null;
   nMonthAvg?: number | null;
-  spreadPercentage?: number | null;
-  usedThreeMonthLow?: boolean;
   lowestThreeMonths?: string[];
-  spreadThreshold?: number;
 }
 
 export function TargetVolumePopover({
