@@ -17,7 +17,7 @@ interface KPIChartModalProps {
   isNegative?: boolean;
   isHighlighted?: boolean;
   chartData?: Array<any>;
-  chartType?: "line" | "bar" | "area" | "pie" | "radial";
+  chartType?: "line" | "bar" | "area" | "pie" | "radial" | "dual-pie";
   breakdownData?: Array<any>;
   decimalPlaces?: number;
   xAxisLabels?: string[];
@@ -53,6 +53,7 @@ export function KPIChartModal({
     "hsl(160 60% 45%)",
   ];
 
+  const isDualPie = chartType === "dual-pie";
   const isPie = chartType === "pie";
   const isRadial = chartType === "radial";
 
@@ -832,6 +833,65 @@ export function KPIChartModal({
                       <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "hsl(0 84% 60%)" }} />&gt;20% Critical</span>
                     </div>
                   </div>
+                ) : isDualPie && chartData && chartData.length === 2 ? (
+                  (() => {
+                    const allSliceNames = new Set<string>();
+                    chartData.forEach((g: any) => g.slices?.forEach((s: any) => allSliceNames.add(s.name)));
+                    const legendItems = Array.from(allSliceNames);
+                    return (
+                      <div className="space-y-3">
+                        <div className="flex justify-center gap-8">
+                          {chartData.map((group: any, gi: number) => {
+                            const slices = (group.slices || []).filter((s: any) => s.value > 0).sort((a: any, b: any) => b.value - a.value);
+                            const total = group.total ?? slices.reduce((s: number, d: any) => s + d.value, 0);
+                            const dualConfig: ChartConfig = {};
+                            slices.forEach((item: any, i: number) => { dualConfig[item.name] = { label: item.name, color: PIE_COLORS[i % PIE_COLORS.length] }; });
+                            return (
+                              <div key={gi} className="flex flex-col items-center">
+                                <p className="text-sm font-medium text-foreground mb-1">{group.shift}</p>
+                                <div className="w-[200px] h-[200px]">
+                                  <ChartContainer config={dualConfig} className="h-full w-full">
+                                    <PieChart>
+                                      <ChartTooltip
+                                        content={
+                                          <ChartTooltipContent
+                                            formatter={(val, name) => (
+                                              <span>
+                                                {name}: {Number(val).toLocaleString(undefined, { maximumFractionDigits: 1 })} FTE
+                                                {total > 0 ? ` (${((Number(val) / total) * 100).toFixed(1)}%)` : ''}
+                                              </span>
+                                            )}
+                                          />
+                                        }
+                                      />
+                                      <Pie data={slices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} innerRadius={45} paddingAngle={2} label={false} labelLine={false}>
+                                        {slices.map((_: any, i: number) => (
+                                          <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                                        ))}
+                                      </Pie>
+                                      <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central">
+                                        <tspan x="50%" dy="-0.5em" className="text-[10px] fill-muted-foreground">Total</tspan>
+                                        <tspan x="50%" dy="1.3em" className="text-base font-semibold fill-foreground">{formatValue(total)}</tspan>
+                                      </text>
+                                    </PieChart>
+                                  </ChartContainer>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {/* Shared legend */}
+                        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 pt-1 border-t">
+                          {legendItems.map((name, i) => (
+                            <div key={name} className="flex items-center gap-1.5 text-sm">
+                              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
+                              <span className="text-foreground">{name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()
                 ) : isPie && filteredPieData && filteredPieData.length > 0 ? (
                   <div className="h-[300px] w-full flex justify-center">
                     <div className="inline-flex max-w-full items-center justify-center gap-6">

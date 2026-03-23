@@ -214,26 +214,30 @@ export default function StaffingSummary() {
     );
   }, [skillShiftData]);
 
-  // Aggregate skill-shift data by skill_mix for pie charts
+  // Aggregate skill-shift data by skill_mix for pie charts (including day/night)
   const skillMixPieData = useMemo(() => {
-    if (!skillShiftData?.length) return { hired: [], openReqs: [], target: [] };
+    if (!skillShiftData?.length) return { hired: [], openReqs: [], target: [], hiredDay: [], hiredNight: [], targetDay: [], targetNight: [] };
     
-    const bySkill: Record<string, { hired: number; openReqs: number; target: number }> = {};
+    const bySkill: Record<string, { hired: number; openReqs: number; target: number; hiredDay: number; hiredNight: number; targetDay: number; targetNight: number }> = {};
     
     skillShiftData.forEach(r => {
       const key = r.skill_mix || r.broader_skill_mix_category || 'Other';
-      if (!bySkill[key]) bySkill[key] = { hired: 0, openReqs: 0, target: 0 };
+      if (!bySkill[key]) bySkill[key] = { hired: 0, openReqs: 0, target: 0, hiredDay: 0, hiredNight: 0, targetDay: 0, targetNight: 0 };
       bySkill[key].hired += Number(r.hired_total_fte ?? 0);
+      bySkill[key].hiredDay += Number(r.hired_day_fte ?? 0);
+      bySkill[key].hiredNight += Number(r.hired_night_fte ?? 0);
       bySkill[key].openReqs += Number(r.open_reqs_total_fte ?? 0);
       
       const nf = String(r.nursing_flag).toLowerCase();
       const isNursing = nf === 'y' || nf === 'true' || nf === '1';
       if (isNursing) {
         bySkill[key].target += Number(r.target_fte_total ?? 0);
+        bySkill[key].targetDay += Number(r.target_fte_day ?? 0);
+        bySkill[key].targetNight += Number(r.target_fte_night ?? 0);
       }
     });
 
-    const toSorted = (field: 'hired' | 'openReqs' | 'target') =>
+    const toSorted = (field: keyof typeof bySkill[string]) =>
       Object.entries(bySkill)
         .map(([name, v]) => ({ name, value: Math.round(v[field] * 10) / 10 }))
         .filter(d => d.value > 0)
@@ -243,6 +247,10 @@ export default function StaffingSummary() {
       hired: toSorted('hired'),
       openReqs: toSorted('openReqs'),
       target: toSorted('target'),
+      hiredDay: toSorted('hiredDay'),
+      hiredNight: toSorted('hiredNight'),
+      targetDay: toSorted('targetDay'),
+      targetNight: toSorted('targetNight'),
     };
   }, [skillShiftData]);
 
@@ -508,10 +516,13 @@ export default function StaffingSummary() {
         id: 'vacancy-rate',
         title: "Vacancy Rate",
         value: fmtPct(vacancyRate),
-        chartData: hasNursingData && vacancyBySkillMix.length > 0 
-          ? vacancyBySkillMix.map(d => ({ name: d.name, value: d.hired })) 
-          : [],
-        chartType: "pie" as const,
+        chartData: hasNursingData && skillMixPieData.hiredDay.length > 0
+          ? [
+              { shift: 'Day', slices: skillMixPieData.hiredDay, total: Math.round(skillMixPieData.hiredDay.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+              { shift: 'Night', slices: skillMixPieData.hiredNight, total: Math.round(skillMixPieData.hiredNight.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+            ]
+          : (hasNursingData && vacancyBySkillMix.length > 0 ? vacancyBySkillMix.map(d => ({ name: d.name, value: d.hired })) : []),
+        chartType: (hasNursingData && skillMixPieData.hiredDay.length > 0 ? "dual-pie" : "pie") as any,
         delay: 0,
         definition: "Vacancy Rate measures the percentage of Approved budgeted positions that are currently unfilled.",
         calculation: `Vacancy Rate = (FTE Variance / Target FTEs) × 100
@@ -540,8 +551,13 @@ Includes:
         id: 'target-ftes',
         title: "Target FTEs",
         value: fmt(targetFtes),
-        chartData: hasNursingData && skillMixPieData.target.length > 0 ? skillMixPieData.target : [],
-        chartType: skillMixPieData.target.length > 0 ? "pie" as const : "area" as const,
+        chartData: hasNursingData && skillMixPieData.targetDay.length > 0
+          ? [
+              { shift: 'Day', slices: skillMixPieData.targetDay, total: Math.round(skillMixPieData.targetDay.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+              { shift: 'Night', slices: skillMixPieData.targetNight, total: Math.round(skillMixPieData.targetNight.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+            ]
+          : (hasNursingData && skillMixPieData.target.length > 0 ? skillMixPieData.target : []),
+        chartType: (hasNursingData && skillMixPieData.targetDay.length > 0 ? "dual-pie" : (skillMixPieData.target.length > 0 ? "pie" : "area")) as any,
         delay: 0.1,
         definition: "The number of resources needed to meet budgeted staffing levels based on specific type and amount of Unit of Service. Combines nursing targets from Skill-Shift and non-nursing targets from Productive Resources.",
         calculation: `Target FTEs = Nursing Target (Skill-Shift) + Non-Nursing Target (Productive Resources)
