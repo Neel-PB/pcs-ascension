@@ -197,7 +197,7 @@ export default function SupportPage() {
 
       <div className="min-h-0 max-h-full overflow-auto">
         {activeTab === "guides" && (
-          <div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">
+          <div className="bg-shell-elevated rounded-xl px-4 pb-4 shadow-md">
             <UserGuidesTab />
           </div>
         )}
