@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShieldCheck, Users, Crown, Building2, UserCog, Briefcase, Loader2 } from "@/lib/icons";
+import { ShieldCheck, Users, Crown, UserCog, Briefcase, Loader2 } from "@/lib/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { MANAGEABLE_ROLES, ROLE_METADATA, type AppRole } from "@/config/rbacConfig";
@@ -11,7 +11,6 @@ const DEMO_CREDENTIALS: Record<string, { email: string; password: string }> = {
   admin: { email: "demo.admin@ascension.org", password: "demo123" },
   labor_team: { email: "demo.labor@ascension.org", password: "demo123" },
   leadership: { email: "demo.leadership@ascension.org", password: "demo123" },
-  cno: { email: "demo.cno@ascension.org", password: "demo123" },
   director: { email: "demo.director@ascension.org", password: "demo123" },
   manager: { email: "demo.manager@ascension.org", password: "demo123" },
 };
@@ -21,7 +20,6 @@ const ROLE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
   admin: ShieldCheck,
   labor_team: Users,
   leadership: Crown,
-  cno: Building2,
   director: UserCog,
   manager: Briefcase,
 };

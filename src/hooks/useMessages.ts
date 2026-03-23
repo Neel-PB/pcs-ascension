@@ -71,7 +71,6 @@ export const roleGroups = [
   { value: "all", label: "All" },
   { value: "labor_team", label: "Labor Team" },
   { value: "leadership", label: "Leadership" },
-  { value: "cno", label: "CNO" },
   { value: "director", label: "Directors" },
-  { value: "nurse_manager", label: "Nurse Managers" },
+  { value: "manager", label: "Managers" },
 ];
