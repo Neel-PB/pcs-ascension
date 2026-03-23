@@ -34,6 +34,7 @@ export interface KPICardProps {
   showAllOptions?: boolean;
   decimalPlaces?: number;
   xAxisLabels?: string[];
+  highlightPoints?: 'lowest-3' | 'highest-3';
   employmentBreakdown?: EmploymentBreakdown;
   breakdownVariant?: 'green' | 'red' | 'orange';
   dataTour?: string;
