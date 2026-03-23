@@ -33,6 +33,7 @@ export interface KPIConfig {
   xAxisLabels?: string[];
   isHighlighted?: boolean;
   decimalPlaces?: number;
+  highlightPoints?: 'lowest-3' | 'highest-3';
   breakdownData?: Array<{
     skillType: string;
     ftFtes: number;
