@@ -72,15 +72,6 @@ export default function AuthPage() {
     }
   };
 
-  const handleMicrosoftSignIn = async () => {
-    setIsMsalLoading(true);
-    try {
-      const { error } = await signInWithMicrosoft();
-      if (!error) navigate("/");
-    } finally {
-      setIsMsalLoading(false);
-    }
-  };
 
   const goBack = () => {
     setStep("email");
