@@ -110,24 +110,7 @@ export default function AdminPage() {
 
         {activeTab === "audit-log" && <RBACAuditLog />}
         
-        {activeTab === "settings" && (
-          <Tabs defaultValue="ui-settings" className="space-y-6">
-            <TabsList className="w-full" data-tour="admin-settings-tabs">
-              <TabsTrigger value="ui-settings" className="flex-1">UI Settings</TabsTrigger>
-              <TabsTrigger value="volume-config" className="flex-1">Volume Config</TabsTrigger>
-            </TabsList>
-            
-            <div data-tour="admin-settings-content">
-              <TabsContent value="ui-settings" className="mt-0">
-                <UISettings />
-              </TabsContent>
-              
-              <TabsContent value="volume-config" className="mt-0">
-                <VolumeOverrideSettings />
-              </TabsContent>
-            </div>
-          </Tabs>
-        )}
+        {activeTab === "settings" && <UISettings />}
       </div>
     </div>
   );
