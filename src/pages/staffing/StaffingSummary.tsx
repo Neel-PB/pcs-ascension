@@ -574,8 +574,8 @@ Example: If FTE Variance is ${fmt(fteVariance)} and Target is ${fmt(targetFtes)}
               },
               {
                 category: 'Non-Nursing',
-                inner: { shift: 'Day', slices: skillMixPieData.hiredDayNonNursing, total: Math.round(skillMixPieData.hiredDayNonNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
-                outer: { shift: 'Night', slices: skillMixPieData.hiredNightNonNursing, total: Math.round(skillMixPieData.hiredNightNonNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+                inner: { shift: 'Night', slices: skillMixPieData.hiredNightNonNursing, total: Math.round(skillMixPieData.hiredNightNonNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+                outer: { shift: 'Day', slices: skillMixPieData.hiredDayNonNursing, total: Math.round(skillMixPieData.hiredDayNonNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
               },
             ]
           : (skillMixPieData.hired.length > 0 ? skillMixPieData.hired : (hiredFtes != null ? generateGrowthTrend(hiredFtes * 0.9, hiredFtes) : [])),
