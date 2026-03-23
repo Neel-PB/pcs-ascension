@@ -17,6 +17,7 @@ interface WorkforceKPICardProps {
   xAxisLabels?: string[];
   decimalPlaces?: number;
   highlightPoints?: 'lowest-3' | 'highest-3';
+  customChartContent?: React.ReactNode;
 }
 
 export const WorkforceKPICard = ({ 
