@@ -1,74 +1,45 @@
 
 
-## Nested Donut Charts for Hired FTEs & Open Reqs (Nursing + Non-Nursing)
+## Side-by-Side Nested Donuts with Single Legend
 
-### Summary
-Add a new chart type `"nested-pie"` that renders two stacked nested donuts — one for Nursing (inner=Day, outer=Night) and one for Non-Nursing (inner=Day, outer=Night) — for the Hired FTEs and Open Reqs KPI modals.
+### Problem
+Currently the Nursing and Non-Nursing nested donuts are stacked vertically, requiring scrolling. They should be side-by-side, with a wider modal and a single shared legend.
 
-### Data Changes
-
-#### `src/pages/staffing/StaffingSummary.tsx` — Extend `skillMixPieData` aggregation
-
-Add nursing-split fields to the aggregation (~line 221):
-- `hiredDayNursing`, `hiredNightNursing`, `hiredDayNonNursing`, `hiredNightNonNursing`
-- `openReqsDayNursing`, `openReqsNightNursing`, `openReqsDayNonNursing`, `openReqsNightNonNursing`
-
-Uses existing `nursing_flag` check and `open_reqs_day_fte` / `open_reqs_night_fte` fields from SkillShiftRecord.
-
-Return 8 new sorted arrays from the memo.
-
-#### `src/pages/staffing/StaffingSummary.tsx` — Update Hired FTEs & Open Reqs KPI configs (~lines 534, 585)
-
-Switch both to `chartType: "nested-pie"` when data is available. Pass chartData as:
-```typescript
-chartData: [
-  { category: 'Nursing', inner: { shift: 'Day', slices: [...], total: X }, outer: { shift: 'Night', slices: [...], total: Y } },
-  { category: 'Non-Nursing', inner: { shift: 'Day', slices: [...], total: X }, outer: { shift: 'Night', slices: [...], total: Y } },
-]
-```
-
-### Rendering Changes
+### Changes
 
 #### `src/components/staffing/KPIChartModal.tsx`
 
-1. Add `"nested-pie"` to `chartType` union
-2. Add `isNestedPie` boolean alongside `isDualPie`, `isPie`
-3. Exclude `nested-pie` from `stats` calculation (no High/Avg/Low)
+1. **Widen modal for nested-pie** (~line 149): Add `isNestedPie` to the width condition so it uses `max-w-5xl` (or similar wider class):
+   ```typescript
+   className={cn("...", isNestedPie ? "max-w-5xl" : showAllOptions ? "max-w-4xl" : "max-w-3xl")}
+   ```
 
-**Chart tab** — new nested-pie renderer:
-- Two vertically stacked sections, each with a category label ("Nursing" / "Non-Nursing")
-- Each section: single `PieChart` with two `<Pie>` components — inner ring (Day, smaller radius) and outer ring (Night, larger radius)
-- Center label shows combined total
-- Shared legend below both sections
+2. **Chart tab layout** (~lines 910-988): Change the nested-pie renderer from vertical `space-y-4` to a horizontal flex layout:
+   - Remove `<ScrollArea>` wrapper (no longer needed)
+   - Use `flex flex-row` for the two category groups side-by-side
+   - Each group gets its own category label + nested donut + Inner/Outer labels
+   - Single shared legend below both groups (keep only one at the bottom)
 
+3. **Table tab footer** — no change needed, already works horizontally
+
+### Layout
 ```text
-┌──────────────────────────────┐
-│  Hired FTEs          40.9   │
-├──────────────────────────────┤
-│  ── Nursing ──               │
-│     ╭──────────╮             │
-│     │ (Night)  │             │
-│     │ ╭──────╮ │             │
-│     │ │(Day) │ │             │
-│     │ ╰──────╯ │             │
-│     ╰──────────╯             │
-│  ── Non-Nursing ──           │
-│     ╭──────────╮             │
-│     │ (Night)  │             │
-│     │ ╭──────╮ │             │
-│     │ │(Day) │ │             │
-│     │ ╰──────╯ │             │
-│     ╰──────────╯             │
-│    [shared legend]           │
-└──────────────────────────────┘
+┌───────────────────────────────────────────────────┐
+│  Hired FTEs                           13,035.6    │
+├───────────────────────────────────────────────────┤
+│  ┌──── Nursing ─────┐   ┌── Non-Nursing ────┐    │
+│  │    ╭────────╮     │   │    ╭────────╮     │    │
+│  │    │ Night  │     │   │    │ Night  │     │    │
+│  │    │╭────╮  │     │   │    │╭────╮  │     │    │
+│  │    ││Day │  │     │   │    ││Day │  │     │    │
+│  │    │╰────╯  │     │   │    │╰────╯  │     │    │
+│  │    ╰────────╯     │   │    ╰────────╯     │    │
+│  └───────────────────┘   └───────────────────┘    │
+│              [single shared legend]               │
+│  Nrs Day | Nrs Night | Non-Nrs Day | Non-Nrs Ngt │
+└───────────────────────────────────────────────────┘
 ```
 
-**Table tab** — nested-pie handler:
-Table with columns: Skill Mix | Nrs Day | Nrs Night | Non-Nrs Day | Non-Nrs Night
-
-**Footer** — show category totals instead of High/Avg/Low
-
 ### Files Changed
-- `src/pages/staffing/StaffingSummary.tsx`
 - `src/components/staffing/KPIChartModal.tsx`
 
