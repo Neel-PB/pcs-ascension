@@ -200,10 +200,6 @@ export function UserGuidesTab() {
 
   return (
     <div className="space-y-4">
-      {/* Intro text */}
-      <p className="text-sm text-muted-foreground">
-        Browse interactive walkthroughs for every feature. Expand a section to jump to a specific step.
-      </p>
 
       {/* Compact search field */}
       <SearchField
