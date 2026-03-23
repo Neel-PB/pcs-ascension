@@ -53,6 +53,7 @@ export function KPIChartModal({
     "hsl(160 60% 45%)",
   ];
 
+  const isDualPie = chartType === "dual-pie";
   const isPie = chartType === "pie";
   const isRadial = chartType === "radial";
 
