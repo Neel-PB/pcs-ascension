@@ -68,11 +68,12 @@ export function TargetVolumePopover({
       const m = d.month.includes('-') ? d.month : `${d.month.slice(0, 4)}-${d.month.slice(4)}`;
       const parsed = parseISO(m + '-01');
       return {
-      month: isNaN(parsed.getTime()) ? d.month : format(parsed, "MMM"),
-      fullMonth: d.month,
-      volume: Math.round(d.volume),
-      isLowest: lowestThreeMonths.includes(d.month),
-    }));
+        month: isNaN(parsed.getTime()) ? d.month : format(parsed, "MMM"),
+        fullMonth: d.month,
+        volume: Math.round(d.volume),
+        isLowest: lowestThreeMonths.includes(d.month),
+      };
+    });
 
   // Get icon based on historical months
   const getIcon = () => {
