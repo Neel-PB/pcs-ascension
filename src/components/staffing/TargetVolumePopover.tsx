@@ -119,11 +119,13 @@ export function TargetVolumePopover({
             {/* Line Chart with highlighted lowest 3 months */}
             <div className="h-44 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={chartData} margin={{ top: 5, right: 15, left: 0, bottom: 5 }}>
+                <ComposedChart data={chartData} margin={{ top: 5, right: 15, left: 0, bottom: 40 }}>
                   <XAxis 
                     dataKey="month" 
-                    tick={{ fontSize: 10 }} 
+                    tick={{ fontSize: 9 }} 
                     interval={0}
+                    angle={-45}
+                    textAnchor="end"
                     axisLine={{ stroke: 'hsl(var(--border))' }}
                     tickLine={{ stroke: 'hsl(var(--border))' }}
                   />
