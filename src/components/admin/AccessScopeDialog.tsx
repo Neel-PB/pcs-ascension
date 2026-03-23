@@ -183,7 +183,7 @@ export function AccessScopeDialog({
                 label="Region"
                 count={access.regions.size}
               />
-              <div className="space-y-0.5 max-h-[140px] overflow-y-auto rounded-md border border-border/50 p-1">
+              <div className="space-y-0.5 rounded-md border border-border/50 p-1">
                 {regions.map((r) => (
                   <CheckboxRow
                     key={r.region}
@@ -209,7 +209,7 @@ export function AccessScopeDialog({
                 label="Market"
                 count={access.markets.size}
               />
-              <div className="space-y-0.5 max-h-[160px] overflow-y-auto rounded-md border border-border/50 p-1">
+              <div className="space-y-0.5 rounded-md border border-border/50 p-1">
                 {filteredMarkets.map((m) => (
                   <CheckboxRow
                     key={m.market}
@@ -248,7 +248,7 @@ export function AccessScopeDialog({
                     />
                   </div>
                 </div>
-                <div className="space-y-0.5 max-h-[200px] overflow-y-auto p-1">
+                <div className="space-y-0.5 p-1">
                   {searchedFacilities.map((f) => (
                     <CheckboxRow
                       key={f.facility_id}
@@ -291,7 +291,7 @@ export function AccessScopeDialog({
                     />
                   </div>
                 </div>
-                <div className="space-y-0.5 max-h-[200px] overflow-y-auto p-1">
+                <div className="space-y-0.5 p-1">
                   {searchedDepartments.map((d) => (
                     <CheckboxRow
                       key={d.department_id}
