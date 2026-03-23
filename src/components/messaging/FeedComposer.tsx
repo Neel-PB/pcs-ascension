@@ -273,11 +273,7 @@ export function FeedComposer() {
   const canSend = content.trim().length > 0 && !isPending && !isProcessing && !isUploading;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <h2 className="text-xl font-semibold">Create Feed Post</h2>
-      </div>
-
+    <div>
       <div className="bg-background/95 backdrop-blur-sm border border-border/60 rounded-xl shadow-lg focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/40 transition-all duration-200">
         <div className="px-3 pt-3">
           {renderAttachments()}
