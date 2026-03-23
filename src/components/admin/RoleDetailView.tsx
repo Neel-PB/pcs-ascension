@@ -36,7 +36,7 @@ type PendingChanges = Map<AppRole, Map<PermissionKey, boolean>>;
 
 interface RoleDetailViewProps {
   roles: Role[];
-  onEditRole: (role: Role) => void;
+  onEditRole?: (role: Role) => void;
 }
 
 interface CompactRoleCardProps {
