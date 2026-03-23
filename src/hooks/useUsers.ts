@@ -1,8 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/apiFetch";
 import { toast } from "sonner";
+import type { AccessScopeData } from "@/components/admin/AccessScopeManager";
 
 export type UserRole = 'admin' | 'labor_team' | 'leadership' | 'cno' | 'director' | 'manager' | 'nurse_manager' | 'moderator' | 'user';
+
+function flattenAccessScope(data: AccessScopeData | null | undefined): any[] {
+  if (!data) return [];
+  const result: any[] = [];
+  data.regions.forEach(r => result.push({ region: r }));
+  data.markets.forEach(m => result.push({ market: m }));
+  data.facilities.forEach(f => result.push({ facility_id: f.facility_id, facility_name: f.facility_name }));
+  data.departments.forEach(d => result.push({ department_id: d.department_id, department_name: d.department_name, facility_id: d.facility_id }));
+  return result;
+}
 
 export interface UserWithProfile {
   id: string;
@@ -59,7 +70,7 @@ export function useUsers() {
       firstName: string;
       lastName: string;
       role: string;
-      accessScope?: any;
+      accessScope?: AccessScopeData;
     }) => {
       return apiFetch('/users', {
         method: 'POST',
@@ -68,7 +79,7 @@ export function useUsers() {
           first_name: userData.firstName,
           last_name: userData.lastName,
           role: userData.role,
-          accessScope: userData.accessScope,
+          accessScope: flattenAccessScope(userData.accessScope),
         }),
       });
     },
@@ -87,6 +98,7 @@ export function useUsers() {
       firstName: string;
       lastName: string;
       role: string;
+      accessScope?: AccessScopeData;
     }) => {
       return apiFetch(`/users/${userData.userId}`, {
         method: 'PATCH',
@@ -94,6 +106,7 @@ export function useUsers() {
           first_name: userData.firstName,
           last_name: userData.lastName,
           role: userData.role,
+          accessScope: flattenAccessScope(userData.accessScope),
         }),
       });
     },
