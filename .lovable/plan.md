@@ -1,27 +1,33 @@
 
 
-## RBAC Page: Remove Action Buttons & Fix Checkbox Sizing
+## Show Target Volume Historical Chart in KPI Chart Modal
+
+### What
+When clicking the chart icon on the "Target Vol" KPI card, show the same historical volume line chart from `TargetVolumePopover` — with highlighted lowest-3 dots, N-month avg and 3-month low avg reference lines, and the legend. No spread percentage, no calculation details — just the chart and legend.
 
 ### Changes
 
-#### 1. `src/pages/admin/AccessControlPage.tsx` — Remove "+ Permission" and "+ Role" buttons
-**Lines 163-184**: Remove the separator div and the action buttons block entirely (the `<div className="h-6 w-px bg-border" />` and the `<div className="flex items-center gap-2" data-tour="admin-rbac-actions">` with both buttons).
+#### 1. `src/components/staffing/KPICard.tsx` & `src/components/staffing/KPIChartModal.tsx`
+Add an optional `customChartContent?: React.ReactNode` prop. When provided, the modal renders it instead of the default chart.
 
-Also remove the related state, handlers, and dialog components:
-- `isPermissionFormOpen` state and `setIsPermissionFormOpen`
-- `isRoleFormOpen` state, `setIsRoleFormOpen`, `selectedRoleForEdit`
-- `handleRoleFormSubmit` and `handlePermissionFormSubmit` functions
-- `RoleFormDialog` and `PermissionFormDialog` components at the bottom
-- Their imports: `RoleFormDialog`, `PermissionFormDialog`, `Plus`
-- Remove `createRole`, `updateRole` from `useDynamicRoles` destructure
-- Remove `createPermission` from `usePermissions` destructure
+#### 2. `src/pages/staffing/StaffingSummary.tsx`
+For the `target-vol` KPI config, compute the chart data from `pvFilteredRecords` (using `last_12_month_volume_stats`) and pass a `customChartContent` with a `ComposedChart` containing:
+- Line with highlighted lowest-3 month dots (orange)
+- N-month avg dashed reference line (primary)
+- 3-month low avg dashed reference line (orange)
+- Legend showing Monthly Volume, Lowest 3, N-Mo Avg, 3-Mo Low
 
-#### 2. `src/components/admin/RoleDetailView.tsx` — Fix checkbox size
-**Line 165**: The checkbox has `className="h-3.5 w-3.5"` which makes it 14px — too small, causing the check icon to look cramped/odd. Change to `h-4 w-4` (16px) for proper proportions matching the default checkbox size.
+Data derivation (in a `useMemo`):
+- Parse `last_12_month_volume_stats` from the first matching record
+- Sort months to find lowest 3 by daily volume
+- Compute n-month avg and 3-month low avg from the record's existing fields (`dly_avg_volume_12mth`, `dly_avg_volume_3mth_low`)
 
-Also check `PermissionMatrix.tsx` for similar checkbox sizing issues.
+#### 3. `src/components/workforce/WorkforceKPICard.tsx`
+Add the same `customChartContent` prop passthrough so the workforce drawer's Target Vol KPI also shows this chart.
 
 ### Files Changed
-- `src/pages/admin/AccessControlPage.tsx`
-- `src/components/admin/RoleDetailView.tsx`
+- `src/components/staffing/KPICard.tsx`
+- `src/components/staffing/KPIChartModal.tsx`
+- `src/components/workforce/WorkforceKPICard.tsx`
+- `src/pages/staffing/StaffingSummary.tsx`
 
