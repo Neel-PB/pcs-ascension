@@ -7,7 +7,8 @@ import {
   SheetHeader,
   SheetFooter 
 } from "@/components/ui/sheet";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ToggleButtonGroup } from "@/components/ui/toggle-button-group";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { AttachmentDisplay } from "@/components/feed/AttachmentDisplay";
 import {
@@ -55,24 +56,20 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-lg [&>button]:hidden p-0 flex flex-col">
         <SheetHeader className="flex-shrink-0 px-6 py-4 border-b">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList>
-              <TabsTrigger value="feed">Feed</TabsTrigger>
-              <TabsTrigger value="alerts" className="gap-2">
-                Alerts
-                {unreadCount > 0 && (
-                  <span className="bg-primary text-primary-foreground text-xs font-medium px-1.5 py-0.5 rounded-full">
-                    {unreadCount}
-                  </span>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="actions">Actions</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <ToggleButtonGroup
+            items={[
+              { id: "feed", label: "Feed" },
+              { id: "alerts", label: unreadCount > 0 ? `Alerts (${unreadCount})` : "Alerts" },
+              { id: "actions", label: "Actions" },
+            ]}
+            activeId={activeTab}
+            onSelect={setActiveTab}
+            layoutId="notificationPanelToggle"
+          />
         </SheetHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col">
-          <TabsContent value="feed" className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden flex flex-col">
+          {activeTab === "feed" && (
             <ScrollArea className="h-full px-6">
               {isLoadingPosts ? (
                 <div className="space-y-4 py-4">
@@ -137,10 +134,10 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
                 </div>
               )}
             </ScrollArea>
-          </TabsContent>
+          )}
 
-          <TabsContent value="alerts" className="flex-1 overflow-hidden">
-            {isLoading ? (
+          {activeTab === "alerts" && (
+            isLoading ? (
               <div className="flex-1 px-6 py-4 space-y-3">
                 {[...Array(5)].map((_, i) => (
                   <Skeleton key={i} className="h-20 w-full" />
@@ -211,15 +208,15 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
                   </div>
                 )}
               </ScrollArea>
-            )}
-          </TabsContent>
+            )
+          )}
 
-          <TabsContent value="actions" className="flex-1 overflow-hidden">
+          {activeTab === "actions" && (
             <ScrollArea className="h-full px-6">
               <MonthlyVolumeChecklist />
             </ScrollArea>
-          </TabsContent>
-        </Tabs>
+          )}
+        </div>
 
         <SheetFooter className="flex-shrink-0 px-6 py-3 border-t flex-row justify-between gap-2">
           {activeTab === "alerts" && unreadCount > 0 && (
