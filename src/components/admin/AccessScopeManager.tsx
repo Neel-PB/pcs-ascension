@@ -207,7 +207,90 @@ export function AccessScopeManager({ userId, isEditMode, onAccessChange }: Acces
   }, [regions, markets, facilities, departments, selectedAccess]);
 
   const handleLevelDone = (level: ScopeLevel, newSelected: Set<string>) => {
-    setSelectedAccess((prev) => ({ ...prev, [level]: newSelected }));
+    setSelectedAccess((prev) => {
+      const next = { ...prev, [level]: newSelected };
+
+      // Cascade-prune children when a parent level changes
+      if (level === "regions") {
+        // Prune markets not in selected regions
+        if (newSelected.size > 0) {
+          const validMarkets = new Set(
+            markets.filter((m) => m.region && newSelected.has(m.region)).map((m) => m.market)
+          );
+          next.markets = new Set(Array.from(prev.markets).filter((id) => validMarkets.has(id)));
+        }
+        // Prune facilities based on new regions + pruned markets
+        const activeMarkets = next.markets as Set<string>;
+        if (activeMarkets.size > 0) {
+          const validFacIds = new Set(
+            facilities.filter((f) => activeMarkets.has(f.market)).map((f) => f.facility_id)
+          );
+          next.facilities = new Set(Array.from(prev.facilities).filter((id) => validFacIds.has(id)));
+        } else if (newSelected.size > 0) {
+          const validFacIds = new Set(
+            facilities.filter((f) => f.region && newSelected.has(f.region)).map((f) => f.facility_id)
+          );
+          next.facilities = new Set(Array.from(prev.facilities).filter((id) => validFacIds.has(id)));
+        }
+        // Prune departments based on valid facilities
+        const activeFacs = next.facilities as Set<string>;
+        if (activeFacs.size > 0) {
+          const validDeptIds = new Set(
+            departments.filter((d) => activeFacs.has(d.facility_id)).map((d) => d.department_id)
+          );
+          next.departments = new Set(Array.from(prev.departments).filter((id) => validDeptIds.has(id)));
+        } else if (activeMarkets.size > 0) {
+          const fIds = new Set(facilities.filter((f) => activeMarkets.has(f.market)).map((f) => f.facility_id));
+          const validDeptIds = new Set(departments.filter((d) => fIds.has(d.facility_id)).map((d) => d.department_id));
+          next.departments = new Set(Array.from(prev.departments).filter((id) => validDeptIds.has(id)));
+        } else if (newSelected.size > 0) {
+          const fIds = new Set(facilities.filter((f) => f.region && newSelected.has(f.region)).map((f) => f.facility_id));
+          const validDeptIds = new Set(departments.filter((d) => fIds.has(d.facility_id)).map((d) => d.department_id));
+          next.departments = new Set(Array.from(prev.departments).filter((id) => validDeptIds.has(id)));
+        }
+      }
+
+      if (level === "markets") {
+        // Prune facilities not in selected markets (or regions if no markets)
+        if (newSelected.size > 0) {
+          const validFacIds = new Set(
+            facilities.filter((f) => newSelected.has(f.market)).map((f) => f.facility_id)
+          );
+          next.facilities = new Set(Array.from(prev.facilities).filter((id) => validFacIds.has(id)));
+        } else if (prev.regions.size > 0) {
+          const validFacIds = new Set(
+            facilities.filter((f) => f.region && prev.regions.has(f.region)).map((f) => f.facility_id)
+          );
+          next.facilities = new Set(Array.from(prev.facilities).filter((id) => validFacIds.has(id)));
+        }
+        // Prune departments
+        const activeFacs = next.facilities as Set<string>;
+        if (activeFacs.size > 0) {
+          const validDeptIds = new Set(departments.filter((d) => activeFacs.has(d.facility_id)).map((d) => d.department_id));
+          next.departments = new Set(Array.from(prev.departments).filter((id) => validDeptIds.has(id)));
+        } else if (newSelected.size > 0) {
+          const fIds = new Set(facilities.filter((f) => newSelected.has(f.market)).map((f) => f.facility_id));
+          const validDeptIds = new Set(departments.filter((d) => fIds.has(d.facility_id)).map((d) => d.department_id));
+          next.departments = new Set(Array.from(prev.departments).filter((id) => validDeptIds.has(id)));
+        } else if (prev.regions.size > 0) {
+          const fIds = new Set(facilities.filter((f) => f.region && prev.regions.has(f.region)).map((f) => f.facility_id));
+          const validDeptIds = new Set(departments.filter((d) => fIds.has(d.facility_id)).map((d) => d.department_id));
+          next.departments = new Set(Array.from(prev.departments).filter((id) => validDeptIds.has(id)));
+        }
+      }
+
+      if (level === "facilities") {
+        // Prune departments not in selected facilities
+        if (newSelected.size > 0) {
+          const validDeptIds = new Set(
+            departments.filter((d) => newSelected.has(d.facility_id)).map((d) => d.department_id)
+          );
+          next.departments = new Set(Array.from(prev.departments).filter((id) => validDeptIds.has(id)));
+        }
+      }
+
+      return next;
+    });
   };
 
   const removeItem = (level: ScopeLevel, value: string) => {
