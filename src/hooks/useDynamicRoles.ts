@@ -165,7 +165,7 @@ export function useDynamicRoles() {
 
   // Get manageable roles (non-legacy) - includes core manageable + any custom DB roles
   const manageableRoles = useMemo(() => {
-    const legacyNames = ["moderator", "user", "nurse_manager"];
+    const legacyNames = ["moderator", "user", "nurse_manager", "cno"];
     return roles.filter(role => !legacyNames.includes(role.name));
   }, [roles]);
 

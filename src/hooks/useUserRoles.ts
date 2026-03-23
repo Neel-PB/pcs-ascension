@@ -14,7 +14,7 @@ export function useUserRoles(userId?: string) {
     enabled: !!userId,
   });
 
-  const availableRoles: UserRole[] = ['admin', 'labor_team', 'leadership', 'cno', 'director', 'manager'];
+  const availableRoles: UserRole[] = ['admin', 'labor_team', 'leadership', 'director', 'manager'];
 
   return {
     roles: roles || [],
