@@ -17,7 +17,7 @@ interface KPIChartModalProps {
   isNegative?: boolean;
   isHighlighted?: boolean;
   chartData?: Array<any>;
-  chartType?: "line" | "bar" | "area" | "pie" | "radial";
+  chartType?: "line" | "bar" | "area" | "pie" | "radial" | "dual-pie";
   breakdownData?: Array<any>;
   decimalPlaces?: number;
   xAxisLabels?: string[];
