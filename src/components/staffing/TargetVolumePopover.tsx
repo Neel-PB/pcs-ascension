@@ -48,10 +48,7 @@ export function TargetVolumePopover({
   minMonthsForTarget,
   threeMonthLowAvg,
   nMonthAvg,
-  spreadPercentage,
-  usedThreeMonthLow = false,
   lowestThreeMonths = [],
-  spreadThreshold = 15,
 }: TargetVolumePopoverProps) {
   const hasEnoughData = historicalMonthsCount >= minMonthsForTarget;
 
