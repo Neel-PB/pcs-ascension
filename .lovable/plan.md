@@ -1,27 +1,21 @@
 
 
-## Fix 3M High Chart Type from Bar to Area
-
-### Problem
-The 3M High KPI chart is configured with `chartType: "bar"` instead of `"area"`. This is inconsistent with the 3M Low chart (which uses area) and prevents the highlight dots from rendering properly on an area trend.
+## Change 3M Low Highlight Dots from Red to Orange
 
 ### Change
 
-**`src/pages/staffing/StaffingSummary.tsx`** — Line 747
+**`src/components/staffing/KPIChartModal.tsx`** — Line 1098
 
-Change `chartType` from `"bar"` to `"area"`:
+Change the color for `lowest-3` from `hsl(var(--destructive))` (red) to an orange color:
 
 ```typescript
 // Before
-chartType: "bar" as const,
+const color = highlightPoints === 'lowest-3' ? 'hsl(var(--destructive))' : 'hsl(142 71% 45%)';
 
 // After
-chartType: "area" as const,
+const color = highlightPoints === 'lowest-3' ? 'hsl(25 95% 53%)' : 'hsl(142 71% 45%)';
 ```
 
-Also update the fallback in **`src/config/kpiConfigs.ts`** (~line 207) for the 3M High default config — same change from `"bar"` to `"area"`.
-
 ### Files Changed
-- `src/pages/staffing/StaffingSummary.tsx`
-- `src/config/kpiConfigs.ts`
+- `src/components/staffing/KPIChartModal.tsx`
 
