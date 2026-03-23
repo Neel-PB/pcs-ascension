@@ -22,6 +22,7 @@ interface KPIChartModalProps {
   decimalPlaces?: number;
   xAxisLabels?: string[];
   showAllOptions?: boolean;
+  highlightPoints?: 'lowest-3' | 'highest-3';
 }
 
 export function KPIChartModal({
