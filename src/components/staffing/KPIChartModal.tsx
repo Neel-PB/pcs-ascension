@@ -929,7 +929,7 @@ export function KPIChartModal({
                               <div key={gi} className="flex flex-col items-center">
                                 <p className="text-sm font-semibold text-foreground mb-2">{group.category}</p>
                                 <div className="flex items-center gap-4">
-                                  <div className="w-[220px] h-[220px]">
+                                  <div className="w-[280px] h-[280px]">
                                     <ChartContainer config={nestedConfig} className="h-full w-full">
                                       <PieChart>
                                         <ChartTooltip
