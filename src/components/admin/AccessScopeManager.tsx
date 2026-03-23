@@ -35,6 +35,7 @@ const LEVEL_CONFIG: {
   icon: React.ReactNode;
   description: string;
   searchable: boolean;
+  size: "compact" | "large";
 }[] = [
   {
     key: "regions",
@@ -42,6 +43,7 @@ const LEVEL_CONFIG: {
     icon: <Globe className="h-4 w-4" />,
     description: "Select regions to restrict access",
     searchable: false,
+    size: "compact",
   },
   {
     key: "markets",
@@ -49,6 +51,7 @@ const LEVEL_CONFIG: {
     icon: <MapPin className="h-4 w-4" />,
     description: "Select markets to restrict access",
     searchable: false,
+    size: "compact",
   },
   {
     key: "facilities",
@@ -56,6 +59,7 @@ const LEVEL_CONFIG: {
     icon: <Building2 className="h-4 w-4" />,
     description: "Select facilities to restrict access",
     searchable: true,
+    size: "large",
   },
   {
     key: "departments",
@@ -63,6 +67,7 @@ const LEVEL_CONFIG: {
     icon: <Layers className="h-4 w-4" />,
     description: "Select departments to restrict access",
     searchable: true,
+    size: "large",
   },
 ];
 
