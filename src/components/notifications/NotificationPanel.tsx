@@ -56,20 +56,16 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-lg [&>button]:hidden p-0 flex flex-col">
         <SheetHeader className="flex-shrink-0 px-6 py-4 border-b">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList>
-              <TabsTrigger value="feed">Feed</TabsTrigger>
-              <TabsTrigger value="alerts" className="gap-2">
-                Alerts
-                {unreadCount > 0 && (
-                  <span className="bg-primary text-primary-foreground text-xs font-medium px-1.5 py-0.5 rounded-full">
-                    {unreadCount}
-                  </span>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="actions">Actions</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <ToggleButtonGroup
+            items={[
+              { id: "feed", label: "Feed" },
+              { id: "alerts", label: unreadCount > 0 ? `Alerts (${unreadCount})` : "Alerts" },
+              { id: "actions", label: "Actions" },
+            ]}
+            activeId={activeTab}
+            onSelect={setActiveTab}
+            layoutId="notificationPanelToggle"
+          />
         </SheetHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col">
