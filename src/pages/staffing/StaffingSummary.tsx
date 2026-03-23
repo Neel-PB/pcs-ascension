@@ -343,7 +343,7 @@ export default function StaffingSummary() {
 
     const labels = sortedDates.map(d => {
       const parsed = new Date(d);
-      return !isNaN(parsed.getTime()) ? format(parsed, 'M/d') : d;
+      return !isNaN(parsed.getTime()) ? format(parsed, 'MMM d') : d;
     });
 
     const data = sortedDates.map(dateKey => {
@@ -731,12 +731,12 @@ Used when:
     const fmtPct = (v: number | null | undefined) =>
       v != null ? `${v.toFixed(1)}%` : "—";
 
-    const dowPaidChart = dailyTrendData.length > 0 ? dailyTrendData.map(d => ({ value: d.paid_fte, name: d.day })) : [];
-    const dowContractChart = dailyTrendData.length > 0 ? dailyTrendData.map(d => ({ value: d.contractor_fte, name: d.day })) : [];
-    const dowOvertimeChart = dailyTrendData.length > 0 ? dailyTrendData.map(d => ({ value: d.overtime_fte, name: d.day })) : [];
-    const dowPrnChart = dailyTrendData.length > 0 ? dailyTrendData.map(d => ({ value: d.total_prn, name: d.day })) : [];
-    const dowNpChart = dailyTrendData.length > 0 ? dailyTrendData.map(d => ({ value: d.npPercent, name: d.day })) : [];
-    const dowEmployedChart = dailyTrendData.length > 0 ? dailyTrendData.map(d => ({ value: d.employed_productive_fte, name: d.day })) : [];
+    const dowPaidChart = dailyTrendData.length > 0 ? dailyTrendData.map((d, i) => ({ value: d.paid_fte, name: dailyTrendLabels[i] ?? d.day })) : [];
+    const dowContractChart = dailyTrendData.length > 0 ? dailyTrendData.map((d, i) => ({ value: d.contractor_fte, name: dailyTrendLabels[i] ?? d.day })) : [];
+    const dowOvertimeChart = dailyTrendData.length > 0 ? dailyTrendData.map((d, i) => ({ value: d.overtime_fte, name: dailyTrendLabels[i] ?? d.day })) : [];
+    const dowPrnChart = dailyTrendData.length > 0 ? dailyTrendData.map((d, i) => ({ value: d.total_prn, name: dailyTrendLabels[i] ?? d.day })) : [];
+    const dowNpChart = dailyTrendData.length > 0 ? dailyTrendData.map((d, i) => ({ value: d.npPercent, name: dailyTrendLabels[i] ?? d.day })) : [];
+    const dowEmployedChart = dailyTrendData.length > 0 ? dailyTrendData.map((d, i) => ({ value: d.employed_productive_fte, name: dailyTrendLabels[i] ?? d.day })) : [];
 
     const kpis = [
       {
