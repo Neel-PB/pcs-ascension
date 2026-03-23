@@ -929,7 +929,7 @@ export function KPIChartModal({
                               <div key={gi} className="flex flex-col items-center">
                                 <p className="text-sm font-semibold text-foreground mb-2">{group.category}</p>
                                 <div className="flex items-center gap-4">
-                                  <div className="w-[220px] h-[220px]">
+                                  <div className="w-[280px] h-[280px]">
                                     <ChartContainer config={nestedConfig} className="h-full w-full">
                                       <PieChart>
                                         <ChartTooltip
@@ -944,14 +944,14 @@ export function KPIChartModal({
                                           }
                                         />
                                         {innerSlices.length > 0 && (
-                                          <Pie data={innerSlices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={50} innerRadius={25} paddingAngle={2} label={false} labelLine={false}>
+                                          <Pie data={innerSlices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={65} innerRadius={35} paddingAngle={2} label={false} labelLine={false}>
                                             {innerSlices.map((s: any) => (
                                               <Cell key={s.name} fill={skillColorMap[s.name] || PIE_COLORS[0]} />
                                             ))}
                                           </Pie>
                                         )}
                                         {outerSlices.length > 0 && (
-                                          <Pie data={outerSlices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={85} innerRadius={60} paddingAngle={2} label={false} labelLine={false}>
+                                          <Pie data={outerSlices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} innerRadius={80} paddingAngle={2} label={false} labelLine={false}>
                                             {outerSlices.map((s: any) => (
                                               <Cell key={s.name} fill={skillColorMap[s.name] || PIE_COLORS[0]} />
                                             ))}
