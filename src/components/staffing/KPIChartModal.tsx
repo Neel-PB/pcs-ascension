@@ -1117,6 +1117,53 @@ export function KPIChartModal({
                       </div>
                     </div>
                   </div>
+                ) : isDualPie && chartData ? (
+                  (() => {
+                    const groups = chartData as any[];
+                    const allSkills = Array.from(new Set(groups.flatMap((g: any) => g.slices.map((s: any) => s.name))));
+                    return (
+                      <div className="rounded-lg border overflow-hidden h-full">
+                        <ScrollArea className="h-full">
+                          <div
+                            className="grid sticky top-0 z-10 bg-muted/50 backdrop-blur-sm border-b"
+                            style={{ gridTemplateColumns: '1.2fr 1fr 0.8fr 1fr 0.8fr' }}
+                          >
+                            <div className="px-4 py-3 text-left font-semibold text-sm">Skill Mix</div>
+                            <div className="px-4 py-3 text-right font-semibold text-sm">Day FTE</div>
+                            <div className="px-4 py-3 text-right font-semibold text-sm">Day %</div>
+                            <div className="px-4 py-3 text-right font-semibold text-sm">Night FTE</div>
+                            <div className="px-4 py-3 text-right font-semibold text-sm">Night %</div>
+                          </div>
+                          {allSkills.map((skill, idx) => {
+                            const dayGroup = groups.find((g: any) => g.shift === 'Day');
+                            const nightGroup = groups.find((g: any) => g.shift === 'Night');
+                            const daySlice = dayGroup?.slices.find((s: any) => s.name === skill);
+                            const nightSlice = nightGroup?.slices.find((s: any) => s.name === skill);
+                            const dayVal = daySlice?.value ?? 0;
+                            const nightVal = nightSlice?.value ?? 0;
+                            const dayTotal = dayGroup?.total ?? 0;
+                            const nightTotal = nightGroup?.total ?? 0;
+                            return (
+                              <div
+                                key={skill}
+                                className="grid border-b hover:bg-muted/50 transition-colors"
+                                style={{ gridTemplateColumns: '1.2fr 1fr 0.8fr 1fr 0.8fr' }}
+                              >
+                                <div className="px-4 py-3 text-left text-sm font-medium flex items-center gap-2">
+                                  <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
+                                  {skill}
+                                </div>
+                                <div className="px-4 py-3 text-right text-sm">{formatValue(dayVal)}</div>
+                                <div className="px-4 py-3 text-right text-sm">{dayTotal > 0 ? `${((dayVal / dayTotal) * 100).toFixed(1)}%` : '—'}</div>
+                                <div className="px-4 py-3 text-right text-sm">{formatValue(nightVal)}</div>
+                                <div className="px-4 py-3 text-right text-sm">{nightTotal > 0 ? `${((nightVal / nightTotal) * 100).toFixed(1)}%` : '—'}</div>
+                              </div>
+                            );
+                          })}
+                        </ScrollArea>
+                      </div>
+                    );
+                  })()
                 ) : isPie && filteredPieData && filteredPieData.length > 0 ? (
                   <div className="rounded-lg border overflow-hidden h-full">
                     <ScrollArea className="h-full">
