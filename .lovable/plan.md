@@ -1,27 +1,22 @@
 
 
-## Hide Vacancy Rate Chart for Non-Nursing Departments
+## Integrate Report Issue with Google Chat (Direct Webhook)
 
-### Problem
-The Vacancy Rate KPI currently shows its chart icon regardless of whether the selected department is nursing or non-nursing. It should only show the chart for nursing departments.
+### Summary
+When a user submits an issue from the "Report Issue" tab, the form will POST directly to the Google Chat webhook URL from the client side. No backend function needed.
 
-### Change
+### Changes
 
-**`src/pages/staffing/StaffingSummary.tsx`** — Line 509
+#### `src/pages/support/SupportPage.tsx`
+- Hardcode the Google Chat webhook URL as a constant
+- Update `handleSubmitIssue` to:
+  1. POST a formatted card message to the webhook with issue title, description, and timestamp
+  2. Add loading state to the submit button
+  3. Show success/error toast based on the response
+- Google Chat webhooks accept `{ text: "..." }` via simple POST — no auth needed
 
-Update the `chartData` for the `vacancy-rate` KPI to be gated by `hasNursingData`, same pattern already used for Target FTEs:
+### Note
+The webhook URL will be visible in the client-side JavaScript bundle. Incoming webhooks are low-risk (they can only post messages to the space, not read), but be aware anyone inspecting the code could use the URL to post messages.
 
-```typescript
-// Before
-chartData: vacancyBySkillMix.length > 0 
-  ? vacancyBySkillMix.map(d => ({ name: d.name, value: d.hired })) 
-  : [],
-
-// After
-chartData: hasNursingData && vacancyBySkillMix.length > 0 
-  ? vacancyBySkillMix.map(d => ({ name: d.name, value: d.hired })) 
-  : [],
-```
-
-This uses the existing `hasNursingData` flag (which checks `nursing_flag` from the skill-shift API) to hide the chart icon when a non-nursing department is selected — identical to how Target FTEs already works.
+**You'll need to provide the Google Chat webhook URL** so I can hardcode it in the component.
 
