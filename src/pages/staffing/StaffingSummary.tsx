@@ -737,6 +737,7 @@ Calculated by:
 • Identifying the 3 consecutive months with lowest total volume in past 12 months
 • Calculating average daily volume across those 3 months
 • Used for minimum staffing level planning`,
+        highlightPoints: 'lowest-3' as const,
       },
       {
         id: '3m-high',
