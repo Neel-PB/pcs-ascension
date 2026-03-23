@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Play, FileText, AlertCircle, MessageSquare, ExternalLink, Plus } from "@/lib/icons";
 import { toast } from "sonner";
 import { UserGuidesTab } from "@/components/support/UserGuidesTab";
+import { useAuth } from "@/hooks/useAuth";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { useRBAC } from "@/hooks/useRBAC";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -27,6 +28,7 @@ export default function SupportPage() {
   const [newFaqAnswer, setNewFaqAnswer] = useState("");
 
   const { hasPermission, userId } = useRBAC();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const tabs = [
@@ -43,7 +45,7 @@ export default function SupportPage() {
     try {
       const timestamp = new Date().toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
       const payload = {
-        text: `🚨 *New Issue Reported*\n\n*Title:* ${issueTitle}\n*Description:* ${issueDescription}\n*Submitted:* ${timestamp}`,
+        text: `🚨 *New Issue Reported*\n\n*Reporter:* ${user?.firstName ?? ''} ${user?.lastName ?? ''} (${user?.email ?? 'unknown'})\n*Title:* ${issueTitle}\n*Description:* ${issueDescription}\n*Submitted:* ${timestamp}`,
       };
       const res = await fetch(GOOGLE_CHAT_WEBHOOK_URL, {
         method: "POST",
