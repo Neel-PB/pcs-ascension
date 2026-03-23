@@ -33,7 +33,6 @@ export default function AdminPage() {
     { id: "users", label: "Users" },
     { id: "feed", label: "Feed" },
     { id: "access-control", label: "RBAC" },
-    { id: "audit-log", label: "Audit Log" },
     { id: "settings", label: "Settings" },
   ];
 
