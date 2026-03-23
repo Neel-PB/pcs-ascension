@@ -275,13 +275,12 @@ export function FilterBar({
   // Get available submarkets based on selected market
   const availableSubmarkets = getSubmarketsByMarket(selectedMarket);
   
-  // ONLY disable if filter is LOCKED (single option) - NEVER disable based on parent selection
-  const isRegionDisabled = lockedFilters.region;
-  const isMarketDisabled = lockedFilters.market;
-  const isFacilityDisabled = lockedFilters.facility;
-  // Department is disabled if locked, OR if no facility is selected (unless user has department-level restrictions)
-  const isDepartmentDisabled = lockedFilters.department || 
-    (!hasRestrictionAt('department') && selectedFacility === "all-facilities");
+  // Filters are never disabled due to access scope — restriction is enforced by limiting dropdown options
+  const isRegionDisabled = false;
+  const isMarketDisabled = false;
+  const isFacilityDisabled = false;
+  // Department is disabled only if no facility is selected (unless user has department-level restrictions)
+  const isDepartmentDisabled = !hasRestrictionAt('department') && selectedFacility === "all-facilities";
 
   // Check if any filters are active (not in default state)
   const hasActiveFilters = 

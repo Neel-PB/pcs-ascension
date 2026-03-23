@@ -182,10 +182,11 @@ export function useOrgScopedFilters(): AccessScopedFiltersResult {
     const defaultDepartment = availableDepartments.length === 1 ? availableDepartments[0].department_id : "all-departments";
     
     // Lock filters if user has exactly ONE option (no choice to make)
-    const lockedRegion = accessScope.hasRegionRestriction && availableRegions.length === 1;
-    const lockedMarket = accessScope.hasMarketRestriction && availableMarkets.length === 1;
-    const lockedFacility = accessScope.hasFacilityRestriction && availableFacilities.length === 1;
-    const lockedDepartment = accessScope.hasDepartmentRestriction && availableDepartments.length === 1;
+    // Filters are never locked — restriction is enforced by limiting dropdown options
+    const lockedRegion = false;
+    const lockedMarket = false;
+    const lockedFacility = false;
+    const lockedDepartment = false;
     
     // Check if there are any restrictions at all
     const hasRestrictions = accessScope.hasRegionRestriction || 
