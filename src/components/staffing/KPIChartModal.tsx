@@ -1168,6 +1168,26 @@ export function KPIChartModal({
                   <Button onClick={() => onOpenChange(false)}>Close</Button>
                 </div>
               )}
+              {isNestedPie && chartData && (
+                <div className="flex items-center justify-between pt-2 border-t mt-1">
+                  <div className="grid grid-cols-4 gap-4">
+                    {(chartData as any[]).map((group: any) => {
+                      if (!group.inner && !group.outer) return null;
+                      return [
+                        <div key={`${group.category}-day`} className="text-center">
+                          <p className="text-xs text-muted-foreground">{group.category} Day</p>
+                          <p className="text-lg font-semibold text-foreground">{formatValue(group.inner?.total ?? 0)}</p>
+                        </div>,
+                        <div key={`${group.category}-night`} className="text-center">
+                          <p className="text-xs text-muted-foreground">{group.category} Night</p>
+                          <p className="text-lg font-semibold text-foreground">{formatValue(group.outer?.total ?? 0)}</p>
+                        </div>,
+                      ];
+                    })}
+                  </div>
+                  <Button onClick={() => onOpenChange(false)}>Close</Button>
+                </div>
+              )}
               {stats && (
                 <div className="flex items-center justify-between pt-2 border-t mt-1">
                   <div className="grid grid-cols-3 gap-4">
