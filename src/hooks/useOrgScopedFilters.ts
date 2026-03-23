@@ -120,7 +120,11 @@ export function useOrgScopedFilters(): AccessScopedFiltersResult {
               submarket: null,
             }))
         )
-      : facilities;
+      : accessScope.hasMarketRestriction
+        ? facilities.filter(f => accessScope.markets.some(m => m.toLowerCase() === f.market?.toLowerCase()))
+        : accessScope.hasRegionRestriction
+          ? facilities.filter(f => f.region && accessScope.regions.some(r => r.toLowerCase() === f.region?.toLowerCase()))
+          : facilities;
     
     // PRIORITY ORDER: Most specific assignment wins
     // Department > Facility > Market > Region
