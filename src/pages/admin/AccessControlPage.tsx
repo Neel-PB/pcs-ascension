@@ -22,22 +22,16 @@ type ViewMode = "matrix" | "detail" | "list";
 
 export default function AccessControlPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("detail");
-  const [isRoleFormOpen, setIsRoleFormOpen] = useState(false);
-  const [isPermissionFormOpen, setIsPermissionFormOpen] = useState(false);
   const [selectedRoleForEdit, setSelectedRoleForEdit] = useState<Role | null>(null);
 
   const {
     manageableRoles: dynamicRoles,
     isLoading: rolesLoading,
-    createRole,
-    updateRole,
   } = useDynamicRoles();
 
   const {
     permissions,
-    categories,
     isLoading: permissionsLoading,
-    createPermission,
     corePermissions,
   } = usePermissions();
 
