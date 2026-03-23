@@ -343,7 +343,7 @@ export default function StaffingSummary() {
 
     const labels = sortedDates.map(d => {
       const parsed = new Date(d);
-      return !isNaN(parsed.getTime()) ? format(parsed, 'M/d') : d;
+      return !isNaN(parsed.getTime()) ? format(parsed, 'MMM d') : d;
     });
 
     const data = sortedDates.map(dateKey => {
