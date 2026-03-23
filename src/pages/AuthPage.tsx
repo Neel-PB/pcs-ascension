@@ -9,8 +9,6 @@ import { Loader2 } from "@/lib/icons";
 import { ArrowLeft, AlertCircle, Mail, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { Separator } from "@/components/ui/separator";
-import MicrosoftSignInButton from "@/components/auth/MicrosoftSignInButton";
 
 type AuthStep = "email" | "unauthorized" | "password" | "setup";
 
