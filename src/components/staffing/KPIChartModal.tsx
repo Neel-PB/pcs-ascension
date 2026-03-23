@@ -110,7 +110,7 @@ export function KPIChartModal({
   }, [isPie, chartData]);
 
   // Calculate statistics if data exists (skip for pie)
-  const stats = (!isPie && chartData) ? {
+  const stats = (!isPie && !isDualPie && chartData) ? {
     high: formatValue(Math.max(...chartData.map(d => d.value))),
     low: formatValue(Math.min(...chartData.map(d => d.value))),
     average: formatValue(chartData.reduce((sum, d) => sum + d.value, 0) / chartData.length),
