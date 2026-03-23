@@ -216,6 +216,7 @@ export function KPICard({
         xAxisLabels={xAxisLabels}
         showAllOptions={showAllOptions}
         highlightPoints={highlightPoints}
+        customChartContent={customChartContent}
       />
 
       {/* Info Modal */}
