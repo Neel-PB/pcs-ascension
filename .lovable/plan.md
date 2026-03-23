@@ -1,44 +1,28 @@
 
 
-## Side-by-Side Nested Donuts with Single Legend
+## Widen Chart Modal for 28-Day Productive Resources Charts
 
 ### Problem
-Currently the Nursing and Non-Nursing nested donuts are stacked vertically, requiring scrolling. They should be side-by-side, with a wider modal and a single shared legend.
+The area charts for Productive Resources KPIs have 28 daily data points that get compressed in the current `max-w-3xl` modal width, making labels overlap and the chart hard to read.
 
-### Changes
+### Change
 
-#### `src/components/staffing/KPIChartModal.tsx`
+**`src/components/staffing/KPIChartModal.tsx`** — Line 149
 
-1. **Widen modal for nested-pie** (~line 149): Add `isNestedPie` to the width condition so it uses `max-w-5xl` (or similar wider class):
-   ```typescript
-   className={cn("...", isNestedPie ? "max-w-5xl" : showAllOptions ? "max-w-4xl" : "max-w-3xl")}
-   ```
+Update the width logic to also widen the modal when chartData has many points (28+ days):
 
-2. **Chart tab layout** (~lines 910-988): Change the nested-pie renderer from vertical `space-y-4` to a horizontal flex layout:
-   - Remove `<ScrollArea>` wrapper (no longer needed)
-   - Use `flex flex-row` for the two category groups side-by-side
-   - Each group gets its own category label + nested donut + Inner/Outer labels
-   - Single shared legend below both groups (keep only one at the bottom)
+```typescript
+// Current
+isNestedPie ? "max-w-5xl" : showAllOptions ? "max-w-4xl" : "max-w-3xl"
 
-3. **Table tab footer** — no change needed, already works horizontally
-
-### Layout
-```text
-┌───────────────────────────────────────────────────┐
-│  Hired FTEs                           13,035.6    │
-├───────────────────────────────────────────────────┤
-│  ┌──── Nursing ─────┐   ┌── Non-Nursing ────┐    │
-│  │    ╭────────╮     │   │    ╭────────╮     │    │
-│  │    │ Night  │     │   │    │ Night  │     │    │
-│  │    │╭────╮  │     │   │    │╭────╮  │     │    │
-│  │    ││Day │  │     │   │    ││Day │  │     │    │
-│  │    │╰────╯  │     │   │    │╰────╯  │     │    │
-│  │    ╰────────╯     │   │    ╰────────╯     │    │
-│  └───────────────────┘   └───────────────────┘    │
-│              [single shared legend]               │
-│  Nrs Day | Nrs Night | Non-Nrs Day | Non-Nrs Ngt │
-└───────────────────────────────────────────────────┘
+// Updated — also widen for charts with 20+ data points
+isNestedPie ? "max-w-5xl" 
+  : (chartData && chartData.length >= 20) ? "max-w-5xl"
+  : showAllOptions ? "max-w-4xl" 
+  : "max-w-3xl"
 ```
+
+This ensures the 28-day area charts for Paid FTEs, Contract FTEs, Overtime FTEs, Total PRN, Non-Productive %, and Employed Productive FTEs all render at full width with readable x-axis labels.
 
 ### Files Changed
 - `src/components/staffing/KPIChartModal.tsx`
