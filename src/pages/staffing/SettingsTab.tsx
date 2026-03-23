@@ -35,6 +35,15 @@ export function SettingsTab({ selectedRegion, selectedMarket, selectedFacility }
     facility: selectedFacility,
   });
 
+  // Derive region/market from loaded data to avoid storing sentinel values
+  const derivedRegion = useMemo(() => {
+    return patientVolumeData?.[0]?.region || (selectedRegion !== 'all-regions' ? selectedRegion : '');
+  }, [patientVolumeData, selectedRegion]);
+
+  const derivedMarket = useMemo(() => {
+    return patientVolumeData?.[0]?.market || (selectedMarket !== 'all-markets' ? selectedMarket : '');
+  }, [patientVolumeData, selectedMarket]);
+
   // Pending overrides stored in memory (not saved to DB until expiration date is set)
   const [pendingOverrides, setPendingOverrides] = useState<Record<string, number>>({});
   // Track which department should auto-open its date picker
@@ -125,7 +134,7 @@ export function SettingsTab({ selectedRegion, selectedMarket, selectedFacility }
       department_name: row.department_name,
       override_volume: volumeToSave,
       expiry_date: date,
-      region: selectedRegion || '',
+      region: derivedRegion,
     });
 
     setPendingOverrides(prev => {
