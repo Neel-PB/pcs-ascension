@@ -147,6 +147,7 @@ export default function StaffingSummary() {
     submarket: selectedSubmarket,
     level2: selectedLevel2,
     pstat: selectedPstat,
+    enabled: filtersInitialized,
   });
   // Fetch productive resources KPI data from API
   const { data: prKpiData, isLoading: prLoading } = useProductiveResourcesKpi({
@@ -157,6 +158,7 @@ export default function StaffingSummary() {
     submarket: selectedSubmarket,
     level2: selectedLevel2,
     pstat: selectedPstat,
+    enabled: filtersInitialized,
   });
 
   // Fetch skill-shift data for FTE KPIs
@@ -168,6 +170,7 @@ export default function StaffingSummary() {
     submarket: selectedSubmarket,
     level2: selectedLevel2,
     pstat: selectedPstat,
+    enabled: filtersInitialized,
   });
 
   // Fetch employment split for Hired FTEs breakdown
@@ -179,6 +182,7 @@ export default function StaffingSummary() {
     submarket: selectedSubmarket,
     level2: selectedLevel2,
     pstat: selectedPstat,
+    enabled: filtersInitialized,
   });
 
   const prAgg = useMemo(() => {

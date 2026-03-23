@@ -97,15 +97,17 @@ export function useProductiveResourcesKpi(filters: {
   submarket?: string;
   level2?: string;
   pstat?: string;
+  enabled?: boolean;
 }) {
+  const { enabled = true, ...rest } = filters;
   const cleaned = {
-    region: clean(filters.region),
-    market: clean(filters.market),
-    businessUnit: clean(filters.facility),
-    departmentId: clean(filters.department),
-    submarket: clean(filters.submarket),
-    level2: clean(filters.level2),
-    pstat: clean(filters.pstat),
+    region: clean(rest.region),
+    market: clean(rest.market),
+    businessUnit: clean(rest.facility),
+    departmentId: clean(rest.department),
+    submarket: clean(rest.submarket),
+    level2: clean(rest.level2),
+    pstat: clean(rest.pstat),
   };
 
   return useQuery({
@@ -114,5 +116,6 @@ export function useProductiveResourcesKpi(filters: {
     staleTime: 5 * 60 * 1000,
     retry: 1,
     refetchOnWindowFocus: false,
+    enabled,
   });
 }

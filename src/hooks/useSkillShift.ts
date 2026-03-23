@@ -96,21 +96,24 @@ export function useSkillShift(filters: {
   level2?: string;
   pstat?: string;
   nursingFlag?: string;
+  enabled?: boolean;
 }) {
+  const { enabled = true, ...rest } = filters;
   const cleaned = {
-    region: clean(filters.region),
-    market: clean(filters.market),
-    businessUnit: clean(filters.facility),
-    departmentId: clean(filters.department),
-    submarket: clean(filters.submarket),
-    level2: clean(filters.level2),
-    pstat: clean(filters.pstat),
-    nursingFlag: clean(filters.nursingFlag),
+    region: clean(rest.region),
+    market: clean(rest.market),
+    businessUnit: clean(rest.facility),
+    departmentId: clean(rest.department),
+    submarket: clean(rest.submarket),
+    level2: clean(rest.level2),
+    pstat: clean(rest.pstat),
+    nursingFlag: clean(rest.nursingFlag),
   };
 
   return useQuery({
     queryKey: ['skill-shift', cleaned],
     queryFn: () => fetchSkillShift(cleaned),
     staleTime: 5 * 60 * 1000,
+    enabled,
   });
 }
