@@ -55,7 +55,7 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-lg [&>button]:hidden p-0 flex flex-col">
-        <SheetHeader className="flex-shrink-0 px-6 py-3 border-b">
+        <SheetHeader className="flex-shrink-0 px-6 py-2.5 border-b">
           <ToggleButtonGroup
             items={[
               { id: "feed", label: "Feed" },
