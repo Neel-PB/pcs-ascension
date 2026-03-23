@@ -166,7 +166,7 @@ export function AccessScopeDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col p-0">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col p-0">
         <DialogHeader className="px-6 pt-6 pb-2">
           <DialogTitle>Configure Access Scope</DialogTitle>
           <DialogDescription>
