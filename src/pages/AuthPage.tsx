@@ -9,21 +9,18 @@ import { Loader2 } from "@/lib/icons";
 import { ArrowLeft, AlertCircle, Mail, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { Separator } from "@/components/ui/separator";
-import MicrosoftSignInButton from "@/components/auth/MicrosoftSignInButton";
 
 type AuthStep = "email" | "unauthorized" | "password" | "setup";
 
 export default function AuthPage() {
   const navigate = useNavigate();
-  const { signIn, signInWithMicrosoft, checkEmail, setInitialPassword, user } = useAuth();
+  const { signIn, checkEmail, setInitialPassword, user } = useAuth();
 
   const [step, setStep] = useState<AuthStep>("email");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isMsalLoading, setIsMsalLoading] = useState(false);
 
   if (user) return null;
 
@@ -75,15 +72,6 @@ export default function AuthPage() {
     }
   };
 
-  const handleMicrosoftSignIn = async () => {
-    setIsMsalLoading(true);
-    try {
-      const { error } = await signInWithMicrosoft();
-      if (!error) navigate("/");
-    } finally {
-      setIsMsalLoading(false);
-    }
-  };
 
   const goBack = () => {
     setStep("email");
@@ -118,18 +106,6 @@ export default function AuthPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Microsoft SSO — always visible on email step */}
-            {step === "email" && (
-              <>
-                <MicrosoftSignInButton onClick={handleMicrosoftSignIn} isLoading={isMsalLoading} disabled={isLoading} />
-                <div className="relative my-4">
-                  <Separator />
-                  <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-3 text-xs text-muted-foreground">
-                    or
-                  </span>
-                </div>
-              </>
-            )}
 
             {/* Back button for non-email steps */}
             {step !== "email" && (

@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from "react";
 import { QueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { loginWithMicrosoft } from "@/lib/msalAuth";
 import { apiFetch } from "@/lib/apiFetch";
 import { toast } from "sonner";
 
@@ -21,7 +20,6 @@ interface AuthContextType {
   setInitialPassword: (email: string, password: string) => Promise<{ data?: any; error?: any }>;
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ data?: any; error?: any }>;
   signIn: (email: string, password: string) => Promise<{ data?: any; error?: any }>;
-  signInWithMicrosoft: () => Promise<{ data?: any; error?: any }>;
   signOut: (queryClient?: QueryClient) => Promise<{ error: any | null }>;
   clearMustChangePassword: () => void;
 }
@@ -162,41 +160,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const signInWithMicrosoft = useCallback(async () => {
-    try {
-      const msalResult = await loginWithMicrosoft();
-
-      const data = await apiFetch<any>("/auth/msal", {
-        method: "POST",
-        body: JSON.stringify({ idToken: msalResult.idToken }),
-      });
-
-      const appUser: AppUser = {
-        id: data.user?.id || "",
-        email: data.user?.email || msalResult.email,
-        firstName: data.user?.firstName || msalResult.firstName,
-        lastName: data.user?.lastName || msalResult.lastName,
-        role: data.user?.role || "user",
-      };
-
-      if (data.access_token) {
-        sessionStorage.setItem("nestjs_token", data.access_token);
-        sessionStorage.setItem("msal_access_token", data.access_token);
-      }
-      sessionStorage.setItem("nestjs_user", JSON.stringify(appUser));
-      sessionStorage.setItem("msal_user", JSON.stringify(appUser));
-      setUser(appUser);
-
-      toast.success("Signed in with Microsoft successfully!");
-      return { data };
-    } catch (error: any) {
-      const message = error.message || "Microsoft sign-in failed";
-      if (!message.includes("Redirecting")) {
-        toast.error(message);
-      }
-      return { error };
-    }
-  }, []);
 
   const signOut = useCallback(async (queryClient?: QueryClient) => {
     isSigningOutRef.current = true;
@@ -271,7 +234,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, mustChangePassword, checkEmail, setInitialPassword, signUp, signIn, signInWithMicrosoft, signOut, clearMustChangePassword }}>
+    <AuthContext.Provider value={{ user, loading, mustChangePassword, checkEmail, setInitialPassword, signUp, signIn, signOut, clearMustChangePassword }}>
       {children}
     </AuthContext.Provider>
   );
