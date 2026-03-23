@@ -964,10 +964,6 @@ export function KPIChartModal({
                                       </PieChart>
                                     </ChartContainer>
                                   </div>
-                                  <div className="flex flex-col gap-1 text-xs">
-                                    <p className="text-muted-foreground font-medium">Inner: {group.inner?.shift} ({formatValue(innerTotal)})</p>
-                                    <p className="text-muted-foreground font-medium">Outer: {group.outer?.shift} ({formatValue(outerTotal)})</p>
-                                  </div>
                                 </div>
                               </div>
                             );
@@ -981,6 +977,17 @@ export function KPIChartModal({
                               <span className="text-foreground">{name}</span>
                             </div>
                           ))}
+                        </div>
+                        {/* Ring indicator legend */}
+                        <div className="flex justify-center gap-x-6 gap-y-1 pt-1.5 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1.5">
+                            <span className="inline-block w-3 h-3 rounded-full border-2 border-muted-foreground/50 bg-muted-foreground/20" />
+                            <span>Inner: Night</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="inline-block w-3 h-3 rounded-full border-2 border-muted-foreground/50 bg-transparent" />
+                            <span>Outer: Day</span>
+                          </div>
                         </div>
                       </div>
                     );

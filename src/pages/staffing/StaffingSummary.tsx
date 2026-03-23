@@ -569,13 +569,13 @@ Example: If FTE Variance is ${fmt(fteVariance)} and Target is ${fmt(targetFtes)}
           ? [
               {
                 category: 'Nursing',
-                inner: { shift: 'Day', slices: skillMixPieData.hiredDayNursing, total: Math.round(skillMixPieData.hiredDayNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
-                outer: { shift: 'Night', slices: skillMixPieData.hiredNightNursing, total: Math.round(skillMixPieData.hiredNightNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+                inner: { shift: 'Night', slices: skillMixPieData.hiredNightNursing, total: Math.round(skillMixPieData.hiredNightNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+                outer: { shift: 'Day', slices: skillMixPieData.hiredDayNursing, total: Math.round(skillMixPieData.hiredDayNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
               },
               {
                 category: 'Non-Nursing',
-                inner: { shift: 'Day', slices: skillMixPieData.hiredDayNonNursing, total: Math.round(skillMixPieData.hiredDayNonNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
-                outer: { shift: 'Night', slices: skillMixPieData.hiredNightNonNursing, total: Math.round(skillMixPieData.hiredNightNonNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+                inner: { shift: 'Night', slices: skillMixPieData.hiredNightNonNursing, total: Math.round(skillMixPieData.hiredNightNonNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+                outer: { shift: 'Day', slices: skillMixPieData.hiredDayNonNursing, total: Math.round(skillMixPieData.hiredDayNonNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
               },
             ]
           : (skillMixPieData.hired.length > 0 ? skillMixPieData.hired : (hiredFtes != null ? generateGrowthTrend(hiredFtes * 0.9, hiredFtes) : [])),
@@ -635,13 +635,13 @@ ${fmt(hiredFtes)} - ${fmt(targetFtes)} = ${fmt(fteVariance)}`,
           ? [
               {
                 category: 'Nursing',
-                inner: { shift: 'Day', slices: skillMixPieData.openReqsDayNursing, total: Math.round(skillMixPieData.openReqsDayNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
-                outer: { shift: 'Night', slices: skillMixPieData.openReqsNightNursing, total: Math.round(skillMixPieData.openReqsNightNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+                inner: { shift: 'Night', slices: skillMixPieData.openReqsNightNursing, total: Math.round(skillMixPieData.openReqsNightNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+                outer: { shift: 'Day', slices: skillMixPieData.openReqsDayNursing, total: Math.round(skillMixPieData.openReqsDayNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
               },
               {
                 category: 'Non-Nursing',
-                inner: { shift: 'Day', slices: skillMixPieData.openReqsDayNonNursing, total: Math.round(skillMixPieData.openReqsDayNonNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
-                outer: { shift: 'Night', slices: skillMixPieData.openReqsNightNonNursing, total: Math.round(skillMixPieData.openReqsNightNonNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+                inner: { shift: 'Night', slices: skillMixPieData.openReqsNightNonNursing, total: Math.round(skillMixPieData.openReqsNightNonNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+                outer: { shift: 'Day', slices: skillMixPieData.openReqsDayNonNursing, total: Math.round(skillMixPieData.openReqsDayNonNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
               },
             ]
           : (skillMixPieData.openReqs.length > 0 ? skillMixPieData.openReqs : (openReqs != null ? generateVolatileTrend(openReqs, 2) : [])),
