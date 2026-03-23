@@ -1065,9 +1065,6 @@ export function KPIChartModal({
                           className="text-xs"
                           tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9 }}
                           interval={0}
-                          angle={-45}
-                          textAnchor="end"
-                          height={50}
                         />
                         <YAxis 
                           className="text-xs"
