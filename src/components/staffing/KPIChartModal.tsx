@@ -42,6 +42,7 @@ export function KPIChartModal({
   xAxisLabels,
   showAllOptions = false,
   highlightPoints,
+  customChartContent,
 }: KPIChartModalProps) {
   const [activeTab, setActiveTab] = useState("chart");
 
