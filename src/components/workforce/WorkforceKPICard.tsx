@@ -34,6 +34,7 @@ export const WorkforceKPICard = ({
   xAxisLabels,
   decimalPlaces = 1,
   highlightPoints,
+  customChartContent,
 }: WorkforceKPICardProps) => {
   const [showChartModal, setShowChartModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
