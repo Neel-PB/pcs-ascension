@@ -649,7 +649,7 @@ Example: If total volume is 7,602 over 365 days:
         id: '3m-low',
         title: "3M Low",
         value: fmt(low3),
-        chartData: dailyTrend.length > 0 ? dailyTrend : (low3 != null ? generateVolatileTrend(low3, 3, 12) : []),
+        chartData: lowHighTrend.length > 0 ? lowHighTrend : (low3 != null ? generateVolatileTrend(low3, 3, 12) : []),
         chartType: "area" as const,
         delay: 0.1,
         xAxisLabels: volLabels,
