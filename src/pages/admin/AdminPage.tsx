@@ -11,9 +11,7 @@ import RBACAuditLog from "./RBACAuditLog";
 import { FeedComposer } from "@/components/messaging/FeedComposer";
 import { FeedHistory } from "@/components/feed/FeedHistory";
 import { Button } from "@/components/ui/button";
-import { VolumeOverrideSettings } from "@/components/admin/VolumeOverrideSettings";
 import { UISettings } from "@/components/admin/UISettings";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AdminTour } from "@/components/tour/AdminTour";
 
 export default function AdminPage() {
