@@ -209,7 +209,7 @@ export function AccessScopeDialog({
                 label="Market"
                 count={access.markets.size}
               />
-              <div className="space-y-0.5 rounded-md border border-border/50 p-1">
+              <div className="max-h-[200px] overflow-y-auto space-y-0.5 rounded-md border border-border/50 p-1">
                 {filteredMarkets.map((m) => (
                   <CheckboxRow
                     key={m.market}
