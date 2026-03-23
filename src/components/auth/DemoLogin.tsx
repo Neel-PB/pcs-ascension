@@ -11,7 +11,6 @@ const DEMO_CREDENTIALS: Record<string, { email: string; password: string }> = {
   admin: { email: "demo.admin@ascension.org", password: "demo123" },
   labor_team: { email: "demo.labor@ascension.org", password: "demo123" },
   leadership: { email: "demo.leadership@ascension.org", password: "demo123" },
-  cno: { email: "demo.cno@ascension.org", password: "demo123" },
   director: { email: "demo.director@ascension.org", password: "demo123" },
   manager: { email: "demo.manager@ascension.org", password: "demo123" },
 };
