@@ -48,20 +48,6 @@ export default function AccessControlPage() {
   const displayRoles = dynamicRoles.length > 0 ? dynamicRoles : CORE_ROLES;
   const displayPermissions = permissions.length > 0 ? permissions : corePermissions;
 
-  const handleRoleFormSubmit = async (data: { name: string; label: string; description?: string }) => {
-    if (selectedRoleForEdit) {
-      await updateRole.mutateAsync({ id: selectedRoleForEdit.id, data });
-    } else {
-      await createRole.mutateAsync(data);
-    }
-    setIsRoleFormOpen(false);
-    setSelectedRoleForEdit(null);
-  };
-
-  const handlePermissionFormSubmit = async (data: { key: string; label: string; description?: string; category: string }) => {
-    await createPermission.mutateAsync(data);
-    setIsPermissionFormOpen(false);
-  };
 
   // Only show skeleton if critical data (permission mappings) is still loading
   if (isLoading) {
