@@ -183,7 +183,7 @@ export function AccessScopeDialog({
                 label="Region"
                 count={access.regions.size}
               />
-              <div className="space-y-0.5 max-h-[140px] overflow-y-auto rounded-md border border-border/50 p-1">
+              <div className="space-y-0.5 rounded-md border border-border/50 p-1">
                 {regions.map((r) => (
                   <CheckboxRow
                     key={r.region}
