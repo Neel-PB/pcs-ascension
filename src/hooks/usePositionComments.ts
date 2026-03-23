@@ -7,7 +7,7 @@ const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "
 
 function getApiHeaders(): Record<string, string> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
-  const token = sessionStorage.getItem("msal_access_token");
+  const token = sessionStorage.getItem("nestjs_token");
   if (token) headers["Authorization"] = `Bearer ${token}`;
   return headers;
 }
