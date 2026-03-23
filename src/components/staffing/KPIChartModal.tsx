@@ -23,6 +23,7 @@ interface KPIChartModalProps {
   xAxisLabels?: string[];
   showAllOptions?: boolean;
   highlightPoints?: 'lowest-3' | 'highest-3';
+  customChartContent?: React.ReactNode;
 }
 
 export function KPIChartModal({
