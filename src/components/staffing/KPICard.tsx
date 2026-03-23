@@ -93,7 +93,7 @@ export function KPICard({
             className
           )}
         >
-          <CardContent className="!p-2 relative flex flex-col justify-start min-h-[72px]">
+          <CardContent className="!p-2 relative flex flex-col justify-center min-h-[72px]">
             {/* Title */}
             <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-0.5">
               {title}
