@@ -111,6 +111,7 @@ export default function AdminPage() {
         
         {activeTab === "settings" && <UISettings />}
       </div>
+      <AdminTour activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
 }
