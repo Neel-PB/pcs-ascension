@@ -7,6 +7,7 @@ import {
   SheetContent,
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { AccessScopeManager, type AccessScopeData } from "./AccessScopeManager";
 import {
   Form,
@@ -91,14 +92,12 @@ export function UserFormSheet({
 
   const handleSubmit = async (data: UserFormValues) => {
     if (isEditMode) {
-      if ((window as any).__accessScopeSave) {
-        await (window as any).__accessScopeSave();
-      }
       onSubmit({
         userId: user.id,
         firstName: data.firstName,
         lastName: data.lastName,
         role: data.role,
+        accessScope: pendingAccessScope,
       });
     } else {
       onSubmit({
@@ -112,7 +111,7 @@ export function UserFormSheet({
   };
 
   const roleOptions = manageableRoles
-    .filter((role) => role.name && role.name.trim() !== '')
+    .filter((role) => role.name && role.name.trim() !== "")
     .map((role) => ({
       value: role.name,
       label: role.label,
@@ -127,49 +126,54 @@ export function UserFormSheet({
       >
         <div
           className="shrink-0 px-6 border-b border-border flex flex-col justify-center"
-          style={{ height: 'var(--header-height)' }}
+          style={{ height: "var(--header-height)" }}
         >
           <h2 className="text-lg font-semibold">
-            {isEditMode ? 'Edit User' : 'Invite New User'}
+            {isEditMode ? "Edit User" : "Invite New User"}
           </h2>
           <p className="text-sm text-muted-foreground">
             {isEditMode
-              ? 'Update user information and role'
-              : 'Send an invitation email to create a new user account'}
+              ? "Update user information and role"
+              : "Send an invitation email to create a new user account"}
           </p>
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 min-h-0">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="flex flex-col flex-1 min-h-0"
+          >
             <ScrollArea className="flex-1">
-              <div className="px-6 py-6 space-y-6">
-                <FormField
-                  control={form.control}
-                  name="firstName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>First Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="John" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="lastName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Last Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Doe" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <div className="px-6 py-5 space-y-4">
+                {/* Names side-by-side */}
+                <div className="grid grid-cols-2 gap-3">
+                  <FormField
+                    control={form.control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="John" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Last Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Doe" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 <FormField
                   control={form.control}
@@ -215,13 +219,15 @@ export function UserFormSheet({
                   )}
                 />
 
-                {/* Access Scope Section - always visible */}
+                <Separator />
+
+                {/* Access Scope Section */}
                 <div data-tour="admin-users-scope">
-                  <h4 className="text-sm font-medium mb-2">Access Scope Restrictions</h4>
+                  <h4 className="text-sm font-medium mb-2">Access Scope</h4>
                   <AccessScopeManager
                     userId={user?.id}
                     isEditMode={isEditMode}
-                    onAccessChange={!isEditMode ? handleAccessChange : undefined}
+                    onAccessChange={handleAccessChange}
                   />
                 </div>
               </div>
@@ -239,7 +245,11 @@ export function UserFormSheet({
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting} className="flex-1">
-                  {isSubmitting ? 'Sending...' : isEditMode ? 'Update' : 'Send Invite'}
+                  {isSubmitting
+                    ? "Sending..."
+                    : isEditMode
+                    ? "Update"
+                    : "Send Invite"}
                 </Button>
               </div>
             </div>
