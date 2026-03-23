@@ -213,6 +213,7 @@ export function KPICard({
         decimalPlaces={decimalPlaces}
         xAxisLabels={xAxisLabels}
         showAllOptions={showAllOptions}
+        highlightPoints={highlightPoints}
       />
 
       {/* Info Modal */}

@@ -754,6 +754,7 @@ Calculated by:
 • Identifying the 3 consecutive months with highest total volume in past 12 months
 • Calculating average daily volume across those 3 months
 • Used for peak staffing level planning`,
+        highlightPoints: 'highest-3' as const,
       },
       {
         id: 'target-vol',

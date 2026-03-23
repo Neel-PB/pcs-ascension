@@ -94,6 +94,7 @@ export const WorkforceKPICard = ({
         breakdownData={breakdownData}
         xAxisLabels={xAxisLabels}
         decimalPlaces={decimalPlaces}
+        highlightPoints={highlightPoints}
       />
 
       {/* Info Modal */}

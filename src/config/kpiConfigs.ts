@@ -195,6 +195,7 @@ Used for:
 • Minimum staffing levels
 • Core staff planning
 • Base capacity requirements`,
+      highlightPoints: 'lowest-3',
     },
     {
       id: '3m-high',
@@ -211,6 +212,7 @@ Used for:
 • Peak staffing levels
 • PRN/contract planning
 • Surge capacity requirements`,
+      highlightPoints: 'highest-3',
     },
     {
       id: 'target-vol',
