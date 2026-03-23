@@ -41,15 +41,20 @@ export function useRBAC() {
     : (user?.role ? [user.role as AppRole] : []);
 
   // Fetch permission overrides from NestJS
-  const { data: permissionOverrides, isLoading: permissionsLoading } = useQuery({
+  const { data: permissionOverridesRaw, isLoading: permissionsLoading } = useQuery({
     queryKey: ['role-permissions'],
     queryFn: async () => {
-      const data = await apiFetch<RolePermissionOverride[]>('/role-permissions');
-      return data;
+      const data = await apiFetch<any>('/role-permissions');
+      // API may return array directly or wrapped in { data: [...] }
+      if (Array.isArray(data)) return data as RolePermissionOverride[];
+      if (data && Array.isArray(data.data)) return data.data as RolePermissionOverride[];
+      return [] as RolePermissionOverride[];
     },
     staleTime: 5 * 60 * 1000,
     retry: 1,
   });
+
+  const permissionOverrides: RolePermissionOverride[] = permissionOverridesRaw ?? [];
 
   // Calculate effective permissions for user's roles
   const effectivePermissions = useMemo(() => {
