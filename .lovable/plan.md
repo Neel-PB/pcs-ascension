@@ -1,36 +1,31 @@
 
 
-## Fix: Resolve Region to Actual Value When Saving Overrides
+## Use `patient_volume_low_high` from `last_12_month_volume_stats` for 3M Low & 3M High Charts
 
 ### Problem
-When a user selects a facility and department without explicitly selecting a region/market filter, the `selectedRegion` value is `"all-regions"` (the sentinel). This gets stored in the database as-is. Instead, the actual region should be derived from the patient volume data that's already loaded.
-
-### Current State
-- **NPSettingsTab**: Already partially handles this (line 50-52) — derives region from `patientVolumeData[0]?.region`. But it falls back to `selectedRegion` which could be `"all-regions"`.
-- **SettingsTab**: Uses `selectedRegion || ''` directly (line 128), which stores `"all-regions"` when no region filter is selected.
+Currently, the 3M Low and 3M High KPI cards use `dailyTrend` (which is built from `patient_volume_dly`) for their chart data. The API returns a separate field `patient_volume_low_high` in each `last_12_month_volume_stats` array entry that should be used specifically for these two charts.
 
 ### Changes
 
-#### 1. `src/pages/staffing/SettingsTab.tsx`
-- Add a derived `region` value from `patientVolumeData`, same pattern as NPSettingsTab
-- Use it on line 128 instead of `selectedRegion || ''`
-- Also derive `market` from the data to avoid storing `"all-markets"`
-
+#### 1. `src/hooks/usePatientVolume.ts` — Add `patient_volume_low_high` to type
+Update the `last_12_month_volume_stats` array type to include the new field:
 ```typescript
-const region = useMemo(() => {
-  return patientVolumeData?.[0]?.region || selectedRegion || '';
-}, [patientVolumeData, selectedRegion]);
-
-const market = useMemo(() => {
-  return patientVolumeData?.[0]?.market || selectedMarket || '';
-}, [patientVolumeData, selectedMarket]);
+last_12_month_volume_stats: Array<{
+  year_month: string;
+  patient_volume_dly: number;
+  patient_volume_mthly: number;
+  patient_volume_low_high: number;
+}> | string | null;
 ```
 
-Then in `handleSaveDate`: `region: region` instead of `region: selectedRegion || ''`
+#### 2. `src/pages/staffing/StaffingSummary.tsx` — Extract low_high trend
+In the `useMemo` that aggregates `last_12_month_volume_stats` (~line 442), add a third aggregation for `lowHigh`:
+- Accumulate `patient_volume_low_high` per `year_month` alongside `mthly` and `dly`
+- Return a new `lowHighTrend` array: `sorted.map(([, v]) => ({ value: v.lowHigh }))`
 
-#### 2. `src/pages/staffing/NPSettingsTab.tsx`
-- The existing derived `region` (line 50-52) already prefers `patientVolumeData[0]?.region`, which is correct
-- However, also derive `market` from the data to avoid storing `"all-markets"` when the market filter isn't explicitly selected
+Then update the chart data for 3M Low and 3M High KPIs (~lines 650, 666):
+- **3M Low**: `chartData: lowHighTrend.length > 0 ? lowHighTrend : ...`
+- **3M High**: `chartData: lowHighTrend.length > 0 ? lowHighTrend : ...`
 
-Both tabs will now resolve region/market from the actual API data associated with the selected facility, regardless of filter state.
+The 12M Average, 12M Daily Average, and Target Vol charts remain unchanged (using `monthlyTrend` and `dailyTrend`).
 
