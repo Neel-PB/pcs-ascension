@@ -1,19 +1,26 @@
 
 
-## Fix: Make Entire Dialog Scroll as One Unit
+## Fix: Proper Scroll Heights for Access Scope Dialog
 
 ### Problem
-Each section (Region, Market, Facility, Department) has its own `max-h-[140px]`/`max-h-[160px]`/`max-h-[200px]` with `overflow-y-auto`, creating nested scroll areas inside the outer `ScrollArea`. This clips content within each section individually — facilities and departments get cut off even though the dialog has room.
+With all `max-h` removed, sections with many items (Facility ~30, Department ~339) make the dialog content taller than the viewport. The `ScrollArea` wrapping the content doesn't have proper height constraints, so it overflows and clips Facility/Department entirely.
 
-### Fix
-Remove the `max-h` and `overflow-y-auto` from all four inner section containers. Let the outer `ScrollArea` handle all scrolling so the entire dialog content scrolls as one continuous list.
+### Solution
+Give each section appropriate height limits based on item count:
+- **Region** (2 items): No constraint — show all
+- **Market** (~12 items): Cap at `max-h-[200px]` with its own scroll
+- **Facility** (~30 items): Cap at `max-h-[240px]` with its own scroll
+- **Department** (~339 items): Cap at `max-h-[280px]` with its own scroll
+
+This way all four sections are always visible on screen, each with internal scrolling for long lists. The outer `ScrollArea` stays as a safety net.
 
 ### Change: `src/components/admin/AccessScopeDialog.tsx`
 
-- **Line 186**: Region container — remove `max-h-[140px] overflow-y-auto`
-- **Line 212**: Market container — remove `max-h-[160px] overflow-y-auto`  
-- **Line 251**: Facility list — remove `max-h-[200px] overflow-y-auto`
-- **Line 294**: Department list — remove `max-h-[200px] overflow-y-auto`
+1. **Line 169** — Increase dialog max height: `max-h-[90vh]` (from 85vh) for more room
+2. **Line 186** — Region container: keep as-is (no max-h, only 2 items)
+3. **Line 212** — Market container: add `max-h-[200px] overflow-y-auto`
+4. **Line 251** — Facility list container: add `max-h-[240px] overflow-y-auto`
+5. **Line 294** — Department list container: add `max-h-[280px] overflow-y-auto`
 
-All four become simple `space-y-0.5 p-1` containers that expand to show all items, and the outer `ScrollArea` (line 177) handles the full-dialog scroll.
+Each scrollable section gets its own internal scroll so all four sections remain visible and accessible within the dialog.
 
