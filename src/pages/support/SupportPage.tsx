@@ -325,9 +325,9 @@ export default function SupportPage() {
               />
             </div>
             <div className="flex gap-3">
-              <Button type="submit" className="gap-2">
+              <Button type="submit" className="gap-2" disabled={isSubmitting}>
                 <FileText className="h-4 w-4" />
-                Submit Issue
+                {isSubmitting ? "Submitting..." : "Submit Issue"}
               </Button>
               <Button type="button" variant="outline" className="gap-2">
                 <ExternalLink className="h-4 w-4" />
