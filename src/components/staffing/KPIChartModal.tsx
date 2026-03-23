@@ -951,7 +951,7 @@ export function KPIChartModal({
                                           </Pie>
                                         )}
                                         {outerSlices.length > 0 && (
-                                          <Pie data={outerSlices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={85} innerRadius={60} paddingAngle={2} label={false} labelLine={false}>
+                                          <Pie data={outerSlices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} innerRadius={80} paddingAngle={2} label={false} labelLine={false}>
                                             {outerSlices.map((s: any) => (
                                               <Cell key={s.name} fill={skillColorMap[s.name] || PIE_COLORS[0]} />
                                             ))}
