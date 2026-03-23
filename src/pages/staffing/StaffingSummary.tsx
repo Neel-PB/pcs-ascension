@@ -744,7 +744,7 @@ Calculated by:
         title: "3M High",
         value: fmt(high3),
         chartData: lowHighTrend.length > 0 ? lowHighTrend : (high3 != null ? generateVolatileTrend(high3, 5, 12) : []),
-        chartType: "bar" as const,
+        chartType: "area" as const,
         delay: 0.15,
         xAxisLabels: volLabels,
         definition: "3-Month Average Highest Volume shows the average daily volume recorded during the three months with the highest total volume in the immediately preceding 12 months. This value is used to determine maximum capacity or peak staffing requirements.",
