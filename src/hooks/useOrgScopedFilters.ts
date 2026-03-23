@@ -98,7 +98,11 @@ export function useOrgScopedFilters(): AccessScopedFiltersResult {
     // Markets
     const availableMarkets = accessScope.hasMarketRestriction
       ? accessScope.markets
-      : markets.map(m => m.market);
+      : accessScope.hasRegionRestriction
+        ? markets.filter(m => m.region && accessScope.regions.some(r => 
+            r.toLowerCase() === m.region?.toLowerCase()
+          )).map(m => m.market)
+        : markets.map(m => m.market);
     
     // Facilities - map to full Facility objects from filter data
     // If filter data hasn't loaded yet but we have Access Scope, use Access Scope data directly
@@ -116,7 +120,11 @@ export function useOrgScopedFilters(): AccessScopedFiltersResult {
               submarket: null,
             }))
         )
-      : facilities;
+      : accessScope.hasMarketRestriction
+        ? facilities.filter(f => accessScope.markets.some(m => m.toLowerCase() === f.market?.toLowerCase()))
+        : accessScope.hasRegionRestriction
+          ? facilities.filter(f => f.region && accessScope.regions.some(r => r.toLowerCase() === f.region?.toLowerCase()))
+          : facilities;
     
     // PRIORITY ORDER: Most specific assignment wins
     // Department > Facility > Market > Region
