@@ -553,11 +553,15 @@ export default function StaffingSummary() {
     const nMonthAvg = pvAgg?.dly_avg_volume_12mth ?? null;
     const threeMonthLowAvg = pvAgg?.dly_avg_volume_3mth_low ?? null;
 
-    const chartData = withDaily.map(d => ({
-      month: format(parseISO(d.ym + "-01"), "MMM"),
-      volume: d.volume,
-      isLowest: lowest3Set.has(d.ym),
-    }));
+    const chartData = withDaily.map(d => {
+      const parsed = new Date(d.ym + "-01");
+      const label = !isNaN(parsed.getTime()) ? format(parsed, "MMM") : d.ym;
+      return {
+        month: label,
+        volume: d.volume,
+        isLowest: lowest3Set.has(d.ym),
+      };
+    });
 
     return (
       <ResponsiveContainer width="100%" height="100%">
