@@ -34,13 +34,32 @@ export default function SupportPage() {
     { id: "report", label: "Report Issue" },
   ];
 
-  const handleSubmitIssue = (e: React.FormEvent) => {
+  const handleSubmitIssue = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Issue Submitted", {
-      description: "Your issue has been reported. Our support team will contact you soon.",
-    });
-    setIssueTitle("");
-    setIssueDescription("");
+    setIsSubmitting(true);
+    try {
+      const timestamp = new Date().toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
+      const payload = {
+        text: `🚨 *New Issue Reported*\n\n*Title:* ${issueTitle}\n*Description:* ${issueDescription}\n*Submitted:* ${timestamp}`,
+      };
+      const res = await fetch(GOOGLE_CHAT_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json; charset=UTF-8" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Failed to send");
+      toast.success("Issue Submitted", {
+        description: "Your issue has been reported to the support team.",
+      });
+      setIssueTitle("");
+      setIssueDescription("");
+    } catch {
+      toast.error("Failed to submit issue", {
+        description: "Please try again or contact support directly.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Fetch DB FAQs
