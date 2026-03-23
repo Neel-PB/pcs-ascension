@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +20,8 @@ export interface ScopeItem {
   sublabel?: string;
 }
 
+type DialogSize = "compact" | "large";
+
 interface AccessScopeLevelDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -31,7 +32,19 @@ interface AccessScopeLevelDialogProps {
   selected: Set<string>;
   onDone: (selected: Set<string>) => void;
   searchable?: boolean;
+  size?: DialogSize;
 }
+
+const sizeClasses: Record<DialogSize, { dialog: string; list: string }> = {
+  compact: {
+    dialog: "sm:max-w-md",
+    list: "max-h-[220px]",
+  },
+  large: {
+    dialog: "sm:max-w-lg",
+    list: "max-h-[380px]",
+  },
+};
 
 export function AccessScopeLevelDialog({
   open,
@@ -43,11 +56,11 @@ export function AccessScopeLevelDialog({
   selected,
   onDone,
   searchable = false,
+  size = "compact",
 }: AccessScopeLevelDialogProps) {
   const [localSelected, setLocalSelected] = useState<Set<string>>(new Set(selected));
   const [search, setSearch] = useState("");
 
-  // Reset on open
   const handleOpenChange = (isOpen: boolean) => {
     if (isOpen) {
       setLocalSelected(new Set(selected));
@@ -65,12 +78,6 @@ export function AccessScopeLevelDialog({
     });
   };
 
-  const selectAll = () => {
-    setLocalSelected(new Set(filteredItems.map((i) => i.id)));
-  };
-
-  const clearAll = () => setLocalSelected(new Set());
-
   const filteredItems = useMemo(() => {
     if (!search) return items;
     const q = search.toLowerCase();
@@ -81,15 +88,29 @@ export function AccessScopeLevelDialog({
     );
   }, [items, search]);
 
+  const selectAll = () => {
+    setLocalSelected(new Set(filteredItems.map((i) => i.id)));
+  };
+
+  const clearAll = () => setLocalSelected(new Set());
+
   const handleDone = () => {
     onDone(localSelected);
     onOpenChange(false);
   };
 
+  const classes = sizeClasses[size];
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[80vh] flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6 pb-3">
+      <DialogContent
+        className={cn(
+          "flex flex-col overflow-hidden p-0",
+          classes.dialog
+        )}
+      >
+        {/* ── Static Header ── */}
+        <DialogHeader className="shrink-0 px-6 pt-6 pb-3">
           <div className="flex items-center gap-2.5">
             <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-primary/10 text-primary shrink-0">
               {icon}
@@ -103,9 +124,9 @@ export function AccessScopeLevelDialog({
           </div>
         </DialogHeader>
 
-        {/* Search bar */}
+        {/* ── Search ── */}
         {searchable && (
-          <div className="px-6 pb-2">
+          <div className="shrink-0 px-6 pb-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -118,8 +139,8 @@ export function AccessScopeLevelDialog({
           </div>
         )}
 
-        {/* Count bar */}
-        <div className="px-6 pb-2 flex items-center justify-between">
+        {/* ── Count bar ── */}
+        <div className="shrink-0 px-6 pb-2 flex items-center justify-between">
           <span className="text-xs text-muted-foreground">
             {localSelected.size} of {items.length} selected
           </span>
@@ -129,7 +150,7 @@ export function AccessScopeLevelDialog({
               onClick={selectAll}
               className="text-xs text-primary hover:underline font-medium"
             >
-              Select All
+              Select All{search ? " Visible" : ""}
             </button>
             <button
               type="button"
@@ -137,51 +158,59 @@ export function AccessScopeLevelDialog({
               className="text-xs text-muted-foreground hover:underline"
               disabled={localSelected.size === 0}
             >
-              Clear
+              Clear Selection
             </button>
           </div>
         </div>
 
-        {/* List */}
-        <ScrollArea className="flex-1 min-h-0 px-6">
-          <div className="space-y-0.5 pb-3">
-            {filteredItems.map((item) => {
-              const checked = localSelected.has(item.id);
-              return (
-                <div
-                  key={item.id}
-                  role="option"
-                  aria-selected={checked}
-                  onClick={() => toggleItem(item.id)}
-                  className={cn(
-                    "flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer transition-colors",
-                    checked
-                      ? "bg-primary/10 border border-primary/30"
-                      : "border border-transparent hover:bg-muted/50"
-                  )}
-                >
-                  <Checkbox checked={checked} className="shrink-0 pointer-events-none" />
-                  <span className="text-sm flex-1 min-w-0 truncate">{item.label}</span>
-                  {item.sublabel && (
-                    <>
-                      <div className="w-px h-4 bg-border shrink-0" />
-                      <span className="text-xs text-muted-foreground font-mono shrink-0">
-                        {item.sublabel}
-                      </span>
-                    </>
-                  )}
-                </div>
-              );
-            })}
-            {filteredItems.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-6">
-                {search ? "No results found" : "No items available"}
-              </p>
+        {/* ── Scrollable List Panel ── */}
+        <div className="flex-1 min-h-0 px-6">
+          <div
+            className={cn(
+              "overflow-y-auto overscroll-contain rounded-lg border border-border",
+              classes.list
             )}
+          >
+            <div className="p-1 space-y-0.5">
+              {filteredItems.map((item) => {
+                const checked = localSelected.has(item.id);
+                return (
+                  <div
+                    key={item.id}
+                    role="option"
+                    aria-selected={checked}
+                    onClick={() => toggleItem(item.id)}
+                    className={cn(
+                      "flex items-center gap-2.5 px-3 py-2 rounded-md cursor-pointer transition-colors",
+                      checked
+                        ? "bg-primary/10 border border-primary/30"
+                        : "border border-transparent hover:bg-muted/50"
+                    )}
+                  >
+                    <Checkbox checked={checked} className="shrink-0 pointer-events-none" />
+                    <span className="text-sm flex-1 min-w-0 truncate">{item.label}</span>
+                    {item.sublabel && (
+                      <>
+                        <div className="w-px h-4 bg-border shrink-0" />
+                        <span className="text-xs text-muted-foreground font-mono shrink-0">
+                          {item.sublabel}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+              {filteredItems.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-6">
+                  {search ? "No results found" : "No items available"}
+                </p>
+              )}
+            </div>
           </div>
-        </ScrollArea>
+        </div>
 
-        <DialogFooter className="px-6 py-4 border-t border-border">
+        {/* ── Static Footer ── */}
+        <DialogFooter className="shrink-0 px-6 py-4 border-t border-border">
           <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
