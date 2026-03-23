@@ -23,7 +23,6 @@ const tabConfig: Record<string, { tourKey: string; steps: any[] }> = {
   users: { tourKey: 'admin-users', steps: adminUsersTourSteps },
   feed: { tourKey: 'admin-feed', steps: adminFeedTourSteps },
   'access-control': { tourKey: 'admin-access-control', steps: adminRbacTourSteps },
-  'audit-log': { tourKey: 'admin-audit-log', steps: adminAuditTourSteps },
   settings: { tourKey: 'admin-settings', steps: adminSettingsTourSteps },
 };
 

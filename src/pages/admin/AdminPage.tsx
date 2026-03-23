@@ -105,8 +105,6 @@ export default function AdminPage() {
         )}
         
         {activeTab === "access-control" && <AccessControlPage />}
-
-        {activeTab === "audit-log" && <RBACAuditLog />}
         
         {activeTab === "settings" && <UISettings />}
       </div>
