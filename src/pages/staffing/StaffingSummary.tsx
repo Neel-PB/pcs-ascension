@@ -214,26 +214,30 @@ export default function StaffingSummary() {
     );
   }, [skillShiftData]);
 
-  // Aggregate skill-shift data by skill_mix for pie charts
+  // Aggregate skill-shift data by skill_mix for pie charts (including day/night)
   const skillMixPieData = useMemo(() => {
-    if (!skillShiftData?.length) return { hired: [], openReqs: [], target: [] };
+    if (!skillShiftData?.length) return { hired: [], openReqs: [], target: [], hiredDay: [], hiredNight: [], targetDay: [], targetNight: [] };
     
-    const bySkill: Record<string, { hired: number; openReqs: number; target: number }> = {};
+    const bySkill: Record<string, { hired: number; openReqs: number; target: number; hiredDay: number; hiredNight: number; targetDay: number; targetNight: number }> = {};
     
     skillShiftData.forEach(r => {
       const key = r.skill_mix || r.broader_skill_mix_category || 'Other';
-      if (!bySkill[key]) bySkill[key] = { hired: 0, openReqs: 0, target: 0 };
+      if (!bySkill[key]) bySkill[key] = { hired: 0, openReqs: 0, target: 0, hiredDay: 0, hiredNight: 0, targetDay: 0, targetNight: 0 };
       bySkill[key].hired += Number(r.hired_total_fte ?? 0);
+      bySkill[key].hiredDay += Number(r.hired_day_fte ?? 0);
+      bySkill[key].hiredNight += Number(r.hired_night_fte ?? 0);
       bySkill[key].openReqs += Number(r.open_reqs_total_fte ?? 0);
       
       const nf = String(r.nursing_flag).toLowerCase();
       const isNursing = nf === 'y' || nf === 'true' || nf === '1';
       if (isNursing) {
         bySkill[key].target += Number(r.target_fte_total ?? 0);
+        bySkill[key].targetDay += Number(r.target_fte_day ?? 0);
+        bySkill[key].targetNight += Number(r.target_fte_night ?? 0);
       }
     });
 
-    const toSorted = (field: 'hired' | 'openReqs' | 'target') =>
+    const toSorted = (field: keyof typeof bySkill[string]) =>
       Object.entries(bySkill)
         .map(([name, v]) => ({ name, value: Math.round(v[field] * 10) / 10 }))
         .filter(d => d.value > 0)
@@ -243,6 +247,10 @@ export default function StaffingSummary() {
       hired: toSorted('hired'),
       openReqs: toSorted('openReqs'),
       target: toSorted('target'),
+      hiredDay: toSorted('hiredDay'),
+      hiredNight: toSorted('hiredNight'),
+      targetDay: toSorted('targetDay'),
+      targetNight: toSorted('targetNight'),
     };
   }, [skillShiftData]);
 
