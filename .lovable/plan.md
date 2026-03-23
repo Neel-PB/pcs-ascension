@@ -1,25 +1,29 @@
 
 
-## Shorten X-Axis Date Labels for 28-Day Charts
+## Swap Inner/Outer Rings + Move Ring Labels to Shared Legend
 
-### Problem
-The x-axis labels use `"MMM d"` format (e.g., "Feb 15", "Mar 1") which is too wide for 28 daily data points, causing overlap.
+### Changes
 
-### Change
+#### 1. `src/pages/staffing/StaffingSummary.tsx` — Swap inner/outer assignments
 
-**`src/pages/staffing/StaffingSummary.tsx`** — Line 385
-
-Change the date format from `'MMM d'` to `'MM/dd'`:
-```typescript
-// Before
-return !isNaN(parsed.getTime()) ? format(parsed, 'MMM d') : d;
-
-// After
-return !isNaN(parsed.getTime()) ? format(parsed, 'MM/dd') : d;
+For both Hired FTEs (~lines 570-579) and Open Reqs (~lines 636-645), swap so **Night = inner, Day = outer**:
+```
+inner: { shift: 'Night', slices: ...Night..., total: ... }
+outer: { shift: 'Day', slices: ...Day..., total: ... }
 ```
 
-This produces compact labels like `02/15`, `03/01` instead of `Feb 15`, `Mar 1`, fitting all 28 days without overlap.
+#### 2. `src/components/staffing/KPIChartModal.tsx` — Move ring labels to legend row
+
+**Remove** the per-chart "Inner: Day (value) / Outer: Night (value)" text block next to each donut (lines 967-970).
+
+**Add** a second legend row below the skill-mix legend showing ring meaning without values:
+```
+● Inner: Night   ○ Outer: Day
+```
+
+Use two small concentric ring icons (or simple styled spans) to indicate inner vs outer. No FTE values — those are already in the footer totals.
 
 ### Files Changed
 - `src/pages/staffing/StaffingSummary.tsx`
+- `src/components/staffing/KPIChartModal.tsx`
 
