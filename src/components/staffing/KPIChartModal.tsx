@@ -978,6 +978,17 @@ export function KPIChartModal({
                             </div>
                           ))}
                         </div>
+                        {/* Ring indicator legend */}
+                        <div className="flex justify-center gap-x-6 gap-y-1 pt-1.5 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1.5">
+                            <span className="inline-block w-3 h-3 rounded-full border-2 border-muted-foreground/50 bg-muted-foreground/20" />
+                            <span>Inner: Night</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="inline-block w-3 h-3 rounded-full border-2 border-muted-foreground/50 bg-transparent" />
+                            <span>Outer: Day</span>
+                          </div>
+                        </div>
                       </div>
                     );
                   })()

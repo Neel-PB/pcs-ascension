@@ -640,8 +640,8 @@ ${fmt(hiredFtes)} - ${fmt(targetFtes)} = ${fmt(fteVariance)}`,
               },
               {
                 category: 'Non-Nursing',
-                inner: { shift: 'Day', slices: skillMixPieData.openReqsDayNonNursing, total: Math.round(skillMixPieData.openReqsDayNonNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
-                outer: { shift: 'Night', slices: skillMixPieData.openReqsNightNonNursing, total: Math.round(skillMixPieData.openReqsNightNonNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+                inner: { shift: 'Night', slices: skillMixPieData.openReqsNightNonNursing, total: Math.round(skillMixPieData.openReqsNightNonNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+                outer: { shift: 'Day', slices: skillMixPieData.openReqsDayNonNursing, total: Math.round(skillMixPieData.openReqsDayNonNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
               },
             ]
           : (skillMixPieData.openReqs.length > 0 ? skillMixPieData.openReqs : (openReqs != null ? generateVolatileTrend(openReqs, 2) : [])),
