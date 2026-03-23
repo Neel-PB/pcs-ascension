@@ -506,7 +506,7 @@ export default function StaffingSummary() {
         id: 'vacancy-rate',
         title: "Vacancy Rate",
         value: fmtPct(vacancyRate),
-        chartData: vacancyBySkillMix.length > 0 
+        chartData: hasNursingData && vacancyBySkillMix.length > 0 
           ? vacancyBySkillMix.map(d => ({ name: d.name, value: d.hired })) 
           : [],
         chartType: "pie" as const,
