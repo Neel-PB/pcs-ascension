@@ -631,8 +631,23 @@ ${fmt(hiredFtes)} - ${fmt(targetFtes)} = ${fmt(fteVariance)}`,
         id: 'open-reqs',
         title: "Open Reqs",
         value: fmt(openReqs),
-        chartData: skillMixPieData.openReqs.length > 0 ? skillMixPieData.openReqs : (openReqs != null ? generateVolatileTrend(openReqs, 2) : []),
-        chartType: skillMixPieData.openReqs.length > 0 ? "pie" as const : "bar" as const,
+        chartData: (skillMixPieData.openReqsDayNursing.length > 0 || skillMixPieData.openReqsDayNonNursing.length > 0)
+          ? [
+              {
+                category: 'Nursing',
+                inner: { shift: 'Day', slices: skillMixPieData.openReqsDayNursing, total: Math.round(skillMixPieData.openReqsDayNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+                outer: { shift: 'Night', slices: skillMixPieData.openReqsNightNursing, total: Math.round(skillMixPieData.openReqsNightNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+              },
+              {
+                category: 'Non-Nursing',
+                inner: { shift: 'Day', slices: skillMixPieData.openReqsDayNonNursing, total: Math.round(skillMixPieData.openReqsDayNonNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+                outer: { shift: 'Night', slices: skillMixPieData.openReqsNightNonNursing, total: Math.round(skillMixPieData.openReqsNightNonNursing.reduce((s, d) => s + d.value, 0) * 10) / 10 },
+              },
+            ]
+          : (skillMixPieData.openReqs.length > 0 ? skillMixPieData.openReqs : (openReqs != null ? generateVolatileTrend(openReqs, 2) : [])),
+        chartType: (skillMixPieData.openReqsDayNursing.length > 0 || skillMixPieData.openReqsDayNonNursing.length > 0)
+          ? "nested-pie" as any
+          : (skillMixPieData.openReqs.length > 0 ? "pie" as const : "bar" as const),
         delay: 0.2,
         decimalPlaces: 0,
         definition: "The number of approved requisitions that have not yet been successfully filled.",
