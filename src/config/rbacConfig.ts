@@ -34,20 +34,12 @@ export const CORE_ROLES: Role[] = [
     sort_order: 3,
   },
   {
-    id: "core-cno",
-    name: "cno",
-    label: "CNO",
-    description: "Chief Nursing Officer with configurable filter access, excluded from Admin, Feedback, and Settings",
-    is_system: true,
-    sort_order: 4,
-  },
-  {
     id: "core-director",
     name: "director",
     label: "Director",
     description: "Facility and department level access only, no sub-filters, excluded from Admin, Feedback, and Settings",
     is_system: true,
-    sort_order: 5,
+    sort_order: 4,
   },
   {
     id: "core-manager",
@@ -55,7 +47,7 @@ export const CORE_ROLES: Role[] = [
     label: "Manager",
     description: "Department level access only, no sub-filters, excluded from Admin, Feedback, and Settings",
     is_system: true,
-    sort_order: 6,
+    sort_order: 5,
   },
 ];
 
