@@ -137,31 +137,6 @@ export default function AccessControlPage() {
             </ToggleGroup>
           </TooltipProvider>
 
-          <div className="h-6 w-px bg-border" />
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2" data-tour="admin-rbac-actions">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsPermissionFormOpen(true)}
-              className="flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Permission
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => {
-                setSelectedRoleForEdit(null);
-                setIsRoleFormOpen(true);
-              }}
-              className="flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Role
-            </Button>
-          </div>
         </div>
       </div>
 
