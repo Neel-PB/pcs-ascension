@@ -16,6 +16,7 @@ interface WorkforceKPICardProps {
   breakdownData?: Array<any>;
   xAxisLabels?: string[];
   decimalPlaces?: number;
+  highlightPoints?: 'lowest-3' | 'highest-3';
 }
 
 export const WorkforceKPICard = ({ 
