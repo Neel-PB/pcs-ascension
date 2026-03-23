@@ -569,22 +569,6 @@ export const adminRbacTourSteps: Step[] = [
   },
 ];
 
-export const adminAuditTourSteps: Step[] = [
-  {
-    target: '[data-tour="admin-audit-filters"]',
-    title: 'Audit Filters',
-    content: 'Filter audit entries by action type (Created, Updated, Deleted, Granted, Revoked) and target type (Roles, Permissions, Role Permissions).',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="admin-audit-table"]',
-    title: 'Audit Table',
-    content: 'Each row shows the timestamp, action, target, and who made the change. Click rows with a chevron to expand and see the previous and new values.',
-    placement: 'top',
-    disableBeacon: true,
-  },
-];
 
 export const adminSettingsTourSteps: Step[] = [
   {

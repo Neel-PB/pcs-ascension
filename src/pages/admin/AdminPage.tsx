@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import UsersManagement from "./UsersManagement";
 import AccessControlPage from "./AccessControlPage";
-import RBACAuditLog from "./RBACAuditLog";
+
 import { FeedComposer } from "@/components/messaging/FeedComposer";
 import { FeedHistory } from "@/components/feed/FeedHistory";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ export default function AdminPage() {
   const { hasPermission, loading } = useRBAC();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const validTabs = ["users", "feed", "access-control", "audit-log", "settings"];
+  const validTabs = ["users", "feed", "access-control", "settings"];
 
   const [activeTab, setActiveTab] = useState(
     tabParam && validTabs.includes(tabParam) ? tabParam : "users"
@@ -33,7 +33,6 @@ export default function AdminPage() {
     { id: "users", label: "Users" },
     { id: "feed", label: "Feed" },
     { id: "access-control", label: "RBAC" },
-    { id: "audit-log", label: "Audit Log" },
     { id: "settings", label: "Settings" },
   ];
 
@@ -106,8 +105,6 @@ export default function AdminPage() {
         )}
         
         {activeTab === "access-control" && <AccessControlPage />}
-
-        {activeTab === "audit-log" && <RBACAuditLog />}
         
         {activeTab === "settings" && <UISettings />}
       </div>

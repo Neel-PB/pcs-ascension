@@ -20,7 +20,7 @@ export const APP_TOUR_SEQUENCE: TourSection[] = [
   { page: '/admin', tab: 'users', tourKey: 'admin-users', name: 'Admin Users' },
   { page: '/admin', tab: 'feed', tourKey: 'admin-feed', name: 'Admin Feed' },
   { page: '/admin', tab: 'access-control', tourKey: 'admin-access-control', name: 'RBAC' },
-  { page: '/admin', tab: 'audit-log', tourKey: 'admin-audit-log', name: 'Audit Log' },
+  
   { page: '/admin', tab: 'settings', tourKey: 'admin-settings', name: 'Admin Settings' },
   { page: '/feedback', tab: null, tourKey: 'feedback-page', name: 'Feedback Management' },
   { page: '/analytics', tab: null, tourKey: 'analytics', name: 'Analytics' },

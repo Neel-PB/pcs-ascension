@@ -5,19 +5,17 @@ import {
   adminUsersTourSteps,
   adminFeedTourSteps,
   adminRbacTourSteps,
-  adminAuditTourSteps,
   adminSettingsTourSteps,
 } from './tourSteps';
 import { TourTooltip } from './TourTooltip';
 import { getNextSection, injectSectionMetadata } from './tourConfig';
 import { useMemo } from 'react';
 
-const TAB_SEQUENCE = ['users', 'feed', 'access-control', 'audit-log', 'settings'];
+const TAB_SEQUENCE = ['users', 'feed', 'access-control', 'settings'];
 const TOUR_KEY_MAP: Record<string, string> = {
   users: 'admin-users',
   feed: 'admin-feed',
   'access-control': 'admin-access-control',
-  'audit-log': 'admin-audit-log',
   settings: 'admin-settings',
 };
 
@@ -25,7 +23,6 @@ const tabConfig: Record<string, { tourKey: string; steps: any[] }> = {
   users: { tourKey: 'admin-users', steps: adminUsersTourSteps },
   feed: { tourKey: 'admin-feed', steps: adminFeedTourSteps },
   'access-control': { tourKey: 'admin-access-control', steps: adminRbacTourSteps },
-  'audit-log': { tourKey: 'admin-audit-log', steps: adminAuditTourSteps },
   settings: { tourKey: 'admin-settings', steps: adminSettingsTourSteps },
 };
 

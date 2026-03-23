@@ -3,7 +3,7 @@ import {
   staffingSteps, planningSteps, varianceSteps, forecastSteps,
   volumeSettingsSteps, npSettingsSteps,
   adminUsersTourSteps, adminFeedTourSteps, adminRbacTourSteps,
-  adminAuditTourSteps, adminSettingsTourSteps,
+  adminSettingsTourSteps,
   feedbackTourSteps, aiHubTourSteps, checklistTourSteps,
   feedbackPageTourSteps, analyticsTourSteps, reportsTourSteps,
 } from './tourSteps';
@@ -26,7 +26,7 @@ export const TOUR_STEP_REGISTRY: Record<string, Step[]> = {
   'admin-users': adminUsersTourSteps,
   'admin-feed': adminFeedTourSteps,
   'admin-access-control': adminRbacTourSteps,
-  'admin-audit-log': adminAuditTourSteps,
+  
   'admin-settings': adminSettingsTourSteps,
   'header': headerTourSteps,
   'sidebar': sidebarTourSteps,
