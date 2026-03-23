@@ -46,20 +46,20 @@ export function useDynamicSidebar() {
         { title: "Positions", url: "/positions", icon: UserCog, permissions: ["positions.access"] },
       ],
     },
-    {
-      label: "Analytics",
-      icon: TrendingUp,
-      items: [
-        { title: "Analytics Region", url: "/analytics", icon: TrendingUp, permissions: ["analytics.access"] },
-      ],
-    },
-    {
-      label: "Reports",
-      icon: FileBarChart,
-      items: [
-        { title: "Reports", url: "/reports", icon: FileBarChart, permissions: ["reports.access"] },
-      ],
-    },
+    // {
+    //   label: "Analytics",
+    //   icon: TrendingUp,
+    //   items: [
+    //     { title: "Analytics Region", url: "/analytics", icon: TrendingUp, permissions: ["analytics.access"] },
+    //   ],
+    // },
+    // {
+    //   label: "Reports",
+    //   icon: FileBarChart,
+    //   items: [
+    //     { title: "Reports", url: "/reports", icon: FileBarChart, permissions: ["reports.access"] },
+    //   ],
+    // },
     {
       label: "Support",
       icon: LifeBuoy,
