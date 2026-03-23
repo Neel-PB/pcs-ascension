@@ -63,7 +63,7 @@ export function FeedHistory() {
 
   return (
     <>
-      <ScrollArea className="h-[600px]">
+      <ScrollArea className="h-full">
         <div className="space-y-4">
           {posts.map((post) => {
             const isExpanded = expandedPosts.has(post.id);

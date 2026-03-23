@@ -96,11 +96,11 @@ export default function AdminPage() {
         {activeTab === "users" && <UsersManagement />}
         
         {activeTab === "feed" && (
-          <div className="space-y-6">
-            <div data-tour="admin-feed-composer">
+          <div className="flex gap-6 h-full min-h-0">
+            <div className="w-1/2 flex-shrink-0" data-tour="admin-feed-composer">
               <FeedComposer />
             </div>
-            <div data-tour="admin-feed-history">
+            <div className="w-1/2 min-h-0 overflow-hidden" data-tour="admin-feed-history">
               <FeedHistory />
             </div>
           </div>
