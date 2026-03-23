@@ -1,59 +1,33 @@
 
 
-## Migrate User List & Add User to NestJS API
+## Update User Form: Single Role, No Bio, Inline Access Scope
 
 ### Summary
-Replace all Supabase calls in `useUsers.ts` with NestJS API calls via `apiFetch`. No changes needed to UI components — they consume the same `UserWithProfile` interface.
-
-### API Mapping (from User entity)
-
-Based on the entity you shared, the NestJS response uses snake_case (`first_name`, `last_name`, `created_at`) with `roles` as a relation array and `accessScope` as a relation array.
+Simplify the UserFormSheet to match the NestJS API: single role select instead of multi-select, remove bio field, and show Access Scope inline (not inside a collapsible).
 
 ### Changes
 
-**`src/hooks/useUsers.ts`** — Full rewrite, remove all Supabase imports
+**1. `src/components/admin/UserFormSheet.tsx`**
+- **Remove bio field** entirely (form schema, default values, reset logic, submit payload, and the Textarea)
+- **Change roles from array to single string**: Update zod schema from `z.array(z.string())` to `z.string()`. Replace `MultiSelectChips` with a standard `Select` dropdown for picking one role
+- **Remove Collapsible wrapper** around Access Scope — render `AccessScopeManager` directly inline in the form (always visible, no expand/collapse)
+- **Update submit handler**: Send `role` as a single string (or wrap in array for API compatibility) instead of `roles` array. Remove `bio` from payload
+- **Clean up imports**: Remove `Textarea`, `MultiSelectChips`, `Collapsible` components, `ChevronDown` icon
 
-1. **List users** — `GET /users`
-   - Map response to `UserWithProfile[]`
-   - Extract role names from the `roles` relation (each item likely has a `.role` field)
-   - Map `is_active`, `avatar_url`, `bio`, `email`, `first_name`, `last_name`, `created_at`
-   - Default roles to `['user']` if empty
+**2. `src/hooks/useUsers.ts`**
+- **Update `UserWithProfile`**: Change `roles: UserRole[]` to `role: UserRole` (single role). Remove `bio` field
+- **Update `mapApiUser`**: Map single role from `u.roles[0]?.role` or fallback to `'user'`
+- **Update create/update mutations**: Send `role` (single string) instead of `roles` array. Remove `bio` from payloads
+- **Update mutation input types** accordingly
 
-2. **Create user** — `POST /users`
-   - Send `{ email, first_name, last_name, roles, bio, accessScope }`
-   - Replace `supabase.functions.invoke('invite-user')`
+**3. `src/pages/admin/UsersManagement.tsx`**
+- Update sort case from `'roles'` to `'role'` (single value comparison)
 
-3. **Update user** — `PATCH /users/:id`
-   - Send `{ first_name, last_name, bio, roles }`
-   - Replace multi-step Supabase profile + role updates
+**4. `src/components/admin/UserManagementTable.tsx`**
+- Update any reference from `user.roles` (array) to `user.role` (string) for badge display
 
-4. **Delete user** — `DELETE /users/:id`
-   - Replace `supabase.functions.invoke('delete-user')`
-
-### Response Mapping Logic
-
-```text
-GET /users returns array of User objects:
-  {
-    id, email, first_name, last_name, is_active, must_change_password,
-    role, created_at, updated_at,
-    roles: [{ id, role, ... }],        // from UserRoleTable relation
-    accessScope: [{ id, region, market, ... }]  // from UserOrganizationAccess relation
-  }
-
-Map to UserWithProfile:
-  - avatar_url: null (not in NestJS entity — field doesn't exist there)
-  - bio: null (not in NestJS entity)
-  - roles: user.roles.map(r => r.role)
-```
-
-### What stays the same
-- `UserWithProfile` interface (unchanged)
-- `UserFormSheet`, `UserManagementTable`, `UsersManagement` page — no changes
-- Toast messages remain identical
-- react-query invalidation pattern stays
-
-### Notes
-- The NestJS User entity does NOT have `avatar_url` or `bio` columns. These will be set to `null` in the mapping. If you need them, they'd need to be added to the NestJS entity.
-- `is_active` from the entity can be used later for filtering active/inactive users.
+### API Alignment
+- `POST /users` sends `{ email, first_name, last_name, role: "admin", accessScope: [...] }`
+- `PATCH /users/:id` sends `{ first_name, last_name, role: "admin" }`
+- Single `role` field aligns with the NestJS User entity's `role` column
 
