@@ -188,7 +188,7 @@ export function KPIChartModal({
               activeId={activeTab}
               onSelect={setActiveTab}
               layoutId="kpiChartTab"
-              className="max-w-xs"
+              className="max-w-xs mx-auto"
             />
           )}
 
