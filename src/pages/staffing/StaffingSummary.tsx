@@ -214,15 +214,29 @@ export default function StaffingSummary() {
     );
   }, [skillShiftData]);
 
-  // Aggregate skill-shift data by skill_mix for pie charts (including day/night)
+  // Aggregate skill-shift data by skill_mix for pie charts (including day/night and nursing splits)
   const skillMixPieData = useMemo(() => {
-    if (!skillShiftData?.length) return { hired: [], openReqs: [], target: [], hiredDay: [], hiredNight: [], targetDay: [], targetNight: [] };
+    if (!skillShiftData?.length) return {
+      hired: [], openReqs: [], target: [],
+      hiredDay: [], hiredNight: [], targetDay: [], targetNight: [],
+      hiredDayNursing: [], hiredNightNursing: [], hiredDayNonNursing: [], hiredNightNonNursing: [],
+      openReqsDayNursing: [], openReqsNightNursing: [], openReqsDayNonNursing: [], openReqsNightNonNursing: [],
+    };
     
-    const bySkill: Record<string, { hired: number; openReqs: number; target: number; hiredDay: number; hiredNight: number; targetDay: number; targetNight: number }> = {};
+    const bySkill: Record<string, {
+      hired: number; openReqs: number; target: number;
+      hiredDay: number; hiredNight: number; targetDay: number; targetNight: number;
+      hiredDayNursing: number; hiredNightNursing: number; hiredDayNonNursing: number; hiredNightNonNursing: number;
+      openReqsDayNursing: number; openReqsNightNursing: number; openReqsDayNonNursing: number; openReqsNightNonNursing: number;
+    }> = {};
     
     skillShiftData.forEach(r => {
       const key = r.skill_mix || r.broader_skill_mix_category || 'Other';
-      if (!bySkill[key]) bySkill[key] = { hired: 0, openReqs: 0, target: 0, hiredDay: 0, hiredNight: 0, targetDay: 0, targetNight: 0 };
+      if (!bySkill[key]) bySkill[key] = {
+        hired: 0, openReqs: 0, target: 0, hiredDay: 0, hiredNight: 0, targetDay: 0, targetNight: 0,
+        hiredDayNursing: 0, hiredNightNursing: 0, hiredDayNonNursing: 0, hiredNightNonNursing: 0,
+        openReqsDayNursing: 0, openReqsNightNursing: 0, openReqsDayNonNursing: 0, openReqsNightNonNursing: 0,
+      };
       bySkill[key].hired += Number(r.hired_total_fte ?? 0);
       bySkill[key].hiredDay += Number(r.hired_day_fte ?? 0);
       bySkill[key].hiredNight += Number(r.hired_night_fte ?? 0);
@@ -234,6 +248,15 @@ export default function StaffingSummary() {
         bySkill[key].target += Number(r.target_fte_total ?? 0);
         bySkill[key].targetDay += Number(r.target_fte_day ?? 0);
         bySkill[key].targetNight += Number(r.target_fte_night ?? 0);
+        bySkill[key].hiredDayNursing += Number(r.hired_day_fte ?? 0);
+        bySkill[key].hiredNightNursing += Number(r.hired_night_fte ?? 0);
+        bySkill[key].openReqsDayNursing += Number(r.open_reqs_day_fte ?? 0);
+        bySkill[key].openReqsNightNursing += Number(r.open_reqs_night_fte ?? 0);
+      } else {
+        bySkill[key].hiredDayNonNursing += Number(r.hired_day_fte ?? 0);
+        bySkill[key].hiredNightNonNursing += Number(r.hired_night_fte ?? 0);
+        bySkill[key].openReqsDayNonNursing += Number(r.open_reqs_day_fte ?? 0);
+        bySkill[key].openReqsNightNonNursing += Number(r.open_reqs_night_fte ?? 0);
       }
     });
 
@@ -251,6 +274,14 @@ export default function StaffingSummary() {
       hiredNight: toSorted('hiredNight'),
       targetDay: toSorted('targetDay'),
       targetNight: toSorted('targetNight'),
+      hiredDayNursing: toSorted('hiredDayNursing'),
+      hiredNightNursing: toSorted('hiredNightNursing'),
+      hiredDayNonNursing: toSorted('hiredDayNonNursing'),
+      hiredNightNonNursing: toSorted('hiredNightNonNursing'),
+      openReqsDayNursing: toSorted('openReqsDayNursing'),
+      openReqsNightNursing: toSorted('openReqsNightNursing'),
+      openReqsDayNonNursing: toSorted('openReqsDayNonNursing'),
+      openReqsNightNonNursing: toSorted('openReqsNightNonNursing'),
     };
   }, [skillShiftData]);
 
