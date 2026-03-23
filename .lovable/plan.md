@@ -1,29 +1,25 @@
 
 
-## Widen Chart Modal for 28-Day Productive Resources Charts
+## Shorten X-Axis Date Labels for 28-Day Charts
 
 ### Problem
-The area charts for Productive Resources KPIs have 28 daily data points that get compressed in the current `max-w-3xl` modal width, making labels overlap and the chart hard to read.
+The x-axis labels use `"MMM d"` format (e.g., "Feb 15", "Mar 1") which is too wide for 28 daily data points, causing overlap.
 
 ### Change
 
-**`src/components/staffing/KPIChartModal.tsx`** — Line 149
+**`src/pages/staffing/StaffingSummary.tsx`** — Line 385
 
-Update the width logic to also widen the modal when chartData has many points (28+ days):
-
+Change the date format from `'MMM d'` to `'MM/dd'`:
 ```typescript
-// Current
-isNestedPie ? "max-w-5xl" : showAllOptions ? "max-w-4xl" : "max-w-3xl"
+// Before
+return !isNaN(parsed.getTime()) ? format(parsed, 'MMM d') : d;
 
-// Updated — also widen for charts with 20+ data points
-isNestedPie ? "max-w-5xl" 
-  : (chartData && chartData.length >= 20) ? "max-w-5xl"
-  : showAllOptions ? "max-w-4xl" 
-  : "max-w-3xl"
+// After
+return !isNaN(parsed.getTime()) ? format(parsed, 'MM/dd') : d;
 ```
 
-This ensures the 28-day area charts for Paid FTEs, Contract FTEs, Overtime FTEs, Total PRN, Non-Productive %, and Employed Productive FTEs all render at full width with readable x-axis labels.
+This produces compact labels like `02/15`, `03/01` instead of `Feb 15`, `Mar 1`, fitting all 28 days without overlap.
 
 ### Files Changed
-- `src/components/staffing/KPIChartModal.tsx`
+- `src/pages/staffing/StaffingSummary.tsx`
 
