@@ -59,6 +59,7 @@ export function KPICard({
   showAllOptions,
   decimalPlaces = 1,
   xAxisLabels,
+  highlightPoints,
   employmentBreakdown,
   breakdownVariant,
   dataTour,
