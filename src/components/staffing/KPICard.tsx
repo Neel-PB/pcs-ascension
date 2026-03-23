@@ -67,6 +67,7 @@ export function KPICard({
   className,
   dataTourChart,
   dataTourInfo,
+  customChartContent,
 }: KPICardProps) {
   const [showChartModal, setShowChartModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
