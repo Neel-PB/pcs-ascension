@@ -318,34 +318,38 @@ export default function StaffingSummary() {
       .sort((a, b) => b.npPercent - a.npPercent);
   }, [prKpiData]);
 
-  // Day-of-week aggregation for Productive Resources area charts
-  const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const DAY_LABELS_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  // 28-day daily trend aggregation for Productive Resources area charts
+  const { dailyTrendData, dailyTrendLabels } = useMemo(() => {
+    if (!prKpiData?.length) return { dailyTrendData: [], dailyTrendLabels: [] as string[] };
 
-  const dayOfWeekData = useMemo(() => {
-    if (!prKpiData?.length) return [];
-    const byDay: Record<string, { paid: number; contractor: number; overtime: number; prn: number; employed: number; npWeighted: number; totalPaid: number }> = {};
-    DAY_ORDER.forEach(d => { byDay[d] = { paid: 0, contractor: 0, overtime: 0, prn: 0, employed: 0, npWeighted: 0, totalPaid: 0 }; });
-
+    // Group by date
+    const byDate: Record<string, { paid: number; contractor: number; overtime: number; prn: number; employed: number; npWeighted: number; totalPaid: number }> = {};
     prKpiData.forEach(r => {
-      const raw = String(r.day_of_week ?? '').trim();
-      // Normalise: could be "Monday", "monday", "1", etc.
-      const day = DAY_ORDER.find(d => d.toLowerCase() === raw.toLowerCase()) ?? raw;
-      if (!byDay[day]) return; // skip unknown
+      const dateKey = String(r.date ?? '').trim();
+      if (!dateKey) return;
+      if (!byDate[dateKey]) byDate[dateKey] = { paid: 0, contractor: 0, overtime: 0, prn: 0, employed: 0, npWeighted: 0, totalPaid: 0 };
       const paid = Number(r.paid_fte ?? 0);
-      byDay[day].paid += paid;
-      byDay[day].contractor += Number(r.contractor_fte ?? 0);
-      byDay[day].overtime += Number(r.overtime_fte ?? 0);
-      byDay[day].prn += Number(r.total_prn ?? 0);
-      byDay[day].employed += Number(r.employed_productive_fte ?? 0);
-      byDay[day].npWeighted += Number(r.non_productive_percentage ?? 0) * paid;
-      byDay[day].totalPaid += paid;
+      byDate[dateKey].paid += paid;
+      byDate[dateKey].contractor += Number(r.contractor_fte ?? 0);
+      byDate[dateKey].overtime += Number(r.overtime_fte ?? 0);
+      byDate[dateKey].prn += Number(r.total_prn ?? 0);
+      byDate[dateKey].employed += Number(r.employed_productive_fte ?? 0);
+      byDate[dateKey].npWeighted += Number(r.non_productive_percentage ?? 0) * paid;
+      byDate[dateKey].totalPaid += paid;
     });
 
-    return DAY_ORDER.map((day, i) => {
-      const d = byDay[day];
+    // Sort chronologically
+    const sortedDates = Object.keys(byDate).sort((a, b) => a.localeCompare(b));
+
+    const labels = sortedDates.map(d => {
+      const parsed = new Date(d);
+      return !isNaN(parsed.getTime()) ? format(parsed, 'M/d') : d;
+    });
+
+    const data = sortedDates.map(dateKey => {
+      const d = byDate[dateKey];
       return {
-        day: DAY_LABELS_SHORT[i],
+        day: dateKey,
         paid_fte: Math.round(d.paid * 10) / 10,
         contractor_fte: Math.round(d.contractor * 10) / 10,
         overtime_fte: Math.round(d.overtime * 10) / 10,
@@ -354,6 +358,8 @@ export default function StaffingSummary() {
         npPercent: d.totalPaid > 0 ? Math.round((d.npWeighted / d.totalPaid) * 10) / 10 : 0,
       };
     });
+
+    return { dailyTrendData: data, dailyTrendLabels: labels };
   }, [prKpiData]);
 
   // Non-nursing target from productive-resources-kpi
