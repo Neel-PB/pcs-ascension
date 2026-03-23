@@ -73,7 +73,7 @@ export function NPSettingsTab({ selectedRegion, selectedMarket, selectedFacility
         pending_volume: pendingVolume ?? null,
         expiry_date: override?.expiry_date ?? null,
         max_expiry_date: maxExpiry,
-        market: selectedMarket,
+        market: derivedMarket,
         facility_id: selectedFacility,
         facility_name: facilityName,
       };
