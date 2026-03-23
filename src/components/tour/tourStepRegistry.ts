@@ -3,7 +3,7 @@ import {
   staffingSteps, planningSteps, varianceSteps, forecastSteps,
   volumeSettingsSteps, npSettingsSteps,
   adminUsersTourSteps, adminFeedTourSteps, adminRbacTourSteps,
-  adminAuditTourSteps, adminSettingsTourSteps,
+  adminAuditTourSteps: _unused, adminSettingsTourSteps,
   feedbackTourSteps, aiHubTourSteps, checklistTourSteps,
   feedbackPageTourSteps, analyticsTourSteps, reportsTourSteps,
 } from './tourSteps';
