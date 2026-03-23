@@ -196,8 +196,10 @@ export function KPIChartModal({
             />
           )}
 
-          {/* All 3 Options View */}
-          {showAllOptions ? (
+          {/* Custom chart content override */}
+          {customChartContent ? (
+            <div className="h-[350px] w-full">{customChartContent}</div>
+          ) : showAllOptions ? (
             <div className="overflow-y-auto pr-1" style={{ maxHeight: 'calc(85vh - 140px)' }}>
               <div className="space-y-8 pb-4">
                 {title === "Paid FTEs" ? (
