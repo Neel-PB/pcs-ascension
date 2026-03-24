@@ -35,6 +35,7 @@ export const useFeedbackComments = (feedbackId: string | null) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['feedback-comments', feedbackId] });
+      queryClient.invalidateQueries({ queryKey: ['feedback-comment-counts'] });
     },
     onError: (error: Error) => {
       toast.error('Failed to add comment: ' + error.message);
@@ -48,6 +49,7 @@ export const useFeedbackComments = (feedbackId: string | null) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['feedback-comments', feedbackId] });
+      queryClient.invalidateQueries({ queryKey: ['feedback-comment-counts'] });
     },
     onError: (error: Error) => {
       toast.error('Failed to delete comment: ' + error.message);
