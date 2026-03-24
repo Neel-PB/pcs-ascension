@@ -1,28 +1,29 @@
 
 
-# Fix Feedback Screenshot Capture Quality
+# Fix Screenshot Capture Fidelity
 
 ## Problem
-The captured screenshot appears washed out, blurry, and incorrectly scaled compared to the actual UI. Two root causes:
+`html2canvas` re-renders the DOM to a canvas element, which doesn't faithfully reproduce modern CSS (Tailwind utilities, backdrop-blur, shadows, custom fonts, etc.). This is why the captured screenshot looks visually different from the actual UI — it's a fundamental limitation of the library.
 
-1. **Scroll offset not accounted for** — The selection overlay records `clientX/clientY` (viewport-relative coordinates), but `html2canvas` renders the entire `document.body` including scrolled-off content. The crop coordinates must include `window.scrollX/scrollY` to align correctly.
-
-2. **Double-scaled capture** — `html2canvas` v1.4.1 already applies `window.devicePixelRatio` internally when the `scale` option is set. The current code uses `scale: devicePixelRatio * 1.5`, which over-scales the canvas, then crops using that same multiplier — causing misalignment and blurry/washed output.
+## Solution
+Replace `html2canvas` with **`html-to-image`**, which uses SVG `foreignObject` rendering. This approach lets the browser's own rendering engine produce the image, resulting in pixel-perfect output that matches what's on screen.
 
 ## Changes
 
-### 1. `src/lib/capturePageScreenshot.ts` — Fix scaling and scroll offset
+### 1. Install `html-to-image`
+Add dependency: `html-to-image` (remove `html2canvas`).
 
-- **Remove the 1.5x multiplier**: Change `scale: window.devicePixelRatio * 1.5` to just `scale: window.devicePixelRatio`. This prevents double-scaling.
-- **Add scroll offset to crop coordinates**: When cropping, add `window.scrollX` to `area.x` and `window.scrollY` to `area.y` so the crop aligns with the correct region of the full-page canvas.
-- **Update scaleFactor** to match: `const scaleFactor = window.devicePixelRatio` (remove `* 1.5`).
-- **Add `windowWidth` / `windowHeight`** options to html2canvas to ensure it captures at the correct viewport dimensions.
+### 2. `src/lib/capturePageScreenshot.ts` — Rewrite with html-to-image
+- Replace `html2canvas` import with `import { toBlob } from 'html-to-image'`
+- Use `toBlob(document.body, { filter, backgroundColor, pixelRatio })` to capture the full page
+- The `filter` callback excludes elements with `[data-feedback-ui]` (same as current `ignoreElements`)
+- For area cropping: capture full page as a blob, draw it onto a temporary canvas, then crop the selected region using the same scroll-offset math already in place
+- `pixelRatio` set to `window.devicePixelRatio` for sharp output
 
-### 2. `src/components/feedback/FeedbackTrigger.tsx` — Add extra frame delay
-
-- Add a third `requestAnimationFrame` wait before capture to ensure the overlay is fully removed from the DOM and repaint is complete.
+### 3. No changes to other files
+`ScreenshotSelectionOverlay`, `FeedbackTrigger`, and `ScreenshotCapture` all remain unchanged — they only depend on `capturePageScreenshot` returning a `Blob | null`.
 
 ## Files Modified
-- `src/lib/capturePageScreenshot.ts`
-- `src/components/feedback/FeedbackTrigger.tsx`
+- `package.json` (swap dependency)
+- `src/lib/capturePageScreenshot.ts` (rewrite)
 
