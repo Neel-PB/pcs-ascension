@@ -1,23 +1,66 @@
 
 
-## Better Approach: Handle 401 Directly in `apiFetch`
+# Migrate Feed from Supabase to NestJS API
 
-### Why the previous plan wasn't ideal
-The CustomEvent + listener pattern adds unnecessary complexity — two files coordinating via a browser event when a simpler solution exists.
+## Summary
+Replace all direct Supabase client calls in the feed system with NestJS API calls via `apiFetch`, matching the pattern used by staffing, positions, and user management modules.
 
-### Better approach
-Handle everything in `apiFetch` itself. On a 401 response (excluding auth endpoints), clear session storage and do a hard redirect to `/auth`. No custom events, no React state coordination needed. A hard redirect (`window.location.href`) guarantees all React state, query caches, and stale data are wiped clean — which is exactly what you want after session expiry.
+## Required NestJS API Endpoints
 
-### Changes
+These endpoints need to exist on the backend (`ascension-api`):
 
-#### `src/lib/apiFetch.ts`
-After the fetch response, before the generic error throw:
-- Check `res.status === 401` and the path is NOT `/auth/login`, `/auth/register`, `/auth/check-email`, or `/auth/set-initial-password`
-- If 401: clear all session keys (`nestjs_token`, `nestjs_user`, `nestjs_must_change_password`), then `window.location.href = '/auth'`
-- This is a hard redirect — React unmounts, all caches reset, user sees login page fresh
+```text
+GET    /feed/posts              — List posts (with author, likes, comments)
+POST   /feed/posts              — Create a post
+PATCH  /feed/posts/:id          — Edit a post
+DELETE /feed/posts/:id          — Delete a post
+POST   /feed/posts/:id/like     — Toggle like on a post
+POST   /feed/posts/:id/comments — Add a comment to a post
+POST   /feed/upload             — Upload attachment (returns URL)
+```
 
-No changes needed in `AuthContext.tsx` or anywhere else. One file, ~5 lines added.
+## Frontend Changes
 
-### Files Changed
-- `src/lib/apiFetch.ts`
+### 1. Rewrite `useEmployeeFeed.ts`
+Replace all 6 Supabase-based hooks with `apiFetch` equivalents:
+- `useEmployeeFeed()` → `GET /feed/posts` with react-query
+- `useCreatePost()` → `POST /feed/posts`
+- `useEditPost()` → `PATCH /feed/posts/:id`
+- `useDeletePost()` → `DELETE /feed/posts/:id`
+- `useLikePost()` → `POST /feed/posts/:id/like`
+- `useAddComment()` → `POST /feed/posts/:id/comments`
+
+Handle both flat array and `{ data, total }` response formats per project convention.
+
+### 2. Update `FeedComposer.tsx`
+- Replace `supabase.storage.from('post-images').upload()` with `POST /feed/upload` (multipart form or base64 payload)
+- Remove `import { supabase }` entirely
+
+### 3. Update `UnifiedEmployeeFeed.tsx`
+- Replace `supabase.storage.from('post-images').upload()` with the new upload endpoint
+- Replace `supabase.storage.from('avatars').getPublicUrl()` in `resolveAvatarUrl` — either pass full URLs from API or use a utility that builds the URL from config
+- Remove `import { supabase }`
+
+### 4. Update `FeedHistory.tsx`
+- No direct Supabase calls here (uses hooks only) — no changes needed beyond what the hook rewrite covers
+
+### 5. Update `AttachmentDisplay.tsx`
+- No Supabase calls — no changes needed
+
+### 6. Remove Supabase realtime for feed (if any)
+- Check `useRealtimeSubscriptions.ts` — currently no feed-specific subscription exists, so no change needed
+
+## Technical Notes
+- Auth token injection is handled automatically by `apiFetch` (reads `nestjs_token` from sessionStorage)
+- The NestJS backend must join profiles/author data server-side and return it in the response
+- File uploads: the backend should accept multipart/form-data and store files (e.g. in GCS or the existing storage), returning the public URL
+- Response shape for posts should match the current frontend interface: `{ id, content, post_type, attachments, created_at, author: { first_name, last_name, avatar_url }, likes: string[], comments: [...] }`
+
+## Files Modified
+- `src/hooks/useEmployeeFeed.ts` — full rewrite
+- `src/components/messaging/FeedComposer.tsx` — replace storage upload
+- `src/components/feed/UnifiedEmployeeFeed.tsx` — replace storage upload + avatar URL resolution
+
+## Prerequisites
+The NestJS backend endpoints listed above must be implemented first. If they don't exist yet, the frontend migration can be built to target them, but the feed will not function until the backend is ready.
 
