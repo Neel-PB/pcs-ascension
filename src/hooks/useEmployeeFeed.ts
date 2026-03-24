@@ -92,9 +92,8 @@ export function useLikePost() {
 
   return useMutation({
     mutationFn: async ({ postId, isLiked }: { postId: string; isLiked: boolean }) => {
-      return apiFetch(`/feed/posts/${postId}/like`, {
-        method: "POST",
-        body: JSON.stringify({ isLiked }),
+      return apiFetch(`/feed/${postId}/like`, {
+        method: isLiked ? "DELETE" : "POST",
       });
     },
     onSuccess: () => {
