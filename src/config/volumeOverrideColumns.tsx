@@ -111,6 +111,7 @@ export const createVolumeOverrideColumns = (
         <OverrideVolumeCell
           value={displayValue}
           isPending={hasPending}
+          maxVolume={row.max_vol_patients}
           onSave={(value) => onSaveVolume(row.department_id, value)}
           onDelete={() => onDeleteOverride(row.department_id)}
           badge={{
