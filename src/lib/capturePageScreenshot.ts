@@ -25,14 +25,18 @@ export const capturePageScreenshot = async (
     const backgroundColor = isUsableBg(bodyBg) ? bodyBg : isUsableBg(htmlBg) ? htmlBg : fallbackBg;
 
     // Capture full page with html2canvas
+    const scaleFactor = window.devicePixelRatio;
+
     const canvas = await html2canvas(document.body, {
       useCORS: true,
       allowTaint: false,
       backgroundColor: backgroundColor,
-      scale: window.devicePixelRatio * 1.5, // Higher resolution for better quality
+      scale: scaleFactor,
+      windowWidth: document.documentElement.clientWidth,
+      windowHeight: document.documentElement.clientHeight,
       logging: false,
-      imageTimeout: 0, // Wait for all images to load
-      removeContainer: true, // Clean up after capture
+      imageTimeout: 0,
+      removeContainer: true,
       ignoreElements: (el) => {
         return el.closest('[data-feedback-ui]') !== null;
       },
@@ -41,8 +45,9 @@ export const capturePageScreenshot = async (
     // If area specified, crop the canvas
     if (area) {
       const croppedCanvas = document.createElement('canvas');
-      // Use the same scale factor as the capture for proper alignment
-      const scaleFactor = window.devicePixelRatio * 1.5;
+      // Add scroll offset — selection uses viewport coords, canvas includes full page
+      const cropX = (area.x + window.scrollX) * scaleFactor;
+      const cropY = (area.y + window.scrollY) * scaleFactor;
       
       croppedCanvas.width = area.width * scaleFactor;
       croppedCanvas.height = area.height * scaleFactor;
