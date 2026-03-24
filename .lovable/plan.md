@@ -1,24 +1,39 @@
 
 
-# Fix Checkbox Alignment in RBAC Detail View
+# Add Max Volume Validation to Override Volume Cell
 
-## Problem
-In the RBAC Detail View, checkboxes are not properly aligned with their labels in the permission rows.
+## Summary
+Add a `max_vol_patients` field from the patient-volume API to enforce a maximum value when users enter override volumes. Each department row will show a hint like "Not more than X" and prevent values outside the 0–max range.
 
-## Root Cause
-The `CompactPermissionRow` component's checkbox container uses `flex items-center gap-2`, but the Radix `Checkbox` primitive can have slight vertical alignment inconsistencies due to its internal flex layout. Adding explicit `shrink-0` at the usage site and ensuring consistent vertical centering will fix this.
+## Changes
 
-## Change
+### 1. `src/hooks/usePatientVolume.ts` — Add field to interface
+Add `max_vol_patients: number | null` to `PatientVolumeRecord` (around line 12–53).
 
-### `src/components/admin/RoleDetailView.tsx`
-In the `CompactPermissionRow` component (around line 160-167), wrap the `Checkbox` to ensure it doesn't get squeezed and aligns perfectly:
+### 2. `src/config/volumeOverrideColumns.tsx` — Add field to row type + pass to cell
+- Add `max_vol_patients?: number | null` to `VolumeOverrideRow` interface.
+- Pass `maxVolume={row.max_vol_patients}` to `OverrideVolumeCell` in the `override_volume` column renderer.
 
-- Add `shrink-0` to the Checkbox className (currently only `h-4 w-4`)
-- Add `leading-none` or adjust the text span to use `leading-tight` for consistent baseline alignment
-- Ensure the outer flex container uses `items-start pt-0.5` or keeps `items-center` with the checkbox properly constrained
+### 3. `src/components/editable-table/cells/OverrideVolumeCell.tsx` — Enforce validation
+- Accept new prop `maxVolume?: number | null`.
+- Add `min="0"` and `max={maxVolume}` attributes to the `<input>` element.
+- In `handleAccept`, validate: if value < 0 or value > maxVolume, show a toast error and reject the save.
+- Show a helper text below/beside the input: `"Max: {maxVolume}"` when in editing state and maxVolume is defined.
 
-The fix is a small CSS tweak to the `CompactPermissionRow` layout — changing the checkbox class to `h-4 w-4 shrink-0 mt-px` and ensuring the label text has `leading-normal` for consistent vertical centering across all permission categories.
+### 4. `src/pages/staffing/SettingsTab.tsx` — Map the field
+In the `tableData` memo (around line 105–128), add:
+```
+max_vol_patients: record.max_vol_patients ?? null,
+```
+
+## Technical Details
+- The `max_vol_patients` column comes from the NestJS `patient-volume` API response. If the backend doesn't yet return this field, rows will have `null` and no cap will be enforced (graceful fallback).
+- Validation is both visual (input min/max attributes) and programmatic (checked in the accept handler with a toast message).
+- The input will show a small muted hint text: "Max: X" when `maxVolume` is available.
 
 ## Files Modified
-- `src/components/admin/RoleDetailView.tsx` — fix checkbox alignment in `CompactPermissionRow`
+- `src/hooks/usePatientVolume.ts`
+- `src/config/volumeOverrideColumns.tsx`
+- `src/components/editable-table/cells/OverrideVolumeCell.tsx`
+- `src/pages/staffing/SettingsTab.tsx`
 
