@@ -30,6 +30,22 @@ interface Post {
   comments: Comment[];
 }
 
+function resolveAttachmentUrl(path: string): string {
+  if (!path) return path;
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
+  return `${API_BASE_URL}/feed/file/${encodeURIComponent(path)}`;
+}
+
+function normalizeAuthor(post: any): PostAuthor {
+  const src = post.author || post.user || {};
+  return {
+    first_name: src.first_name || src.firstName || 'Unknown',
+    last_name: src.last_name || src.lastName || 'User',
+    avatar_url: src.avatar_url || src.avatarUrl || undefined,
+  };
+}
+
 function normalizePosts(raw: any): Post[] {
   const items = Array.isArray(raw) ? raw : raw?.data ?? [];
   return items.map((post: any) => ({
@@ -37,10 +53,10 @@ function normalizePosts(raw: any): Post[] {
     user_id: post.user_id || post.userId,
     content: post.content,
     post_type: post.post_type || post.postType || 'general',
-    attachments: post.attachments || [],
+    attachments: (post.attachments || []).map(resolveAttachmentUrl),
     created_at: post.created_at || post.createdAt,
     updated_at: post.updated_at || post.updatedAt,
-    author: post.author || { first_name: 'Unknown', last_name: 'User', avatar_url: undefined },
+    author: normalizeAuthor(post),
     likes: post.likes || [],
     comments: (post.comments || []).map((c: any) => ({
       id: c.id,
@@ -48,7 +64,7 @@ function normalizePosts(raw: any): Post[] {
       user_id: c.user_id || c.userId,
       content: c.content,
       created_at: c.created_at || c.createdAt,
-      author: c.author || { first_name: 'Unknown', last_name: 'User', avatar_url: undefined },
+      author: normalizeAuthor(c),
     })),
   }));
 }
