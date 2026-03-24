@@ -146,44 +146,6 @@ export default function SupportPage() {
     faq.answer.toLowerCase().includes(debouncedSearch.toLowerCase())
   );
 
-  const trainingVideos = [
-    {
-      title: "Getting Started with the Platform",
-      duration: "5:30",
-      description: "Learn the basics of navigating the workforce management platform",
-      thumbnail: "🎯"
-    },
-    {
-      title: "Managing Employee Records",
-      duration: "8:15",
-      description: "Complete guide to adding, editing, and managing employee information",
-      thumbnail: "👥"
-    },
-    {
-      title: "Understanding Analytics Dashboard",
-      duration: "6:45",
-      description: "How to read and interpret workforce analytics and KPIs",
-      thumbnail: "📊"
-    },
-    {
-      title: "Creating and Managing Requisitions",
-      duration: "7:20",
-      description: "Step-by-step process for opening and tracking position requisitions",
-      thumbnail: "📝"
-    },
-    {
-      title: "Generating Reports",
-      duration: "4:50",
-      description: "Learn how to create, customize, and export various reports",
-      thumbnail: "📈"
-    },
-    {
-      title: "Using Advanced Filters",
-      duration: "3:40",
-      description: "Master the filter system to find exactly what you need",
-      thumbnail: "🔍"
-    }
-  ];
 
   const troubleshootingTopics = [
     {
