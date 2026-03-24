@@ -127,7 +127,7 @@ export function useEditPost() {
 
   return useMutation({
     mutationFn: async ({ postId, content }: { postId: string; content: string }) => {
-      return apiFetch(`/feed/posts/${postId}`, {
+      return apiFetch(`/feed/${postId}`, {
         method: "PATCH",
         body: JSON.stringify({ content }),
       });
