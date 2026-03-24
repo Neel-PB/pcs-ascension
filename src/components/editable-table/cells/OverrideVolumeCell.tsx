@@ -30,6 +30,7 @@ interface OverrideVolumeCellProps {
 export function OverrideVolumeCell({
   value,
   isPending = false,
+  maxVolume,
   onSave,
   onDelete,
   badge,
