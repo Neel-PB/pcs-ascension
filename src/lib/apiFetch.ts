@@ -9,7 +9,7 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
   if (token) headers["Authorization"] = `Bearer ${token}`;
   const res = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
 
-  const authPaths = ["/auth/login", "/auth/register", "/auth/check-email", "/auth/set-initial-password"];
+  const authPaths = ["/auth/login", "/auth/register", "/auth/check-email", "/auth/set-initial-password", "/auth/me"];
   if (res.status === 401 && !authPaths.some(p => path.startsWith(p))) {
     sessionStorage.removeItem("nestjs_token");
     sessionStorage.removeItem("nestjs_user");
