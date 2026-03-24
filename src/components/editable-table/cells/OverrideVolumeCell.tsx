@@ -68,6 +68,17 @@ export function OverrideVolumeCell({
     const numValue = editValue.trim() === '' ? null : parseFloat(editValue);
     if (numValue !== null && isNaN(numValue)) return;
 
+    if (numValue !== null) {
+      if (numValue < 0) {
+        toast.error('Value must be at least 0');
+        return;
+      }
+      if (maxVolume != null && numValue > maxVolume) {
+        toast.error(`Value must not exceed ${maxVolume}`);
+        return;
+      }
+    }
+
     setIsLoading(true);
     try {
       await onSave(numValue);
