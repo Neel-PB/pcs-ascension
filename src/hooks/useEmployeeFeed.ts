@@ -72,7 +72,7 @@ export function useCreatePost() {
       post_type: string;
       attachments?: string[];
     }) => {
-      return apiFetch("/feed/posts", {
+      return apiFetch("/feed", {
         method: "POST",
         body: JSON.stringify({ content, post_type, attachments: attachments || [] }),
       });
