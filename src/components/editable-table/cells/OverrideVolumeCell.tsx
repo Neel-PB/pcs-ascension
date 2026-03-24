@@ -18,7 +18,8 @@ interface BadgeConfig {
 
 interface OverrideVolumeCellProps {
   value: number | null | undefined;
-  isPending?: boolean; // NEW: Whether this value is pending (stored in memory, not DB)
+  isPending?: boolean;
+  maxVolume?: number | null;
   onSave: (value: number | null) => Promise<void>;
   onDelete: () => Promise<void>;
   badge?: BadgeConfig;
