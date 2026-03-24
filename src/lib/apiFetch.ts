@@ -14,7 +14,10 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
     sessionStorage.removeItem("nestjs_token");
     sessionStorage.removeItem("nestjs_user");
     sessionStorage.removeItem("nestjs_must_change_password");
-    window.location.href = "/auth";
+    // Only hard-redirect if we're not already on the auth page (prevents infinite reload loop)
+    if (!window.location.pathname.startsWith("/auth")) {
+      window.location.href = "/auth";
+    }
     throw new Error("Session expired. Please sign in again.");
   }
 
