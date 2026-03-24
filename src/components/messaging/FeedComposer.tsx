@@ -1,9 +1,8 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { useCreatePost } from "@/hooks/useEmployeeFeed";
+import { useCreatePost, uploadFeedAttachment } from "@/hooks/useEmployeeFeed";
 import { Send, Paperclip, Image, FileText, FileSpreadsheet, X, Bold, Italic, Underline, List, ListOrdered, ArrowUp } from "@/lib/icons";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 
 // Define the structure for a processed file
 interface ProcessedFile {
@@ -76,7 +75,6 @@ export function FeedComposer() {
     return processedFiles;
   };
 
-  // Function to handle file selection and processing
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -95,25 +93,21 @@ export function FeedComposer() {
     }
   };
 
-  // Function to remove an attachment
   const handleRemoveAttachment = (id: string) => {
     setAttachments(prev => prev.filter(f => f.id !== id));
   };
 
-  // Function to trigger the file input dialog
   const handleAttachClick = () => {
     fileInputRef.current?.click();
   };
 
   const updateActiveFormats = () => {
     const formats = new Set<string>();
-    
     if (document.queryCommandState('bold')) formats.add('bold');
     if (document.queryCommandState('italic')) formats.add('italic');
     if (document.queryCommandState('underline')) formats.add('underline');
     if (document.queryCommandState('insertUnorderedList')) formats.add('ul');
     if (document.queryCommandState('insertOrderedList')) formats.add('ol');
-    
     setActiveFormats(formats);
   };
 
@@ -122,43 +116,6 @@ export function FeedComposer() {
     document.execCommand(command, false, value);
     editorRef.current?.focus();
     setTimeout(updateActiveFormats, 10);
-  };
-
-  const uploadAttachmentToStorage = async (file: ProcessedFile): Promise<string | null> => {
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      let fileToUpload: Blob;
-      if (file.type === 'image' || file.type === 'pdf') {
-        const base64Response = await fetch(`data:${file.mimeType};base64,${file.data}`);
-        fileToUpload = await base64Response.blob();
-      } else {
-        fileToUpload = new Blob([file.data], { type: file.mimeType });
-      }
-
-      const { data, error } = await supabase.storage
-        .from('post-images')
-        .upload(filePath, fileToUpload, {
-          contentType: file.mimeType,
-          upsert: false
-        });
-
-      if (error) throw error;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('post-images')
-        .getPublicUrl(data.path);
-
-      return publicUrl;
-    } catch (error) {
-      console.error('Upload failed:', error);
-      toast.error("Upload failed", {
-        description: `Failed to upload ${file.name}`,
-      });
-      return null;
-    }
   };
 
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -173,8 +130,21 @@ export function FeedComposer() {
     try {
       const uploadedUrls: string[] = [];
       for (const file of attachments) {
-        const url = await uploadAttachmentToStorage(file);
-        if (url) uploadedUrls.push(url);
+        try {
+          // Convert base64 back to blob for upload
+          const base64Response = await fetch(`data:${file.mimeType};base64,${file.data}`);
+          const blob = await base64Response.blob();
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+          
+          const url = await uploadFeedAttachment(blob, fileName);
+          uploadedUrls.push(url);
+        } catch (error) {
+          console.error('Upload failed:', error);
+          toast.error("Upload failed", {
+            description: `Failed to upload ${file.name}`,
+          });
+        }
       }
 
       createPost(
@@ -294,100 +264,54 @@ export function FeedComposer() {
 
         <div className="flex items-center justify-between px-3 pb-3 pt-2">
           <div className="flex items-center gap-1">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('bold') ? 'bg-blue-500/20' : ''}`}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => execCommand('bold')}
-                  title="Bold"
-                >
-                  <Bold className="h-3 w-3" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('italic') ? 'bg-blue-500/20' : ''}`}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => execCommand('italic')}
-                  title="Italic"
-                >
-                  <Italic className="h-3 w-3" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('underline') ? 'bg-blue-500/20' : ''}`}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => execCommand('underline')}
-                  title="Underline"
-                >
-                  <Underline className="h-3 w-3" />
-                </Button>
+            <Button type="button" variant="ghost" size="icon"
+              className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('bold') ? 'bg-blue-500/20' : ''}`}
+              onMouseDown={(e) => e.preventDefault()} onClick={() => execCommand('bold')} title="Bold">
+              <Bold className="h-3 w-3" />
+            </Button>
+            <Button type="button" variant="ghost" size="icon"
+              className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('italic') ? 'bg-blue-500/20' : ''}`}
+              onMouseDown={(e) => e.preventDefault()} onClick={() => execCommand('italic')} title="Italic">
+              <Italic className="h-3 w-3" />
+            </Button>
+            <Button type="button" variant="ghost" size="icon"
+              className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('underline') ? 'bg-blue-500/20' : ''}`}
+              onMouseDown={(e) => e.preventDefault()} onClick={() => execCommand('underline')} title="Underline">
+              <Underline className="h-3 w-3" />
+            </Button>
             
             <div className="w-px h-5 bg-border/40 mx-1" />
             
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('ul') ? 'bg-blue-500/20' : ''}`}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => execCommand('insertUnorderedList')}
-                  title="Bullet List"
-                >
-                  <List className="h-3 w-3" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('ol') ? 'bg-blue-500/20' : ''}`}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => execCommand('insertOrderedList')}
-                  title="Numbered List"
-                >
-                  <ListOrdered className="h-3 w-3" />
-                </Button>
+            <Button type="button" variant="ghost" size="icon"
+              className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('ul') ? 'bg-blue-500/20' : ''}`}
+              onMouseDown={(e) => e.preventDefault()} onClick={() => execCommand('insertUnorderedList')} title="Bullet List">
+              <List className="h-3 w-3" />
+            </Button>
+            <Button type="button" variant="ghost" size="icon"
+              className={`h-7 w-7 rounded-lg hover:bg-accent ${activeFormats.has('ol') ? 'bg-blue-500/20' : ''}`}
+              onMouseDown={(e) => e.preventDefault()} onClick={() => execCommand('insertOrderedList')} title="Numbered List">
+              <ListOrdered className="h-3 w-3" />
+            </Button>
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
+            <Button type="button" variant="ghost" size="icon"
               className="h-7 w-7 rounded-lg hover:bg-accent"
-              onClick={handleAttachClick}
-              disabled={isPending || attachments.length >= 10 || isUploading}
-            >
+              onClick={handleAttachClick} disabled={isPending || attachments.length >= 10 || isUploading}>
               <Paperclip className="h-3 w-3" />
             </Button>
 
-            <Button
-              type="button"
-              size="icon"
+            <Button type="button" size="icon"
               className="h-8 w-8 rounded-full disabled:opacity-50"
-              onClick={() => handleSubmit()}
-              disabled={!canSend}
-              title={isUploading ? "Uploading..." : "Send"}
-            >
+              onClick={() => handleSubmit()} disabled={!canSend}
+              title={isUploading ? "Uploading..." : "Send"}>
               <ArrowUp className="h-4 w-4" />
             </Button>
           </div>
         </div>
       </div>
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        onChange={handleFileChange}
-        className="hidden"
-        multiple
-        accept="image/*,.pdf"
-      />
+      <input ref={fileInputRef} type="file" onChange={handleFileChange} className="hidden" multiple accept="image/*,.pdf" />
 
       <style>{`
         [contentEditable][data-placeholder]:empty:before {

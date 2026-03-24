@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { apiFetch } from "@/lib/apiFetch";
 import { toast } from "sonner";
-import { useAuth } from "@/hooks/useAuth";
 
 interface PostAuthor {
   first_name: string;
@@ -31,67 +30,52 @@ interface Post {
   comments: Comment[];
 }
 
+function normalizePosts(raw: any): Post[] {
+  const items = Array.isArray(raw) ? raw : raw?.data ?? [];
+  return items.map((post: any) => ({
+    id: post.id,
+    user_id: post.user_id || post.userId,
+    content: post.content,
+    post_type: post.post_type || post.postType || 'general',
+    attachments: post.attachments || [],
+    created_at: post.created_at || post.createdAt,
+    updated_at: post.updated_at || post.updatedAt,
+    author: post.author || { first_name: 'Unknown', last_name: 'User', avatar_url: undefined },
+    likes: post.likes || [],
+    comments: (post.comments || []).map((c: any) => ({
+      id: c.id,
+      post_id: c.post_id || c.postId,
+      user_id: c.user_id || c.userId,
+      content: c.content,
+      created_at: c.created_at || c.createdAt,
+      author: c.author || { first_name: 'Unknown', last_name: 'User', avatar_url: undefined },
+    })),
+  }));
+}
+
 export function useEmployeeFeed() {
   return useQuery({
     queryKey: ["employee-feed"],
     queryFn: async () => {
-      const { data: posts, error } = await supabase
-        .from("posts")
-        .select(`
-          *,
-          author:profiles!posts_user_id_fkey(first_name, last_name, avatar_url),
-          post_likes(user_id),
-          comments(
-            id,
-            post_id,
-            user_id,
-            content,
-            created_at,
-            author:profiles!comments_user_id_fkey(first_name, last_name, avatar_url)
-          )
-        `)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
-      return posts.map((post: any) => ({
-        ...post,
-        author: post.author || { first_name: 'Unknown', last_name: 'User', avatar_url: undefined },
-        likes: post.post_likes?.map((like: any) => like.user_id) || [],
-        comments: (post.comments || []).map((comment: any) => ({
-          ...comment,
-          author: comment.author || { first_name: 'Unknown', last_name: 'User', avatar_url: undefined },
-        })),
-      })) as Post[];
+      const raw = await apiFetch("/feed/posts");
+      return normalizePosts(raw);
     },
   });
 }
 
 export function useCreatePost() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ content, post_type, attachments }: { 
-      content: string; 
+    mutationFn: async ({ content, post_type, attachments }: {
+      content: string;
       post_type: string;
       attachments?: string[];
     }) => {
-      if (!user) throw new Error("Not authenticated");
-
-      const { data, error } = await supabase
-        .from("posts")
-        .insert({
-          user_id: user.id,
-          content,
-          post_type,
-          attachments: attachments || [],
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      return apiFetch("/feed/posts", {
+        method: "POST",
+        body: JSON.stringify({ content, post_type, attachments: attachments || [] }),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employee-feed"] });
@@ -105,27 +89,13 @@ export function useCreatePost() {
 
 export function useLikePost() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async ({ postId, isLiked }: { postId: string; isLiked: boolean }) => {
-      if (!user) throw new Error("Not authenticated");
-
-      if (isLiked) {
-        const { error } = await supabase
-          .from("post_likes")
-          .delete()
-          .eq("post_id", postId)
-          .eq("user_id", user.id);
-
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("post_likes")
-          .insert({ post_id: postId, user_id: user.id });
-
-        if (error) throw error;
-      }
+      return apiFetch(`/feed/posts/${postId}/like`, {
+        method: "POST",
+        body: JSON.stringify({ isLiked }),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employee-feed"] });
@@ -135,24 +105,13 @@ export function useLikePost() {
 
 export function useAddComment() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async ({ postId, content }: { postId: string; content: string }) => {
-      if (!user) throw new Error("Not authenticated");
-
-      const { data, error } = await supabase
-        .from("comments")
-        .insert({
-          post_id: postId,
-          user_id: user.id,
-          content,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      return apiFetch(`/feed/posts/${postId}/comments`, {
+        method: "POST",
+        body: JSON.stringify({ content }),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employee-feed"] });
@@ -169,12 +128,10 @@ export function useEditPost() {
 
   return useMutation({
     mutationFn: async ({ postId, content }: { postId: string; content: string }) => {
-      const { error } = await supabase
-        .from("posts")
-        .update({ content })
-        .eq("id", postId);
-
-      if (error) throw error;
+      return apiFetch(`/feed/posts/${postId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ content }),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employee-feed"] });
@@ -192,12 +149,9 @@ export function useDeletePost() {
 
   return useMutation({
     mutationFn: async (postId: string) => {
-      const { error } = await supabase
-        .from("posts")
-        .delete()
-        .eq("id", postId);
-
-      if (error) throw error;
+      return apiFetch(`/feed/posts/${postId}`, {
+        method: "DELETE",
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employee-feed"] });
@@ -208,4 +162,28 @@ export function useDeletePost() {
       console.error(error);
     },
   });
+}
+
+export async function uploadFeedAttachment(file: File | Blob, fileName: string): Promise<string> {
+  const formData = new FormData();
+  formData.append("file", file, fileName);
+
+  const token = sessionStorage.getItem("nestjs_token");
+  const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
+
+  const res = await fetch(`${API_BASE_URL}/feed/upload`, {
+    method: "POST",
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Upload failed");
+  }
+
+  const data = await res.json();
+  return data.url || data.publicUrl;
 }
