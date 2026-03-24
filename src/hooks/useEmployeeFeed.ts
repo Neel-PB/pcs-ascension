@@ -57,7 +57,7 @@ export function useEmployeeFeed() {
   return useQuery({
     queryKey: ["employee-feed"],
     queryFn: async () => {
-      const raw = await apiFetch("/feed/posts");
+      const raw = await apiFetch("/feed");
       return normalizePosts(raw);
     },
   });
@@ -72,7 +72,7 @@ export function useCreatePost() {
       post_type: string;
       attachments?: string[];
     }) => {
-      return apiFetch("/feed/posts", {
+      return apiFetch("/feed", {
         method: "POST",
         body: JSON.stringify({ content, post_type, attachments: attachments || [] }),
       });
@@ -92,9 +92,8 @@ export function useLikePost() {
 
   return useMutation({
     mutationFn: async ({ postId, isLiked }: { postId: string; isLiked: boolean }) => {
-      return apiFetch(`/feed/posts/${postId}/like`, {
-        method: "POST",
-        body: JSON.stringify({ isLiked }),
+      return apiFetch(`/feed/${postId}/like`, {
+        method: isLiked ? "DELETE" : "POST",
       });
     },
     onSuccess: () => {
@@ -108,7 +107,7 @@ export function useAddComment() {
 
   return useMutation({
     mutationFn: async ({ postId, content }: { postId: string; content: string }) => {
-      return apiFetch(`/feed/posts/${postId}/comments`, {
+      return apiFetch(`/feed/${postId}/comments`, {
         method: "POST",
         body: JSON.stringify({ content }),
       });
@@ -128,7 +127,7 @@ export function useEditPost() {
 
   return useMutation({
     mutationFn: async ({ postId, content }: { postId: string; content: string }) => {
-      return apiFetch(`/feed/posts/${postId}`, {
+      return apiFetch(`/feed/${postId}`, {
         method: "PATCH",
         body: JSON.stringify({ content }),
       });
@@ -149,7 +148,7 @@ export function useDeletePost() {
 
   return useMutation({
     mutationFn: async (postId: string) => {
-      return apiFetch(`/feed/posts/${postId}`, {
+      return apiFetch(`/feed/${postId}`, {
         method: "DELETE",
       });
     },
