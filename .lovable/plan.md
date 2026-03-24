@@ -1,40 +1,24 @@
 
 
-# Fix Feed: Author Name and Attachment Image
+# Fix Checkbox Alignment in RBAC Detail View
 
-## Problems Found
+## Problem
+In the RBAC Detail View, checkboxes are not properly aligned with their labels in the permission rows.
 
-From the actual API response:
-```json
-{
-  "user": { "first_name": "Admin", "last_name": "User", ... },
-  "attachments": ["feed/982cd2df-c0b9-4a4a-bd24-25bba450574c.png"]
-}
-```
+## Root Cause
+The `CompactPermissionRow` component's checkbox container uses `flex items-center gap-2`, but the Radix `Checkbox` primitive can have slight vertical alignment inconsistencies due to its internal flex layout. Adding explicit `shrink-0` at the usage site and ensuring consistent vertical centering will fix this.
 
-1. **"Unknown User"**: The normalizer looks for `post.author` but the API returns `post.user`. Since no `author` key exists, it falls back to `{ first_name: 'Unknown', last_name: 'User' }`.
+## Change
 
-2. **Broken image**: Attachments are stored as relative paths (e.g. `feed/982cd2df-...png`), not full URLs. The `AttachmentDisplay` component tries to use them as `src` directly, which fails.
+### `src/components/admin/RoleDetailView.tsx`
+In the `CompactPermissionRow` component (around line 160-167), wrap the `Checkbox` to ensure it doesn't get squeezed and aligns perfectly:
 
-## Changes
+- Add `shrink-0` to the Checkbox className (currently only `h-4 w-4`)
+- Add `leading-none` or adjust the text span to use `leading-tight` for consistent baseline alignment
+- Ensure the outer flex container uses `items-start pt-0.5` or keeps `items-center` with the checkbox properly constrained
 
-### 1. `src/hooks/useEmployeeFeed.ts` — Fix author mapping
-In `normalizePosts`, check for `post.user` in addition to `post.author`:
-```
-author: post.author || post.user || { first_name: 'Unknown', ... }
-```
-Map `avatar_url` from `post.user.avatar_url` or `post.user.avatarUrl`.
-
-### 2. `src/hooks/useEmployeeFeed.ts` — Resolve attachment URLs
-Add a helper that converts relative paths to full GCS signed URLs or public URLs. Since the backend already has a `/feed/upload` endpoint that returns URLs, the simplest fix is to have the normalizer prepend the API base URL or a known storage base URL to relative paths:
-- If the attachment starts with `http`, use as-is
-- Otherwise, construct the full URL (the backend should ideally return full URLs — but as a frontend fix, we can call a resolve function)
-
-**Preferred approach**: Since the backend stores relative paths and generates signed URLs on read (which was the cause of the earlier 500 error), the backend's `GET /feed` response should now return full signed URLs after the IAM fix. If it's still returning relative paths, the frontend will prefix them with the GCS bucket base URL from config or the API base URL.
-
-### 3. `src/components/feed/AttachmentDisplay.tsx` — No changes needed
-Once URLs are resolved in the normalizer, this component works as-is.
+The fix is a small CSS tweak to the `CompactPermissionRow` layout — changing the checkbox class to `h-4 w-4 shrink-0 mt-px` and ensuring the label text has `leading-normal` for consistent vertical centering across all permission categories.
 
 ## Files Modified
-- `src/hooks/useEmployeeFeed.ts` — fix `post.user` → `author` mapping + resolve relative attachment paths to full URLs
+- `src/components/admin/RoleDetailView.tsx` — fix checkbox alignment in `CompactPermissionRow`
 
