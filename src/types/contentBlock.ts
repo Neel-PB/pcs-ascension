@@ -25,11 +25,15 @@ export interface ContentBlockMetadata {
   tasks?: Task[];
   timestamp?: Date;
   attachments?: Array<{ id: string; name: string }>;
+  /** When type is data-table */
+  columns?: { key: string; label: string }[];
+  rows?: Record<string, unknown>[];
+  totalRows?: number;
 }
 
 export interface ContentBlock {
   id: string;
-  type: 'user-input' | 'ai-response' | 'reasoning' | 'task-list';
+  type: 'user-input' | 'ai-response' | 'data-table' | 'reasoning' | 'task-list';
   content: string;
   metadata?: ContentBlockMetadata;
 }
