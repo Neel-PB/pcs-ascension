@@ -162,9 +162,9 @@ function CompactPermissionRow({
                 checked={isEnabled}
                 onCheckedChange={onToggle}
                 disabled={isUpdating}
-                className="h-4 w-4"
+                className="h-4 w-4 shrink-0"
               />
-              <span className="text-sm truncate">{label}</span>
+              <span className="text-sm leading-normal truncate">{label}</span>
               {isPending ? (
                 <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
               ) : isOverridden ? (
