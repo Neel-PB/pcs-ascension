@@ -1,12 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useEmployeeFeed, useCreatePost, useLikePost, useAddComment, useEditPost, useDeletePost } from "@/hooks/useEmployeeFeed";
+import { useEmployeeFeed, useCreatePost, useLikePost, useAddComment, useEditPost, useDeletePost, uploadFeedAttachment } from "@/hooks/useEmployeeFeed";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
-import { supabase } from "@/integrations/supabase/client";
 import { 
   Heart, 
   MessageCircle, 
@@ -31,9 +30,13 @@ const resolveAvatarUrl = (avatar_url?: string, first_name?: string, last_name?: 
   if (avatar_url) {
     if (avatar_url.startsWith('http')) {
       return avatar_url;
-    } else {
-      return supabase.storage.from('avatars').getPublicUrl(avatar_url).data.publicUrl;
     }
+    // If it's a relative path, construct URL from env
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (supabaseUrl) {
+      return `${supabaseUrl}/storage/v1/object/public/avatars/${avatar_url}`;
+    }
+    return avatar_url;
   }
   const initials = `${first_name?.[0] || ''}${last_name?.[0] || ''}`.toUpperCase();
   return `https://api.dicebear.com/7.x/initials/svg?seed=${initials}&backgroundColor=6366f1&color=ffffff`;
@@ -88,18 +91,9 @@ export function UnifiedEmployeeFeed() {
       setUploadingImages(true);
       try {
         for (const image of selectedImages) {
-          const fileName = `${user?.id}/${Date.now()}-${image.name}`;
-          const { data, error } = await supabase.storage
-            .from('post-images')
-            .upload(fileName, image);
-
-          if (error) throw error;
-
-          const { data: urlData } = supabase.storage
-            .from('post-images')
-            .getPublicUrl(data.path);
-
-          attachmentUrls.push(urlData.publicUrl);
+          const fileName = `${Date.now()}-${image.name}`;
+          const url = await uploadFeedAttachment(image, fileName);
+          attachmentUrls.push(url);
         }
       } catch (error) {
         console.error('Error uploading images:', error);
@@ -138,23 +132,14 @@ export function UnifiedEmployeeFeed() {
 
     addCommentMutation.mutate({ postId, content: text }, {
       onSuccess: () => {
-        setNewComments(prev => ({
-          ...prev,
-          [postId]: ""
-        }));
-        setShowComments(prev => ({
-          ...prev,
-          [postId]: true
-        }));
+        setNewComments(prev => ({ ...prev, [postId]: "" }));
+        setShowComments(prev => ({ ...prev, [postId]: true }));
       }
     });
   };
 
   const toggleComments = (postId: string) => {
-    setShowComments(prev => ({
-      ...prev,
-      [postId]: !prev[postId]
-    }));
+    setShowComments(prev => ({ ...prev, [postId]: !prev[postId] }));
   };
 
   const handleImageUpload = () => {
@@ -188,15 +173,9 @@ export function UnifiedEmployeeFeed() {
 
     try {
       switch (type) {
-        case 'bold':
-          document.execCommand('bold', false, '');
-          break;
-        case 'italic':
-          document.execCommand('italic', false, '');
-          break;
-        case 'underline':
-          document.execCommand('underline', false, '');
-          break;
+        case 'bold': document.execCommand('bold', false, ''); break;
+        case 'italic': document.execCommand('italic', false, ''); break;
+        case 'underline': document.execCommand('underline', false, ''); break;
         case 'list':
           document.execCommand('insertUnorderedList', false, '');
           normalizeEditorLists(editor);
@@ -212,12 +191,10 @@ export function UnifiedEmployeeFeed() {
 
   const updateActiveFormattingState = () => {
     const active: string[] = [];
-
     if (document.queryCommandState('bold')) active.push('bold');
     if (document.queryCommandState('italic')) active.push('italic');
     if (document.queryCommandState('underline')) active.push('underline');
     if (document.queryCommandState('insertUnorderedList')) active.push('list');
-
     setActiveFormatting(active);
   };
 
@@ -229,18 +206,9 @@ export function UnifiedEmployeeFeed() {
 
     if (e.ctrlKey || e.metaKey) {
       switch (e.key) {
-        case 'b':
-          e.preventDefault();
-          applyFormatting('bold');
-          break;
-        case 'i':
-          e.preventDefault();
-          applyFormatting('italic');
-          break;
-        case 'u':
-          e.preventDefault();
-          applyFormatting('underline');
-          break;
+        case 'b': e.preventDefault(); applyFormatting('bold'); break;
+        case 'i': e.preventDefault(); applyFormatting('italic'); break;
+        case 'u': e.preventDefault(); applyFormatting('underline'); break;
       }
     }
   };
@@ -248,7 +216,6 @@ export function UnifiedEmployeeFeed() {
   const handleEditorInput = () => {
     const editor = editorRef.current;
     if (!editor) return;
-
     normalizeEditorLists(editor);
     setNewPostContent(editor.innerHTML);
     updateActiveFormattingState();
@@ -290,15 +257,9 @@ export function UnifiedEmployeeFeed() {
 
     try {
       switch (type) {
-        case 'bold':
-          document.execCommand('bold', false, '');
-          break;
-        case 'italic':
-          document.execCommand('italic', false, '');
-          break;
-        case 'underline':
-          document.execCommand('underline', false, '');
-          break;
+        case 'bold': document.execCommand('bold', false, ''); break;
+        case 'italic': document.execCommand('italic', false, ''); break;
+        case 'underline': document.execCommand('underline', false, ''); break;
         case 'list':
           document.execCommand('insertUnorderedList', false, '');
           normalizeEditorLists(editor);
@@ -314,19 +275,16 @@ export function UnifiedEmployeeFeed() {
 
   const updateEditActiveFormattingState = () => {
     const active: string[] = [];
-
     if (document.queryCommandState('bold')) active.push('bold');
     if (document.queryCommandState('italic')) active.push('italic');
     if (document.queryCommandState('underline')) active.push('underline');
     if (document.queryCommandState('insertUnorderedList')) active.push('list');
-
     setEditActiveFormatting(active);
   };
 
   const handleEditEditorInput = () => {
     const editor = editEditorRef.current;
     if (!editor) return;
-
     normalizeEditorLists(editor);
     setEditContent(editor.innerHTML);
     updateEditActiveFormattingState();
@@ -335,18 +293,9 @@ export function UnifiedEmployeeFeed() {
   const handleEditKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.ctrlKey || e.metaKey) {
       switch (e.key) {
-        case 'b':
-          e.preventDefault();
-          applyEditFormatting('bold');
-          break;
-        case 'i':
-          e.preventDefault();
-          applyEditFormatting('italic');
-          break;
-        case 'u':
-          e.preventDefault();
-          applyEditFormatting('underline');
-          break;
+        case 'b': e.preventDefault(); applyEditFormatting('bold'); break;
+        case 'i': e.preventDefault(); applyEditFormatting('italic'); break;
+        case 'u': e.preventDefault(); applyEditFormatting('underline'); break;
       }
     }
   };
@@ -421,73 +370,36 @@ export function UnifiedEmployeeFeed() {
           <div className="flex items-center justify-between gap-2 px-4 py-3 bg-muted/20 border-t border-border/50">
             {/* Left Side - Formatting Tools */}
             <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => applyFormatting('bold')}
-                className={cn(
-                  "h-9 w-9 p-0 hover:bg-accent/50",
-                  activeFormatting.includes('bold') && "bg-accent text-accent-foreground"
-                )}
-                title="Bold (Ctrl+B)"
-              >
+              <Button variant="ghost" size="sm" onClick={() => applyFormatting('bold')}
+                className={cn("h-9 w-9 p-0 hover:bg-accent/50", activeFormatting.includes('bold') && "bg-accent text-accent-foreground")}
+                title="Bold (Ctrl+B)">
                 <Bold className="h-4 w-4" />
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => applyFormatting('italic')}
-                className={cn(
-                  "h-9 w-9 p-0 hover:bg-accent/50",
-                  activeFormatting.includes('italic') && "bg-accent text-accent-foreground"
-                )}
-                title="Italic (Ctrl+I)"
-              >
+              <Button variant="ghost" size="sm" onClick={() => applyFormatting('italic')}
+                className={cn("h-9 w-9 p-0 hover:bg-accent/50", activeFormatting.includes('italic') && "bg-accent text-accent-foreground")}
+                title="Italic (Ctrl+I)">
                 <Italic className="h-4 w-4" />
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => applyFormatting('underline')}
-                className={cn(
-                  "h-9 w-9 p-0 hover:bg-accent/50",
-                  activeFormatting.includes('underline') && "bg-accent text-accent-foreground"
-                )}
-                title="Underline (Ctrl+U)"
-              >
+              <Button variant="ghost" size="sm" onClick={() => applyFormatting('underline')}
+                className={cn("h-9 w-9 p-0 hover:bg-accent/50", activeFormatting.includes('underline') && "bg-accent text-accent-foreground")}
+                title="Underline (Ctrl+U)">
                 <Underline className="h-4 w-4" />
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => applyFormatting('list')}
-                className={cn(
-                  "h-9 w-9 p-0 hover:bg-accent/50",
-                  activeFormatting.includes('list') && "bg-accent text-accent-foreground"
-                )}
-                title="Bullet List"
-              >
+              <Button variant="ghost" size="sm" onClick={() => applyFormatting('list')}
+                className={cn("h-9 w-9 p-0 hover:bg-accent/50", activeFormatting.includes('list') && "bg-accent text-accent-foreground")}
+                title="Bullet List">
                 <List className="h-4 w-4" />
               </Button>
             </div>
 
             {/* Right Side - Actions */}
             <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleImageUpload}
-                className="h-9 w-9 p-0 hover:bg-accent/50"
-                title="Add Image"
-              >
+              <Button variant="ghost" size="sm" onClick={handleImageUpload}
+                className="h-9 w-9 p-0 hover:bg-accent/50" title="Add Image">
                 <ImagePlus className="h-4 w-4" />
               </Button>
-              <Button
-                onClick={handleCreatePost}
-                disabled={createPostMutation.isPending || uploadingImages}
-                size="sm"
-                className="h-9 w-9 p-0 rounded-full"
-              >
+              <Button onClick={handleCreatePost} disabled={createPostMutation.isPending || uploadingImages}
+                size="sm" className="h-9 w-9 p-0 rounded-full">
                 {(createPostMutation.isPending || uploadingImages) ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
@@ -498,14 +410,7 @@ export function UnifiedEmployeeFeed() {
           </div>
         </div>
 
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={handleFileSelect}
-          className="hidden"
-        />
+        <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFileSelect} className="hidden" />
       </div>
 
       {/* Posts Section */}
@@ -518,7 +423,7 @@ export function UnifiedEmployeeFeed() {
           </p>
         </div>
       ) : (
-        posts.map((post, index) => {
+        posts.map((post) => {
           const isLiked = user?.id ? post.likes.includes(user.id) : false;
           const commentsOpen = showComments[post.id] || false;
           const authorAvatarSrc = post.author?.avatar_url;
@@ -580,71 +485,28 @@ export function UnifiedEmployeeFeed() {
                     />
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => applyEditFormatting('bold')}
-                          className={cn(
-                            "h-7 w-7 p-0",
-                            editActiveFormatting.includes('bold') && "bg-accent"
-                          )}
-                        >
+                        <Button variant="ghost" size="sm" onClick={() => applyEditFormatting('bold')}
+                          className={cn("h-7 w-7 p-0", editActiveFormatting.includes('bold') && "bg-accent")}>
                           <Bold className="h-3 w-3" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => applyEditFormatting('italic')}
-                          className={cn(
-                            "h-7 w-7 p-0",
-                            editActiveFormatting.includes('italic') && "bg-accent"
-                          )}
-                        >
+                        <Button variant="ghost" size="sm" onClick={() => applyEditFormatting('italic')}
+                          className={cn("h-7 w-7 p-0", editActiveFormatting.includes('italic') && "bg-accent")}>
                           <Italic className="h-3 w-3" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => applyEditFormatting('underline')}
-                          className={cn(
-                            "h-7 w-7 p-0",
-                            editActiveFormatting.includes('underline') && "bg-accent"
-                          )}
-                        >
+                        <Button variant="ghost" size="sm" onClick={() => applyEditFormatting('underline')}
+                          className={cn("h-7 w-7 p-0", editActiveFormatting.includes('underline') && "bg-accent")}>
                           <Underline className="h-3 w-3" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => applyEditFormatting('list')}
-                          className={cn(
-                            "h-7 w-7 p-0",
-                            editActiveFormatting.includes('list') && "bg-accent"
-                          )}
-                        >
+                        <Button variant="ghost" size="sm" onClick={() => applyEditFormatting('list')}
+                          className={cn("h-7 w-7 p-0", editActiveFormatting.includes('list') && "bg-accent")}>
                           <List className="h-3 w-3" />
                         </Button>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => handleSaveEdit(post.id)}
-                          disabled={editPostMutation.isPending}
-                        >
-                          {editPostMutation.isPending ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            "Save"
-                          )}
+                        <Button size="sm" onClick={() => handleSaveEdit(post.id)} disabled={editPostMutation.isPending}>
+                          {editPostMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => {
-                            setEditingPost(null);
-                            setEditActiveFormatting([]);
-                          }}
-                        >
+                        <Button size="sm" variant="ghost" onClick={() => { setEditingPost(null); setEditActiveFormatting([]); }}>
                           Cancel
                         </Button>
                       </div>
@@ -678,16 +540,9 @@ export function UnifiedEmployeeFeed() {
               )}
 
               <div className="flex items-center justify-end gap-1 pt-3 ml-[52px]">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleLikePost(post.id, isLiked)}
-                  className={cn(
-                    "h-8 w-8 p-0 relative hover:bg-accent/50",
-                    isLiked && "text-red-500 hover:text-red-600"
-                  )}
-                  title="Like"
-                >
+                <Button variant="ghost" size="sm" onClick={() => handleLikePost(post.id, isLiked)}
+                  className={cn("h-8 w-8 p-0 relative hover:bg-accent/50", isLiked && "text-red-500 hover:text-red-600")}
+                  title="Like">
                   <Heart className={cn("h-4 w-4", isLiked && "fill-current")} />
                   {post.likes.length > 0 && (
                     <span className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 bg-red-500 text-white text-[10px] font-medium rounded-full flex items-center justify-center">
@@ -695,13 +550,8 @@ export function UnifiedEmployeeFeed() {
                     </span>
                   )}
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => toggleComments(post.id)}
-                  className="h-8 w-8 p-0 relative hover:bg-accent/50"
-                  title="Comment"
-                >
+                <Button variant="ghost" size="sm" onClick={() => toggleComments(post.id)}
+                  className="h-8 w-8 p-0 relative hover:bg-accent/50" title="Comment">
                   <MessageCircle className="h-4 w-4" />
                   {(post.comments?.length || 0) > 0 && (
                     <span className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 bg-primary text-primary-foreground text-[10px] font-medium rounded-full flex items-center justify-center">
@@ -747,10 +597,7 @@ export function UnifiedEmployeeFeed() {
                         type="text"
                         placeholder="Write a comment..."
                         value={newComments[post.id] || ""}
-                        onChange={(e) => setNewComments(prev => ({
-                          ...prev,
-                          [post.id]: e.target.value
-                        }))}
+                        onChange={(e) => setNewComments(prev => ({ ...prev, [post.id]: e.target.value }))}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
@@ -760,12 +607,9 @@ export function UnifiedEmployeeFeed() {
                         className="flex-1 bg-muted/50 rounded-xl px-4 py-2 text-sm border border-border/50 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                         disabled={addCommentMutation.isPending}
                       />
-                      <Button
-                        size="sm"
-                        onClick={() => handleAddComment(post.id, newComments[post.id] || "")}
+                      <Button size="sm" onClick={() => handleAddComment(post.id, newComments[post.id] || "")}
                         disabled={!newComments[post.id]?.trim() || addCommentMutation.isPending}
-                        className="h-9 w-9 p-0 rounded-full flex-shrink-0"
-                      >
+                        className="h-9 w-9 p-0 rounded-full flex-shrink-0">
                         {addCommentMutation.isPending ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
