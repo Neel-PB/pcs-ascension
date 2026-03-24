@@ -148,7 +148,7 @@ export function useDeletePost() {
 
   return useMutation({
     mutationFn: async (postId: string) => {
-      return apiFetch(`/feed/posts/${postId}`, {
+      return apiFetch(`/feed/${postId}`, {
         method: "DELETE",
       });
     },
