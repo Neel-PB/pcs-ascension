@@ -108,7 +108,7 @@ export function useAddComment() {
 
   return useMutation({
     mutationFn: async ({ postId, content }: { postId: string; content: string }) => {
-      return apiFetch(`/feed/posts/${postId}/comments`, {
+      return apiFetch(`/feed/${postId}/comments`, {
         method: "POST",
         body: JSON.stringify({ content }),
       });
