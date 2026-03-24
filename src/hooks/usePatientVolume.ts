@@ -43,6 +43,7 @@ export interface PatientVolumeRecord {
   dly_avg_volume_12mth: number;
   dly_avg_volume_3mth_low: number;
   dly_avg_volume_3mth_high: number;
+  max_vol_patients: number | null;
   curated_data_load_ts: string;
   last_12_month_volume_stats: Array<{
     year_month: string;

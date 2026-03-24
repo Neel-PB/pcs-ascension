@@ -125,6 +125,7 @@ export function SettingsTab({ selectedRegion, selectedMarket, selectedFacility }
         spread_percentage: spreadPct,
         used_three_month_low: usedThreeMonthLow,
         lowest_three_months: lowestThree,
+        max_vol_patients: record.max_vol_patients ?? null,
       };
     });
   }, [patientVolumeData, overrides, pendingOverrides, selectedMarket, selectedFacility, config]);

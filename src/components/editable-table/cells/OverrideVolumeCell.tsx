@@ -5,6 +5,7 @@ import { Pencil, Check, X, RotateCcw } from '@/lib/icons';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 type CellState = 'idle' | 'editing' | 'saved';
 
@@ -17,7 +18,8 @@ interface BadgeConfig {
 
 interface OverrideVolumeCellProps {
   value: number | null | undefined;
-  isPending?: boolean; // NEW: Whether this value is pending (stored in memory, not DB)
+  isPending?: boolean;
+  maxVolume?: number | null;
   onSave: (value: number | null) => Promise<void>;
   onDelete: () => Promise<void>;
   badge?: BadgeConfig;
@@ -28,6 +30,7 @@ interface OverrideVolumeCellProps {
 export function OverrideVolumeCell({
   value,
   isPending = false,
+  maxVolume,
   onSave,
   onDelete,
   badge,
@@ -64,6 +67,17 @@ export function OverrideVolumeCell({
   const handleAccept = async () => {
     const numValue = editValue.trim() === '' ? null : parseFloat(editValue);
     if (numValue !== null && isNaN(numValue)) return;
+
+    if (numValue !== null) {
+      if (numValue < 0) {
+        toast.error('Value must be at least 0');
+        return;
+      }
+      if (maxVolume != null && numValue > maxVolume) {
+        toast.error(`Value must not exceed ${maxVolume}`);
+        return;
+      }
+    }
 
     setIsLoading(true);
     try {
@@ -124,16 +138,23 @@ export function OverrideVolumeCell({
 
       {state === 'editing' && (
         <div className="flex items-center gap-1">
-          <input
-            ref={inputRef}
-            type="number"
-            step="0.01"
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="w-24 text-sm font-medium bg-background border border-input rounded px-2 py-1 focus:outline-none"
-            disabled={isLoading}
-          />
+          <div className="flex flex-col gap-0.5">
+            <input
+              ref={inputRef}
+              type="number"
+              step="0.01"
+              min="0"
+              max={maxVolume ?? undefined}
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="w-24 text-sm font-medium bg-background border border-input rounded px-2 py-1 focus:outline-none"
+              disabled={isLoading}
+            />
+            {maxVolume != null && (
+              <span className="text-[10px] text-muted-foreground leading-none">Max: {maxVolume}</span>
+            )}
+          </div>
           <Button
             variant="ghost"
             size="icon"

@@ -48,6 +48,7 @@ export interface VolumeOverrideRow {
   spread_percentage?: number | null;
   used_three_month_low?: boolean;
   lowest_three_months?: string[];
+  max_vol_patients?: number | null;
 }
 
 export const createVolumeOverrideColumns = (
@@ -110,6 +111,7 @@ export const createVolumeOverrideColumns = (
         <OverrideVolumeCell
           value={displayValue}
           isPending={hasPending}
+          maxVolume={row.max_vol_patients}
           onSave={(value) => onSaveVolume(row.department_id, value)}
           onDelete={() => onDeleteOverride(row.department_id)}
           badge={{
