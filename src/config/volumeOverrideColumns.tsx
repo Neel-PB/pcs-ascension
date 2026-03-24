@@ -48,6 +48,7 @@ export interface VolumeOverrideRow {
   spread_percentage?: number | null;
   used_three_month_low?: boolean;
   lowest_three_months?: string[];
+  max_vol_patients?: number | null;
 }
 
 export const createVolumeOverrideColumns = (
