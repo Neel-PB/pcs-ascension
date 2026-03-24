@@ -57,7 +57,7 @@ export function useEmployeeFeed() {
   return useQuery({
     queryKey: ["employee-feed"],
     queryFn: async () => {
-      const raw = await apiFetch("/feed/posts");
+      const raw = await apiFetch("/feed");
       return normalizePosts(raw);
     },
   });
