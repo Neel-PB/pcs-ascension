@@ -5,6 +5,7 @@ import { Pencil, Check, X, RotateCcw } from '@/lib/icons';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 type CellState = 'idle' | 'editing' | 'saved';
 
