@@ -59,8 +59,8 @@ export const capturePageScreenshot = async (
 
       ctx.drawImage(
         canvas,
-        area.x * scaleFactor,
-        area.y * scaleFactor,
+        cropX,
+        cropY,
         area.width * scaleFactor,
         area.height * scaleFactor,
         0,
