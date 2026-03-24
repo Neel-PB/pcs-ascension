@@ -230,27 +230,8 @@ export default function SupportPage() {
 
         {activeTab === "videos" && (
           <div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {trainingVideos.map((video, index) => (
-              <div key={index} className="group bg-shell-elevated rounded-lg p-4 hover:shadow-medium transition-all cursor-pointer">
-                <div className="flex items-center justify-center bg-gradient-primary rounded-lg h-32 mb-4 text-4xl">
-                  {video.thumbnail}
-                </div>
-                <h3 className="font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-                  {video.title}
-                </h3>
-                <p className="text-sm text-shell-muted mb-3">{video.description}</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-shell-muted">{video.duration}</span>
-                  <Button size="sm" variant="ghost" className="gap-2">
-                    <Play className="h-3 w-3" />
-                    Watch
-                  </Button>
-                </div>
-              </div>
-            ))}
+            <TrainingVideosTab />
           </div>
-        </div>
         )}
 
         {activeTab === "troubleshooting" && (
