@@ -36,7 +36,8 @@ export const FeedbackTrigger: React.FC<FeedbackTriggerProps> = ({
   const handleAreaSelected = async (area: CaptureArea) => {
     setShowSelector(false);
 
-    // Wait for the selector overlay to unmount before capturing (prevents dim/washed captures)
+    // Wait for the selector overlay to fully unmount and repaint before capturing
+    await new Promise<void>((r) => requestAnimationFrame(() => r()));
     await new Promise<void>((r) => requestAnimationFrame(() => r()));
     await new Promise<void>((r) => requestAnimationFrame(() => r()));
 
