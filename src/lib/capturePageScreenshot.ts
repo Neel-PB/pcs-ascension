@@ -1,4 +1,4 @@
-import html2canvas from 'html2canvas';
+import { toBlob } from 'html-to-image';
 
 type CaptureArea = {
   x: number;
@@ -11,10 +11,7 @@ export const capturePageScreenshot = async (
   area?: CaptureArea
 ): Promise<Blob | null> => {
   try {
-    // Detect if dark mode is active
     const isDarkMode = document.documentElement.classList.contains('dark');
-
-    // Prefer the app's actual computed background (avoids "washed out" captures)
     const fallbackBg = isDarkMode ? '#0a0a0b' : '#ffffff';
     const bodyBg = getComputedStyle(document.body).backgroundColor;
     const htmlBg = getComputedStyle(document.documentElement).backgroundColor;
@@ -24,61 +21,46 @@ export const capturePageScreenshot = async (
 
     const backgroundColor = isUsableBg(bodyBg) ? bodyBg : isUsableBg(htmlBg) ? htmlBg : fallbackBg;
 
-    // Capture full page with html2canvas
-    const scaleFactor = window.devicePixelRatio;
+    const pixelRatio = window.devicePixelRatio;
 
-    const canvas = await html2canvas(document.body, {
-      useCORS: true,
-      allowTaint: false,
-      backgroundColor: backgroundColor,
-      scale: scaleFactor,
-      windowWidth: document.documentElement.clientWidth,
-      windowHeight: document.documentElement.clientHeight,
-      logging: false,
-      imageTimeout: 0,
-      removeContainer: true,
-      ignoreElements: (el) => {
-        return el.closest('[data-feedback-ui]') !== null;
-      },
+    const filter = (node: HTMLElement) => {
+      if (node?.closest?.('[data-feedback-ui]')) return false;
+      if (node?.getAttribute?.('data-feedback-ui')) return false;
+      return true;
+    };
+
+    const fullBlob = await toBlob(document.body, {
+      backgroundColor,
+      pixelRatio,
+      filter,
+      cacheBust: true,
     });
 
-    // If area specified, crop the canvas
-    if (area) {
-      const croppedCanvas = document.createElement('canvas');
-      // Add scroll offset — selection uses viewport coords, canvas includes full page
-      const cropX = (area.x + window.scrollX) * scaleFactor;
-      const cropY = (area.y + window.scrollY) * scaleFactor;
-      
-      croppedCanvas.width = area.width * scaleFactor;
-      croppedCanvas.height = area.height * scaleFactor;
-
-      const ctx = croppedCanvas.getContext('2d');
-      if (!ctx) {
-        throw new Error('Could not get canvas context');
-      }
-
-      ctx.drawImage(
-        canvas,
-        cropX,
-        cropY,
-        area.width * scaleFactor,
-        area.height * scaleFactor,
-        0,
-        0,
-        croppedCanvas.width,
-        croppedCanvas.height
-      );
-
-      return new Promise<Blob>((resolve, reject) => {
-        croppedCanvas.toBlob(
-          (blob) => (blob ? resolve(blob) : reject(new Error('Failed to create blob'))),
-          'image/png',
-          1.0
-        );
-      });
+    if (!fullBlob) {
+      throw new Error('html-to-image returned null blob');
     }
 
-    // Return full page if no area
+    // No area specified — return full page
+    if (!area) return fullBlob;
+
+    // Crop the selected area from the full-page image
+    const img = await createImageBitmap(fullBlob);
+
+    const cropX = (area.x + window.scrollX) * pixelRatio;
+    const cropY = (area.y + window.scrollY) * pixelRatio;
+    const cropW = area.width * pixelRatio;
+    const cropH = area.height * pixelRatio;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = cropW;
+    canvas.height = cropH;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Could not get canvas context');
+
+    ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+    img.close();
+
     return new Promise<Blob>((resolve, reject) => {
       canvas.toBlob(
         (blob) => (blob ? resolve(blob) : reject(new Error('Failed to create blob'))),
