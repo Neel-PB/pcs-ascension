@@ -6,9 +6,10 @@ import { SearchField } from "@/components/ui/search-field";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { Play, FileText, AlertCircle, MessageSquare, ExternalLink, Plus } from "@/lib/icons";
+import { FileText, AlertCircle, MessageSquare, ExternalLink, Plus } from "@/lib/icons";
 import { toast } from "sonner";
 import { UserGuidesTab } from "@/components/support/UserGuidesTab";
+import { TrainingVideosTab } from "@/components/support/TrainingVideosTab";
 import { useAuth } from "@/hooks/useAuth";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { useRBAC } from "@/hooks/useRBAC";
@@ -145,44 +146,6 @@ export default function SupportPage() {
     faq.answer.toLowerCase().includes(debouncedSearch.toLowerCase())
   );
 
-  const trainingVideos = [
-    {
-      title: "Getting Started with the Platform",
-      duration: "5:30",
-      description: "Learn the basics of navigating the workforce management platform",
-      thumbnail: "🎯"
-    },
-    {
-      title: "Managing Employee Records",
-      duration: "8:15",
-      description: "Complete guide to adding, editing, and managing employee information",
-      thumbnail: "👥"
-    },
-    {
-      title: "Understanding Analytics Dashboard",
-      duration: "6:45",
-      description: "How to read and interpret workforce analytics and KPIs",
-      thumbnail: "📊"
-    },
-    {
-      title: "Creating and Managing Requisitions",
-      duration: "7:20",
-      description: "Step-by-step process for opening and tracking position requisitions",
-      thumbnail: "📝"
-    },
-    {
-      title: "Generating Reports",
-      duration: "4:50",
-      description: "Learn how to create, customize, and export various reports",
-      thumbnail: "📈"
-    },
-    {
-      title: "Using Advanced Filters",
-      duration: "3:40",
-      description: "Master the filter system to find exactly what you need",
-      thumbnail: "🔍"
-    }
-  ];
 
   const troubleshootingTopics = [
     {
@@ -267,27 +230,8 @@ export default function SupportPage() {
 
         {activeTab === "videos" && (
           <div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {trainingVideos.map((video, index) => (
-              <div key={index} className="group bg-shell-elevated rounded-lg p-4 hover:shadow-medium transition-all cursor-pointer">
-                <div className="flex items-center justify-center bg-gradient-primary rounded-lg h-32 mb-4 text-4xl">
-                  {video.thumbnail}
-                </div>
-                <h3 className="font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-                  {video.title}
-                </h3>
-                <p className="text-sm text-shell-muted mb-3">{video.description}</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-shell-muted">{video.duration}</span>
-                  <Button size="sm" variant="ghost" className="gap-2">
-                    <Play className="h-3 w-3" />
-                    Watch
-                  </Button>
-                </div>
-              </div>
-            ))}
+            <TrainingVideosTab />
           </div>
-        </div>
         )}
 
         {activeTab === "troubleshooting" && (
