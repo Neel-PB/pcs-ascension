@@ -1,8 +1,19 @@
+import { useState } from 'react';
 import { ContentBlock } from '@/types/contentBlock';
 import { Response } from './elements/Response';
 import { Reasoning } from './elements/Reasoning';
 import { Task } from './elements/Task';
 import { Actions } from './elements/Actions';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { toast } from 'sonner';
 
 interface ContentBlockRendererProps {
@@ -41,9 +52,22 @@ export const ContentBlockRenderer = ({
         </div>
       );
 
+    case 'data-table': {
+      const columns = block.metadata?.columns ?? [];
+      const rows = block.metadata?.rows ?? [];
+      const totalRows = block.metadata?.totalRows;
+      return (
+        <DataTableSection
+          columns={columns}
+          rows={rows}
+          totalRows={totalRows}
+        />
+      );
+    }
+
     case 'ai-response':
       return (
-        <div className="relative group mb-12">
+        <div className="relative group mb-6">
           {/* Reasoning block (if present) */}
           {block.metadata?.reasoning && (
             <Reasoning 
@@ -99,3 +123,69 @@ export const ContentBlockRenderer = ({
       return null;
   }
 };
+
+function DataTableSection({
+  columns,
+  rows,
+  totalRows,
+}: {
+  columns: { key: string; label: string }[];
+  rows: Record<string, unknown>[];
+  totalRows?: number;
+}) {
+  const [open, setOpen] = useState(false);
+
+  const tableBody = (
+    <div className="max-h-[280px] overflow-auto">
+      <Table className="min-w-max">
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            {columns.map((col) => (
+              <TableHead
+                key={col.key}
+                className="whitespace-nowrap px-4 py-3 font-medium text-muted-foreground bg-muted/50"
+              >
+                {col.label}
+              </TableHead>
+            ))}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row, i) => (
+            <TableRow key={i}>
+              {columns.map((col) => (
+                <TableCell key={col.key} className="whitespace-nowrap px-4 py-3 align-middle">
+                  {row[col.key] != null ? String(row[col.key]) : '—'}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      {totalRows != null && rows.length < totalRows && (
+        <p className="text-xs text-muted-foreground mt-2 px-4">
+          Showing {rows.length} of {totalRows} rows
+        </p>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="mb-6 rounded-lg border border-border bg-card overflow-hidden">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/40">
+        <span className="text-xs font-medium text-muted-foreground">Data table</span>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button type="button" variant="outline" size="sm" className="h-7 text-xs">
+              Expand
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-[90vw] max-h-[85vh] overflow-auto">
+            {tableBody}
+          </DialogContent>
+        </Dialog>
+      </div>
+      {tableBody}
+    </div>
+  );
+}

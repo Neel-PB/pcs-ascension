@@ -8,6 +8,7 @@ import { mockComplexResponse, simpleReasoningBlocks } from '@/data/mockContentBl
 import ascensionLogo from '@/assets/Ascension-Emblem.svg';
 import { OverlayTour } from '@/components/tour/OverlayTour';
 import { aiHubTourSteps } from '@/components/tour/tourSteps';
+import { toast } from 'sonner';
 
 interface ProcessedFile {
   id: string;
@@ -22,6 +23,20 @@ interface ProcessedFile {
 const MIN_WIDTH = 490;
 const MAX_WIDTH_VW = 0.7;
 const SNAP_POINTS = [400, 520, 640, 820];
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
+const useLiveApi = Boolean(API_BASE_URL);
+
+function buildHistory(blocks: ContentBlock[]): { role: 'user' | 'model'; content: string }[] {
+  const out: { role: 'user' | 'model'; content: string }[] = [];
+  for (const b of blocks) {
+    if (b.type === 'user-input') out.push({ role: 'user', content: b.content });
+    else if (b.type === 'ai-response' && b.content.trim()) {
+      out.push({ role: 'model', content: b.content });
+    }
+  }
+  return out.slice(-10);
+}
 
 // Mock AI responses for different scenarios
 const mockResponses = [
@@ -85,6 +100,7 @@ export const AIHubPanel = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const streamingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   const { isDragging, currentWidth, handlePointerDown } = useResizable({
     minWidth: MIN_WIDTH,
@@ -230,10 +246,158 @@ export const AIHubPanel = () => {
     }, updateInterval);
   };
 
+  const runLiveStream = async (
+    message: string,
+    history: { role: 'user' | 'model'; content: string }[],
+    aiBlockId: string,
+  ) => {
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
+    try {
+      const token = sessionStorage.getItem('nestjs_token');
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(`${API_BASE_URL}/ai/chat/stream`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          message,
+          ...(history.length > 0 ? { history } : {}),
+        }),
+        signal: abortRef.current.signal,
+      });
+
+      if (res.status === 401) {
+        sessionStorage.removeItem('nestjs_token');
+        sessionStorage.removeItem('nestjs_user');
+        sessionStorage.removeItem('nestjs_must_change_password');
+        if (!window.location.pathname.startsWith('/auth')) {
+          window.location.href = '/auth';
+        }
+        throw new Error('Session expired. Please sign in again.');
+      }
+
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText || `Request failed (${res.status})`);
+      }
+
+      const reader = res.body?.getReader();
+      if (!reader) throw new Error('No response body');
+
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let streamError: string | null = null;
+
+      const processLine = (line: string) => {
+        if (!line.trim()) return;
+        let obj: Record<string, unknown>;
+        try {
+          obj = JSON.parse(line) as Record<string, unknown>;
+        } catch {
+          return;
+        }
+        if (obj.error != null && String(obj.error).length > 0) {
+          streamError = String(obj.error);
+          toast.error(streamError);
+          setContentBlocks(prev =>
+            prev.map(b =>
+              b.id === aiBlockId
+                ? {
+                    ...b,
+                    content: b.content || streamError!,
+                    metadata: { ...b.metadata, isStreaming: false },
+                  }
+                : b,
+            ),
+          );
+          return;
+        }
+        if (typeof obj.delta === 'string' && obj.delta.length > 0) {
+          setContentBlocks(prev =>
+            prev.map(b => (b.id === aiBlockId ? { ...b, content: b.content + obj.delta } : b)),
+          );
+        }
+        if (obj.block && typeof obj.block === 'object') {
+          const blk = obj.block as {
+            type?: string;
+            id?: string;
+            columns?: { key: string; label: string }[];
+            rows?: Record<string, unknown>[];
+            totalRows?: number;
+          };
+          if (blk.type === 'data-table' && blk.columns && blk.rows) {
+            setContentBlocks(prev => [
+              ...prev,
+              {
+                id: blk.id ?? `data-table-${Date.now()}`,
+                type: 'data-table',
+                content: '',
+                metadata: {
+                  columns: blk.columns,
+                  rows: blk.rows,
+                  totalRows: blk.totalRows,
+                },
+              },
+            ]);
+          }
+        }
+        if (obj.done === true) {
+          setContentBlocks(prev =>
+            prev.map(b =>
+              b.id === aiBlockId ? { ...b, metadata: { ...b.metadata, isStreaming: false } } : b,
+            ),
+          );
+        }
+      };
+
+      outer: while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+        for (const line of lines) {
+          processLine(line);
+          if (streamError) break outer;
+        }
+      }
+      if (buffer.trim()) processLine(buffer.trim());
+    } catch (e: unknown) {
+      if (e instanceof Error && e.name === 'AbortError') {
+        // user stopped
+      } else {
+        const msg = e instanceof Error ? e.message : String(e);
+        toast.error(msg);
+        setContentBlocks(prev =>
+          prev.map(b =>
+            b.id === aiBlockId
+              ? {
+                  ...b,
+                  content: b.content || `Error: ${msg}`,
+                  metadata: { ...b.metadata, isStreaming: false },
+                }
+              : b,
+          ),
+        );
+      }
+    } finally {
+      setIsGenerating(false);
+      setContentBlocks(prev =>
+        prev.map(b =>
+          b.id === aiBlockId ? { ...b, metadata: { ...b.metadata, isStreaming: false } } : b,
+        ),
+      );
+      abortRef.current = null;
+    }
+  };
+
   const handleSendMessage = async (message: string, attachments?: ProcessedFile[]) => {
     if (!message.trim()) return;
 
     const activeAttachments = attachments || fileAttachments;
+    const history = buildHistory(contentBlocks);
 
     // Add user message
     const userBlock: ContentBlock = {
@@ -254,7 +418,20 @@ export const AIHubPanel = () => {
     setCurrentInput('');
     setFileAttachments([]);
 
-    // Simulate AI thinking delay
+    if (useLiveApi) {
+      const aiBlockId = `ai-${Date.now()}`;
+      const aiBlock: ContentBlock = {
+        id: aiBlockId,
+        type: 'ai-response',
+        content: '',
+        metadata: { isStreaming: true, timestamp: new Date() },
+      };
+      setContentBlocks(prev => [...prev, aiBlock]);
+      await runLiveStream(message.trim(), history, aiBlockId);
+      return;
+    }
+
+    // Simulate AI thinking delay (local demo / no API base URL)
     setTimeout(() => {
       const aiBlockId = `ai-${Date.now()}`;
       
@@ -316,6 +493,8 @@ export const AIHubPanel = () => {
   };
 
   const handleClearChat = () => {
+    abortRef.current?.abort();
+    abortRef.current = null;
     setContentBlocks([]);
     setCurrentInput('');
     setFileAttachments([]);
@@ -327,22 +506,40 @@ export const AIHubPanel = () => {
   };
 
   const handleRegenerate = (blockId: string) => {
-    // Find the block to regenerate
     const blockIndex = contentBlocks.findIndex(b => b.id === blockId);
     if (blockIndex === -1) return;
+    const target = contentBlocks[blockIndex];
+    if (target.type !== 'ai-response') return;
 
-    // Get a different random response
+    if (useLiveApi) {
+      const blocksBefore = contentBlocks.slice(0, blockIndex);
+      const last = blocksBefore[blocksBefore.length - 1];
+      if (!last || last.type !== 'user-input') {
+        toast.error('Cannot regenerate: no user message found.');
+        return;
+      }
+      const userMessage = last.content;
+      const history = buildHistory(blocksBefore.slice(0, -1));
+      const aiBlockId = `ai-${Date.now()}`;
+      setContentBlocks([...blocksBefore, {
+        id: aiBlockId,
+        type: 'ai-response',
+        content: '',
+        metadata: { isStreaming: true, timestamp: new Date() },
+      }]);
+      setIsGenerating(true);
+      void runLiveStream(userMessage, history, aiBlockId);
+      return;
+    }
+
     const newResponse = mockResponses[Math.floor(Math.random() * mockResponses.length)];
-    
-    // Update the block to start streaming again
     setContentBlocks(prev =>
       prev.map(block =>
         block.id === blockId
           ? { ...block, content: '', metadata: { ...block.metadata, isStreaming: true } }
-          : block
-      )
+          : block,
+      ),
     );
-    
     setIsGenerating(true);
     setTimeout(() => {
       simulateStreaming(newResponse, blockId);
@@ -448,6 +645,7 @@ export const AIHubPanel = () => {
             isLoading={false}
             isGenerating={isGenerating}
             onStop={() => {
+              abortRef.current?.abort();
               if (streamingIntervalRef.current) {
                 clearInterval(streamingIntervalRef.current);
                 streamingIntervalRef.current = null;
