@@ -6,7 +6,7 @@ import { SearchField } from "@/components/ui/search-field";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { FileText, AlertCircle, MessageSquare, ExternalLink, Plus } from "@/lib/icons";
+import { FileText, MessageSquare, ExternalLink, Plus } from "@/lib/icons";
 import { toast } from "sonner";
 import { UserGuidesTab } from "@/components/support/UserGuidesTab";
 import { TrainingVideosTab } from "@/components/support/TrainingVideosTab";
