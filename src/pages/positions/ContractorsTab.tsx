@@ -173,7 +173,7 @@ export function ContractorsTab({
             { label: "Contractors", value: totals.totalContractorNames },
             { label: "Hired FTE", value: totals.totalHiredFTE },
           ]} />
-          <span data-tour="positions-refresh"><DataRefreshButton dataSources={['positions_data']} /></span>
+          <span data-tour="positions-refresh"><DataRefreshButton lastUpdated={(contractors as any)?.[0]?.curated_data_load_ts ?? (contractors as any)?.[0]?.updated_at ?? null} /></span>
           <Button variant="ascension" size="icon" onClick={() => setFilterOpen(true)} className="relative" aria-label="Filters" title="Filters" data-tour="positions-filter-btn">
             <Filter className="h-4 w-4" />
             {activeFilterCount > 0 && (

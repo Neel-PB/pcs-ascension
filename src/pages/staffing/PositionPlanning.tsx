@@ -509,6 +509,7 @@ interface PositionPlanningProps {
   selectedSubmarket?: string;
   selectedLevel2?: string;
   selectedPstat?: string;
+  lastUpdated?: string | null;
 }
 
 export default function PositionPlanning({
@@ -519,6 +520,7 @@ export default function PositionPlanning({
   selectedSubmarket,
   selectedLevel2,
   selectedPstat,
+  lastUpdated,
 }: PositionPlanningProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
@@ -867,7 +869,7 @@ export default function PositionPlanning({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.15 }}
           >
-            <DataRefreshButton dataSources={['staffing_grid', 'labor_uos_data']} className="h-8 w-8" />
+            <DataRefreshButton lastUpdated={lastUpdated} className="h-8 w-8" />
             <Button
               variant="ascension"
               size="icon"
