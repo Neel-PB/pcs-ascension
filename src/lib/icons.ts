@@ -124,4 +124,5 @@ export {
   MdOutlinePeopleOutline as Users,
   MdBuild as Wrench,
   MdClose as X,
+  MdLogout as LogOut,
 } from 'react-icons/md';

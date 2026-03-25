@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { HelpCircle, Navigation, Play, List } from "@/lib/icons";
+import { HelpCircle, Navigation, Play, List, User, LogOut } from "@/lib/icons";
 import { useTourStore } from "@/stores/useTourStore";
 
 import { HeaderTour } from "@/components/tour/HeaderTour";
@@ -143,15 +143,19 @@ export function AppHeader() {
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-[210px]" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{userName}</p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {userEmail}
-                    </p>
+                  <div className="flex items-start gap-2">
+                    <User className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{userName}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {userEmail}
+                      </p>
+                    </div>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={() => setProfileModalOpen(true)}>
+                  <User className="h-4 w-4 mr-2" />
                   <span>Profile</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={handleTourThisPage}>
@@ -181,6 +185,7 @@ export function AppHeader() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4 mr-2" />
                   <span>Log out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
