@@ -100,7 +100,7 @@ export function TrainingVideosTab() {
             <div
               key={video.id}
               className="group bg-card rounded-lg border hover:shadow-md transition-all cursor-pointer overflow-hidden"
-              onClick={() => setActiveVideo(video)}
+              onClick={() => handleVideoClick(video)}
             >
               {/* Thumbnail / play overlay */}
               <div className="relative flex items-center justify-center bg-muted h-36 overflow-hidden">
