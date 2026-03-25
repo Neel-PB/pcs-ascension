@@ -1,23 +1,29 @@
 
 
-## Add Report Issue Trigger Button & Remove Tab from Support
+## Fix Report Issue Trigger: Overlap & Color
 
-### Changes
+### Problem
+- The Report Issue trigger (`bottom-[116px]`) overlaps with the Workforce/Positions Checklist trigger (`bottom-[120px]`).
+- The Report Issue trigger uses red (`bg-destructive`) instead of matching the blue style of the other triggers.
 
-**1. Create `src/components/feedback/ReportIssueTrigger.tsx`**
-- A fixed-position button placed just below the AI Hub trigger (`bottom-[116px]` to stack above its `bottom-[68px]`).
-- Same visual style as AIHubTrigger: slim pill hugging the right edge, rounded-l-xl.
-- Uses a `Bug` or `AlertCircle` icon.
-- On click, opens a Sheet (side drawer) containing the Report Issue form.
-- The sheet contains the same form logic currently in SupportPage: title input, description textarea, submit via Google Chat webhook.
-- Self-contained component with its own state for the sheet open/close, form fields, and submission.
+### Current Stack (bottom to top)
+| Button | Position |
+|--------|----------|
+| Feedback | `bottom-4` (16px) |
+| AI Hub | `bottom-[68px]` |
+| Report Issue | `bottom-[116px]` ← overlaps |
+| Workforce Checklist | `bottom-[120px]` ← overlaps |
 
-**2. Mount in `src/components/shell/ShellLayout.tsx`**
-- Import and render `<ReportIssueTrigger />` alongside the existing layout, so it's globally available on every page.
+### Fix — `src/components/feedback/ReportIssueTrigger.tsx`
 
-**3. Clean up `src/pages/support/SupportPage.tsx`**
-- Remove `{ id: "report", label: "Report Issue" }` from the `tabs` array.
-- Remove the `{activeTab === "report" && ...}` render block (lines 173-208).
-- Remove now-unused state (`issueTitle`, `issueDescription`, `isSubmitting`) and the `handleSubmitIssue` function.
-- Remove unused imports (`FileText`, `ExternalLink`, `Input`, `Textarea`) if no longer referenced.
+1. **Change position** from `bottom-[116px]` to `bottom-[168px]` — placing it above the Workforce Checklist trigger with proper spacing.
+2. **Change color** from `bg-destructive hover:bg-destructive/90 text-destructive-foreground` to `bg-primary hover:bg-primary/90 text-white` to match the AI Hub and Feedback triggers.
+
+### Updated Stack
+| Button | Position |
+|--------|----------|
+| Feedback | `bottom-4` |
+| AI Hub | `bottom-[68px]` |
+| Workforce Checklist | `bottom-[120px]` |
+| Report Issue | `bottom-[168px]` |
 
