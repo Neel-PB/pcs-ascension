@@ -1026,6 +1026,7 @@ This metric helps:
               selectedSubmarket={selectedSubmarket}
               selectedLevel2={selectedLevel2}
               selectedPstat={selectedPstat}
+              lastUpdated={patientVolumeData?.[0]?.curated_data_load_ts ?? null}
             />
           )}
           
