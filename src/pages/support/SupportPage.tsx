@@ -84,13 +84,13 @@ export default function SupportPage() {
 
       <div className="min-h-0 max-h-full overflow-auto">
         {activeTab === "guides" && (
-          <div className="bg-shell-elevated rounded-xl px-4 pb-4 shadow-md">
+          <div>
             <UserGuidesTab />
           </div>
         )}
 
         {activeTab === "faqs" && (
-          <div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">
+          <div>
           <div className="mb-4 flex items-center gap-3">
             <div className="flex-1">
               <SearchField
@@ -129,7 +129,7 @@ export default function SupportPage() {
         )}
 
         {activeTab === "videos" && (
-          <div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">
+          <div>
             <TrainingVideosTab />
           </div>
         )}
