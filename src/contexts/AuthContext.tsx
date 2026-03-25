@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from "react";
 import { QueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { apiFetch } from "@/lib/apiFetch";
 import { toast } from "sonner";
 
@@ -61,22 +60,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Also let Supabase restore its own session (for RLS data queries)
-      // No action needed — supabase client auto-restores from localStorage
       setLoading(false);
     };
 
     restore();
   }, []);
 
-  // Keep Supabase onAuthStateChange for RLS session awareness
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      // We don't set user from Supabase — NestJS is authority
-      // This just keeps Supabase session alive for data queries
-    });
-    return () => subscription.unsubscribe();
-  }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
     try {
@@ -106,14 +95,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setUser(appUser);
 
-      // Silent Supabase session for RLS-protected data queries
-      try {
-        await supabase.auth.signInWithPassword({ email, password });
-      } catch {
-        // Non-critical — data queries may fail but auth works
-        console.warn("Silent Supabase session failed — RLS queries may be affected");
-      }
-
       toast.success("Signed in successfully!");
       return { data };
     } catch (err: any) {
@@ -141,17 +122,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sessionStorage.setItem("nestjs_user", JSON.stringify(appUser));
       setUser(appUser);
 
-      // Silent Supabase session
-      try {
-        await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { first_name: firstName, last_name: lastName } },
-        });
-      } catch {
-        console.warn("Silent Supabase signup failed");
-      }
-
       toast.success("Account created successfully!");
       return { data };
     } catch (err: any) {
@@ -173,10 +143,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     sessionStorage.removeItem("nestjs_user");
     sessionStorage.removeItem("nestjs_must_change_password");
     sessionStorage.removeItem("msal_user");
-    sessionStorage.removeItem("msal_access_token");
-
-    // Clear Supabase session too
-    await supabase.auth.signOut({ scope: "local" }).catch(() => {});
 
     toast.success("Signed out successfully!");
     setTimeout(() => { isSigningOutRef.current = false; }, 200);
@@ -217,13 +183,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sessionStorage.removeItem("nestjs_must_change_password");
       setMustChangePassword(false);
       setUser(appUser);
-
-      // Silent Supabase session for RLS
-      try {
-        await supabase.auth.signInWithPassword({ email, password });
-      } catch {
-        console.warn("Silent Supabase session failed");
-      }
 
       toast.success("Password set successfully!");
       return { data };

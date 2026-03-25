@@ -13,7 +13,7 @@ import { useRealtimeSubscriptions } from "@/hooks/useRealtimeSubscriptions";
 import { LogoLoader } from "@/components/ui/LogoLoader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useTourStore } from "@/stores/useTourStore";
-import { supabase } from "@/integrations/supabase/client";
+import { apiFetch } from "@/lib/apiFetch";
 
 // Lazy load all pages for code splitting
 const AuthPage = lazy(() => import("./pages/AuthPage"));
@@ -64,16 +64,15 @@ const AppContent = () => {
     if (!user || loading || onboardingChecked) return;
 
     const checkOnboarding = async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('onboarding_completed')
-        .eq('id', user.id)
-        .single();
-
-      if (data && !(data as any).onboarding_completed) {
-        startFullTour();
-        markOnboardingComplete(user.id);
-      } else {
+      try {
+        const data = await apiFetch("/auth/me");
+        if (data && !data.onboarding_completed) {
+          startFullTour();
+          markOnboardingComplete(user.id);
+        } else {
+          setOnboardingChecked(true);
+        }
+      } catch {
         setOnboardingChecked(true);
       }
     };
