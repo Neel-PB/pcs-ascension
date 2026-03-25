@@ -1446,11 +1446,11 @@ export function KPIChartModal({
                       return [
                         <div key={`${group.category}-day`} className="text-center">
                           <p className="text-xs text-muted-foreground">{group.category} Day</p>
-                          <p className="text-lg font-semibold text-foreground">{formatValue(group.inner?.total ?? 0)}</p>
+                          <p className="text-lg font-semibold text-foreground">{formatValue(group.outer?.total ?? 0)}</p>
                         </div>,
                         <div key={`${group.category}-night`} className="text-center">
                           <p className="text-xs text-muted-foreground">{group.category} Night</p>
-                          <p className="text-lg font-semibold text-foreground">{formatValue(group.outer?.total ?? 0)}</p>
+                          <p className="text-lg font-semibold text-foreground">{formatValue(group.inner?.total ?? 0)}</p>
                         </div>,
                       ];
                     })}
