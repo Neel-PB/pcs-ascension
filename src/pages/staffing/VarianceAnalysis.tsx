@@ -685,7 +685,7 @@ export function VarianceAnalysis({
             transition={{ duration: 0.3, delay: 0.15 }}
             data-tour="variance-actions"
           >
-            <DataRefreshButton dataSources={['staffing_grid', 'labor_uos_data']} className="h-8 w-8" />
+            <DataRefreshButton lastUpdated={lastUpdated} className="h-8 w-8" />
             <Button
               variant="ascension"
               size="icon"
