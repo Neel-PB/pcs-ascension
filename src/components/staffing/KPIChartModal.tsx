@@ -1333,10 +1333,10 @@ export function KPIChartModal({
                           {allSkills.map((skill, idx) => {
                             const nrsGroup = groups.find((g: any) => g.category === 'Nursing');
                             const nonNrsGroup = groups.find((g: any) => g.category === 'Non-Nursing');
-                            const nrsDay = nrsGroup?.inner?.slices?.find((s: any) => s.name === skill)?.value ?? 0;
-                            const nrsNight = nrsGroup?.outer?.slices?.find((s: any) => s.name === skill)?.value ?? 0;
-                            const nonNrsDay = nonNrsGroup?.inner?.slices?.find((s: any) => s.name === skill)?.value ?? 0;
-                            const nonNrsNight = nonNrsGroup?.outer?.slices?.find((s: any) => s.name === skill)?.value ?? 0;
+                            const nrsDay = nrsGroup?.outer?.slices?.find((s: any) => s.name === skill)?.value ?? 0;
+                            const nrsNight = nrsGroup?.inner?.slices?.find((s: any) => s.name === skill)?.value ?? 0;
+                            const nonNrsDay = nonNrsGroup?.outer?.slices?.find((s: any) => s.name === skill)?.value ?? 0;
+                            const nonNrsNight = nonNrsGroup?.inner?.slices?.find((s: any) => s.name === skill)?.value ?? 0;
                             return (
                               <div
                                 key={skill}
