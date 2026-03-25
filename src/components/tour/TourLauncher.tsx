@@ -20,28 +20,32 @@ import {
 
 const TOUR_PREFIX = 'helix-tour-';
 
+const categoryPermissionMap: Record<string, string> = {
+  Staffing: 'staffing.access',
+  Positions: 'positions.access',
+  Admin: 'admin.access',
+  Overlays: '', // no blanket permission
+};
+
+const guidePermissionMap: Record<string, string> = {
+  'staffing-volume-settings': 'settings.volume_override',
+  'staffing-np-settings': 'settings.np_override',
+};
+
+const overlayPermissionMap: Record<string, string> = {
+  feedback: 'feedback.access',
+};
+
 interface TourGroup {
   label: string;
   sections: TourSection[];
 }
 
 const GROUPS: TourGroup[] = [
-  {
-    label: 'Staffing',
-    sections: APP_TOUR_SEQUENCE.filter(s => s.page === '/staffing'),
-  },
-  {
-    label: 'Positions',
-    sections: APP_TOUR_SEQUENCE.filter(s => s.page === '/positions'),
-  },
-  {
-    label: 'Admin',
-    sections: APP_TOUR_SEQUENCE.filter(s => s.page === '/admin'),
-  },
-  {
-    label: 'Overlays',
-    sections: APP_TOUR_SEQUENCE.filter(s => s.page === null),
-  },
+  { label: 'Staffing', sections: APP_TOUR_SEQUENCE.filter(s => s.page === '/staffing') },
+  { label: 'Positions', sections: APP_TOUR_SEQUENCE.filter(s => s.page === '/positions') },
+  { label: 'Admin', sections: APP_TOUR_SEQUENCE.filter(s => s.page === '/admin') },
+  { label: 'Overlays', sections: APP_TOUR_SEQUENCE.filter(s => s.page === null) },
 ];
 
 function isCompleted(tourKey: string): boolean {
