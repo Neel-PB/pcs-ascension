@@ -95,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setUser(appUser);
 
+      toast.success("Signed in successfully!");
       return { data };
     } catch (err: any) {
       toast.error(err.message || "Sign-in failed");
