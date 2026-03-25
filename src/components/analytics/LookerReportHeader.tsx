@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Download, Share2, Filter, Calendar } from "@/lib/icons";
+import { ICON_CHROME } from "@/lib/iconSizes";
+import { cn } from "@/lib/utils";
 
 interface LookerReportHeaderProps {
   title: string;
@@ -18,15 +20,15 @@ export const LookerReportHeader = ({ title, description }: LookerReportHeaderPro
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm">
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <RefreshCw className={cn(ICON_CHROME, "mr-2")} />
             Refresh
           </Button>
           <Button variant="ghost" size="sm">
-            <Download className="h-4 w-4 mr-2" />
+            <Download className={cn(ICON_CHROME, "mr-2")} />
             Export
           </Button>
           <Button variant="ghost" size="sm">
-            <Share2 className="h-4 w-4 mr-2" />
+            <Share2 className={cn(ICON_CHROME, "mr-2")} />
             Share
           </Button>
         </div>
@@ -34,11 +36,11 @@ export const LookerReportHeader = ({ title, description }: LookerReportHeaderPro
       
       <div className="flex items-center gap-4 px-6 py-3 bg-muted/30">
         <Button variant="outline" size="sm">
-          <Calendar className="h-4 w-4 mr-2" />
+          <Calendar className={cn(ICON_CHROME, "mr-2")} />
           Last 30 Days
         </Button>
         <Button variant="outline" size="sm">
-          <Filter className="h-4 w-4 mr-2" />
+          <Filter className={cn(ICON_CHROME, "mr-2")} />
           All Regions
         </Button>
         <div className="ml-auto">

@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Search, X } from "@/lib/icons";
+import { ICON_CHROME, ICON_SEARCH_FIELD } from "@/lib/iconSizes";
 import { cn } from "@/lib/utils";
 
 interface SearchFieldProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
@@ -44,7 +45,7 @@ const SearchField = React.forwardRef<HTMLInputElement, SearchFieldProps>(
             className="absolute right-14 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Clear search"
           >
-            <X className="h-5 w-5" />
+            <X className={ICON_CHROME} />
           </button>
         )}
         <button
@@ -53,7 +54,7 @@ const SearchField = React.forwardRef<HTMLInputElement, SearchFieldProps>(
           className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 flex items-center justify-center rounded-full bg-primary text-primary-foreground"
           aria-label="Search"
         >
-          <Search className="h-6 w-6" />
+          <Search className={ICON_SEARCH_FIELD} />
         </button>
       </div>
     );

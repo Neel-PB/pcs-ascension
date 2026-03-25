@@ -1,5 +1,4 @@
-import { Pencil, RotateCcw, MessageSquare, ChevronDown, Send } from '@/lib/icons';
-import { FiClock } from 'react-icons/fi';
+import { Pencil, RotateCcw, MessageSquare, ChevronDown, Send, Clock } from '@/lib/icons';
 
 type PositionsDemoVariant = 'active-fte-steps' | 'shift-override-steps' | 'comments-preview' | 'position-details';
 
@@ -132,7 +131,7 @@ const CommentsPreview = () => (
     <div className="flex gap-2">
       <div className="flex flex-col items-center">
         <div className="w-4 h-4 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
-          <FiClock className="h-2.5 w-2.5 text-primary" />
+          <Clock className="h-2.5 w-2.5 text-primary" />
         </div>
         <div className="w-px flex-1 bg-border mt-0.5" />
       </div>

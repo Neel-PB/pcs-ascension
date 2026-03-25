@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Download, Maximize2, ChevronRight } from "@/lib/icons";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
@@ -23,6 +23,7 @@ import { useFilterData } from "@/hooks/useFilterData";
 import { useOrgScopedFilters } from "@/hooks/useOrgScopedFilters";
 import { useSkillShift, SkillShiftRecord } from "@/hooks/useSkillShift";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useStaffingViewSnapshotStore } from "@/stores/useStaffingViewSnapshotStore";
 
 interface VarianceData {
   name: string;
@@ -372,6 +373,33 @@ export function VarianceAnalysis({
   };
 
   const totals = calculateTotals(data);
+
+  const setStaffingSnapshot = useStaffingViewSnapshotStore((s) => s.setStaffingSnapshot);
+
+  useEffect(() => {
+    const fmt = (n: number) => n.toFixed(1);
+    setStaffingSnapshot({
+      tab: "variance",
+      capturedAt: new Date().toISOString(),
+      kpis: [
+        { id: "cl-day", label: "CL Day", value: fmt(totals.clDay), section: "Totals" },
+        { id: "cl-night", label: "CL Night", value: fmt(totals.clNight), section: "Totals" },
+        { id: "cl-total", label: "CL Total", value: fmt(totals.clTotal), section: "Totals" },
+        { id: "rn-day", label: "RN Day", value: fmt(totals.rnDay), section: "Totals" },
+        { id: "rn-night", label: "RN Night", value: fmt(totals.rnNight), section: "Totals" },
+        { id: "rn-total", label: "RN Total", value: fmt(totals.rnTotal), section: "Totals" },
+        { id: "pct-day", label: "PCT Day", value: fmt(totals.pctDay), section: "Totals" },
+        { id: "pct-night", label: "PCT Night", value: fmt(totals.pctNight), section: "Totals" },
+        { id: "pct-total", label: "PCT Total", value: fmt(totals.pctTotal), section: "Totals" },
+        { id: "huc-day", label: "HUC Day", value: fmt(totals.hucDay), section: "Totals" },
+        { id: "huc-night", label: "HUC Night", value: fmt(totals.hucNight), section: "Totals" },
+        { id: "huc-total", label: "HUC Total", value: fmt(totals.hucTotal), section: "Totals" },
+        { id: "overhead-day", label: "Overhead Day", value: fmt(totals.overheadDay), section: "Totals" },
+        { id: "overhead-night", label: "Overhead Night", value: fmt(totals.overheadNight), section: "Totals" },
+        { id: "overhead-total", label: "Overhead Total", value: fmt(totals.overheadTotal), section: "Totals" },
+      ],
+    });
+  }, [totals, setStaffingSnapshot]);
 
   const downloadCSV = () => {
     const headers = [

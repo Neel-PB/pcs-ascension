@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectItemNoCheck, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { X, Lock, Loader2, ChevronDown } from "@/lib/icons";
+import { ICON_CHROME } from "@/lib/iconSizes";
 import { useFilterData } from "@/hooks/useFilterData";
 import { useIsCompactScreen } from "@/hooks/use-compact-screen";
 import { CombinedOptionalFilters } from "./CombinedOptionalFilters";
@@ -324,7 +325,9 @@ export function FilterBar({
             {isRegionDisabled && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Lock className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex cursor-default">
+                    <Lock className="h-3 w-3 text-muted-foreground" aria-hidden />
+                  </span>
                 </TooltipTrigger>
                 <TooltipContent>Assigned by administrator</TooltipContent>
               </Tooltip>
@@ -360,7 +363,9 @@ export function FilterBar({
             {isMarketDisabled && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Lock className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex cursor-default">
+                    <Lock className="h-3 w-3 text-muted-foreground" aria-hidden />
+                  </span>
                 </TooltipTrigger>
                 <TooltipContent>Assigned by administrator</TooltipContent>
               </Tooltip>
@@ -450,7 +455,9 @@ export function FilterBar({
             {isFacilityDisabled && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Lock className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex cursor-default">
+                    <Lock className="h-3 w-3 text-muted-foreground" aria-hidden />
+                  </span>
                 </TooltipTrigger>
                 <TooltipContent>Assigned by administrator</TooltipContent>
               </Tooltip>
@@ -540,7 +547,9 @@ export function FilterBar({
             {isDepartmentDisabled && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Lock className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex cursor-default">
+                    <Lock className="h-3 w-3 text-muted-foreground" aria-hidden />
+                  </span>
                 </TooltipTrigger>
                 <TooltipContent>Assigned by administrator</TooltipContent>
               </Tooltip>
@@ -559,7 +568,7 @@ export function FilterBar({
           title="Clear all filters"
           aria-label="Clear all filters"
         >
-          <X className="h-3 w-3" />
+          <X className={ICON_CHROME} />
         </Button>
       </div>
 

@@ -6,10 +6,12 @@ import { Shimmer } from './Shimmer';
 interface ResponseProps extends ComponentProps<typeof Streamdown> {
   content?: string;
   isStreaming?: boolean;
+  /** Hide the three-line skeleton when tool activity rows show progress instead. */
+  suppressEmptyShimmer?: boolean;
 }
 
 export const Response = memo(
-  ({ content, isStreaming, className, children, ...props }: ResponseProps) => {
+  ({ content, isStreaming, suppressEmptyShimmer, className, children, ...props }: ResponseProps) => {
     const displayContent = children || content;
     
     return (
@@ -36,7 +38,7 @@ export const Response = memo(
               </div>
             )}
           </>
-        ) : (
+        ) : suppressEmptyShimmer ? null : (
           <Shimmer lines={3} />
         )}
       </>
@@ -45,7 +47,8 @@ export const Response = memo(
   (prevProps, nextProps) => 
     prevProps.content === nextProps.content && 
     prevProps.children === nextProps.children &&
-    prevProps.isStreaming === nextProps.isStreaming
+    prevProps.isStreaming === nextProps.isStreaming &&
+    prevProps.suppressEmptyShimmer === nextProps.suppressEmptyShimmer
 );
 
 Response.displayName = 'Response';

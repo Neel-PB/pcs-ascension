@@ -79,6 +79,8 @@ export {
   MdLocationOn as MapPin,
   MdFullscreen as Maximize2,
   MdMenu as Menu,
+  MdMic as Mic,
+  MdAccessTime as Clock,
   MdChatBubble as MessageCircle,
   MdOutlineChatBubbleOutline as MessageSquare,
   MdAddComment as MessageSquarePlus,

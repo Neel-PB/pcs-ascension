@@ -5,7 +5,7 @@ import { DateCell } from '@/components/editable-table/cells/DateCell';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MdOutlineEdit, MdOutlineDelete } from 'react-icons/md';
+import { Edit, Trash2 } from '@/lib/icons';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -128,7 +128,7 @@ export const createUserColumns = (
             onClick={() => onEdit(row)}
             title="Edit user"
           >
-            <MdOutlineEdit size={15} className="text-muted-foreground" />
+            <Edit className="h-[15px] w-[15px] text-muted-foreground" />
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -138,7 +138,7 @@ export const createUserColumns = (
                 className="h-7 w-7"
                 title="Delete user"
               >
-                <MdOutlineDelete size={15} className="text-muted-foreground" />
+                <Trash2 className="h-[15px] w-[15px] text-muted-foreground" />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>

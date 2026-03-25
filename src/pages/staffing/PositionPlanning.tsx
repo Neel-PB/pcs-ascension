@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useStaffingViewSnapshotStore } from "@/stores/useStaffingViewSnapshotStore";
 import { motion, LayoutGroup } from "framer-motion";
 // nursing status is now derived from API data, not Supabase DB
 import { useSkillShift, type SkillShiftRecord } from "@/hooks/useSkillShift";
@@ -593,6 +594,37 @@ export default function PositionPlanning({
     const total = computeGroupTotals(mapped);
     return [...mapped, { ...total, skill: 'TOTAL' }];
   }, [filteredSkillShiftData, viewMode]);
+
+  const setStaffingSnapshot = useStaffingViewSnapshotStore((s) => s.setStaffingSnapshot);
+
+  useEffect(() => {
+    const totalRow = displayVarianceData.find((d) => d.skill === "TOTAL");
+    if (!totalRow) {
+      setStaffingSnapshot(null);
+      return;
+    }
+    const fmt = (n: number) =>
+      Number.isFinite(n) ? n.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "—";
+    setStaffingSnapshot({
+      tab: "planning",
+      capturedAt: new Date().toISOString(),
+      planningViewMode: viewMode === "planned" ? "planned" : "active",
+      kpis: [
+        { id: "target-day", label: "Target Day", value: fmt(totalRow.targetDay), section: "TOTAL" },
+        { id: "target-night", label: "Target Night", value: fmt(totalRow.targetNight), section: "TOTAL" },
+        { id: "target-total", label: "Target Total", value: fmt(totalRow.targetTotal), section: "TOTAL" },
+        { id: "hired-day", label: `${viewMode === "active" ? "Active" : "Hired"} Day`, value: fmt(totalRow.hiredDay), section: "TOTAL" },
+        { id: "hired-night", label: `${viewMode === "active" ? "Active" : "Hired"} Night`, value: fmt(totalRow.hiredNight), section: "TOTAL" },
+        { id: "hired-total", label: `${viewMode === "active" ? "Active" : "Hired"} Total`, value: fmt(totalRow.hiredTotal), section: "TOTAL" },
+        { id: "reqs-day", label: "Reqs Day", value: fmt(totalRow.reqsDay), section: "TOTAL" },
+        { id: "reqs-night", label: "Reqs Night", value: fmt(totalRow.reqsNight), section: "TOTAL" },
+        { id: "reqs-total", label: "Reqs Total", value: fmt(totalRow.reqsTotal), section: "TOTAL" },
+        { id: "variance-day", label: "Variance Day", value: fmt(totalRow.varianceDay), section: "TOTAL" },
+        { id: "variance-night", label: "Variance Night", value: fmt(totalRow.varianceNight), section: "TOTAL" },
+        { id: "variance-total", label: "Variance Total", value: fmt(totalRow.varianceTotal), section: "TOTAL" },
+      ],
+    });
+  }, [displayVarianceData, viewMode, setStaffingSnapshot]);
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroups(prev => {

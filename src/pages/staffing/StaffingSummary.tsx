@@ -26,6 +26,7 @@ import { usePatientVolume } from "@/hooks/usePatientVolume";
 import { useProductiveResourcesKpi } from "@/hooks/useProductiveResourcesKpi";
 import { useSkillShift } from "@/hooks/useSkillShift";
 import { useEmploymentSplit } from "@/hooks/useEmploymentSplit";
+import { useStaffingViewSnapshotStore } from "@/stores/useStaffingViewSnapshotStore";
 
 const validTabs = ["summary", "planning", "variance", "forecasts", "volume-settings", "np-settings"];
 
@@ -930,6 +931,38 @@ This metric helps:
       return aIndex - bIndex;
     });
   }, [productivityOrder, prAgg, prNpPercent, dailyTrendData, dailyTrendLabels]);
+
+  const setActiveStaffingTab = useStaffingViewSnapshotStore((s) => s.setActiveStaffingTab);
+  const setStaffingSnapshot = useStaffingViewSnapshotStore((s) => s.setStaffingSnapshot);
+
+  useEffect(() => {
+    setActiveStaffingTab(activeTab);
+  }, [activeTab, setActiveStaffingTab]);
+
+  useEffect(() => {
+    if (activeTab === "forecasts" || activeTab === "volume-settings" || activeTab === "np-settings") {
+      setStaffingSnapshot(null);
+    }
+  }, [activeTab, setStaffingSnapshot]);
+
+  useEffect(() => {
+    if (activeTab !== "summary") return;
+    const rows: { id: string; label: string; value: string; section: string }[] = [];
+    const pushSection = (section: string, kpis: { id: string; title: string; value: string }[]) => {
+      for (const k of kpis) {
+        if (!isKpiVisible(k.id, roles)) continue;
+        rows.push({ id: k.id, label: k.title, value: k.value, section });
+      }
+    };
+    pushSection("FTE", fteKPIs.map((k) => ({ id: k.id, title: k.title, value: k.value })));
+    pushSection("Volume", volumeKPIs.map((k) => ({ id: k.id, title: k.title, value: k.value })));
+    pushSection("Productive Resources", productivityKPIs.map((k) => ({ id: k.id, title: k.title, value: k.value })));
+    setStaffingSnapshot({
+      tab: "summary",
+      capturedAt: new Date().toISOString(),
+      kpis: rows,
+    });
+  }, [activeTab, fteKPIs, volumeKPIs, productivityKPIs, roles, setStaffingSnapshot]);
 
   // Page-level loading guard
   const isInitializing = rbacLoading || (orgScopedLoading && !filtersInitialized);

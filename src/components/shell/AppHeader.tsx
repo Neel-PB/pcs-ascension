@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Bell } from "@/lib/icons";
+import { BTN_HEADER_ICON, ICON_HEADER_BELL } from "@/lib/iconSizes";
 
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -93,7 +94,7 @@ export function AppHeader() {
         {/* Left Section - Title */}
         <div className="flex items-center gap-4">
           <h1 className="text-lg font-semibold text-foreground">
-            Position Control System
+            Position Control
           </h1>
         </div>
 
@@ -108,11 +109,11 @@ export function AppHeader() {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="relative h-11 w-11" 
+            className={BTN_HEADER_ICON} 
             onClick={() => setNotificationsOpen(true)}
             data-tour="header-notifications"
           >
-            <Bell className="h-6 w-6" />
+            <Bell className={ICON_HEADER_BELL} />
             {notifications && notifications.filter(n => !n.read).length > 0 && (
               <Badge
                 variant="destructive"

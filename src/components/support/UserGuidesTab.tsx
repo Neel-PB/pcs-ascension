@@ -35,14 +35,14 @@ import {
   Briefcase,
   ChevronRight,
   Search,
+  type LucideIcon,
 } from "@/lib/icons";
-import type { IconType } from "react-icons";
 
 interface Guide {
   tourKey: string;
   title: string;
   description: string;
-  icon: IconType;
+  icon: LucideIcon;
   route: string;
   category: string;
   isOverlay?: boolean;

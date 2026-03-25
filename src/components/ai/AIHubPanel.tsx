@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
+import { useLocation } from 'react-router-dom';
 import { useAIHub } from '@/hooks/useAIHub';
+import { useAuth } from '@/hooks/useAuth';
+import { buildChatPromptContext, type ChatPromptContextPayload } from '@/lib/chatPromptContext';
+import { useFilterStore } from '@/stores/useFilterStore';
+import { useStaffingViewSnapshotStore } from '@/stores/useStaffingViewSnapshotStore';
 import { useResizable } from '@/hooks/useResizable';
 import { PillChatBar } from './PillChatBar';
 import { ContentBlock } from '@/types/contentBlock';
@@ -9,16 +15,6 @@ import ascensionLogo from '@/assets/Ascension-Emblem.svg';
 import { OverlayTour } from '@/components/tour/OverlayTour';
 import { aiHubTourSteps } from '@/components/tour/tourSteps';
 import { toast } from 'sonner';
-
-interface ProcessedFile {
-  id: string;
-  name: string;
-  type: 'image' | 'pdf' | 'doc' | 'excel' | 'text' | 'csv';
-  data: string;
-  mimeType: string;
-  size: number;
-  extractedText?: string;
-}
 
 const MIN_WIDTH = 490;
 const MAX_WIDTH_VW = 0.7;
@@ -90,12 +86,23 @@ Let me know if you'd like me to generate specific job requisitions for any of th
 What would you like to explore first?`
 ];
 
+function normalizePathname(p: string): string {
+  if (p.length > 1 && p.endsWith('/')) return p.slice(0, -1);
+  return p;
+}
+
 export const AIHubPanel = () => {
+  const location = useLocation();
+  const { user } = useAuth();
+  const activeStaffingTab = useStaffingViewSnapshotStore((s) => s.activeStaffingTab);
+  const staffingViewSnapshot = useStaffingViewSnapshotStore((s) => s.snapshot);
+  const clearStaffingViewSnapshot = useStaffingViewSnapshotStore((s) => s.clearStaffing);
   const { isOpen, setOpen } = useAIHub();
   const [currentInput, setCurrentInput] = useState('');
-  const [fileAttachments, setFileAttachments] = useState<ProcessedFile[]>([]);
   const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  /** When true, POST /ai/chat/stream includes region/market/facility/department from the global filter bar. */
+  const [scopeFiltersEnabled, setScopeFiltersEnabled] = useState(true);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -128,6 +135,12 @@ export const AIHubPanel = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [contentBlocks]);
+
+  useEffect(() => {
+    if (normalizePathname(location.pathname) !== '/staffing') {
+      clearStaffingViewSnapshot();
+    }
+  }, [location.pathname, clearStaffingViewSnapshot]);
 
   // Cleanup streaming interval on unmount
   useEffect(() => {
@@ -250,6 +263,7 @@ export const AIHubPanel = () => {
     message: string,
     history: { role: 'user' | 'model'; content: string }[],
     aiBlockId: string,
+    context?: ChatPromptContextPayload,
   ) => {
     abortRef.current?.abort();
     abortRef.current = new AbortController();
@@ -264,6 +278,7 @@ export const AIHubPanel = () => {
         body: JSON.stringify({
           message,
           ...(history.length > 0 ? { history } : {}),
+          ...(context ? { context } : {}),
         }),
         signal: abortRef.current.signal,
       });
@@ -318,6 +333,52 @@ export const AIHubPanel = () => {
           setContentBlocks(prev =>
             prev.map(b => (b.id === aiBlockId ? { ...b, content: b.content + obj.delta } : b)),
           );
+        }
+        if (obj.tool && typeof obj.tool === 'object') {
+          const t = obj.tool as { event?: string; name?: string; id?: string; label?: string };
+          if (t.event === 'start' && t.name) {
+            const stepId =
+              typeof t.id === 'string' && t.id.length > 0 ? t.id : crypto.randomUUID();
+            const displayTarget =
+              typeof t.label === 'string' && t.label.trim().length > 0 ? t.label.trim() : undefined;
+            // Flush so "Running …" paints before the same tick processes tool `end` (React 18 batches otherwise).
+            flushSync(() => {
+              setContentBlocks(prev =>
+                prev.map(b =>
+                  b.id === aiBlockId
+                    ? {
+                        ...b,
+                        metadata: {
+                          ...b.metadata,
+                          toolSteps: [
+                            ...(b.metadata?.toolSteps ?? []),
+                            {
+                              id: stepId,
+                              apiName: t.name!,
+                              status: 'running' as const,
+                              ...(displayTarget ? { displayTarget } : {}),
+                            },
+                          ],
+                        },
+                      }
+                    : b,
+                ),
+              );
+            });
+          } else if (t.event === 'end' && t.name) {
+            setContentBlocks(prev =>
+              prev.map(b => {
+                if (b.id !== aiBlockId) return b;
+                const steps = [...(b.metadata?.toolSteps ?? [])];
+                const byId =
+                  typeof t.id === 'string' && t.id.length > 0
+                    ? steps.findIndex((s) => s.id === t.id)
+                    : steps.findIndex((s) => s.apiName === t.name && s.status === 'running');
+                if (byId >= 0) steps[byId] = { ...steps[byId], status: 'done' };
+                return { ...b, metadata: { ...b.metadata, toolSteps: steps } };
+              }),
+            );
+          }
         }
         if (obj.block && typeof obj.block === 'object') {
           const blk = obj.block as {
@@ -393,10 +454,9 @@ export const AIHubPanel = () => {
     }
   };
 
-  const handleSendMessage = async (message: string, attachments?: ProcessedFile[]) => {
+  const handleSendMessage = async (message: string) => {
     if (!message.trim()) return;
 
-    const activeAttachments = attachments || fileAttachments;
     const history = buildHistory(contentBlocks);
 
     // Add user message
@@ -406,17 +466,12 @@ export const AIHubPanel = () => {
       content: message.trim(),
       metadata: {
         timestamp: new Date(),
-        attachments: activeAttachments?.map(file => ({
-          id: file.id,
-          name: file.name,
-        }))
       }
     };
 
     setContentBlocks(prev => [...prev, userBlock]);
     setIsGenerating(true);
     setCurrentInput('');
-    setFileAttachments([]);
 
     if (useLiveApi) {
       const aiBlockId = `ai-${Date.now()}`;
@@ -427,7 +482,18 @@ export const AIHubPanel = () => {
         metadata: { isStreaming: true, timestamp: new Date() },
       };
       setContentBlocks(prev => [...prev, aiBlock]);
-      await runLiveStream(message.trim(), history, aiBlockId);
+      const filterState = useFilterStore.getState();
+      const onStaffing = normalizePathname(location.pathname) === '/staffing';
+      const context = buildChatPromptContext({
+        pathname: location.pathname,
+        search: location.search,
+        userRole: user?.role,
+        filters: filterState,
+        includeScopeFilters: scopeFiltersEnabled,
+        staffingTabId: onStaffing ? activeStaffingTab : null,
+        viewSnapshot: onStaffing ? staffingViewSnapshot : null,
+      });
+      await runLiveStream(message.trim(), history, aiBlockId, context);
       return;
     }
 
@@ -497,53 +563,11 @@ export const AIHubPanel = () => {
     abortRef.current = null;
     setContentBlocks([]);
     setCurrentInput('');
-    setFileAttachments([]);
     if (streamingIntervalRef.current) {
       clearInterval(streamingIntervalRef.current);
       streamingIntervalRef.current = null;
     }
     setIsGenerating(false);
-  };
-
-  const handleRegenerate = (blockId: string) => {
-    const blockIndex = contentBlocks.findIndex(b => b.id === blockId);
-    if (blockIndex === -1) return;
-    const target = contentBlocks[blockIndex];
-    if (target.type !== 'ai-response') return;
-
-    if (useLiveApi) {
-      const blocksBefore = contentBlocks.slice(0, blockIndex);
-      const last = blocksBefore[blocksBefore.length - 1];
-      if (!last || last.type !== 'user-input') {
-        toast.error('Cannot regenerate: no user message found.');
-        return;
-      }
-      const userMessage = last.content;
-      const history = buildHistory(blocksBefore.slice(0, -1));
-      const aiBlockId = `ai-${Date.now()}`;
-      setContentBlocks([...blocksBefore, {
-        id: aiBlockId,
-        type: 'ai-response',
-        content: '',
-        metadata: { isStreaming: true, timestamp: new Date() },
-      }]);
-      setIsGenerating(true);
-      void runLiveStream(userMessage, history, aiBlockId);
-      return;
-    }
-
-    const newResponse = mockResponses[Math.floor(Math.random() * mockResponses.length)];
-    setContentBlocks(prev =>
-      prev.map(block =>
-        block.id === blockId
-          ? { ...block, content: '', metadata: { ...block.metadata, isStreaming: true } }
-          : block,
-      ),
-    );
-    setIsGenerating(true);
-    setTimeout(() => {
-      simulateStreaming(newResponse, blockId);
-    }, 500);
   };
 
   const handleTaskToggle = (blockId: string, taskId: string) => {
@@ -597,7 +621,7 @@ export const AIHubPanel = () => {
         </div>
 
         {/* Content Area - Document Style */}
-        <div className="flex-1 overflow-y-auto px-4 lg:px-8 py-8 pb-32" data-tour="ai-hub-welcome">
+        <div className="flex-1 overflow-y-auto px-4 py-8 pb-32" data-tour="ai-hub-welcome">
           {contentBlocks.length === 0 ? (
             <div className="h-full flex items-center justify-center">
               <div className="text-center space-y-6">
@@ -619,12 +643,11 @@ export const AIHubPanel = () => {
               </div>
             </div>
           ) : (
-            <div className="w-full px-4">
+            <div className="w-full">
               {contentBlocks.map((block) => (
                 <ContentBlockRenderer
                   key={block.id}
                   block={block}
-                  onRegenerate={handleRegenerate}
                   onTaskToggle={handleTaskToggle}
                 />
               ))}
@@ -639,9 +662,6 @@ export const AIHubPanel = () => {
             value={currentInput}
             onChange={setCurrentInput}
             onSend={handleSendMessage}
-            onAttach={(files) => setFileAttachments(prev => [...prev, ...files])}
-            onRemoveAttachment={(id) => setFileAttachments(prev => prev.filter(f => f.id !== id))}
-            attachments={fileAttachments}
             isLoading={false}
             isGenerating={isGenerating}
             onStop={() => {
@@ -656,6 +676,8 @@ export const AIHubPanel = () => {
             showVoice={true}
             onMinimize={() => setOpen(false)}
             onClearChat={handleClearChat}
+            scopeFiltersEnabled={scopeFiltersEnabled}
+            onToggleScopeFilters={() => setScopeFiltersEnabled((v) => !v)}
           />
         </div>
       </div>
