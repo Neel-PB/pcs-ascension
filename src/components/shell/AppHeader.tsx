@@ -155,6 +155,7 @@ export function AppHeader() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={() => setProfileModalOpen(true)}>
+                  <User className="h-4 w-4 mr-2" />
                   <span>Profile</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={handleTourThisPage}>
