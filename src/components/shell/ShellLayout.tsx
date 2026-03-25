@@ -4,6 +4,7 @@ import { DynamicIconOnlySidebar } from "../layout/DynamicIconOnlySidebar";
 import { AppHeader } from "./AppHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { LogoLoader } from "@/components/ui/LogoLoader";
+import { ReportIssueTrigger } from "@/components/feedback/ReportIssueTrigger";
 
 // Content area loader - shows in main content while keeping shell visible
 const ContentLoader = () => (
