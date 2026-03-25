@@ -1,40 +1,24 @@
 
 
-## Add Training Video Upload for Admin & Labor Team
+## Integrate Signed URL Refresh for Training Video Playback
 
-### Overview
-Add an upload dialog to the Training Videos tab, gated by a new `support.upload_video` RBAC permission, allowing authorized users to upload videos with metadata (title, description, optional thumbnail) via `POST /training/upload`.
+### Problem
+Currently, when a user clicks a video card, the player uses the `url` stored on the video object (which may be an expired signed URL). The new `GET /training/videos/:id/url` endpoint provides fresh signed URLs on demand.
 
 ### Changes
 
-**1. Add RBAC permission — `src/config/rbacConfig.ts`**
-- Add `support.upload_video` to `CORE_PERMISSIONS` array
-- Add it to `PERMISSION_CATEGORIES.support.permissions`
-- Grant it by default to `admin` and `labor_team` roles in `DEFAULT_ROLE_PERMISSIONS`
+**1. `src/components/support/TrainingVideosTab.tsx`**
+- When a video card is clicked, instead of immediately setting the video URL, fetch a fresh signed URL via `apiFetch(`/training/videos/${video.id}/url`)` before opening the player dialog.
+- Add a loading state while the fresh URL is being fetched.
+- On success, set the active video with the refreshed `videoUrl` and `thumbnailUrl`.
+- On error (e.g. legacy videos without DB records), fall back to the existing `video.url`.
 
-**2. Create upload hook — `src/hooks/useUploadTrainingVideo.ts`**
-- `useMutation` that sends `FormData` (title, description, duration, video file, optional thumbnail) to `POST /training/upload` via `apiFetch`
-- On success, invalidate `training-videos` query cache
+**2. No hook file needed** — the fetch is a one-off call triggered on click, not a persistent query. A simple async function inside the component is sufficient.
 
-**3. Create upload dialog — `src/components/support/UploadTrainingVideoDialog.tsx`**
-- Dialog with form fields: title (input), description (textarea), video file (drag-drop or browse), optional thumbnail image
-- Video file accepts `.mp4,.webm,.mov`; thumbnail accepts `.jpg,.png,.webp`
-- Shows file name/size after selection
-- Submit button triggers the upload mutation with a loading state
-
-**4. Update TrainingVideosTab — `src/components/support/TrainingVideosTab.tsx`**
-- Import `useRBAC` and check `hasPermission('support.upload_video')`
-- If permitted, show an "Upload Video" button at the top of the tab
-- Button opens the `UploadTrainingVideoDialog`
-- Update the video grid to also fetch from `GET /training/uploaded-videos` and merge both sources (legacy GCS + uploaded), or switch entirely to `uploaded-videos` endpoint
-- Display `title` (from DB metadata) instead of formatted filename for uploaded videos; show thumbnail if available
-
-**5. Update `useTrainingVideos` hook — `src/hooks/useTrainingVideos.ts`**
-- Extend the `TrainingVideo` interface to include optional fields from the upload response: `title`, `description`, `thumbnail_url`, `duration`, `status`, `uploader`
-- Fetch from `GET /training/uploaded-videos` (or merge both endpoints) so newly uploaded videos appear in the grid
-
-### Technical Notes
-- `apiFetch` already handles `FormData` by omitting `Content-Type` header, so multipart uploads work out of the box
-- The upload endpoint extracts `uploaded_by` from the JWT — no need to send user ID from frontend
-- Videos with `status: 'processing'` can show a subtle indicator on the card
+### Flow
+1. User clicks video card → show loading indicator on the card or dialog
+2. Call `GET /training/videos/${id}/url`
+3. If success → open player with fresh `videoUrl`
+4. If 404 (legacy video) → fall back to `video.url`
+5. Player dialog renders with the resolved URL
 
