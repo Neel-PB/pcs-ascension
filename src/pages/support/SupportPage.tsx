@@ -14,7 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { useRBAC } from "@/hooks/useRBAC";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { apiFetch } from "@/lib/apiFetch";
 
 const GOOGLE_CHAT_WEBHOOK_URL = "https://chat.googleapis.com/v1/spaces/AAQANHVwNj8/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=kCFviCb1lEHdQ2uobep6zSXuomIdNtrLaifZBB00YqY";
 
@@ -71,23 +71,13 @@ export default function SupportPage() {
   // Fetch DB FAQs
   const { data: dbFaqs = [] } = useQuery({
     queryKey: ['faqs'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('faqs')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => apiFetch<{ id: string; question: string; answer: string; created_at: string; author?: { first_name: string; last_name: string } }[]>('/faqs'),
   });
 
   // Insert FAQ mutation
   const addFaqMutation = useMutation({
     mutationFn: async ({ question, answer }: { question: string; answer: string }) => {
-      const { error } = await supabase
-        .from('faqs')
-        .insert({ question, answer, created_by: userId! });
-      if (error) throw error;
+      await apiFetch('/faqs', { method: 'POST', body: JSON.stringify({ question, answer }) });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['faqs'] });
