@@ -509,6 +509,7 @@ interface PositionPlanningProps {
   selectedSubmarket?: string;
   selectedLevel2?: string;
   selectedPstat?: string;
+  lastUpdated?: string | null;
 }
 
 export default function PositionPlanning({
