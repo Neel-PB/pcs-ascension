@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { HelpCircle, Navigation, Play, List } from "@/lib/icons";
+import { HelpCircle, Navigation, Play, List, User, LogOut } from "@/lib/icons";
 import { useTourStore } from "@/stores/useTourStore";
 
 import { HeaderTour } from "@/components/tour/HeaderTour";
