@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Play, X, Upload } from "@/lib/icons";
+import { Play, X, Upload, Loader2 } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useTrainingVideos, type TrainingVideo } from "@/hooks/useTrainingVideos";
 import { useRBAC } from "@/hooks/useRBAC";
 import { UploadTrainingVideoDialog } from "./UploadTrainingVideoDialog";
+import { apiFetch } from "@/lib/apiFetch";
 
 function formatFileSize(bytes: number) {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
@@ -22,9 +23,29 @@ function formatName(name: string) {
 export function TrainingVideosTab() {
   const { data: videos = [], isLoading, error } = useTrainingVideos();
   const [activeVideo, setActiveVideo] = useState<TrainingVideo | null>(null);
+  const [playbackUrl, setPlaybackUrl] = useState<string | null>(null);
+  const [loadingVideoId, setLoadingVideoId] = useState<string | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
   const { hasPermission } = useRBAC();
   const canUpload = hasPermission("support.upload_video");
+
+  const handleVideoClick = async (video: TrainingVideo) => {
+    setLoadingVideoId(video.id);
+    try {
+      const res = await apiFetch<{ videoUrl: string; thumbnailUrl?: string }>(`/training/videos/${video.id}/url`);
+      setPlaybackUrl(res.videoUrl);
+    } catch {
+      setPlaybackUrl(video.url);
+    } finally {
+      setLoadingVideoId(null);
+      setActiveVideo(video);
+    }
+  };
+
+  const handleClosePlayer = () => {
+    setActiveVideo(null);
+    setPlaybackUrl(null);
+  };
 
   if (isLoading) {
     return (
@@ -79,7 +100,7 @@ export function TrainingVideosTab() {
             <div
               key={video.id}
               className="group bg-card rounded-lg border hover:shadow-md transition-all cursor-pointer overflow-hidden"
-              onClick={() => setActiveVideo(video)}
+              onClick={() => handleVideoClick(video)}
             >
               {/* Thumbnail / play overlay */}
               <div className="relative flex items-center justify-center bg-muted h-36 overflow-hidden">
@@ -88,7 +109,11 @@ export function TrainingVideosTab() {
                 ) : null}
                 <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
                   <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/90 text-primary-foreground group-hover:scale-110 transition-transform">
-                    <Play className="h-5 w-5 ml-0.5" />
+                    {loadingVideoId === video.id ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <Play className="h-5 w-5 ml-0.5" />
+                    )}
                   </div>
                 </div>
                 {video.status === "processing" && (
@@ -114,18 +139,18 @@ export function TrainingVideosTab() {
       )}
 
       {/* Video Player Dialog */}
-      <Dialog open={!!activeVideo} onOpenChange={(open) => !open && setActiveVideo(null)}>
+      <Dialog open={!!activeVideo} onOpenChange={(open) => !open && handleClosePlayer()}>
         <DialogContent className="max-w-4xl p-0 overflow-hidden">
           {activeVideo && (
             <div className="space-y-0">
               <div className="flex items-center justify-between px-4 py-3 border-b">
                 <h3 className="font-semibold text-sm">{activeVideo.title || formatName(activeVideo.name)}</h3>
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setActiveVideo(null)}>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleClosePlayer}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
               <div className="bg-black aspect-video">
-                <video controls autoPlay className="w-full h-full" src={activeVideo.url}>
+                <video controls autoPlay className="w-full h-full" src={playbackUrl || activeVideo.url}>
                   Your browser does not support the video tag.
                 </video>
               </div>
