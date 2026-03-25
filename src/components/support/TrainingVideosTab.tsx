@@ -139,18 +139,18 @@ export function TrainingVideosTab() {
       )}
 
       {/* Video Player Dialog */}
-      <Dialog open={!!activeVideo} onOpenChange={(open) => !open && setActiveVideo(null)}>
+      <Dialog open={!!activeVideo} onOpenChange={(open) => !open && handleClosePlayer()}>
         <DialogContent className="max-w-4xl p-0 overflow-hidden">
           {activeVideo && (
             <div className="space-y-0">
               <div className="flex items-center justify-between px-4 py-3 border-b">
                 <h3 className="font-semibold text-sm">{activeVideo.title || formatName(activeVideo.name)}</h3>
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setActiveVideo(null)}>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleClosePlayer}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
               <div className="bg-black aspect-video">
-                <video controls autoPlay className="w-full h-full" src={activeVideo.url}>
+                <video controls autoPlay className="w-full h-full" src={playbackUrl || activeVideo.url}>
                   Your browser does not support the video tag.
                 </video>
               </div>
