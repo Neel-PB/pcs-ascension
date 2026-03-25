@@ -109,7 +109,11 @@ export function TrainingVideosTab() {
                 ) : null}
                 <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
                   <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/90 text-primary-foreground group-hover:scale-110 transition-transform">
-                    <Play className="h-5 w-5 ml-0.5" />
+                    {loadingVideoId === video.id ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <Play className="h-5 w-5 ml-0.5" />
+                    )}
                   </div>
                 </div>
                 {video.status === "processing" && (
