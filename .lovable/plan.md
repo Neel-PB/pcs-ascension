@@ -1,26 +1,26 @@
 
 
-## Standardize & Reorder Floating Trigger Buttons
+## Add Permission-Based Filtering to TourLauncher
 
 ### Problem
-- Triggers have inconsistent spacing (bottom-4, bottom-[68px], bottom-[120px], bottom-[168px]) — gaps are uneven (52px, 52px, 48px).
-- Order from bottom needs to be: Feedback → AI Hub → Report Issue → Checklist.
-- Currently Report Issue is above Checklist but the user wants it below Checklist (3rd from bottom).
+The "All Tours" sheet (`TourLauncher.tsx`) in the user menu shows all tours regardless of the user's role/permissions. The `UserGuidesTab` already filters tours by category permissions, guide-level permissions, overlay permissions, and KPI visibility — but the TourLauncher doesn't use any of this logic.
 
-### New Order & Positions (consistent 48px gap)
+### Fix — `src/components/tour/TourLauncher.tsx`
 
-| # | Button | Position | Current |
-|---|--------|----------|---------|
-| 1 | Feedback | `bottom-4` (16px) | `bottom-4` ✓ |
-| 2 | AI Hub | `bottom-[64px]` | `bottom-[68px]` |
-| 3 | Report Issue | `bottom-[112px]` | `bottom-[168px]` |
-| 4 | Checklist | `bottom-[160px]` | `bottom-[120px]` |
+Apply the same filtering that `UserGuidesTab` uses:
 
-All buttons: `h-12 w-6`, `variant="ghost"`, `bg-primary hover:bg-primary/90`, `text-white`, same rounded/shadow/transition classes.
+1. **Import** `useRBAC`, `useAuth`, `useUserRoles`, and `isKpiVisible`.
+2. **Reuse the same permission maps** (category, guide-level, overlay) from UserGuidesTab — extract or duplicate:
+   - `categoryPermissionMap`: Staffing→`staffing.access`, Positions→`positions.access`, Admin→`admin.access`, etc.
+   - `guidePermissionMap`: `staffing-volume-settings`→`settings.volume_override`, `staffing-np-settings`→`settings.np_override`
+   - `overlayPermissionMap`: `feedback`→`feedback.access`
+3. **Filter `GROUPS` sections** so each group only shows tours the user has permission to see:
+   - Check category permission for the group
+   - Check guide-level and overlay-level permissions for individual sections
+4. **Filter KPI steps** for the staffing tour based on `isKpiVisible` + user roles (same as UserGuidesTab lines 152-160).
+5. **Hide empty groups** — if all sections in a group are filtered out, hide the group header.
 
-### Files to Edit
-
-1. **`src/components/ai/AIHubTrigger.tsx`** — Change `bottom-[68px]` → `bottom-[64px]`
-2. **`src/components/feedback/ReportIssueTrigger.tsx`** — Change `bottom-[168px]` → `bottom-[112px]`
-3. **`src/components/workforce/WorkforceDrawerTrigger.tsx`** — Change `bottom-[120px]` → `bottom-[160px]`, change `variant="default"` → `variant="ghost"`, add `bg-primary hover:bg-primary/90 text-white` to match others
+### Scope
+- Single file change: `src/components/tour/TourLauncher.tsx`
+- No new dependencies — reuses existing hooks and config already used in UserGuidesTab
 
