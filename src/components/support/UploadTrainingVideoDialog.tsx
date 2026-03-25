@@ -78,7 +78,7 @@ export function UploadTrainingVideoDialog({ open, onOpenChange }: Props) {
             <input ref={videoRef} type="file" accept=".mp4,.webm,.mov,video/*" className="hidden" onChange={onVideoPick} />
             {videoFile ? (
               <div className="flex items-center gap-2 rounded-md border p-2 text-sm">
-                <Video className="h-4 w-4 text-muted-foreground shrink-0" />
+                <FiVideo className="h-4 w-4 text-muted-foreground shrink-0" />
                 <span className="truncate flex-1">{videoFile.name}</span>
                 <span className="text-muted-foreground text-xs">{formatSize(videoFile.size)}</span>
                 <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => setVideoFile(null)}>
