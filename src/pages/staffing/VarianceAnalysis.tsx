@@ -132,6 +132,7 @@ export function VarianceAnalysis({
   selectedSubmarket,
   selectedLevel2,
   selectedPstat,
+  lastUpdated,
 }: VarianceAnalysisProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { isExpanded: isGroupExpanded, toggleExpanded } = useExpandStore();
