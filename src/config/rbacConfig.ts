@@ -207,6 +207,7 @@ export const PERMISSION_CATEGORIES = {
     label: "Support",
     permissions: {
       "support.add_faq": { label: "Add FAQ", description: "Ability to create FAQ entries" },
+      "support.upload_video": { label: "Upload Training Video", description: "Ability to upload training videos" },
     },
   },
 } as const;
