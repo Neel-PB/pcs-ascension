@@ -60,8 +60,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Also let Supabase restore its own session (for RLS data queries)
-      // No action needed — supabase client auto-restores from localStorage
       setLoading(false);
     };
 
