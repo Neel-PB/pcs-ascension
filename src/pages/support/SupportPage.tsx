@@ -129,7 +129,7 @@ export default function SupportPage() {
         )}
 
         {activeTab === "videos" && (
-          <div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">
+          <div>
             <TrainingVideosTab />
           </div>
         )}
