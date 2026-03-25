@@ -36,7 +36,7 @@ export default function SupportPage() {
     { id: "guides", label: "User Guides" },
     { id: "faqs", label: "FAQs" },
     { id: "videos", label: "Training Videos" },
-    { id: "troubleshooting", label: "Troubleshooting" },
+    
     { id: "report", label: "Report Issue" },
   ];
 
