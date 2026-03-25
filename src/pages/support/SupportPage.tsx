@@ -90,7 +90,7 @@ export default function SupportPage() {
         )}
 
         {activeTab === "faqs" && (
-          <div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">
+          <div>
           <div className="mb-4 flex items-center gap-3">
             <div className="flex-1">
               <SearchField
