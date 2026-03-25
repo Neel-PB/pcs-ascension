@@ -520,6 +520,7 @@ export default function PositionPlanning({
   selectedSubmarket,
   selectedLevel2,
   selectedPstat,
+  lastUpdated,
 }: PositionPlanningProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
