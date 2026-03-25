@@ -124,10 +124,11 @@ export function TrainingVideosTab() {
                 {video.description && (
                   <p className="text-xs text-muted-foreground line-clamp-2">{video.description}</p>
                 )}
-                <p className="text-xs text-muted-foreground">
-                  {formatFileSize(video.size)}
-                  {video.uploader && ` · ${video.uploader.first_name || ""} ${video.uploader.last_name || ""}`.trim()}
-                </p>
+                {video.uploader && (
+                  <p className="text-xs text-muted-foreground">
+                    {`${video.uploader.first_name || ""} ${video.uploader.last_name || ""}`.trim()}
+                  </p>
+                )}
               </div>
             </div>
           ))}
