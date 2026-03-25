@@ -127,7 +127,9 @@ const App = () => (
         <TooltipProvider>
           <Sonner />
           <BrowserRouter>
-            <AppContent />
+            <ErrorBoundary>
+              <AppContent />
+            </ErrorBoundary>
           </BrowserRouter>
         </TooltipProvider>
       </ThemeProvider>
