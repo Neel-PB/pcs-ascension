@@ -21,9 +21,6 @@ const GOOGLE_CHAT_WEBHOOK_URL = "https://chat.googleapis.com/v1/spaces/AAQANHVwN
 export default function SupportPage() {
   const [activeTab, setActiveTab] = useState("guides");
   const { inputValue: searchQuery, debouncedValue: debouncedSearch, setInputValue: setSearchQuery } = useDebouncedSearch();
-  const [issueTitle, setIssueTitle] = useState("");
-  const [issueDescription, setIssueDescription] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAddFaqDialog, setShowAddFaqDialog] = useState(false);
   const [newFaqQuestion, setNewFaqQuestion] = useState("");
   const [newFaqAnswer, setNewFaqAnswer] = useState("");
