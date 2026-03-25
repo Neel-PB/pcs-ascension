@@ -95,8 +95,11 @@ export default function AuthPage() {
       >
         <Card>
           <CardHeader className="space-y-1">
+            <div className="flex justify-center mb-2">
+              <img src={AscensionLogo} alt="Ascension" className="w-12 h-12 object-contain" />
+            </div>
             <CardTitle className="text-2xl font-bold text-center">
-              Position Control Dashboard
+              Position Control
             </CardTitle>
             <CardDescription className="text-center">
               {step === "email" && "Enter your email to continue"}
