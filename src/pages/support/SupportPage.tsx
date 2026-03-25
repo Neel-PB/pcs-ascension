@@ -169,21 +169,6 @@ export default function SupportPage() {
           </div>
         )}
 
-        {activeTab === "troubleshooting" && (
-          <div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">
-          <div className="space-y-4">
-            {troubleshootingTopics.map((topic, index) => (
-              <div key={index} className="p-4 bg-shell-elevated rounded-lg border border-shell-elevated">
-                <h3 className="font-semibold text-foreground mb-2 flex items-start gap-2">
-                  <AlertCircle className="h-5 w-5 text-warning mt-0.5 flex-shrink-0" />
-                  {topic.issue}
-                </h3>
-                <p className="text-sm text-shell-muted ml-7">{topic.solution}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-        )}
 
         {activeTab === "report" && (
           <div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">
