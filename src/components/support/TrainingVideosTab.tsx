@@ -92,7 +92,7 @@ export function TrainingVideosTab() {
                   </div>
                 </div>
                 {video.status === "processing" && (
-                  <span className="absolute top-2 right-2 text-[10px] bg-yellow-500/90 text-white px-1.5 py-0.5 rounded">Processing</span>
+                  <span className="absolute top-2 right-2 text-[10px] bg-accent text-accent-foreground px-1.5 py-0.5 rounded">Processing</span>
                 )}
               </div>
 
