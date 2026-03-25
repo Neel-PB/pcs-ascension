@@ -1,31 +1,43 @@
 
 
-## Remove Supabase from AuthContext.tsx
+## Replace DataRefreshButton Supabase Query with Data-Derived Dates
 
-You're right — `AuthContext.tsx` still has leftover Supabase calls even though NestJS is the auth authority. These are remnants from the original setup and serve no purpose now.
+### Summary
+Remove the Supabase dependency from `DataRefreshButton`. Instead of querying `data_refresh_log`, the component will accept a `lastUpdated` date prop derived from the data already fetched by each tab's NestJS-backed hooks.
 
-### What to remove
+### How It Works
 
-**File: `src/contexts/AuthContext.tsx`**
+Each tab already fetches data that contains timestamp fields:
+- **Summary / Variance / Planning tabs** use `usePatientVolume` → `curated_data_load_ts` and `useProductiveResourcesKpi` → `load_ts`
+- **Volume Settings** uses `usePatientVolume` → `curated_data_load_ts`
+- **NP Settings** uses `usePatientVolume` → `curated_data_load_ts`
 
-1. Remove `import { supabase }` line
-2. Remove the `supabase.auth.onAuthStateChange` useEffect (lines ~68-74) — NestJS handles auth, this does nothing
-3. In `signIn`: Remove the "Silent Supabase session" block (`supabase.auth.signInWithPassword`) — no longer needed once all data hooks use `apiFetch`
-4. In `signUp`: Remove the "Silent Supabase signup" block (`supabase.auth.signUp`)
-5. In `signOut`: Remove `supabase.auth.signOut()` call
-6. In `setInitialPassword`: Remove the "Silent Supabase session" block
+We take the max date from the loaded data and pass it as a simple prop.
 
-**File: `src/App.tsx`**
+### Changes
 
-7. Remove `import { supabase }` and the `supabase.from('profiles')` onboarding check — replace with `apiFetch('/auth/me')` or similar NestJS call
+**1. Refactor `DataRefreshButton` (`src/components/dashboard/DataRefreshButton.tsx`)**
+- Remove `supabase` import, `useQuery`, and the Supabase fetch logic
+- Replace `dataSources` prop with `lastUpdated: string | null`
+- Show a simple popover with the formatted date and relative time ("2 hours ago")
+- Keep the status dot (green/yellow/red) based on hours since `lastUpdated`
+- No network call — purely presentational
 
-### Why these existed
+**2. Delete `DataRefreshPanel` (`src/components/dashboard/DataRefreshPanel.tsx`)**
+- Dead code — not imported anywhere
 
-The "silent Supabase session" was kept so that hooks using `supabase.from()` directly (with RLS) would have an authenticated session. Once all those hooks migrate to `apiFetch`, this workaround becomes dead code.
+**3. Update consumers to pass `lastUpdated` prop**
+
+Each file that renders `<DataRefreshButton>` will compute the latest date from its already-fetched data:
+
+- **`StaffingSummary.tsx`** — derive from `patientVolumeData[0]?.curated_data_load_ts`
+- **`VarianceAnalysis.tsx`** — derive from `skillShiftData` (or accept as prop from parent)
+- **`PositionPlanning.tsx`** — derive from skill-shift data (or accept as prop from parent)
+- **`EmployeesTab.tsx`**, **`ContractorsTab.tsx`**, **`RequisitionsTab.tsx`**, **`OpenRequisitionTab.tsx`**, **`ContractorRequisitionTab.tsx`** — derive from their `usePositionsByFlag` data's latest date field
 
 ### Result
-
-- `AuthContext.tsx` becomes purely NestJS-based (which it logically already is)
-- No behavioral change — NestJS token in sessionStorage continues to drive all auth
-- 2 files changed, ~30 lines removed
+- Supabase fully removed from DataRefresh components
+- No new API endpoint needed
+- "Last Updated" derived from the actual data on screen — always accurate
+- 1 dead file deleted, 1 component simplified, ~8 consumers updated
 
