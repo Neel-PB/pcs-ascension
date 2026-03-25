@@ -23,9 +23,29 @@ function formatName(name: string) {
 export function TrainingVideosTab() {
   const { data: videos = [], isLoading, error } = useTrainingVideos();
   const [activeVideo, setActiveVideo] = useState<TrainingVideo | null>(null);
+  const [playbackUrl, setPlaybackUrl] = useState<string | null>(null);
+  const [loadingVideoId, setLoadingVideoId] = useState<string | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
   const { hasPermission } = useRBAC();
   const canUpload = hasPermission("support.upload_video");
+
+  const handleVideoClick = async (video: TrainingVideo) => {
+    setLoadingVideoId(video.id);
+    try {
+      const res = await apiFetch<{ videoUrl: string; thumbnailUrl?: string }>(`/training/videos/${video.id}/url`);
+      setPlaybackUrl(res.videoUrl);
+    } catch {
+      setPlaybackUrl(video.url);
+    } finally {
+      setLoadingVideoId(null);
+      setActiveVideo(video);
+    }
+  };
+
+  const handleClosePlayer = () => {
+    setActiveVideo(null);
+    setPlaybackUrl(null);
+  };
 
   if (isLoading) {
     return (
