@@ -66,6 +66,44 @@ export function TourLauncher({ open, onOpenChange }: TourLauncherProps) {
   const { startSingleTour, startMicroTour } = useTourStore();
   const [, forceUpdate] = useState(0);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const { hasPermission } = useRBAC();
+  const { user } = useAuth();
+  const { roles: userRoles } = useUserRoles(user?.id);
+
+  // Filter groups based on permissions
+  const filteredGroups = useMemo(() => {
+    return GROUPS.map(group => {
+      // Check category-level permission
+      const catPerm = categoryPermissionMap[group.label];
+      if (catPerm && !hasPermission(catPerm)) return { ...group, sections: [] };
+
+      // Filter individual sections
+      const filtered = group.sections.filter(section => {
+        const guidePerm = guidePermissionMap[section.tourKey];
+        if (guidePerm && !hasPermission(guidePerm)) return false;
+        if (group.label === 'Overlays') {
+          const overlayPerm = overlayPermissionMap[section.tourKey];
+          if (overlayPerm && !hasPermission(overlayPerm)) return false;
+        }
+        return true;
+      });
+
+      return { ...group, sections: filtered };
+    }).filter(group => group.sections.length > 0);
+  }, [hasPermission]);
+
+  // Get filtered steps for a tour (handles KPI visibility)
+  const getFilteredSteps = useCallback((tourKey: string) => {
+    let steps = TOUR_STEP_REGISTRY[tourKey] || [];
+    if (tourKey === 'staffing' && userRoles.length > 0) {
+      steps = steps.filter(s => {
+        const kpiMatch = typeof s.target === 'string' && s.target.match(/\[data-tour="kpi-(.+?)"\]/);
+        if (kpiMatch) return isKpiVisible(kpiMatch[1], userRoles as any);
+        return true;
+      });
+    }
+    return steps;
+  }, [userRoles]);
 
   const toggleExpanded = useCallback((tourKey: string) => {
     setExpandedSections(prev => {
