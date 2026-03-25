@@ -33,8 +33,6 @@ export default function SupportPage() {
     { id: "guides", label: "User Guides" },
     { id: "faqs", label: "FAQs" },
     { id: "videos", label: "Training Videos" },
-    
-    { id: "report", label: "Report Issue" },
   ];
 
   const handleSubmitIssue = async (e: React.FormEvent) => {
