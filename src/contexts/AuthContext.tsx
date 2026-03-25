@@ -184,6 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setMustChangePassword(false);
       setUser(appUser);
 
+      toast.success("Password set successfully!");
       return { data };
     } catch (err: any) {
       toast.error(err.message || "Failed to set password");
