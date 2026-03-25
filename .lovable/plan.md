@@ -1,24 +1,26 @@
 
 
-## Integrate Signed URL Refresh for Training Video Playback
+## Fix Day/Night Data Mismatch in Nested Pie KPI Charts & Tables
 
-### Problem
-Currently, when a user clicks a video card, the player uses the `url` stored on the video object (which may be an expired signed URL). The new `GET /training/videos/:id/url` endpoint provides fresh signed URLs on demand.
+### Root Cause
+The data is correctly structured: `inner` = Night, `outer` = Day (set in `StaffingSummary.tsx`). The chart legend correctly says "Inner: Night, Outer: Day". But the **footer totals** and **table columns** have them backwards — `inner` is labeled "Day" and `outer` is labeled "Night".
 
-### Changes
+### Changes — `src/components/staffing/KPIChartModal.tsx`
 
-**1. `src/components/support/TrainingVideosTab.tsx`**
-- When a video card is clicked, instead of immediately setting the video URL, fetch a fresh signed URL via `apiFetch(`/training/videos/${video.id}/url`)` before opening the player dialog.
-- Add a loading state while the fresh URL is being fetched.
-- On success, set the active video with the refreshed `videoUrl` and `thumbnailUrl`.
-- On error (e.g. legacy videos without DB records), fall back to the existing `video.url`.
+**Fix 1: Chart footer totals (line 1202-1209)**
+- Line 1203: Change label from `{group.category} Day` to `{group.category} Night`
+- Line 1204: Keep using `group.inner?.total` (which IS Night)
+- Line 1207: Change label from `{group.category} Night` to `{group.category} Day`  
+- Line 1208: Keep using `group.outer?.total` (which IS Day)
 
-**2. No hook file needed** — the fetch is a one-off call triggered on click, not a persistent query. A simple async function inside the component is sufficient.
+**Fix 2: Table footer totals (line 1447-1454)** — same swap as Fix 1.
 
-### Flow
-1. User clicks video card → show loading indicator on the card or dialog
-2. Call `GET /training/videos/${id}/url`
-3. If success → open player with fresh `videoUrl`
-4. If 404 (legacy video) → fall back to `video.url`
-5. Player dialog renders with the resolved URL
+**Fix 3: Table data columns (lines 1336-1339)**
+Swap inner/outer so columns match their headers:
+- `nrsDay` → read from `nrsGroup?.outer?.slices` (was `inner`)
+- `nrsNight` → read from `nrsGroup?.inner?.slices` (was `outer`)
+- `nonNrsDay` → read from `nonNrsGroup?.outer?.slices` (was `inner`)
+- `nonNrsNight` → read from `nonNrsGroup?.inner?.slices` (was `outer`)
+
+After this fix, chart hover values, footer totals, and table data will all consistently show Inner=Night, Outer=Day.
 
