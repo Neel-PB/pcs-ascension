@@ -121,6 +121,7 @@ interface VarianceAnalysisProps {
   selectedSubmarket?: string;
   selectedLevel2?: string;
   selectedPstat?: string;
+  lastUpdated?: string | null;
 }
 
 export function VarianceAnalysis({
