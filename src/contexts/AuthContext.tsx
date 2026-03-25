@@ -123,18 +123,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sessionStorage.setItem("nestjs_user", JSON.stringify(appUser));
       setUser(appUser);
 
-      // Silent Supabase session
-      try {
-        await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { first_name: firstName, last_name: lastName } },
-        });
-      } catch {
-        console.warn("Silent Supabase signup failed");
-      }
-
-      toast.success("Account created successfully!");
       return { data };
     } catch (err: any) {
       toast.error(err.message || "Sign-up failed");
