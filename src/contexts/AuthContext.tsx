@@ -68,14 +68,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     restore();
   }, []);
 
-  // Keep Supabase onAuthStateChange for RLS session awareness
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      // We don't set user from Supabase — NestJS is authority
-      // This just keeps Supabase session alive for data queries
-    });
-    return () => subscription.unsubscribe();
-  }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
     try {
