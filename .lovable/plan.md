@@ -1,47 +1,50 @@
 
 
-## Fix Blank Page on "Full Guided Tour" Click
+## Add Missing Icons to User Menu Items
 
 ### Problem
-Clicking "Full Guided Tour" from the user menu causes a completely white/blank page. The app has no Error Boundary, so any unhandled rendering error crashes the entire React tree silently (no sidebar, no header, nothing).
+Three menu items in the user dropdown lack icons: the user label area, "Profile", and "Log out" — while the other items (Tour This Page, Full Guided Tour, All Tours, View All Guides) all have icons.
 
-### Root Cause
-When `startFullTour()` is called while already on `/staffing`:
-1. It resets all tour localStorage flags and sets `activeTour: 'staffing'`
-2. Then navigates to `/staffing?tab=summary&tour=true` (same page)
-3. Both `StaffingSummary` and `useTour` hook race to consume/delete search params (`tab` and `tour`)
-4. The `StaffingSummary` useEffect with empty deps `[]` deletes `tab` immediately, but on a "same-page" navigation React may not remount the component — so the effect doesn't re-fire and the tab state can become stale
-5. Meanwhile Joyride tries to target DOM elements that may not be rendered yet
+### Changes
 
-### Fix (2 changes)
+**File: `src/components/shell/AppHeader.tsx`**
 
-#### 1. Add a global Error Boundary (`src/components/ErrorBoundary.tsx`)
-Wrap the app so crashes show a recovery UI instead of a blank page. Includes a "Reload" button.
+1. Import `LogOut` icon — need to add it to `@/lib/icons` first since it doesn't exist yet.
 
-#### 2. Fix the "Full Guided Tour" navigation in `AppHeader.tsx`
-When the user is already on `/staffing`, don't navigate — just call `startFullTour()` and let the tour hook handle it. When on a different page, navigate with params.
-
-**Before (line 161-163):**
+2. Add icon to **Profile** item (line 154-155):
 ```tsx
-startFullTour();
-navigate('/staffing?tab=summary&tour=true');
+<DropdownMenuItem onSelect={() => setProfileModalOpen(true)}>
+  <User className="h-4 w-4 mr-2" />
+  <span>Profile</span>
+</DropdownMenuItem>
 ```
 
-**After:**
+3. Add icon to **Log out** item (line 183-185):
 ```tsx
-startFullTour();
-if (location.pathname === '/staffing') {
-  // Already on staffing — just trigger the tour after a short delay
-  setTimeout(() => {
-    useTourStore.getState().startTour('staffing');
-  }, 300);
-} else {
-  navigate('/staffing?tab=summary&tour=true');
-}
+<DropdownMenuItem onClick={handleSignOut}>
+  <LogOut className="h-4 w-4 mr-2" />
+  <span>Log out</span>
+</DropdownMenuItem>
 ```
 
-### Files
-1. **New**: `src/components/ErrorBoundary.tsx` — React class component error boundary with reload button
-2. **Edit**: `src/App.tsx` — Wrap `<AppContent />` with `<ErrorBoundary>`
-3. **Edit**: `src/components/shell/AppHeader.tsx` (lines 161-163) — Conditional navigation for full tour
+4. Add icon to **User label** area (line 145-151) — add a small `User` icon next to the name:
+```tsx
+<DropdownMenuLabel className="font-normal">
+  <div className="flex items-start gap-2">
+    <User className="h-4 w-4 mt-0.5 text-muted-foreground" />
+    <div className="flex flex-col space-y-1">
+      <p className="text-sm font-medium leading-none">{userName}</p>
+      <p className="text-xs leading-none text-muted-foreground">{userEmail}</p>
+    </div>
+  </div>
+</DropdownMenuLabel>
+```
+
+**File: `src/lib/icons.ts`**
+- Add `MdLogout as LogOut` export (for the log out icon)
+
+**File: `src/components/shell/AppHeader.tsx`**
+- Update import to include `User` and `LogOut` from `@/lib/icons`
+
+Two files changed, icons-only addition.
 
