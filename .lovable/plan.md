@@ -1,25 +1,31 @@
 
 
-## Add Ascension Logo & Rename Title on Auth Page
+## Remove Supabase from AuthContext.tsx
 
-### Changes
+You're right — `AuthContext.tsx` still has leftover Supabase calls even though NestJS is the auth authority. These are remnants from the original setup and serve no purpose now.
 
-**File: `src/pages/AuthPage.tsx`**
+### What to remove
 
-1. Import the Ascension logo: `import AscensionLogo from "@/assets/Ascension-Emblem.svg";`
-2. In the `CardHeader`, add the logo image centered above the title and change "Position Control Dashboard" to "Position Control":
+**File: `src/contexts/AuthContext.tsx`**
 
-```tsx
-<CardHeader className="space-y-1">
-  <div className="flex justify-center mb-2">
-    <img src={AscensionLogo} alt="Ascension" className="w-12 h-12 object-contain" />
-  </div>
-  <CardTitle className="text-2xl font-bold text-center">
-    Position Control
-  </CardTitle>
-  ...
-</CardHeader>
-```
+1. Remove `import { supabase }` line
+2. Remove the `supabase.auth.onAuthStateChange` useEffect (lines ~68-74) — NestJS handles auth, this does nothing
+3. In `signIn`: Remove the "Silent Supabase session" block (`supabase.auth.signInWithPassword`) — no longer needed once all data hooks use `apiFetch`
+4. In `signUp`: Remove the "Silent Supabase signup" block (`supabase.auth.signUp`)
+5. In `signOut`: Remove `supabase.auth.signOut()` call
+6. In `setInitialPassword`: Remove the "Silent Supabase session" block
 
-One file changed, two small edits.
+**File: `src/App.tsx`**
+
+7. Remove `import { supabase }` and the `supabase.from('profiles')` onboarding check — replace with `apiFetch('/auth/me')` or similar NestJS call
+
+### Why these existed
+
+The "silent Supabase session" was kept so that hooks using `supabase.from()` directly (with RLS) would have an authenticated session. Once all those hooks migrate to `apiFetch`, this workaround becomes dead code.
+
+### Result
+
+- `AuthContext.tsx` becomes purely NestJS-based (which it logically already is)
+- No behavioral change — NestJS token in sessionStorage continues to drive all auth
+- 2 files changed, ~30 lines removed
 
