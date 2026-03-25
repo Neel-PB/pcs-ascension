@@ -1,26 +1,24 @@
 
 
-## Add Permission-Based Filtering to TourLauncher
+## Fix Trigger Button Spacing
 
 ### Problem
-The "All Tours" sheet (`TourLauncher.tsx`) in the user menu shows all tours regardless of the user's role/permissions. The `UserGuidesTab` already filters tours by category permissions, guide-level permissions, overlay permissions, and KPI visibility — but the TourLauncher doesn't use any of this logic.
+The four triggers have large 48px gaps between them, but the reference image shows them stacked tightly with small gaps (~8px between each button).
 
-### Fix — `src/components/tour/TourLauncher.tsx`
+### Current vs New Positions
 
-Apply the same filtering that `UserGuidesTab` uses:
+Each button is `h-12` (48px tall). With 8px gaps between buttons:
 
-1. **Import** `useRBAC`, `useAuth`, `useUserRoles`, and `isKpiVisible`.
-2. **Reuse the same permission maps** (category, guide-level, overlay) from UserGuidesTab — extract or duplicate:
-   - `categoryPermissionMap`: Staffing→`staffing.access`, Positions→`positions.access`, Admin→`admin.access`, etc.
-   - `guidePermissionMap`: `staffing-volume-settings`→`settings.volume_override`, `staffing-np-settings`→`settings.np_override`
-   - `overlayPermissionMap`: `feedback`→`feedback.access`
-3. **Filter `GROUPS` sections** so each group only shows tours the user has permission to see:
-   - Check category permission for the group
-   - Check guide-level and overlay-level permissions for individual sections
-4. **Filter KPI steps** for the staffing tour based on `isKpiVisible` + user roles (same as UserGuidesTab lines 152-160).
-5. **Hide empty groups** — if all sections in a group are filtered out, hide the group header.
+| # | Button | Current | New |
+|---|--------|---------|-----|
+| 1 | Feedback | `bottom-4` (16px) | `bottom-4` (16px) |
+| 2 | AI Hub | `bottom-[64px]` | `bottom-[72px]` (16 + 48 + 8) |
+| 3 | Report Issue | `bottom-[112px]` | `bottom-[128px]` (72 + 48 + 8) |
+| 4 | Workforce Checklist | `bottom-[160px]` | `bottom-[184px]` (128 + 48 + 8) |
 
-### Scope
-- Single file change: `src/components/tour/TourLauncher.tsx`
-- No new dependencies — reuses existing hooks and config already used in UserGuidesTab
+### Files to Edit
+
+1. **`src/components/ai/AIHubTrigger.tsx`** — `bottom-[64px]` → `bottom-[72px]`
+2. **`src/components/feedback/ReportIssueTrigger.tsx`** — `bottom-[112px]` → `bottom-[128px]`
+3. **`src/components/workforce/WorkforceDrawerTrigger.tsx`** — `bottom-[160px]` → `bottom-[184px]`
 
