@@ -102,10 +102,6 @@ export default function SupportPage() {
     faq.question.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
     faq.answer.toLowerCase().includes(debouncedSearch.toLowerCase())
   );
-    debouncedSearch === "" ||
-    faq.question.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-    faq.answer.toLowerCase().includes(debouncedSearch.toLowerCase())
-  );
 
 
   const troubleshootingTopics = [
