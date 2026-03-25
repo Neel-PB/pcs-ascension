@@ -134,6 +134,7 @@ export const CORE_PERMISSIONS: Permission[] = [
   
   // Support
   { id: "core-support.add_faq", key: "support.add_faq", label: "Add FAQ", description: "Ability to create FAQ entries", category: "support", is_system: true },
+  { id: "core-support.upload_video", key: "support.upload_video", label: "Upload Training Video", description: "Ability to upload training videos", category: "support", is_system: true },
 ];
 
 // Helper maps for quick lookup
