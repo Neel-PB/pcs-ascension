@@ -1,29 +1,38 @@
 
 
-# Fix Screenshot Capture Fidelity
+## Why Cloud Run Build Fails
 
-## Problem
-`html2canvas` re-renders the DOM to a canvas element, which doesn't faithfully reproduce modern CSS (Tailwind utilities, backdrop-blur, shadows, custom fonts, etc.). This is why the captured screenshot looks visually different from the actual UI — it's a fundamental limitation of the library.
+The Node.js buildpack runs `npm install` → `npm run build` → `npm start`. Your project is missing:
+- A `start` script (buildpack doesn't know how to serve the app)
+- The `serve` package (needed to serve static files)
+- A Node `engines` field (buildpack may pick wrong version)
 
-## Solution
-Replace `html2canvas` with **`html-to-image`**, which uses SVG `foreignObject` rendering. This approach lets the browser's own rendering engine produce the image, resulting in pixel-perfect output that matches what's on screen.
+## Fix — 3 changes to package.json
 
-## Changes
+### 1. Add `serve` to dependencies
+```json
+"serve": "^14.2.4"
+```
 
-### 1. Install `html-to-image`
-Add dependency: `html-to-image` (remove `html2canvas`).
+### 2. Add `start` script
+```json
+"start": "serve dist -s -l $PORT"
+```
+- `-s` enables single-page app mode (rewrites to `index.html`)
+- `$PORT` is injected by Cloud Run automatically
 
-### 2. `src/lib/capturePageScreenshot.ts` — Rewrite with html-to-image
-- Replace `html2canvas` import with `import { toBlob } from 'html-to-image'`
-- Use `toBlob(document.body, { filter, backgroundColor, pixelRatio })` to capture the full page
-- The `filter` callback excludes elements with `[data-feedback-ui]` (same as current `ignoreElements`)
-- For area cropping: capture full page as a blob, draw it onto a temporary canvas, then crop the selected region using the same scroll-offset math already in place
-- `pixelRatio` set to `window.devicePixelRatio` for sharp output
+### 3. Add engines field
+```json
+"engines": {
+  "node": "20"
+}
+```
 
-### 3. No changes to other files
-`ScreenshotSelectionOverlay`, `FeedbackTrigger`, and `ScreenshotCapture` all remain unchanged — they only depend on `capturePageScreenshot` returning a `Blob | null`.
+### Cloud Run Settings
+- **Runtime**: Node.js
+- **Build context directory**: `/` (or leave default)
+- **Entry point**: leave blank (it will use `npm start`)
+- **Function target**: leave blank
 
-## Files Modified
-- `package.json` (swap dependency)
-- `src/lib/capturePageScreenshot.ts` (rewrite)
+After these changes, the buildpack will: install deps → run `vite build` → run `serve dist` on the correct port.
 
