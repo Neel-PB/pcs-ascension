@@ -97,15 +97,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setUser(appUser);
 
-      // Silent Supabase session for RLS-protected data queries
-      try {
-        await supabase.auth.signInWithPassword({ email, password });
-      } catch {
-        // Non-critical — data queries may fail but auth works
-        console.warn("Silent Supabase session failed — RLS queries may be affected");
-      }
-
-      toast.success("Signed in successfully!");
       return { data };
     } catch (err: any) {
       toast.error(err.message || "Sign-in failed");
