@@ -6,7 +6,7 @@ import { SearchField } from "@/components/ui/search-field";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { FileText, AlertCircle, MessageSquare, ExternalLink, Plus } from "@/lib/icons";
+import { FileText, MessageSquare, ExternalLink, Plus } from "@/lib/icons";
 import { toast } from "sonner";
 import { UserGuidesTab } from "@/components/support/UserGuidesTab";
 import { TrainingVideosTab } from "@/components/support/TrainingVideosTab";
@@ -36,7 +36,7 @@ export default function SupportPage() {
     { id: "guides", label: "User Guides" },
     { id: "faqs", label: "FAQs" },
     { id: "videos", label: "Training Videos" },
-    { id: "troubleshooting", label: "Troubleshooting" },
+    
     { id: "report", label: "Report Issue" },
   ];
 
@@ -104,28 +104,6 @@ export default function SupportPage() {
   );
 
 
-  const troubleshootingTopics = [
-    {
-      issue: "Data not loading or showing blank screens",
-      solution: "Try refreshing your browser or clearing your cache. If the issue persists, check your internet connection and ensure you're logged in properly."
-    },
-    {
-      issue: "Unable to export reports",
-      solution: "Make sure you have the necessary permissions for the data you're trying to export. Contact your administrator if you need additional access rights."
-    },
-    {
-      issue: "Filters not working correctly",
-      solution: "Clear all filters and reapply them one at a time. Ensure you're starting with the highest level (Region) before applying more specific filters."
-    },
-    {
-      issue: "Employee records not updating",
-      solution: "Check that all required fields are filled in correctly. Wait a few moments for the system to sync, then refresh the page."
-    },
-    {
-      issue: "Performance issues or slow loading",
-      solution: "Close unnecessary browser tabs, ensure you're using a supported browser (Chrome, Firefox, Safari, or Edge), and check your internet speed."
-    }
-  ];
 
   return (
     <div className="h-full flex flex-col gap-4 overflow-hidden">
@@ -191,21 +169,6 @@ export default function SupportPage() {
           </div>
         )}
 
-        {activeTab === "troubleshooting" && (
-          <div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">
-          <div className="space-y-4">
-            {troubleshootingTopics.map((topic, index) => (
-              <div key={index} className="p-4 bg-shell-elevated rounded-lg border border-shell-elevated">
-                <h3 className="font-semibold text-foreground mb-2 flex items-start gap-2">
-                  <AlertCircle className="h-5 w-5 text-warning mt-0.5 flex-shrink-0" />
-                  {topic.issue}
-                </h3>
-                <p className="text-sm text-shell-muted ml-7">{topic.solution}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-        )}
 
         {activeTab === "report" && (
           <div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">
