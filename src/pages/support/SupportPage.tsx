@@ -97,40 +97,7 @@ export default function SupportPage() {
     addFaqMutation.mutate({ question: newFaqQuestion, answer: newFaqAnswer });
   };
 
-  const hardcodedFaqs = [
-    {
-      question: "How do I add a new employee to the system?",
-      answer: "Navigate to the Positions page, click on the Employees tab, and use the 'Add Employee' button. Fill in the required information including name, department, position, and start date."
-    },
-    {
-      question: "How can I view staffing analytics by region?",
-      answer: "Go to the Analytics page and select the 'Region' tab. You'll see comprehensive metrics including total staff, fill rates, and performance scores for each region."
-    },
-    {
-      question: "What's the difference between Contractors and Employees?",
-      answer: "Employees are permanent staff on your payroll, while Contractors are temporary workers hired for specific projects or time periods. They have different management workflows and reporting requirements."
-    },
-    {
-      question: "How do I generate a staffing report?",
-      answer: "Visit the Reports page and select the appropriate level (Region, Market, Facility, or Department). Choose the report type you need and click the 'Export' button to download it."
-    },
-    {
-      question: "Can I filter data by multiple criteria?",
-      answer: "Yes! Use the filter bar at the top of each page to select Region, Market, Facility, and Department. The filters cascade, so selecting a region will show only markets within that region."
-    },
-    {
-      question: "How do I track open requisitions?",
-      answer: "Go to the Positions page and click on the Requisitions tab. You'll see all open positions, their status, priority level, and how long they've been open."
-    }
-  ];
-
-  // Merge DB FAQs (first) with hardcoded FAQs
-  const allFaqs = [
-    ...dbFaqs.map(f => ({ question: f.question, answer: f.answer })),
-    ...hardcodedFaqs,
-  ];
-
-  const filteredFaqs = allFaqs.filter(faq =>
+  const filteredFaqs = dbFaqs.filter(faq =>
     debouncedSearch === "" ||
     faq.question.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
     faq.answer.toLowerCase().includes(debouncedSearch.toLowerCase())
