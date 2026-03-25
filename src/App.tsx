@@ -64,16 +64,15 @@ const AppContent = () => {
     if (!user || loading || onboardingChecked) return;
 
     const checkOnboarding = async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('onboarding_completed')
-        .eq('id', user.id)
-        .single();
-
-      if (data && !(data as any).onboarding_completed) {
-        startFullTour();
-        markOnboardingComplete(user.id);
-      } else {
+      try {
+        const data = await apiFetch("/auth/me");
+        if (data && !data.onboarding_completed) {
+          startFullTour();
+          markOnboardingComplete(user.id);
+        } else {
+          setOnboardingChecked(true);
+        }
+      } catch {
         setOnboardingChecked(true);
       }
     };

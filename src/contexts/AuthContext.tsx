@@ -184,14 +184,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setMustChangePassword(false);
       setUser(appUser);
 
-      // Silent Supabase session for RLS
-      try {
-        await supabase.auth.signInWithPassword({ email, password });
-      } catch {
-        console.warn("Silent Supabase session failed");
-      }
-
-      toast.success("Password set successfully!");
       return { data };
     } catch (err: any) {
       toast.error(err.message || "Failed to set password");
