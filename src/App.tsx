@@ -11,6 +11,7 @@ import { useRBAC } from "@/hooks/useRBAC";
 import { useUISettings } from "@/hooks/useAppSettings";
 import { useRealtimeSubscriptions } from "@/hooks/useRealtimeSubscriptions";
 import { LogoLoader } from "@/components/ui/LogoLoader";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useTourStore } from "@/stores/useTourStore";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -126,7 +127,9 @@ const App = () => (
         <TooltipProvider>
           <Sonner />
           <BrowserRouter>
-            <AppContent />
+            <ErrorBoundary>
+              <AppContent />
+            </ErrorBoundary>
           </BrowserRouter>
         </TooltipProvider>
       </ThemeProvider>

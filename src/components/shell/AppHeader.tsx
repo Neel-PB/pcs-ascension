@@ -160,7 +160,13 @@ export function AppHeader() {
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => {
                   startFullTour();
-                  navigate('/staffing?tab=summary&tour=true');
+                  if (location.pathname === '/staffing') {
+                    setTimeout(() => {
+                      useTourStore.getState().startTour('staffing');
+                    }, 300);
+                  } else {
+                    navigate('/staffing?tab=summary&tour=true');
+                  }
                 }}>
                   <Navigation className="h-4 w-4 mr-2" />
                   <span>Full Guided Tour</span>
