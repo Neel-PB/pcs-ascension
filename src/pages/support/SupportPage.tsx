@@ -104,28 +104,6 @@ export default function SupportPage() {
   );
 
 
-  const troubleshootingTopics = [
-    {
-      issue: "Data not loading or showing blank screens",
-      solution: "Try refreshing your browser or clearing your cache. If the issue persists, check your internet connection and ensure you're logged in properly."
-    },
-    {
-      issue: "Unable to export reports",
-      solution: "Make sure you have the necessary permissions for the data you're trying to export. Contact your administrator if you need additional access rights."
-    },
-    {
-      issue: "Filters not working correctly",
-      solution: "Clear all filters and reapply them one at a time. Ensure you're starting with the highest level (Region) before applying more specific filters."
-    },
-    {
-      issue: "Employee records not updating",
-      solution: "Check that all required fields are filled in correctly. Wait a few moments for the system to sync, then refresh the page."
-    },
-    {
-      issue: "Performance issues or slow loading",
-      solution: "Close unnecessary browser tabs, ensure you're using a supported browser (Chrome, Firefox, Safari, or Edge), and check your internet speed."
-    }
-  ];
 
   return (
     <div className="h-full flex flex-col gap-4 overflow-hidden">
