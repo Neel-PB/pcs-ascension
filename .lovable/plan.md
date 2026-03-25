@@ -1,38 +1,20 @@
 
 
-## Why Cloud Run Build Fails
+## Migrate FAQs from Supabase to NestJS API
 
-The Node.js buildpack runs `npm install` → `npm run build` → `npm start`. Your project is missing:
-- A `start` script (buildpack doesn't know how to serve the app)
-- The `serve` package (needed to serve static files)
-- A Node `engines` field (buildpack may pick wrong version)
+Replace the current Supabase-based FAQ queries with `apiFetch` calls to the new NestJS endpoints.
 
-## Fix — 3 changes to package.json
+### Changes — `src/pages/support/SupportPage.tsx`
 
-### 1. Add `serve` to dependencies
-```json
-"serve": "^14.2.4"
-```
+1. **Remove** the Supabase import and replace FAQ query with `apiFetch('/faqs')` using `useQuery`
+2. **Replace** the insert mutation to use `apiFetch('/faqs', { method: 'POST', body: JSON.stringify({ question, answer }) })`
+3. **Keep** hardcoded FAQs as fallback, merged after DB FAQs
+4. **Optionally** display author info (e.g., "Added by John Doe") on DB FAQs
 
-### 2. Add `start` script
-```json
-"start": "serve dist -s -l $PORT"
-```
-- `-s` enables single-page app mode (rewrites to `index.html`)
-- `$PORT` is injected by Cloud Run automatically
+### Technical Details
 
-### 3. Add engines field
-```json
-"engines": {
-  "node": "20"
-}
-```
-
-### Cloud Run Settings
-- **Runtime**: Node.js
-- **Build context directory**: `/` (or leave default)
-- **Entry point**: leave blank (it will use `npm start`)
-- **Function target**: leave blank
-
-After these changes, the buildpack will: install deps → run `vite build` → run `serve dist` on the correct port.
+- `GET /faqs` returns `{ id, question, answer, created_by, created_at, author: { first_name, last_name, email } }[]`
+- `POST /faqs` accepts `{ question: string, answer: string }` — `created_by` is extracted server-side from JWT
+- Remove `userId` from the mutation since the backend handles it via token
+- No new files needed — single file edit
 
