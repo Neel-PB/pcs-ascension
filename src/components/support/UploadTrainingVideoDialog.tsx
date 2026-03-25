@@ -1,5 +1,6 @@
 import { useState, useRef, type ChangeEvent } from "react";
-import { Upload, X, Video, Image } from "@/lib/icons";
+import { Upload, X, Image } from "@/lib/icons";
+import { FileVideo } from "react-icons/fi";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
