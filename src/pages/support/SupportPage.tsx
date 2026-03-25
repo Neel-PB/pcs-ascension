@@ -138,42 +138,6 @@ export default function SupportPage() {
         )}
 
 
-        {activeTab === "report" && (
-          <div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">
-          <form onSubmit={handleSubmitIssue} className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">Issue Title</label>
-              <Input
-                type="text"
-                placeholder="Brief description of the issue"
-                value={issueTitle}
-                onChange={(e) => setIssueTitle(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">Description</label>
-              <Textarea
-                placeholder="Please provide detailed information about the issue you're experiencing..."
-                value={issueDescription}
-                onChange={(e) => setIssueDescription(e.target.value)}
-                required
-                rows={6}
-              />
-            </div>
-            <div className="flex gap-3">
-              <Button type="submit" className="gap-2" disabled={isSubmitting}>
-                <FileText className="h-4 w-4" />
-                {isSubmitting ? "Submitting..." : "Submit Issue"}
-              </Button>
-              <Button type="button" variant="outline" className="gap-2">
-                <ExternalLink className="h-4 w-4" />
-                View My Tickets
-              </Button>
-            </div>
-          </form>
-        </div>
-        )}
       </div>
 
       {/* Add FAQ Dialog */}

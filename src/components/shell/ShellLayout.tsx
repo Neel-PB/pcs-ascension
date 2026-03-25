@@ -39,6 +39,7 @@ export function ShellLayout({ children }: ShellLayoutProps) {
     <div className="h-screen bg-shell-elevated w-full overflow-hidden">
       <DynamicIconOnlySidebar />
       <AppHeader />
+      <ReportIssueTrigger />
       
       <main 
         className="px-6 py-4 bg-shell-elevated overflow-y-auto overflow-x-hidden" 
