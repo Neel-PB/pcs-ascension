@@ -154,7 +154,8 @@ export function TourLauncher({ open, onOpenChange }: TourLauncherProps) {
     forceUpdate(n => n + 1);
   }, []);
 
-  const completedCount = APP_TOUR_SEQUENCE.filter(s => isCompleted(s.tourKey)).length;
+  const allFilteredSections = filteredGroups.flatMap(g => g.sections);
+  const completedCount = allFilteredSections.filter(s => isCompleted(s.tourKey)).length;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -162,12 +163,12 @@ export function TourLauncher({ open, onOpenChange }: TourLauncherProps) {
         <SheetHeader className="pb-4">
           <SheetTitle className="text-lg">All Tours</SheetTitle>
           <p className="text-sm text-muted-foreground">
-            {completedCount} of {APP_TOUR_SEQUENCE.length} completed
+            {completedCount} of {allFilteredSections.length} completed
           </p>
         </SheetHeader>
 
         <div className="space-y-6">
-          {GROUPS.map(group => (
+          {filteredGroups.map(group => (
             <div key={group.label}>
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1">
                 {group.label}
@@ -175,7 +176,7 @@ export function TourLauncher({ open, onOpenChange }: TourLauncherProps) {
               <div className="space-y-1">
                 {group.sections.map(section => {
                   const completed = isCompleted(section.tourKey);
-                  const steps = TOUR_STEP_REGISTRY[section.tourKey] || [];
+                  const steps = getFilteredSteps(section.tourKey);
                   const stepCount = steps.length;
                   const isExpanded = expandedSections.has(section.tourKey);
 
