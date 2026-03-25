@@ -1,17 +1,26 @@
 
 
-## Fix Support Page Content Taking Full Width
+## Standardize & Reorder Floating Trigger Buttons
 
 ### Problem
-Each tab's content is wrapped in a `bg-shell-elevated rounded-xl px-4 py-4 shadow-md` card container. Since the shell layout already provides `bg-shell-elevated` and `px-6` padding, these inner wrappers add unnecessary padding and rounded card styling that shrinks the content area.
+- Triggers have inconsistent spacing (bottom-4, bottom-[68px], bottom-[120px], bottom-[168px]) — gaps are uneven (52px, 52px, 48px).
+- Order from bottom needs to be: Feedback → AI Hub → Report Issue → Checklist.
+- Currently Report Issue is above Checklist but the user wants it below Checklist (3rd from bottom).
 
-### Fix — `src/pages/support/SupportPage.tsx`
+### New Order & Positions (consistent 48px gap)
 
-Remove the decorative card wrapper divs from all three tab content blocks. The content should render directly inside the scrollable container without extra padding/shadow.
+| # | Button | Position | Current |
+|---|--------|----------|---------|
+| 1 | Feedback | `bottom-4` (16px) | `bottom-4` ✓ |
+| 2 | AI Hub | `bottom-[64px]` | `bottom-[68px]` |
+| 3 | Report Issue | `bottom-[112px]` | `bottom-[168px]` |
+| 4 | Checklist | `bottom-[160px]` | `bottom-[120px]` |
 
-1. **Guides tab** (line 87): Change `<div className="bg-shell-elevated rounded-xl px-4 pb-4 shadow-md">` to just `<div>`.
-2. **FAQs tab** (line 93): Change `<div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">` to just `<div>`.
-3. **Videos tab** (line 132): Change `<div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">` to just `<div>`.
+All buttons: `h-12 w-6`, `variant="ghost"`, `bg-primary hover:bg-primary/90`, `text-white`, same rounded/shadow/transition classes.
 
-This removes the extra horizontal padding (`px-4`) and shadow/rounded styling, letting search fields and content span the full available width.
+### Files to Edit
+
+1. **`src/components/ai/AIHubTrigger.tsx`** — Change `bottom-[68px]` → `bottom-[64px]`
+2. **`src/components/feedback/ReportIssueTrigger.tsx`** — Change `bottom-[168px]` → `bottom-[112px]`
+3. **`src/components/workforce/WorkforceDrawerTrigger.tsx`** — Change `bottom-[120px]` → `bottom-[160px]`, change `variant="default"` → `variant="ghost"`, add `bg-primary hover:bg-primary/90 text-white` to match others
 
