@@ -107,13 +107,13 @@ export default function SupportPage() {
             )}
           </div>
 
-          <Accordion type="single" collapsible className="space-y-2">
+          <Accordion type="single" collapsible className="space-y-3">
             {filteredFaqs.map((faq, index) => (
-              <AccordionItem key={index} value={`faq-${index}`} className="border border-shell-elevated rounded-lg px-4">
-                <AccordionTrigger className="hover:no-underline">
-                  <span className="text-left font-medium">{faq.question}</span>
+              <AccordionItem key={index} value={`faq-${index}`} className="border border-border/60 border-l-[3px] border-l-primary bg-primary/5 rounded-lg overflow-hidden">
+                <AccordionTrigger className="hover:no-underline hover:bg-primary/10 px-4 py-3 transition-colors [&>svg]:text-primary">
+                  <span className="text-left font-medium text-foreground">{faq.question}</span>
                 </AccordionTrigger>
-                <AccordionContent className="text-shell-muted">
+                <AccordionContent className="text-muted-foreground bg-background/60 border-t border-border/40 px-4 pb-4 pt-3">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
