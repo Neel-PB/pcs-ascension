@@ -122,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sessionStorage.setItem("nestjs_user", JSON.stringify(appUser));
       setUser(appUser);
 
+      toast.success("Account created successfully!");
       return { data };
     } catch (err: any) {
       toast.error(err.message || "Sign-up failed");
