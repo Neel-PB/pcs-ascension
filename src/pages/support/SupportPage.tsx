@@ -6,17 +6,14 @@ import { SearchField } from "@/components/ui/search-field";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { MessageSquare, Plus } from "@/lib/icons";
+import { Plus } from "@/lib/icons";
 import { toast } from "sonner";
 import { UserGuidesTab } from "@/components/support/UserGuidesTab";
 import { TrainingVideosTab } from "@/components/support/TrainingVideosTab";
-import { useAuth } from "@/hooks/useAuth";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { useRBAC } from "@/hooks/useRBAC";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/apiFetch";
-
-const GOOGLE_CHAT_WEBHOOK_URL = "https://chat.googleapis.com/v1/spaces/AAQANHVwNj8/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=kCFviCb1lEHdQ2uobep6zSXuomIdNtrLaifZBB00YqY";
 
 export default function SupportPage() {
   const [activeTab, setActiveTab] = useState("guides");
