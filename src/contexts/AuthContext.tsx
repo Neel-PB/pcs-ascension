@@ -143,10 +143,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     sessionStorage.removeItem("nestjs_user");
     sessionStorage.removeItem("nestjs_must_change_password");
     sessionStorage.removeItem("msal_user");
-    sessionStorage.removeItem("msal_access_token");
-
-    // Clear Supabase session too
-    await supabase.auth.signOut({ scope: "local" }).catch(() => {});
 
     toast.success("Signed out successfully!");
     setTimeout(() => { isSigningOutRef.current = false; }, 200);
