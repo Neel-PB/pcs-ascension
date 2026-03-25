@@ -1,29 +1,17 @@
 
 
-## Fix Report Issue Trigger: Overlap & Color
+## Fix Support Page Content Taking Full Width
 
 ### Problem
-- The Report Issue trigger (`bottom-[116px]`) overlaps with the Workforce/Positions Checklist trigger (`bottom-[120px]`).
-- The Report Issue trigger uses red (`bg-destructive`) instead of matching the blue style of the other triggers.
+Each tab's content is wrapped in a `bg-shell-elevated rounded-xl px-4 py-4 shadow-md` card container. Since the shell layout already provides `bg-shell-elevated` and `px-6` padding, these inner wrappers add unnecessary padding and rounded card styling that shrinks the content area.
 
-### Current Stack (bottom to top)
-| Button | Position |
-|--------|----------|
-| Feedback | `bottom-4` (16px) |
-| AI Hub | `bottom-[68px]` |
-| Report Issue | `bottom-[116px]` ← overlaps |
-| Workforce Checklist | `bottom-[120px]` ← overlaps |
+### Fix — `src/pages/support/SupportPage.tsx`
 
-### Fix — `src/components/feedback/ReportIssueTrigger.tsx`
+Remove the decorative card wrapper divs from all three tab content blocks. The content should render directly inside the scrollable container without extra padding/shadow.
 
-1. **Change position** from `bottom-[116px]` to `bottom-[168px]` — placing it above the Workforce Checklist trigger with proper spacing.
-2. **Change color** from `bg-destructive hover:bg-destructive/90 text-destructive-foreground` to `bg-primary hover:bg-primary/90 text-white` to match the AI Hub and Feedback triggers.
+1. **Guides tab** (line 87): Change `<div className="bg-shell-elevated rounded-xl px-4 pb-4 shadow-md">` to just `<div>`.
+2. **FAQs tab** (line 93): Change `<div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">` to just `<div>`.
+3. **Videos tab** (line 132): Change `<div className="bg-shell-elevated rounded-xl px-4 py-4 shadow-md">` to just `<div>`.
 
-### Updated Stack
-| Button | Position |
-|--------|----------|
-| Feedback | `bottom-4` |
-| AI Hub | `bottom-[68px]` |
-| Workforce Checklist | `bottom-[120px]` |
-| Report Issue | `bottom-[168px]` |
+This removes the extra horizontal padding (`px-4`) and shadow/rounded styling, letting search fields and content span the full available width.
 
