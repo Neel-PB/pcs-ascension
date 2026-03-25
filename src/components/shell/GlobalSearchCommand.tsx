@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Briefcase, FileText, MessageSquare, Loader2 } from "lucide-react";
+import { Users, Briefcase, FileText, MessageSquare, Loader2 } from "@/lib/icons";
 import { SearchField } from "@/components/ui/search-field";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";

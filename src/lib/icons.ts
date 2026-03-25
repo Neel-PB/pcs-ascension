@@ -75,6 +75,7 @@ export {
   MdFormatListNumbered as ListOrdered,
   MdSync as Loader2,
   MdLock as Lock,
+  MdEmail as Mail,
   MdLocationOn as MapPin,
   MdFullscreen as Maximize2,
   MdMenu as Menu,
