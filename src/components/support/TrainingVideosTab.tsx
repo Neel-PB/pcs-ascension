@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Play, X, Upload } from "@/lib/icons";
+import { Play, X, Upload, Loader2 } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useTrainingVideos, type TrainingVideo } from "@/hooks/useTrainingVideos";
 import { useRBAC } from "@/hooks/useRBAC";
 import { UploadTrainingVideoDialog } from "./UploadTrainingVideoDialog";
+import { apiFetch } from "@/lib/apiFetch";
 
 function formatFileSize(bytes: number) {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
