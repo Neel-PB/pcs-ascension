@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,10 @@ import { useTourStore } from '@/stores/useTourStore';
 import { useFeedbackStore } from '@/stores/useFeedbackStore';
 import { useWorkforceDrawerStore } from '@/stores/useWorkforceDrawerStore';
 import { TOUR_STEP_REGISTRY, getStepTitle } from './tourStepRegistry';
+import { useRBAC } from '@/hooks/useRBAC';
+import { useAuth } from '@/hooks/useAuth';
+import { useUserRoles } from '@/hooks/useUserRoles';
+import { isKpiVisible } from '@/config/kpiVisibility';
 import {
   Collapsible,
   CollapsibleContent,
@@ -16,28 +20,32 @@ import {
 
 const TOUR_PREFIX = 'helix-tour-';
 
+const categoryPermissionMap: Record<string, string> = {
+  Staffing: 'staffing.access',
+  Positions: 'positions.access',
+  Admin: 'admin.access',
+  Overlays: '', // no blanket permission
+};
+
+const guidePermissionMap: Record<string, string> = {
+  'staffing-volume-settings': 'settings.volume_override',
+  'staffing-np-settings': 'settings.np_override',
+};
+
+const overlayPermissionMap: Record<string, string> = {
+  feedback: 'feedback.access',
+};
+
 interface TourGroup {
   label: string;
   sections: TourSection[];
 }
 
 const GROUPS: TourGroup[] = [
-  {
-    label: 'Staffing',
-    sections: APP_TOUR_SEQUENCE.filter(s => s.page === '/staffing'),
-  },
-  {
-    label: 'Positions',
-    sections: APP_TOUR_SEQUENCE.filter(s => s.page === '/positions'),
-  },
-  {
-    label: 'Admin',
-    sections: APP_TOUR_SEQUENCE.filter(s => s.page === '/admin'),
-  },
-  {
-    label: 'Overlays',
-    sections: APP_TOUR_SEQUENCE.filter(s => s.page === null),
-  },
+  { label: 'Staffing', sections: APP_TOUR_SEQUENCE.filter(s => s.page === '/staffing') },
+  { label: 'Positions', sections: APP_TOUR_SEQUENCE.filter(s => s.page === '/positions') },
+  { label: 'Admin', sections: APP_TOUR_SEQUENCE.filter(s => s.page === '/admin') },
+  { label: 'Overlays', sections: APP_TOUR_SEQUENCE.filter(s => s.page === null) },
 ];
 
 function isCompleted(tourKey: string): boolean {
@@ -58,6 +66,44 @@ export function TourLauncher({ open, onOpenChange }: TourLauncherProps) {
   const { startSingleTour, startMicroTour } = useTourStore();
   const [, forceUpdate] = useState(0);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const { hasPermission } = useRBAC();
+  const { user } = useAuth();
+  const { roles: userRoles } = useUserRoles(user?.id);
+
+  // Filter groups based on permissions
+  const filteredGroups = useMemo(() => {
+    return GROUPS.map(group => {
+      // Check category-level permission
+      const catPerm = categoryPermissionMap[group.label];
+      if (catPerm && !hasPermission(catPerm)) return { ...group, sections: [] };
+
+      // Filter individual sections
+      const filtered = group.sections.filter(section => {
+        const guidePerm = guidePermissionMap[section.tourKey];
+        if (guidePerm && !hasPermission(guidePerm)) return false;
+        if (group.label === 'Overlays') {
+          const overlayPerm = overlayPermissionMap[section.tourKey];
+          if (overlayPerm && !hasPermission(overlayPerm)) return false;
+        }
+        return true;
+      });
+
+      return { ...group, sections: filtered };
+    }).filter(group => group.sections.length > 0);
+  }, [hasPermission]);
+
+  // Get filtered steps for a tour (handles KPI visibility)
+  const getFilteredSteps = useCallback((tourKey: string) => {
+    let steps = TOUR_STEP_REGISTRY[tourKey] || [];
+    if (tourKey === 'staffing' && userRoles.length > 0) {
+      steps = steps.filter(s => {
+        const kpiMatch = typeof s.target === 'string' && s.target.match(/\[data-tour="kpi-(.+?)"\]/);
+        if (kpiMatch) return isKpiVisible(kpiMatch[1], userRoles as any);
+        return true;
+      });
+    }
+    return steps;
+  }, [userRoles]);
 
   const toggleExpanded = useCallback((tourKey: string) => {
     setExpandedSections(prev => {
@@ -108,7 +154,8 @@ export function TourLauncher({ open, onOpenChange }: TourLauncherProps) {
     forceUpdate(n => n + 1);
   }, []);
 
-  const completedCount = APP_TOUR_SEQUENCE.filter(s => isCompleted(s.tourKey)).length;
+  const allFilteredSections = filteredGroups.flatMap(g => g.sections);
+  const completedCount = allFilteredSections.filter(s => isCompleted(s.tourKey)).length;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -116,12 +163,12 @@ export function TourLauncher({ open, onOpenChange }: TourLauncherProps) {
         <SheetHeader className="pb-4">
           <SheetTitle className="text-lg">All Tours</SheetTitle>
           <p className="text-sm text-muted-foreground">
-            {completedCount} of {APP_TOUR_SEQUENCE.length} completed
+            {completedCount} of {allFilteredSections.length} completed
           </p>
         </SheetHeader>
 
         <div className="space-y-6">
-          {GROUPS.map(group => (
+          {filteredGroups.map(group => (
             <div key={group.label}>
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1">
                 {group.label}
@@ -129,7 +176,7 @@ export function TourLauncher({ open, onOpenChange }: TourLauncherProps) {
               <div className="space-y-1">
                 {group.sections.map(section => {
                   const completed = isCompleted(section.tourKey);
-                  const steps = TOUR_STEP_REGISTRY[section.tourKey] || [];
+                  const steps = getFilteredSteps(section.tourKey);
                   const stepCount = steps.length;
                   const isExpanded = expandedSections.has(section.tourKey);
 
