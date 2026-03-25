@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,10 @@ import { useTourStore } from '@/stores/useTourStore';
 import { useFeedbackStore } from '@/stores/useFeedbackStore';
 import { useWorkforceDrawerStore } from '@/stores/useWorkforceDrawerStore';
 import { TOUR_STEP_REGISTRY, getStepTitle } from './tourStepRegistry';
+import { useRBAC } from '@/hooks/useRBAC';
+import { useAuth } from '@/hooks/useAuth';
+import { useUserRoles } from '@/hooks/useUserRoles';
+import { isKpiVisible } from '@/config/kpiVisibility';
 import {
   Collapsible,
   CollapsibleContent,
