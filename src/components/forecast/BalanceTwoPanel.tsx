@@ -54,10 +54,10 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
                 </div>
               ) : (
                 <div className="mt-4">
-                  <div className="flex items-center justify-between bg-muted/60 rounded px-2 py-1.5 text-xs">
-                    <span className="font-medium">{row.employmentType}</span>
-                    <span className="font-semibold">{row.openReqsFte.toFixed(1)}</span>
-                  </div>
+                <div className={cn("flex items-center justify-between rounded px-2 py-1.5 text-xs", typeColors[row.employmentType] || 'bg-muted/60 text-muted-foreground')}>
+                  <span className="font-medium">{row.employmentType}</span>
+                  <span className="font-semibold">{row.openReqsFte.toFixed(1)}</span>
+                </div>
                 </div>
               )
             ) : (
