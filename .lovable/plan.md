@@ -1,28 +1,32 @@
 
 
-## Fix × (multiplication sign) rendering in HeadcountBreakdown
+## Restyle User Guides to Match FAQ Accordion Design + Reorder Row Buttons
 
-### Problem
-The Unicode `×` character in the HeadcountBreakdown rows renders as a small colored block in some browsers/fonts, making the calculation unreadable.
+### Changes
 
-### Fix
-**File: `src/components/forecast/BalanceTwoPanel.tsx`** — line 129
+#### 1. FAQ-style accordion rows for each guide
+**File: `src/components/support/UserGuidesTab.tsx`** — lines 255-327
 
-Replace the literal `×` with a styled "x" or use `\u00D7` wrapped in a span with explicit font:
+Replace the current plain hover row with the FAQ accordion style:
+- `border border-border/60 border-l-[3px] border-l-primary bg-primary/5 rounded-lg`
+- Remove the transparent border / hover-border approach
 
-```tsx
-// Current (line 129):
-<span>{label}: {fteVal} FTE × {totalHc}</span>
+#### 2. Reorder right-side buttons: Reset → Done badge → Steps → Go & Start
+**File: `src/components/support/UserGuidesTab.tsx`** — lines 291-326
 
-// Fixed:
-<span>{label}: {fteVal} FTE <span className="font-sans">×</span> {totalHc}</span>
-```
+Current order: `Steps badge | Done badge | Go & Start button | Reset button`
 
-If that still fails, fall back to the word "x":
-```tsx
-<span>{label}: {fteVal} FTE x {totalHc}</span>
+New order (left to right):
+1. **Reset** button (always visible, not just when completed — ghost when not completed)
+2. **Done** badge (or empty space if not completed)
+3. **Steps** badge
+4. **Go & Start** button
+
+```text
+Current:  [16 steps] [✓ Done] [▶ Go & Start] [↺]
+New:      [↺] [✓ Done] [16 steps] [▶ Go & Start]
 ```
 
 ### Files Modified
-1. `src/components/forecast/BalanceTwoPanel.tsx` — line 129, fix multiplication sign rendering
+1. `src/components/support/UserGuidesTab.tsx` — accordion styling + button reorder
 
