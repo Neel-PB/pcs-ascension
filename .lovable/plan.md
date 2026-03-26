@@ -1,27 +1,17 @@
 
 
-## Restore Rich Narrative Summary in Left Panel
+## Feedback Page: Larger Search Button + Uniform Filter Dimensions
 
-### Problem
-The current Summary section shows a basic one-liner like "5.9 FTE surplus identified. 1.8 FTE addressed." The previous version had a detailed narrative that explained the recommendation in context — referencing the current employment mix, specific actions (open PRN, cancel reqs, close positions), priority order, and target split.
+### Changes
 
-### Approach
-Build a dynamic narrative summary using data already available on the `ForecastBalanceRow`:
+**File: `src/pages/feedback/FeedbackPage.tsx`**
+1. Search field container: `w-64` → `w-72`
+2. All 3 `SelectTrigger` components: `w-[140px]` → `w-[160px] h-11` for uniform width and height matching the search field
 
-- **Current mix %** — compute from `fteHeadcountJson` entries (same logic already used in target footer)
-- **Actions** — derive from `staffingStatus`, `addressedFte`, `unaddressedFte`, `openReqsFte`, `actionTypes`
-- **Target split** — use the static 70/20/10 reference (FT/PT/PRN) per existing memory
-- **Skill + Shift** — from `row.skillType` and `row.shift`
+**File: `src/components/ui/search-field.tsx`**
+3. Search icon button: `h-9 w-9` → `h-10 w-10` for a larger, more prominent button
 
-The narrative template for **surplus**:
-> "Based on your current mix of {FT%} FT / {PT%} PT / {PRN%} PRN, we recommend canceling {addressedFte} FTE in open requisitions, additionally closing {unaddressedFte} FTE from employed positions. We recommend first canceling open requisitions before considering any employed position changes. This will reduce the {totalFteReq} FTE surplus while achieving the optimal 70/20/10 split for your {skillType} {shift} shift workforce."
-
-For **shortage**:
-> "Based on your current mix of {FT%} FT / {PT%} PT / {PRN%} PRN, we recommend opening {totalFteReq} FTE across {breakdown}. This will address the {totalFteReq} FTE shortage while achieving the optimal 70/20/10 split for your {skillType} {shift} shift workforce."
-
-For **balanced**:
-> "Staffing is balanced for your {skillType} {shift} shift workforce."
-
-### File Modified
-1. **`src/components/forecast/BalanceTwoPanel.tsx`** — lines 73-84: replace the static summary with a function that generates the rich narrative from row data
+### Files Modified
+1. `src/pages/feedback/FeedbackPage.tsx` — lines 158, 168, 180, 192
+2. `src/components/ui/search-field.tsx` — line 54
 
