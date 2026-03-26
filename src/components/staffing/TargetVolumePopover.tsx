@@ -123,13 +123,13 @@ export function TargetVolumePopover({
           </div>
         </div>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle className="text-base font-medium">Historical Volume Trend</DialogTitle>
         </DialogHeader>
         {hasEnoughData && chartData.length > 0 ? (
           <>
-            <div className="h-64 w-full">
+            <div className="h-96 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={chartData} margin={{ top: 5, right: 15, left: 0, bottom: 20 }}>
                   <XAxis 
