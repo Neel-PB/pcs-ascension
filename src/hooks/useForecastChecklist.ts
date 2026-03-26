@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useForecastBalance, ForecastBalanceRow, FteHeadcountEntry, ForecastBalanceFilters } from './useForecastBalance';
+import { useForecastBalance, ForecastBalanceRow, ForecastBalanceFilters } from './useForecastBalance';
 
 export interface ChecklistPositionToOpen {
   id: string;
