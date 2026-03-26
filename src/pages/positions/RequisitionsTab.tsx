@@ -32,6 +32,7 @@ export function RequisitionsTab({
   const { data: requisitions, isFetching } = usePositionsByFlag('open_position_flag', {
     selectedRegion, selectedMarket, selectedFacility, selectedDepartment,
   });
+  const latestTimestamp = useMemo(() => getLatestTimestamp(requisitions), [requisitions]);
 
   const [selectedRequisition, setSelectedRequisition] = useState<any>(null);
   const [sheetOpen, setSheetOpen] = useState(false);

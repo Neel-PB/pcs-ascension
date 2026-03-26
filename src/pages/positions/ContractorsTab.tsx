@@ -41,6 +41,7 @@ export function ContractorsTab({
   const { data: contractors, isFetching } = usePositionsByFlag('contractor_flag', {
     selectedRegion, selectedMarket, selectedFacility, selectedDepartment,
   });
+  const latestTimestamp = useMemo(() => getLatestTimestamp(contractors), [contractors]);
 
   const updateActualFte = useUpdateActualFte();
   const updateShiftOverride = useUpdateShiftOverride();

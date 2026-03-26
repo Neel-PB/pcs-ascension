@@ -39,6 +39,7 @@ export function OpenRequisitionTab({
   const { data: requisitions, isFetching } = usePositionsByFlag("open_requisition_flag", {
     selectedRegion, selectedMarket, selectedFacility, selectedDepartment,
   });
+  const latestTimestamp = useMemo(() => getLatestTimestamp(requisitions), [requisitions]);
 
   const positionIds = useMemo(() => (requisitions || []).map(r => r.id), [requisitions]);
   const commentCounts = usePositionCommentCounts(positionIds);

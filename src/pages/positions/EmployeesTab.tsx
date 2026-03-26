@@ -46,6 +46,7 @@ export function EmployeesTab({
   const { data: employees, isFetching } = usePositionsByFlag('employee_flag', {
     selectedRegion, selectedMarket, selectedFacility, selectedDepartment,
   });
+  const latestTimestamp = useMemo(() => getLatestTimestamp(employees), [employees]);
 
   const updateActualFte = useUpdateActualFte();
   const updateShiftOverride = useUpdateShiftOverride();
