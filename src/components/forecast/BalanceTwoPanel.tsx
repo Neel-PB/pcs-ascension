@@ -160,8 +160,10 @@ export function BalanceTwoPanel({
               {/* Hired FTE Column */}
               <div>
                 <div className="pb-2 border-b">
-                  <span className="text-xs text-muted-foreground">Hired FTE</span>
-                  <div className="text-lg font-bold">{hiredFTE.total.toFixed(1)}</div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xs text-muted-foreground">Hired FTE</span>
+                    <span className="text-lg font-bold">{hiredFTE.total.toFixed(1)}</span>
+                  </div>
                 </div>
                 <div className="space-y-2 mt-3">
                   <PercentageBar actual={hiredFTE.ftPercent} target={70} label="Full-Time" value={hiredFTE.ft} />
