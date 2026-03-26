@@ -1,34 +1,28 @@
 
 
-## Restructure Left Panel: Split Hired FTE and Open Reqs into Two Columns
+## Fix Left Panel Headers to Match Reference Design
 
-### Layout Change
+### Changes
 
-The left panel (45%) currently stacks everything vertically. Instead, split it into two side-by-side columns internally:
+**File: `src/components/forecast/BalanceTwoPanel.tsx`** (lines 162-165 and 175-178)
 
-```text
-┌──────────── Left Panel (45%) ─────────────┐
-│  Hired FTE: 12.0    │  Open Reqs: 3.0     │
-│  ─────────────────  │  ─────────────────   │
-│  Full-Time  █████   │  Full-Time  2.0      │
-│  Part-Time  ███     │  Part-Time  0.6      │
-│  PRN        █       │  PRN        0.4      │
-│─────────────────────────────────────────────│
-│  Summary: Based on your current...          │
-└─────────────────────────────────────────────┘
+Two fixes:
+
+1. **Inline headers** — Change from stacked (label above, value below) to inline (label then value on same line):
+
+```tsx
+// Current (stacked)
+<span className="text-xs text-muted-foreground">Hired FTE</span>
+<div className="text-lg font-bold">{hiredFTE.total.toFixed(1)}</div>
+
+// Updated (inline)
+<div className="flex items-baseline gap-2">
+  <span className="text-xs text-muted-foreground">Hired FTE</span>
+  <span className="text-lg font-bold">{hiredFTE.total.toFixed(1)}</span>
+</div>
 ```
 
-- **Left column**: "Hired FTE" header + total, then FT/PT/PRN percentage bars (existing `PercentageBar` component)
-- **Right column**: "Open Reqs" header + total, then FT/PT/PRN values listed vertically (simple label + value rows, matching style)
-- **Below both columns**: AI Summary stays full-width at the bottom
+Same pattern for Open Reqs header.
 
-### Change
-
-**File: `src/components/forecast/BalanceTwoPanel.tsx`** (~lines 156-210)
-
-1. Replace the current combined header row and stacked content with a `grid grid-cols-2 gap-4` inside the left panel Card
-2. **Left sub-column**: "Hired FTE" label + total value, then the 3 `PercentageBar` components for FT/PT/PRN
-3. **Right sub-column**: "Open Reqs" label + total value, then 3 simple rows showing FT/PT/PRN values styled consistently (label left, value right, with a subtle background like `bg-muted/60`)
-4. Remove the existing separate "Open Requisitions" section with the 3 horizontal cards (lines 193-209)
-5. AI Summary section remains below, spanning full width
+2. **Summary section styling** — Remove the `bg-muted/60` wrapper to match the cleaner reference look. Keep it as plain text with just the border-top separator.
 
