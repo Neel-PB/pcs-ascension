@@ -1,38 +1,27 @@
 
 
-## Restyle Auth Page Header: Logo + Title Inline
+## Fix Card Expanding Direction (Grow Downward, Not Upward)
 
-### Current Layout
-```text
-       [Logo]
-  Position Control
-Enter your email to continue
-```
+The card is centered with `items-center` on the parent flex container, so when its height increases (adding password field), it expands equally top and bottom — visually shifting upward. Fix: align the card to top-center with a margin approach so it stays pinned and only grows downward.
 
-### Desired Layout
-```text
-  [Logo]  Position Control
-```
-Logo on the left, title to the right, both centered as a row. No subtitle/subheader text.
+### Change
 
-### Changes
+**File: `src/pages/AuthPage.tsx`** (line 89)
 
-**File: `src/pages/AuthPage.tsx`** (lines 97-109)
-
-Replace the current `CardHeader` content:
-- Combine logo and title into a single horizontal `flex` row, centered
-- Remove the `CardDescription` entirely (no more "Enter your email to continue" etc.)
+Change the outer container from `items-center` to `items-start` with a top padding/margin to visually center it but anchor growth downward:
 
 ```tsx
-<CardHeader className="space-y-1">
-  <div className="flex items-center justify-center gap-3">
-    <img src={AscensionLogo} alt="Ascension" className="w-10 h-10 object-contain" />
-    <CardTitle className="text-2xl font-bold">
-      Position Control
-    </CardTitle>
-  </div>
-</CardHeader>
+// Before
+<div className="min-h-screen h-screen overflow-auto flex items-center justify-center ...">
+
+// After  
+<div className="min-h-screen h-screen overflow-auto flex items-start justify-center pt-[25vh] ...">
 ```
 
-One file, ~12 lines replaced with ~7 lines. No other changes needed.
+This pins the card's top edge so additional fields push the card downward only. The `pt-[25vh]` places it roughly where center was, but anchored from top.
+
+### Result
+- Card top stays fixed when transitioning between steps
+- Height growth happens downward only
+- One line changed
 
