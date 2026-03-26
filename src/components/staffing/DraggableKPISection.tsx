@@ -216,7 +216,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps, volumeBreakd
             </div>
           </div>
           {/* Row 3: Single centered vertical line down to badge */}
-          <div className="col-span-6 flex justify-center">
+          <div className={`col-span-${colCount} flex justify-center`}>
             <div className="w-0.5 h-1.5 bg-primary/60 dark:bg-primary/70" />
           </div>
           {/* Row 4: Blue pill badge */}
