@@ -69,8 +69,7 @@ export function TrainingVideosTab() {
     <>
       {/* Header row */}
       {(canUpload || videos.length > 0) && (
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-sm text-muted-foreground">{videos.length} video{videos.length !== 1 ? "s" : ""}</span>
+        <div className="flex items-center justify-end mb-4">
           {canUpload && (
             <Button size="sm" onClick={() => setUploadOpen(true)}>
               <Upload className="h-4 w-4 mr-1.5" />
