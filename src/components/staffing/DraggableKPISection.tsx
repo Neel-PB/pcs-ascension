@@ -50,6 +50,9 @@ export function DraggableKPISection({ title, kpis, dragHandleProps, volumeBreakd
   const [showTargetBreakdownModal, setShowTargetBreakdownModal] = useState(false);
   const [showVolumeBreakdownModal, setShowVolumeBreakdownModal] = useState(false);
 
+  const colCount = Math.min(kpis.length, 6);
+  const xlGridCols = xlGridColsMap[colCount] || 'xl:grid-cols-6';
+
   // Get the shared breakdown from hired-ftes
   const hiredFtesKpi = kpis.find(k => k.id === 'hired-ftes');
   const sharedBreakdown = hiredFtesKpi?.employmentBreakdown;
