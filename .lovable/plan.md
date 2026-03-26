@@ -1,24 +1,29 @@
 
 
-## Capitalize Shift Values Everywhere in UI
+## Update Forecast Panel Split to 45/55
 
-### Problem
-Shift override values ("day"/"night") display lowercase in the activity log comments within the Position Comment Section, even though the ShiftCell table display was already fixed.
+### Change
 
-### Changes
+**File: `src/components/forecast/BalanceTwoPanel.tsx`**
 
-**File: `src/components/positions/PositionCommentSection.tsx`**
+Update the grid template from `35% 65%` to `45% 55%`:
 
-In the `ShiftActivityCard` component, capitalize `shiftOld` and `shiftNew` before rendering:
-
-- Line 152-153: After extracting the values, capitalize them:
 ```tsx
-const rawOld = (metadata.shift_old ?? metadata.shiftOld ?? metadata.old_value) as string | null;
-const rawNew = (metadata.shift_new ?? metadata.shiftNew ?? metadata.new_value) as string | null;
-const capitalize = (s: string | null) => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
-const shiftOld = capitalize(rawOld);
-const shiftNew = capitalize(rawNew);
+// Line ~137: Current
+style={{ gridTemplateColumns: '35% 65%' }}
+
+// Updated
+style={{ gridTemplateColumns: '45% 55%' }}
 ```
 
-No other changes needed — the three render points on lines 162, 167, 170 already reference `shiftOld`/`shiftNew` and will automatically pick up the capitalized values.
+**File: `src/components/forecast/BalanceTwoPanel.tsx`** (left panel additions)
+
+Add an **Open Requisitions** section below the Hired FTE bars. The `openReqsFTE` data is already available on each `ForecastBalanceRow` — just needs to be passed through and rendered.
+
+- Add `openReqsFTE: OpenReqsBreakdown` to `BalanceTwoPanelProps`
+- Below the FT/PT/PRN percentage bars, render a compact "Open Reqs" summary showing FT, PT, PRN counts and total
+
+**File: `src/components/forecast/ForecastBalanceTableRow.tsx`**
+
+Pass `openReqsFTE={row.openReqsFTE}` to `BalanceTwoPanel`.
 
