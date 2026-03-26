@@ -177,31 +177,6 @@ export const createVolumeOverrideColumns = (
     },
   },
   {
-    id: 'max_allowed_expiry',
-    label: 'Max Expiration',
-    type: 'custom',
-    width: 150,
-    minWidth: 120,
-    sortable: true,
-    renderCell: (row) => (
-      <div className="px-4 py-2">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="text-sm text-muted-foreground">
-              {row.max_allowed_expiry_date 
-                ? format(new Date(row.max_allowed_expiry_date), 'MMM dd, yyyy')
-                : '—'
-              }
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            Maximum allowed expiration date based on historical data availability
-          </TooltipContent>
-        </Tooltip>
-      </div>
-    ),
-  },
-  {
     id: 'status',
     label: 'Status',
     type: 'custom',
