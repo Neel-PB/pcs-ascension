@@ -916,15 +916,10 @@ export function KPIChartModal({
                           {groups.map((group: any, gi: number) => {
                             const innerSlices = (group.inner?.slices || []).filter((s: any) => s.value > 0).sort((a: any, b: any) => b.value - a.value);
                             const outerSlices = (group.outer?.slices || []).filter((s: any) => s.value > 0).sort((a: any, b: any) => b.value - a.value);
-                            const innerTotal = group.inner?.total ?? innerSlices.reduce((s: number, d: any) => s + d.value, 0);
-                            const outerTotal = group.outer?.total ?? outerSlices.reduce((s: number, d: any) => s + d.value, 0);
-                            const combinedTotal = Math.round((innerTotal + outerTotal) * 10) / 10;
-
+                            const combinedTotal = [...innerSlices, ...outerSlices].reduce((s: number, d: any) => s + d.value, 0);
                             const nestedConfig: ChartConfig = {};
                             [...innerSlices, ...outerSlices].forEach((item: any) => {
-                              if (!nestedConfig[item.name]) {
-                                nestedConfig[item.name] = { label: item.name, color: skillColorMap[item.name] };
-                              }
+                              nestedConfig[item.name] = { label: item.name, color: skillColorMap[item.name] || PIE_COLORS[0] };
                             });
 
                             if (innerSlices.length === 0 && outerSlices.length === 0) return null;
@@ -970,6 +965,23 @@ export function KPIChartModal({
                               </div>
                             );
                           })}
+                        </div>
+                        {/* Single-line legend: skills + ring indicators */}
+                        <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-1.5 pt-2 border-t w-full text-sm">
+                          {legendItems.map((name) => (
+                            <div key={name} className="flex items-center gap-1.5">
+                              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: skillColorMap[name] }} />
+                              <span className="text-foreground">{name}</span>
+                            </div>
+                          ))}
+                          <div className="flex items-center gap-1.5 text-muted-foreground">
+                            <span className="inline-block w-3 h-3 rounded-full border-2 border-muted-foreground/50 bg-muted-foreground/20" />
+                            <span>Inner: Night</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-muted-foreground">
+                            <span className="inline-block w-3 h-3 rounded-full border-2 border-muted-foreground/50 bg-transparent" />
+                            <span>Outer: Day</span>
+                          </div>
                         </div>
                       </div>
                     );
