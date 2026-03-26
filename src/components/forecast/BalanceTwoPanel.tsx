@@ -218,7 +218,7 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
 export function BalanceTwoPanel({ row }: BalanceTwoPanelProps) {
   return (
     <div className="space-y-4">
-      <div className="grid gap-4" style={{ gridTemplateColumns: '45% 55%' }}>
+      <div className="grid gap-5" style={{ gridTemplateColumns: '45% 55%' }}>
         <LeftPanel row={row} />
         <RightPanel row={row} />
       </div>
