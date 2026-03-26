@@ -3,6 +3,7 @@ import { Filter } from "@/lib/icons";
 import { differenceInDays } from "date-fns";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import { usePositionsByFlag } from "@/hooks/usePositionsByFlag";
+import { getLatestTimestamp } from "@/lib/getLatestTimestamp";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LogoLoader } from "@/components/ui/LogoLoader";
