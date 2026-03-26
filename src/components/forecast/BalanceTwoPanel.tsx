@@ -42,7 +42,7 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
           {/* Open Reqs Column */}
           <div>
             <div className="pb-2 border-b">
-              <div className="flex items-baseline gap-2">
+              <div className="flex items-baseline justify-between">
                 <span className="text-xs text-muted-foreground">Open Reqs</span>
                 <span className="text-lg font-bold">{row.openReqsFte.toFixed(1)}</span>
               </div>
