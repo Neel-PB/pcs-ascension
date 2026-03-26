@@ -175,7 +175,12 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         g.staffingStatus = worstStatus(g.staffingStatus, row.staffing_status);
         if (row.action_type) g.actionTypes.add(row.action_type);
         if (row.fte_headcount_json) {
-          g.fteHeadcountJson.push(...row.fte_headcount_json);
+          const parsed = typeof row.fte_headcount_json === 'string'
+            ? JSON.parse(row.fte_headcount_json)
+            : row.fte_headcount_json;
+          if (Array.isArray(parsed)) {
+            g.fteHeadcountJson.push(...parsed);
+          }
         }
         // nursing_flag: OR across group
         const nf = typeof row.nursing_flag === 'boolean' ? row.nursing_flag : String(row.nursing_flag).toLowerCase() === 'y' || String(row.nursing_flag) === 'true';
