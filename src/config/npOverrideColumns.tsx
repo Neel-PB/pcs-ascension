@@ -50,10 +50,12 @@ export const createNPOverrideColumns = (
     minWidth: 160,
     sortable: true,
     renderCell: (row) => (
-      <div className="flex items-center justify-between w-full h-full px-4">
-        <span className="text-sm font-medium text-foreground">
-          {row.np_target_volume != null ? row.np_target_volume.toLocaleString() : '—'}
-        </span>
+      <div className="flex items-center justify-between gap-2 px-4 py-2 w-full">
+        <div className="text-sm font-medium text-right ml-auto">
+          {row.np_target_volume != null
+            ? row.np_target_volume.toLocaleString(undefined, { maximumFractionDigits: 1 })
+            : '—'}
+        </div>
       </div>
     ),
   },
