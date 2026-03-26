@@ -1,34 +1,45 @@
 
 
-## Fix HeadcountBreakdown: Group by Employee Type + FTE Value
+## Style Headcount Rows and Target Footer to Match Reference Design
 
-### Problem
-Aggregation groups by `employee_type` only. When entries of the same type have different `fte_value`s (e.g., 128 FT at 1.0 + 1 FT at 0.8), the display shows `Full Time: 1 FTE × 129 = 128.8 FTE` — mathematically incorrect.
+### What stays the same
+All structure, logic, and layout — Hired FTE, Open Reqs, Recommended Actions, Position to Close/Open. No functional changes.
 
-### Fix
+### What changes (visual only)
 
-**File: `src/components/forecast/BalanceTwoPanel.tsx`** — `HeadcountBreakdown` (lines 102-113)
+#### 1. HeadcountBreakdown row colors — per employment type
+**File: `src/components/forecast/BalanceTwoPanel.tsx`** — `HeadcountBreakdown`
 
-Change the aggregation key from `employee_type` alone to `employee_type + fte_value`. This way each unique FTE value gets its own row with a correct formula:
+Currently all rows use `bg-primary/10`. Update to use distinct colors per type matching the reference:
+- **Full Time** → `bg-orange-500/10 text-orange-700`
+- **Part Time** → `bg-emerald-500/10 text-emerald-700`
+- **PRN** → `bg-primary/10 text-primary`
 
-```
-Full Time: 1.0 FTE × 128 = 128.0 FTE
-Full Time: 0.8 FTE × 1   = 0.8 FTE
-```
-
-```typescript
-const key = `${type}_${fteVal}`;
-const existing = aggregated.get(key);
-if (existing) {
-  existing.totalHc += hc;
-  existing.totalFte += fteVal * hc;
-} else {
-  aggregated.set(key, { type, fteVal, totalHc: hc, totalFte: fteVal * hc });
-}
+```tsx
+const typeColors: Record<string, string> = {
+  FT: 'bg-orange-500/10 text-orange-700',
+  PT: 'bg-emerald-500/10 text-emerald-700',
+  PRN: 'bg-primary/10 text-primary',
+};
+// fallback: 'bg-muted/60 text-muted-foreground'
 ```
 
-Update the render to read `type` from the value object and use `employeeTypeLabels` for the label.
+Apply to each breakdown row's container `div`.
+
+#### 2. Target footer — colored split pills
+**File: `src/components/forecast/BalanceTwoPanel.tsx`** — `RightPanel` target footer (lines 223-231)
+
+Replace the single "Target FTE" pill with a split showing per-type targets derived from `fteHeadcountJson`. If breakdown data exists, compute each type's share and show colored pills:
+
+```
+Target FTE: 128.8    [FT 70%] [PT 20%] [PRN 10%]
+```
+
+Using matching colors: orange pill for FT, green for PT, blue for PRN. If no breakdown data, keep the current single pill.
+
+#### 3. Left panel employment type rows — same color coding
+Apply the same `typeColors` map to the Left Panel's employment type display rows (lines 34-37, 57-59) so colors are consistent across both panels.
 
 ### Files Modified
-1. `src/components/forecast/BalanceTwoPanel.tsx` — group by type+fteVal for correct math
+1. `src/components/forecast/BalanceTwoPanel.tsx` — color map + styled rows + target split pills
 
