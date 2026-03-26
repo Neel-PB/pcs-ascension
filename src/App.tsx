@@ -66,7 +66,8 @@ const AppContent = () => {
     const checkOnboarding = async () => {
       try {
         const data = await apiFetch("/auth/me");
-        if (data && !data.onboarding_completed) {
+        const completed = data?.onboarding_completed ?? data?.onboardingCompleted ?? true;
+        if (!completed) {
           startFullTour();
           markOnboardingComplete(user.id);
         } else {
