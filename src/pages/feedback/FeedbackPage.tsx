@@ -155,7 +155,7 @@ export default function FeedbackPage() {
       {/* Header */}
       <div className="shrink-0 py-4 border-b border-border">
         <div className="flex items-center justify-center gap-3">
-          <div data-tour="feedback-search" className="w-64">
+          <div data-tour="feedback-search" className="w-72">
             <SearchField
               placeholder="Search feedback..."
               value={searchQuery}
