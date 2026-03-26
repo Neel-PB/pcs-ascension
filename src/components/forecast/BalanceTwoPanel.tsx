@@ -126,7 +126,7 @@ function HeadcountBreakdown({ entries }: { entries: FteHeadcountEntry[] }) {
         const label = employeeTypeLabels[type] || type;
         return (
           <div key={key} className={cn("flex items-center justify-between text-xs rounded px-2.5 py-1.5", typeColors[type] || 'bg-muted/60 text-muted-foreground')}>
-            <span>{label}: {fteVal} FTE <span className="font-sans">×</span> {totalHc}</span>
+            <span>{label}: {fteVal} FTE x {totalHc}</span>
             <span className="font-semibold">= {totalFte.toFixed(1)} FTE</span>
           </div>
         );
