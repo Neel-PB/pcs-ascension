@@ -1,25 +1,22 @@
 
 
-## Capitalize Shift Values in Forecast Table
+## Fix DataRefreshButton Timestamp in Positions Module
 
 ### Problem
-Shift values from the API come as lowercase (e.g., "night", "day") but should display as Title Case ("Night", "Day") per UI standards.
+The `DataRefreshButton` in all Position tabs tries to read `curated_data_load_ts` or `updated_at` from the first row of data. However, the NestJS API returns the timestamp as `load_ts`, and the `normalizeRow` function in `usePositionsByFlag.ts` doesn't map this field. Result: the button always shows "No refresh data available."
 
 ### Fix
 
-**File: `src/components/forecast/ForecastBalanceTableRow.tsx`** (line 61)
+**File: `src/hooks/usePositionsByFlag.ts`** (normalizeRow, ~line 12-40)
 
-Capitalize the shift display:
+Add the timestamp mapping to `normalizeRow`:
 
-```tsx
-// Current
-<div className="px-2 text-sm">{row.shift}</div>
-
-// Updated
-<div className="px-2 text-sm">
-  {row.shift ? row.shift.charAt(0).toUpperCase() + row.shift.slice(1) : '—'}
-</div>
+```typescript
+curated_data_load_ts: row.load_ts ?? row.curated_data_load_ts ?? row.updated_at,
 ```
 
-Single line change, consistent with existing shift capitalization standard used in ShiftCell.
+This single line ensures all 5 Position tabs (Employee, Open Requisition, Open Position, Contractor, Contractor Requisition) pick up the correct timestamp since they all read `[0]?.curated_data_load_ts`.
+
+### Files Modified
+1. `src/hooks/usePositionsByFlag.ts` — add `curated_data_load_ts` mapping from `load_ts`
 
