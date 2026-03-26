@@ -158,8 +158,14 @@ export function BalanceTwoPanel({
             {/* TOP: Title + FTE bars */}
             <div>
               <div className="flex items-center justify-between pb-2 border-b">
-                <h4 className="font-semibold text-sm">Hired FTE</h4>
-                <span className="text-lg font-bold">{hiredFTE.total.toFixed(1)} FTE</span>
+                <div>
+                  <span className="text-xs text-muted-foreground">Hired FTE</span>
+                  <div className="text-lg font-bold">{hiredFTE.total.toFixed(1)}</div>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs text-muted-foreground">Open Reqs</span>
+                  <div className="text-lg font-bold">{openReqsFTE.total.toFixed(1)}</div>
+                </div>
               </div>
               
               <div className="space-y-2 mt-4">
