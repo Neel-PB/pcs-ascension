@@ -1,12 +1,33 @@
 
 
-## Straighten X-axis Month Labels in Volume Settings Dialog
+## Style Target NP % Column to Match Target Volume (Value Only, No Badge)
+
+### Problem
+The "Target NP %" column in NP Settings uses plain text styling. It should match the Target Volume column's value styling — right-aligned, same font treatment — but without the colored badge (since there's no historical data to display).
 
 ### Changes
 
-**File: `src/components/staffing/TargetVolumePopover.tsx`**
+**File: `src/config/npOverrideColumns.tsx`** — Update `np_target_volume` renderCell
 
-1. **Widen dialog**: `max-w-4xl` → `max-w-6xl` to give enough horizontal room for straight labels
-2. **Remove angle on X-axis** (line 139-140): Remove `angle={-30}` and `textAnchor="end"`, keeping labels horizontal
-3. **Reduce bottom margin**: `margin.bottom: 20` → `10` since straight labels need less vertical space
+Current:
+```tsx
+<div className="flex items-center justify-between w-full h-full px-4">
+  <span className="text-sm font-medium text-foreground">
+    {row.np_target_volume != null ? row.np_target_volume.toLocaleString() : '—'}
+  </span>
+</div>
+```
+
+Updated to match Target Volume's right-aligned value style:
+```tsx
+<div className="flex items-center justify-between gap-2 px-4 py-2 w-full">
+  <div className="text-sm font-medium text-right ml-auto">
+    {row.np_target_volume != null
+      ? row.np_target_volume.toLocaleString(undefined, { maximumFractionDigits: 1 })
+      : '—'}
+  </div>
+</div>
+```
+
+This gives the same container layout (`flex items-center justify-between gap-2 px-4 py-2 w-full`) and right-aligned value treatment as the Target Volume column, just without the badge on the left.
 
