@@ -75,11 +75,53 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
           <div className="mb-1.5 space-y-1">
             <p className="text-xs font-medium text-muted-foreground">Summary</p>
             <p className="text-xs leading-relaxed">
-              {row.staffingStatus === 'shortage'
-                ? `${Math.abs(row.totalFteReq).toFixed(1)} FTE shortage identified. ${row.unaddressedFte > 0 ? `${row.unaddressedFte.toFixed(1)} FTE unaddressed.` : 'All gaps addressed.'}`
-                : row.staffingStatus === 'surplus'
-                  ? `${Math.abs(row.totalFteReq).toFixed(1)} FTE surplus identified. ${row.addressedFte > 0 ? `${row.addressedFte.toFixed(1)} FTE addressed.` : ''} ${row.unaddressedFte > 0 ? `${row.unaddressedFte.toFixed(1)} FTE unaddressed.` : ''}`
-                  : 'Staffing is balanced for this group.'}
+              {(() => {
+                const shiftLabel = row.shift ? row.shift.charAt(0).toUpperCase() + row.shift.slice(1) : '';
+                const skill = row.skillType || '';
+
+                // Compute current mix % from fteHeadcountJson
+                const mixMap = new Map<string, number>();
+                for (const entry of row.fteHeadcountJson) {
+                  const t = String(entry.employee_type).toUpperCase();
+                  const fte = (parseFloat(String(entry.fte_value)) || 0) * (parseFloat(String(entry.hc)) || 0);
+                  mixMap.set(t, (mixMap.get(t) || 0) + fte);
+                }
+                const mixTotal = Array.from(mixMap.values()).reduce((a, b) => a + b, 0);
+                const ftPct = mixTotal > 0 ? Math.round(((mixMap.get('FT') || 0) / mixTotal) * 100) : 0;
+                const ptPct = mixTotal > 0 ? Math.round(((mixMap.get('PT') || 0) / mixTotal) * 100) : 0;
+                const prnPct = mixTotal > 0 ? Math.round(((mixMap.get('PRN') || 0) / mixTotal) * 100) : 0;
+                const hasMix = mixTotal > 0;
+                const mixStr = hasMix ? `${ftPct}% FT / ${ptPct}% PT / ${prnPct}% PRN` : '';
+                const gap = Math.abs(row.totalFteReq).toFixed(1);
+
+                if (row.staffingStatus === 'surplus') {
+                  const parts: string[] = [];
+                  if (hasMix) parts.push(`Based on your current mix of ${mixStr}`);
+                  if (row.addressedFte > 0) parts.push(`we recommend canceling ${row.addressedFte.toFixed(1)} FTE in open requisitions`);
+                  if (row.unaddressedFte > 0) parts.push(`additionally closing ${row.unaddressedFte.toFixed(1)} FTE from employed positions`);
+                  if (row.addressedFte > 0) parts.push('We recommend first canceling open requisitions before considering any employed position changes');
+                  const action = parts.length > 0 ? parts.join(', ') + '.' : `${gap} FTE surplus identified.`;
+                  return `${action} This will reduce the ${gap} FTE surplus while achieving the optimal 70/20/10 split for your ${skill} ${shiftLabel} shift workforce.`;
+                }
+                if (row.staffingStatus === 'shortage') {
+                  // Build breakdown string from headcount
+                  const breakdownParts: string[] = [];
+                  const agg = new Map<string, number>();
+                  for (const e of row.fteHeadcountJson) {
+                    const t = String(e.employee_type).toUpperCase();
+                    const fte = (parseFloat(String(e.fte_value)) || 0) * (parseFloat(String(e.hc)) || 0);
+                    agg.set(t, (agg.get(t) || 0) + fte);
+                  }
+                  for (const [t, fte] of agg) {
+                    const label = employeeTypeLabels[t] || t;
+                    breakdownParts.push(`${fte.toFixed(1)} FTE in ${label} positions`);
+                  }
+                  const breakdownStr = breakdownParts.length > 0 ? breakdownParts.join(', ') : `${gap} FTE`;
+                  const prefix = hasMix ? `Based on your current mix of ${mixStr}, we recommend opening ${breakdownStr}` : `We recommend opening ${breakdownStr}`;
+                  return `${prefix}. This will address the ${gap} FTE shortage while achieving the optimal 70/20/10 split for your ${skill} ${shiftLabel} shift workforce.`;
+                }
+                return `Staffing is balanced for your ${skill} ${shiftLabel} shift workforce.`;
+              })()}
             </p>
           </div>
         </div>
