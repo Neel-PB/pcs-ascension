@@ -166,12 +166,12 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         }
 
         const g = grouped.get(key)!;
-        g.hiredFte += row.hired_fte || 0;
-        g.openReqsFte += row.open_reqs_fte || 0;
-        g.targetFte += row.target_fte || 0;
-        g.totalFteReq += row.total_fte_req || 0;
-        g.addressedFte += row.addressed_fte || 0;
-        g.unaddressedFte += row.unaddressed_fte || 0;
+        g.hiredFte += parseFloat(String(row.hired_fte)) || 0;
+        g.openReqsFte += parseFloat(String(row.open_reqs_fte)) || 0;
+        g.targetFte += parseFloat(String(row.target_fte)) || 0;
+        g.totalFteReq += parseFloat(String(row.total_fte_req)) || 0;
+        g.addressedFte += parseFloat(String(row.addressed_fte)) || 0;
+        g.unaddressedFte += parseFloat(String(row.unaddressed_fte)) || 0;
         g.staffingStatus = worstStatus(g.staffingStatus, row.staffing_status);
         if (row.action_type) g.actionTypes.add(row.action_type);
         if (row.fte_headcount_json) {
