@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { Filter } from "@/lib/icons";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import { usePositionsByFlag } from "@/hooks/usePositionsByFlag";
+import { getLatestTimestamp } from "@/lib/getLatestTimestamp";
 import { useCheckExpiredFte } from "@/hooks/useCheckExpiredFte";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,7 @@ export function EmployeesTab({
   const { data: employees, isFetching } = usePositionsByFlag('employee_flag', {
     selectedRegion, selectedMarket, selectedFacility, selectedDepartment,
   });
+  const latestTimestamp = useMemo(() => getLatestTimestamp(employees), [employees]);
 
   const updateActualFte = useUpdateActualFte();
   const updateShiftOverride = useUpdateShiftOverride();
@@ -179,7 +181,7 @@ export function EmployeesTab({
             { label: "Hired FTE", value: totals.totalHiredFTE },
             { label: "Active FTE", value: totals.totalActiveFTE },
           ]} />
-          <span data-tour="positions-refresh"><DataRefreshButton lastUpdated={(employees as any)?.[0]?.curated_data_load_ts ?? (employees as any)?.[0]?.updated_at ?? null} /></span>
+          <span data-tour="positions-refresh"><DataRefreshButton lastUpdated={latestTimestamp} /></span>
           <Button variant="ascension" size="icon" onClick={() => setFilterOpen(true)} className="relative" aria-label="Filters" title="Filters" data-tour="positions-filter-btn">
             <Filter className="h-4 w-4" />
             {activeFilterCount > 0 && (

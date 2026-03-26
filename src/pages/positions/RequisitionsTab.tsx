@@ -3,6 +3,7 @@ import { Filter } from "@/lib/icons";
 import { differenceInDays } from "date-fns";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import { usePositionsByFlag } from "@/hooks/usePositionsByFlag";
+import { getLatestTimestamp } from "@/lib/getLatestTimestamp";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LogoLoader } from "@/components/ui/LogoLoader";
@@ -31,6 +32,7 @@ export function RequisitionsTab({
   const { data: requisitions, isFetching } = usePositionsByFlag('open_position_flag', {
     selectedRegion, selectedMarket, selectedFacility, selectedDepartment,
   });
+  const latestTimestamp = useMemo(() => getLatestTimestamp(requisitions), [requisitions]);
 
   const [selectedRequisition, setSelectedRequisition] = useState<any>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -105,7 +107,7 @@ export function RequisitionsTab({
         <SearchField placeholder="Search requisitions..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-[32rem]" data-tour="positions-search" />
         <div className="flex gap-2 items-center flex-shrink-0 ml-auto">
           <PositionKPICards items={[{ label: "Open Positions", value: totalCount }]} />
-          <span data-tour="positions-refresh"><DataRefreshButton lastUpdated={(requisitions as any)?.[0]?.curated_data_load_ts ?? (requisitions as any)?.[0]?.updated_at ?? null} /></span>
+          <span data-tour="positions-refresh"><DataRefreshButton lastUpdated={latestTimestamp} /></span>
           <Button variant="ascension" size="icon" onClick={() => setFilterOpen(true)} className="relative" aria-label="Filters" title="Filters" data-tour="positions-filter-btn">
             <Filter className="h-4 w-4" />
             {activeFilterCount > 0 && (
