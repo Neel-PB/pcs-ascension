@@ -252,7 +252,7 @@ export function UserGuidesTab() {
                       open={isExpanded}
                       onOpenChange={() => toggleExpanded(guide.tourKey)}
                     >
-                      <div className="rounded-lg border border-transparent hover:border-border hover:bg-accent/30 transition-colors px-1 py-0.5">
+                      <div className="rounded-lg border border-border/60 border-l-[3px] border-l-primary bg-primary/5 transition-colors px-1 py-0.5">
                         <div className="flex items-center gap-1.5">
                           {/* Expand chevron */}
                           <CollapsibleTrigger asChild>
