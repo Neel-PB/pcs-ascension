@@ -1,50 +1,26 @@
 
 
-## Staffing Summary Performance Optimization Plan
+## Capitalize Shift Override Display in ShiftCell
 
-### Root Causes Identified
+### Problem
+When a user manually selects "day" or "night" in the shift override popover, the value displays lowercase (e.g., "night") instead of capitalized ("Night").
 
-1. **All 4 API calls fire regardless of active tab** — skill-shift (50k records), productive-resources-kpi (50k), patient-volume (paginated), and employment-split (50k) all fetch even when viewing Planning, Variance, Forecasts, or Settings tabs that don't use this data.
+### Change
 
-2. **Patient Volume uses sequential pagination** — loops `while(true)` fetching 1k records per page, causing waterfall network requests. The other hooks already use single `take=50000` fetches.
+**File: `src/components/editable-table/cells/ShiftCell.tsx`**
 
-3. **`Math.random()` in chart generators** — `generateGrowthTrend`, `generateVolatileTrend`, etc. produce different data on every call, defeating memoization and causing unnecessary re-renders of KPI cards and charts.
+On the line displaying the override value (currently `<span className="font-medium capitalize shrink-0">{selectedDayNight}</span>`), the `capitalize` CSS class should handle this — but the `SelectItem` values are lowercase `"day"` and `"night"`. The `capitalize` class only capitalizes the first letter via CSS `text-transform`, which should work. However, to be safe and consistent across all rendering contexts, explicitly capitalize the displayed text:
 
-4. **Missing query optimizations on 2 hooks** — `useSkillShift` and `usePatientVolume` lack `retry: 1` and `refetchOnWindowFocus: false`, causing extra network requests on tab switches.
-
-5. **1109-line monolith component** — All ~15 `useMemo` aggregations run on every render even when the Summary tab isn't active, because hooks can't be conditional.
-
-### Changes
-
-**1. Gate API fetches to Summary tab only**
-
-In `StaffingSummary.tsx`, add `activeTab === 'summary'` to the `enabled` flag for all 4 data hooks:
+Change the override display span (~line 100):
 ```tsx
-enabled: filtersInitialized && activeTab === 'summary',
+// Current
+<span className="font-medium capitalize shrink-0">{selectedDayNight}</span>
+
+// Updated — explicit JS capitalization, remove CSS capitalize
+<span className="font-medium shrink-0">
+  {selectedDayNight ? selectedDayNight.charAt(0).toUpperCase() + selectedDayNight.slice(1) : ''}
+</span>
 ```
-This prevents fetching 200k+ records when the user is on Planning, Variance, or Settings tabs. The data will be cached by React Query when switching back.
 
-**2. Switch Patient Volume to single-fetch (like other hooks)**
-
-In `usePatientVolume.ts`, replace the pagination loop with a single `take=50000` fetch, matching the pattern used by `useSkillShift` and `useProductiveResourcesKpi`. The API ignores `offset` anyway (per project memory), so pagination adds latency without benefit.
-
-**3. Stabilize chart data generators**
-
-In `kpiConfigs.ts` and `StaffingSummary.tsx`, replace `Math.random()` calls in `generateGrowthTrend`, `generateVolatileTrend`, `generateDeclineTrend`, `generateSeasonalTrend` with deterministic functions using seeded pseudo-random (index-based sine perturbation). This ensures chart data stays referentially stable across renders.
-
-**4. Add missing query optimizations**
-
-In `useSkillShift.ts` and `usePatientVolume.ts`, add `retry: 1` and `refetchOnWindowFocus: false` to match `useProductiveResourcesKpi`.
-
-**5. Extract Summary tab into its own component**
-
-Move all the aggregation `useMemo` hooks and the Summary JSX from `StaffingSummary.tsx` into a new `StaffingSummaryTab.tsx` component. This way, React only mounts the aggregation logic when the Summary tab is active, and unmounts it (freeing memory) when switching tabs.
-
-### Expected Impact
-
-- **~75% fewer API calls** when not on Summary tab (4 requests eliminated)
-- **Faster patient-volume fetch** — single request vs. multi-page waterfall
-- **Fewer re-renders** — stable chart data prevents KPI card re-renders
-- **Lower memory** — aggregation logic unmounts when switching tabs
-- **Faster tab switches** — no background refetching on window focus
+This ensures "day" → "Day" and "night" → "Night" regardless of CSS support or context. Single-line change, UI-only.
 
