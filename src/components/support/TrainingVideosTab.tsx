@@ -99,10 +99,12 @@ export function TrainingVideosTab() {
               onClick={() => handleVideoClick(video)}
             >
               {/* Thumbnail / play overlay */}
-              <div className="relative flex items-center justify-center bg-muted h-48 overflow-hidden">
+              <div className="relative flex items-center justify-center bg-muted h-32 overflow-hidden">
                 {video.thumbnail_url ? (
                   <img src={video.thumbnail_url} alt="" className="w-full h-full object-cover" />
-                ) : null}
+                ) : (
+                  <img src={AscensionEmblem} alt="" className="h-12 w-12 opacity-20" />
+                )}
                 <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
                   <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/90 text-primary-foreground group-hover:scale-110 transition-transform">
                     {loadingVideoId === video.id ? (
@@ -117,12 +119,12 @@ export function TrainingVideosTab() {
                 )}
               </div>
 
-              <div className="p-4 space-y-2">
-                <h3 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2">
+              <div className="p-3 space-y-1">
+                <h3 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1">
                   {video.title || formatName(video.name)}
                 </h3>
                 {video.description && (
-                  <p className="text-xs text-muted-foreground line-clamp-2">{video.description}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-1">{video.description}</p>
                 )}
                 {video.uploader && (
                   <p className="text-xs text-muted-foreground">
