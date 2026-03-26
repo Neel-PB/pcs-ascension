@@ -13,10 +13,10 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
   const isNA = row.employmentType === 'NA';
 
   return (
-    <Card className="pt-1.5 px-4 pb-1.5 border-l-4 border-l-muted-foreground/30">
+    <Card className="pt-3 px-5 pb-3 border-l-4 border-l-muted-foreground/30">
       <div className="flex flex-col h-full">
         {/* Two-column: Hired FTE left, Open Reqs right */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-6">
           {/* Hired FTE Column */}
           <div>
             <div className="pb-2 border-b">
