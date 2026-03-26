@@ -1,4 +1,4 @@
-import { FTEBreakdown, RecommendedChanges, PositionChange, ClosureRecommendation } from "@/hooks/useForecastBalance";
+import { FTEBreakdown, OpenReqsBreakdown, RecommendedChanges, PositionChange, ClosureRecommendation } from "@/hooks/useForecastBalance";
 import { Card } from "@/components/ui/card";
 import { Check, ArrowRight } from "@/lib/icons";
 import { cn } from "@/lib/utils";
