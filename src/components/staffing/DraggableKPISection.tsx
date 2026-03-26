@@ -36,6 +36,15 @@ interface DraggableKPISectionProps {
 // Only Hired FTEs and Open Reqs get rounded-b-none (not FTE Variance)
 const BREAKDOWN_CONNECTED_IDS = ['hired-ftes', 'open-reqs'];
 
+const xlGridColsMap: Record<number, string> = {
+  1: 'xl:grid-cols-1',
+  2: 'xl:grid-cols-2',
+  3: 'xl:grid-cols-3',
+  4: 'xl:grid-cols-4',
+  5: 'xl:grid-cols-5',
+  6: 'xl:grid-cols-6',
+};
+
 export function DraggableKPISection({ title, kpis, dragHandleProps, volumeBreakdown }: DraggableKPISectionProps) {
   const [showBreakdownModal, setShowBreakdownModal] = useState(false);
   const [showTargetBreakdownModal, setShowTargetBreakdownModal] = useState(false);
