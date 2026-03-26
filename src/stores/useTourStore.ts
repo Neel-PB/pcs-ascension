@@ -47,7 +47,7 @@ export const useTourStore = create<TourState>((set) => ({
   startMicroTour: (tourKey: string, stepIndex: number) =>
     set({ activeTour: tourKey, singleSection: true, microTourStep: { tourKey, stepIndex } }),
   clearMicroTour: () => set({ microTourStep: null }),
-  stopTour: () => set({ activeTour: null, microTourStep: null }),
+  stopTour: () => set({ activeTour: null, microTourStep: null, isOnboarding: false }),
   setSkipMode: (mode) => set({ skipMode: mode }),
   clearSkipMode: () => set({ skipMode: null }),
   skipAllTours: () => {
