@@ -29,7 +29,6 @@ export function ForecastTab({
   selectedLevel2,
   selectedPstat,
 }: ForecastTabProps) {
-  // Transform filter values, handling "all-" prefixes
   const filters = {
     region: selectedRegion !== "all-regions" ? selectedRegion : undefined,
     market: selectedMarket !== "all-markets" ? selectedMarket : undefined,
@@ -64,8 +63,8 @@ export function ForecastTab({
 
   const filteredRows = useMemo(() => {
     return (data?.rows ?? []).filter(row => {
-      if (activeFilter === 'shortage' && row.gapType !== 'shortage') return false;
-      if (activeFilter === 'surplus' && row.gapType !== 'surplus') return false;
+      if (activeFilter === 'shortage' && row.staffingStatus !== 'shortage') return false;
+      if (activeFilter === 'surplus' && row.staffingStatus !== 'surplus') return false;
       if (selectedSkillType !== "all" && row.skillType !== selectedSkillType) return false;
       if (selectedShift !== "all" && row.shift !== selectedShift) return false;
       return true;
@@ -79,7 +78,6 @@ export function ForecastTab({
 
   return (
     <div className="flex flex-col gap-4 h-full">
-      {/* Two Large KPIs with filters between */}
       <div data-tour="forecast-kpi-cards">
         <ForecastKPICards
           totalShortage={data?.totalShortage ?? 0}
@@ -137,7 +135,6 @@ export function ForecastTab({
         </ForecastKPICards>
       </div>
 
-      {/* Smart Table */}
       <div className="min-h-0 max-h-full">
         <ForecastBalanceTable
           rows={filteredRows}
