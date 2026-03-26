@@ -71,8 +71,8 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
         </div>
 
         {/* Summary section */}
-        <div className="border-t mt-auto">
-          <div className="mt-1.5 mb-1.5 space-y-1">
+        <div className="border-t pt-3 mt-auto">
+          <div className="mb-1.5 space-y-1">
             <p className="text-xs font-medium text-muted-foreground">Summary</p>
             <p className="text-xs leading-relaxed">
               {row.staffingStatus === 'shortage'
