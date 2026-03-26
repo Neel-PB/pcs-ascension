@@ -1,23 +1,22 @@
 
 
-## Fix Dual Donut Chart Sizing & Remove Legend Whitespace
+## Increase Donut Chart Height for Hired FTEs & Vacancy Rate
 
-### Issues
-1. **Extra space below skill legend** in the nested donut section — the `gap-3` on the outer flex-col adds unnecessary spacing
-2. **Dual donut charts (Vacancy Rate, Target FTEs)** are smaller (`320x300`, radii `120/70`) than the nested donuts (`340x340`, radii `145/100`)
+### Problem
+The 400x400 containers are being clipped by the `max-h-[85vh]` dialog constraint combined with `overflow-hidden`. The charts need more visible space.
 
 ### Changes
 
 **File: `src/components/staffing/KPIChartModal.tsx`**
 
-1. **Reduce gap on nested donut container** (line 918): Change `gap-3` → `gap-1` to tighten space between charts and legend
+1. **Increase dialog max-height** (line 153): `max-h-[85vh]` → `max-h-[92vh]` to give charts more room
 
-2. **Enlarge dual donut charts** (lines 994-1035): Match the nested donut sizing:
-   - Container: `w-[320px] h-[300px]` → `w-[340px] h-[340px]`
-   - Outer wrapper: `h-[300px]` → remove fixed height constraint
-   - `outerRadius={120}` → `outerRadius={145}`
-   - `innerRadius={70}` → `innerRadius={100}`
-   - Center text: adjust `text-[11px]` → `text-[9px]` and `text-lg` → `text-sm` to match nested style
+2. **Increase nested donut containers** (line 934): `w-[400px] h-[400px]` → `w-[440px] h-[440px]`, update radii:
+   - Inner: `outerRadius={95}` → `110`, `innerRadius={55}` → `65`
+   - Outer: `outerRadius={170}` → `195`, `innerRadius={115}` → `135`
 
-Result: All FTE donut charts will be the same large size, and no extra whitespace below legends.
+3. **Increase dual donut containers** (line 997): `w-[400px] h-[400px]` → `w-[440px] h-[440px]`, update radii:
+   - `outerRadius={170}` → `195`, `innerRadius={120}` → `140`
+
+4. **Update overflow** (line 199): Change `overflow-hidden` → `overflow-y-auto` so content scrolls if needed instead of clipping
 
