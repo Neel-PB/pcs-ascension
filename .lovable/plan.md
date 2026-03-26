@@ -1,29 +1,35 @@
 
 
-## Fix: fte_headcount_json Entries Showing Empty Names and NaN Values
+## Fix Position to Open Display and Improve Panel Spacing
 
-### Problem
-The API returns `fte_headcount_json` as a **JSON string** (e.g., `"[{\"employee_type\":\"RN\",\"fte_value\":0.9,\"hc\":1}]"`) rather than a parsed array. When the code does `push(...row.fte_headcount_json)`, it spreads individual characters of the string, resulting in entries where `employee_type`, `fte_value`, and `hc` are all `undefined`.
+### Issues
+1. **Headcount breakdown format** — Currently shows `ft: 1 FTE × 128` which is hard to read. Should display in a cleaner format matching the screenshot reference: employee_type capitalized, with a clear visual separator between FTE value and headcount.
+2. **Overall spacing** — Panels need more breathing room with better padding and consistent vertical spacing.
 
-### Fix
+### Changes
 
-**File: `src/hooks/useForecastBalance.ts`** (~line 177-179)
+**File: `src/components/forecast/BalanceTwoPanel.tsx`**
 
-Parse the JSON string before spreading:
+1. **HeadcountBreakdown component** (lines 93-108) — Improve formatting:
+   - Capitalize `employee_type` (e.g., "ft" → "FT")
+   - Change format to: `FT: {fte_value} FTE ▏{hc}` on left, `= {total}` on right
+   - Add slightly more padding (`py-1.5`)
 
-```typescript
-if (row.fte_headcount_json) {
-  const parsed = typeof row.fte_headcount_json === 'string'
-    ? JSON.parse(row.fte_headcount_json)
-    : row.fte_headcount_json;
-  if (Array.isArray(parsed)) {
-    g.fteHeadcountJson.push(...parsed);
-  }
-}
-```
+2. **Left Panel spacing** (lines 16-88):
+   - Increase card padding: `pt-3 px-5 pb-3` (from `pt-1.5 px-4 pb-1.5`)
+   - Add `gap-6` between grid columns (from `gap-4`)
+   - More space between header and content (`mt-4` instead of `mt-3`)
+   - Summary section: add `pt-3` padding above
 
-This handles both cases — if the API returns a string or an already-parsed array.
+3. **Right Panel spacing** (lines 117-213):
+   - Match card padding: `pt-3 px-5 pb-3`
+   - Header gap increase to `gap-6`
+   - Position to Close/Open sections: `gap-6` between columns
+   - Target footer: `pt-2` padding
 
-### Files Modified
-1. `src/hooks/useForecastBalance.ts` — safe-parse `fte_headcount_json`
+4. **Main grid** (line 221) — increase `gap-5` between left and right panels
+
+### Technical Detail
+- `employee_type` comes from API as lowercase (e.g., "ft", "prn") — apply `.toUpperCase()` for display
+- Use a thin vertical bar `│` as separator between FTE value and headcount for cleaner look
 
