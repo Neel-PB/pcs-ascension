@@ -1,22 +1,35 @@
 
 
-## Fix DataRefreshButton Timestamp in Positions Module
+## Expand Employee Type Abbreviations in Headcount Breakdown
 
 ### Problem
-The `DataRefreshButton` in all Position tabs tries to read `curated_data_load_ts` or `updated_at` from the first row of data. However, the NestJS API returns the timestamp as `load_ts`, and the `normalizeRow` function in `usePositionsByFlag.ts` doesn't map this field. Result: the button always shows "No refresh data available."
+The headcount breakdown shows raw abbreviations ("FT", "PT", "PRN") which aren't user-friendly. These should display as full labels: "Full Time", "Part Time", "PRN".
 
 ### Fix
 
-**File: `src/hooks/usePositionsByFlag.ts`** (normalizeRow, ~line 12-40)
+**File: `src/components/forecast/BalanceTwoPanel.tsx`** — `HeadcountBreakdown` component
 
-Add the timestamp mapping to `normalizeRow`:
+Add a label map and use it when rendering:
 
 ```typescript
-curated_data_load_ts: row.load_ts ?? row.curated_data_load_ts ?? row.updated_at,
+const employeeTypeLabels: Record<string, string> = {
+  FT: 'Full Time',
+  PT: 'Part Time',
+  PRN: 'PRN',
+};
+
+// In render:
+const label = employeeTypeLabels[type] || type;
 ```
 
-This single line ensures all 5 Position tabs (Employee, Open Requisition, Open Position, Contractor, Contractor Requisition) pick up the correct timestamp since they all read `[0]?.curated_data_load_ts`.
+Also apply the previously approved aggregation logic (grouping duplicate employee types by summing HC and FTE) in the same change.
+
+### Display format per row
+```
+Full Time: 129 HC    = 128.8 FTE
+PRN: 5 HC            = 5.0 FTE
+```
 
 ### Files Modified
-1. `src/hooks/usePositionsByFlag.ts` — add `curated_data_load_ts` mapping from `load_ts`
+1. `src/components/forecast/BalanceTwoPanel.tsx` — label map + aggregation
 
