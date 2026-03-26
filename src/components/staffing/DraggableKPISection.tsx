@@ -192,22 +192,22 @@ export function DraggableKPISection({ title, kpis, dragHandleProps, volumeBreakd
       )}
       {/* Volume UOS Breakdown Badge with 6-column connectors */}
       {volumeBreakdown && volumeBreakdown.length > 0 && (
-        <div className="hidden xl:grid grid-cols-6 relative z-10" style={{ gap: 'inherit', marginTop: '0' }}>
-          {/* Row 1: Vertical drops from each of the 6 columns */}
-          <div className="col-span-6 grid grid-cols-6" style={{ gap: 'inherit' }}>
-            {Array.from({ length: 6 }).map((_, i) => (
+        <div className={cn("hidden xl:grid relative z-10", xlGridCols)} style={{ gap: 'inherit', marginTop: '0' }}>
+          {/* Row 1: Vertical drops from each column */}
+          <div className={cn(`col-span-${colCount} grid`, xlGridCols)} style={{ gap: 'inherit' }}>
+            {Array.from({ length: colCount }).map((_, i) => (
               <div key={`vol-drop-${i}`} className="flex justify-center">
                 <div className="w-0.5 h-2 bg-primary/60 dark:bg-primary/70" />
               </div>
             ))}
           </div>
-          {/* Row 2: Horizontal bar from col 1 center to col 6 center */}
-          <div className="col-span-6 grid grid-cols-6" style={{ gap: 'inherit' }}>
+          {/* Row 2: Horizontal bar from col 1 center to last col center */}
+          <div className={cn(`col-span-${colCount} grid`, xlGridCols)} style={{ gap: 'inherit' }}>
             <div className="flex items-start">
               <div className="w-1/2" />
               <div className="w-1/2 h-0.5 bg-primary/60 dark:bg-primary/70" />
             </div>
-            {Array.from({ length: 4 }).map((_, i) => (
+            {Array.from({ length: Math.max(0, colCount - 2) }).map((_, i) => (
               <div key={`vol-hbar-${i}`} className="h-0.5 bg-primary/60 dark:bg-primary/70" />
             ))}
             <div className="flex items-start">
