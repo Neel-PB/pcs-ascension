@@ -36,10 +36,22 @@ interface DraggableKPISectionProps {
 // Only Hired FTEs and Open Reqs get rounded-b-none (not FTE Variance)
 const BREAKDOWN_CONNECTED_IDS = ['hired-ftes', 'open-reqs'];
 
+const xlGridColsMap: Record<number, string> = {
+  1: 'xl:grid-cols-1',
+  2: 'xl:grid-cols-2',
+  3: 'xl:grid-cols-3',
+  4: 'xl:grid-cols-4',
+  5: 'xl:grid-cols-5',
+  6: 'xl:grid-cols-6',
+};
+
 export function DraggableKPISection({ title, kpis, dragHandleProps, volumeBreakdown }: DraggableKPISectionProps) {
   const [showBreakdownModal, setShowBreakdownModal] = useState(false);
   const [showTargetBreakdownModal, setShowTargetBreakdownModal] = useState(false);
   const [showVolumeBreakdownModal, setShowVolumeBreakdownModal] = useState(false);
+
+  const colCount = Math.min(kpis.length, 6);
+  const xlGridCols = xlGridColsMap[colCount] || 'xl:grid-cols-6';
 
   // Get the shared breakdown from hired-ftes
   const hiredFtesKpi = kpis.find(k => k.id === 'hired-ftes');
@@ -75,33 +87,25 @@ export function DraggableKPISection({ title, kpis, dragHandleProps, volumeBreakd
       
       {/* KPI Grid */}
       <div className={cn(
-        "gap-4",
-        kpis.length < 6
-          ? "flex flex-wrap justify-center"
-          : "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6"
+        "gap-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4",
+        xlGridCols
       )}>
-        {kpis.map((kpi) => {
-          const isFlexMode = kpis.length < 6;
-          return (
-            <div
-              key={kpi.id}
-              className={isFlexMode ? "w-full md:w-[calc((100%-2*16px)/3)] lg:w-[calc((100%-3*16px)/4)] xl:w-[calc((100%-5*16px)/6)]" : undefined}
-            >
-              <KPICard 
-                {...kpi}
-                dataTour={`kpi-${kpi.id}`}
-                employmentBreakdown={kpi.id === 'hired-ftes' || kpi.id === 'target-ftes' ? undefined : kpi.employmentBreakdown}
-                dataTourChart={kpi.chartData && kpi.chartData.length > 0 ? `kpi-${kpi.id}-chart` : undefined}
-                dataTourInfo={`kpi-${kpi.id}-info`}
-              />
-            </div>
-          );
-        })}
+        {kpis.map((kpi) => (
+          <div key={kpi.id}>
+            <KPICard 
+              {...kpi}
+              dataTour={`kpi-${kpi.id}`}
+              employmentBreakdown={kpi.id === 'hired-ftes' || kpi.id === 'target-ftes' ? undefined : kpi.employmentBreakdown}
+              dataTourChart={kpi.chartData && kpi.chartData.length > 0 ? `kpi-${kpi.id}-chart` : undefined}
+              dataTourInfo={`kpi-${kpi.id}-info`}
+            />
+          </div>
+        ))}
       </div>
 
       {/* Badges Row - positioned under respective KPI columns with vertical connectors */}
       {(targetBreakdown || (hasConnectedKpis && sharedBreakdown)) && (
-        <div className="hidden xl:grid grid-cols-6 relative z-10" style={{ gap: 'inherit', marginTop: '0' }}>
+        <div className={cn("hidden xl:grid relative z-10", xlGridCols)} style={{ gap: 'inherit', marginTop: '0' }}>
           {/* Spacers before Target FTEs */}
           {Array.from({ length: targetIndex }).map((_, i) => (
             <div key={`spacer-before-target-${i}`} />
@@ -188,22 +192,22 @@ export function DraggableKPISection({ title, kpis, dragHandleProps, volumeBreakd
       )}
       {/* Volume UOS Breakdown Badge with 6-column connectors */}
       {volumeBreakdown && volumeBreakdown.length > 0 && (
-        <div className="hidden xl:grid grid-cols-6 relative z-10" style={{ gap: 'inherit', marginTop: '0' }}>
-          {/* Row 1: Vertical drops from each of the 6 columns */}
-          <div className="col-span-6 grid grid-cols-6" style={{ gap: 'inherit' }}>
-            {Array.from({ length: 6 }).map((_, i) => (
+        <div className={cn("hidden xl:grid relative z-10", xlGridCols)} style={{ gap: 'inherit', marginTop: '0' }}>
+          {/* Row 1: Vertical drops from each column */}
+          <div className={cn("grid", xlGridCols)} style={{ gap: 'inherit', gridColumn: `span ${colCount}` }}>
+            {Array.from({ length: colCount }).map((_, i) => (
               <div key={`vol-drop-${i}`} className="flex justify-center">
                 <div className="w-0.5 h-2 bg-primary/60 dark:bg-primary/70" />
               </div>
             ))}
           </div>
-          {/* Row 2: Horizontal bar from col 1 center to col 6 center */}
-          <div className="col-span-6 grid grid-cols-6" style={{ gap: 'inherit' }}>
+          {/* Row 2: Horizontal bar from col 1 center to last col center */}
+          <div className={cn("grid", xlGridCols)} style={{ gap: 'inherit', gridColumn: `span ${colCount}` }}>
             <div className="flex items-start">
               <div className="w-1/2" />
               <div className="w-1/2 h-0.5 bg-primary/60 dark:bg-primary/70" />
             </div>
-            {Array.from({ length: 4 }).map((_, i) => (
+            {Array.from({ length: Math.max(0, colCount - 2) }).map((_, i) => (
               <div key={`vol-hbar-${i}`} className="h-0.5 bg-primary/60 dark:bg-primary/70" />
             ))}
             <div className="flex items-start">
@@ -212,11 +216,11 @@ export function DraggableKPISection({ title, kpis, dragHandleProps, volumeBreakd
             </div>
           </div>
           {/* Row 3: Single centered vertical line down to badge */}
-          <div className="col-span-6 flex justify-center">
+          <div className="flex justify-center" style={{ gridColumn: `span ${colCount}` }}>
             <div className="w-0.5 h-1.5 bg-primary/60 dark:bg-primary/70" />
           </div>
           {/* Row 4: Blue pill badge */}
-          <div className="col-span-6 flex justify-center">
+          <div className="flex justify-center" style={{ gridColumn: `span ${colCount}` }}>
             <div
               onClick={() => setShowVolumeBreakdownModal(true)}
               className={cn(
