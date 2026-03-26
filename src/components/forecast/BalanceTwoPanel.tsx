@@ -1,10 +1,11 @@
-import { FTEBreakdown, RecommendedChanges, PositionChange, ClosureRecommendation } from "@/hooks/useForecastBalance";
+import { FTEBreakdown, OpenReqsBreakdown, RecommendedChanges, PositionChange, ClosureRecommendation } from "@/hooks/useForecastBalance";
 import { Card } from "@/components/ui/card";
 import { Check, ArrowRight } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 interface BalanceTwoPanelProps {
   hiredFTE: FTEBreakdown;
+  openReqsFTE: OpenReqsBreakdown;
   targetFTE: number;
   recommendation: RecommendedChanges;
   aiSummary: string;
@@ -113,6 +114,7 @@ function ClosureChangeList({
 
 export function BalanceTwoPanel({
   hiredFTE,
+  openReqsFTE,
   targetFTE,
   recommendation,
   aiSummary,
@@ -149,7 +151,7 @@ export function BalanceTwoPanel({
   return (
     <div className="space-y-4">
       {/* Two Panel Layout - 35/65 split */}
-      <div className="grid gap-4" style={{ gridTemplateColumns: '35% 65%' }}>
+      <div className="grid gap-4" style={{ gridTemplateColumns: '45% 55%' }}>
         {/* Current State Panel - 35% */}
         <Card className="pt-1.5 px-4 pb-0 border-l-4 border-l-muted-foreground/30">
           <div className="flex flex-col h-full">
@@ -179,6 +181,28 @@ export function BalanceTwoPanel({
                   label="PRN" 
                   value={hiredFTE.prn}
                 />
+              </div>
+            </div>
+
+            {/* Open Requisitions */}
+            <div className="mt-3">
+              <div className="flex items-center justify-between pb-1.5 border-b">
+                <h4 className="font-semibold text-sm">Open Requisitions</h4>
+                <span className="text-lg font-bold">{openReqsFTE.total.toFixed(1)} FTE</span>
+              </div>
+              <div className="flex gap-3 mt-2 text-xs">
+                <div className="flex-1 bg-muted/60 rounded px-2 py-1.5 text-center">
+                  <div className="text-muted-foreground">FT</div>
+                  <div className="font-semibold">{openReqsFTE.ft.toFixed(1)}</div>
+                </div>
+                <div className="flex-1 bg-muted/60 rounded px-2 py-1.5 text-center">
+                  <div className="text-muted-foreground">PT</div>
+                  <div className="font-semibold">{openReqsFTE.pt.toFixed(1)}</div>
+                </div>
+                <div className="flex-1 bg-muted/60 rounded px-2 py-1.5 text-center">
+                  <div className="text-muted-foreground">PRN</div>
+                  <div className="font-semibold">{openReqsFTE.prn.toFixed(1)}</div>
+                </div>
               </div>
             </div>
             
