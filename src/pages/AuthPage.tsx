@@ -1,14 +1,13 @@
 import { useState } from "react";
-import AscensionLogo from "@/assets/Ascension-Emblem.svg";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ArrowLeft, AlertCircle, Mail, Lock } from "@/lib/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import AuthBg from "@/assets/auth-bg.png";
 
 type AuthStep = "email" | "unauthorized" | "password" | "setup";
 
@@ -72,7 +71,6 @@ export default function AuthPage() {
     }
   };
 
-
   const goBack = () => {
     setStep("email");
     setPassword("");
@@ -86,120 +84,120 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen h-screen overflow-auto flex items-start justify-center pt-[25vh] bg-gradient-to-br from-background via-background to-muted p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
-        <Card>
-          <CardHeader className="space-y-1">
-            <div className="flex items-center justify-center gap-3">
-              <img src={AscensionLogo} alt="Ascension" className="w-10 h-10 object-contain" />
-              <CardTitle className="text-2xl font-bold">
-                Position Control
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
+    <div className="flex h-screen w-full">
+      {/* Left: Background image */}
+      <div
+        className="hidden lg:block lg:w-1/2 bg-cover bg-center"
+        style={{ backgroundImage: `url(${AuthBg})` }}
+      />
 
-            {/* Back button for non-email steps */}
-            {step !== "email" && (
-              <Button variant="ghost" size="sm" onClick={goBack} className="mb-4 -ml-2 text-muted-foreground">
-                <ArrowLeft className="mr-1 h-4 w-4" /> Back
-              </Button>
+      {/* Right: Form */}
+      <div className="w-full lg:w-1/2 flex items-start justify-center pt-[25vh] bg-background p-6 overflow-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
+          <h1 className="text-2xl font-bold text-foreground text-center mb-8">
+            Position Control
+          </h1>
+
+          {/* Back button for non-email steps */}
+          {step !== "email" && (
+            <Button variant="ghost" size="sm" onClick={goBack} className="mb-4 -ml-2 text-muted-foreground">
+              <ArrowLeft className="mr-1 h-4 w-4" /> Back
+            </Button>
+          )}
+
+          <AnimatePresence mode="wait">
+            {/* Step: Email */}
+            {step === "email" && (
+              <motion.form key="email" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.2 }} onSubmit={handleCheckEmail} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isLoading} className="pl-10" />
+                  </div>
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Checking...</> : "Continue"}
+                </Button>
+              </motion.form>
             )}
 
-            <AnimatePresence mode="wait">
-              {/* Step: Email */}
-              {step === "email" && (
-                <motion.form key="email" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.2 }} onSubmit={handleCheckEmail} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isLoading} className="pl-10" />
-                    </div>
+            {/* Step: Unauthorized */}
+            {step === "unauthorized" && (
+              <motion.div key="unauthorized" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.2 }} className="space-y-4">
+                <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-destructive font-medium">
+                    <AlertCircle className="h-5 w-5" />
+                    You are not authorized
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Checking...</> : "Continue"}
-                  </Button>
-                </motion.form>
-              )}
+                  <p className="text-sm text-muted-foreground">
+                    The email <span className="font-medium text-foreground">{email}</span> is not registered in the system.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Please contact{" "}
+                    <a href="mailto:pcssupport@particleblack.com" className="text-primary underline underline-offset-2">
+                      pcssupport@particleblack.com
+                    </a>{" "}
+                    for access.
+                  </p>
+                </div>
+              </motion.div>
+            )}
 
-              {/* Step: Unauthorized */}
-              {step === "unauthorized" && (
-                <motion.div key="unauthorized" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.2 }} className="space-y-4">
-                  <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 space-y-2">
-                    <div className="flex items-center gap-2 text-destructive font-medium">
-                      <AlertCircle className="h-5 w-5" />
-                      You are not authorized
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      The email <span className="font-medium text-foreground">{email}</span> is not registered in the system.
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Please contact{" "}
-                      <a href="mailto:pcssupport@particleblack.com" className="text-primary underline underline-offset-2">
-                        pcssupport@particleblack.com
-                      </a>{" "}
-                      for access.
-                    </p>
+            {/* Step: Password (registered user) */}
+            {step === "password" && (
+              <motion.form key="password" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.2 }} onSubmit={handleSignIn} className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Email</Label>
+                  <Input type="email" value={email} disabled className="bg-muted/50" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={isLoading} className="pl-10" autoFocus />
                   </div>
-                </motion.div>
-              )}
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Signing in...</> : "Sign In"}
+                </Button>
+              </motion.form>
+            )}
 
-              {/* Step: Password (registered user) */}
-              {step === "password" && (
-                <motion.form key="password" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.2 }} onSubmit={handleSignIn} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Email</Label>
-                    <Input type="email" value={email} disabled className="bg-muted/50" />
+            {/* Step: Setup (first-time password creation) */}
+            {step === "setup" && (
+              <motion.form key="setup" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.2 }} onSubmit={handleSetPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Email</Label>
+                  <Input type="email" value={email} disabled className="bg-muted/50" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">Create Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input id="new-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={isLoading} minLength={6} className="pl-10" autoFocus />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={isLoading} className="pl-10" autoFocus />
-                    </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required disabled={isLoading} minLength={6} className="pl-10" />
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Signing in...</> : "Sign In"}
-                  </Button>
-                </motion.form>
-              )}
-
-              {/* Step: Setup (first-time password creation) */}
-              {step === "setup" && (
-                <motion.form key="setup" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.2 }} onSubmit={handleSetPassword} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Email</Label>
-                    <Input type="email" value={email} disabled className="bg-muted/50" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="new-password">Create Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input id="new-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={isLoading} minLength={6} className="pl-10" autoFocus />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirm Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required disabled={isLoading} minLength={6} className="pl-10" />
-                    </div>
-                  </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Setting password...</> : "Set Password & Sign In"}
-                  </Button>
-                </motion.form>
-              )}
-            </AnimatePresence>
-          </CardContent>
-        </Card>
-      </motion.div>
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Setting password...</> : "Set Password & Sign In"}
+                </Button>
+              </motion.form>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </div>
     </div>
   );
 }
