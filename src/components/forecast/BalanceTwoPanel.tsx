@@ -127,7 +127,7 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-3 mt-4">
+          <div className="grid grid-cols-2 gap-6 mb-3 mt-4">
             {/* Positions to Close */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
