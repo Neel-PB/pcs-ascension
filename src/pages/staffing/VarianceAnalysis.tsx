@@ -653,21 +653,21 @@ export function VarianceAnalysis({
         </TableRow>
         <TableRow>
           <TableHead className="min-w-[200px] bg-card"></TableHead>
-          <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30">Day</TableHead>
-          <TableHead className="text-center text-xs">Night</TableHead>
-          <TableHead className="text-center text-xs">Total</TableHead>
-          <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30">Day</TableHead>
-          <TableHead className="text-center text-xs">Night</TableHead>
-          <TableHead className="text-center text-xs">Total</TableHead>
-          <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30">Day</TableHead>
-          <TableHead className="text-center text-xs">Night</TableHead>
-          <TableHead className="text-center text-xs">Total</TableHead>
-          <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30">Day</TableHead>
-          <TableHead className="text-center text-xs">Night</TableHead>
-          <TableHead className="text-center text-xs">Total</TableHead>
-          <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30">Day</TableHead>
-          <TableHead className="text-center text-xs">Night</TableHead>
-          <TableHead className="text-center text-xs">Total</TableHead>
+          <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30 bg-card">Day</TableHead>
+          <TableHead className="text-center text-xs bg-card">Night</TableHead>
+          <TableHead className="text-center text-xs bg-card">Total</TableHead>
+          <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30 bg-card">Day</TableHead>
+          <TableHead className="text-center text-xs bg-card">Night</TableHead>
+          <TableHead className="text-center text-xs bg-card">Total</TableHead>
+          <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30 bg-card">Day</TableHead>
+          <TableHead className="text-center text-xs bg-card">Night</TableHead>
+          <TableHead className="text-center text-xs bg-card">Total</TableHead>
+          <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30 bg-card">Day</TableHead>
+          <TableHead className="text-center text-xs bg-card">Night</TableHead>
+          <TableHead className="text-center text-xs bg-card">Total</TableHead>
+          <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30 bg-card">Day</TableHead>
+          <TableHead className="text-center text-xs bg-card">Night</TableHead>
+          <TableHead className="text-center text-xs bg-card">Total</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
