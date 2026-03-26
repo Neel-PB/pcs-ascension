@@ -1,4 +1,4 @@
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 
 import { 
@@ -12,7 +12,7 @@ import {
   Scatter,
   ComposedChart
 } from "recharts";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, parse, isValid } from "date-fns";
 import { cn } from "@/lib/utils";
 import { 
   AlertCircle, 
@@ -41,6 +41,26 @@ interface TargetVolumePopoverProps {
   lowestThreeMonths?: string[];
 }
 
+function parseMonthString(raw: string): Date | null {
+  // Try various formats: "202301", "2023-01", "2023-01-01", "Jan 2023", etc.
+  const cleaned = raw.trim();
+  
+  // "202301" → "2023-01"
+  if (/^\d{6}$/.test(cleaned)) {
+    const d = parseISO(`${cleaned.slice(0, 4)}-${cleaned.slice(4)}-01`);
+    return isValid(d) ? d : null;
+  }
+  // "2023-01" or "2023-01-01"
+  if (/^\d{4}-\d{2}/.test(cleaned)) {
+    const normalized = cleaned.length <= 7 ? cleaned + '-01' : cleaned;
+    const d = parseISO(normalized);
+    return isValid(d) ? d : null;
+  }
+  // Fallback
+  const d = new Date(cleaned);
+  return isValid(d) ? d : null;
+}
+
 export function TargetVolumePopover({
   historicalMonthsCount,
   historicalMonthsData,
@@ -52,15 +72,13 @@ export function TargetVolumePopover({
 }: TargetVolumePopoverProps) {
   const hasEnoughData = historicalMonthsCount >= minMonthsForTarget;
 
-  // Prepare chart data - format months as "Jan", "Feb", etc., oldest to newest
+  // Prepare chart data - format months as "Jan'24", "Feb'25", etc., oldest to newest
   const chartData = [...historicalMonthsData]
     .reverse()
     .map((d) => {
-      // Normalise month string: "202301" → "2023-01", "2023-01" stays as-is
-      const m = d.month.includes('-') ? d.month : `${d.month.slice(0, 4)}-${d.month.slice(4)}`;
-      const parsed = parseISO(m + '-01');
+      const parsed = parseMonthString(d.month);
       return {
-        month: isNaN(parsed.getTime()) ? d.month : format(parsed, "MMM''yy"),
+        month: parsed ? format(parsed, "MMM''yy") : d.month,
         fullMonth: d.month,
         volume: Math.round(d.volume),
         isLowest: lowestThreeMonths.includes(d.month),
@@ -77,17 +95,10 @@ export function TargetVolumePopover({
 
   const BadgeIcon = getIcon();
 
-  // Format number for display
-  const formatVolume = (value: number | null | undefined) => {
-    if (value === null || value === undefined) return "—";
-    return value.toLocaleString(undefined, { maximumFractionDigits: 1 });
-  };
-
   return (
-    <Popover>
-      <PopoverTrigger asChild>
+    <Dialog>
+      <DialogTrigger asChild>
         <div className="flex items-center justify-between gap-2 px-4 py-2 w-full cursor-pointer">
-          {/* Left side - Badge */}
           <Badge 
             className={cn(
               "flex items-center gap-1 shrink-0 transition-opacity hover:opacity-80",
@@ -101,7 +112,6 @@ export function TargetVolumePopover({
             </span>
           </Badge>
 
-          {/* Right side - Value */}
           <div className={cn(
             "text-sm font-medium text-right",
             targetVolume ? "text-foreground" : "text-muted-foreground"
@@ -112,26 +122,28 @@ export function TargetVolumePopover({
             }
           </div>
         </div>
-      </PopoverTrigger>
-      <PopoverContent className="w-[520px] p-3" align="start">
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-base font-medium">Historical Volume Trend</DialogTitle>
+        </DialogHeader>
         {hasEnoughData && chartData.length > 0 ? (
           <>
-            {/* Line Chart with highlighted lowest 3 months */}
-            <div className="h-44 w-full">
+            <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={chartData} margin={{ top: 5, right: 15, left: 0, bottom: 40 }}>
+                <ComposedChart data={chartData} margin={{ top: 5, right: 15, left: 0, bottom: 20 }}>
                   <XAxis 
                     dataKey="month" 
-                    tick={{ fontSize: 9 }} 
+                    tick={{ fontSize: 11 }} 
                     interval={0}
-                    angle={-45}
+                    angle={-30}
                     textAnchor="end"
                     axisLine={{ stroke: 'hsl(var(--border))' }}
                     tickLine={{ stroke: 'hsl(var(--border))' }}
                   />
                   <YAxis 
-                    tick={{ fontSize: 10 }} 
-                    width={38}
+                    tick={{ fontSize: 11 }} 
+                    width={45}
                     axisLine={{ stroke: 'hsl(var(--border))' }}
                     tickLine={{ stroke: 'hsl(var(--border))' }}
                     tickFormatter={(value) => {
@@ -159,7 +171,6 @@ export function TargetVolumePopover({
                       ];
                     }}
                   />
-                  {/* N-month average reference line */}
                   {nMonthAvg && (
                     <ReferenceLine 
                       y={nMonthAvg} 
@@ -168,7 +179,6 @@ export function TargetVolumePopover({
                       strokeWidth={1.5}
                     />
                   )}
-                  {/* 3-month low average reference line */}
                   {threeMonthLowAvg && (
                     <ReferenceLine 
                       y={threeMonthLowAvg} 
@@ -202,8 +212,7 @@ export function TargetVolumePopover({
               </ResponsiveContainer>
             </div>
             
-            {/* Legend */}
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-0.5 rounded-full" style={{ backgroundColor: 'hsl(142 71% 45%)' }} />
                 <span>Monthly Volume</span>
@@ -223,12 +232,12 @@ export function TargetVolumePopover({
             </div>
           </>
         ) : (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Insufficient historical data ({historicalMonthsCount} month{historicalMonthsCount !== 1 ? 's' : ''}). 
             Minimum of {minMonthsForTarget} months required to calculate target volume.
           </p>
         )}
-      </PopoverContent>
-    </Popover>
+      </DialogContent>
+    </Dialog>
   );
 }
