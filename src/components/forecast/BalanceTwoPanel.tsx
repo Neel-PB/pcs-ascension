@@ -99,24 +99,27 @@ const employeeTypeLabels: Record<string, string> = {
 function HeadcountBreakdown({ entries }: { entries: FteHeadcountEntry[] }) {
   if (entries.length === 0) return null;
 
-  const aggregated = new Map<string, { totalFte: number; totalHc: number }>();
+  const aggregated = new Map<string, { fteVal: number; totalHc: number; totalFte: number }>();
   for (const entry of entries) {
     const type = String(entry.employee_type).toUpperCase();
     const fteVal = parseFloat(String(entry.fte_value)) || 0;
     const hc = parseFloat(String(entry.hc)) || 0;
-    const existing = aggregated.get(type) || { totalFte: 0, totalHc: 0 };
-    existing.totalFte += fteVal * hc;
-    existing.totalHc += hc;
-    aggregated.set(type, existing);
+    const existing = aggregated.get(type);
+    if (existing) {
+      existing.totalHc += hc;
+      existing.totalFte += fteVal * hc;
+    } else {
+      aggregated.set(type, { fteVal, totalHc: hc, totalFte: fteVal * hc });
+    }
   }
 
   return (
     <div className="space-y-1">
-      {Array.from(aggregated).map(([type, { totalFte, totalHc }]) => {
+      {Array.from(aggregated).map(([type, { fteVal, totalHc, totalFte }]) => {
         const label = employeeTypeLabels[type] || type;
         return (
           <div key={type} className="flex items-center justify-between text-xs text-muted-foreground bg-primary/10 rounded px-2.5 py-1.5">
-            <span>{label}: {totalHc} HC</span>
+            <span>{label}: {fteVal} FTE × {totalHc}</span>
             <span className="font-semibold">= {totalFte.toFixed(1)} FTE</span>
           </div>
         );
