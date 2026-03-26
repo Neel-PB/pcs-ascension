@@ -131,13 +131,11 @@ export function TargetVolumePopover({
           <>
             <div className="h-96 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={chartData} margin={{ top: 5, right: 15, left: 0, bottom: 20 }}>
+                <ComposedChart data={chartData} margin={{ top: 5, right: 15, left: 0, bottom: 10 }}>
                   <XAxis 
                     dataKey="month" 
                     tick={{ fontSize: 11 }} 
                     interval={0}
-                    angle={-30}
-                    textAnchor="end"
                     axisLine={{ stroke: 'hsl(var(--border))' }}
                     tickLine={{ stroke: 'hsl(var(--border))' }}
                   />
