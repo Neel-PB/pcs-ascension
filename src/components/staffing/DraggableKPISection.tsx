@@ -87,28 +87,20 @@ export function DraggableKPISection({ title, kpis, dragHandleProps, volumeBreakd
       
       {/* KPI Grid */}
       <div className={cn(
-        "gap-4",
-        kpis.length < 6
-          ? "flex flex-wrap justify-center"
-          : "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6"
+        "gap-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4",
+        xlGridCols
       )}>
-        {kpis.map((kpi) => {
-          const isFlexMode = kpis.length < 6;
-          return (
-            <div
-              key={kpi.id}
-              className={isFlexMode ? "w-full md:w-[calc((100%-2*16px)/3)] lg:w-[calc((100%-3*16px)/4)] xl:w-[calc((100%-5*16px)/6)]" : undefined}
-            >
-              <KPICard 
-                {...kpi}
-                dataTour={`kpi-${kpi.id}`}
-                employmentBreakdown={kpi.id === 'hired-ftes' || kpi.id === 'target-ftes' ? undefined : kpi.employmentBreakdown}
-                dataTourChart={kpi.chartData && kpi.chartData.length > 0 ? `kpi-${kpi.id}-chart` : undefined}
-                dataTourInfo={`kpi-${kpi.id}-info`}
-              />
-            </div>
-          );
-        })}
+        {kpis.map((kpi) => (
+          <div key={kpi.id}>
+            <KPICard 
+              {...kpi}
+              dataTour={`kpi-${kpi.id}`}
+              employmentBreakdown={kpi.id === 'hired-ftes' || kpi.id === 'target-ftes' ? undefined : kpi.employmentBreakdown}
+              dataTourChart={kpi.chartData && kpi.chartData.length > 0 ? `kpi-${kpi.id}-chart` : undefined}
+              dataTourInfo={`kpi-${kpi.id}-info`}
+            />
+          </div>
+        ))}
       </div>
 
       {/* Badges Row - positioned under respective KPI columns with vertical connectors */}
