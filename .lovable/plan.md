@@ -1,34 +1,34 @@
 
 
-## Show Hired FTE and Open Reqs Side-by-Side in Left Panel Header
+## Restructure Left Panel: Split Hired FTE and Open Reqs into Two Columns
 
-### Current
-The left panel has two separate sections stacked vertically:
-- "Hired FTE" header with value on the right
-- "Open Requisitions" header with value on the right (below the percentage bars)
+### Layout Change
 
-### Requested
-Combine both into a single header row: **Hired FTE value on the left, Open Reqs value on the right**, same styling.
+The left panel (45%) currently stacks everything vertically. Instead, split it into two side-by-side columns internally:
+
+```text
+┌──────────── Left Panel (45%) ─────────────┐
+│  Hired FTE: 12.0    │  Open Reqs: 3.0     │
+│  ─────────────────  │  ─────────────────   │
+│  Full-Time  █████   │  Full-Time  2.0      │
+│  Part-Time  ███     │  Part-Time  0.6      │
+│  PRN        █       │  PRN        0.4      │
+│─────────────────────────────────────────────│
+│  Summary: Based on your current...          │
+└─────────────────────────────────────────────┘
+```
+
+- **Left column**: "Hired FTE" header + total, then FT/PT/PRN percentage bars (existing `PercentageBar` component)
+- **Right column**: "Open Reqs" header + total, then FT/PT/PRN values listed vertically (simple label + value rows, matching style)
+- **Below both columns**: AI Summary stays full-width at the bottom
 
 ### Change
 
-**File: `src/components/forecast/BalanceTwoPanel.tsx`**
+**File: `src/components/forecast/BalanceTwoPanel.tsx`** (~lines 156-210)
 
-Replace the two separate header sections (lines 160-162 for Hired FTE header, and lines 188-192 for Open Reqs header) with a single combined header row at the top:
-
-```tsx
-{/* Combined header: Hired FTE left, Open Reqs right */}
-<div className="flex items-center justify-between pb-2 border-b">
-  <div>
-    <span className="text-xs text-muted-foreground">Hired FTE</span>
-    <div className="text-lg font-bold">{hiredFTE.total.toFixed(1)}</div>
-  </div>
-  <div className="text-right">
-    <span className="text-xs text-muted-foreground">Open Reqs</span>
-    <div className="text-lg font-bold">{openReqsFTE.total.toFixed(1)}</div>
-  </div>
-</div>
-```
-
-Then remove the separate "Open Requisitions" header (lines 189-192) since the total is now shown in the combined header. Keep the FT/PT/PRN breakdown cards below as they are.
+1. Replace the current combined header row and stacked content with a `grid grid-cols-2 gap-4` inside the left panel Card
+2. **Left sub-column**: "Hired FTE" label + total value, then the 3 `PercentageBar` components for FT/PT/PRN
+3. **Right sub-column**: "Open Reqs" label + total value, then 3 simple rows showing FT/PT/PRN values styled consistently (label left, value right, with a subtle background like `bg-muted/60`)
+4. Remove the existing separate "Open Requisitions" section with the 3 horizontal cards (lines 193-209)
+5. AI Summary section remains below, spanning full width
 
