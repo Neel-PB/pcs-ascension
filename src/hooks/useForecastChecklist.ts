@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useForecastBalance, ForecastBalanceRow, PositionChange, ClosureRecommendation, ForecastBalanceFilters } from './useForecastBalance';
+import { useForecastBalance, ForecastBalanceRow, FteHeadcountEntry, ForecastBalanceFilters } from './useForecastBalance';
 
 export interface ChecklistPositionToOpen {
   id: string;
@@ -8,8 +8,8 @@ export interface ChecklistPositionToOpen {
   market: string;
   facilityName: string;
   departmentName: string;
-  shift: 'Day' | 'Night';
-  employmentType: 'Full-Time' | 'Part-Time' | 'PRN';
+  shift: string;
+  employmentType: string;
   fte: number;
   count: number;
 }
@@ -21,35 +21,32 @@ export interface ChecklistPositionToClose {
   market: string;
   facilityName: string;
   departmentName: string;
-  shift: 'Day' | 'Night';
-  employmentType: 'Full-Time' | 'Part-Time' | 'PRN';
+  shift: string;
+  employmentType: string;
   fte: number;
   count: number;
   source: 'open-reqs' | 'employed';
 }
 
-// Level 3: Individual position detail (Shift | FT/PT/PRN | FTE with count badge)
 export interface PositionDetail {
   id: string;
-  shift: 'Day' | 'Night';
-  employmentType: 'Full-Time' | 'Part-Time' | 'PRN';
+  shift: string;
+  employmentType: string;
   fte: number;
   count: number;
-  source?: 'open-reqs' | 'employed'; // Only for closures
+  source?: 'open-reqs' | 'employed';
 }
 
-// Level 2: Department + Skill Type + Shift group
 export interface DepartmentSkillGroup {
   departmentName: string;
   skillType: string;
-  shift: 'Day' | 'Night';
+  shift: string;
   groupKey: string;
   totalFTE: number;
   totalCount: number;
   details: PositionDetail[];
 }
 
-// Level 1: Region/Market/Facility group
 export interface FacilityLocationGroup {
   region: string;
   market: string;
@@ -60,7 +57,6 @@ export interface FacilityLocationGroup {
   departmentGroups: DepartmentSkillGroup[];
 }
 
-// Legacy interfaces for backward compatibility
 export interface OpeningSkillSubGroup {
   skillType: string;
   totalFTE: number;
@@ -89,76 +85,85 @@ export interface ClosureFacilityGroup {
   skillGroups: ClosureSkillSubGroup[];
 }
 
-function extractOpenings(
-  row: ForecastBalanceRow,
-  positions: PositionChange[],
-  employmentType: 'Full-Time' | 'Part-Time' | 'PRN'
-): ChecklistPositionToOpen[] {
-  return positions
-    .filter(p => p.action === 'open' && p.count > 0)
-    .map((p, idx) => ({
-      id: `${row.id}-open-${employmentType}-${idx}`,
+function extractOpeningsFromRow(row: ForecastBalanceRow): ChecklistPositionToOpen[] {
+  if (row.staffingStatus !== 'shortage') return [];
+  
+  // Use fte_headcount_json entries
+  if (row.fteHeadcountJson.length > 0) {
+    return row.fteHeadcountJson.map((entry, idx) => ({
+      id: `${row.id}-open-${idx}`,
       skillType: row.skillType,
       region: row.region,
       market: row.market,
       facilityName: row.facilityName,
       departmentName: row.departmentName,
       shift: row.shift,
-      employmentType,
-      fte: p.fteValue,
-      count: p.count,
+      employmentType: entry.employee_type,
+      fte: entry.fte_value,
+      count: entry.hc,
     }));
+  }
+
+  // Fallback: single entry from totalFteReq
+  if (Math.abs(row.totalFteReq) > 0.01) {
+    return [{
+      id: `${row.id}-open-0`,
+      skillType: row.skillType,
+      region: row.region,
+      market: row.market,
+      facilityName: row.facilityName,
+      departmentName: row.departmentName,
+      shift: row.shift,
+      employmentType: row.employmentType !== 'NA' ? row.employmentType : 'Unknown',
+      fte: Math.abs(row.totalFteReq),
+      count: 1,
+    }];
+  }
+
+  return [];
 }
 
-function extractClosures(
-  row: ForecastBalanceRow,
-  closure: ClosureRecommendation,
-  employmentType: 'Full-Time' | 'Part-Time' | 'PRN'
-): ChecklistPositionToClose[] {
+function extractClosuresFromRow(row: ForecastBalanceRow): ChecklistPositionToClose[] {
+  if (row.staffingStatus !== 'surplus') return [];
+  
   const items: ChecklistPositionToClose[] = [];
+  const hasOpenReqs = row.openReqsFte > 0;
 
-  // From open requisitions first (priority)
-  closure.fromReqs.forEach((p, idx) => {
-    if (p.count > 0) {
-      items.push({
-        id: `${row.id}-close-reqs-${employmentType}-${idx}`,
-        skillType: row.skillType,
-        region: row.region,
-        market: row.market,
-        facilityName: row.facilityName,
-        departmentName: row.departmentName,
-        shift: row.shift,
-        employmentType,
-        fte: p.fteValue,
-        count: p.count,
-        source: 'open-reqs',
-      });
-    }
-  });
+  if (hasOpenReqs && row.addressedFte > 0) {
+    items.push({
+      id: `${row.id}-close-reqs-0`,
+      skillType: row.skillType,
+      region: row.region,
+      market: row.market,
+      facilityName: row.facilityName,
+      departmentName: row.departmentName,
+      shift: row.shift,
+      employmentType: row.employmentType !== 'NA' ? row.employmentType : 'Unknown',
+      fte: row.addressedFte,
+      count: 1,
+      source: 'open-reqs',
+    });
+  }
 
-  // From employed positions
-  closure.fromEmployed.forEach((p, idx) => {
-    if (p.count > 0) {
-      items.push({
-        id: `${row.id}-close-emp-${employmentType}-${idx}`,
-        skillType: row.skillType,
-        region: row.region,
-        market: row.market,
-        facilityName: row.facilityName,
-        departmentName: row.departmentName,
-        shift: row.shift,
-        employmentType,
-        fte: p.fteValue,
-        count: p.count,
-        source: 'employed',
-      });
-    }
-  });
+  if (row.unaddressedFte > 0) {
+    items.push({
+      id: `${row.id}-close-emp-0`,
+      skillType: row.skillType,
+      region: row.region,
+      market: row.market,
+      facilityName: row.facilityName,
+      departmentName: row.departmentName,
+      shift: row.shift,
+      employmentType: row.employmentType !== 'NA' ? row.employmentType : 'Unknown',
+      fte: row.unaddressedFte,
+      count: 1,
+      source: 'employed',
+    });
+  }
 
   return items;
 }
 
-// New 3-level grouping for openings: Location → Department/Skill → Details
 function groupOpeningsByLocation(openings: ChecklistPositionToOpen[]): FacilityLocationGroup[] {
   const locationMap = new Map<string, FacilityLocationGroup>();
 
@@ -213,7 +218,6 @@ function groupOpeningsByLocation(openings: ChecklistPositionToOpen[]): FacilityL
   return Array.from(locationMap.values());
 }
 
-// New 3-level grouping for closures: Location → Department/Skill → Details
 function groupClosuresByLocation(closures: ChecklistPositionToClose[]): FacilityLocationGroup[] {
   const locationMap = new Map<string, FacilityLocationGroup>();
 
@@ -290,19 +294,8 @@ export function useForecastChecklist(filters?: ForecastBalanceFilters) {
     const allClosures: ChecklistPositionToClose[] = [];
 
     for (const row of forecastData.rows) {
-      // Extract openings from shortage rows
-      if (row.gapType === 'shortage' || row.gapType === 'split-imbalanced') {
-        allOpenings.push(...extractOpenings(row, row.recommendation.ft, 'Full-Time'));
-        allOpenings.push(...extractOpenings(row, row.recommendation.pt, 'Part-Time'));
-        allOpenings.push(...extractOpenings(row, row.recommendation.prn, 'PRN'));
-      }
-
-      // Extract closures from surplus rows
-      if (row.gapType === 'surplus' || row.gapType === 'split-imbalanced') {
-        allClosures.push(...extractClosures(row, row.recommendation.ftClosure, 'Full-Time'));
-        allClosures.push(...extractClosures(row, row.recommendation.ptClosure, 'Part-Time'));
-        allClosures.push(...extractClosures(row, row.recommendation.prnClosure, 'PRN'));
-      }
+      allOpenings.push(...extractOpeningsFromRow(row));
+      allClosures.push(...extractClosuresFromRow(row));
     }
 
     const totalOpeningsFTE = allOpenings.reduce((sum, o) => sum + o.fte * o.count, 0);
@@ -311,8 +304,8 @@ export function useForecastChecklist(filters?: ForecastBalanceFilters) {
     return {
       openings: allOpenings,
       closures: allClosures,
-      groupedOpenings: [], // Legacy - no longer used
-      groupedClosures: [], // Legacy - no longer used
+      groupedOpenings: [],
+      groupedClosures: [],
       locationGroupedOpenings: groupOpeningsByLocation(allOpenings),
       locationGroupedClosures: groupClosuresByLocation(allClosures),
       totalOpeningsFTE,
