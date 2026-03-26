@@ -1006,22 +1006,19 @@ export function KPIChartModal({
                             );
                           })}
                         </div>
-                        {/* Single shared legend */}
-                        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 pt-2 border-t w-full">
+                        {/* Combined skill + ring legend on one line */}
+                        <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-1.5 pt-2 border-t w-full text-sm">
                           {legendItems.map((name) => (
-                            <div key={name} className="flex items-center gap-1.5 text-sm">
+                            <div key={name} className="flex items-center gap-1.5">
                               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: skillColorMap[name] }} />
                               <span className="text-foreground">{name}</span>
                             </div>
                           ))}
-                        </div>
-                        {/* Ring indicator legend */}
-                        <div className="flex justify-center gap-x-6 gap-y-1 pt-1.5 text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1.5 text-muted-foreground">
                             <span className="inline-block w-3 h-3 rounded-full border-2 border-muted-foreground/50 bg-muted-foreground/20" />
                             <span>Inner: Night</span>
                           </div>
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1.5 text-muted-foreground">
                             <span className="inline-block w-3 h-3 rounded-full border-2 border-muted-foreground/50 bg-transparent" />
                             <span>Outer: Day</span>
                           </div>
