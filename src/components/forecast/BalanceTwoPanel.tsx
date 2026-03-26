@@ -99,26 +99,27 @@ const employeeTypeLabels: Record<string, string> = {
 function HeadcountBreakdown({ entries }: { entries: FteHeadcountEntry[] }) {
   if (entries.length === 0) return null;
 
-  const aggregated = new Map<string, { fteVal: number; totalHc: number; totalFte: number }>();
+  const aggregated = new Map<string, { type: string; fteVal: number; totalHc: number; totalFte: number }>();
   for (const entry of entries) {
     const type = String(entry.employee_type).toUpperCase();
     const fteVal = parseFloat(String(entry.fte_value)) || 0;
     const hc = parseFloat(String(entry.hc)) || 0;
-    const existing = aggregated.get(type);
+    const key = `${type}_${fteVal}`;
+    const existing = aggregated.get(key);
     if (existing) {
       existing.totalHc += hc;
       existing.totalFte += fteVal * hc;
     } else {
-      aggregated.set(type, { fteVal, totalHc: hc, totalFte: fteVal * hc });
+      aggregated.set(key, { type, fteVal, totalHc: hc, totalFte: fteVal * hc });
     }
   }
 
   return (
     <div className="space-y-1">
-      {Array.from(aggregated).map(([type, { fteVal, totalHc, totalFte }]) => {
+      {Array.from(aggregated).map(([key, { type, fteVal, totalHc, totalFte }]) => {
         const label = employeeTypeLabels[type] || type;
         return (
-          <div key={type} className="flex items-center justify-between text-xs text-muted-foreground bg-primary/10 rounded px-2.5 py-1.5">
+          <div key={key} className="flex items-center justify-between text-xs text-muted-foreground bg-primary/10 rounded px-2.5 py-1.5">
             <span>{label}: {fteVal} FTE × {totalHc}</span>
             <span className="font-semibold">= {totalFte.toFixed(1)} FTE</span>
           </div>
