@@ -58,7 +58,7 @@ export function ForecastBalanceTableRow({ row, isExpanded, onToggle }: ForecastB
         <div className="px-2 text-sm truncate">{row.facilityName}</div>
         <div className="px-2 text-sm truncate">{row.departmentName}</div>
         <div className="px-2 text-sm">{row.skillType}</div>
-        <div className="px-2 text-sm">{row.shift}</div>
+        <div className="px-2 text-sm">{row.shift ? row.shift.charAt(0).toUpperCase() + row.shift.slice(1) : '—'}</div>
         <div className={cn("px-2 text-sm font-semibold", gapColor)}>
           {gapSign}{Math.abs(row.totalFteReq).toFixed(1)}
         </div>
