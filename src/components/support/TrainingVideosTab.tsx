@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Play, X, Upload, Loader2 } from "@/lib/icons";
+import AscensionEmblem from "@/assets/Ascension-Emblem.svg";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
