@@ -915,7 +915,7 @@ export function KPIChartModal({
                     legendItems.forEach((name, i) => { skillColorMap[name] = PIE_COLORS[i % PIE_COLORS.length]; });
 
                     return (
-                      <div className="flex flex-col items-center gap-3">
+                      <div className="flex flex-col items-center gap-1">
                         <div className="flex flex-row items-start justify-center gap-8 w-full">
                           {groups.map((group: any, gi: number) => {
                             const innerSlices = (group.inner?.slices || []).filter((s: any) => s.value > 0).sort((a: any, b: any) => b.value - a.value);
@@ -991,10 +991,10 @@ export function KPIChartModal({
                     );
                   })()
                 ) : isPie && filteredPieData && filteredPieData.length > 0 ? (
-                  <div className="h-[300px] w-full flex justify-center">
+                  <div className="w-full flex justify-center">
                     <div className="inline-flex max-w-full items-center justify-center gap-6">
                       {/* Donut chart */}
-                      <div className="w-[320px] h-[300px] shrink-0 flex items-center justify-center">
+                      <div className="w-[340px] h-[340px] shrink-0 flex items-center justify-center">
                         <ChartContainer config={pieConfig} className="h-full w-full">
                           <PieChart>
                             <ChartTooltip
@@ -1015,8 +1015,8 @@ export function KPIChartModal({
                               nameKey="name"
                               cx="50%"
                               cy="50%"
-                              outerRadius={120}
-                              innerRadius={70}
+                              outerRadius={145}
+                              innerRadius={100}
                               paddingAngle={2}
                               label={false}
                               labelLine={false}
@@ -1027,8 +1027,8 @@ export function KPIChartModal({
                             </Pie>
                             {/* Center total label */}
                             <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central">
-                              <tspan x="50%" dy="-0.6em" className="text-[11px] fill-muted-foreground">Total</tspan>
-                              <tspan x="50%" dy="1.4em" className="text-lg font-semibold fill-foreground">{formatValue(pieTotal)}</tspan>
+                              <tspan x="50%" dy="-0.5em" className="text-[9px] fill-muted-foreground">Total</tspan>
+                              <tspan x="50%" dy="1.2em" className="text-sm font-semibold fill-foreground">{formatValue(pieTotal)}</tspan>
                             </text>
                           </PieChart>
                         </ChartContainer>
