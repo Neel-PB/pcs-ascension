@@ -155,55 +155,40 @@ export function BalanceTwoPanel({
         {/* Current State Panel - 35% */}
         <Card className="pt-1.5 px-4 pb-0 border-l-4 border-l-muted-foreground/30">
           <div className="flex flex-col h-full">
-            {/* TOP: Title + FTE bars */}
-            <div>
-              <div className="flex items-center justify-between pb-2 border-b">
-                <div>
+            {/* Two-column: Hired FTE left, Open Reqs right */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* Hired FTE Column */}
+              <div>
+                <div className="pb-2 border-b">
                   <span className="text-xs text-muted-foreground">Hired FTE</span>
                   <div className="text-lg font-bold">{hiredFTE.total.toFixed(1)}</div>
                 </div>
-                <div className="text-right">
+                <div className="space-y-2 mt-3">
+                  <PercentageBar actual={hiredFTE.ftPercent} target={70} label="Full-Time" value={hiredFTE.ft} />
+                  <PercentageBar actual={hiredFTE.ptPercent} target={20} label="Part-Time" value={hiredFTE.pt} />
+                  <PercentageBar actual={hiredFTE.prnPercent} target={10} label="PRN" value={hiredFTE.prn} />
+                </div>
+              </div>
+
+              {/* Open Reqs Column */}
+              <div>
+                <div className="pb-2 border-b">
                   <span className="text-xs text-muted-foreground">Open Reqs</span>
                   <div className="text-lg font-bold">{openReqsFTE.total.toFixed(1)}</div>
                 </div>
-              </div>
-              
-              <div className="space-y-2 mt-4">
-                <PercentageBar 
-                  actual={hiredFTE.ftPercent} 
-                  target={70} 
-                  label="Full-Time" 
-                  value={hiredFTE.ft}
-                />
-                <PercentageBar 
-                  actual={hiredFTE.ptPercent} 
-                  target={20} 
-                  label="Part-Time" 
-                  value={hiredFTE.pt}
-                />
-                <PercentageBar 
-                  actual={hiredFTE.prnPercent} 
-                  target={10} 
-                  label="PRN" 
-                  value={hiredFTE.prn}
-                />
-              </div>
-            </div>
-
-            {/* Open Requisitions */}
-            <div className="mt-3">
-              <div className="flex gap-3 mt-2 text-xs">
-                <div className="flex-1 bg-muted/60 rounded px-2 py-1.5 text-center">
-                  <div className="text-muted-foreground">FT</div>
-                  <div className="font-semibold">{openReqsFTE.ft.toFixed(1)}</div>
-                </div>
-                <div className="flex-1 bg-muted/60 rounded px-2 py-1.5 text-center">
-                  <div className="text-muted-foreground">PT</div>
-                  <div className="font-semibold">{openReqsFTE.pt.toFixed(1)}</div>
-                </div>
-                <div className="flex-1 bg-muted/60 rounded px-2 py-1.5 text-center">
-                  <div className="text-muted-foreground">PRN</div>
-                  <div className="font-semibold">{openReqsFTE.prn.toFixed(1)}</div>
+                <div className="space-y-2 mt-3">
+                  <div className="flex items-center justify-between bg-muted/60 rounded px-2 py-1.5 text-xs">
+                    <span className="font-medium">Full-Time</span>
+                    <span className="font-semibold">{openReqsFTE.ft.toFixed(1)}</span>
+                  </div>
+                  <div className="flex items-center justify-between bg-muted/60 rounded px-2 py-1.5 text-xs">
+                    <span className="font-medium">Part-Time</span>
+                    <span className="font-semibold">{openReqsFTE.pt.toFixed(1)}</span>
+                  </div>
+                  <div className="flex items-center justify-between bg-muted/60 rounded px-2 py-1.5 text-xs">
+                    <span className="font-medium">PRN</span>
+                    <span className="font-semibold">{openReqsFTE.prn.toFixed(1)}</span>
+                  </div>
                 </div>
               </div>
             </div>
