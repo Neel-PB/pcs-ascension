@@ -98,9 +98,9 @@ function HeadcountBreakdown({ entries }: { entries: FteHeadcountEntry[] }) {
         const fteVal = parseFloat(String(entry.fte_value)) || 0;
         const hc = parseFloat(String(entry.hc)) || 0;
         return (
-          <div key={i} className="flex items-center justify-between text-xs text-muted-foreground bg-primary/10 rounded px-2 py-1">
-            <span>{entry.employee_type}: {fteVal} FTE × {hc}</span>
-            <span>= {(fteVal * hc).toFixed(1)}</span>
+          <div key={i} className="flex items-center justify-between text-xs text-muted-foreground bg-primary/10 rounded px-2.5 py-1.5">
+            <span>{String(entry.employee_type).toUpperCase()}: {fteVal} FTE │ {hc}</span>
+            <span className="font-semibold">= {(fteVal * hc).toFixed(1)}</span>
           </div>
         );
       })}
