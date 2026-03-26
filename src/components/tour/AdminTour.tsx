@@ -34,6 +34,7 @@ interface AdminTourProps {
 export function AdminTour({ activeTab, onTabChange }: AdminTourProps) {
   const config = tabConfig[activeTab] || tabConfig.users;
   const microTourStep = useTourStore(s => s.microTourStep);
+  const isOnboarding = useTourStore(s => s.isOnboarding);
   const clearMicroTour = useTourStore(s => s.clearMicroTour);
   const isMicro = microTourStep && microTourStep.tourKey === config.tourKey;
   const steps = useMemo(() => {
