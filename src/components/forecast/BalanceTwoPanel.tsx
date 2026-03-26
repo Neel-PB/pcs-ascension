@@ -183,6 +183,28 @@ export function BalanceTwoPanel({
                 />
               </div>
             </div>
+
+            {/* Open Requisitions */}
+            <div className="mt-3">
+              <div className="flex items-center justify-between pb-1.5 border-b">
+                <h4 className="font-semibold text-sm">Open Requisitions</h4>
+                <span className="text-lg font-bold">{openReqsFTE.total.toFixed(1)} FTE</span>
+              </div>
+              <div className="flex gap-3 mt-2 text-xs">
+                <div className="flex-1 bg-muted/60 rounded px-2 py-1.5 text-center">
+                  <div className="text-muted-foreground">FT</div>
+                  <div className="font-semibold">{openReqsFTE.ft.toFixed(1)}</div>
+                </div>
+                <div className="flex-1 bg-muted/60 rounded px-2 py-1.5 text-center">
+                  <div className="text-muted-foreground">PT</div>
+                  <div className="font-semibold">{openReqsFTE.pt.toFixed(1)}</div>
+                </div>
+                <div className="flex-1 bg-muted/60 rounded px-2 py-1.5 text-center">
+                  <div className="text-muted-foreground">PRN</div>
+                  <div className="font-semibold">{openReqsFTE.prn.toFixed(1)}</div>
+                </div>
+              </div>
+            </div>
             
             {/* BOTTOM: AI Summary - pinned with mt-auto */}
             <div className="border-t mt-auto">

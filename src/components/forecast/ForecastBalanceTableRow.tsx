@@ -76,6 +76,7 @@ export function ForecastBalanceTableRow({ row, isExpanded, onToggle }: ForecastB
           <div className="px-6 py-4 overflow-hidden">
             <BalanceTwoPanel
               hiredFTE={row.hiredFTE}
+              openReqsFTE={row.openReqsFTE}
               targetFTE={row.targetFTE}
               recommendation={row.recommendation}
               aiSummary={row.aiSummary}
