@@ -84,15 +84,16 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="flex h-screen w-full">
-      {/* Left: Background image */}
-      <div
-        className="hidden lg:block lg:w-1/2 bg-cover bg-center"
-        style={{ backgroundImage: `url(${AuthBg})` }}
-      />
+    <div className="h-screen w-full bg-muted/30 p-4">
+      <div className="flex h-full w-full rounded-2xl overflow-hidden shadow-lg bg-background">
+        {/* Left: Background image */}
+        <div
+          className="hidden lg:block lg:w-1/2 bg-cover bg-bottom"
+          style={{ backgroundImage: `url(${AuthBg})` }}
+        />
 
-      {/* Right: Form */}
-      <div className="w-full lg:w-1/2 flex items-start justify-center pt-[25vh] bg-background p-6 overflow-auto">
+        {/* Right: Form */}
+        <div className="w-full lg:w-1/2 flex items-start justify-center pt-[25vh] bg-background p-6 overflow-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
