@@ -200,7 +200,7 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
         </div>
 
         {/* Target info footer */}
-        <div className="mt-1.5 border-t mt-auto">
+        <div className="border-t pt-2 mt-auto">
           <div className="text-xs text-muted-foreground mb-1">Target FTE:</div>
           <div className="flex gap-2 text-xs font-medium">
             <span className="text-primary bg-primary/10 px-1.5 py-0 rounded">
