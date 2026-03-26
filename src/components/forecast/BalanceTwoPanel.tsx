@@ -115,7 +115,7 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
   const isCancelReq = row.actionTypes.includes('CANCEL_OPEN_REQ');
 
   return (
-    <Card className="pt-1.5 px-4 pb-1.5 border-l-4 border-l-primary">
+    <Card className="pt-3 px-5 pb-3 border-l-4 border-l-primary">
       <div className="flex flex-col h-full">
         <div className="flex-1">
           <div className="flex items-center justify-between pb-2 border-b">
