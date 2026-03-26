@@ -96,6 +96,12 @@ const employeeTypeLabels: Record<string, string> = {
   PRN: 'PRN',
 };
 
+const typeColors: Record<string, string> = {
+  FT: 'bg-orange-500/10 text-orange-700',
+  PT: 'bg-emerald-500/10 text-emerald-700',
+  PRN: 'bg-primary/10 text-primary',
+};
+
 function HeadcountBreakdown({ entries }: { entries: FteHeadcountEntry[] }) {
   if (entries.length === 0) return null;
 
