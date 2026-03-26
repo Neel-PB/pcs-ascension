@@ -114,6 +114,7 @@ function ClosureChangeList({
 
 export function BalanceTwoPanel({
   hiredFTE,
+  openReqsFTE,
   targetFTE,
   recommendation,
   aiSummary,
