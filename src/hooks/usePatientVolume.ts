@@ -64,61 +64,34 @@ interface PatientVolumeFilters {
 }
 
 async function fetchPatientVolume(filters: PatientVolumeFilters): Promise<PatientVolumeRecord[]> {
-  const PAGE_SIZE = 1000;
-  const allRecords: PatientVolumeRecord[] = [];
-  let offset = 0;
+  const params = new URLSearchParams();
+  if (filters.region) params.append('region', filters.region);
+  if (filters.market) params.append('market', filters.market);
+  if (filters.businessUnit) params.append('businessUnit', filters.businessUnit);
+  if (filters.departmentId) params.append('departmentId', filters.departmentId);
+  if (filters.submarket) params.append('submarket', filters.submarket);
+  if (filters.level2) params.append('level2', filters.level2);
+  if (filters.pstat) params.append('pstat', filters.pstat);
+  params.append('take', '50000');
 
-  const baseParams = new URLSearchParams();
-  if (filters.region) baseParams.append('region', filters.region);
-  if (filters.market) baseParams.append('market', filters.market);
-  if (filters.businessUnit) baseParams.append('businessUnit', filters.businessUnit);
-  if (filters.departmentId) baseParams.append('departmentId', filters.departmentId);
-  if (filters.submarket) baseParams.append('submarket', filters.submarket);
-  if (filters.level2) baseParams.append('level2', filters.level2);
-  if (filters.pstat) baseParams.append('pstat', filters.pstat);
+  const url = `${API_BASE_URL}/patient-volume?${params.toString()}`;
+  const res = await fetch(url, { headers: getAuthHeaders() });
+  if (!res.ok) throw new Error(`Failed to fetch patient volume: ${res.status}`);
 
-  while (true) {
-    const params = new URLSearchParams(baseParams);
-    params.append('take', String(PAGE_SIZE));
-    params.append('offset', String(offset));
+  const text = await res.text();
+  if (!text) return [];
 
-    const qs = params.toString();
-    const url = `${API_BASE_URL}/patient-volume?${qs}`;
+  const json = JSON.parse(text);
+  const records: PatientVolumeRecord[] = Array.isArray(json.data) ? json.data : Array.isArray(json) ? json : [];
 
-    const res = await fetch(url, { headers: getAuthHeaders() });
-    if (!res.ok) throw new Error(`Failed to fetch patient volume: ${res.status}`);
-
-    const text = await res.text();
-    if (!text) break;
-
-    const json = JSON.parse(text);
-
-    let pageData: PatientVolumeRecord[] = [];
-    let total: number | null = null;
-
-    if (json && Array.isArray(json.data)) {
-      pageData = json.data as PatientVolumeRecord[];
-      total = typeof json.total === 'number' ? json.total : null;
-    } else if (Array.isArray(json)) {
-      pageData = json as PatientVolumeRecord[];
-    }
-
-    allRecords.push(...pageData);
-
-    if (pageData.length < PAGE_SIZE) break;
-    if (total !== null && allRecords.length >= total) break;
-
-    offset += PAGE_SIZE;
-  }
-
+  // Deduplicate
   const seen = new Set<string>();
-  const deduped = allRecords.filter(r => {
+  return records.filter(r => {
     const key = `${r.market_hierarchy_key}|${r.department_id}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
-  return deduped;
 }
 
 const SENTINEL_VALUES = ['all-regions', 'all-markets', 'all-facilities', 'all-departments', 'all-submarkets', 'all-level2', 'all-pstat'];
