@@ -155,7 +155,7 @@ export default function FeedbackPage() {
       {/* Header */}
       <div className="shrink-0 py-4 border-b border-border">
         <div className="flex items-center justify-center gap-3">
-          <div data-tour="feedback-search" className="w-64">
+          <div data-tour="feedback-search" className="w-72">
             <SearchField
               placeholder="Search feedback..."
               value={searchQuery}
@@ -165,7 +165,7 @@ export default function FeedbackPage() {
           </div>
           <div className="flex items-center gap-3" data-tour="feedback-filters">
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-[140px]">
+              <SelectTrigger className="w-[160px] h-11">
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
@@ -177,7 +177,7 @@ export default function FeedbackPage() {
               </SelectContent>
             </Select>
             <Select value={pcsStatusFilter} onValueChange={setPcsStatusFilter}>
-              <SelectTrigger className="w-[140px]">
+              <SelectTrigger className="w-[160px] h-11">
                 <SelectValue placeholder="ACS Status" />
               </SelectTrigger>
               <SelectContent>
@@ -189,7 +189,7 @@ export default function FeedbackPage() {
               </SelectContent>
             </Select>
             <Select value={pbStatusFilter} onValueChange={setPbStatusFilter}>
-              <SelectTrigger className="w-[140px]">
+              <SelectTrigger className="w-[160px] h-11">
                 <SelectValue placeholder="PB Status" />
               </SelectTrigger>
               <SelectContent>
