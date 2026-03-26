@@ -171,7 +171,7 @@ export default function StaffingSummary() {
     submarket: selectedSubmarket,
     level2: selectedLevel2,
     pstat: selectedPstat,
-    enabled: filtersInitialized,
+    enabled: filtersInitialized && isSummaryTab,
   });
 
   // Fetch employment split for Hired FTEs breakdown
