@@ -90,17 +90,34 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
 
 /* ─── Right Panel: Positions to Close / Open ─── */
 
+const employeeTypeLabels: Record<string, string> = {
+  FT: 'Full Time',
+  PT: 'Part Time',
+  PRN: 'PRN',
+};
+
 function HeadcountBreakdown({ entries }: { entries: FteHeadcountEntry[] }) {
   if (entries.length === 0) return null;
+
+  const aggregated = new Map<string, { totalFte: number; totalHc: number }>();
+  for (const entry of entries) {
+    const type = String(entry.employee_type).toUpperCase();
+    const fteVal = parseFloat(String(entry.fte_value)) || 0;
+    const hc = parseFloat(String(entry.hc)) || 0;
+    const existing = aggregated.get(type) || { totalFte: 0, totalHc: 0 };
+    existing.totalFte += fteVal * hc;
+    existing.totalHc += hc;
+    aggregated.set(type, existing);
+  }
+
   return (
     <div className="space-y-1">
-      {entries.map((entry, i) => {
-        const fteVal = parseFloat(String(entry.fte_value)) || 0;
-        const hc = parseFloat(String(entry.hc)) || 0;
+      {Array.from(aggregated).map(([type, { totalFte, totalHc }]) => {
+        const label = employeeTypeLabels[type] || type;
         return (
-          <div key={i} className="flex items-center justify-between text-xs text-muted-foreground bg-primary/10 rounded px-2.5 py-1.5">
-            <span>{String(entry.employee_type).toUpperCase()}: {fteVal} FTE │ {hc}</span>
-            <span className="font-semibold">= {(fteVal * hc).toFixed(1)}</span>
+          <div key={type} className="flex items-center justify-between text-xs text-muted-foreground bg-primary/10 rounded px-2.5 py-1.5">
+            <span>{label}: {totalHc} HC</span>
+            <span className="font-semibold">= {totalFte.toFixed(1)} FTE</span>
           </div>
         );
       })}
