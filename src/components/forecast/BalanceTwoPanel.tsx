@@ -13,10 +13,10 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
   const isNA = row.employmentType === 'NA';
 
   return (
-    <Card className="pt-1.5 px-4 pb-1.5 border-l-4 border-l-muted-foreground/30">
+    <Card className="pt-3 px-5 pb-3 border-l-4 border-l-muted-foreground/30">
       <div className="flex flex-col h-full">
         {/* Two-column: Hired FTE left, Open Reqs right */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-6">
           {/* Hired FTE Column */}
           <div>
             <div className="pb-2 border-b">
@@ -30,7 +30,7 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
                 Employment type not specified
               </div>
             ) : (
-              <div className="mt-3">
+              <div className="mt-4">
                 <div className="flex items-center justify-between bg-muted/60 rounded px-2 py-1.5 text-xs">
                   <span className="font-medium">{row.employmentType}</span>
                   <span className="font-semibold">{row.hiredFte.toFixed(1)}</span>
@@ -53,7 +53,7 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
                   Employment type not specified
                 </div>
               ) : (
-                <div className="mt-3">
+                <div className="mt-4">
                   <div className="flex items-center justify-between bg-muted/60 rounded px-2 py-1.5 text-xs">
                     <span className="font-medium">{row.employmentType}</span>
                     <span className="font-semibold">{row.openReqsFte.toFixed(1)}</span>
@@ -61,7 +61,7 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
                 </div>
               )
             ) : (
-              <div className="mt-3">
+              <div className="mt-4">
                 <div className="flex items-center justify-center py-1.5 text-xs text-muted-foreground">
                   No open reqs
                 </div>
@@ -71,8 +71,8 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
         </div>
 
         {/* Summary section */}
-        <div className="border-t mt-auto">
-          <div className="mt-1.5 mb-1.5 space-y-1">
+        <div className="border-t pt-3 mt-auto">
+          <div className="mb-1.5 space-y-1">
             <p className="text-xs font-medium text-muted-foreground">Summary</p>
             <p className="text-xs leading-relaxed">
               {row.staffingStatus === 'shortage'
@@ -98,9 +98,9 @@ function HeadcountBreakdown({ entries }: { entries: FteHeadcountEntry[] }) {
         const fteVal = parseFloat(String(entry.fte_value)) || 0;
         const hc = parseFloat(String(entry.hc)) || 0;
         return (
-          <div key={i} className="flex items-center justify-between text-xs text-muted-foreground bg-primary/10 rounded px-2 py-1">
-            <span>{entry.employee_type}: {fteVal} FTE × {hc}</span>
-            <span>= {(fteVal * hc).toFixed(1)}</span>
+          <div key={i} className="flex items-center justify-between text-xs text-muted-foreground bg-primary/10 rounded px-2.5 py-1.5">
+            <span>{String(entry.employee_type).toUpperCase()}: {fteVal} FTE │ {hc}</span>
+            <span className="font-semibold">= {(fteVal * hc).toFixed(1)}</span>
           </div>
         );
       })}
@@ -115,7 +115,7 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
   const isCancelReq = row.actionTypes.includes('CANCEL_OPEN_REQ');
 
   return (
-    <Card className="pt-1.5 px-4 pb-1.5 border-l-4 border-l-primary">
+    <Card className="pt-3 px-5 pb-3 border-l-4 border-l-primary">
       <div className="flex flex-col h-full">
         <div className="flex-1">
           <div className="flex items-center justify-between pb-2 border-b">
@@ -127,7 +127,7 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-3 mt-4">
+          <div className="grid grid-cols-2 gap-6 mb-3 mt-4">
             {/* Positions to Close */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -200,7 +200,7 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
         </div>
 
         {/* Target info footer */}
-        <div className="mt-1.5 border-t mt-auto">
+        <div className="border-t pt-2 mt-auto">
           <div className="text-xs text-muted-foreground mb-1">Target FTE:</div>
           <div className="flex gap-2 text-xs font-medium">
             <span className="text-primary bg-primary/10 px-1.5 py-0 rounded">
@@ -218,7 +218,7 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
 export function BalanceTwoPanel({ row }: BalanceTwoPanelProps) {
   return (
     <div className="space-y-4">
-      <div className="grid gap-4" style={{ gridTemplateColumns: '45% 55%' }}>
+      <div className="grid gap-5" style={{ gridTemplateColumns: '45% 55%' }}>
         <LeftPanel row={row} />
         <RightPanel row={row} />
       </div>
