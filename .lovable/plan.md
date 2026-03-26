@@ -1,26 +1,24 @@
 
 
-## Capitalize Shift Override Display in ShiftCell
+## Capitalize Shift Values Everywhere in UI
 
 ### Problem
-When a user manually selects "day" or "night" in the shift override popover, the value displays lowercase (e.g., "night") instead of capitalized ("Night").
+Shift override values ("day"/"night") display lowercase in the activity log comments within the Position Comment Section, even though the ShiftCell table display was already fixed.
 
-### Change
+### Changes
 
-**File: `src/components/editable-table/cells/ShiftCell.tsx`**
+**File: `src/components/positions/PositionCommentSection.tsx`**
 
-On the line displaying the override value (currently `<span className="font-medium capitalize shrink-0">{selectedDayNight}</span>`), the `capitalize` CSS class should handle this — but the `SelectItem` values are lowercase `"day"` and `"night"`. The `capitalize` class only capitalizes the first letter via CSS `text-transform`, which should work. However, to be safe and consistent across all rendering contexts, explicitly capitalize the displayed text:
+In the `ShiftActivityCard` component, capitalize `shiftOld` and `shiftNew` before rendering:
 
-Change the override display span (~line 100):
+- Line 152-153: After extracting the values, capitalize them:
 ```tsx
-// Current
-<span className="font-medium capitalize shrink-0">{selectedDayNight}</span>
-
-// Updated — explicit JS capitalization, remove CSS capitalize
-<span className="font-medium shrink-0">
-  {selectedDayNight ? selectedDayNight.charAt(0).toUpperCase() + selectedDayNight.slice(1) : ''}
-</span>
+const rawOld = (metadata.shift_old ?? metadata.shiftOld ?? metadata.old_value) as string | null;
+const rawNew = (metadata.shift_new ?? metadata.shiftNew ?? metadata.new_value) as string | null;
+const capitalize = (s: string | null) => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+const shiftOld = capitalize(rawOld);
+const shiftNew = capitalize(rawNew);
 ```
 
-This ensures "day" → "Day" and "night" → "Night" regardless of CSS support or context. Single-line change, UI-only.
+No other changes needed — the three render points on lines 162, 167, 170 already reference `shiftOld`/`shiftNew` and will automatically pick up the capitalized values.
 
