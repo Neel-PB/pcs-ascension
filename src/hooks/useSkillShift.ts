@@ -114,6 +114,8 @@ export function useSkillShift(filters: {
     queryKey: ['skill-shift', cleaned],
     queryFn: () => fetchSkillShift(cleaned),
     staleTime: 5 * 60 * 1000,
+    retry: 1,
+    refetchOnWindowFocus: false,
     enabled,
   });
 }

@@ -126,6 +126,8 @@ export function usePatientVolume(filters: {
     queryKey: ['patient-volume', cleaned],
     queryFn: () => fetchPatientVolume(cleaned),
     staleTime: 5 * 60 * 1000,
+    retry: 1,
+    refetchOnWindowFocus: false,
     enabled,
   });
 }
