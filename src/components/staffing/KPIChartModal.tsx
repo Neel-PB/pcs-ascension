@@ -915,7 +915,7 @@ export function KPIChartModal({
                     legendItems.forEach((name, i) => { skillColorMap[name] = PIE_COLORS[i % PIE_COLORS.length]; });
 
                     return (
-                      <div className="flex flex-col items-center gap-3">
+                      <div className="flex flex-col items-center gap-1">
                         <div className="flex flex-row items-start justify-center gap-8 w-full">
                           {groups.map((group: any, gi: number) => {
                             const innerSlices = (group.inner?.slices || []).filter((s: any) => s.value > 0).sort((a: any, b: any) => b.value - a.value);
