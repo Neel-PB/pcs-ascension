@@ -220,7 +220,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps, volumeBreakd
             <div className="w-0.5 h-1.5 bg-primary/60 dark:bg-primary/70" />
           </div>
           {/* Row 4: Blue pill badge */}
-          <div className={`col-span-${colCount} flex justify-center`}>
+          <div className="flex justify-center" style={{ gridColumn: `span ${colCount}` }}>
             <div
               onClick={() => setShowVolumeBreakdownModal(true)}
               className={cn(
