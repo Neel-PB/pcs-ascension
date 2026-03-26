@@ -1,24 +1,37 @@
 
 
-## Make First-Time Onboarding Tour Unskippable
+## Fix Auth Page Image Layout to Match Design
 
-### Changes (3 files, ~10 lines)
+### Issue
+The left image panel extends edge-to-edge with no rounding, and the Ascension logo at the bottom gets cut off. The desired look (image 432) shows the entire page wrapped with padding and the left panel having rounded corners.
 
-**1. `src/stores/useTourStore.ts`**
-- Add `isOnboarding: boolean` to state (default `false`)
-- `startFullTour()` → also sets `isOnboarding: true`
-- `stopTour()` and `skipAllTours()` → reset `isOnboarding: false`
+### Changes
 
-**2. `src/components/tour/TourTooltip.tsx`**
-- Read `isOnboarding` from store
-- When `true`, hide all skip buttons (Skip All, Skip Section, Skip)
+**File: `src/pages/AuthPage.tsx`** (~3 lines changed)
 
-**3. `src/components/tour/OverlayTour.tsx`**
-- Read `isOnboarding` from store
-- Pass `showSkipButton={!isOnboarding}` to Joyride
+1. Wrap the outer `flex` container in a full-screen wrapper with padding (`p-4`) and background
+2. Add `rounded-2xl overflow-hidden` to the inner flex container so both panels get rounded corners
+3. Change `bg-cover bg-center` to `bg-cover bg-bottom` on the left panel so the Ascension logo at the bottom stays visible
 
-### Result
-- First-time users must complete the full tour — no skip option
-- Manual tours remain skippable
-- 3 files, ~10 lines changed
+```text
+Before:
+┌─────────────────────────────────────┐
+│ [image edge-to-edge] │ Form        │
+│                      │             │
+│ logo cut off ───────>│             │
+└─────────────────────────────────────┘
+
+After:
+┌─────────────────────────────────────┐
+│  ╭────────────────╮╭─────────────╮  │
+│  │ image rounded  ││ Form        │  │
+│  │                ││             │  │
+│  │ logo visible   ││             │  │
+│  ╰────────────────╯╰─────────────╯  │
+└─────────────────────────────────────┘
+```
+
+- Outer div: `h-screen w-full bg-muted/30 p-4`
+- Inner flex div: `flex h-full w-full rounded-2xl overflow-hidden shadow-lg`
+- Left panel: change `bg-center` → `bg-bottom` to keep logo visible
 
