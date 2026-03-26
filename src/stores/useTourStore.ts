@@ -13,6 +13,7 @@ interface TourState {
   activeTour: string | null;
   skipMode: 'section' | 'all' | null;
   singleSection: boolean;
+  isOnboarding: boolean;
   microTourStep: MicroTourStep | null;
   onboardingChecked: boolean;
   startTour: (tourId: string) => void;
@@ -32,6 +33,7 @@ export const useTourStore = create<TourState>((set) => ({
   activeTour: null,
   skipMode: null,
   singleSection: false,
+  isOnboarding: false,
   microTourStep: null,
   onboardingChecked: false,
   startTour: (tourId: string) => set({ activeTour: tourId, singleSection: false, microTourStep: null }),
@@ -40,17 +42,17 @@ export const useTourStore = create<TourState>((set) => ({
     APP_TOUR_SEQUENCE.forEach((s) => {
       localStorage.removeItem(`${TOUR_PREFIX}${s.tourKey}-completed`);
     });
-    set({ activeTour: 'staffing', singleSection: false, skipMode: null, microTourStep: null });
+    set({ activeTour: 'staffing', singleSection: false, skipMode: null, microTourStep: null, isOnboarding: true });
   },
   startMicroTour: (tourKey: string, stepIndex: number) =>
     set({ activeTour: tourKey, singleSection: true, microTourStep: { tourKey, stepIndex } }),
   clearMicroTour: () => set({ microTourStep: null }),
-  stopTour: () => set({ activeTour: null, microTourStep: null }),
+  stopTour: () => set({ activeTour: null, microTourStep: null, isOnboarding: false }),
   setSkipMode: (mode) => set({ skipMode: mode }),
   clearSkipMode: () => set({ skipMode: null }),
   skipAllTours: () => {
     markAllToursCompleted();
-    set({ activeTour: null, skipMode: 'all', microTourStep: null });
+    set({ activeTour: null, skipMode: 'all', microTourStep: null, isOnboarding: false });
   },
   markOnboardingComplete: async (userId: string) => {
     await supabase

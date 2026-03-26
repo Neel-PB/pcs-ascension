@@ -14,7 +14,7 @@ export function TourTooltip({
   size,
 }: TooltipRenderProps) {
   const progress = ((index + 1) / size) * 100;
-  const { setSkipMode, singleSection } = useTourStore();
+  const { setSkipMode, singleSection, isOnboarding } = useTourStore();
 
   // Section metadata from step.data
   const sectionName = (step as any).data?.sectionName;
@@ -89,7 +89,7 @@ export function TourTooltip({
         <CardFooter className="px-5 pb-3 flex items-center justify-between gap-2 border-t border-border/30 pt-2.5">
           {/* Left: Skip actions */}
           <div className="flex items-center gap-1">
-            {singleSection ? (
+            {isOnboarding ? null : singleSection ? (
               <Button
                 variant="ghost"
                 size="sm"
