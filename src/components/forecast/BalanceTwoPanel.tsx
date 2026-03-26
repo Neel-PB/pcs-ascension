@@ -31,7 +31,7 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
               </div>
             ) : (
               <div className="mt-4">
-                <div className="flex items-center justify-between bg-muted/60 rounded px-2 py-1.5 text-xs">
+                <div className={cn("flex items-center justify-between rounded px-2 py-1.5 text-xs", typeColors[row.employmentType] || 'bg-muted/60 text-muted-foreground')}>
                   <span className="font-medium">{row.employmentType}</span>
                   <span className="font-semibold">{row.hiredFte.toFixed(1)}</span>
                 </div>
@@ -54,10 +54,10 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
                 </div>
               ) : (
                 <div className="mt-4">
-                  <div className="flex items-center justify-between bg-muted/60 rounded px-2 py-1.5 text-xs">
-                    <span className="font-medium">{row.employmentType}</span>
-                    <span className="font-semibold">{row.openReqsFte.toFixed(1)}</span>
-                  </div>
+                <div className={cn("flex items-center justify-between rounded px-2 py-1.5 text-xs", typeColors[row.employmentType] || 'bg-muted/60 text-muted-foreground')}>
+                  <span className="font-medium">{row.employmentType}</span>
+                  <span className="font-semibold">{row.openReqsFte.toFixed(1)}</span>
+                </div>
                 </div>
               )
             ) : (
@@ -96,6 +96,12 @@ const employeeTypeLabels: Record<string, string> = {
   PRN: 'PRN',
 };
 
+const typeColors: Record<string, string> = {
+  FT: 'bg-orange-500/10 text-orange-700',
+  PT: 'bg-emerald-500/10 text-emerald-700',
+  PRN: 'bg-primary/10 text-primary',
+};
+
 function HeadcountBreakdown({ entries }: { entries: FteHeadcountEntry[] }) {
   if (entries.length === 0) return null;
 
@@ -119,7 +125,7 @@ function HeadcountBreakdown({ entries }: { entries: FteHeadcountEntry[] }) {
       {Array.from(aggregated).map(([key, { type, fteVal, totalHc, totalFte }]) => {
         const label = employeeTypeLabels[type] || type;
         return (
-          <div key={key} className="flex items-center justify-between text-xs text-muted-foreground bg-primary/10 rounded px-2.5 py-1.5">
+          <div key={key} className={cn("flex items-center justify-between text-xs rounded px-2.5 py-1.5", typeColors[type] || 'bg-muted/60 text-muted-foreground')}>
             <span>{label}: {fteVal} FTE × {totalHc}</span>
             <span className="font-semibold">= {totalFte.toFixed(1)} FTE</span>
           </div>
@@ -222,11 +228,34 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
 
         {/* Target info footer */}
         <div className="border-t pt-2 mt-auto">
-          <div className="text-xs text-muted-foreground mb-1">Target FTE:</div>
-          <div className="flex gap-2 text-xs font-medium">
-            <span className="text-primary bg-primary/10 px-1.5 py-0 rounded">
-              {row.targetFte.toFixed(1)} FTE
-            </span>
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-xs text-muted-foreground">Target FTE:</span>
+            <span className="text-sm font-bold text-primary">{row.targetFte.toFixed(1)}</span>
+            {(() => {
+              // Compute per-type share from fteHeadcountJson
+              const typeShares = new Map<string, number>();
+              for (const entry of row.fteHeadcountJson) {
+                const t = String(entry.employee_type).toUpperCase();
+                const fte = (parseFloat(String(entry.fte_value)) || 0) * (parseFloat(String(entry.hc)) || 0);
+                typeShares.set(t, (typeShares.get(t) || 0) + fte);
+              }
+              const total = Array.from(typeShares.values()).reduce((a, b) => a + b, 0);
+              if (total <= 0) return null;
+              return Array.from(typeShares).map(([t, fte]) => {
+                const pct = Math.round((fte / total) * 100);
+                const label = employeeTypeLabels[t] || t;
+                const pillColors: Record<string, string> = {
+                  FT: 'bg-orange-500/15 text-orange-700',
+                  PT: 'bg-emerald-500/15 text-emerald-700',
+                  PRN: 'bg-primary/15 text-primary',
+                };
+                return (
+                  <span key={t} className={cn("px-1.5 py-0.5 rounded text-[10px] font-semibold", pillColors[t] || 'bg-muted text-muted-foreground')}>
+                    {label} {pct}%
+                  </span>
+                );
+              });
+            })()}
           </div>
         </div>
       </div>
