@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { Filter } from "@/lib/icons";
 import { DataRefreshButton } from "@/components/dashboard/DataRefreshButton";
 import { usePositionsByFlag } from "@/hooks/usePositionsByFlag";
+import { getLatestTimestamp } from "@/lib/getLatestTimestamp";
 import { useCheckExpiredFte } from "@/hooks/useCheckExpiredFte";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
