@@ -138,7 +138,8 @@ export default function StaffingSummary() {
   const facilityForOverrides = selectedFacility === "all-facilities" ? null : selectedFacility;
   const { data: volumeOverrides } = useVolumeOverrides(facilityForOverrides);
 
-  // Fetch patient volume data from API
+  // Fetch patient volume data from API (only when Summary tab is active)
+  const isSummaryTab = activeTab === 'summary';
   const { data: patientVolumeData, isLoading: pvLoading } = usePatientVolume({
     region: selectedRegion,
     market: selectedMarket,
@@ -147,7 +148,7 @@ export default function StaffingSummary() {
     submarket: selectedSubmarket,
     level2: selectedLevel2,
     pstat: selectedPstat,
-    enabled: filtersInitialized,
+    enabled: filtersInitialized && isSummaryTab,
   });
   // Fetch productive resources KPI data from API
   const { data: prKpiData, isLoading: prLoading } = useProductiveResourcesKpi({
