@@ -123,7 +123,7 @@ export function TargetVolumePopover({
           </div>
         </div>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="max-w-6xl">
         <DialogHeader>
           <DialogTitle className="text-base font-medium">Historical Volume Trend</DialogTitle>
         </DialogHeader>
