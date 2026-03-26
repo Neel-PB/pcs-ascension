@@ -935,7 +935,7 @@ export function KPIChartModal({
                               <div key={gi} className="flex flex-col items-center">
                                 <p className="text-sm font-semibold text-foreground mb-2">{group.category}</p>
                                 <div className="flex items-center gap-4">
-                                  <div className="w-[280px] h-[280px]">
+                                  <div className="w-[340px] h-[340px]">
                                     <ChartContainer config={nestedConfig} className="h-full w-full">
                                       <PieChart>
                                         <ChartTooltip
@@ -950,14 +950,14 @@ export function KPIChartModal({
                                           }
                                         />
                                         {innerSlices.length > 0 && (
-                                          <Pie data={innerSlices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={65} innerRadius={35} paddingAngle={2} label={false} labelLine={false}>
+                                          <Pie data={innerSlices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} innerRadius={45} paddingAngle={2} label={false} labelLine={false}>
                                             {innerSlices.map((s: any) => (
                                               <Cell key={s.name} fill={skillColorMap[s.name] || PIE_COLORS[0]} />
                                             ))}
                                           </Pie>
                                         )}
                                         {outerSlices.length > 0 && (
-                                          <Pie data={outerSlices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} innerRadius={80} paddingAngle={2} label={false} labelLine={false}>
+                                          <Pie data={outerSlices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={145} innerRadius={100} paddingAngle={2} label={false} labelLine={false}>
                                             {outerSlices.map((s: any) => (
                                               <Cell key={s.name} fill={skillColorMap[s.name] || PIE_COLORS[0]} />
                                             ))}
@@ -969,6 +969,37 @@ export function KPIChartModal({
                                         </text>
                                       </PieChart>
                                     </ChartContainer>
+                                  </div>
+                                  {/* Skill breakdown by ring */}
+                                  <div className="flex flex-col gap-3 min-w-[140px]">
+                                    {outerSlices.length > 0 && (
+                                      <div>
+                                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Day (Outer)</p>
+                                        <div className="flex flex-col gap-0.5">
+                                          {outerSlices.map((s: any) => (
+                                            <div key={s.name} className="flex items-center gap-1.5 text-xs">
+                                              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: skillColorMap[s.name] }} />
+                                              <span className="text-foreground truncate">{s.name}</span>
+                                              <span className="ml-auto tabular-nums text-muted-foreground">{formatValue(s.value)}</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                    {innerSlices.length > 0 && (
+                                      <div>
+                                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Night (Inner)</p>
+                                        <div className="flex flex-col gap-0.5">
+                                          {innerSlices.map((s: any) => (
+                                            <div key={s.name} className="flex items-center gap-1.5 text-xs">
+                                              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: skillColorMap[s.name] }} />
+                                              <span className="text-foreground truncate">{s.name}</span>
+                                              <span className="ml-auto tabular-nums text-muted-foreground">{formatValue(s.value)}</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               </div>
