@@ -150,7 +150,7 @@ export function KPIChartModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn("max-h-[85vh] overflow-hidden p-3 flex flex-col gap-2", "max-w-[95vw]")}>
+      <DialogContent className={cn("max-h-[92vh] overflow-hidden p-3 flex flex-col gap-2", "max-w-[95vw]")}>
         <DialogHeader className="relative flex flex-row items-center justify-between space-y-0 border-b pb-3">
           <div>
             <DialogTitle className="text-xl">{title}</DialogTitle>
@@ -196,7 +196,7 @@ export function KPIChartModal({
           </div>
         </DialogHeader>
         
-        <div className="space-y-3 pt-0 overflow-hidden flex flex-col flex-1 min-h-0">
+        <div className="space-y-3 pt-0 overflow-y-auto flex flex-col flex-1 min-h-0">
 
           {/* Custom chart content override */}
           {customChartContent ? (
@@ -931,7 +931,7 @@ export function KPIChartModal({
                             return (
                               <div key={gi} className="flex flex-col items-center">
                                 <p className="text-sm font-semibold text-foreground mb-2">{group.category}</p>
-                                <div className="w-[400px] h-[400px]">
+                                <div className="w-[440px] h-[440px]">
                                     <ChartContainer config={nestedConfig} className="h-full w-full">
                                       <PieChart>
                                         <ChartTooltip
@@ -946,14 +946,14 @@ export function KPIChartModal({
                                           }
                                         />
                                         {innerSlices.length > 0 && (
-                                          <Pie data={innerSlices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={95} innerRadius={55} paddingAngle={2} label={false} labelLine={false}>
+                                          <Pie data={innerSlices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={110} innerRadius={65} paddingAngle={2} label={false} labelLine={false}>
                                             {innerSlices.map((s: any) => (
                                               <Cell key={s.name} fill={skillColorMap[s.name] || PIE_COLORS[0]} />
                                             ))}
                                           </Pie>
                                         )}
                                         {outerSlices.length > 0 && (
-                                          <Pie data={outerSlices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={170} innerRadius={115} paddingAngle={2} label={false} labelLine={false}>
+                                          <Pie data={outerSlices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={195} innerRadius={135} paddingAngle={2} label={false} labelLine={false}>
                                             {outerSlices.map((s: any) => (
                                               <Cell key={s.name} fill={skillColorMap[s.name] || PIE_COLORS[0]} />
                                             ))}
@@ -994,7 +994,7 @@ export function KPIChartModal({
                   <div className="w-full flex justify-center">
                     <div className="inline-flex max-w-full items-center justify-center gap-6">
                       {/* Donut chart */}
-                      <div className="w-[400px] h-[400px] shrink-0 flex items-center justify-center">
+                      <div className="w-[440px] h-[440px] shrink-0 flex items-center justify-center">
                         <ChartContainer config={pieConfig} className="h-full w-full">
                           <PieChart>
                             <ChartTooltip
@@ -1015,8 +1015,8 @@ export function KPIChartModal({
                               nameKey="name"
                               cx="50%"
                               cy="50%"
-                              outerRadius={170}
-                              innerRadius={120}
+                              outerRadius={195}
+                              innerRadius={140}
                               paddingAngle={2}
                               label={false}
                               labelLine={false}
