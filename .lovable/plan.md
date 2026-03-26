@@ -1,39 +1,24 @@
 
 
-## Split-Screen Login Page
+## Make First-Time Onboarding Tour Unskippable
 
-Redesign the login page into a two-section layout matching the uploaded Ascension branding image.
+### Changes (3 files, ~10 lines)
 
-### Layout
+**1. `src/stores/useTourStore.ts`**
+- Add `isOnboarding: boolean` to state (default `false`)
+- `startFullTour()` → also sets `isOnboarding: true`
+- `stopTour()` and `skipAllTours()` → reset `isOnboarding: false`
 
-```text
-┌──────────────────────┬──────────────────────┐
-│                      │                      │
-│   Background Image   │   "Position Control" │
-│   (uploaded blue     │                      │
-│    Ascension art)    │   [Email field]       │
-│                      │   [Continue button]   │
-│                      │                      │
-└──────────────────────┴──────────────────────┘
-```
+**2. `src/components/tour/TourTooltip.tsx`**
+- Read `isOnboarding` from store
+- When `true`, hide all skip buttons (Skip All, Skip Section, Skip)
 
-- **Left half**: The uploaded image (`IMG_0620.PNG`) as a full-height cover background. Hidden on mobile, form goes full-width.
-- **Right half**: The login form, vertically centered. Title "Position Control" at top, no logo icon, no card wrapper -- clean white background.
+**3. `src/components/tour/OverlayTour.tsx`**
+- Read `isOnboarding` from store
+- Pass `showSkipButton={!isOnboarding}` to Joyride
 
-### Changes
-
-**1. Copy uploaded image to project**
-- Copy `user-uploads://IMG_0620.PNG` to `src/assets/auth-bg.png`
-
-**2. Rewrite `src/pages/AuthPage.tsx`**
-- Remove the `AscensionLogo` import and `<img>` tag
-- Remove the `Card` wrapper -- form sits directly on white background
-- Outer container: `flex h-screen`
-- Left div: `hidden lg:block lg:w-1/2` with the background image as `bg-cover bg-center`
-- Right div: `w-full lg:w-1/2 flex items-center justify-center` containing the form
-- Keep all existing step logic, animations, and form handlers unchanged
-- Title "Position Control" remains as a heading above the form (no logo)
-
-### Mobile behavior
-On screens below `lg`, the left image panel is hidden and the form takes full width with a subtle gradient background.
+### Result
+- First-time users must complete the full tour — no skip option
+- Manual tours remain skippable
+- 3 files, ~10 lines changed
 
