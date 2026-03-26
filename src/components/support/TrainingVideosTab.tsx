@@ -116,7 +116,7 @@ export function TrainingVideosTab() {
                 )}
               </div>
 
-              <div className="p-4 space-y-1">
+              <div className="p-4 space-y-2">
                 <h3 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2">
                   {video.title || formatName(video.name)}
                 </h3>
