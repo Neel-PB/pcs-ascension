@@ -99,11 +99,11 @@ export function TrainingVideosTab() {
               onClick={() => handleVideoClick(video)}
             >
               {/* Thumbnail / play overlay */}
-              <div className="relative flex items-center justify-center bg-muted h-32 overflow-hidden">
+              <div className="relative flex items-end justify-center bg-muted h-32 overflow-hidden">
                 {video.thumbnail_url ? (
-                  <img src={video.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                  <img src={video.thumbnail_url} alt="" className="w-full h-full object-cover object-bottom" />
                 ) : (
-                  <img src={AscensionEmblem} alt="" className="h-12 w-12 opacity-20" />
+                  <img src={AscensionEmblem} alt="" className="h-12 w-12 opacity-20 mb-2" />
                 )}
                 <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
                   <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/90 text-primary-foreground group-hover:scale-110 transition-transform">
@@ -119,8 +119,8 @@ export function TrainingVideosTab() {
                 )}
               </div>
 
-              <div className="p-3 space-y-1">
-                <h3 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1">
+              <div className="px-3 py-2 space-y-0.5">
+                <h3 className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors line-clamp-1">
                   {video.title || formatName(video.name)}
                 </h3>
                 {video.description && (
