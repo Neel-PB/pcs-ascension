@@ -848,8 +848,8 @@ export function KPIChartModal({
                     chartData.forEach((g: any) => g.slices?.forEach((s: any) => allSliceNames.add(s.name)));
                     const legendItems = Array.from(allSliceNames);
                     return (
-                      <div className="space-y-3">
-                        <div className="flex justify-center gap-8">
+                      <div className="space-y-1">
+                        <div className="flex justify-center gap-6">
                           {chartData.map((group: any, gi: number) => {
                             const slices = (group.slices || []).filter((s: any) => s.value > 0).sort((a: any, b: any) => b.value - a.value);
                             const total = group.total ?? slices.reduce((s: number, d: any) => s + d.value, 0);
@@ -858,7 +858,7 @@ export function KPIChartModal({
                             return (
                               <div key={gi} className="flex flex-col items-center">
                                 <p className="text-sm font-medium text-foreground mb-1">{group.shift}</p>
-                                <div className="w-[200px] h-[200px]">
+                                <div className="w-[340px] h-[340px]">
                                   <ChartContainer config={dualConfig} className="h-full w-full">
                                     <PieChart>
                                       <ChartTooltip
@@ -873,14 +873,14 @@ export function KPIChartModal({
                                           />
                                         }
                                       />
-                                      <Pie data={slices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} innerRadius={45} paddingAngle={2} label={false} labelLine={false}>
+                                      <Pie data={slices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={140} innerRadius={90} paddingAngle={2} label={false} labelLine={false}>
                                         {slices.map((_: any, i: number) => (
                                           <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                                         ))}
                                       </Pie>
                                       <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central">
-                                        <tspan x="50%" dy="-0.5em" className="text-[10px] fill-muted-foreground">Total</tspan>
-                                        <tspan x="50%" dy="1.3em" className="text-base font-semibold fill-foreground">{formatValue(total)}</tspan>
+                                        <tspan x="50%" dy="-0.5em" className="text-[9px] fill-muted-foreground">Total</tspan>
+                                        <tspan x="50%" dy="1.3em" className="text-lg font-semibold fill-foreground">{formatValue(total)}</tspan>
                                       </text>
                                     </PieChart>
                                   </ChartContainer>
@@ -890,7 +890,7 @@ export function KPIChartModal({
                           })}
                         </div>
                         {/* Shared legend */}
-                        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 pt-1 border-t">
+                        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 pt-0.5">
                           {legendItems.map((name, i) => (
                             <div key={name} className="flex items-center gap-1.5 text-sm">
                               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
