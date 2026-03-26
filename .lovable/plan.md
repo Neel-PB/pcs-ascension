@@ -1,29 +1,28 @@
 
 
-## Fix NaN Values — API Returns Strings Instead of Numbers
+## Fix NaN in Headcount Breakdown (fte_headcount_json)
 
 ### Problem
-The API returns numeric fields as **strings** (e.g., `"1.00"` instead of `1.00`). The aggregation code does `g.hiredFte += row.hired_fte || 0` which concatenates strings instead of adding numbers, producing `NaN` downstream.
+The `fte_headcount_json` entries have `fte_value` and `hc` as strings (from API). The multiplication `entry.fte_value * entry.hc` produces NaN.
 
 ### Fix
 
-**File: `src/hooks/useForecastBalance.ts`** (lines 168-174)
+**File: `src/components/forecast/BalanceTwoPanel.tsx`** (HeadcountBreakdown component, ~lines 96-103)
 
-Wrap each numeric field with `parseFloat()` during aggregation:
+Parse the values before display:
 
-```typescript
-g.hiredFte += parseFloat(String(row.hired_fte)) || 0;
-g.openReqsFte += parseFloat(String(row.open_reqs_fte)) || 0;
-g.targetFte += parseFloat(String(row.target_fte)) || 0;
-g.totalFteReq += parseFloat(String(row.total_fte_req)) || 0;
-g.addressedFte += parseFloat(String(row.addressed_fte)) || 0;
-g.unaddressedFte += parseFloat(String(row.unaddressed_fte)) || 0;
+```tsx
+{entries.map((entry, i) => {
+  const fteVal = parseFloat(String(entry.fte_value)) || 0;
+  const hc = parseFloat(String(entry.hc)) || 0;
+  return (
+    <div key={i} className="flex items-center justify-between text-xs text-muted-foreground bg-primary/10 rounded px-2 py-1">
+      <span>{entry.employee_type}: {fteVal} FTE × {hc}</span>
+      <span>= {(fteVal * hc).toFixed(1)}</span>
+    </div>
+  );
+})}
 ```
 
-Also update the `ForecastApiRow` interface types from `number` to `number | string` for these fields to reflect reality, or just rely on the parseFloat coercion.
-
-This single change fixes:
-- NaN in FTE Gap column
-- NaN in KPI cards (FTE Shortage / FTE Surplus)
-- NaN in expanded detail panels
+This fixes the `= NaN` display in the "Position to Open" breakdown rows.
 
