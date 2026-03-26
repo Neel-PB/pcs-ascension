@@ -1,24 +1,28 @@
 import { generateLast12MonthLabels } from '@/lib/utils';
 
 // Chart data generators
+// Deterministic pseudo-random perturbation (no Math.random — stable across renders)
+const seededNoise = (i: number, seed: number = 0) =>
+  Math.sin(i * 127.1 + seed * 311.7) * 0.5;
+
 export const generateGrowthTrend = (start: number, end: number, points: number = 24) => 
   Array.from({ length: points }, (_, i) => ({
-    value: i === points - 1 ? end : start + ((end - start) * i) / (points - 1) + (Math.random() - 0.5) * 2
+    value: i === points - 1 ? end : start + ((end - start) * i) / (points - 1) + seededNoise(i, start) * 2
   }));
 
 export const generateDeclineTrend = (start: number, end: number, points: number = 24) =>
   Array.from({ length: points }, (_, i) => ({
-    value: start - ((start - end) * i) / (points - 1) + (Math.random() - 0.5) * 2
+    value: start - ((start - end) * i) / (points - 1) + seededNoise(i, start) * 2
   }));
 
 export const generateVolatileTrend = (base: number, variance: number, points: number = 24) =>
   Array.from({ length: points }, (_, i) => ({
-    value: base + Math.sin(i * 0.5) * variance + (Math.random() - 0.5) * (variance * 0.3)
+    value: base + Math.sin(i * 0.5) * variance + seededNoise(i, base) * (variance * 0.3)
   }));
 
 export const generateSeasonalTrend = (base: number, amplitude: number, points: number = 24) =>
   Array.from({ length: points }, (_, i) => ({
-    value: base + Math.sin((i / points) * Math.PI * 2) * amplitude + (Math.random() - 0.5) * 2
+    value: base + Math.sin((i / points) * Math.PI * 2) * amplitude + seededNoise(i, base) * 2
   }));
 
 export interface KPIConfig {
