@@ -642,17 +642,17 @@ export function VarianceAnalysis({
 
   const VarianceTable = () => (
     <Table>
-      <TableHeader className="sticky top-0 z-10 bg-card">
+      <TableHeader className="sticky top-0 z-10 bg-card border-b border-border">
         <TableRow data-tour="variance-skill-headers">
-          <TableHead className="font-semibold bg-muted/30 min-w-[200px]">{columnHeader}</TableHead>
-          <TableHead colSpan={3} className="text-center font-semibold bg-muted/30 border-l-2 border-muted-foreground/30">CL Skill</TableHead>
-          <TableHead colSpan={3} className="text-center font-semibold bg-muted/30 border-l-2 border-muted-foreground/30">RN Skill</TableHead>
-          <TableHead colSpan={3} className="text-center font-semibold bg-muted/30 border-l-2 border-muted-foreground/30">PCT Skill</TableHead>
-          <TableHead colSpan={3} className="text-center font-semibold bg-muted/30 border-l-2 border-muted-foreground/30">HUC</TableHead>
-          <TableHead colSpan={3} className="text-center font-semibold bg-muted/30 border-l-2 border-muted-foreground/30">Overhead</TableHead>
+          <TableHead className="font-semibold bg-muted min-w-[200px]">{columnHeader}</TableHead>
+          <TableHead colSpan={3} className="text-center font-semibold bg-muted border-l-2 border-muted-foreground/30">CL Skill</TableHead>
+          <TableHead colSpan={3} className="text-center font-semibold bg-muted border-l-2 border-muted-foreground/30">RN Skill</TableHead>
+          <TableHead colSpan={3} className="text-center font-semibold bg-muted border-l-2 border-muted-foreground/30">PCT Skill</TableHead>
+          <TableHead colSpan={3} className="text-center font-semibold bg-muted border-l-2 border-muted-foreground/30">HUC</TableHead>
+          <TableHead colSpan={3} className="text-center font-semibold bg-muted border-l-2 border-muted-foreground/30">Overhead</TableHead>
         </TableRow>
         <TableRow>
-          <TableHead className="min-w-[200px]"></TableHead>
+          <TableHead className="min-w-[200px] bg-card"></TableHead>
           <TableHead className="text-center text-xs border-l-2 border-muted-foreground/30">Day</TableHead>
           <TableHead className="text-center text-xs">Night</TableHead>
           <TableHead className="text-center text-xs">Total</TableHead>

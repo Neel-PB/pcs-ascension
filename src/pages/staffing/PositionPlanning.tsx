@@ -410,24 +410,24 @@ const FTESkillShiftTable = ({
   return (
     <div className="overflow-auto flex-1 min-h-0 [&>div]:overflow-visible">
       <Table className="table-fixed">
-        <TableHeader className="sticky top-0 z-10 bg-card">
+        <TableHeader className="sticky top-0 z-10 bg-card border-b border-border">
           <TableRow>
-            <TableHead className="font-semibold text-foreground w-48 min-w-48 max-w-48">Skills</TableHead>
+            <TableHead className="font-semibold text-foreground w-48 min-w-48 max-w-48 bg-muted">Skills</TableHead>
             {/* Target FTEs - only for Nursing */}
             {staffCategory === 'nursing' && (
-              <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30 border-l-2 border-muted-foreground/30">
+              <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted border-l-2 border-muted-foreground/30">
                 Target FTEs
               </TableHead>
             )}
-            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30 border-l-2 border-muted-foreground/30">
+            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted border-l-2 border-muted-foreground/30">
               {viewMode === 'active' ? 'Active FTEs' : 'Hired FTEs'}
             </TableHead>
-            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30 border-l-2 border-muted-foreground/30">
+            <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted border-l-2 border-muted-foreground/30">
               Open Req FTEs
             </TableHead>
             {/* Variance - only for Nursing */}
             {staffCategory === 'nursing' && (
-              <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted/30 border-l-2 border-muted-foreground/30">
+              <TableHead colSpan={3} className="text-center font-semibold text-foreground bg-muted border-l-2 border-muted-foreground/30">
                 Variance
               </TableHead>
             )}
