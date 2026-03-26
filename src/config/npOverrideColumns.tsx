@@ -79,21 +79,6 @@ export const createNPOverrideColumns = (
     },
   },
   {
-    id: 'max_expiry',
-    label: 'Max Expiration',
-    type: 'custom',
-    width: 180,
-    minWidth: 150,
-    sortable: true,
-    renderCell: (row) => (
-      <div className="px-4 py-2">
-        <span className="text-sm text-muted-foreground">
-          {format(row.max_expiry_date, 'MMM dd, yyyy')}
-        </span>
-      </div>
-    ),
-  },
-  {
     id: 'expiry_date',
     label: 'Expiration Date',
     type: 'custom',
