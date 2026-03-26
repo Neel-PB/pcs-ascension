@@ -30,7 +30,7 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
                 Employment type not specified
               </div>
             ) : (
-              <div className="mt-3">
+              <div className="mt-4">
                 <div className="flex items-center justify-between bg-muted/60 rounded px-2 py-1.5 text-xs">
                   <span className="font-medium">{row.employmentType}</span>
                   <span className="font-semibold">{row.hiredFte.toFixed(1)}</span>
