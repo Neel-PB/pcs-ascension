@@ -14,7 +14,7 @@ export function TourTooltip({
   size,
 }: TooltipRenderProps) {
   const progress = ((index + 1) / size) * 100;
-  const { setSkipMode, singleSection } = useTourStore();
+  const { setSkipMode, singleSection, isOnboarding } = useTourStore();
 
   // Section metadata from step.data
   const sectionName = (step as any).data?.sectionName;
