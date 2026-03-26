@@ -1,67 +1,57 @@
 
-Fix the Positions refresh timestamp in a more complete way.
 
-What I found:
-- `src/hooks/usePositionsByFlag.ts` already maps `row.load_ts`, but the refresh button in all 5 Positions tabs still reads only the first row:
-  - `employees?.[0]?.curated_data_load_ts`
-  - `requisitions?.[0]?.curated_data_load_ts`
-  - etc.
-- That means the button is wrong if:
-  1. the first row has no timestamp, or
-  2. the dataset is not ordered by newest load time.
-- The normalizer is also less defensive than other API mappers in this codebase: it does not currently check camelCase timestamp keys like `loadTs`, `curatedDataLoadTs`, or `updatedAt`.
+## Fix HeadcountBreakdown Display Format
 
-Implementation plan:
-1. Update `src/hooks/usePositionsByFlag.ts`
-   - Expand timestamp normalization to support both snake_case and camelCase:
-   - `row.curated_data_load_ts ?? row.curatedDataLoadTs ?? row.load_ts ?? row.loadTs ?? row.updated_at ?? row.updatedAt`
-   - Keep storing the result on `curated_data_load_ts` so the UI stays consistent.
+### Problem
+Current display shows `Full Time: 129 HC = 128.8 FTE` which loses the per-entry FTE value context. The user wants to see the calculation clearly: `FTE_value × HC = total`.
 
-2. Add a small shared helper for latest timestamp derivation
-   - Create a utility that scans the full rows array, ignores null/invalid values, and returns the newest valid timestamp.
-   - This keeps the logic reusable across all Positions tabs and avoids duplicating date parsing code 5 times.
+For example, `[{"fte_value":0.2, "hc":1, "employee_type":"prn"}]` should show:
+```
+PRN: 0.2 FTE × 1 = 0.2
+```
 
-3. Replace first-row timestamp usage in all Positions tabs
-   - Update:
-     - `src/pages/positions/EmployeesTab.tsx`
-     - `src/pages/positions/OpenRequisitionTab.tsx`
-     - `src/pages/positions/RequisitionsTab.tsx`
-     - `src/pages/positions/ContractorsTab.tsx`
-     - `src/pages/positions/ContractorRequisitionTab.tsx`
-   - Compute `lastUpdated` from the full fetched dataset with `useMemo`, then pass that to `DataRefreshButton`.
-   - This will use the latest timestamp already present in the fetched API data, with no extra requests.
+### Fix
 
-4. Harden `src/components/dashboard/DataRefreshButton.tsx`
-   - Add a validity check before formatting/parsing the date.
-   - If the timestamp is invalid, treat it as unavailable instead of showing a misleading status or risking a date formatting error.
+**File: `src/components/forecast/BalanceTwoPanel.tsx`** — `HeadcountBreakdown` component (lines 99-126)
 
-Technical note:
-- The current bug is no longer just a `load_ts` mapping issue.
-- The real UI problem is:
-  ```text
-  data exists
-    -> first row chosen
-    -> first row may not contain the newest timestamp
-    -> refresh button shows wrong / empty value
-  ```
-- The fix should derive:
-  ```text
-  latest valid timestamp across active tab dataset
-  ```
-  not:
-  ```text
-  timestamp from row 0
-  ```
+Keep the aggregation by employee_type but change the display format to show the original FTE value and headcount with the multiplication:
 
-Expected result:
-- The refresh button will show the correct latest load time on:
-  - Employee
-  - Open Requisition
-  - Open Position
-  - Contractor
-  - Contractor Requisition
+```tsx
+function HeadcountBreakdown({ entries }: { entries: FteHeadcountEntry[] }) {
+  if (entries.length === 0) return null;
 
-QA to run after implementation:
-- Verify the refresh popover on each of the 5 Positions tabs.
-- Confirm the displayed timestamp matches the newest timestamp present in that tab’s fetched rows.
-- Confirm empty datasets still show “No refresh data available”.
+  const aggregated = new Map<string, { fteVal: number; totalHc: number; totalFte: number }>();
+  for (const entry of entries) {
+    const type = String(entry.employee_type).toUpperCase();
+    const fteVal = parseFloat(String(entry.fte_value)) || 0;
+    const hc = parseFloat(String(entry.hc)) || 0;
+    const existing = aggregated.get(type);
+    if (existing) {
+      existing.totalHc += hc;
+      existing.totalFte += fteVal * hc;
+    } else {
+      aggregated.set(type, { fteVal, totalHc: hc, totalFte: fteVal * hc });
+    }
+  }
+
+  return (
+    <div className="space-y-1">
+      {Array.from(aggregated).map(([type, { fteVal, totalHc, totalFte }]) => {
+        const label = employeeTypeLabels[type] || type;
+        return (
+          <div key={type} className="...">
+            <span>{label}: {fteVal} FTE × {totalHc}</span>
+            <span className="font-semibold">= {totalFte.toFixed(1)} FTE</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+```
+
+This preserves the FTE value per unit (e.g., 0.2 for PRN, 1.0 for FT) while still aggregating HC across duplicate types. Display: `PRN: 0.2 FTE × 1 = 0.2 FTE`.
+
+### Files Modified
+1. `src/components/forecast/BalanceTwoPanel.tsx` — update display format in HeadcountBreakdown
+
