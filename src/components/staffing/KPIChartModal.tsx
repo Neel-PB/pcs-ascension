@@ -159,8 +159,17 @@ export function KPIChartModal({
             </DialogDescription>
           </div>
           
-          {/* Current Value and Trend */}
+          {/* Chart/Table Toggle + Current Value */}
           <div className="flex items-center gap-4">
+            {!showAllOptions && !customChartContent && (
+              <ToggleButtonGroup
+                items={[{ id: "chart", label: "Chart" }, { id: "table", label: "Table" }]}
+                activeId={activeTab}
+                onSelect={setActiveTab}
+                layoutId="kpiChartTab"
+                className="max-w-xs"
+              />
+            )}
             <div className="text-right">
               <p className="text-xs text-muted-foreground">Current Value</p>
               <p className={cn(
@@ -184,17 +193,6 @@ export function KPIChartModal({
         </DialogHeader>
         
         <div className="space-y-3 pt-0 overflow-hidden flex flex-col flex-1 min-h-0">
-
-          {/* Toggle for Chart and Table — hidden when showAllOptions or customChartContent */}
-          {!showAllOptions && !customChartContent && (
-            <ToggleButtonGroup
-              items={[{ id: "chart", label: "Chart" }, { id: "table", label: "Table" }]}
-              activeId={activeTab}
-              onSelect={setActiveTab}
-              layoutId="kpiChartTab"
-              className="max-w-xs mx-auto"
-            />
-          )}
 
           {/* Custom chart content override */}
           {customChartContent ? (
