@@ -95,18 +95,12 @@ export default function AuthPage() {
       >
         <Card>
           <CardHeader className="space-y-1">
-            <div className="flex justify-center mb-2">
-              <img src={AscensionLogo} alt="Ascension" className="w-12 h-12 object-contain" />
+            <div className="flex items-center justify-center gap-3">
+              <img src={AscensionLogo} alt="Ascension" className="w-10 h-10 object-contain" />
+              <CardTitle className="text-2xl font-bold">
+                Position Control
+              </CardTitle>
             </div>
-            <CardTitle className="text-2xl font-bold text-center">
-              Position Control
-            </CardTitle>
-            <CardDescription className="text-center">
-              {step === "email" && "Enter your email to continue"}
-              {step === "unauthorized" && "Access denied"}
-              {step === "password" && "Enter your password to sign in"}
-              {step === "setup" && "Create your password to get started"}
-            </CardDescription>
           </CardHeader>
           <CardContent>
 
