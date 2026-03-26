@@ -37,7 +37,7 @@ const normalizeRow = (row: any) => ({
   shift: row.shift,
   region: row.region,
   market: row.market,
-  curated_data_load_ts: row.curated_data_load_ts ?? row.curatedDataLoadTs ?? row.load_ts ?? row.loadTs ?? row.updated_at ?? row.updatedAt,
+  curated_data_load_ts: row.curated_data_load_ts ?? row.curatedDataLoadTs ?? row.load_ts ?? row.loadTs ?? row.updated_at ?? row.updatedAt ?? row.pos_status_date ?? row.posStatusDate ?? row.positionStatusDate,
 });
 
 /**
