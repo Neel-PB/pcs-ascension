@@ -1027,8 +1027,8 @@ export function KPIChartModal({
                             </Pie>
                             {/* Center total label */}
                             <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central">
-                              <tspan x="50%" dy="-0.6em" className="text-[11px] fill-muted-foreground">Total</tspan>
-                              <tspan x="50%" dy="1.4em" className="text-lg font-semibold fill-foreground">{formatValue(pieTotal)}</tspan>
+                              <tspan x="50%" dy="-0.5em" className="text-[9px] fill-muted-foreground">Total</tspan>
+                              <tspan x="50%" dy="1.2em" className="text-sm font-semibold fill-foreground">{formatValue(pieTotal)}</tspan>
                             </text>
                           </PieChart>
                         </ChartContainer>
