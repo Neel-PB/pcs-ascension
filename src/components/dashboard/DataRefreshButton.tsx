@@ -31,7 +31,7 @@ export function DataRefreshButton({ lastUpdated, className }: DataRefreshButtonP
         <Button
           variant="ascension"
           size="icon"
-          className={cn("relative", className)}
+          className={cn("relative overflow-visible", className)}
           aria-label="Data refresh status"
           title="Data refresh status"
         >
