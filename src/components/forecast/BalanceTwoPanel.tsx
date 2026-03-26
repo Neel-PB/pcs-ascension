@@ -175,8 +175,10 @@ export function BalanceTwoPanel({
               {/* Open Reqs Column */}
               <div>
                 <div className="pb-2 border-b">
-                  <span className="text-xs text-muted-foreground">Open Reqs</span>
-                  <div className="text-lg font-bold">{openReqsFTE.total.toFixed(1)}</div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xs text-muted-foreground">Open Reqs</span>
+                    <span className="text-lg font-bold">{openReqsFTE.total.toFixed(1)}</span>
+                  </div>
                 </div>
                 <div className="space-y-2 mt-3">
                   <div className="flex items-center justify-between bg-muted/60 rounded px-2 py-1.5 text-xs">
