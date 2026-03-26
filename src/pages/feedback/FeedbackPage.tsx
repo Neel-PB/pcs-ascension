@@ -189,7 +189,7 @@ export default function FeedbackPage() {
               </SelectContent>
             </Select>
             <Select value={pbStatusFilter} onValueChange={setPbStatusFilter}>
-              <SelectTrigger className="w-[140px]">
+              <SelectTrigger className="w-[160px] h-11">
                 <SelectValue placeholder="PB Status" />
               </SelectTrigger>
               <SelectContent>
