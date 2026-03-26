@@ -102,7 +102,7 @@ export function ShiftCell({ value, selectedDayNight, onSave, onClick }: ShiftCel
             <span className="flex-1 inline-flex items-center gap-1 whitespace-nowrap min-w-0">
               <span className="text-muted-foreground line-through text-xs truncate max-w-[60px]">{value}</span>
               <span className="text-muted-foreground shrink-0">→</span>
-              <span className="font-medium capitalize shrink-0">{selectedDayNight}</span>
+              <span className="font-medium shrink-0">{selectedDayNight ? selectedDayNight.charAt(0).toUpperCase() + selectedDayNight.slice(1) : ''}</span>
             </span>
           ) : (
             <span className="flex-1 truncate whitespace-nowrap min-w-0">{value || "—"}</span>
