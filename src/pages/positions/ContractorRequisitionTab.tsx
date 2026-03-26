@@ -74,7 +74,7 @@ export function ContractorRequisitionTab({
         <SearchField placeholder="Search requisitions..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-[32rem]" />
         <div className="flex gap-2 items-center flex-shrink-0 ml-auto">
           <PositionKPICards items={[{ label: "Open Requisitions", value: filteredData.length }]} />
-          <DataRefreshButton lastUpdated={(requisitions as any)?.[0]?.curated_data_load_ts ?? (requisitions as any)?.[0]?.updated_at ?? null} />
+          <DataRefreshButton lastUpdated={latestTimestamp} />
           <Button variant="ascension" size="icon" onClick={() => setFilterOpen(true)} className="relative" aria-label="Filters" title="Filters">
             <Filter className="h-4 w-4" />
             {activeFilterCount > 0 && (
