@@ -15,6 +15,7 @@ interface OverlayTourProps {
 export function OverlayTour({ tourKey, steps }: OverlayTourProps) {
   const navigate = useNavigate();
   const microTourStep = useTourStore(s => s.microTourStep);
+  const isOnboarding = useTourStore(s => s.isOnboarding);
   const clearMicroTour = useTourStore(s => s.clearMicroTour);
   const isMicro = microTourStep && microTourStep.tourKey === tourKey;
   const enrichedSteps = useMemo(() => {
