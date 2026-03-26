@@ -98,7 +98,7 @@ export function TrainingVideosTab() {
               onClick={() => handleVideoClick(video)}
             >
               {/* Thumbnail / play overlay */}
-              <div className="relative flex items-center justify-center bg-muted h-36 overflow-hidden">
+              <div className="relative flex items-center justify-center bg-muted h-48 overflow-hidden">
                 {video.thumbnail_url ? (
                   <img src={video.thumbnail_url} alt="" className="w-full h-full object-cover" />
                 ) : null}
