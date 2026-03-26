@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 
 interface BalanceTwoPanelProps {
   hiredFTE: FTEBreakdown;
+  openReqsFTE: OpenReqsBreakdown;
   targetFTE: number;
   recommendation: RecommendedChanges;
   aiSummary: string;
