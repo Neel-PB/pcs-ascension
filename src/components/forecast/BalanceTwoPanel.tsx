@@ -94,12 +94,16 @@ function HeadcountBreakdown({ entries }: { entries: FteHeadcountEntry[] }) {
   if (entries.length === 0) return null;
   return (
     <div className="space-y-1">
-      {entries.map((entry, i) => (
-        <div key={i} className="flex items-center justify-between text-xs text-muted-foreground bg-primary/10 rounded px-2 py-1">
-          <span>{entry.employee_type}: {entry.fte_value} FTE × {entry.hc}</span>
-          <span>= {(entry.fte_value * entry.hc).toFixed(1)}</span>
-        </div>
-      ))}
+      {entries.map((entry, i) => {
+        const fteVal = parseFloat(String(entry.fte_value)) || 0;
+        const hc = parseFloat(String(entry.hc)) || 0;
+        return (
+          <div key={i} className="flex items-center justify-between text-xs text-muted-foreground bg-primary/10 rounded px-2 py-1">
+            <span>{entry.employee_type}: {fteVal} FTE × {hc}</span>
+            <span>= {(fteVal * hc).toFixed(1)}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }
