@@ -194,7 +194,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps, volumeBreakd
       {volumeBreakdown && volumeBreakdown.length > 0 && (
         <div className={cn("hidden xl:grid relative z-10", xlGridCols)} style={{ gap: 'inherit', marginTop: '0' }}>
           {/* Row 1: Vertical drops from each column */}
-          <div className={cn(`col-span-${colCount} grid`, xlGridCols)} style={{ gap: 'inherit' }}>
+          <div className={cn("grid", xlGridCols)} style={{ gap: 'inherit', gridColumn: `span ${colCount}` }}>
             {Array.from({ length: colCount }).map((_, i) => (
               <div key={`vol-drop-${i}`} className="flex justify-center">
                 <div className="w-0.5 h-2 bg-primary/60 dark:bg-primary/70" />
