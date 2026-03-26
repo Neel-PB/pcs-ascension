@@ -228,11 +228,34 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
 
         {/* Target info footer */}
         <div className="border-t pt-2 mt-auto">
-          <div className="text-xs text-muted-foreground mb-1">Target FTE:</div>
-          <div className="flex gap-2 text-xs font-medium">
-            <span className="text-primary bg-primary/10 px-1.5 py-0 rounded">
-              {row.targetFte.toFixed(1)} FTE
-            </span>
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-xs text-muted-foreground">Target FTE:</span>
+            <span className="text-sm font-bold text-primary">{row.targetFte.toFixed(1)}</span>
+            {(() => {
+              // Compute per-type share from fteHeadcountJson
+              const typeShares = new Map<string, number>();
+              for (const entry of row.fteHeadcountJson) {
+                const t = String(entry.employee_type).toUpperCase();
+                const fte = (parseFloat(String(entry.fte_value)) || 0) * (parseFloat(String(entry.hc)) || 0);
+                typeShares.set(t, (typeShares.get(t) || 0) + fte);
+              }
+              const total = Array.from(typeShares.values()).reduce((a, b) => a + b, 0);
+              if (total <= 0) return null;
+              return Array.from(typeShares).map(([t, fte]) => {
+                const pct = Math.round((fte / total) * 100);
+                const label = employeeTypeLabels[t] || t;
+                const pillColors: Record<string, string> = {
+                  FT: 'bg-orange-500/15 text-orange-700',
+                  PT: 'bg-emerald-500/15 text-emerald-700',
+                  PRN: 'bg-primary/15 text-primary',
+                };
+                return (
+                  <span key={t} className={cn("px-1.5 py-0.5 rounded text-[10px] font-semibold", pillColors[t] || 'bg-muted text-muted-foreground')}>
+                    {label} {pct}%
+                  </span>
+                );
+              });
+            })()}
           </div>
         </div>
       </div>
