@@ -934,8 +934,7 @@ export function KPIChartModal({
                             return (
                               <div key={gi} className="flex flex-col items-center">
                                 <p className="text-sm font-semibold text-foreground mb-2">{group.category}</p>
-                                <div className="flex items-center gap-4">
-                                  <div className="w-[340px] h-[340px]">
+                                <div className="w-[340px] h-[340px]">
                                     <ChartContainer config={nestedConfig} className="h-full w-full">
                                       <PieChart>
                                         <ChartTooltip
@@ -970,58 +969,9 @@ export function KPIChartModal({
                                       </PieChart>
                                     </ChartContainer>
                                   </div>
-                                  {/* Skill breakdown by ring */}
-                                  <div className="flex flex-col gap-3 min-w-[140px]">
-                                    {outerSlices.length > 0 && (
-                                      <div>
-                                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Day (Outer)</p>
-                                        <div className="flex flex-col gap-0.5">
-                                          {outerSlices.map((s: any) => (
-                                            <div key={s.name} className="flex items-center gap-1.5 text-xs">
-                                              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: skillColorMap[s.name] }} />
-                                              <span className="text-foreground truncate">{s.name}</span>
-                                              <span className="ml-auto tabular-nums text-muted-foreground">{formatValue(s.value)}</span>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    )}
-                                    {innerSlices.length > 0 && (
-                                      <div>
-                                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Night (Inner)</p>
-                                        <div className="flex flex-col gap-0.5">
-                                          {innerSlices.map((s: any) => (
-                                            <div key={s.name} className="flex items-center gap-1.5 text-xs">
-                                              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: skillColorMap[s.name] }} />
-                                              <span className="text-foreground truncate">{s.name}</span>
-                                              <span className="ml-auto tabular-nums text-muted-foreground">{formatValue(s.value)}</span>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
                               </div>
                             );
                           })}
-                        </div>
-                        {/* Combined skill + ring legend on one line */}
-                        <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-1.5 pt-2 border-t w-full text-sm">
-                          {legendItems.map((name) => (
-                            <div key={name} className="flex items-center gap-1.5">
-                              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: skillColorMap[name] }} />
-                              <span className="text-foreground">{name}</span>
-                            </div>
-                          ))}
-                          <div className="flex items-center gap-1.5 text-muted-foreground">
-                            <span className="inline-block w-3 h-3 rounded-full border-2 border-muted-foreground/50 bg-muted-foreground/20" />
-                            <span>Inner: Night</span>
-                          </div>
-                          <div className="flex items-center gap-1.5 text-muted-foreground">
-                            <span className="inline-block w-3 h-3 rounded-full border-2 border-muted-foreground/50 bg-transparent" />
-                            <span>Outer: Day</span>
-                          </div>
                         </div>
                       </div>
                     );
