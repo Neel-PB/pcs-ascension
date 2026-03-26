@@ -125,7 +125,7 @@ function HeadcountBreakdown({ entries }: { entries: FteHeadcountEntry[] }) {
       {Array.from(aggregated).map(([key, { type, fteVal, totalHc, totalFte }]) => {
         const label = employeeTypeLabels[type] || type;
         return (
-          <div key={key} className="flex items-center justify-between text-xs text-muted-foreground bg-primary/10 rounded px-2.5 py-1.5">
+          <div key={key} className={cn("flex items-center justify-between text-xs rounded px-2.5 py-1.5", typeColors[type] || 'bg-muted/60 text-muted-foreground')}>
             <span>{label}: {fteVal} FTE × {totalHc}</span>
             <span className="font-semibold">= {totalFte.toFixed(1)} FTE</span>
           </div>
