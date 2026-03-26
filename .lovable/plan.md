@@ -1,11 +1,15 @@
 
 
-## Increase Target Volume Dialog Size
+## Remove "Max Expiration" Column from Volume and NP Settings Tables
+
+### Rationale
+The max expiration date is already enforced inside the Expiration Date calendar picker (via `maxDate` prop). Showing it as a separate column is redundant and wastes horizontal space.
 
 ### Changes
 
-**File: `src/components/staffing/TargetVolumePopover.tsx`**
+**1. `src/config/volumeOverrideColumns.tsx`** — Remove the `max_allowed_expiry` column definition (lines 179-203)
 
-1. **Dialog width**: `max-w-2xl` → `max-w-4xl`
-2. **Chart height**: `h-64` → `h-96`
+**2. `src/config/npOverrideColumns.tsx`** — Remove the `max_expiry` column definition (lines 81-95)
+
+No other files need changes — the data fields remain available for the date picker's `maxDate` constraint.
 
