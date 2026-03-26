@@ -15,7 +15,9 @@ interface DataRefreshButtonProps {
 
 export function DataRefreshButton({ lastUpdated, className }: DataRefreshButtonProps) {
   const getStatusInfo = (dateStr: string) => {
-    const hoursSince = (Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60);
+    const parsed = new Date(dateStr);
+    if (isNaN(parsed.getTime())) return null;
+    const hoursSince = (Date.now() - parsed.getTime()) / (1000 * 60 * 60);
 
     if (hoursSince > 48) return { text: "Needs Update", dotColor: "bg-red-500" };
     if (hoursSince > 12) return { text: "Stale", dotColor: "bg-yellow-500" };
