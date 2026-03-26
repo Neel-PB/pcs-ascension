@@ -52,7 +52,7 @@ export const useTourStore = create<TourState>((set) => ({
   clearSkipMode: () => set({ skipMode: null }),
   skipAllTours: () => {
     markAllToursCompleted();
-    set({ activeTour: null, skipMode: 'all', microTourStep: null });
+    set({ activeTour: null, skipMode: 'all', microTourStep: null, isOnboarding: false });
   },
   markOnboardingComplete: async (userId: string) => {
     await supabase

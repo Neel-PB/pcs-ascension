@@ -89,7 +89,7 @@ export function TourTooltip({
         <CardFooter className="px-5 pb-3 flex items-center justify-between gap-2 border-t border-border/30 pt-2.5">
           {/* Left: Skip actions */}
           <div className="flex items-center gap-1">
-            {singleSection ? (
+            {isOnboarding ? null : singleSection ? (
               <Button
                 variant="ghost"
                 size="sm"

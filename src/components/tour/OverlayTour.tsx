@@ -85,7 +85,7 @@ export function OverlayTour({ tourKey, steps }: OverlayTourProps) {
       steps={enrichedSteps}
       run={run}
       continuous
-      showSkipButton
+      showSkipButton={!isOnboarding}
       scrollToFirstStep
       disableOverlayClose
       disableScrollParentFix
