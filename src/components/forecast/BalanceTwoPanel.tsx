@@ -151,7 +151,7 @@ export function BalanceTwoPanel({
   return (
     <div className="space-y-4">
       {/* Two Panel Layout - 35/65 split */}
-      <div className="grid gap-4" style={{ gridTemplateColumns: '35% 65%' }}>
+      <div className="grid gap-4" style={{ gridTemplateColumns: '45% 55%' }}>
         {/* Current State Panel - 35% */}
         <Card className="pt-1.5 px-4 pb-0 border-l-4 border-l-muted-foreground/30">
           <div className="flex flex-col h-full">
