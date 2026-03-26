@@ -177,7 +177,7 @@ export default function FeedbackPage() {
               </SelectContent>
             </Select>
             <Select value={pcsStatusFilter} onValueChange={setPcsStatusFilter}>
-              <SelectTrigger className="w-[140px]">
+              <SelectTrigger className="w-[160px] h-11">
                 <SelectValue placeholder="ACS Status" />
               </SelectTrigger>
               <SelectContent>
