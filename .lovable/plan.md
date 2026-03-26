@@ -1,15 +1,12 @@
 
 
-## Remove "Max Expiration" Column from Volume and NP Settings Tables
-
-### Rationale
-The max expiration date is already enforced inside the Expiration Date calendar picker (via `maxDate` prop). Showing it as a separate column is redundant and wastes horizontal space.
+## Straighten X-axis Month Labels in Volume Settings Dialog
 
 ### Changes
 
-**1. `src/config/volumeOverrideColumns.tsx`** — Remove the `max_allowed_expiry` column definition (lines 179-203)
+**File: `src/components/staffing/TargetVolumePopover.tsx`**
 
-**2. `src/config/npOverrideColumns.tsx`** — Remove the `max_expiry` column definition (lines 81-95)
-
-No other files need changes — the data fields remain available for the date picker's `maxDate` constraint.
+1. **Widen dialog**: `max-w-4xl` → `max-w-6xl` to give enough horizontal room for straight labels
+2. **Remove angle on X-axis** (line 139-140): Remove `angle={-30}` and `textAnchor="end"`, keeping labels horizontal
+3. **Reduce bottom margin**: `margin.bottom: 20` → `10` since straight labels need less vertical space
 
