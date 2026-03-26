@@ -1015,8 +1015,8 @@ export function KPIChartModal({
                               nameKey="name"
                               cx="50%"
                               cy="50%"
-                              outerRadius={170}
-                              innerRadius={120}
+                              outerRadius={195}
+                              innerRadius={140}
                               paddingAngle={2}
                               label={false}
                               labelLine={false}
