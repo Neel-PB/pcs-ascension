@@ -934,8 +934,7 @@ export function KPIChartModal({
                             return (
                               <div key={gi} className="flex flex-col items-center">
                                 <p className="text-sm font-semibold text-foreground mb-2">{group.category}</p>
-                                <div className="flex items-center gap-4">
-                                  <div className="w-[340px] h-[340px]">
+                                <div className="w-[340px] h-[340px]">
                                     <ChartContainer config={nestedConfig} className="h-full w-full">
                                       <PieChart>
                                         <ChartTooltip
@@ -970,38 +969,6 @@ export function KPIChartModal({
                                       </PieChart>
                                     </ChartContainer>
                                   </div>
-                                  {/* Skill breakdown by ring */}
-                                  <div className="flex flex-col gap-3 min-w-[140px]">
-                                    {outerSlices.length > 0 && (
-                                      <div>
-                                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Day (Outer)</p>
-                                        <div className="flex flex-col gap-0.5">
-                                          {outerSlices.map((s: any) => (
-                                            <div key={s.name} className="flex items-center gap-1.5 text-xs">
-                                              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: skillColorMap[s.name] }} />
-                                              <span className="text-foreground truncate">{s.name}</span>
-                                              <span className="ml-auto tabular-nums text-muted-foreground">{formatValue(s.value)}</span>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    )}
-                                    {innerSlices.length > 0 && (
-                                      <div>
-                                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Night (Inner)</p>
-                                        <div className="flex flex-col gap-0.5">
-                                          {innerSlices.map((s: any) => (
-                                            <div key={s.name} className="flex items-center gap-1.5 text-xs">
-                                              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: skillColorMap[s.name] }} />
-                                              <span className="text-foreground truncate">{s.name}</span>
-                                              <span className="ml-auto tabular-nums text-muted-foreground">{formatValue(s.value)}</span>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
                               </div>
                             );
                           })}
