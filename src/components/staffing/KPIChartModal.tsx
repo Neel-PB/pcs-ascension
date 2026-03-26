@@ -991,10 +991,10 @@ export function KPIChartModal({
                     );
                   })()
                 ) : isPie && filteredPieData && filteredPieData.length > 0 ? (
-                  <div className="h-[300px] w-full flex justify-center">
+                  <div className="w-full flex justify-center">
                     <div className="inline-flex max-w-full items-center justify-center gap-6">
                       {/* Donut chart */}
-                      <div className="w-[320px] h-[300px] shrink-0 flex items-center justify-center">
+                      <div className="w-[340px] h-[340px] shrink-0 flex items-center justify-center">
                         <ChartContainer config={pieConfig} className="h-full w-full">
                           <PieChart>
                             <ChartTooltip
