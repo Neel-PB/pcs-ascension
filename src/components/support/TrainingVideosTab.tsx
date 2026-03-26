@@ -69,8 +69,7 @@ export function TrainingVideosTab() {
     <>
       {/* Header row */}
       {(canUpload || videos.length > 0) && (
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-sm text-muted-foreground">{videos.length} video{videos.length !== 1 ? "s" : ""}</span>
+        <div className="flex items-center justify-end mb-4">
           {canUpload && (
             <Button size="sm" onClick={() => setUploadOpen(true)}>
               <Upload className="h-4 w-4 mr-1.5" />
@@ -99,7 +98,7 @@ export function TrainingVideosTab() {
               onClick={() => handleVideoClick(video)}
             >
               {/* Thumbnail / play overlay */}
-              <div className="relative flex items-center justify-center bg-muted h-36 overflow-hidden">
+              <div className="relative flex items-center justify-center bg-muted h-48 overflow-hidden">
                 {video.thumbnail_url ? (
                   <img src={video.thumbnail_url} alt="" className="w-full h-full object-cover" />
                 ) : null}
@@ -117,7 +116,7 @@ export function TrainingVideosTab() {
                 )}
               </div>
 
-              <div className="p-4 space-y-1">
+              <div className="p-4 space-y-2">
                 <h3 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2">
                   {video.title || formatName(video.name)}
                 </h3>
