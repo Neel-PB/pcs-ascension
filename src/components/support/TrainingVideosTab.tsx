@@ -119,8 +119,8 @@ export function TrainingVideosTab() {
                 )}
               </div>
 
-              <div className="p-3 space-y-1">
-                <h3 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1">
+              <div className="px-3 py-2 space-y-0.5">
+                <h3 className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors line-clamp-1">
                   {video.title || formatName(video.name)}
                 </h3>
                 {video.description && (
