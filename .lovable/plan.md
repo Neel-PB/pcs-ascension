@@ -1,29 +1,34 @@
 
 
-## Update Forecast Panel Split to 45/55
+## Show Hired FTE and Open Reqs Side-by-Side in Left Panel Header
+
+### Current
+The left panel has two separate sections stacked vertically:
+- "Hired FTE" header with value on the right
+- "Open Requisitions" header with value on the right (below the percentage bars)
+
+### Requested
+Combine both into a single header row: **Hired FTE value on the left, Open Reqs value on the right**, same styling.
 
 ### Change
 
 **File: `src/components/forecast/BalanceTwoPanel.tsx`**
 
-Update the grid template from `35% 65%` to `45% 55%`:
+Replace the two separate header sections (lines 160-162 for Hired FTE header, and lines 188-192 for Open Reqs header) with a single combined header row at the top:
 
 ```tsx
-// Line ~137: Current
-style={{ gridTemplateColumns: '35% 65%' }}
-
-// Updated
-style={{ gridTemplateColumns: '45% 55%' }}
+{/* Combined header: Hired FTE left, Open Reqs right */}
+<div className="flex items-center justify-between pb-2 border-b">
+  <div>
+    <span className="text-xs text-muted-foreground">Hired FTE</span>
+    <div className="text-lg font-bold">{hiredFTE.total.toFixed(1)}</div>
+  </div>
+  <div className="text-right">
+    <span className="text-xs text-muted-foreground">Open Reqs</span>
+    <div className="text-lg font-bold">{openReqsFTE.total.toFixed(1)}</div>
+  </div>
+</div>
 ```
 
-**File: `src/components/forecast/BalanceTwoPanel.tsx`** (left panel additions)
-
-Add an **Open Requisitions** section below the Hired FTE bars. The `openReqsFTE` data is already available on each `ForecastBalanceRow` — just needs to be passed through and rendered.
-
-- Add `openReqsFTE: OpenReqsBreakdown` to `BalanceTwoPanelProps`
-- Below the FT/PT/PRN percentage bars, render a compact "Open Reqs" summary showing FT, PT, PRN counts and total
-
-**File: `src/components/forecast/ForecastBalanceTableRow.tsx`**
-
-Pass `openReqsFTE={row.openReqsFTE}` to `BalanceTwoPanel`.
+Then remove the separate "Open Requisitions" header (lines 189-192) since the total is now shown in the combined header. Keep the FT/PT/PRN breakdown cards below as they are.
 
