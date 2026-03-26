@@ -9,6 +9,7 @@ import { PositionKPICards } from "@/components/positions/PositionKPICards";
 import { PositionsFilterSheet, PositionsFilterValues, DEFAULT_POSITION_FILTERS, getActiveFilterCount, applyPositionFilters } from "@/components/positions/PositionsFilterSheet";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { usePositionsByFlag } from "@/hooks/usePositionsByFlag";
+import { getLatestTimestamp } from "@/lib/getLatestTimestamp";
 import { usePositionCommentCounts } from "@/hooks/usePositionCommentCounts";
 import { createRequisitionColumnsWithComments } from "@/config/requisitionColumns";
 import { RequisitionDetailsSheet } from "@/components/workforce/RequisitionDetailsSheet";
