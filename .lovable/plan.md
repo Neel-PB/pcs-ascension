@@ -1,27 +1,39 @@
 
 
-## Fix Card Expanding Direction (Grow Downward, Not Upward)
+## Split-Screen Login Page
 
-The card is centered with `items-center` on the parent flex container, so when its height increases (adding password field), it expands equally top and bottom — visually shifting upward. Fix: align the card to top-center with a margin approach so it stays pinned and only grows downward.
+Redesign the login page into a two-section layout matching the uploaded Ascension branding image.
 
-### Change
+### Layout
 
-**File: `src/pages/AuthPage.tsx`** (line 89)
-
-Change the outer container from `items-center` to `items-start` with a top padding/margin to visually center it but anchor growth downward:
-
-```tsx
-// Before
-<div className="min-h-screen h-screen overflow-auto flex items-center justify-center ...">
-
-// After  
-<div className="min-h-screen h-screen overflow-auto flex items-start justify-center pt-[25vh] ...">
+```text
+┌──────────────────────┬──────────────────────┐
+│                      │                      │
+│   Background Image   │   "Position Control" │
+│   (uploaded blue     │                      │
+│    Ascension art)    │   [Email field]       │
+│                      │   [Continue button]   │
+│                      │                      │
+└──────────────────────┴──────────────────────┘
 ```
 
-This pins the card's top edge so additional fields push the card downward only. The `pt-[25vh]` places it roughly where center was, but anchored from top.
+- **Left half**: The uploaded image (`IMG_0620.PNG`) as a full-height cover background. Hidden on mobile, form goes full-width.
+- **Right half**: The login form, vertically centered. Title "Position Control" at top, no logo icon, no card wrapper -- clean white background.
 
-### Result
-- Card top stays fixed when transitioning between steps
-- Height growth happens downward only
-- One line changed
+### Changes
+
+**1. Copy uploaded image to project**
+- Copy `user-uploads://IMG_0620.PNG` to `src/assets/auth-bg.png`
+
+**2. Rewrite `src/pages/AuthPage.tsx`**
+- Remove the `AscensionLogo` import and `<img>` tag
+- Remove the `Card` wrapper -- form sits directly on white background
+- Outer container: `flex h-screen`
+- Left div: `hidden lg:block lg:w-1/2` with the background image as `bg-cover bg-center`
+- Right div: `w-full lg:w-1/2 flex items-center justify-center` containing the form
+- Keep all existing step logic, animations, and form handlers unchanged
+- Title "Position Control" remains as a heading above the form (no logo)
+
+### Mobile behavior
+On screens below `lg`, the left image panel is hidden and the form takes full width with a subtle gradient background.
 
