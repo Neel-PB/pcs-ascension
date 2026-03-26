@@ -183,7 +183,7 @@ export default function StaffingSummary() {
     submarket: selectedSubmarket,
     level2: selectedLevel2,
     pstat: selectedPstat,
-    enabled: filtersInitialized,
+    enabled: filtersInitialized && isSummaryTab,
   });
 
   const prAgg = useMemo(() => {
