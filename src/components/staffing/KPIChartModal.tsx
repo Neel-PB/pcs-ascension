@@ -196,7 +196,7 @@ export function KPIChartModal({
           </div>
         </DialogHeader>
         
-        <div className="space-y-3 pt-0 overflow-hidden flex flex-col flex-1 min-h-0">
+        <div className="space-y-3 pt-0 overflow-y-auto flex flex-col flex-1 min-h-0">
 
           {/* Custom chart content override */}
           {customChartContent ? (
