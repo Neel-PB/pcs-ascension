@@ -149,8 +149,11 @@ function FteActivityCard({ metadata, displayName }: { metadata: Record<string, u
 
 // Render Shift activity log card
 function ShiftActivityCard({ metadata, displayName }: { metadata: Record<string, unknown>; displayName: string }) {
-  const shiftOld = (metadata.shift_old ?? metadata.shiftOld ?? metadata.old_value) as string | null;
-  const shiftNew = (metadata.shift_new ?? metadata.shiftNew ?? metadata.new_value) as string | null;
+  const rawOld = (metadata.shift_old ?? metadata.shiftOld ?? metadata.old_value) as string | null;
+  const rawNew = (metadata.shift_new ?? metadata.shiftNew ?? metadata.new_value) as string | null;
+  const capitalize = (s: string | null) => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+  const shiftOld = capitalize(rawOld);
+  const shiftNew = capitalize(rawNew);
   const isRevert = (metadata.is_revert ?? metadata.isRevert) as boolean;
 
   return (
