@@ -61,7 +61,7 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
                 </div>
               )
             ) : (
-              <div className="mt-3">
+              <div className="mt-4">
                 <div className="flex items-center justify-center py-1.5 text-xs text-muted-foreground">
                   No open reqs
                 </div>
