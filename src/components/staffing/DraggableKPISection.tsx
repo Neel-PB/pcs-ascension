@@ -202,7 +202,7 @@ export function DraggableKPISection({ title, kpis, dragHandleProps, volumeBreakd
             ))}
           </div>
           {/* Row 2: Horizontal bar from col 1 center to last col center */}
-          <div className={cn(`col-span-${colCount} grid`, xlGridCols)} style={{ gap: 'inherit' }}>
+          <div className={cn("grid", xlGridCols)} style={{ gap: 'inherit', gridColumn: `span ${colCount}` }}>
             <div className="flex items-start">
               <div className="w-1/2" />
               <div className="w-1/2 h-0.5 bg-primary/60 dark:bg-primary/70" />
