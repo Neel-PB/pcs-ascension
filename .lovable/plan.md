@@ -1,37 +1,37 @@
 
 
-## Fix Auth Page Image Layout to Match Design
+## Fix: Tour Guide Triggers on Every Login
 
-### Issue
-The left image panel extends edge-to-edge with no rounding, and the Ascension logo at the bottom gets cut off. The desired look (image 432) shows the entire page wrapped with padding and the left panel having rounded corners.
+### Root Cause
 
-### Changes
+Two problems:
 
-**File: `src/pages/AuthPage.tsx`** (~3 lines changed)
+1. **No fallback in AppContent**: The onboarding check at line 69 does `!data.onboarding_completed` on the raw NestJS `/auth/me` response. If the API doesn't return this field (or returns `null`/`undefined`), this evaluates to `true` → tour always starts.
 
-1. Wrap the outer `flex` container in a full-screen wrapper with padding (`p-4`) and background
-2. Add `rounded-2xl overflow-hidden` to the inner flex container so both panels get rounded corners
-3. Change `bg-cover bg-center` to `bg-cover bg-bottom` on the left panel so the Ascension logo at the bottom stays visible
+2. **Write/read mismatch**: `markOnboardingComplete` writes `onboarding_completed: true` directly to Supabase's `profiles` table, but the NestJS API may not serve this field back. So even after marking complete, the next `/auth/me` call still returns without the flag.
 
-```text
-Before:
-┌─────────────────────────────────────┐
-│ [image edge-to-edge] │ Form        │
-│                      │             │
-│ logo cut off ───────>│             │
-└─────────────────────────────────────┘
+### Fix
 
-After:
-┌─────────────────────────────────────┐
-│  ╭────────────────╮╭─────────────╮  │
-│  │ image rounded  ││ Form        │  │
-│  │                ││             │  │
-│  │ logo visible   ││             │  │
-│  ╰────────────────╯╰─────────────╯  │
-└─────────────────────────────────────┘
+**File: `src/App.tsx`** (lines 66-77)
+
+Add the same safety fallback used in `useUserProfile`: treat missing/null `onboarding_completed` as `true` (already onboarded). Also check for the camelCase variant (`onboardingCompleted`) since NestJS may use that.
+
+```ts
+const checkOnboarding = async () => {
+  try {
+    const data = await apiFetch("/auth/me");
+    const completed = data?.onboarding_completed ?? data?.onboardingCompleted ?? true;
+    if (!completed) {
+      startFullTour();
+      markOnboardingComplete(user.id);
+    } else {
+      setOnboardingChecked(true);
+    }
+  } catch {
+    setOnboardingChecked(true);
+  }
+};
 ```
 
-- Outer div: `h-screen w-full bg-muted/30 p-4`
-- Inner flex div: `flex h-full w-full rounded-2xl overflow-hidden shadow-lg`
-- Left panel: change `bg-center` → `bg-bottom` to keep logo visible
+One file, ~2 lines changed. This ensures that if the NestJS API doesn't explicitly return `onboarding_completed: false`, the tour won't trigger.
 
