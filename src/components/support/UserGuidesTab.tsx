@@ -252,7 +252,7 @@ export function UserGuidesTab() {
                       open={isExpanded}
                       onOpenChange={() => toggleExpanded(guide.tourKey)}
                     >
-                      <div className="rounded-lg border border-transparent hover:border-border hover:bg-accent/30 transition-colors px-1 py-0.5">
+                      <div className="rounded-lg border border-border/60 border-l-[3px] border-l-primary bg-primary/5 transition-colors px-1 py-0.5">
                         <div className="flex items-center gap-1.5">
                           {/* Expand chevron */}
                           <CollapsibleTrigger asChild>
@@ -289,12 +289,18 @@ export function UserGuidesTab() {
 
                           {/* Right side: badges + actions — fixed-width slots */}
                           <div className="flex items-center gap-1.5 flex-shrink-0">
-                            <Badge
-                              variant="secondary"
-                              className="w-16 text-center text-[10px] px-1.5 py-0 h-5 font-normal tabular-nums"
-                            >
-                              {stepTitles.length} steps
-                            </Badge>
+                            <div className="w-7 flex justify-center">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0 rounded-full"
+                                onClick={() => handleReset(guide.tourKey)}
+                                title="Reset tour"
+                                disabled={!completed}
+                              >
+                                <RotateCcw className={`h-3 w-3 ${!completed ? "opacity-30" : ""}`} />
+                              </Button>
+                            </div>
                             <div className="w-14 flex justify-center">
                               {completed ? (
                                 <Badge
@@ -306,23 +312,16 @@ export function UserGuidesTab() {
                                 </Badge>
                               ) : null}
                             </div>
+                            <Badge
+                              variant="secondary"
+                              className="w-16 text-center text-[10px] px-1.5 py-0 h-5 font-normal tabular-nums"
+                            >
+                              {stepTitles.length} steps
+                            </Badge>
                             <Button size="sm" className="gap-1 h-7 text-xs" onClick={() => handleStartTour(guide)}>
                               <Play className="h-3 w-3" />
                               {guide.isOverlay ? "Start" : "Go & Start"}
                             </Button>
-                            <div className="w-7 flex justify-center">
-                              {completed ? (
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-7 w-7 p-0 rounded-full"
-                                  onClick={() => handleReset(guide.tourKey)}
-                                  title="Reset tour"
-                                >
-                                  <RotateCcw className="h-3 w-3" />
-                                </Button>
-                              ) : null}
-                            </div>
                           </div>
                         </div>
                       </div>
