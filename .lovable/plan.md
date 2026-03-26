@@ -1,17 +1,21 @@
 
 
-## Feedback Page: Larger Search Button + Uniform Filter Dimensions
+## Fix "No refresh data available" — Use `pos_status_date` as timestamp
 
-### Changes
+### Change
 
-**File: `src/pages/feedback/FeedbackPage.tsx`**
-1. Search field container: `w-64` → `w-72`
-2. All 3 `SelectTrigger` components: `w-[140px]` → `w-[160px] h-11` for uniform width and height matching the search field
+**File: `src/hooks/usePositionsByFlag.ts`** — line 40 in `normalizeRow`
 
-**File: `src/components/ui/search-field.tsx`**
-3. Search icon button: `h-9 w-9` → `h-10 w-10` for a larger, more prominent button
+Update the `curated_data_load_ts` mapping to include `pos_status_date`:
+
+```tsx
+// Current:
+curated_data_load_ts: row.curated_data_load_ts ?? row.curatedDataLoadTs ?? row.load_ts ?? row.loadTs ?? row.updated_at ?? row.updatedAt,
+
+// New:
+curated_data_load_ts: row.curated_data_load_ts ?? row.curatedDataLoadTs ?? row.load_ts ?? row.loadTs ?? row.updated_at ?? row.updatedAt ?? row.pos_status_date ?? row.posStatusDate ?? row.positionStatusDate,
+```
 
 ### Files Modified
-1. `src/pages/feedback/FeedbackPage.tsx` — lines 158, 168, 180, 192
-2. `src/components/ui/search-field.tsx` — line 54
+1. `src/hooks/usePositionsByFlag.ts` — line 40: add `pos_status_date` fallback
 
