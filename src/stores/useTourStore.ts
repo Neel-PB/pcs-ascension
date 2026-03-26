@@ -42,7 +42,7 @@ export const useTourStore = create<TourState>((set) => ({
     APP_TOUR_SEQUENCE.forEach((s) => {
       localStorage.removeItem(`${TOUR_PREFIX}${s.tourKey}-completed`);
     });
-    set({ activeTour: 'staffing', singleSection: false, skipMode: null, microTourStep: null });
+    set({ activeTour: 'staffing', singleSection: false, skipMode: null, microTourStep: null, isOnboarding: true });
   },
   startMicroTour: (tourKey: string, stepIndex: number) =>
     set({ activeTour: tourKey, singleSection: true, microTourStep: { tourKey, stepIndex } }),
