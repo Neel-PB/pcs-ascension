@@ -33,6 +33,7 @@ export const useTourStore = create<TourState>((set) => ({
   activeTour: null,
   skipMode: null,
   singleSection: false,
+  isOnboarding: false,
   microTourStep: null,
   onboardingChecked: false,
   startTour: (tourId: string) => set({ activeTour: tourId, singleSection: false, microTourStep: null }),
