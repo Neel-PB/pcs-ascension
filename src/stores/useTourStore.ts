@@ -13,6 +13,7 @@ interface TourState {
   activeTour: string | null;
   skipMode: 'section' | 'all' | null;
   singleSection: boolean;
+  isOnboarding: boolean;
   microTourStep: MicroTourStep | null;
   onboardingChecked: boolean;
   startTour: (tourId: string) => void;
