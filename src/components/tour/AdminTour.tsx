@@ -104,7 +104,7 @@ export function AdminTour({ activeTab, onTabChange }: AdminTourProps) {
       steps={steps}
       run={run}
       continuous
-      showSkipButton
+      showSkipButton={!isOnboarding}
       scrollToFirstStep={false}
       disableScrollParentFix
       disableOverlayClose
