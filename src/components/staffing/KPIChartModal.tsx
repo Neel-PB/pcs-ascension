@@ -151,7 +151,7 @@ export function KPIChartModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn("max-h-[85vh] overflow-hidden p-3 flex flex-col gap-2", "max-w-[95vw]")}>
-        <DialogHeader className="flex flex-row items-center justify-between space-y-0 border-b pb-3">
+        <DialogHeader className="relative flex flex-row items-center justify-between space-y-0 border-b pb-3">
           <div>
             <DialogTitle className="text-xl">{title}</DialogTitle>
             <DialogDescription className="sr-only">
@@ -159,9 +159,9 @@ export function KPIChartModal({
             </DialogDescription>
           </div>
           
-          {/* Chart/Table Toggle + Current Value */}
-          <div className="flex items-center gap-4">
-            {!showAllOptions && !customChartContent && (
+          {/* Chart/Table Toggle - Centered */}
+          {!showAllOptions && !customChartContent && (
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
               <ToggleButtonGroup
                 items={[{ id: "chart", label: "Chart" }, { id: "table", label: "Table" }]}
                 activeId={activeTab}
@@ -169,7 +169,11 @@ export function KPIChartModal({
                 layoutId="kpiChartTab"
                 className="max-w-xs"
               />
-            )}
+            </div>
+          )}
+
+          {/* Current Value + Trend */}
+          <div className="flex items-center gap-4">
             <div className="text-right">
               <p className="text-xs text-muted-foreground">Current Value</p>
               <p className={cn(
