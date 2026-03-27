@@ -3,6 +3,7 @@ import { ForecastBalanceRow, FteHeadcountEntry, ForecastSubRow, EmpTypeSplit } f
 import { Card } from "@/components/ui/card";
 import { Check, ArrowRight, ChevronDown, ChevronRight } from "@/lib/icons";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface BalanceTwoPanelProps {
   row: ForecastBalanceRow;
