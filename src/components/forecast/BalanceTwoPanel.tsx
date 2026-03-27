@@ -41,6 +41,7 @@ function getLabel(t: string): string {
 }
 
 function getColor(t: string): string {
+  if (!t) return 'bg-muted/60 text-muted-foreground';
   return typeColors[t] || typeColors[normalizeEmpType(t)] || 'bg-muted/60 text-muted-foreground';
 }
 
