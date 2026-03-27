@@ -149,7 +149,7 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
 /* ─── Right Panel: Recommended Actions ─── */
 
 function PositionsToCloseSection({ subRows }: { subRows: ForecastSubRow[] }) {
-  const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set());
+  const [expanded, setExpanded] = useState(false);
 
   const closeRows = subRows.filter(sr =>
     sr.staffingStatus === 'pos_to_close' || sr.staffingStatus.includes('close')
@@ -157,54 +157,48 @@ function PositionsToCloseSection({ subRows }: { subRows: ForecastSubRow[] }) {
 
   if (closeRows.length === 0) return null;
 
-  // Group by employment type
-  const grouped = new Map<string, { count: number; posIds: (string | number)[] }>();
+  // Aggregate addressed_fte, unaddressed_fte, and all position IDs (deduplicated)
+  let totalAddressed = 0;
+  let totalUnaddressed = 0;
+  const allPosIds = new Set<string>();
   for (const sr of closeRows) {
-    const key = normalizeEmpType(sr.employmentType);
-    const existing = grouped.get(key) || { count: 0, posIds: [] };
-    existing.count += sr.posNbrToClose.length;
-    existing.posIds.push(...sr.posNbrToClose);
-    grouped.set(key, existing);
+    totalAddressed += sr.addressedFte;
+    totalUnaddressed += sr.unaddressedFte;
+    for (const id of sr.posNbrToClose) allPosIds.add(String(id));
   }
 
-  const toggleExpand = (type: string) => {
-    setExpandedTypes(prev => {
-      const next = new Set(prev);
-      next.has(type) ? next.delete(type) : next.add(type);
-      return next;
-    });
-  };
+  const posIdArray = Array.from(allPosIds);
 
   return (
     <div className="space-y-2">
       <span className="text-xs font-medium text-primary underline">Position to Close</span>
-      {Array.from(grouped).map(([type, data]) => (
-        <div key={type} className="space-y-1">
-          <div
-            className={cn("flex items-center justify-between rounded px-2.5 py-1.5 text-xs cursor-pointer", getColor(type))}
-            onClick={() => data.posIds.length > 0 && toggleExpand(type)}
-          >
-            <div className="flex items-center gap-1">
-              {data.posIds.length > 0 && (
-                expandedTypes.has(type)
-                  ? <ChevronDown className="h-3 w-3" />
-                  : <ChevronRight className="h-3 w-3" />
-              )}
-              <span className="font-medium">{getLabel(type)}</span>
-            </div>
-            <span className="font-semibold">Close {data.count} position{data.count !== 1 ? 's' : ''}</span>
-          </div>
-          {expandedTypes.has(type) && data.posIds.length > 0 && (
-            <div className="ml-4 flex flex-wrap gap-1.5 py-1.5">
-              {data.posIds.map((id) => (
-                <Badge key={String(id)} variant="outline" className="text-[10px] px-2 py-0.5 font-mono">
-                  {String(id)}
-                </Badge>
-              ))}
-            </div>
+      <div
+        className="flex items-center justify-between rounded px-2.5 py-1.5 text-xs cursor-pointer bg-orange-500/10 text-orange-700"
+        onClick={() => posIdArray.length > 0 && setExpanded(prev => !prev)}
+      >
+        <div className="flex items-center gap-1">
+          {posIdArray.length > 0 && (
+            expanded
+              ? <ChevronDown className="h-3 w-3" />
+              : <ChevronRight className="h-3 w-3" />
           )}
+          <span className="font-medium">Close {totalAddressed.toFixed(1)} positions</span>
         </div>
-      ))}
+      </div>
+      {expanded && posIdArray.length > 0 && (
+        <div className="ml-4 flex flex-wrap gap-1.5 py-1.5">
+          {posIdArray.map((id) => (
+            <Badge key={id} variant="outline" className="text-[10px] px-2 py-0.5 font-mono">
+              {id}
+            </Badge>
+          ))}
+        </div>
+      )}
+      {totalUnaddressed > 0 && (
+        <p className="text-[11px] text-muted-foreground px-2.5">
+          Apart from {totalAddressed.toFixed(1)}, we have {totalUnaddressed.toFixed(1)} positions to be closed
+        </p>
+      )}
     </div>
   );
 }
