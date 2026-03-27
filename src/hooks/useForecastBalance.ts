@@ -228,7 +228,7 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         const parsedSplit = parseJsonField<EmpTypeSplit[]>(row.empltype_split_hired_open);
         if (Array.isArray(parsedSplit)) {
           for (const s of parsedSplit) {
-            const normType = normalizeEmpTypeForMerge(s.employment_type);
+            const normType = normalizeEmpTypeForMerge((s as any).empltype || s.employment_type);
             const existing = g.empltypeSplitHiredOpen.find(e => normalizeEmpTypeForMerge(e.employment_type) === normType);
             if (existing) {
               existing.hired_fte += parseFloat(String(s.hired_fte)) || 0;
