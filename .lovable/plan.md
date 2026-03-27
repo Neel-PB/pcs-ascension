@@ -1,21 +1,30 @@
 
 
-## Fix "No refresh data available" — Use `pos_status_date` as timestamp
+## Hide Variance Analysis Tab for Director & Manager Roles
 
-### Change
+### Problem
+The Variance Analysis tab is currently visible to all roles, but Directors and Managers should not have access to it.
 
-**File: `src/hooks/usePositionsByFlag.ts`** — line 40 in `normalizeRow`
+### Approach
+Add a new permission key `staffing.variance` to the hardcoded RBAC config (no DB migration needed — the system uses hardcoded defaults with DB overrides). Gate the tab behind a permission check.
 
-Update the `curated_data_load_ts` mapping to include `pos_status_date`:
+### Changes
 
-```tsx
-// Current:
-curated_data_load_ts: row.curated_data_load_ts ?? row.curatedDataLoadTs ?? row.load_ts ?? row.loadTs ?? row.updated_at ?? row.updatedAt,
+**1. `src/config/rbacConfig.ts`**
+- Add `staffing.variance` to `CORE_PERMISSIONS` array (category: "modules")
+- Add `staffing.variance` to `PERMISSION_CATEGORIES.modules`
+- Add it to `DEFAULT_ROLE_PERMISSIONS` for `admin`, `labor_team`, `leadership` (and legacy equivalents)
+- Do NOT add it to `director` or `manager`
+- Add to `PermissionKey` type
 
-// New:
-curated_data_load_ts: row.curated_data_load_ts ?? row.curatedDataLoadTs ?? row.load_ts ?? row.loadTs ?? row.updated_at ?? row.updatedAt ?? row.pos_status_date ?? row.posStatusDate ?? row.positionStatusDate,
-```
+**2. `src/pages/staffing/StaffingSummary.tsx`**
+- Import `hasPermission` from the RBAC hook
+- Conditionally include the "Variance Analysis" tab only when the user has `staffing.variance` permission
+
+### No DB migration needed
+Core permissions are hardcoded. The `role_permissions` table only stores admin overrides. Adding to `CORE_PERMISSIONS` + `DEFAULT_ROLE_PERMISSIONS` is sufficient.
 
 ### Files Modified
-1. `src/hooks/usePositionsByFlag.ts` — line 40: add `pos_status_date` fallback
+1. `src/config/rbacConfig.ts` — add `staffing.variance` permission key and default assignments
+2. `src/pages/staffing/StaffingSummary.tsx` — conditionally render Variance Analysis tab
 
