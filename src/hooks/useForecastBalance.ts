@@ -224,16 +224,12 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
           g.fteHeadcountJson.push(...parsedHc);
         }
 
-        // Parse empltype_split_hired_open and merge
-        const parsedSplit = parseJsonField<EmpTypeSplit[]>(row.empltype_split_hired_open);
-        if (Array.isArray(parsedSplit)) {
-          for (const s of parsedSplit) {
-            const normType = normalizeEmpTypeForMerge((s as any).empltype || s.employment_type);
-            const existing = g.empltypeSplitHiredOpen.find(e => normalizeEmpTypeForMerge(e.employment_type) === normType);
-            if (existing) {
-              existing.hired_fte += parseFloat(String(s.hired_fte)) || 0;
-              existing.open_reqs_fte += parseFloat(String(s.open_reqs_fte)) || 0;
-            } else {
+        // Parse empltype_split_hired_open — take from FIRST row only (pre-aggregated per shift)
+        if (g.empltypeSplitHiredOpen.length === 0) {
+          const parsedSplit = parseJsonField<EmpTypeSplit[]>(row.empltype_split_hired_open);
+          if (Array.isArray(parsedSplit)) {
+            for (const s of parsedSplit) {
+              const normType = normalizeEmpTypeForMerge((s as any).empltype || s.employment_type);
               g.empltypeSplitHiredOpen.push({
                 employment_type: normType || s.employment_type,
                 hired_fte: parseFloat(String(s.hired_fte)) || 0,
