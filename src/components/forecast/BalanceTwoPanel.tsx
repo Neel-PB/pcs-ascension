@@ -1,21 +1,93 @@
-import { ForecastBalanceRow, FteHeadcountEntry } from "@/hooks/useForecastBalance";
+import { useState } from "react";
+import { ForecastBalanceRow, FteHeadcountEntry, ForecastSubRow, EmpTypeSplit } from "@/hooks/useForecastBalance";
 import { Card } from "@/components/ui/card";
-import { Check, ArrowRight } from "@/lib/icons";
+import { Check, ArrowRight, ChevronDown, ChevronRight } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 interface BalanceTwoPanelProps {
   row: ForecastBalanceRow;
 }
 
-/* ─── Left Panel: Hired FTE + Open Reqs ─── */
+const employeeTypeLabels: Record<string, string> = {
+  'Full-Time': 'Full Time',
+  'FT': 'Full Time',
+  'Part-Time': 'Part Time',
+  'PT': 'Part Time',
+  'PRN': 'PRN',
+};
+
+const typeColors: Record<string, string> = {
+  'Full-Time': 'bg-orange-500/10 text-orange-700',
+  'FT': 'bg-orange-500/10 text-orange-700',
+  'Part-Time': 'bg-emerald-500/10 text-emerald-700',
+  'PT': 'bg-emerald-500/10 text-emerald-700',
+  'PRN': 'bg-primary/10 text-primary',
+};
+
+const DISPLAY_TYPES = ['Full-Time', 'Part-Time', 'PRN'] as const;
+
+function normalizeEmpType(t: string): string {
+  const upper = t.toUpperCase().trim();
+  if (upper === 'FT' || upper === 'FULL-TIME' || upper === 'FULL TIME') return 'Full-Time';
+  if (upper === 'PT' || upper === 'PART-TIME' || upper === 'PART TIME') return 'Part-Time';
+  if (upper === 'PRN') return 'PRN';
+  return t;
+}
+
+function getLabel(t: string): string {
+  return employeeTypeLabels[t] || employeeTypeLabels[normalizeEmpType(t)] || t;
+}
+
+function getColor(t: string): string {
+  return typeColors[t] || typeColors[normalizeEmpType(t)] || 'bg-muted/60 text-muted-foreground';
+}
+
+/* ─── Left Panel: Current Workforce ─── */
 
 function LeftPanel({ row }: { row: ForecastBalanceRow }) {
-  const isNA = row.employmentType === 'NA';
+  // Build FT/PT/PRN split from empltypeSplitHiredOpen, always show all 3
+  const splitMap = new Map<string, { hired: number; openReqs: number }>();
+  for (const dt of DISPLAY_TYPES) {
+    splitMap.set(dt, { hired: 0, openReqs: 0 });
+  }
+
+  for (const s of row.empltypeSplitHiredOpen) {
+    const norm = normalizeEmpType(s.employment_type);
+    const existing = splitMap.get(norm);
+    if (existing) {
+      existing.hired += s.hired_fte;
+      existing.openReqs += s.open_reqs_fte;
+    } else {
+      splitMap.set(norm, { hired: s.hired_fte, openReqs: s.open_reqs_fte });
+    }
+  }
+
+  // Compute mix percentages for summary
+  const totalHired = Array.from(splitMap.values()).reduce((a, b) => a + b.hired, 0);
+  const mixParts = DISPLAY_TYPES.map(t => {
+    const val = splitMap.get(t)!;
+    const pct = totalHired > 0 ? Math.round((val.hired / totalHired) * 100) : 0;
+    return { type: t, pct };
+  });
+
+  const shiftLabel = row.shift ? row.shift.charAt(0).toUpperCase() + row.shift.slice(1) : '';
+  const skill = row.skillType || '';
+  const gap = Math.abs(row.totalFteReq).toFixed(1);
+
+  let summaryText = '';
+  if (row.staffingStatus === 'surplus') {
+    const mixStr = mixParts.map(m => `${m.pct}% ${getLabel(m.type)}`).join(' / ');
+    summaryText = `Current mix: ${mixStr}. There is a ${gap} FTE surplus for ${skill} ${shiftLabel} shift. Consider closing surplus positions to optimize staffing.`;
+  } else if (row.staffingStatus === 'shortage') {
+    const mixStr = mixParts.map(m => `${m.pct}% ${getLabel(m.type)}`).join(' / ');
+    summaryText = `Current mix: ${mixStr}. There is a ${gap} FTE shortage for ${skill} ${shiftLabel} shift. Consider opening new positions to fill the gap.`;
+  } else {
+    summaryText = `Staffing is balanced for ${skill} ${shiftLabel} shift workforce.`;
+  }
 
   return (
     <Card className="pt-3 px-5 pb-3 border-l-4 border-l-muted-foreground/30">
       <div className="flex flex-col h-full">
-        {/* Two-column: Hired FTE left, Open Reqs right */}
         <div className="grid grid-cols-2 gap-6">
           {/* Hired FTE Column */}
           <div>
@@ -25,18 +97,17 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
                 <span className="text-lg font-bold">{row.hiredFte.toFixed(1)}</span>
               </div>
             </div>
-            {isNA ? (
-              <div className="py-3 text-xs text-muted-foreground italic">
-                Employment type not specified
-              </div>
-            ) : (
-              <div className="mt-4">
-                <div className={cn("flex items-center justify-between rounded px-2 py-1.5 text-xs", typeColors[row.employmentType] || 'bg-muted/60 text-muted-foreground')}>
-                  <span className="font-medium">{row.employmentType}</span>
-                  <span className="font-semibold">{row.hiredFte.toFixed(1)}</span>
-                </div>
-              </div>
-            )}
+            <div className="mt-3 space-y-1.5">
+              {DISPLAY_TYPES.map(t => {
+                const val = splitMap.get(t)!;
+                return (
+                  <div key={t} className={cn("flex items-center justify-between rounded px-2 py-1.5 text-xs", getColor(t))}>
+                    <span className="font-medium">{getLabel(t)}</span>
+                    <span className="font-semibold">{val.hired.toFixed(1)}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Open Reqs Column */}
@@ -47,257 +118,224 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
                 <span className="text-lg font-bold">{row.openReqsFte.toFixed(1)}</span>
               </div>
             </div>
-            {row.openReqsFte > 0 ? (
-              isNA ? (
-                <div className="py-3 text-xs text-muted-foreground italic">
-                  Employment type not specified
-                </div>
-              ) : (
-                <div className="mt-4">
-                <div className={cn("flex items-center justify-between rounded px-2 py-1.5 text-xs", typeColors[row.employmentType] || 'bg-muted/60 text-muted-foreground')}>
-                  <span className="font-medium">{row.employmentType}</span>
-                  <span className="font-semibold">{row.openReqsFte.toFixed(1)}</span>
-                </div>
-                </div>
-              )
-            ) : (
-              <div className="mt-4">
-                <div className="flex items-center justify-center py-1.5 text-xs text-muted-foreground">
-                  No open reqs
-                </div>
-              </div>
-            )}
+            <div className="mt-3 space-y-1.5">
+              {DISPLAY_TYPES.map(t => {
+                const val = splitMap.get(t)!;
+                return (
+                  <div key={t} className={cn("flex items-center justify-between rounded px-2 py-1.5 text-xs", getColor(t))}>
+                    <span className="font-medium">{getLabel(t)}</span>
+                    <span className="font-semibold">{val.openReqs.toFixed(1)}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 
-        {/* Summary section */}
+        {/* Summary */}
         <div className="border-t pt-3 mt-auto">
-          <div className="mb-1.5 space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">Summary</p>
-            <p className="text-xs leading-relaxed">
-              {(() => {
-                const shiftLabel = row.shift ? row.shift.charAt(0).toUpperCase() + row.shift.slice(1) : '';
-                const skill = row.skillType || '';
-
-                // Compute current mix % from fteHeadcountJson
-                const mixMap = new Map<string, number>();
-                for (const entry of row.fteHeadcountJson) {
-                  const t = String(entry.employee_type).toUpperCase();
-                  const fte = (parseFloat(String(entry.fte_value)) || 0) * (parseFloat(String(entry.hc)) || 0);
-                  mixMap.set(t, (mixMap.get(t) || 0) + fte);
-                }
-                const mixTotal = Array.from(mixMap.values()).reduce((a, b) => a + b, 0);
-                const ftPct = mixTotal > 0 ? Math.round(((mixMap.get('FT') || 0) / mixTotal) * 100) : 0;
-                const ptPct = mixTotal > 0 ? Math.round(((mixMap.get('PT') || 0) / mixTotal) * 100) : 0;
-                const prnPct = mixTotal > 0 ? Math.round(((mixMap.get('PRN') || 0) / mixTotal) * 100) : 0;
-                const hasMix = mixTotal > 0;
-                const mixStr = hasMix ? `${ftPct}% FT / ${ptPct}% PT / ${prnPct}% PRN` : '';
-                const gap = Math.abs(row.totalFteReq).toFixed(1);
-
-                if (row.staffingStatus === 'surplus') {
-                  const parts: string[] = [];
-                  if (hasMix) parts.push(`Based on your current mix of ${mixStr}`);
-                  if (row.addressedFte > 0) parts.push(`we recommend canceling ${row.addressedFte.toFixed(1)} FTE in open requisitions`);
-                  if (row.unaddressedFte > 0) parts.push(`additionally closing ${row.unaddressedFte.toFixed(1)} FTE from employed positions`);
-                  if (row.addressedFte > 0) parts.push('We recommend first canceling open requisitions before considering any employed position changes');
-                  const action = parts.length > 0 ? parts.join(', ') + '.' : `${gap} FTE surplus identified.`;
-                  return `${action} This will reduce the ${gap} FTE surplus while achieving the optimal 70/20/10 split for your ${skill} ${shiftLabel} shift workforce.`;
-                }
-                if (row.staffingStatus === 'shortage') {
-                  // Build breakdown string from headcount
-                  const breakdownParts: string[] = [];
-                  const agg = new Map<string, number>();
-                  for (const e of row.fteHeadcountJson) {
-                    const t = String(e.employee_type).toUpperCase();
-                    const fte = (parseFloat(String(e.fte_value)) || 0) * (parseFloat(String(e.hc)) || 0);
-                    agg.set(t, (agg.get(t) || 0) + fte);
-                  }
-                  for (const [t, fte] of agg) {
-                    const label = employeeTypeLabels[t] || t;
-                    breakdownParts.push(`${fte.toFixed(1)} FTE in ${label} positions`);
-                  }
-                  const breakdownStr = breakdownParts.length > 0 ? breakdownParts.join(', ') : `${gap} FTE`;
-                  const prefix = hasMix ? `Based on your current mix of ${mixStr}, we recommend opening ${breakdownStr}` : `We recommend opening ${breakdownStr}`;
-                  return `${prefix}. This will address the ${gap} FTE shortage while achieving the optimal 70/20/10 split for your ${skill} ${shiftLabel} shift workforce.`;
-                }
-                return `Staffing is balanced for your ${skill} ${shiftLabel} shift workforce.`;
-              })()}
-            </p>
-          </div>
+          <p className="text-xs font-medium text-muted-foreground mb-1">Summary</p>
+          <p className="text-xs leading-relaxed">{summaryText}</p>
         </div>
       </div>
     </Card>
   );
 }
 
-/* ─── Right Panel: Positions to Close / Open ─── */
+/* ─── Right Panel: Recommended Actions ─── */
 
-const employeeTypeLabels: Record<string, string> = {
-  FT: 'Full Time',
-  PT: 'Part Time',
-  PRN: 'PRN',
-};
+function PositionsToCloseSection({ subRows }: { subRows: ForecastSubRow[] }) {
+  const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set());
 
-const typeColors: Record<string, string> = {
-  FT: 'bg-orange-500/10 text-orange-700',
-  PT: 'bg-emerald-500/10 text-emerald-700',
-  PRN: 'bg-primary/10 text-primary',
-};
+  const closeRows = subRows.filter(sr =>
+    sr.staffingStatus === 'pos_to_close' || sr.staffingStatus.includes('close')
+  );
 
-function HeadcountBreakdown({ entries }: { entries: FteHeadcountEntry[] }) {
-  if (entries.length === 0) return null;
+  if (closeRows.length === 0) return null;
 
-  const aggregated = new Map<string, { type: string; fteVal: number; totalHc: number; totalFte: number }>();
-  for (const entry of entries) {
-    const type = String(entry.employee_type).toUpperCase();
-    const fteVal = parseFloat(String(entry.fte_value)) || 0;
-    const hc = parseFloat(String(entry.hc)) || 0;
-    const key = `${type}_${fteVal}`;
-    const existing = aggregated.get(key);
+  // Group by employment type
+  const grouped = new Map<string, { count: number; posIds: (string | number)[] }>();
+  for (const sr of closeRows) {
+    const key = normalizeEmpType(sr.employmentType);
+    const existing = grouped.get(key) || { count: 0, posIds: [] };
+    existing.count += sr.posNbrToClose.length;
+    existing.posIds.push(...sr.posNbrToClose);
+    grouped.set(key, existing);
+  }
+
+  const toggleExpand = (type: string) => {
+    setExpandedTypes(prev => {
+      const next = new Set(prev);
+      next.has(type) ? next.delete(type) : next.add(type);
+      return next;
+    });
+  };
+
+  return (
+    <div className="space-y-2">
+      <span className="text-xs font-medium text-primary underline">Position to Close</span>
+      {Array.from(grouped).map(([type, data]) => (
+        <div key={type} className="space-y-1">
+          <div
+            className={cn("flex items-center justify-between rounded px-2.5 py-1.5 text-xs cursor-pointer", getColor(type))}
+            onClick={() => data.posIds.length > 0 && toggleExpand(type)}
+          >
+            <div className="flex items-center gap-1">
+              {data.posIds.length > 0 && (
+                expandedTypes.has(type)
+                  ? <ChevronDown className="h-3 w-3" />
+                  : <ChevronRight className="h-3 w-3" />
+              )}
+              <span className="font-medium">{getLabel(type)}</span>
+            </div>
+            <span className="font-semibold">Close {data.count} position{data.count !== 1 ? 's' : ''}</span>
+          </div>
+          {expandedTypes.has(type) && data.posIds.length > 0 && (
+            <div className="ml-4 text-[10px] text-muted-foreground bg-muted/40 rounded px-2 py-1.5">
+              Position IDs: {data.posIds.join(', ')}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PositionsToOpenSection({ subRows }: { subRows: ForecastSubRow[] }) {
+  const openRows = subRows.filter(sr =>
+    sr.staffingStatus === 'pos_to_open' || sr.staffingStatus.includes('open')
+  );
+
+  if (openRows.length === 0) return null;
+
+  // Group fte_headcount_json entries by employment type then by fte_value
+  const allEntries: (FteHeadcountEntry & { empType: string })[] = [];
+  for (const sr of openRows) {
+    for (const entry of sr.fteHeadcountJson) {
+      allEntries.push({ ...entry, empType: normalizeEmpType(String(entry.employee_type)) });
+    }
+  }
+
+  // Group by empType
+  const byType = new Map<string, Map<number, { hc: number; total: number }>>();
+  for (const e of allEntries) {
+    const fteVal = parseFloat(String(e.fte_value)) || 0;
+    const hc = parseFloat(String(e.hc)) || 0;
+    if (!byType.has(e.empType)) byType.set(e.empType, new Map());
+    const fteMap = byType.get(e.empType)!;
+    const existing = fteMap.get(fteVal);
     if (existing) {
-      existing.totalHc += hc;
-      existing.totalFte += fteVal * hc;
+      existing.hc += hc;
+      existing.total += fteVal * hc;
     } else {
-      aggregated.set(key, { type, fteVal, totalHc: hc, totalFte: fteVal * hc });
+      fteMap.set(fteVal, { hc, total: fteVal * hc });
     }
   }
 
   return (
-    <div className="space-y-1">
-      {Array.from(aggregated).map(([key, { type, fteVal, totalHc, totalFte }]) => {
-        const label = employeeTypeLabels[type] || type;
-        return (
-          <div key={key} className={cn("flex items-center justify-between text-xs rounded px-2.5 py-1.5", typeColors[type] || 'bg-muted/60 text-muted-foreground')}>
-            <span>{label}: {fteVal} FTE x {totalHc}</span>
-            <span className="font-semibold">= {totalFte.toFixed(1)} FTE</span>
-          </div>
-        );
-      })}
+    <div className="space-y-2">
+      <span className="text-xs font-medium text-primary underline">Position to Open</span>
+      {Array.from(byType).map(([type, fteMap]) => (
+        <div key={type} className="space-y-1">
+          {Array.from(fteMap).map(([fteVal, { hc, total }]) => (
+            <div key={`${type}_${fteVal}`} className={cn("flex items-center justify-between text-xs rounded px-2.5 py-1.5", getColor(type))}>
+              <span>{getLabel(type)}: {fteVal} FTE x {hc}</span>
+              <span className="font-semibold">= {total.toFixed(1)} FTE</span>
+            </div>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }
 
 function RightPanel({ row }: { row: ForecastBalanceRow }) {
-  const isSurplus = row.staffingStatus === 'surplus';
-  const isShortage = row.staffingStatus === 'shortage';
-  const hasOpenReqs = row.openReqsFte > 0;
-  const isCancelReq = row.actionTypes.includes('CANCEL_OPEN_REQ');
+  const currentFte = row.hiredFte + row.openReqsFte;
+  const fteGap = row.totalFteReq;
+  const gapSign = fteGap > 0 ? '+' : fteGap < 0 ? '' : '';
+  const gapLabel = fteGap > 0 ? 'Surplus' : fteGap < 0 ? 'Shortage' : 'Balanced';
+
+  const hasCloseActions = row.subRows.some(sr =>
+    sr.staffingStatus === 'pos_to_close' || sr.staffingStatus.includes('close')
+  );
+  const hasOpenActions = row.subRows.some(sr =>
+    sr.staffingStatus === 'pos_to_open' || sr.staffingStatus.includes('open')
+  );
+  const hasAnyActions = hasCloseActions || hasOpenActions;
+
+  // Compute target employment mix from empltypeSplitHiredOpen
+  const targetTotal = row.targetFte;
+  const splitMap = new Map<string, number>();
+  for (const s of row.empltypeSplitHiredOpen) {
+    const norm = normalizeEmpType(s.employment_type);
+    splitMap.set(norm, (splitMap.get(norm) || 0) + s.hired_fte + s.open_reqs_fte);
+  }
+
+  const pillColors: Record<string, string> = {
+    'Full-Time': 'bg-orange-500/15 text-orange-700',
+    'Part-Time': 'bg-emerald-500/15 text-emerald-700',
+    'PRN': 'bg-primary/15 text-primary',
+  };
 
   return (
     <Card className="pt-3 px-5 pb-3 border-l-4 border-l-primary">
       <div className="flex flex-col h-full">
         <div className="flex-1">
+          {/* Header */}
           <div className="flex items-center justify-between pb-2 border-b">
             <h4 className="font-semibold text-sm">Recommended Actions</h4>
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground text-sm">{row.hiredFte.toFixed(1)}</span>
-              <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              <span className="text-lg font-bold text-primary">{row.targetFte.toFixed(1)} FTE</span>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <div className="text-[10px] text-muted-foreground">FTE Gap</div>
+                <div className={cn("text-sm font-bold", fteGap > 0 ? 'text-primary' : fteGap < 0 ? 'text-orange-600' : 'text-emerald-600')}>
+                  {gapSign}{Math.abs(fteGap).toFixed(1)} ({gapLabel})
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-6 mb-3 mt-4">
-            {/* Positions to Close */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-primary underline">Position to Close</span>
-                {isSurplus && (
-                  <span className="text-xs font-semibold text-primary">
-                    {Math.abs(row.totalFteReq).toFixed(1)} FTE
-                  </span>
-                )}
-              </div>
-
-              {isSurplus ? (
-                <div className="space-y-2">
-                  {isCancelReq && hasOpenReqs ? (
-                    <div className="text-xs text-muted-foreground bg-primary/10 rounded px-2 py-2 space-y-1">
-                      <p>
-                        <span className="font-semibold">{row.addressedFte.toFixed(1)}</span> open positions to be cancelled
-                      </p>
-                      {row.unaddressedFte > 0 && (
-                        <p>
-                          <span className="font-semibold">{row.unaddressedFte.toFixed(3)}</span> unaddressed
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="text-xs text-muted-foreground bg-primary/10 rounded px-2 py-2 space-y-1">
-                      {row.addressedFte > 0 && <p>Addressed: {row.addressedFte.toFixed(1)} FTE</p>}
-                      {row.unaddressedFte > 0 && <p>Unaddressed: {row.unaddressedFte.toFixed(1)} FTE</p>}
-                      {row.addressedFte === 0 && row.unaddressedFte === 0 && <p>No action required</p>}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="flex items-center justify-center py-4 text-xs text-muted-foreground bg-primary/10 rounded">
-                  <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
-                  No closures needed
-                </div>
-              )}
+          {/* Current vs Target */}
+          <div className="flex items-center gap-3 py-2 border-b">
+            <div className="text-xs">
+              <span className="text-muted-foreground">Current: </span>
+              <span className="font-semibold">{currentFte.toFixed(1)} FTE</span>
             </div>
-
-            {/* Positions to Open */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-primary underline">Position to Open</span>
-                {isShortage && (
-                  <span className="text-xs font-semibold text-primary">
-                    {Math.abs(row.totalFteReq).toFixed(1)} FTE
-                  </span>
-                )}
-              </div>
-
-              {isShortage ? (
-                <div className="space-y-2">
-                  {row.fteHeadcountJson.length > 0 ? (
-                    <HeadcountBreakdown entries={row.fteHeadcountJson} />
-                  ) : (
-                    <div className="text-xs text-muted-foreground bg-primary/10 rounded px-2 py-2">
-                      {Math.abs(row.totalFteReq).toFixed(1)} FTE to be opened
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="flex items-center justify-center py-4 text-xs text-muted-foreground bg-primary/10 rounded">
-                  <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
-                  No openings needed
-                </div>
-              )}
+            <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+            <div className="text-xs">
+              <span className="text-muted-foreground">Target: </span>
+              <span className="font-bold text-primary">{row.targetFte.toFixed(1)} FTE</span>
             </div>
+          </div>
+
+          {/* Actions */}
+          <div className="mt-3 space-y-4">
+            {hasAnyActions ? (
+              <>
+                {hasCloseActions && <PositionsToCloseSection subRows={row.subRows} />}
+                {hasOpenActions && <PositionsToOpenSection subRows={row.subRows} />}
+              </>
+            ) : (
+              <div className="flex items-center justify-center py-6 text-xs text-muted-foreground bg-muted/30 rounded">
+                <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
+                No action required
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Target info footer */}
+        {/* Target Employment Mix footer */}
         <div className="border-t pt-2 mt-auto">
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-xs text-muted-foreground">Target FTE:</span>
-            <span className="text-sm font-bold text-primary">{row.targetFte.toFixed(1)}</span>
-            {(() => {
-              // Compute per-type share from fteHeadcountJson
-              const typeShares = new Map<string, number>();
-              for (const entry of row.fteHeadcountJson) {
-                const t = String(entry.employee_type).toUpperCase();
-                const fte = (parseFloat(String(entry.fte_value)) || 0) * (parseFloat(String(entry.hc)) || 0);
-                typeShares.set(t, (typeShares.get(t) || 0) + fte);
-              }
-              const total = Array.from(typeShares.values()).reduce((a, b) => a + b, 0);
-              if (total <= 0) return null;
-              return Array.from(typeShares).map(([t, fte]) => {
-                const pct = Math.round((fte / total) * 100);
-                const label = employeeTypeLabels[t] || t;
-                const pillColors: Record<string, string> = {
-                  FT: 'bg-orange-500/15 text-orange-700',
-                  PT: 'bg-emerald-500/15 text-emerald-700',
-                  PRN: 'bg-primary/15 text-primary',
-                };
-                return (
-                  <span key={t} className={cn("px-1.5 py-0.5 rounded text-[10px] font-semibold", pillColors[t] || 'bg-muted text-muted-foreground')}>
-                    {label} {pct}%
-                  </span>
-                );
-              });
-            })()}
+            <span className="text-xs text-muted-foreground">Target Mix:</span>
+            {DISPLAY_TYPES.map(t => {
+              const val = splitMap.get(t) || 0;
+              const pct = targetTotal > 0 ? Math.round((val / targetTotal) * 100) : 0;
+              return (
+                <span key={t} className={cn("px-1.5 py-0.5 rounded text-[10px] font-semibold", pillColors[t] || 'bg-muted text-muted-foreground')}>
+                  {getLabel(t)} {pct}%
+                </span>
+              );
+            })}
           </div>
         </div>
       </div>
