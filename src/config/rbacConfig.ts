@@ -109,6 +109,7 @@ export const CORE_PERMISSIONS: Permission[] = [
   { id: "core-analytics.access", key: "analytics.access", label: "Analytics", description: "Access to analytics page", category: "modules", is_system: true },
   { id: "core-reports.access", key: "reports.access", label: "Reports", description: "Access to reports page", category: "modules", is_system: true },
   { id: "core-support.access", key: "support.access", label: "Support", description: "Access to support page", category: "modules", is_system: true },
+  { id: "core-staffing.variance", key: "staffing.variance", label: "Variance Analysis", description: "Access to variance analysis tab", category: "modules", is_system: true },
   
   // Settings Access
   { id: "core-settings.volume_override", key: "settings.volume_override", label: "Volume Override Settings", description: "Access to volume override configuration", category: "settings", is_system: true },
