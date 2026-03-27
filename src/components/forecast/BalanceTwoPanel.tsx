@@ -36,6 +36,7 @@ function normalizeEmpType(t: string): string {
 }
 
 function getLabel(t: string): string {
+  if (!t) return 'Unknown';
   return employeeTypeLabels[t] || employeeTypeLabels[normalizeEmpType(t)] || t;
 }
 
