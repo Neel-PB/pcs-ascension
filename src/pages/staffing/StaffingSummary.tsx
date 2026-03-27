@@ -90,9 +90,13 @@ export default function StaffingSummary() {
     const baseTabs = [
       { id: "summary", label: "Summary" },
       { id: "planning", label: "Planned/Active Resources" },
-      { id: "variance", label: "Variance Analysis" },
-      { id: "forecasts", label: "Forecasts" },
     ];
+    
+    if (hasPermission("staffing.variance")) {
+      baseTabs.push({ id: "variance", label: "Variance Analysis" });
+    }
+    
+    baseTabs.push({ id: "forecasts", label: "Forecasts" });
     
     if (hasPermission("settings.volume_override")) {
       baseTabs.push({ id: "volume-settings", label: "Volume Settings" });
