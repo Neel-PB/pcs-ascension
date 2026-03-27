@@ -30,9 +30,9 @@ const DISPLAY_TYPES = ['Full-Time', 'Part-Time', 'PRN'] as const;
 function normalizeEmpType(t: string): string {
   if (!t) return '';
   const upper = t.toUpperCase().trim();
-  if (upper === 'FT' || upper === 'FULL-TIME' || upper === 'FULL TIME') return 'Full-Time';
-  if (upper === 'PT' || upper === 'PART-TIME' || upper === 'PART TIME') return 'Part-Time';
-  if (upper === 'PRN') return 'PRN';
+  if (upper === 'FT' || upper === 'F' || upper === 'FULL-TIME' || upper === 'FULL TIME' || upper === 'FULL_TIME' || upper.startsWith('FULL')) return 'Full-Time';
+  if (upper === 'PT' || upper === 'P' || upper === 'PART-TIME' || upper === 'PART TIME' || upper === 'PART_TIME' || upper.startsWith('PART')) return 'Part-Time';
+  if (upper === 'PRN' || upper === 'PD' || upper === 'PER DIEM') return 'PRN';
   return t;
 }
 

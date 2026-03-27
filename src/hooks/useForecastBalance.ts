@@ -228,13 +228,14 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         const parsedSplit = parseJsonField<EmpTypeSplit[]>(row.empltype_split_hired_open);
         if (Array.isArray(parsedSplit)) {
           for (const s of parsedSplit) {
-            const existing = g.empltypeSplitHiredOpen.find(e => e.employment_type === s.employment_type);
+            const normType = normalizeEmpTypeForMerge(s.employment_type);
+            const existing = g.empltypeSplitHiredOpen.find(e => normalizeEmpTypeForMerge(e.employment_type) === normType);
             if (existing) {
               existing.hired_fte += parseFloat(String(s.hired_fte)) || 0;
               existing.open_reqs_fte += parseFloat(String(s.open_reqs_fte)) || 0;
             } else {
               g.empltypeSplitHiredOpen.push({
-                employment_type: s.employment_type,
+                employment_type: normType || s.employment_type,
                 hired_fte: parseFloat(String(s.hired_fte)) || 0,
                 open_reqs_fte: parseFloat(String(s.open_reqs_fte)) || 0,
               });
