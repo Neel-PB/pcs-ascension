@@ -3,6 +3,7 @@ import { ForecastBalanceRow, FteHeadcountEntry, ForecastSubRow, EmpTypeSplit } f
 import { Card } from "@/components/ui/card";
 import { Check, ArrowRight, ChevronDown, ChevronRight } from "@/lib/icons";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface BalanceTwoPanelProps {
   row: ForecastBalanceRow;
@@ -194,8 +195,12 @@ function PositionsToCloseSection({ subRows }: { subRows: ForecastSubRow[] }) {
             <span className="font-semibold">Close {data.count} position{data.count !== 1 ? 's' : ''}</span>
           </div>
           {expandedTypes.has(type) && data.posIds.length > 0 && (
-            <div className="ml-4 text-[10px] text-muted-foreground bg-muted/40 rounded px-2 py-1.5">
-              Position IDs: {data.posIds.join(', ')}
+            <div className="ml-4 flex flex-wrap gap-1.5 py-1.5">
+              {data.posIds.map((id) => (
+                <Badge key={String(id)} variant="outline" className="text-[10px] px-2 py-0.5 font-mono">
+                  {String(id)}
+                </Badge>
+              ))}
             </div>
           )}
         </div>
