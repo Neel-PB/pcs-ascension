@@ -27,6 +27,7 @@ const typeColors: Record<string, string> = {
 const DISPLAY_TYPES = ['Full-Time', 'Part-Time', 'PRN'] as const;
 
 function normalizeEmpType(t: string): string {
+  if (!t) return '';
   const upper = t.toUpperCase().trim();
   if (upper === 'FT' || upper === 'FULL-TIME' || upper === 'FULL TIME') return 'Full-Time';
   if (upper === 'PT' || upper === 'PART-TIME' || upper === 'PART TIME') return 'Part-Time';
