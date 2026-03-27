@@ -261,6 +261,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<AppRole, PermissionKey[]> = {
     "analytics.access",
     "reports.access",
     "support.access",
+    "staffing.variance",
     "filters.region",
     "filters.market",
     "filters.facility",
