@@ -168,6 +168,7 @@ export const PERMISSION_CATEGORIES = {
       "analytics.access": { label: "Analytics", description: "Access to analytics page" },
       "reports.access": { label: "Reports", description: "Access to reports page" },
       "support.access": { label: "Support", description: "Access to support page" },
+      "staffing.variance": { label: "Variance Analysis", description: "Access to variance analysis tab" },
     },
   },
   settings: {
