@@ -9,6 +9,12 @@ export interface FteHeadcountEntry {
   hc: number;
 }
 
+export interface EmpTypeSplit {
+  employment_type: string;
+  hired_fte: number;
+  open_reqs_fte: number;
+}
+
 export interface ForecastApiRow {
   region: string;
   market: string;
@@ -27,12 +33,30 @@ export interface ForecastApiRow {
   open_reqs_fte: number;
   target_fte: number;
   total_fte_req: number;
+  overall_status: string;
   staffing_status: string;
   action_type: string;
   addressed_fte: number;
   unaddressed_fte: number;
   fte_headcount_json: FteHeadcountEntry[] | null;
+  empltype_split_hired_open: EmpTypeSplit[] | null;
+  pos_nbr_to_close: (string | number)[] | null;
   load_ts: string | null;
+}
+
+// --- Sub-row (per employment type from API) ---
+
+export interface ForecastSubRow {
+  employmentType: string;
+  staffingStatus: string;
+  actionType: string;
+  addressedFte: number;
+  unaddressedFte: number;
+  fteHeadcountJson: FteHeadcountEntry[];
+  posNbrToClose: (string | number)[];
+  hiredFte: number;
+  openReqsFte: number;
+  totalFteReq: number;
 }
 
 // --- Grouped row for UI ---
@@ -58,7 +82,9 @@ export interface ForecastBalanceRow {
   unaddressedFte: number;
   fteHeadcountJson: FteHeadcountEntry[];
   nursingFlag: boolean;
-  employmentType: string; // 'NA' means mixed/aggregated, otherwise specific type
+  employmentType: string;
+  subRows: ForecastSubRow[];
+  empltypeSplitHiredOpen: EmpTypeSplit[];
 }
 
 export interface ForecastBalanceSummary {
@@ -78,19 +104,19 @@ export interface ForecastBalanceFilters {
   pstat?: string | null;
 }
 
-function normalizeStatus(s: string): 'shortage' | 'surplus' | 'balanced' {
+function normalizeOverallStatus(s: string): 'shortage' | 'surplus' | 'balanced' {
   const lower = (s || '').toLowerCase();
   if (lower.includes('short')) return 'shortage';
   if (lower.includes('surp')) return 'surplus';
   return 'balanced';
 }
 
-// Priority: shortage > surplus > balanced
-function worstStatus(a: string, b: string): 'shortage' | 'surplus' | 'balanced' {
-  const order = { shortage: 0, surplus: 1, balanced: 2 };
-  const na = normalizeStatus(a);
-  const nb = normalizeStatus(b);
-  return order[na] <= order[nb] ? na : nb;
+function parseJsonField<T>(val: T | string | null): T | null {
+  if (val == null) return null;
+  if (typeof val === 'string') {
+    try { return JSON.parse(val); } catch { return null; }
+  }
+  return val as T;
 }
 
 export function useForecastBalance(filters?: ForecastBalanceFilters) {
@@ -99,7 +125,6 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
   return useQuery({
     queryKey: ['forecast-balance', { departmentId, region, market, facilityId, level2, pstat }],
     queryFn: async (): Promise<ForecastBalanceSummary> => {
-      // Build query params
       const params = new URLSearchParams();
       params.set('take', '50000');
       if (region) params.set('region', region);
@@ -115,7 +140,7 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
 
       const apiRows: ForecastApiRow[] = Array.isArray(response) ? response : response.data;
 
-      // Client-side grouping by facility + dept + skill_mix + shift
+      // Group by facility + dept + skill_mix + shift
       const grouped = new Map<string, {
         region: string;
         market: string;
@@ -131,11 +156,13 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         totalFteReq: number;
         addressedFte: number;
         unaddressedFte: number;
-        staffingStatus: string;
+        overallStatus: string;
         actionTypes: Set<string>;
         fteHeadcountJson: FteHeadcountEntry[];
         nursingFlag: boolean;
         employmentTypes: Set<string>;
+        subRows: ForecastSubRow[];
+        empltypeSplitHiredOpen: EmpTypeSplit[];
       }>();
 
       for (const row of apiRows) {
@@ -157,11 +184,13 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
             totalFteReq: 0,
             addressedFte: 0,
             unaddressedFte: 0,
-            staffingStatus: row.staffing_status,
+            overallStatus: row.overall_status || row.staffing_status || '',
             actionTypes: new Set<string>(),
             fteHeadcountJson: [],
             nursingFlag: false,
             employmentTypes: new Set<string>(),
+            subRows: [],
+            empltypeSplitHiredOpen: [],
           });
         }
 
@@ -172,20 +201,58 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
         g.totalFteReq += parseFloat(String(row.total_fte_req)) || 0;
         g.addressedFte += parseFloat(String(row.addressed_fte)) || 0;
         g.unaddressedFte += parseFloat(String(row.unaddressed_fte)) || 0;
-        g.staffingStatus = worstStatus(g.staffingStatus, row.staffing_status);
+
+        // Use first non-empty overall_status for the group
+        if (row.overall_status && !g.overallStatus) {
+          g.overallStatus = row.overall_status;
+        }
+
         if (row.action_type) g.actionTypes.add(row.action_type);
-        if (row.fte_headcount_json) {
-          const parsed = typeof row.fte_headcount_json === 'string'
-            ? JSON.parse(row.fte_headcount_json)
-            : row.fte_headcount_json;
-          if (Array.isArray(parsed)) {
-            g.fteHeadcountJson.push(...parsed);
+
+        // Parse fte_headcount_json
+        const parsedHc = parseJsonField<FteHeadcountEntry[]>(row.fte_headcount_json);
+        if (Array.isArray(parsedHc)) {
+          g.fteHeadcountJson.push(...parsedHc);
+        }
+
+        // Parse empltype_split_hired_open and merge
+        const parsedSplit = parseJsonField<EmpTypeSplit[]>(row.empltype_split_hired_open);
+        if (Array.isArray(parsedSplit)) {
+          for (const s of parsedSplit) {
+            const existing = g.empltypeSplitHiredOpen.find(e => e.employment_type === s.employment_type);
+            if (existing) {
+              existing.hired_fte += parseFloat(String(s.hired_fte)) || 0;
+              existing.open_reqs_fte += parseFloat(String(s.open_reqs_fte)) || 0;
+            } else {
+              g.empltypeSplitHiredOpen.push({
+                employment_type: s.employment_type,
+                hired_fte: parseFloat(String(s.hired_fte)) || 0,
+                open_reqs_fte: parseFloat(String(s.open_reqs_fte)) || 0,
+              });
+            }
           }
         }
-        // nursing_flag: OR across group
+
+        // Parse pos_nbr_to_close
+        const parsedClose = parseJsonField<(string | number)[]>(row.pos_nbr_to_close);
+
+        // Collect sub-row
         const nf = typeof row.nursing_flag === 'boolean' ? row.nursing_flag : String(row.nursing_flag).toLowerCase() === 'y' || String(row.nursing_flag) === 'true';
         if (nf) g.nursingFlag = true;
         if (row.employment_type) g.employmentTypes.add(row.employment_type);
+
+        g.subRows.push({
+          employmentType: row.employment_type || 'NA',
+          staffingStatus: (row.staffing_status || '').toLowerCase(),
+          actionType: row.action_type || '',
+          addressedFte: parseFloat(String(row.addressed_fte)) || 0,
+          unaddressedFte: parseFloat(String(row.unaddressed_fte)) || 0,
+          fteHeadcountJson: Array.isArray(parsedHc) ? parsedHc : [],
+          posNbrToClose: Array.isArray(parsedClose) ? parsedClose : [],
+          hiredFte: parseFloat(String(row.hired_fte)) || 0,
+          openReqsFte: parseFloat(String(row.open_reqs_fte)) || 0,
+          totalFteReq: parseFloat(String(row.total_fte_req)) || 0,
+        });
       }
 
       // Build rows
@@ -196,11 +263,9 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
       let surplusCount = 0;
 
       for (const [key, g] of grouped) {
-        const status = normalizeStatus(g.staffingStatus);
+        const status = normalizeOverallStatus(g.overallStatus);
         const fteGap = g.totalFteReq;
 
-        // Determine effective employment type
-        // If all rows in group have same non-NA type, use it; otherwise 'NA'
         const empTypes = Array.from(g.employmentTypes).filter(t => t && t !== 'NA');
         const employmentType = empTypes.length === 1 ? empTypes[0] : 'NA';
 
@@ -234,6 +299,8 @@ export function useForecastBalance(filters?: ForecastBalanceFilters) {
           fteHeadcountJson: g.fteHeadcountJson,
           nursingFlag: g.nursingFlag,
           employmentType,
+          subRows: g.subRows,
+          empltypeSplitHiredOpen: g.empltypeSplitHiredOpen,
         });
       }
 
