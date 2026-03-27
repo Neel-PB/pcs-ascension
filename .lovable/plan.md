@@ -1,36 +1,31 @@
 
 
-## Fix: Guard `normalizeEmpType` Against Undefined Input
+## Show Position IDs as Badges in Recommended Actions
 
-### Problem
-`normalizeEmpType(t)` calls `t.toUpperCase()` but receives `undefined` when API rows have missing `employment_type` values, causing the crash.
+### Change
 
-### Fix
-**File: `src/components/forecast/BalanceTwoPanel.tsx`** — line 29-30
+**File: `src/components/forecast/BalanceTwoPanel.tsx`** — lines 196-200
 
-Add an early return guard:
+Replace the plain text `Position IDs: 578293, 578284` with a flex-wrapped row of `Badge` components.
 
 ```tsx
-function normalizeEmpType(t: string): string {
-  if (!t) return '';
-  const upper = t.toUpperCase().trim();
-  ...
-}
+// Current (line 197-199):
+<div className="ml-4 text-[10px] text-muted-foreground bg-muted/40 rounded px-2 py-1.5">
+  Position IDs: {data.posIds.join(', ')}
+</div>
+
+// New:
+<div className="ml-4 flex flex-wrap gap-1.5 py-1.5">
+  {data.posIds.map((id) => (
+    <Badge key={String(id)} variant="outline" className="text-[10px] px-2 py-0.5 font-mono">
+      {String(id)}
+    </Badge>
+  ))}
+</div>
 ```
 
-Also guard `getLabel` and `getColor` (lines 37-42) to handle empty/undefined input gracefully:
-```tsx
-function getLabel(t: string): string {
-  if (!t) return 'Unknown';
-  ...
-}
-
-function getColor(t: string): string {
-  if (!t) return 'bg-muted/60 text-muted-foreground';
-  ...
-}
-```
+Add `Badge` to the existing imports from `@/components/ui/badge`.
 
 ### Files Modified
-1. `src/components/forecast/BalanceTwoPanel.tsx` — lines 29, 37, 41: add null guards
+1. `src/components/forecast/BalanceTwoPanel.tsx` — render position IDs as Badge components instead of comma-separated text
 
