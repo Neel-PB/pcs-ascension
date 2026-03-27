@@ -104,6 +104,15 @@ export interface ForecastBalanceFilters {
   pstat?: string | null;
 }
 
+function normalizeEmpTypeForMerge(t: string | null | undefined): string {
+  if (!t) return '';
+  const upper = t.toUpperCase().trim();
+  if (upper === 'FT' || upper === 'F' || upper.includes('FULL')) return 'Full-Time';
+  if (upper === 'PT' || upper === 'P' || upper.includes('PART')) return 'Part-Time';
+  if (upper === 'PRN' || upper === 'PD' || upper.includes('DIEM')) return 'PRN';
+  return t;
+}
+
 function normalizeOverallStatus(s: string): 'shortage' | 'surplus' | 'balanced' {
   const lower = (s || '').toLowerCase();
   if (lower.includes('short')) return 'shortage';
