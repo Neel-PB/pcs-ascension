@@ -336,7 +336,8 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
         </div>
 
         {/* Target Employment Mix footer */}
-        <div className="border-t pt-2 mt-auto">
+        <div className="-mx-5 border-t" />
+        <div className="pt-2 mt-auto">
           <div className="flex items-center gap-3 flex-wrap">
             <span className="text-xs text-muted-foreground">Target Mix:</span>
             {DISPLAY_TYPES.map(t => {
