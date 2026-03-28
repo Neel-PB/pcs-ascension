@@ -165,7 +165,15 @@ function PositionsToCloseSection({ subRows }: { subRows: ForecastSubRow[] }) {
     sr.staffingStatus === 'pos_to_close' || sr.staffingStatus.includes('close')
   );
 
-  if (closeRows.length === 0) return null;
+  if (closeRows.length === 0) return (
+    <div className="space-y-2">
+      <span className="text-xs font-medium text-primary underline">Position to Close</span>
+      <div className="flex items-center justify-center py-4 text-xs text-muted-foreground bg-muted/30 rounded">
+        <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
+        No action needed
+      </div>
+    </div>
+  );
 
   // Aggregate addressed_fte, unaddressed_fte, and all position IDs (deduplicated)
   let totalAddressed = 0;
