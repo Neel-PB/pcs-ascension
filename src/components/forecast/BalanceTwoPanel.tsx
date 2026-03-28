@@ -146,8 +146,8 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
           })}
         </div>
 
-        {/* Summary */}
-        <div className="border-t pt-3 mt-auto">
+        <div className="-mx-5 border-t" />
+        <div className="pt-3 mt-auto">
           <p className="text-xs font-medium text-muted-foreground mb-1">Summary</p>
           <p className="text-xs leading-relaxed">{summaryText}</p>
         </div>
