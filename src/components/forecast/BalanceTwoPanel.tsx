@@ -103,7 +103,7 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
     <Card className="pt-3 px-5 pb-3 border-l-4 border-l-muted-foreground/30">
       <div className="flex flex-col h-full">
         {/* Header row aligned with bar columns */}
-        <div className="grid grid-cols-[80px_1fr_1fr] gap-x-4 pb-1.5">
+        <div className="grid grid-cols-[80px_1fr_1fr] gap-x-4 pb-[6px]">
           <div />
           <div className="flex items-baseline justify-between">
             <span className="text-sm font-semibold">Hired FTE</span>
@@ -117,7 +117,7 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
         <div className="-mx-5 border-b" />
 
         {/* Data rows */}
-        <div className="mt-1.5 space-y-2.5">
+        <div className="mt-[6px] space-y-2.5">
           {DISPLAY_TYPES.map(t => {
             const val = splitMap.get(t)!;
             const hiredPct = totalHiredVal > 0 ? (val.hired / totalHiredVal) * 100 : 0;
