@@ -316,7 +316,7 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
           <div className="-mx-5 border-b" />
 
           {/* Actions */}
-          <div className="mt-3 space-y-4">
+          <div className="mt-[6px] space-y-4">
             {hasAnyActions ? (
               <>
                 {hasCloseActions && <PositionsToCloseSection subRows={row.subRows} />}
