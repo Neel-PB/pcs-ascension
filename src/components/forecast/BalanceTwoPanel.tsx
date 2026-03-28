@@ -296,18 +296,18 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
           {/* Header */}
           <div className="flex items-center justify-between pb-[6px]">
             <div className="flex items-center gap-3">
-              <div className="text-xs">
-                <span className="text-muted-foreground">Current: </span>
-                <span className="font-semibold">{currentFte.toFixed(1)} FTE</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-sm font-semibold">Current</span>
+                <span className="text-lg font-bold">{currentFte.toFixed(1)}</span>
               </div>
               <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
-              <div className="text-xs">
-                <span className="text-muted-foreground">Target: </span>
-                <span className="font-bold text-primary">{row.targetFte.toFixed(1)} FTE</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-sm font-semibold">Target</span>
+                <span className="text-lg font-bold text-primary">{row.targetFte.toFixed(1)}</span>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">FTE Gap</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-sm font-semibold">FTE Gap</span>
               <span className={cn("text-lg font-bold", fteGap > 0 ? 'text-primary' : fteGap < 0 ? 'text-orange-600' : 'text-emerald-600')}>
                 {gapSign}{Math.abs(fteGap).toFixed(1)} ({gapLabel})
               </span>
