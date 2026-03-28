@@ -165,7 +165,15 @@ function PositionsToCloseSection({ subRows }: { subRows: ForecastSubRow[] }) {
     sr.staffingStatus === 'pos_to_close' || sr.staffingStatus.includes('close')
   );
 
-  if (closeRows.length === 0) return null;
+  if (closeRows.length === 0) return (
+    <div className="space-y-2">
+      <span className="text-xs font-medium text-primary underline">Position to Close</span>
+      <div className="flex items-center justify-center py-4 text-xs text-muted-foreground bg-muted/30 rounded">
+        <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
+        No action needed
+      </div>
+    </div>
+  );
 
   // Aggregate addressed_fte, unaddressed_fte, and all position IDs (deduplicated)
   let totalAddressed = 0;
@@ -218,7 +226,15 @@ function PositionsToOpenSection({ subRows }: { subRows: ForecastSubRow[] }) {
     sr.staffingStatus === 'pos_to_open' || sr.staffingStatus.includes('open')
   );
 
-  if (openRows.length === 0) return null;
+  if (openRows.length === 0) return (
+    <div className="space-y-2">
+      <span className="text-xs font-medium text-primary underline">Position to Open</span>
+      <div className="flex items-center justify-center py-4 text-xs text-muted-foreground bg-muted/30 rounded">
+        <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
+        No action needed
+      </div>
+    </div>
+  );
 
   // Group fte_headcount_json entries by employment type then by fte_value
   const allEntries: (FteHeadcountEntry & { empType: string })[] = [];
@@ -316,18 +332,9 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
           <div className="-mx-5 border-b" />
 
           {/* Actions */}
-          <div className="mt-[6px] space-y-2">
-            {hasAnyActions ? (
-              <>
-                {hasCloseActions && <PositionsToCloseSection subRows={row.subRows} />}
-                {hasOpenActions && <PositionsToOpenSection subRows={row.subRows} />}
-              </>
-            ) : (
-              <div className="flex items-center justify-center py-6 text-xs text-muted-foreground bg-muted/30 rounded">
-                <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
-                No action required
-              </div>
-            )}
+          <div className="mt-[6px] grid grid-cols-2 gap-4">
+            <PositionsToCloseSection subRows={row.subRows} />
+            <PositionsToOpenSection subRows={row.subRows} />
           </div>
         </div>
 
