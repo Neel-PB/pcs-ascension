@@ -146,8 +146,8 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
           })}
         </div>
 
-        {/* Summary */}
-        <div className="border-t pt-3 mt-auto">
+        <div className="-mx-5 border-t" />
+        <div className="pt-3 mt-auto">
           <p className="text-xs font-medium text-muted-foreground mb-1">Summary</p>
           <p className="text-xs leading-relaxed">{summaryText}</p>
         </div>
@@ -294,7 +294,7 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
       <div className="flex flex-col h-full">
         <div className="flex-1">
           {/* Header */}
-          <div className="flex items-center justify-between pb-2 border-b">
+          <div className="flex items-center justify-between pb-2">
             <h4 className="font-semibold text-sm">Recommended Actions</h4>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">FTE Gap</span>
@@ -303,9 +303,10 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
               </span>
             </div>
           </div>
+          <div className="-mx-5 border-b" />
 
           {/* Current vs Target */}
-          <div className="flex items-center gap-3 py-2 border-b">
+          <div className="flex items-center gap-3 py-2">
             <div className="text-xs">
               <span className="text-muted-foreground">Current: </span>
               <span className="font-semibold">{currentFte.toFixed(1)} FTE</span>
@@ -316,6 +317,7 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
               <span className="font-bold text-primary">{row.targetFte.toFixed(1)} FTE</span>
             </div>
           </div>
+          <div className="-mx-5 border-b" />
 
           {/* Actions */}
           <div className="mt-3 space-y-4">
@@ -334,7 +336,8 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
         </div>
 
         {/* Target Employment Mix footer */}
-        <div className="border-t pt-2 mt-auto">
+        <div className="-mx-5 border-t" />
+        <div className="pt-2 mt-auto">
           <div className="flex items-center gap-3 flex-wrap">
             <span className="text-xs text-muted-foreground">Target Mix:</span>
             {DISPLAY_TYPES.map(t => {
