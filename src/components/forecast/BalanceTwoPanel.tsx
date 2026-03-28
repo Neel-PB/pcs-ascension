@@ -317,6 +317,7 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
               <span className="font-bold text-primary">{row.targetFte.toFixed(1)} FTE</span>
             </div>
           </div>
+          <div className="-mx-5 border-b" />
 
           {/* Actions */}
           <div className="mt-3 space-y-4">
