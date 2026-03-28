@@ -316,18 +316,9 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
           <div className="-mx-5 border-b" />
 
           {/* Actions */}
-          <div className="mt-[6px] space-y-2">
-            {hasAnyActions ? (
-              <>
-                {hasCloseActions && <PositionsToCloseSection subRows={row.subRows} />}
-                {hasOpenActions && <PositionsToOpenSection subRows={row.subRows} />}
-              </>
-            ) : (
-              <div className="flex items-center justify-center py-6 text-xs text-muted-foreground bg-muted/30 rounded">
-                <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
-                No action required
-              </div>
-            )}
+          <div className="mt-[6px] grid grid-cols-2 gap-4">
+            <PositionsToCloseSection subRows={row.subRows} />
+            <PositionsToOpenSection subRows={row.subRows} />
           </div>
         </div>
 
