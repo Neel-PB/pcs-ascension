@@ -290,11 +290,11 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
   };
 
   return (
-    <Card className="pt-3 px-5 pb-3 border-l-4 border-l-primary">
+    <Card className="pt-[6px] px-5 pb-3 border-l-4 border-l-primary">
       <div className="flex flex-col h-full">
         <div className="flex-1">
           {/* Header */}
-          <div className="flex items-center justify-between pb-2">
+          <div className="flex items-center justify-between pb-[6px]">
             <div className="flex items-center gap-3">
               <div className="text-xs">
                 <span className="text-muted-foreground">Current: </span>
