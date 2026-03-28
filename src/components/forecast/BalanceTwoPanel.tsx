@@ -119,8 +119,8 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
         <div className="mt-3 space-y-2.5">
           {DISPLAY_TYPES.map(t => {
             const val = splitMap.get(t)!;
-            const hiredPct = (val.hired / maxValue) * 100;
-            const openPct = (val.openReqs / maxValue) * 100;
+            const hiredPct = totalHiredVal > 0 ? (val.hired / totalHiredVal) * 100 : 0;
+            const openPct = totalOpenVal > 0 ? (val.openReqs / totalOpenVal) * 100 : 0;
             const barColor = barColors[t] || 'bg-muted-foreground';
 
             return (
