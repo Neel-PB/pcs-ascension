@@ -117,7 +117,7 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
         <div className="-mx-5 border-b" />
 
         {/* Data rows */}
-        <div className="mt-3 space-y-2.5">
+        <div className="mt-2 space-y-2.5">
           {DISPLAY_TYPES.map(t => {
             const val = splitMap.get(t)!;
             const hiredPct = totalHiredVal > 0 ? (val.hired / totalHiredVal) * 100 : 0;
