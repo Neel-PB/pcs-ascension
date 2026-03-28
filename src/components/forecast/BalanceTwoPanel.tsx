@@ -294,7 +294,7 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
       <div className="flex flex-col h-full">
         <div className="flex-1">
           {/* Header */}
-          <div className="flex items-center justify-between pb-2 border-b">
+          <div className="flex items-center justify-between pb-2">
             <h4 className="font-semibold text-sm">Recommended Actions</h4>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">FTE Gap</span>
