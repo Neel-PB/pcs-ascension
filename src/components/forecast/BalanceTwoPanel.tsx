@@ -100,7 +100,7 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
   };
 
   return (
-    <Card className="pt-3 px-5 pb-3 border-l-4 border-l-muted-foreground/30">
+    <Card className="pt-3 px-5 pb-3 border-l-4 border-l-muted-foreground/30 [&>div]:pt-0">
       <div className="flex flex-col h-full">
         {/* Header row aligned with bar columns */}
         <div className="grid grid-cols-[80px_1fr_1fr] gap-x-4 pb-1.5">
