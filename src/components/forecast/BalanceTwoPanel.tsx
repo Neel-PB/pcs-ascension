@@ -89,12 +89,9 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
     summaryText = `Staffing is balanced for ${skill} ${shiftLabel} shift workforce.`;
   }
 
-  // Compute max value across all types and both columns for proportional bars
-  const allValues = DISPLAY_TYPES.flatMap(t => {
-    const val = splitMap.get(t)!;
-    return [val.hired, val.openReqs];
-  });
-  const maxValue = Math.max(...allValues, 0.1); // avoid division by zero
+  // Compute composition percentages (FT + PT + PRN = 100% for each column)
+  const totalHiredVal = DISPLAY_TYPES.reduce((sum, t) => sum + splitMap.get(t)!.hired, 0);
+  const totalOpenVal = DISPLAY_TYPES.reduce((sum, t) => sum + splitMap.get(t)!.openReqs, 0);
 
   const barColors: Record<string, string> = {
     'Full-Time': 'bg-orange-500',
