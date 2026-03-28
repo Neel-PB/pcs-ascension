@@ -296,13 +296,11 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
           {/* Header */}
           <div className="flex items-center justify-between pb-2 border-b">
             <h4 className="font-semibold text-sm">Recommended Actions</h4>
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <div className="text-[10px] text-muted-foreground">FTE Gap</div>
-                <div className={cn("text-sm font-bold", fteGap > 0 ? 'text-primary' : fteGap < 0 ? 'text-orange-600' : 'text-emerald-600')}>
-                  {gapSign}{Math.abs(fteGap).toFixed(1)} ({gapLabel})
-                </div>
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">FTE Gap</span>
+              <span className={cn("text-lg font-bold", fteGap > 0 ? 'text-primary' : fteGap < 0 ? 'text-orange-600' : 'text-emerald-600')}>
+                {gapSign}{Math.abs(fteGap).toFixed(1)} ({gapLabel})
+              </span>
             </div>
           </div>
 
