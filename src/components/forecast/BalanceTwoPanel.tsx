@@ -103,17 +103,18 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
     <Card className="pt-3 px-5 pb-3 border-l-4 border-l-muted-foreground/30">
       <div className="flex flex-col h-full">
         {/* Header row aligned with bar columns */}
-        <div className="grid grid-cols-[80px_1fr_1fr] gap-x-4 pb-2 border-b">
+        <div className="grid grid-cols-[80px_1fr_1fr] gap-x-4 pb-2">
           <div />
           <div className="flex items-baseline justify-between">
-            <span className="text-xs text-muted-foreground">Hired FTE</span>
+            <span className="text-sm font-semibold">Hired FTE</span>
             <span className="text-lg font-bold">{row.hiredFte.toFixed(1)}</span>
           </div>
           <div className="flex items-baseline justify-between">
-            <span className="text-xs text-muted-foreground">Open Reqs</span>
+            <span className="text-sm font-semibold">Open Reqs</span>
             <span className="text-lg font-bold">{row.openReqsFte.toFixed(1)}</span>
           </div>
         </div>
+        <div className="-mx-5 border-b" />
 
         {/* Data rows */}
         <div className="mt-3 space-y-2.5">
