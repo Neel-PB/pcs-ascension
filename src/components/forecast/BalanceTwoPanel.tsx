@@ -89,51 +89,63 @@ function LeftPanel({ row }: { row: ForecastBalanceRow }) {
     summaryText = `Staffing is balanced for ${skill} ${shiftLabel} shift workforce.`;
   }
 
+  // Compute max value across all types and both columns for proportional bars
+  const allValues = DISPLAY_TYPES.flatMap(t => {
+    const val = splitMap.get(t)!;
+    return [val.hired, val.openReqs];
+  });
+  const maxValue = Math.max(...allValues, 0.1); // avoid division by zero
+
+  const barColors: Record<string, string> = {
+    'Full-Time': 'bg-orange-500',
+    'Part-Time': 'bg-emerald-500',
+    'PRN': 'bg-primary',
+  };
+
   return (
     <Card className="pt-3 px-5 pb-3 border-l-4 border-l-muted-foreground/30">
       <div className="flex flex-col h-full">
-        <div className="grid grid-cols-2 gap-6">
-          {/* Hired FTE Column */}
-          <div>
-            <div className="pb-2 border-b">
-              <div className="flex items-baseline justify-between">
-                <span className="text-xs text-muted-foreground">Hired FTE</span>
-                <span className="text-lg font-bold">{row.hiredFte.toFixed(1)}</span>
-              </div>
-            </div>
-            <div className="mt-3 space-y-1.5">
-              {DISPLAY_TYPES.map(t => {
-                const val = splitMap.get(t)!;
-                return (
-                  <div key={t} className={cn("flex items-center justify-between rounded px-2 py-1.5 text-xs", getColor(t))}>
-                    <span className="font-medium">{getLabel(t)}</span>
-                    <span className="font-semibold">{val.hired.toFixed(1)}</span>
-                  </div>
-                );
-              })}
-            </div>
+        {/* Header row aligned with bar columns */}
+        <div className="grid grid-cols-[80px_1fr_1fr] gap-x-4 pb-2 border-b">
+          <div />
+          <div className="flex items-baseline justify-between">
+            <span className="text-xs text-muted-foreground">Hired FTE</span>
+            <span className="text-lg font-bold">{row.hiredFte.toFixed(1)}</span>
           </div>
+          <div className="flex items-baseline justify-between">
+            <span className="text-xs text-muted-foreground">Open Reqs</span>
+            <span className="text-lg font-bold">{row.openReqsFte.toFixed(1)}</span>
+          </div>
+        </div>
 
-          {/* Open Reqs Column */}
-          <div>
-            <div className="pb-2 border-b">
-              <div className="flex items-baseline justify-between">
-                <span className="text-xs text-muted-foreground">Open Reqs</span>
-                <span className="text-lg font-bold">{row.openReqsFte.toFixed(1)}</span>
-              </div>
-            </div>
-            <div className="mt-3 space-y-1.5">
-              {DISPLAY_TYPES.map(t => {
-                const val = splitMap.get(t)!;
-                return (
-                  <div key={t} className={cn("flex items-center justify-between rounded px-2 py-1.5 text-xs", getColor(t))}>
-                    <span className="font-medium">{getLabel(t)}</span>
-                    <span className="font-semibold">{val.openReqs.toFixed(1)}</span>
+        {/* Data rows */}
+        <div className="mt-3 space-y-2.5">
+          {DISPLAY_TYPES.map(t => {
+            const val = splitMap.get(t)!;
+            const hiredPct = (val.hired / maxValue) * 100;
+            const openPct = (val.openReqs / maxValue) * 100;
+            const barColor = barColors[t] || 'bg-muted-foreground';
+
+            return (
+              <div key={t} className="grid grid-cols-[80px_1fr_1fr] gap-x-4 items-center">
+                <span className="text-xs font-medium text-muted-foreground">{getLabel(t)}</span>
+                {/* Hired bar */}
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-1.5 rounded-full bg-muted/60 overflow-hidden">
+                    <div className={cn("h-full rounded-full transition-all", barColor)} style={{ width: `${hiredPct}%` }} />
                   </div>
-                );
-              })}
-            </div>
-          </div>
+                  <span className="text-xs font-semibold w-8 text-right">{val.hired.toFixed(1)}</span>
+                </div>
+                {/* Open Reqs bar */}
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-1.5 rounded-full bg-muted/60 overflow-hidden">
+                    <div className={cn("h-full rounded-full transition-all", barColor)} style={{ width: `${openPct}%` }} />
+                  </div>
+                  <span className="text-xs font-semibold w-8 text-right">{val.openReqs.toFixed(1)}</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {/* Summary */}
