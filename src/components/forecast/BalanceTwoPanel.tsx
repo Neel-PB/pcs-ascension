@@ -303,9 +303,10 @@ function RightPanel({ row }: { row: ForecastBalanceRow }) {
               </span>
             </div>
           </div>
+          <div className="-mx-5 border-b" />
 
           {/* Current vs Target */}
-          <div className="flex items-center gap-3 py-2 border-b">
+          <div className="flex items-center gap-3 py-2">
             <div className="text-xs">
               <span className="text-muted-foreground">Current: </span>
               <span className="font-semibold">{currentFte.toFixed(1)} FTE</span>
